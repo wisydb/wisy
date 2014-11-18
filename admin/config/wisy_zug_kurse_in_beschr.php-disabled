@@ -1,0 +1,64 @@
+<?php
+
+require('../sql_curr.inc.php');
+require('config.inc.php');
+header('Cache-Control: no-cache, must-revalidate');
+header('Pragma: no-cache');
+set_time_limit(0);
+$db = new DB_Admin;
+$db2 = new DB_Admin;
+
+
+
+echo 'dieses Skript kopiert "Zugehörige Kurse" als Link in die Beschreibung<br />';
+echo 'Hintergrund: Das Feld "Zugehörige Kurse" soll gelöscht werden.<br />';
+echo '------------------------------------------------------------------<br />';
+
+$cnt = 0;
+$db->query("SELECT id, beschreibung FROM kurse ORDER BY id;");
+while( $db->next_record() )
+{
+	$primary_id = $db->f('id');
+	
+	$zugIds = array();
+	$db2->query("SELECT attr_id FROM kurse_verweis WHERE primary_id=$primary_id ORDER BY structure_pos");
+	while( $db2->next_record() ) { $zugId = $db2->f('attr_id'); if( $zugId != $kursId ) { $zugIds[] = $zugId; } }
+	$db2->query("SELECT primary_id FROM kurse_verweis WHERE attr_id=$primary_id");
+	while( $db2->next_record() ) { $zugId = $db2->f('primary_id'); if( $zugId != $kursId && !in_array($zugId, $zugIds) ) { $zugIds[] = $zugId; } }
+	
+	if( sizeof($zugIds) )
+	{
+		$beschreibung = $db->fs('beschreibung');
+		$add_beschr = '';
+		for( $i = 0; $i < sizeof($zugIds); $i++ )
+		{
+			$db2->query("SELECT titel FROM kurse WHERE id={$zugIds[$i]}");
+			if( $db2->next_record() )
+			{
+				$add_beschr .= $add_beschr? ', ' : '';
+				$add_beschr .= '<a href="k' .$zugIds[$i]. '">' .  htmlspecialchars($db2->fs('titel')) . '</a>';
+				$out++;
+			}
+		}
+		
+		if( $add_beschr!='' )
+		{
+			echo "Fundstelle $cnt: ID $primary_id hat zugehörige Kurse ...<br />";
+			flush();
+			$cnt++;
+
+			$add_beschr = "\n\nZugehörige Angebote: ".$add_beschr;
+			if( ($p=strpos($beschreibung, "\n\nZugehörige Angebote: <")) !== false )
+			{
+				echo '<b>TEXT BEREITS ENTSPR. GEÄNDERT! - Entferne alte Änderung</b><br />';
+				$beschreibung = substr($beschreibung, 0, $p);
+			}
+
+
+			$beschreibung .= $add_beschr;
+			$db2->query("UPDATE kurse SET beschreibung='".addslashes($beschreibung)."' WHERE id=$primary_id;");
+		}
+	}
+}
+
+	echo "$cnt Datensätze bearbeitet. Done.<br />";

@@ -1,0 +1,14 @@
+
+###############################################################################
+# um immer die aktuelle JavaScript/CSS Version auszuliefern, haengen wir diese  
+# als Parameter an die JavaScript-/CSS-Dateien mit an - leider wird dadurch
+# u.U. das Caching verhindert.  Die folgenden Zeilen fuegen auch diesen Dateien
+# den entspr. Header hinzu, wodurch die Performance _wesentlich_ gesteigert
+# wird. (ca. 400 ms pro Abfrage) (bp)
+###############################################################################
+
+<IfModule mod_headers.c>
+<FilesMatch ".(js|css)$">
+Header set Cache-Control "max-age=2592000, public"
+</FilesMatch>
+</IfModule>

@@ -1,0 +1,129 @@
+<?php
+
+
+
+require('../sql_curr.inc.php');
+require('config.inc.php');
+header('Cache-Control: no-cache, must-revalidate');
+header('Pragma: no-cache');
+set_time_limit(0);
+$db = new DB_Admin;
+$db2 = new DB_Admin;
+$db3 = new DB_Admin;
+
+
+/*
+echo "+++++++++++ loesche durchf mit: anbieter.id = 281 UND durchfuehrung.nr endet nicht auf '.0' ... <hr />";
+
+$alleweg = 0;
+$kursanz = 0;
+$db->query("SELECT kurse.id FROM kurse, anbieter WHERE kurse.anbieter=anbieter.id AND anbieter.id=281");
+while( $db->next_record() ) 
+{
+	$kursanz ++;
+	$kursId = $db->f('id');
+	echo "nr $kursanz - id $kursId ...<br />";
+	
+	$durchfanz = 0;
+	$del = 0;
+	$delstr = '';
+	$db2->query("SELECT durchfuehrung.id, durchfuehrung.nr FROM durchfuehrung, kurse_durchfuehrung WHERE durchfuehrung.id=kurse_durchfuehrung.secondary_id AND primary_id=$kursId;");
+	while( $db2->next_record() ) 
+	{
+		$durchfanz ++;
+		$durchfId = $db2->f('id');
+		$nr = $db2->fs('nr');
+		echo "id $durchfId - nr $nr...";
+		
+		if( substr($nr, -2) != '.0' )
+		{
+			echo '<span style="font-weight: bold; color: red;">LOESCHEN!</span>';
+			$del ++;
+			$delstr .= ($delstr?', ':'') . $durchfId;
+		}
+		
+		echo '<br />';
+		
+	}
+	
+	if( $delstr != '' )
+	{
+		$sql = "DELETE FROM durchfuehrung WHERE id IN ($delstr);";
+		$db2->query($sql);
+		echo $sql . '<br />';
+
+		$sql = "DELETE FROM kurse_durchfuehrung WHERE secondary_id IN ($delstr) AND primary_id=$kursId;";
+		$db2->query($sql);
+		echo $sql . '<br />';
+	}
+	
+	if( $durchfanz == $del )
+	{
+		echo '<span style="font-weight: bold; color: red;">VON DIESEM KURS SIND ALLE DURCHFUEHRUNGEN WEG!</span>';
+		$alleweg ++;
+	}
+	
+	echo '<hr />';
+}
+
+echo "von $alleweg kursen sind alle durchfuehrungen geloescht";
+*/
+
+
+
+echo "+++++++++++ anbieter.id = 281: von durchfuehrung.nr und von plz '.0' entfernenn ... <hr />";
+
+
+
+$kursanz = 0;
+$db->query("SELECT kurse.id FROM kurse, anbieter WHERE kurse.anbieter=anbieter.id AND anbieter.id=281");
+while( $db->next_record() ) 
+{
+	$kursanz ++;
+	$kursId = $db->f('id');
+	echo "nr $kursanz - id $kursId ...<br />";
+
+
+	$durchfanz = 0;
+	$db2->query("SELECT durchfuehrung.id, durchfuehrung.nr, durchfuehrung.plz FROM durchfuehrung, kurse_durchfuehrung WHERE durchfuehrung.id=kurse_durchfuehrung.secondary_id AND primary_id=$kursId;");
+	while( $db2->next_record() ) 
+	{
+		$doupdate = false;
+		
+		$durchfanz ++;
+		$durchfId = $db2->f('id');
+		$nr = $db2->fs('nr');
+		$plz = $db2->fs('plz');
+		echo "id $durchfId - nr $nr - plz $plz ...<br />";
+		
+		if( substr($nr, -2) == '.0' )
+		{
+			$nr = substr($nr, 0, strlen($nr)-2);
+			$doupdate = true;
+		}
+
+		if( substr($plz, -2) == '.0' )
+		{
+			$plz = substr($plz, 0, strlen($plz)-2);
+			$doupdate = true;
+		}
+		
+		if( $doupdate )
+		{
+			$sql = "UPDATE durchfuehrung SET nr='".addslashes($nr)."', plz='".addslashes($plz)."' WHERE id=$durchfId;"; 
+			$db3->query($sql);
+			echo $sql . '<br />';
+			echo '<span style="font-weight: bold; color: green;">DATEN KORRIGIERT!</span><br />';
+		}
+		
+		
+		
+	}
+	
+	echo '<hr />';
+}
+
+
+
+
+?>

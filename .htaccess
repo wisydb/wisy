@@ -1,0 +1,17 @@
+
+# *****************************************************************************
+# WISY
+# *****************************************************************************
+#
+# We route non-exisiting-file requests to index.php which will create the 
+# appropriate file or an error message then
+# 
+# @author Bjoern Petersen
+#
+# *****************************************************************************
+
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-l
+RewriteRule ^(.*)$ /index.php [L,QSA]

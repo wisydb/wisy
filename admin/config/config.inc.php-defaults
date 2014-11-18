@@ -1,0 +1,34 @@
+<?php
+
+
+// Diese Datei kann als Template für eine neue Installation von WISY verwendet werden.
+// Kopieren Sie die Datei nach config.inc.php und setzen Sie dort die richtigen Zugangsdaten ein.
+// Der Datei config.inc.php sollte zudem als "Nur Lesen" konfiguriert sein, um sie vorm versehentlichen 
+// Überschreiben zu schützen.
+//
+// ACHTUNG: Das Redaktionssystem verfügt über eine Quellcode-Export-Funktion: 
+// Schreiben Sie in keine anderere Datei als config.inc.php - auch nicht in diese Datei - die Zugangsdaten!
+// Ansonsten würde ihr Passwort u.U. eine weite Verbreitung funden. Die Datei config.inc.php hingegen wird nie exportiert.
+
+
+
+class DB_Admin extends DB_Sql 
+{
+	var $Host     = "";
+	var $Database = "";
+	var $User     = "";
+	var $Password = "";
+}
+
+
+
+$g_sync_data = array(
+	array(	'dbs'=>'*',						'start'=> 800000,	'inc'=>	100,	'offset'=>	0,  	'msg'=> 'Endung -00, Standardwerte, die bei einer neuen, autarken Installation Verwendung finden, Synchronisierung ist mit dieser Einstellung nicht möglich' 	),
+	array(	'dbs'=>'db314961, db314961_1',	'start'=>      1,	'inc'=>	 10,	'offset'=>	1,  	'msg'=> 'Endung -1, WISY-Standard' 			),
+	array(	'dbs'=>'db359146',				'start'=> 800000,	'inc'=>	 10,	'offset'=>	2,  	'msg'=> 'Endung -2, WISY für die Bezirke' 	),
+	array(	'dbs'=>'db314961_2',			'start'=> 800000,	'inc'=>	100,	'offset'=>	3,  	'msg'=> 'Endung -03, Bildungsurlaub'	 	),
+);
+
+
+
+$g_logs_dir = '../files/logs'; 
