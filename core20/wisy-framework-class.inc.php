@@ -1091,9 +1091,10 @@ piwikTracker.enableLinkTracking();
 		}
 
 		// echo the search field
-		$DEFAULT_PLACEHOLDER = '';
-		$DEFAULT_RIGHT_HTML = '| <a href="javascript:window.print();">Drucken</a>';
-		$DEFAULT_BOTTOM_HINT = 'bitte <strong>Suchwörter</strong> eingeben - z.B. Englisch, VHS, Bildungsurlaub, ...';
+		$DEFAULT_PLACEHOLDER	= '';
+		$DEFAULT_ADVLINK_HTML	= '<a href="advanced?q=__Q_URLENCODE__" id="wisy_advlink">Erweitern</a>';
+		$DEFAULT_RIGHT_HTML		= '| <a href="javascript:window.print();">Drucken</a>';
+		$DEFAULT_BOTTOM_HINT	= 'bitte <strong>Suchwörter</strong> eingeben - z.B. Englisch, VHS, Bildungsurlaub, ...';
 		
 		echo "\n";
 		echo '<div id="wisy_searcharea">' . "\n";
@@ -1110,12 +1111,18 @@ piwikTracker.enableLinkTracking();
 					echo '</select>' . "\n";
 				}
 				echo '<input type="submit" id="wisy_searchbtn" value="Suche" />' . "\n";
-				echo '<a href="advanced?q=' .urlencode($q_orig). '" id="wisy_advlink">Erweitern</a> ' . $this->replacePlaceholders($this->iniRead('searcharea.html', $DEFAULT_RIGHT_HTML)) . "\n";
+				if( $this->iniRead('searcharea.advlink', 1) )
+				{
+					echo '' . "\n";
+				}
+				
+				echo $this->replacePlaceholders($this->iniRead('searcharea.advlink', $DEFAULT_ADVLINK_HTML)) . "\n";
+				echo $this->replacePlaceholders($this->iniRead('searcharea.html', $DEFAULT_RIGHT_HTML)) . "\n";
 			echo '</form>' . "\n";
 			echo '<div class="wisy_searchhints" data-favlink="' . $mailfav . '">' .  $this->replacePlaceholders($this->iniRead('searcharea.hint', $DEFAULT_BOTTOM_HINT)) . '</div>' . "\n";
 		echo '</div>' . "\n\n";
 	
-		echo $this->replacePlaceholders( $this->iniRead('searcharea.below', '') );
+		echo $this->replacePlaceholders( $this->iniRead('searcharea.below', '') ); // deprecated!
 	}
 
 	/******************************************************************************

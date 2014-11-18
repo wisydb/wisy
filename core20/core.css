@@ -113,25 +113,24 @@ div.wisy_vcardcontent {
 }
 
 #wisy_searchinput { /* ID also used from JS */
-  /*font-size: 19px;*/
+  font-size: 19px;
   margin-right: 4px;
   width: 40%;
   background: white;
 }
 
 #wisy_beiinput { /* ID also used from JS */
-  /*font-size: 19px;*/
+  font-size: 19px;
   width: 10%;
   background: white;
 }
 
 #wisy_kmselect { /* ID also used from JS */
-  /*font-size: 19px;
-  width: 10%;*/
+  font-size: 19px;
 }
 
 #wisy_searchbtn {
-  /*font-size: 19px;*/
+  font-size: 19px;
 }
 
 .wisy_searchhints {
