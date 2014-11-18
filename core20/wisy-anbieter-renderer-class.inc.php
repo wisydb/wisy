@@ -400,7 +400,14 @@ class WISY_ANBIETER_RENDERER_CLASS
 						/* anbieter nr. */
 						echo '<tr>';
 							echo '<td valign="top">Anbieter-Nr.:&nbsp;</td>';
-							echo "<td valign=\"top\">" .isohtmlentities($din_nr). '</td>';
+							echo "<td valign=\"top\">";
+								if( $din_nr ) {
+									echo isohtmlentities($din_nr);
+								}
+								else {
+									echo $id;
+								}
+							echo '</td>';
 						echo '</tr>';
 						
 					echo '</table>';
