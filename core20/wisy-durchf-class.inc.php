@@ -516,7 +516,7 @@ class WISY_DURCHF_CLASS
 		// termin abgelaufen?
 		$termin_abgelaufen = false;
 		$heute_datum = strftime("%Y-%m-%d 00:00:00");
-		if( $beginnsql > '0000-00-00' && $beginnsql < $heute_datum ) {
+		if( $beginnsql > '0000-00-00 00:00:00' && $beginnsql < $heute_datum ) {
 			$termin_abgelaufen = true;	
 		}
 		
