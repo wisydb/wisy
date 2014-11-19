@@ -216,6 +216,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		$logo_h			= $ob->h;
 
 		$firmenportraet	= trim($db->fs('firmenportraet'));
+		$date_created	= $db->fs('date_created');
 		$date_modified	= $db->fs('date_modified');
 		$homepage		= $db->fs('homepage');
 
@@ -418,13 +419,10 @@ class WISY_ANBIETER_RENDERER_CLASS
 					//echo '&nbsp;<br />Sie m&ouml;chten alle Angebote dieses Anbieters sehen? <a href="' .$this->framework->getUrl('search', array('q'=>$qsuchname)). '">Hier klicken</a>!<br />';
 					
 
-	
-			// bottom hints
-			//	echo '<table class="ix" cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td align="right" valign="top">';
-			//		echo '<small>Letzte &Auml;nderung: ' . wisy_datum($date_modified);
-			//	echo '</small></td></tr></table>';
-	
-	
+			
+			echo '<p class="wisy_anbieter_footer '.$this->framework->getAllowFeedbackClass().'">';
+				echo 'Erstellt:&nbsp;' . $this->framework->formatDatum($date_created) . ', Ge&auml;ndert:&nbsp;' . $this->framework->formatDatum($date_modified);
+			echo '</p>';
 	
 	}
 	
@@ -464,7 +462,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 											));
 		echo $this->framework->getSearchField();
 
-			echo '<div id="wisy_resultarea" class="' .$this->framework->getAllowFeedbackClass(). '">';
+			echo '<div id="wisy_resultarea">';
 				$this->renderDetails($db, $anbieter_id);
 			echo '</div>';
 
