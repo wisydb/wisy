@@ -85,6 +85,8 @@ class WISY_KURS_RENDERER_CLASS
 			else if ($freigeschaltet==3) { echo '<p><i>Dieses Angebot ist abgelaufen.</i></p>';			}
 			else if ($freigeschaltet==2) { echo '<p><i>Dieses Angebot ist gesperrt.</i></p>';			}
 
+	$copyrightClass =& createWisyObject('WISY_COPYRIGHT_CLASS', $this->framework);
+
 	if( $freigeschaltet!=2 || $_REQUEST['showinactive']==1 )
 	{
 			
@@ -222,20 +224,26 @@ class WISY_KURS_RENDERER_CLASS
 							// der eingeloggte Anbieter _entspricht_ dem Anbieter des Kurses
 							$class = 'wisy_edittoolbar';	
 							$tooltip = '';	
+							$editurl = '';
 						}
 						else if( $loggedInAnbieterId > 0 ) {
 							// der eingeloggte Anbieter entspricht _nicht_ dem Anbieter des Kurses
 							$class = '';
 							$tooltip = 'um diesen Kurs zu bearbeiten, ist ein erneuter Anbieterlogin erforderlich';
+							$editurl = $copyrightClass->getEditUrl($db, 'kurse', $kursId);
 						}
 						else {
 							// kein Anbieter eingeloggt
 							$class = '';
-							$tooltip = 'Login für Anbieter';
+							$tooltip = 'Login f&uuml;r Anbieter';
+							$editurl = $copyrightClass->getEditUrl($db, 'kurse', $kursId);
 						}
 						echo '<span class="noprint"> - ';
+							$target = $editurl==''? '' : 'target="_blank"';
 							echo $class? "<span class=\"$class\">" : '';
-								echo "<a href=\"".$this->framework->getUrl('edit', array('action'=>'ek', 'id'=>$kursId))."\" title=\"$tooltip\">Bearbeiten</a>";
+								echo "<a href=\"" . 
+									$editurl
+								 .	$this->framework->getUrl('edit', array('action'=>'ek', 'id'=>$kursId))."\" $target title=\"$tooltip\">Bearbeiten</a>";
 							echo $class? "</span>" : '';
 						echo '</span>';
 					}
@@ -286,7 +294,7 @@ class WISY_KURS_RENDERER_CLASS
 	
 		echo '</div></div>';
 	
-		$copyrightClass =& createWisyObject('WISY_COPYRIGHT_CLASS', $this->framework);
+		
 		$copyrightClass->renderCopyright($db, 'kurse', $kursId);
 		
 		echo $this->framework->getEpilogue();

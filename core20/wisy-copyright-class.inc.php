@@ -70,4 +70,72 @@ class WISY_COPYRIGHT_CLASS
 			echo '<p id="wisy_copyright_footer">' . $copyright . '</p>';
 		}
 	}
+	
+	private function unifyDomain($domain)
+	{
+		return strtr(
+			$domain,
+			array(
+				'www.' => '',
+				'.local' => '.info',
+			)
+		);
+	}
+	
+	function getEditUrl(&$db, $table, $recordId)
+	{
+		// returns the edit url, including protocol and including trailing slash
+		// however, the paramter useredit.url may not contain a slash or a protocol
+		$editurl = '';
+
+		// search by user id
+		if( $editurl == '' )
+		{
+			$sql = "SELECT s.settings x FROM user s, $table a
+					 WHERE a.user_created=s.id AND a.id=$recordId;";
+			$db->query($sql);
+			if( $db->next_record() )
+			{
+				$test = explodeSettings($db->fs('x'));
+				if( $test["useredit.url"] != '' )
+				{
+					$editurl = $test["useredit.url"];
+				}
+			}
+		}
+				
+		// search by group id
+		if( $editurl == '' )
+		{
+			$sql = "SELECT s.settings x FROM user_grp s, $table a
+					 WHERE a.user_grp=s.id AND a.id=$recordId;";
+			$db->query($sql);
+			if( $db->next_record() )
+			{
+				$test = explodeSettings($db->fs('x'));
+				if( $test["useredit.url"] != '' )
+				{
+					$editurl = $test["useredit.url"];
+				}
+			}
+		}
+		
+		if( strpos($editurl, '/') !== false ) {
+			return ''; // bad syntax
+		}
+
+		if( $this->unifyDomain($editurl) == $this->unifyDomain($_SERVER['HTTP_HOST']) ) {
+			return ''; // no external URL
+		}
+
+		// done
+		if( $editurl == '' ) {
+			return '';
+		}
+		else {
+			return 'http://' . $editurl . '/'; // the edit pages will forward to https, if appropriate
+		}
+		
+		
+	}
 }
