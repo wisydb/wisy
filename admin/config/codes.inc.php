@@ -84,8 +84,48 @@ $codes_dauer =
 	.'70###10 Wochen###'
 	.'77###11 Wochen###'
 	.'84###12 Wochen###'
-	.'30###1 Monat###'      // skipped by (*)
-	.'60###2 Monate###'     // skipped
+	.'91###13 Wochen###' // weeks 13..52 added 2014-11-19 01:57 
+	.'98###14 Wochen###'
+	.'105###15 Wochen###'
+	.'112###16 Wochen###'
+	.'119###17 Wochen###'
+	.'126###18 Wochen###'
+	.'133###19 Wochen###'
+	.'140###20 Wochen###'
+	.'147###21 Wochen###'
+	.'154###22 Wochen###'
+	.'161###23 Wochen###'
+	.'168###24 Wochen###'
+	.'175###25 Wochen###'
+	.'181###26 Wochen###' // CAVE: 26 weeks = 1 semester, subtracting 1
+	.'189###27 Wochen###'
+	.'196###28 Wochen###'
+	.'203###29 Wochen###'
+	.'209###30 Wochen###' // CAVE: 30 weeks = 7 months, subtracting 1
+	.'217###31 Wochen###'
+	.'224###32 Wochen###'
+	.'231###33 Wochen###'
+	.'238###34 Wochen###'
+	.'245###35 Wochen###'
+	.'252###36 Wochen###'
+	.'259###37 Wochen###'
+	.'266###38 Wochen###'
+	.'273###39 Wochen###'
+	.'280###40 Wochen###'
+	.'287###41 Wochen###'
+	.'294###42 Wochen###'
+	.'301###43 Wochen###'
+	.'308###44 Wochen###'
+	.'315###45 Wochen###'
+	.'322###46 Wochen###'
+	.'329###47 Wochen###'
+	.'336###48 Wochen###'
+	.'343###49 Wochen###'
+	.'350###50 Wochen###'
+	.'357###51 Wochen###'
+	.'363###52 Wochen###' // CAVE: 52 weeks = 2 semester, subtracting 1	
+	.'30###1 Monat###' 
+	.'60###2 Monate###'
 	.'90###3 Monate###' 
 	.'120###4 Monate###'
 	.'150###5 Monate###'
@@ -108,7 +148,7 @@ $codes_dauer =
 	.'660###22 Monate###'
 	.'690###23 Monate###'
 	.'720###24 Monate###'
-	.'365###1 Jahr###'      // skipped
+	.'365###1 Jahr###' 
 	.'730###2 Jahre###' 
 	.'1095###3 Jahre###'
 	.'1460###4 Jahre###'
@@ -116,14 +156,14 @@ $codes_dauer =
 	.'2190###6 Jahre###'
 	.'2555###7 Jahre###'
 	.'2920###8 Jahre###'
-	.'182###1 Semester###'  // skipped
-	.'364###2 Semester###'  // skipped
-	.'546###3 Semester###'  // skipped
-	.'728###4 Semester###'  // skipped
-	.'910###5 Semester###'  // skipped
-	.'1092###6 Semester###' // skipped
-	.'1274###7 Semester###' // skipped
-	.'1456###8 Semester';   // skipped
+	.'182###1 Semester###' 
+	.'364###2 Semester###'
+	.'546###3 Semester###'
+	.'728###4 Semester###' 
+	.'910###5 Semester###'
+	.'1092###6 Semester###'
+	.'1274###7 Semester###'
+	.'1456###8 Semester';  
 				
 
 /******************************************************************************
