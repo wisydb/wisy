@@ -22,7 +22,7 @@ class WISY_KURS_RENDERER_CLASS
 
 		// query DB
 		$db = new DB_Admin();
-		$db->query("SELECT	k.freigeschaltet, k.titel, k.org_titel, k.beschreibung, k.anbieter, k.date_modified, k.bu_nummer, k.fu_knr, k.azwv_knr, a.pflege_pweinst
+		$db->query("SELECT	k.freigeschaltet, k.titel, k.org_titel, k.beschreibung, k.anbieter, k.date_created, k.date_modified, k.bu_nummer, k.fu_knr, k.azwv_knr, a.pflege_pweinst
 						FROM kurse k
 						LEFT JOIN anbieter a ON a.id=k.anbieter
 						WHERE k.id=$kursId"); // "a.suchname" etc. kann mit "LEFT JOIN anbieter a ON a.id=k.anbieter" zus. abgefragt werden
@@ -33,6 +33,7 @@ class WISY_KURS_RENDERER_CLASS
 		$freigeschaltet 	= intval($db->f('freigeschaltet'));
 		$beschreibung		= $db->fs('beschreibung');
 		$anbieterId			= intval($db->f('anbieter'));
+		$date_created		= $db->f('date_created');
 		$date_modified		= $db->f('date_modified');
 		$bu_nummer 			= $db->f('bu_nummer');
 		$pflege_pweinst		= intval($db->f('pflege_pweinst'));
@@ -197,11 +198,11 @@ class WISY_KURS_RENDERER_CLASS
 			}
 	
 			// vollständigkeit feedback, editieren etc.
-			echo '<p class="' .$this->framework->getAllowFeedbackClass(). '">';
+			echo '<p class="wisy_kurse_footer ' .$this->framework->getAllowFeedbackClass(). '">';
 				
 				if( $vollst['msg'] != '' )
 				{
-					echo $vollst['msg'] . ' &ndash;  ';
+					echo $vollst['msg'] . ' -  ';
 				}
 
 				/*
@@ -211,20 +212,31 @@ class WISY_KURS_RENDERER_CLASS
 				}
 				*/
 				
-				echo 'Letzte &Auml;nderung: ' . $this->framework->formatDatum($date_modified);
+				echo 'Erstellt:&nbsp;' . $this->framework->formatDatum($date_created) . ', Ge&auml;ndert:&nbsp;' . $this->framework->formatDatum($date_modified);
 				if( $this->framework->iniRead('useredit') )
 				{
 					if( $pflege_pweinst&1 )
 					{
-						echo ' <span class="noprint">&ndash; f&uuml;r Anbieter:</span> ';
 						$loggedInAnbieterId = $this->framework->getEditAnbieterId();
-
-						echo $loggedInAnbieterId==$anbieterId? '<span class="wisy_edittoolbar">' : '<span class="noprint">';
-							echo "<a href=\"".$this->framework->getUrl('edit', array('action'=>'ek', 'id'=>$kursId))."\">" .($loggedInAnbieterId==$anbieterId? 'Bearbeiten':'Kurs bearbeiten'). "</a>";
-							if( $loggedInAnbieterId > 0 && $loggedInAnbieterId != $anbieterId ) 
-							{
-								echo " (weiteres Login erforderlich)";
-							}
+						if( $loggedInAnbieterId==$anbieterId ) {
+							// der eingeloggte Anbieter _entspricht_ dem Anbieter des Kurses
+							$class = 'wisy_edittoolbar';	
+							$tooltip = '';	
+						}
+						else if( $loggedInAnbieterId > 0 ) {
+							// der eingeloggte Anbieter entspricht _nicht_ dem Anbieter des Kurses
+							$class = '';
+							$tooltip = 'um diesen Kurs zu bearbeiten, ist ein erneuter Anbieterlogin erforderlich';
+						}
+						else {
+							// kein Anbieter eingeloggt
+							$class = '';
+							$tooltip = 'Login für Anbieter';
+						}
+						echo '<span class="noprint"> - ';
+							echo $class? "<span class=\"$class\">" : '';
+								echo "<a href=\"".$this->framework->getUrl('edit', array('action'=>'ek', 'id'=>$kursId))."\" title=\"$tooltip\">Bearbeiten</a>";
+							echo $class? "</span>" : '';
 						echo '</span>';
 					}
 				} 
