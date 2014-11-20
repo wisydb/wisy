@@ -39,6 +39,7 @@ CREATE TABLE IF NOT EXISTS `anbieter` (
   `user_access` int(11) NOT NULL DEFAULT '0',
   `date_created` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `date_modified` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `vollstaendigkeit` int(11) NOT NULL DEFAULT '0',
   `suchname` varchar(200) NOT NULL DEFAULT '',
   `suchname_sorted` varchar(200) NOT NULL DEFAULT '',
   `freigeschaltet` int(11) NOT NULL DEFAULT '1',

@@ -87,6 +87,9 @@ if( $use_neweditor ) {
 	$anbieter->add_row(TABLE_TEXT, 								'fu_annr', 			'FU-Anbieternr.', 0, 0, '',		array('ctrl.size'=>'10-40', 'layout.defhide'=>2, 'layout.join'=>1));
 	$anbieter->add_row(TABLE_TEXT, 								'azwv_annr', 		'AZWV-Anbieternr.', 0, 0,'', 	array('ctrl.size'=>'10-40', 'layout.defhide'=>2, 'layout.join'=>1));
 	$anbieter->add_row(TABLE_ENUM,								'freigeschaltet',	'Status', 1, '1###Freigegeben###2###Gesperrt', '', array('layout.join'=>1, 'layout.descr.hide'=>1));
+	$anbieter->add_row(TABLE_INT|TABLE_EMPTYONNULL|TABLE_READONLY|TABLE_PERCENT,
+																'vollstaendigkeit',	'Vollständigkeit', 0, '0###100', 0, array('layout.defhide'=>1, 'layout.after'=>'%', 'layout.join'=>1));
+																// new field, add with: ALTER TABLE `anbieter` ADD `vollstaendigkeit` int(11) NOT NULL DEFAULT '0' AFTER `date_modified` ;
 }
 $anbieter->add_row(TABLE_TEXT|TABLE_SUMMARY|TABLE_LIST|TABLE_MUST|TABLE_UNIQUE,
 															'suchname',			($use_neweditor?'Suchname':'Suchname '), '', '', '', array('ctrl.size'=>'20-80', 'layout.descr.class'=>'e_bolder', 'layout.bg.class'=>'e_bglite', 'ctrl.class'=>'e_bolder'));
@@ -198,7 +201,7 @@ if( $use_neweditor ) {
 	$anbieter->add_row(TABLE_SATTR|TABLE_TRACKDEFAULTS,			'thema',			'Thema', 0, $themen, '', array('layout.join'=>1, 'layout.defhide'=>2)); // 1/2014: Verwendung der Anbieter-Themen unklar, wird nur in 88 Kursen verwendet. 
 }
 
-$anbieter->rows[$use_neweditor? 9 : 2]->addparam = $anbieter;
+$anbieter->rows[$use_neweditor? 10 : 2]->addparam = $anbieter;
 
 
 
