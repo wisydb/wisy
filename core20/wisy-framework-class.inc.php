@@ -48,13 +48,6 @@ class WISY_FRAMEWORK_CLASS
 		if( strpos($temp, 'ort,'				)!==false ) $GLOBALS['wisyPortalSpalten'] += 32;
 		if( strpos($temp, 'kursnummer,'			)!==false ) $GLOBALS['wisyPortalSpalten'] += 64;
 		if( strpos($temp, 'bunummer,'			)!==false ) $GLOBALS['wisyPortalSpalten'] += 128;
-		if( strpos($temp, 'bildungsgutschein,'	)!==false ) $GLOBALS['wisyPortalSpalten'] += 256;
-		
-		// deprecated (2014-10-30 13:51)
-				/*
-				if( strpos($temp, 'foerderung,'			)!==false ) $GLOBALS['wisyPortalSpalten'] += 512;
-				*/
-		// /deprecated
 	}
 
 	/******************************************************************************

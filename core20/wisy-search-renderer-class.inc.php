@@ -293,26 +293,6 @@ class WISY_SEARCH_RENDERER_CLASS
 				$stichwoerter = $this->framework->loadStichwoerter($db, 'kurse', $currKursId);
 				$durchfClass->formatDurchfuehrung($db, $currKursId, intval($durchfuehrungenIds[0]), 0, 0, 1, $addText, array('record'=>$record, 'stichwoerter'=>$stichwoerter));
 				
-				// deprecated (2014-10-30 13:51)
-						/*
-						// SPALTE: Logo (?)
-						if( ($wisyPortalSpalten & 512) > 0 )
-						{
-							$wisyPortalQualLogoStich = $this->framework->iniRead('spalten.foerderung.stichwort', 0); 
-							$wisyPortalQualLogo      = $this->framework->iniRead('spalten.foerderung.logo'); ;
-							$db -> query("SELECT primary_id from kurse_stichwort where primary_id=$currKursId AND attr_id=$wisyPortalQualLogoStich");
-							if ($db -> next_record())
-							{
-								echo '<td style="text-align:center"><img src="files/' . $wisyPortalQualLogo . '"></td>';
-							}
-							else
-							{
-								echo '<td>&nbsp;</td>';
-							}
-						}
-						*/
-				// /deprecated
-				
 				// SPALTE: Entfernung
 				if( $this->hasDistanceColumn )
 				{
@@ -517,16 +497,6 @@ class WISY_SEARCH_RENDERER_CLASS
 				if (($wisyPortalSpalten & 32) > 0) {	$this->renderColumnTitle('Ort',				'o', 	$orderBy,	1936);			$colspan++; }
 				if (($wisyPortalSpalten & 64) > 0) {	$this->renderColumnTitle('Kurs-Nr.',		'', 	$orderBy,	0);				$colspan++; }
 				if (($wisyPortalSpalten & 128)> 0) { 	$this->renderColumnTitle('BU',				'', 	$orderBy,	0);				$colspan++; }
-				if (($wisyPortalSpalten & 256)> 0) {	$this->renderColumnTitle('M-Nr.',			'',	 	$orderBy,	2176);			$colspan++; }
-				
-				// deprecated (2014-10-30 13:51)
-						/*
-						if (($wisyPortalSpalten & 512)> 0) {	$this->renderColumnTitle($this->framework->iniRead('spalten.foerderung.titel', 'H.E.I.-Scheck'),	
-																											'',		$orderBy,	$this->framework->iniRead('spalten.foerderung.glossar', 0));	
-																																				$colspan++; }
-						*/
-				// /deprecated
-				
 				if( $info['lat'] && $info['lng'] ) {    $this->renderColumnTitle('Entfernung',		'', 	$orderBy,	0);				$colspan++; $this->hasDistanceColumn = true; $this->baseLat = $info['lat']; $this->baseLng = $info['lng'];  }
 			echo '  </tr>' . "\n";
 			

@@ -279,11 +279,7 @@ if( ($temp=strrpos($wisyRequestedFile, '.')) !== false )
 *******************************************************************************/
 
 $wisyCore = 'core20';
-if( $wisyRequestedFile == 'edit_nr.php' )
-{
-	; // leave core10
-}
-else if( strval($_GET['filecore']) != '' )
+if( strval($_GET['filecore']) != '' )
 {
 	$wisyCore = 'core' . strval($_GET['filecore']);
 }

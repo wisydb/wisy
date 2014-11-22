@@ -694,22 +694,5 @@ class WISY_DURCHF_CLASS
 			echo $nr? isohtmlentities($nr) : 'k. A.';
 			echo '</td>' . "\n";
 		}
-	
-		if (($wisyPortalSpalten & 256) > 0) 
-		{
-		
-			echo "    <td>";
-				echo '<a href="edit_nr.php?wisyedit=durchf.' . $durchfuehrungId . '&amp;uri=' . $_SERVER['SCRIPT_URI'] . '&amp;query=' . urlencode($_SERVER['QUERY_STRING']) . '" title="'. $bg_nummer . '">';
-				if($bg_nummer)
-				{
-					echo  $bg_nummer ;
-				}
-				else 
-				{
-					echo 'k.A.';
-				}
-				echo '</a>';
-			echo '</td>' . "\n";
-		}
 	}
 };
