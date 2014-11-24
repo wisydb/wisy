@@ -5,11 +5,14 @@
 class WISY_DURCHF_CLASS
 {
 	var $framework;
+	
+	private $plzfilterObj;
 
 	function __construct(&$framework)
 	{
 		// constructor
 		$this->framework =& $framework;
+		$this->plzfilterObj = createWisyObject('WISY_PLZFILTER_CLASS', $this->framework);
 	}
 
 	function shy($text)
@@ -367,66 +370,6 @@ class WISY_DURCHF_CLASS
 		return $ret;
 	}
 	
-	
-	
-	private $plz_allow;
-	private $plz_deny;
-	private $plz_order;
-	private function get_plz_array_($ini_key)
-	{
-		$ret = array();
-			$temp = explode(',', $this->framework->iniRead($ini_key, ''));
-			for( $i = 0; $i < sizeof($temp); $i++ ) {
-				$plz = trim($temp[$i]);
-				if( $plz != '' ) {
-					$ret[ $plz ] = 1;
-				}
-			}
-		return $ret;
-	}
-	private function is_plz_in_array_($plz, $arr)
-	{
-		for( $i = strlen($plz); $i >= 1; $i-- ) {
-			if( $arr[ substr($plz, 0, $i) ] )
-				return true;
-		}
-		
-		return false;
-	}
-	private function is_valid_plz($plz)
-	{
-		// PLZ allow/deny liste erzeugen
-		if( !is_array($this->plz_allow) )
-		{
-			$this->plz_allow = $this->get_plz_array_('durchf.plz.allow');
-			$this->plz_deny  = $this->get_plz_array_('durchf.plz.deny');
-			$this->plz_order = str_replace(' ', '', $this->framework->iniRead('durchf.plz.order', 'allow,deny')); // durchf.plz.order ist akt. (21:57 16.01.2013) nicht dokumentiert und inoffiziell!
-		}
-		
-		// übergebene PLZ korrigieren
-		$plz = trim($plz);
-		if( $plz == '' ) {
-			$plz = 'empty';
-		}
-		
-		// prüfen, ob die PLZ explizit verboten oder erlaubt ist
-		if( $this->plz_order == 'deny,allow' )
-		{
-			if( sizeof($this->plz_deny ) ) { if(  $this->is_plz_in_array_($plz, $this->plz_deny ) ) { return false; } }
-			if( sizeof($this->plz_allow) ) { if( !$this->is_plz_in_array_($plz, $this->plz_allow) ) { return false; } }
-		}
-		else
-		{
-			// default behaviour
-			if( sizeof($this->plz_allow) ) { if( !$this->is_plz_in_array_($plz, $this->plz_allow) ) { return false; } }
-			if( sizeof($this->plz_deny ) ) { if(  $this->is_plz_in_array_($plz, $this->plz_deny ) ) { return false; } }
-		}
-		
-		return true;
-	}
-	
-	
-	
 	function getDurchfuehrungIds(&$db, $kursId, $sabg = 0 /*1=auch abgelaufene Durchfuehrungen anzeigen*/)
 	{
 		// "ORDER BY beginn='0000-00-00 00:00:00'" stellt Kurse ohne Datum ans Ende
@@ -445,7 +388,7 @@ class WISY_DURCHF_CLASS
 						 ORDER BY beginn='0000-00-00 00:00:00', beginn, beginnoptionen, structure_pos");
 			while( $db->next_record() )
 			{
-				if( $this->is_valid_plz($db->fs('plz')) ) {
+				if( $this->plzfilterObj->is_valid_plz($db->fs('plz')) ) {
 					$durchfuehrungenIds[] = $db->fs('secondary_id');
 				}
 			}
@@ -696,3 +639,4 @@ class WISY_DURCHF_CLASS
 		}
 	}
 };
+
