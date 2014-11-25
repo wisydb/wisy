@@ -169,8 +169,9 @@ function update_kurs_state($kurs_id, $param)
 			// PLZ/Stadtteil ueberpruefen
 			if( $param['set_plz_stadtteil'] )
 			{
-				require_once('plztool.inc.php');
-				$plzetc = search_plz($db, $strasse, $ort);
+				if( !is_object($GLOBALS['plztool']) ) { $GLOBALS['plztool'] = new PLZTOOL_CLASS(); } 				
+				$plzetc = $GLOBALS['plztool']->search_plz_by_str_ort($strasse, $ort);
+				
 				if( is_array( $plzetc ) )
 				{
 					$setmsg = '';
