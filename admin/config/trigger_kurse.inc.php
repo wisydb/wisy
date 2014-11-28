@@ -170,7 +170,7 @@ function update_kurs_state($kurs_id, $param)
 			if( $param['set_plz_stadtteil'] )
 			{
 				if( !is_object($GLOBALS['plztool']) ) { $GLOBALS['plztool'] = new PLZTOOL_CLASS(); } 				
-				$plzetc = $GLOBALS['plztool']->search_plz_by_str_ort($strasse, $ort);
+				$plzetc = $GLOBALS['plztool']->search_plzstadtteil_by_strort($strasse, $ort);
 				
 				if( is_array( $plzetc ) )
 				{

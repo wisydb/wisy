@@ -3,9 +3,9 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Erstellungszeit: 23. Sep 2014 um 12:12
--- Server Version: 5.5.38-0ubuntu0.14.04.1
--- PHP-Version: 5.5.9-1ubuntu4.4
+-- Erstellungszeit: 28. Nov 2014 um 13:32
+-- Server Version: 5.5.40-0ubuntu0.14.04.1
+-- PHP-Version: 5.5.9-1ubuntu4.5
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET time_zone = "+00:00";
@@ -111,7 +111,7 @@ CREATE TABLE IF NOT EXISTS `anbieter` (
   KEY `freigeschaltet` (`freigeschaltet`),
   KEY `strasse` (`strasse`),
   FULLTEXT KEY `textfields` (`din_nr`,`suchname`,`postname`,`strasse`,`ort`,`stadtteil`,`anspr_name`,`notizen`,`leitung_name`,`homepage`,`firmenportraet`,`pflege_name`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=854432 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=855462 ;
 
 --
 -- Trigger `anbieter`
@@ -367,7 +367,7 @@ CREATE TABLE IF NOT EXISTS `durchfuehrung` (
   KEY `sonderpreistage` (`sonderpreistage`),
   KEY `strasse` (`strasse`),
   FULLTEXT KEY `textfields` (`nr`,`strasse`,`plz`,`ort`,`bemerkungen`,`stadtteil`,`preishinweise`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=8642892 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=9303642 ;
 
 --
 -- Trigger `durchfuehrung`
@@ -407,7 +407,7 @@ CREATE TABLE IF NOT EXISTS `feedback` (
   KEY `date_modified` (`date_modified`),
   KEY `url` (`url`),
   KEY `ip` (`ip`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci AUTO_INCREMENT=254522 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci AUTO_INCREMENT=254542 ;
 
 --
 -- Trigger `feedback`
@@ -580,7 +580,7 @@ CREATE TABLE IF NOT EXISTS `kurse` (
   KEY `anbieter` (`anbieter`),
   KEY `freigeschaltet` (`freigeschaltet`),
   FULLTEXT KEY `titel_beschreibung` (`titel`,`beschreibung`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=2835472 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=3225682 ;
 
 --
 -- Trigger `kurse`
@@ -656,6 +656,21 @@ CREATE TABLE IF NOT EXISTS `plztool` (
 -- --------------------------------------------------------
 
 --
+-- Tabellenstruktur für Tabelle `plztool2`
+--
+
+CREATE TABLE IF NOT EXISTS `plztool2` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `plz` varchar(255) COLLATE latin1_general_ci NOT NULL,
+  `ort` varchar(255) COLLATE latin1_general_ci NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `plz` (`plz`),
+  KEY `ort` (`ort`)
+) ENGINE=MyISAM  DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci AUTO_INCREMENT=8290 ;
+
+-- --------------------------------------------------------
+
+--
 -- Tabellenstruktur für Tabelle `portale`
 --
 
@@ -703,7 +718,7 @@ CREATE TABLE IF NOT EXISTS `portale` (
   KEY `begriff_sorted` (`domains`),
   KEY `date_modified` (`date_modified`),
   FULLTEXT KEY `begriff_erklaerung` (`name`,`filter`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1372 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1422 ;
 
 --
 -- Trigger `portale`
@@ -748,7 +763,7 @@ CREATE TABLE IF NOT EXISTS `stichwoerter` (
   KEY `stichwort` (`stichwort`),
   KEY `stichwort_sorted` (`stichwort_sorted`),
   KEY `eigenschaften` (`eigenschaften`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=805762 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=806472 ;
 
 --
 -- Trigger `stichwoerter`
@@ -821,7 +836,7 @@ CREATE TABLE IF NOT EXISTS `themen` (
   KEY `kuerzel_sorted` (`kuerzel_sorted`),
   KEY `thema` (`thema`),
   KEY `thema_sorted` (`thema_sorted`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=284 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=292 ;
 
 --
 -- Trigger `themen`
@@ -865,7 +880,7 @@ CREATE TABLE IF NOT EXISTS `user` (
   `notizen` longtext,
   PRIMARY KEY (`id`),
   KEY `loginname` (`loginname`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=572 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=592 ;
 
 --
 -- Trigger `user`
@@ -881,7 +896,6 @@ CREATE TRIGGER `user_bi_v9_10_1` BEFORE INSERT ON `user`
 DELIMITER ;
 
 INSERT INTO user (loginname, access) VALUES('root', '*.*:rwnd;');
-
 -- --------------------------------------------------------
 
 --
@@ -932,7 +946,7 @@ CREATE TABLE IF NOT EXISTS `user_grp` (
   `notizen` longtext,
   `settings` longtext NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=162 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=172 ;
 
 --
 -- Trigger `user_grp`
@@ -1137,7 +1151,7 @@ CREATE TABLE IF NOT EXISTS `x_tags` (
   KEY `tag_name` (`tag_name`),
   KEY `tag_soundex` (`tag_soundex`),
   KEY `tag_metaphone` (`tag_metaphone`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci AUTO_INCREMENT=4666414 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci AUTO_INCREMENT=4711887 ;
 
 -- --------------------------------------------------------
 

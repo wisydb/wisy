@@ -4,7 +4,8 @@ Search for PLZ using the table "plztool"
 ********************************************************************************
 
 To set up the table, please refer to plztool_init.php or 
-plztool_init.php-disabled.
+plztool_init.php-disabled.  This file also contains some more information about
+the data structures.
 
 @author Bjoern Petersen
  
@@ -15,8 +16,10 @@ class PLZTOOL_CLASS
 {
 	private $plz_normalize_array;
 	
-
-	private function plz_normalize($strasse)
+	/***************************************************************************
+	Function is also used by PLZTOOL_INIT_CLASS and is therefore public
+	***************************************************************************/
+	function plz_normalize($strasse)
 	{
 		if( !is_array($this->plz_normalize_array) )
 		{
@@ -53,7 +56,7 @@ class PLZTOOL_CLASS
  	
  	If no data can be found at all (eg. street typo), "false" is returned.
 	***************************************************************************/
-	function search_plz_by_str_ort($strasse_hsnr, $ort)
+	function search_plzstadtteil_by_strort($strasse_hsnr, $ort)
 	{
 		$db = new DB_Admin;
 		
@@ -71,6 +74,24 @@ class PLZTOOL_CLASS
 
 		return array('plz'=>$plz, 'stadtteil'=>$stadtteil);
 	}
+	
+	/***************************************************************************
+	Search for a PLZ/Ort by entering the first characters of PLZ or a Ort, 
+	returns a list of matches as:
+	
+		array(
+			'matches' => array(
+				0 => array('plz'=>22767, 'ort'=>Hamburg),
+				1 => ...
+			);
+		);
+	
+	If no data can be found, the matches array will be empty.
+	***************************************************************************/
+	function search_plzort_by_plzort()
+	{
+	}
+	
 
 };
 
