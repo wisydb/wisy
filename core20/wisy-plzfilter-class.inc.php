@@ -16,7 +16,10 @@ durchf.plz.order values:
 - deny,allow: If the given PLZ is is the deny-list, it is rejected _unless_
   if is present in the allow-list.
   Other PLZ are permitted.
-  
+
+Currently, the durchf.plz.order option is not officially supported, however, it 
+should work as expected.
+
 @author Bjoern Petersen
 
 *******************************************************************************/
