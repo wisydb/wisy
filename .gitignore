@@ -7,3 +7,7 @@ config.inc.php
 /skprint/
 /skww*/
 /temp/
+
+# ignore private scripts and directories, eg. local2github.prv.sh
+*.prv*
+
