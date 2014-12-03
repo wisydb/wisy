@@ -104,6 +104,20 @@ class WISY_PLZFILTER_CLASS
 		
 		return true;
 	}
+	
+	function is_valid_plz_in_hash($plz_hash)
+	{
+		// function expects an array as array('12345'=>1, '23456'=>1, '34567'=>1 ...)
+		// and checks if _any_ of the given plz is valid
+		foreach( $plz_hash as $plz=>$dummy )
+		{
+			if( $this->is_valid_plz($plz) ) {	
+				return true;
+			}
+		}
+		
+		return false;
+	}
 };
 
 
