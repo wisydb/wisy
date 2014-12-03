@@ -7,13 +7,13 @@
  
  Aufruf dieses Scripts:
  sync?kurseFast		-	Aufruf z.B. alle 30 oder 60 oder 120 Minute
-						* geänderte kurse nach x_kurse / x_kurse_plz / x_kurse_tags kopieren
+						* geaenderte kurse nach x_kurse / x_kurse_plz / x_kurse_tags kopieren
 						
 						
- sync?kurseSlow		-	Aufruf z.B. einmal täglich, 6:00 Uhr:
+ sync?kurseSlow		-	Aufruf z.B. einmal taeglich, 6:00 Uhr:
 						* alle kurse nach x_kurse / x_kurse_plz / x_kurse_tags kopieren
  
- Zusätzliche Parameter:
+ Zusaetzliche Parameter:
  &apikey=<apikey>	-	evtl. notwendiges Passwort, kann in den Portaleinstellungen
 						der Domain unter apikey= definiert werden.
 						Standardpasswort: none
@@ -40,10 +40,10 @@
  16         - Abschlussart			(gleicher Wert wie stichwort.eigenschaften)
  32			- verstecktes Synonym	(gleicher Wert wie stichwort.eigenschaften, in tag_type nur in Kombination mit Synonym/64)
  64         - Synonym 				(gleicher Wert wie stichwort.eigenschaften, alles, was kein Synonym ist, ist ein Lemma)
- 128        - Thema             	(so nicht in stichwort.eigenschaften - wird nicht verwendet, da zu viele überschneidungen mit normalen Stichworten)
+ 128        - Thema             	(so nicht in stichwort.eigenschaften - wird nicht verwendet, da zu viele ueberschneidungen mit normalen Stichworten)
  256        - Anbieter				(so nicht in stichwort.eigenschaften)
  512        - Ort					(so nicht in stichwort.eigenschaften)
- 0x0sss0000	- Subtype				(verwendet für Anbieter)
+ 0x0sss0000	- Subtype				(verwendet fuer Anbieter)
  0x10000000 - Indent				(wird nur zur Laufzeit verwendet)
  0x20000000	- Fuzzy					(wird nur zur Laufzeit verwendet)
 
@@ -52,7 +52,7 @@
  
  
 /* WISY_SYNC_STATE_CLASS --
- * hier werden in einer INI-ähnlichen Tabelle zustände abgelegt, z.B. das Datum des letzten Syncs;
+ * hier werden in einer INI-aehnlichen Tabelle zustaende abgelegt, z.B. das Datum des letzten Syncs;
  * modifizierte Tabellen: x_state
  *****************************************************************************/
  
@@ -241,7 +241,7 @@ class ATTR2TAG_CLASS
 		{
 			// ... special preparations for "stichwoerter"
 			global $hidden_stichwort_eigenschaften;
-			$hidden_stichwort_eigenschaften_plus_synonyme = $hidden_stichwort_eigenschaften | 32 | 64; // hier die Bits nicht addieren: Dies führt schnell dazu, das Werte doppelt addiert werden ...
+			$hidden_stichwort_eigenschaften_plus_synonyme = $hidden_stichwort_eigenschaften | 32 | 64; // hier die Bits nicht addieren: Dies fuehrt schnell dazu, das Werte doppelt addiert werden ...
 			$this->addWhere = " AND (eigenschaften & $hidden_stichwort_eigenschaften_plus_synonyme)=0 ";
 			$this->addField = ', eigenschaften, glossar, zusatzinfo';
 		}
@@ -336,7 +336,7 @@ class ATTR2TAG_CLASS
 
 
 /* PORTAL2TAG_CLASS
- * Berechnet zu einer Kurs-ID die zugehörigen Portal-Tags
+ * Berechnet zu einer Kurs-ID die zugehoerigen Portal-Tags
  * Modifizierte Tabellen: x_tags
  ****************************************************************************/
  
@@ -388,10 +388,10 @@ class KURS2PORTALTAG_CLASS
 			// der kurs ist in diesem portal ...
 			$portal_tag_id = $this->portaltags[ $kurs_id ][ $i ];
 			
-			// portal tag zurückgeben
+			// portal tag zurueckgeben
 			$tag_ids[] = $portal_tag_id;
 			
-			// anzahlen für dieses portal erhöhen (nur wenn es auch durchführungen gibt)
+			// anzahlen fuer dieses portal erhoehen (nur wenn es auch durchfuehrungen gibt)
 			if( $anz_durchf ) 
 			{
 				$this->portal_tags_anz_anbieter[ $portal_tag_id ][ $anbieter_id ] = 1;
@@ -400,7 +400,7 @@ class KURS2PORTALTAG_CLASS
 			}
 		}
 
-		// anzahlen portal ohne filter erhöhen (nur wenn es auch durchführungen gibt)
+		// anzahlen portal ohne filter erhoehen (nur wenn es auch durchfuehrungen gibt)
 		if( $anz_durchf ) 
 		{
 			$this->portal_tags_anz_anbieter[ 0 ][ $anbieter_id ] = 1;
@@ -713,7 +713,7 @@ class WISY_SYNC_RENDERER_CLASS
 				}					
 				
 				// HACK: tagescode und dauer in Quelle berechnen
-				// (dies sollte besser ausserhalb des Portals im Redaktionssystem passieren, aber hier ist es so schön praktisch, da die Trigger sowieso aufgerufen werden)
+				// (dies sollte besser ausserhalb des Portals im Redaktionssystem passieren, aber hier ist es so schoen praktisch, da die Trigger sowieso aufgerufen werden)
 				$write_back = '';
 				$d_tagescode = berechne_tagescode($db2->f('zeit_von'), $db2->f('zeit_bis'), $d_kurstage);
 				if( $d_tagescode != intval($db2->f('tagescode')) )
@@ -733,13 +733,13 @@ class WISY_SYNC_RENDERER_CLASS
 					$db3->query($sql);
 				}
 				
-				// höchste dauer setzen ("höchste" hier willkürlich, in 99.9% sind eh alle Angaben hierzu bei allen Druchführungen gleich)
+				// hoechste dauer setzen ("hoechste" hier willkuerlich, in 99.9% sind eh alle Angaben hierzu bei allen Druchfuehrungen gleich)
 				if( $d_dauer > 0 && ($d_dauer > $k_dauer || $k_dauer==0) )
 				{
 					$k_dauer = $d_dauer;
 				}				
 
-				// höchsten preis setzen ("höchsten" wg. spam verhinderung, keine Ausnutzung besonderheiten des Systems)
+				// hoechsten preis setzen ("hoechsten" wg. spam verhinderung, keine Ausnutzung besonderheiten des Systems)
 				$d_preis = intval($db2->f('preis'));
 				if( $d_preis != -1 && ($d_preis > $k_preis || $k_preis == -1) )
 				{
@@ -752,9 +752,9 @@ class WISY_SYNC_RENDERER_CLASS
 				
 			} // ende durchfuehrungen
 
-			// portale-tags zu $tag_ids hinzufügen, anzahlen erhöhen
-			//if( $anz_durchf == 0 && $at_least_one_durchf ) // 21:29 01.10.2013 at_least_one_durchf stellt sicher, dass im Zweifelsfalle eher mehr gezählt wird als zu wenig, s. Mails mit Jürgen
-			//	$anz_durchf++;								 // 15:11 08.10.2013 das führt zu zu hohen Zahlen in RLP und anderswo, wir lassen das so also sein...
+			// portale-tags zu $tag_ids hinzufuegen, anzahlen erhoehen
+			//if( $anz_durchf == 0 && $at_least_one_durchf ) // 21:29 01.10.2013 at_least_one_durchf stellt sicher, dass im Zweifelsfalle eher mehr gezaehlt wird als zu wenig, s. Mails mit Juergen
+			//	$anz_durchf++;								 // 15:11 08.10.2013 das fuehrt zu zu hohen Zahlen in RLP und anderswo, wir lassen das so also sein...
 			
 			$kurs2portaltag->getPortalTagsAndIncCounts($kurs_id, $tag_ids /*modified*/, $anbieter_id, $anz_durchf);
 
@@ -778,7 +778,7 @@ class WISY_SYNC_RENDERER_CLASS
 				}
 			}
 			
-			// frühestmöglichstes beginndatum setzen
+			// fruehestmoeglichstes beginndatum setzen
 			if( sizeof($d_beginn) )
 			{
 				sort($d_beginn);
@@ -794,7 +794,7 @@ class WISY_SYNC_RENDERER_CLASS
 			{
 				if( $k_beginn < $this->today_datenotime )
 					$k_beginn = '9999-09-09';	// Any date in the future -- this may happen frequently on missing dates with given beginnoptionen
-												// -- 11:23 26.04.2013 it also happens with the new Stichwort #315/Einstieg bis Kursende möglich
+												// -- 11:23 26.04.2013 it also happens with the new Stichwort #315/Einstieg bis Kursende moeglich
 			}
 			else if( $freigeschaltet == 3 /*abgelaufen*/ ) 
 			{
@@ -802,7 +802,7 @@ class WISY_SYNC_RENDERER_CLASS
 					$k_beginn = '0000-00-00'; // Any date in the past -- this should normally not happen, only if the kurs is valid normally but set to abgelaufen manually
 			}
 
-			// frühestmöglichstes beginndatum korrigieren, falls dieses in der Vergangenheit liegt UND kurse die Eigentschaften "Beginn erfragen" etc. zugewiesen wurde
+			// fruehestmoeglichstes beginndatum korrigieren, falls dieses in der Vergangenheit liegt UND kurse die Eigentschaften "Beginn erfragen" etc. zugewiesen wurde
 			/*
 			if( $k_beginn < $this->today_datenotime && $k_beginnerfragenetc )
 			{
@@ -948,7 +948,7 @@ class WISY_SYNC_RENDERER_CLASS
 					FROM x_kurse_tags t 
 					LEFT JOIN x_kurse k ON k.kurs_id=t.kurs_id 
 					WHERE (k.beginn>='$today') 
-					ORDER BY kurs_id";  // -- dies berücksichtigt nur die akt. kurse ... "SELECT tag_id, kurs_id FROM x_kurse_tags ORDER BY kurs_id"; würde auch die abgelaufenen kurse berücksichtigen
+					ORDER BY kurs_id";  // -- dies beruecksichtigt nur die akt. kurse ... "SELECT tag_id, kurs_id FROM x_kurse_tags ORDER BY kurs_id"; wuerde auch die abgelaufenen kurse beruecksichtigen
 										// Abfrage vor 13:55 30.01.2013: (k.beginn='0000-00-00' OR k.beginn>='$today')
 			$db->query($sql . " LIMIT $limit_i, $limit_cnt"); // da die Abfrage sehr speicherintensiv ist, und die SQL-implementierung in DB_Admin ein ergebnis komplett einliest, hier ausnahmsweise Limitanweisungen, um speicher zu sparen.
 			while( $cont )
