@@ -344,15 +344,18 @@ class KURS2PORTALTAG_CLASS
 {
 	public  $all_portals;
 	private $portaltags;
+	private $plzfilter;
 	
-	function KURS2PORTALTAG_CLASS(&$tagtable, &$statetable, $alle_kurse_str)
+	function KURS2PORTALTAG_CLASS(&$framework, &$tagtable, &$statetable, $alle_kurse_str)
 	{
 		$db = new DB_ADMIN;
 		$db2 = new DB_ADMIN;
-		
+		$this->framework = $framework;
+				
 		// nachsehen, in welchen portalen, die kurse von $alle_kurse_str enthalten sind 
 		$this->all_portals = array();
 		$this->portaltags = array();
+		$this->plzfilter = array();
 		$eql2sql = new EQL2SQL_CLASS('kurse');
 		$db->query("SELECT id, einstellungen, einstcache, filter FROM portale;");
 		while( $db->next_record() )
@@ -373,20 +376,36 @@ class KURS2PORTALTAG_CLASS
 				echo sprintf("... lade %d Kurse fuer Portal %d ...\n", $db2->num_rows(), $portal_id); flush();
 				$statetable->updateUpdatestick();
 				
-				while( $db2->next_record() )
+				while( $db2->next_record() ) {
 					$this->portaltags[ $db2->f('id') ][] = $portal_tag;
+				}
+				
+				if( $einstellungen['durchf.plz.hardfilter'] ) {
+					$this->plzfilter[ $portal_tag ] =& createWisyObject('WISY_PLZFILTER_CLASS', $this->framework, $einstellungen);
+				}
 			}
 			
 			$this->all_portals[ $portal_id ] = array( 'einstellungen'=>$einstellungen, 'einstcache'=>$einstcache, 'filter'=>$filer, 'portal_tag'=>$portal_tag);
 		}
 	}
 	
-	function getPortalTagsAndIncCounts($kurs_id, &$tag_ids, $anbieter_id, $anz_durchf)
+	function getPortalTagsAndIncCounts($kurs_id, &$tag_ids, $anbieter_id, $anz_durchf, $d_plz, $d_has_unset_plz)
 	{
 		for( $i = sizeof($this->portaltags[ $kurs_id ])-1; $i >= 0; $i-- )
 		{
 			// der kurs ist in diesem portal ...
 			$portal_tag_id = $this->portaltags[ $kurs_id ][ $i ];
+			
+			// ist der kurs auch ueber den PLZ-Fiter ausgewaehlt? wenn nicht, soll er nicht in diesem Portal erscheinen
+			if( is_object($this->plzfilter[ $portal_tag_id ]) ) {
+				if( $d_has_unset_plz || $this->plzfilter[ $portal_tag_id ]->is_valid_plz_in_hash($d_plz) ) {
+					//echo "OK: $kurs_id<br />";
+				}
+				else {
+					//echo "SKIPPED: $kurs_id for $portal_tag_id\n";
+					continue;
+				}
+			}
 			
 			// portal tag zurueckgeben
 			$tag_ids[] = $portal_tag_id;
@@ -571,7 +590,7 @@ class WISY_SYNC_RENDERER_CLASS
 		for( $i = 0; $i < $kurse_cnt; $i++ )
 			$alle_kurse_str .= ', ' . $db->Result[$i]['id'];
 		
-		$kurs2portaltag = new KURS2PORTALTAG_CLASS($this->tagtable, $this->statetable, $alle_kurse_str);
+		$kurs2portaltag = new KURS2PORTALTAG_CLASS($this->framework, $this->tagtable, $this->statetable, $alle_kurse_str);
 		
 		// go through all kurse modified since $lastsync
 		$kurs_cnt = 0;
@@ -628,7 +647,7 @@ class WISY_SYNC_RENDERER_CLASS
 			
 			// durchfuehrungen durchgehen ...
 			$d_beginn			= array();
-			$d_plz				= array();
+			$d_plz				= array(); $d_has_unset_plz = false;
 			$d_latlng			= array();
 			$k_beginn			= '0000-00-00';
 			$k_preis			= -1;
@@ -675,6 +694,10 @@ class WISY_SYNC_RENDERER_CLASS
 				if( $plz != '' )
 				{
 					$d_plz[$plz] = 1;
+				}
+				else
+				{
+					$d_has_unset_plz = true;
 				}
 				
 				// latlng sammeln
@@ -756,7 +779,7 @@ class WISY_SYNC_RENDERER_CLASS
 			//if( $anz_durchf == 0 && $at_least_one_durchf ) // 21:29 01.10.2013 at_least_one_durchf stellt sicher, dass im Zweifelsfalle eher mehr gezaehlt wird als zu wenig, s. Mails mit Juergen
 			//	$anz_durchf++;								 // 15:11 08.10.2013 das fuehrt zu zu hohen Zahlen in RLP und anderswo, wir lassen das so also sein...
 			
-			$kurs2portaltag->getPortalTagsAndIncCounts($kurs_id, $tag_ids /*modified*/, $anbieter_id, $anz_durchf);
+			$kurs2portaltag->getPortalTagsAndIncCounts($kurs_id, $tag_ids /*modified*/, $anbieter_id, $anz_durchf, $d_plz, $d_has_unset_plz);
 
 			// kurstage (wochentage) / tagescode (vormittags, nachmittags, ...) setzen
 			for( $i = 0; $i < 7; $i++ ) 
@@ -1088,11 +1111,11 @@ class WISY_SYNC_RENDERER_CLASS
 
 		// use the following for debugging only ...
 		$this->dbgCond = "";
-		/*if( substr($host, -6)=='.local' )
+		if( substr($host, -6)=='.local' )
 		{
 			$this->dbgCond = " ORDER BY date_modified DESC LIMIT 500";
 			$this->log("********** WARNING: $host: incomplete update forced!");
-		}*/
+		}
 		
 		
 		// allocate exclusive access
