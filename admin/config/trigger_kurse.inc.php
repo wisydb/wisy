@@ -35,8 +35,8 @@ function update_kurs_state($kurs_id, $param)
 	$azwv_knr				= $db->fs('azwv_knr');
 
 	// formatiertes datum fuer heute vor zwei wochen
-	$tage  = 14;
-	$test_datum = strftime("%Y-%m-%d 00:00:00", (time()-$tage*24*60*60));
+	$tage  = 1;
+	$test_datum = strftime("%Y-%m-%d 00:00:00", (time()-$tage*24*60*60)); // a data of a df must be _larger_ that this data to be "freigeschaltet" 
 	$heute_datum = strftime("%Y-%m-%d 00:00:00");
 
 	// alle durchfuehrungs IDs holen
