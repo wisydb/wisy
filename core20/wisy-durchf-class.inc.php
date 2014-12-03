@@ -12,7 +12,11 @@ class WISY_DURCHF_CLASS
 	{
 		// constructor
 		$this->framework =& $framework;
-		$this->plzfilterObj = createWisyObject('WISY_PLZFILTER_CLASS', $this->framework);
+		$this->plzfilterObj = createWisyObject('WISY_PLZFILTER_CLASS', $this->framework, array(
+			'durchf.plz.allow' => $this->framework->iniRead('durchf.plz.allow', ''),
+			'durchf.plz.deny'  => $this->framework->iniRead('durchf.plz.deny',  ''),
+			'durchf.plz.order' => $this->framework->iniRead('durchf.plz.order', '')
+		));
 	}
 
 	function shy($text)

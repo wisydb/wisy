@@ -33,16 +33,20 @@ class WISY_PLZFILTER_CLASS
 	private $plz_deny;
 	private $plz_order;
 
-	function __construct(&$framework)
+	function __construct(&$framework, $addparam)
 	{
 		// constructor
 		$this->framework =& $framework;
+
+		$this->plz_allow = $this->get_plz_array_($addparam['durchf.plz.allow']);
+		$this->plz_deny  = $this->get_plz_array_($addparam['durchf.plz.deny']);
+		$this->plz_order = str_replace(' ', '', $addparam['durchf.plz.order']); // durchf.plz.order ist akt. (21:57 16.01.2013) nicht dokumentiert und inoffiziell!
 	}
 		
-	private function get_plz_array_($ini_key)
+	private function get_plz_array_($plz_list_as_string)
 	{
 		$ret = array();
-			$temp = explode(',', $this->framework->iniRead($ini_key, ''));
+			$temp = explode(',', $plz_list_as_string);
 			for( $i = 0; $i < sizeof($temp); $i++ ) {
 				$plz = trim($temp[$i]);
 				if( $plz != '' ) {
@@ -64,14 +68,6 @@ class WISY_PLZFILTER_CLASS
 	
 	function is_valid_plz($plz)
 	{
-		// create PLZ allow/deny lists
-		if( !is_array($this->plz_allow) )
-		{
-			$this->plz_allow = $this->get_plz_array_('durchf.plz.allow');
-			$this->plz_deny  = $this->get_plz_array_('durchf.plz.deny');
-			$this->plz_order = str_replace(' ', '', $this->framework->iniRead('durchf.plz.order', 'allow,deny')); // durchf.plz.order ist akt. (21:57 16.01.2013) nicht dokumentiert und inoffiziell!
-		}
-		
 		// correct the PLZ given
 		$plz = trim($plz);
 		if( $plz == '' ) {
