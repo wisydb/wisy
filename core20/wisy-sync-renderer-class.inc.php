@@ -451,6 +451,7 @@ class WISY_SYNC_RENDERER_CLASS
 		require_once("admin/lang.inc.php");								
 		require_once("admin/eql.inc.php");
 		require_once("admin/config/codes.inc.php");
+		require_once('admin/config/trigger_kurse.inc.php');
 
 		// setup vars
 		$this->framework		=& $framework;
@@ -1129,6 +1130,9 @@ class WISY_SYNC_RENDERER_CLASS
 					}
 					else if( isset($_GET['kurseSlow']) )
 					{
+						$this->log("********** $host: calling alle_freischaltungen_ueberpruefen()");
+						alle_freischaltungen_ueberpruefen();
+						
 						$this->log("********** $host: starting kurseSlow - if you do not read \"done.\" below, we're aborted unexpectedly and things may not work!");
 						$this->doSyncKurse(true);
 					}

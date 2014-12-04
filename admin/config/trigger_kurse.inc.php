@@ -334,7 +334,8 @@ function trigger_kurse(&$param)
 		if( $uks['returnmsg'] ) 	$param['returnmsg'] .= ($param['returnmsg']? '<br />' : '') . $uks['returnmsg'];
 		if( $uks['returnreload'] )	$param['returnreload'] = true;
 
-
+		// once a day, we're calling alle_freischaltungen_ueberpruefen() from here; however, since 12/2014 we're calling this function
+		// also from wisy-sync-renderer-class.inc.php, so, if everything works well, the part below may be removed
 		$lastUpdate = regGet('daily.freischaltung_ueberpruefen', '0000-00-00', 'template');
 		if( $lastUpdate != strftime('%Y-%m-%d') )
 		{
