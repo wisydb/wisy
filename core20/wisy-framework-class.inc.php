@@ -1095,7 +1095,7 @@ piwikTracker.enableLinkTracking();
 				echo '<input type="text" id="wisy_searchinput" class="ac_keyword" name="q" value="' .$q. '" placeholder="' . $this->iniRead('searcharea.placeholder', $DEFAULT_PLACEHOLDER) . '" />' . "\n";
 				if( $this->iniRead('searcharea.radiussearch', 0) )
 				{
-					echo '<input type="text" id="wisy_beiinput" name="bei" value="' .$bei. '" placeholder="PLZ/Ort" />' . "\n";
+					echo '<input type="text" id="wisy_beiinput" class="ac_plzort" name="bei" value="' .$bei. '" placeholder="PLZ/Ort" />' . "\n";
 					echo '<select id="wisy_kmselect" name="km" >' . "\n";
 						foreach( $km_arr as $value=>$descr ) {
 							$selected = strval($km)==strval($value)? ' selected="selected"' : '';
@@ -1207,6 +1207,9 @@ piwikTracker.enableLinkTracking();
 			case 'autosuggest':
 				return createWisyObject('WISY_AUTOSUGGEST_RENDERER_CLASS', $this);
 
+			case 'autosuggestplzort':
+				return createWisyObject('WISY_AUTOSUGGESTPLZORT_RENDERER_CLASS', $this);
+				
 			case 'opensearch':
 				return createWisyObject('WISY_OPENSEARCH_RENDERER_CLASS', $this);
 

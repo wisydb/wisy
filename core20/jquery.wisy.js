@@ -264,6 +264,14 @@ function formatResult(row) {
 	return row[0].replace(/(<.+?>)/gi, '');
 }
 
+function formatPlzOrtItem(row) {
+	return row[0] + ' ' + row[1];
+}
+
+function formatPlzOrtResult(row) {
+	return row[1];
+}
+
 function initAutocomplete()
 {
 	$(".ac_keyword").autocomplete('autosuggest',
@@ -274,6 +282,19 @@ function initAutocomplete()
 		matchSubset: false, /* andernfalls wird aus den bisherigen Anfragen versucht eine Liste herzustellen; dies schlaegt dann aber bei unseren Verweisen fehl */
 		formatItem: formatItem,
 		formatResult: formatResult,
+		max: 512,
+		scrollHeight: 250,
+		selectFirst: false
+	});
+	
+	$(".ac_plzort").autocomplete('autosuggestplzort',
+	{
+		width: '20%',
+		multiple: false,
+		matchContains: true,
+		matchSubset: false, /* andernfalls wird aus den bisherigen Anfragen versucht eine Liste herzustellen; dies schlaegt dann aber bei unseren Verweisen fehl */
+		formatItem: formatPlzOrtItem,
+		formatResult: formatPlzOrtResult,
 		max: 512,
 		scrollHeight: 250,
 		selectFirst: false
