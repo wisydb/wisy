@@ -14,7 +14,7 @@ class WISY_ADVANCED_RENDERER_CLASS
 			(
 				'type'			=> 'text',
 				'descr'			=> '<strong>Suchwörter:</strong>',
-				'autocomplete'	=>	true,
+				'autocomplete'	=>	'ac_keyword',
 			);
 		$this->presets['datum'] = array
 			(
@@ -88,6 +88,7 @@ class WISY_ADVANCED_RENDERER_CLASS
 					'type'				=>	'text',
 					'function'			=>	'bei:',
 					'descr'				=>	'Stra&szlig;e/Ort:',
+					'autocomplete'		=>	'ac_plzort',
 					'comma_to_slash'	=>	true,
 					'decoration' => array(
 						'headline_left' => '<strong>Umkreissuche</strong>',
@@ -362,7 +363,7 @@ class WISY_ADVANCED_RENDERER_CLASS
 									echo '<td>';
 										if( $preset['type'] == 'text' )
 										{
-											$autocomplete = $preset['autocomplete']? ' class="ac_keyword" ' : '';
+											$autocomplete = $preset['autocomplete']? ' class="'.$preset['autocomplete'].'" ' : '';
 											echo "<input type=\"text\" name=\"adv_$field_name\" id=\"adv_$field_name\" $autocomplete value=\"" .isohtmlspecialchars($presets_curr[$field_name]). "\" />";
 										}
 										else
