@@ -40,8 +40,6 @@ class WISY_TAGSUGGESTOR_CLASS
 	//
 	function suggestTags($q_tag_name, $param = 0 /*can be an hash, for future use*/)
 	{
-		global $wisyPortalId;
-		
 		// check some parameters
 		if( $param == 0 )
 			$param = array();
@@ -63,10 +61,10 @@ class WISY_TAGSUGGESTOR_CLASS
 			$WILDCARDATSTART	= $LEN>1? '%' : '';
 			$COND				= "tag_name LIKE '$WILDCARDATSTART$QUERY%'";
 			
-			//$PORTALFILTER 		= $this->framework->cacheRead('stats.tag_filter', '(1)');
-			
-			//$portalIdFor		= $PORTALFILTER=='(1)'? 0 : $wisyPortalId;
-			$portalIdFor		= $GLOBALS['wisyPortalFilter']['stdkursfilter']!=''? $GLOBALS['wisyPortalId'] : 0;
+			$portalIdCond = '';
+			if( $GLOBALS['wisyPortalFilter']['stdkursfilter']!='' ) {
+				$portalIdCond = ' AND f.portal_id=' . $GLOBALS['wisyPortalId'] . ' ';
+			}
 			
 			$ret = array();
 			$tags_done  = array();
@@ -75,9 +73,9 @@ class WISY_TAGSUGGESTOR_CLASS
 			{
 				$sql = "SELECT t.tag_id, tag_name, tag_descr, tag_type, tag_help, tag_freq 
 							FROM x_tags t 
-							LEFT JOIN x_tags_freq f ON f.tag_id=t.tag_id AND f.portal_id=$portalIdFor
+							LEFT JOIN x_tags_freq f ON f.tag_id=t.tag_id $portalIdCond
 							WHERE ( $COND )
-							AND f.portal_id=$portalIdFor
+							$portalIdCond
 							ORDER BY LEFT(tag_name,$LEN)<>'$QUERY', tag_name LIMIT 0, $max"; // sortierung alphabetisch, richtiger Wortanfang aber immer zuerst!
 
 				$this->db->query($sql); 
@@ -104,8 +102,8 @@ class WISY_TAGSUGGESTOR_CLASS
 							$this->db2->query("SELECT tag_name, tag_descr, tag_type, tag_help, tag_freq
 													FROM x_tags t 
 													LEFT JOIN x_tags_syn s ON s.lemma_id=t.tag_id 
-													LEFT JOIN x_tags_freq f ON f.tag_id=t.tag_id AND f.portal_id=$portalIdFor
-													WHERE s.tag_id=$tag_id AND f.portal_id=$portalIdFor");
+													LEFT JOIN x_tags_freq f ON f.tag_id=t.tag_id $portalIdCond
+													WHERE s.tag_id=$tag_id $portalIdCond");
 							while( $this->db2->next_record() )
 							{
 								$names[] = array(	'tag_name'=>$this->db2->fs('tag_name'), 
