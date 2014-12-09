@@ -471,21 +471,22 @@ class WISY_DURCHF_CLASS
 		{
 			echo "    <td$terminAttr>";
 			
-			if( $termin_abgelaufen ) echo '<span class="wisy_datum_abgel">';
-				if( $beginn )
-				{
-				    echo ($ende && $beginn!=$ende)? "$beginn - $ende" : $beginn;
-					if( $beginnoptionen ) { echo "<br /><small>($beginnoptionen)</small>"; }
-				}
-				else if( $beginnoptionen )
-				{
-					echo $beginnoptionen;
-				}
-				else
-				{
-					echo 'k. A.';
-				}
-			if( $termin_abgelaufen ) echo '</span>';
+			if( $beginn )
+			{
+				if( $termin_abgelaufen ) { echo '<span class="wisy_datum_abgel">'; }
+			    	echo ($ende && $beginn!=$ende)? "$beginn - $ende" : $beginn;
+			    if( $termin_abgelaufen ) { echo '</span>'; }
+			    
+				if( $beginnoptionen ) { echo "<br /><small>($beginnoptionen)</small>"; }
+			}
+			else if( $beginnoptionen )
+			{
+				echo $beginnoptionen;
+			}
+			else
+			{
+				echo 'k. A.';
+			}
 				
 			if( $zeit_von && $zeit_bis ) {
 				echo "<br /><small>$zeit_von - $zeit_bis Uhr</small>"; 
