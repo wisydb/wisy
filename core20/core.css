@@ -97,7 +97,9 @@ div.wisy_vcardcontent {
 	text-decoration: underline !important;
 }
 
-
+h1.wisy_df_headline {
+	margin-top: 1em;
+}
 
 /*******************************************************************************
 wisy_searcharea

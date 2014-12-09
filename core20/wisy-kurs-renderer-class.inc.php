@@ -128,6 +128,8 @@ class WISY_KURS_RENDERER_CLASS
 			}
 
 			// Durchfuehrungen vorbereiten
+			echo '<h1 class="wisy_df_headline">Termine</h1>';
+			
 			$showAllDurchf = intval($_GET['showalldurchf'])==1? 1 : 0;
 			if( $showAllDurchf )
 				echo '<a name="showalldurchf"></a>';
