@@ -53,6 +53,7 @@ function update_kurs_state($kurs_id, $param)
 	$has_fernunterricht_stichw = false;
 	$has_bildungsgutschein_stichw  = false;
 	$has_aktivierungsgutschein_stichw  = false;
+	$has_umschulung_stichw  = false;
 	$einstieg_bis_kursende_moeglich = false;
 	$db->query("SELECT attr_id FROM kurse_stichwort WHERE primary_id=$kurs_id;");
 	while ( $db->next_record() )
@@ -62,6 +63,7 @@ function update_kurs_state($kurs_id, $param)
 			case 4112: case 7721:	$has_fernunterricht_stichw			= true; break;
 			case 3207: 				$has_bildungsgutschein_stichw		= true; break;
 			case 16311: 			$has_aktivierungsgutschein_stichw	= true; break;
+			case 6013: 				$has_umschulung_stichw				= true; break;
 			case 315:  				$einstieg_bis_kursende_moeglich		= true; break;
 		}
 		$anz_stichw ++;
@@ -230,7 +232,7 @@ function update_kurs_state($kurs_id, $param)
 			 || $has_fernunterricht_stichw )								$baD['ende']++;
 			if( $plz != '' || $ort != '' || $has_fernunterricht_stichw )	$baD['plz']++;
 			
-			if( $preis != -1 || $has_bildungsgutschein_stichw || $has_aktivierungsgutschein_stichw )				
+			if( $preis != -1 || $has_bildungsgutschein_stichw || $has_aktivierungsgutschein_stichw || $has_umschulung_stichw )				
 																			$baD['preis']++;
 
 			if( $nr != '' )													$baD['nr']++;
@@ -271,7 +273,7 @@ function update_kurs_state($kurs_id, $param)
 	}
 	$ret['vmsg'] = $vmsg;
 	
-	//if( $ret['vmsg'] ) { $ret['returnmsg'] .= ($ret['returnmsg']? '<br />' : '') . $ret['vmsg']; }
+	//if( $ret['vmsg'] ) { $ret['returnmsg'] .= ($ret['returnmsg']? '<br />' : '') . 'Informationen zur Vollst&auml;ndigkeit:' . $ret['vmsg']; }
 	
 	// neuen status schreiben
 	if( ($alter_status == 1 /*freigesch.*/ || $alter_status == 3 /*abgel.*/)
