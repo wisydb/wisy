@@ -42,11 +42,11 @@ class WISY_RSS_RENDERER_CLASS
 		$this->dbCache		=& createWisyObject('WISY_CACHE_CLASS', $this->framework, array('table'=>'x_cache_rss', 'itemLifetimeSeconds'=>60*60));
 	}
 
-	function createDurchfuehrungContent(&$db, &$durchfClass, $kursId)
+	function createDurchfuehrungContent(&$db, &$durchfClass, $addParam)
 	{
 		global $wisyPortalSpalten;
 
-		$durchfuehrungenIds = $durchfClass->getDurchfuehrungIds($db, $kursId); // $durchfuehrungenIds enthalten bereits nur die relevanten durchfuehrungen
+		$durchfuehrungenIds = $durchfClass->getDurchfuehrungIds($db, $addParam['record']['id']); // $durchfuehrungenIds enthalten bereits nur die relevanten durchfuehrungen
 		if( sizeof($durchfuehrungenIds) == 0 )
 			return '';
 		
@@ -103,7 +103,12 @@ class WISY_RSS_RENDERER_CLASS
 				}
 			}
 		}
-		
+
+		if( $addParam['record']['freigeschaltet'] == 4 )
+		{
+			$all_beginnoptionen[] = 'dauerhaftes Angebot'; 
+		}
+					
 		// create output
 		$ret = '';
 		if (($wisyPortalSpalten & 2) > 0)
@@ -193,7 +198,7 @@ class WISY_RSS_RENDERER_CLASS
 				{
 					// beschreibung erstellen
 					$descrHtml = '';
-					$descrHtml .= $this->createDurchfuehrungContent($db2, $durchfClass, $record['id']);
+					$descrHtml .= $this->createDurchfuehrungContent($db2, $durchfClass, array('record'=>$record));
 					$descrHtml .= '<a href="' . $this->absPath.'k'.$record['id'] . '">weitere Informationen auf '.isohtmlspecialchars($this->domain).' ...</a>';
 				
 					// itemdatum: da wir neue durchfuerungen erwischen moechten, ist dies das "beginnaenderungsdatum"

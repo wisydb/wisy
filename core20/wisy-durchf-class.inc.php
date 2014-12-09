@@ -487,7 +487,12 @@ class WISY_DURCHF_CLASS
 			{
 				echo 'k. A.';
 			}
-				
+			
+			if( $addParam['record']['freigeschaltet'] == 4 )
+			{
+				echo "<br /><small>dauerhaftes Angebot</small>"; 
+			}
+			
 			if( $zeit_von && $zeit_bis ) {
 				echo "<br /><small>$zeit_von - $zeit_bis Uhr</small>"; 
 			}
