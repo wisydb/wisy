@@ -614,6 +614,14 @@ class WISY_SYNC_RENDERER_CLASS
 				$this->stichw2tag->lookupTagIds($stichwort_id, $tag_ids);
 			}
 			
+			$db2->query("SELECT attr_id FROM anbieter_stichwort WHERE primary_id=$anbieter_id;");
+			while( $db2->next_record() )
+			{
+				$stichwort_id = intval($db2->f('attr_id'));
+				$all_stichwort_ids[] = $stichwort_id;
+				$this->stichw2tag->lookupTagIds($stichwort_id, $tag_ids);
+			}		
+			
 			// spezielle Nummern erzeugen spezielle Tags
 			// siehe hierzu die Anmerkungen in wisy-durchf-class.inc.php bei [1]
 			if( $db->f('bu_nummer') != '' ) 

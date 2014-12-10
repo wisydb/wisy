@@ -57,7 +57,7 @@ $codes_stichwort_eigenschaften =
 	.'2048###Verwaltungsstichwort###'
 	.'4096###Thema###'
 	.'8192###Schlagwort nicht verwenden###'		// 8192 war mal "Hierarchie", "Schlagwort nicht verwenden" war mal bit 32 -- in beiden Fällen: wozu soll das sein? (bp)
-	.'16384###Anbieterstichwort';
+	.'16384###Anbieterstichwort';				// sollte mal exklusiv die Kurse infizieren, wenn bei einem Anbieter verwendet, aktuell (12/2014) nicht verwendet, alle nicht-versteckten Stichwoerter infizieren die Kurse, wenn einem Anbieter zugeordnet
 
 global $hidden_stichwort_eigenschaften;
 $hidden_stichwort_eigenschaften = 32 + 128 + 256 + 512 + 2048 + 4096 + 8192;
