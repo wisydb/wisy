@@ -420,7 +420,8 @@ function alle_freischaltungen_ueberpruefen()
 		update_kurs_state($db->f('id'), array('from_cms'=>0, 'set_plz_stadtteil'=>0, 'write'=>1));
 	}
 	
-	update_alle_anbieter_vollst();
+	$dummy = array();
+	update_alle_anbieter_vollst($dummy);
 }
 
 
