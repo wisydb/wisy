@@ -2,6 +2,103 @@
 
 
 
+/* two simple functions to convert "key=value" pairs to/from arrays
+ */
+function explode_settings($in)
+{
+	$out = array();
+	$in = strtr($in, "\r\t", "\n ");
+	$in = explode("\n", $in);
+	for( $i = 0; $i < sizeof($in); $i++ )
+	{
+		$equalPos = strpos($in[$i], '=');
+		if( $equalPos )
+		{
+			$regKey = trim(substr($in[$i], 0, $equalPos));
+			if( $regKey != '' )
+			{
+				$regValue = trim(substr($in[$i], $equalPos+1));
+				$out[$regKey] = $regValue; // the key may be set with an empty value!
+			}
+		}
+	}
+	return $out;
+}
+function implode_settings($arr)
+{
+	$str = '';
+	foreach( $arr as $key=>$value ) {
+		$str .= "$key=$value\n";
+	}
+	return $str;
+}
+
+
+
+/* alle anbieter vollstaendigkeiten neu berechnen, wird indirekt von 
+ * alle_freischaltungen_ueberpruefen() aufgerufen.
+ */
+function update_alle_anbieter_vollst(&$param)
+{
+	$total_anbieter = 0;
+	$total_kurse = 0; 
+	
+	$db = new DB_Admin;
+	$db2 = new DB_Admin;
+	$db->query("SELECT id, vollstaendigkeit, settings FROM anbieter;");
+	while( $db->next_record() )
+	{
+		$anbieter_id = $db->f('id');
+		$settings = explode_settings($db->f('settings'));
+		$old_avg_vollst = intval($db->f('vollstaendigkeit'));
+		
+		$kurse_cnt = 0;
+		$kurse_sum_vollst = 0;
+		$new_min_vollst =  666;
+		$new_max_vollst = -666;
+		$db2->query("SELECT id, vollstaendigkeit FROM kurse WHERE anbieter=$anbieter_id AND (freigeschaltet=1 OR freigeschaltet=4)");
+		while( $db2->next_record() ) {
+			$kurs_vollst = intval($db2->f('vollstaendigkeit'));
+			$kurse_sum_vollst += $kurs_vollst;
+			$kurse_cnt++;
+			if( $kurs_vollst < $new_min_vollst ) {
+				$new_min_vollst = $kurs_vollst;
+				$new_min_vollst_id = $db2->f('id');
+			}
+			if( $kurs_vollst > $new_max_vollst ) {
+				$new_max_vollst = $kurs_vollst;
+			}
+		}
+		
+		if( $kurse_cnt ) {
+			$new_avg_vollst = intval($kurse_sum_vollst/$kurse_cnt);
+			if( $new_avg_vollst < 1 ) $new_avg_vollst = 1;
+			if( $new_avg_vollst > 100 ) $new_avg_vollst = 100;
+		}
+		else {
+			$new_avg_vollst = 0; 		// all unset
+			$new_min_vollst = 0;
+			$new_min_vollst_id = 0;
+			$new_max_vollst = 0;
+		}
+		
+		if( $old_avg_vollst != $new_avg_vollst
+		 || strval($settings['vollstaendigkeit.min'])    != strval($new_min_vollst) // compare against strval to differ between "" and "0" and force settings such values to "0"
+		 || strval($settings['vollstaendigkeit.min.id']) != strval($new_min_vollst_id)
+		 || strval($settings['vollstaendigkeit.max'])    != strval($new_max_vollst)  )
+		{
+			$settings['vollstaendigkeit.min']    = $new_min_vollst;
+			$settings['vollstaendigkeit.min.id'] = $new_min_vollst_id;
+			$settings['vollstaendigkeit.max']    = $new_max_vollst;
+			$db2->query("UPDATE anbieter SET vollstaendigkeit=$new_avg_vollst, settings=".$db2->quote(implode_settings($settings))." WHERE id=$anbieter_id");
+		}
+		
+		$total_anbieter++;
+		$total_kurse += $kurse_cnt;
+	}
+	
+	//$param['returnmsg'] .= "<br />$total_anbieter Anbietervollstaendigkeiten berechnet, $total_kurse Kurse beruecksichtigt"; // DEBUG ONLY
+}
 
 
 
@@ -322,6 +419,8 @@ function alle_freischaltungen_ueberpruefen()
 	{
 		update_kurs_state($db->f('id'), array('from_cms'=>0, 'set_plz_stadtteil'=>0, 'write'=>1));
 	}
+	
+	update_alle_anbieter_vollst();
 }
 
 
