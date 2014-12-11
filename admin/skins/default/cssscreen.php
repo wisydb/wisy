@@ -316,13 +316,7 @@ textarea.prop {
 }
 
 
-span.shyedit, input.shyedit {
-	color: #bbb;
-	font-size: 8pt;
-}
-input.shyedit {
-	border: 0px;
-}
+
 
 
 

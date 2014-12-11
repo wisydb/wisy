@@ -299,7 +299,7 @@ if(!$use_neweditor) {
 																	'vollstaendigkeit',	'Vollständigkeit', 0, '0###100', 0, array('layout.defhide'=>1, 'layout.after'=>'%'));
 }
 if(!$use_neweditor) {
-	$kurse->add_row(TABLE_TEXT, 									'org_titel', 		'Originaltitel', 0, 0, '', array('css.class'=>'shyedit'));
+	$kurse->add_row(TABLE_TEXT, 									'org_titel', 		'Originaltitel', 0, 0, '');
 }
 $kurse->add_row(TABLE_SATTR|TABLE_LIST|TABLE_TRACKDEFAULTS|TABLE_MUST,
 																'anbieter',			'Anbieter', 0, $anbieter);
