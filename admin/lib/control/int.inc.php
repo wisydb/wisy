@@ -43,7 +43,7 @@ class CONTROL_INT_CLASS extends CONTROL_BASE_CLASS
 		
 		if( $this->is_readonly() ) {
 			return  "<input name=\"{$this->name}\" type=\"hidden\" value=\"".isohtmlspecialchars($html_val)."\" />" 
-				. 	isohtmlspecialchars($html_val);
+				. 	($html_val==''? '<span class="emptyreadonlyval">'.htmlconstant('_NA').'</span>' : isohtmlspecialchars($html_val));
 		}
 		else {
 			return "<input name=\"{$this->name}\" type=\"text\" value=\"".isohtmlspecialchars($html_val)."\" size=\"$width\" ".$this->tooltip_attr()." />";

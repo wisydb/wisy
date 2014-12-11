@@ -315,8 +315,9 @@ textarea.prop {
 	font-size:1em; font-family:Verdana,Arial,sans-serif;
 }
 
-
-
+.emptyreadonlyval {
+	color: #bbb;
+}
 
 
 

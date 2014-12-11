@@ -74,7 +74,7 @@ define('_MONTH7',              "Juli");
 define('_MONTH8',              "August");
 define('_MONTH9',              "September");
 define('_MORE___',             "mehr...");
-define('_NA',                  "k. A.");
+define('_NA',                  "k.A.");
 // Abbr. for "not available" or "not set"
 define('_NAME',                "Name");
 define('_NEW',                 "Neu");
