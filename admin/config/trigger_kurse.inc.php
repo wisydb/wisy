@@ -2,6 +2,11 @@
 
 
 
+/*****************************************************************************
+ * Tools
+ *****************************************************************************/
+
+
 /* two simple functions to convert "key=value" pairs to/from arrays
  */
 function explode_settings($in)
@@ -35,6 +40,11 @@ function implode_settings($arr)
 
 
 
+/*****************************************************************************
+ * Anbietervollstaendigkeit bestimmen
+ *****************************************************************************/
+
+
 /* alle anbieter vollstaendigkeiten neu berechnen, wird indirekt von 
  * alle_freischaltungen_ueberpruefen() aufgerufen.
  */
@@ -56,7 +66,7 @@ function update_alle_anbieter_vollst(&$param)
 		$kurse_sum_vollst = 0;
 		$new_min_vollst =  666;
 		$new_max_vollst = -666;
-		$db2->query("SELECT id, vollstaendigkeit FROM kurse WHERE anbieter=$anbieter_id AND (freigeschaltet=1 OR freigeschaltet=4)");
+		$db2->query("SELECT id, vollstaendigkeit FROM kurse WHERE anbieter=$anbieter_id AND (freigeschaltet=1 OR freigeschaltet=4) AND vollstaendigkeit>=1 AND vollstaendigkeit<=100");
 		while( $db2->next_record() ) {
 			$kurs_vollst = intval($db2->f('vollstaendigkeit'));
 			$kurse_sum_vollst += $kurs_vollst;
@@ -100,6 +110,11 @@ function update_alle_anbieter_vollst(&$param)
 	//$param['returnmsg'] .= "<br />$total_anbieter Anbietervollstaendigkeiten berechnet, $total_kurse Kurse beruecksichtigt"; // DEBUG ONLY
 }
 
+
+
+/*****************************************************************************
+ * Kursstatus / Kursvollstaendigkeit bestimmen
+ *****************************************************************************/
 
 
 /* update_kurs_state() ...
