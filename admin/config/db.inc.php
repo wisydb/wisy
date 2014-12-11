@@ -88,7 +88,7 @@ if( $use_neweditor ) {
 	$anbieter->add_row(TABLE_TEXT, 								'azwv_annr', 		'AZWV-Anbieternr.', 0, 0,'', 	array('ctrl.size'=>'10-40', 'layout.defhide'=>2, 'layout.join'=>1));
 	$anbieter->add_row(TABLE_ENUM,								'freigeschaltet',	'Status', 1, '1###Freigegeben###2###Gesperrt', '', array('layout.join'=>1, 'layout.descr.hide'=>1));
 	$anbieter->add_row(TABLE_INT|TABLE_EMPTYONNULL|TABLE_READONLY|TABLE_PERCENT,
-																'vollstaendigkeit',	'Vollständigkeit', 0, '0###100', 0, array('layout.after'=>'%', 'layout.join'=>1));
+																'vollstaendigkeit',	'Vollständigkeit', 0, '0###100', 0, array('layout.defhide'=>1, 'layout.after'=>'%', 'layout.join'=>1));
 																// new field, add with: ALTER TABLE `anbieter` ADD `vollstaendigkeit` int(11) NOT NULL DEFAULT '0' AFTER `date_modified` ;
 }
 $anbieter->add_row(TABLE_TEXT|TABLE_SUMMARY|TABLE_LIST|TABLE_MUST|TABLE_UNIQUE,
