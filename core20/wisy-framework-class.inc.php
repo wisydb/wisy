@@ -426,6 +426,8 @@ class WISY_FRAMEWORK_CLASS
 		$title = $seit? "Gepr&uuml;fte Weiterbildungseinrichtung seit $seit" : "Gepr&uuml;fte Weiterbildungseinrichtung";
 	
 		// render the seals
+		if( !isset($vars['break']) ) $vars['break'] = '<br />&nbsp;<br />';
+		
 		$ret = '';
 		$sealsOut = 0;
 		for( $i = 0; $i < sizeof($seals); $i++ )
@@ -450,7 +452,7 @@ class WISY_FRAMEWORK_CLASS
 				$img = "files/seals/$sealId-large.gif";
 				if( @file_exists($img) )
 				{
-					$ret .= $sealsOut? '<br />&nbsp;<br />' : '';
+					$ret .= $sealsOut? $vars['break'] : '';
 					$ret .= "<img src=\"$img\" border=\"0\" alt=\"Pr&uuml;siegel\" title=\"$title\" />";
 					$sealsOut++;
 				}
