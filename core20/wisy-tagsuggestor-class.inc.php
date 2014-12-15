@@ -35,6 +35,17 @@ class WISY_TAGSUGGESTOR_CLASS
 	}
 	
 
+	function getTagFreq($q_tag_name)
+	{	
+		$temp = $this->suggestTags($q_tag_name);
+		$freq = 0;
+		for( $i = 0; $i < sizeof($temp); $i++ ) {
+			$freq += $temp[$i]['tag_freq'];
+		}
+		return $freq;
+	}
+
+
 	//
 	// suggest some tags
 	//
