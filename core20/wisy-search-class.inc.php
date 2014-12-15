@@ -547,7 +547,7 @@ class WISY_SEARCH_CLASS
 						default:		$orderBy = 'kurse.id';										die('invalid order!');
 					}
 					
-					$sql = $this->getKurseRecordsSql("kurse.id, kurse.anbieter, kurse.freigeschaltet, kurse.titel, kurse.date_modified, kurse.bu_nummer, kurse.fu_knr, kurse.azwv_knr, x_kurse.begmod_date");
+					$sql = $this->getKurseRecordsSql("kurse.id, kurse.anbieter, kurse.freigeschaltet, kurse.titel, kurse.vollstaendigkeit, kurse.date_modified, kurse.bu_nummer, kurse.fu_knr, kurse.azwv_knr, x_kurse.begmod_date");
 					$sql .= " ORDER BY $orderBy, vollstaendigkeit DESC, x_kurse.kurs_id ";
 					$sql .= " LIMIT $offset, $rows ";
 					
