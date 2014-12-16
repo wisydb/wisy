@@ -1578,6 +1578,11 @@ class WISY_EDIT_RENDERER_CLASS
 		{
 			echo "<p class=\"wisy_topnote\">" .implode('<br />', $topnotes). "</p>";
 		}
+		else
+		{
+			$temp = $this->renderVollstMsg($kurs['id'], true);
+			echo $temp? "<p>$temp</p>" : '';
+		}
 		
 		echo '<form action="edit" method="post" name="kurs">' . "\n";
 			echo '<input type="hidden" name="action" value="ek" /> ' . "\n";
@@ -1940,8 +1945,6 @@ class WISY_EDIT_RENDERER_CLASS
 
 				echo '</table>';
 
-				$temp = $this->renderVollstMsg($kurs['id'], true);
-				echo $temp? "<p>$temp</p>" : '';
 			}
 		
 			echo '<p>' . "\n";
