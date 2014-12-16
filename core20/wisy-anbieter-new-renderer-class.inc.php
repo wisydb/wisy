@@ -183,297 +183,123 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 		}
 		
 		return $ret;
-	
-
-
-	}
-	
-	function renderDetails(&$db, $id)
-	{
-		global $wisyPortal;
-		global $wisyPortalEinstellungen;
-		
-		// load anbieter
-		$db->query("SELECT * FROM anbieter WHERE id=$id");
-		if( !$db->next_record() || $db->f('freigeschaltet')!=1 ) {
-			echo 'Dieser Anbieterdatensatz ist nicht freigeschaltet.'; // it exists, however, we've checked this [here]
-			return;
-		}
-		
-		$din_nr			= $db->fs('din_nr');
-		$suchname		= $db->fs('suchname');
-		$postname		= $db->fs('postname');
-		$strasse		= $db->fs('strasse');
-		$plz			= $db->fs('plz');
-		$ort			= $db->fs('ort');
-		$stadtteil		= $db->fs('stadtteil');
-		$land			= $db->fs('land');
-		$anspr_tel		= $db->fs('anspr_tel');
-		$anspr_fax		= $db->fs('anspr_fax');
-		$anspr_name		= $db->fs('anspr_name');
-		$anspr_email	= $db->fs('anspr_email');
-		$anspr_zeit		= $db->fs('anspr_zeit');
-		
-		$ob = new G_BLOB_CLASS($db->fs('logo'));
-		$logo_name		= $ob->name;
-		$logo_w			= $ob->w;
-		$logo_h			= $ob->h;
-
-		$firmenportraet	= trim($db->fs('firmenportraet'));
-		$date_created	= $db->fs('date_created');
-		$date_modified	= $db->fs('date_modified');
-		$homepage		= $db->fs('homepage');
-
-		if( $homepage ) {
-			if( substr($homepage, 0, 5) != 'http:'
-			 && substr($homepage, 0, 6) != 'https:' ) {
-			 	$homepage = 'http:/'.'/'.$homepage;
-			}
-		}
-
-		
-		$stichwoerter = $this->framework->loadStichwoerter($db, 'anbieter', $id);
-		
-		$seals = $this->framework->getSeals($db, array('anbieterId'=>$id));
-	
-		// prepare contact link
-		if( $anspr_email )
-		{
-			$anspr_mail_link = "<a href=\"" . $this->createMailtoLink($anspr_email) . "\"><i>" .isohtmlentities($anspr_email). '</i></a>';
-		}
-	
-
-		// render head
-		echo '<p class="noprint">';
-			echo '<a href="javascript:history.back();">&laquo; Zur&uuml;ck</a>';
-		echo '</p>';
-		
-		
-		
-		flush();
-			
-		
-		// do what to do ...
-
-					echo '<h1> NEW ' . isohtmlentities($suchname) . '</h1>';
-
-				
-					//if( ($logo_w && $logo_h && $logo_name != '')
-					// || $seals )
-					{
-						echo '<table border="0" align="right"><tr><td align="center">';
-						
-							if( $logo_w && $logo_h && $logo_name != '' )
-							{
-								$title = "";
-								/* - aufgrund der inneren konsistenz das logo nicht anklickbar gestalten - es ist ansonsten verwirrend, ob es zum portait oder zur homepage führt ...
-								if( $homepage ) {
-									echo "<a href=\"$homepage\" target=\"_blank\">";
-									$title = "Der Anbieter im Internet";
-								}
-								*/
-								
-								echo "<img src=\"{$wisyPortal}admin/media.php/logo/anbieter/$id/".urlencode($logo_name)."\" width=\"$logo_w\" height=\"$logo_h\" border=\"0\" alt=\"Anbieter Logo\" title=\"$title\" />";
-			
-								/*
-								if( $homepage ) {
-									echo '</a>';
-								}
-								*/
-									
-								echo '<br />&nbsp;<br />';
-							}
-
-							$qsuchname = strtr($suchname, ':,', '  ');
-							while( strpos($qsuchname, '  ')!==false ) $qsuchname = str_replace('  ', ' ', $qsuchname);
-							echo '<a class="wisy_showalloffers" href="' .$this->framework->getUrl('search', array('q'=>$qsuchname)). '">'
-								. 'Zeige alle Angebote'
-								. '</a>';
-							echo '<br />&nbsp;<br />';
-							
-							if( $seals )
-							{
-								echo $seals;
-								echo '<br />&nbsp;<br />';
-							}
-							
-
-							
-						
-						echo '</td></tr></table>';
-					}
-					
-					
-					if( $firmenportraet != '' ) 
-					{
-						$wiki2html =& createWisyObject('WISY_WIKI2HTML_CLASS', $this->framework);
-						echo $wiki2html->run($firmenportraet);
-					}
-					
-					echo '<table cellpadding="0" cellspacing="0" border="0" class="">';
-					
-						/* adresse */
-						echo '<tr>';
-							echo '<td valign="top">Adresse:&nbsp;</td>';
-							echo '<td valign="top">';
-							
-								if( $postname ) {
-									echo '<i>' . isohtmlentities($postname) . '</i>';
-								}
-								else {
-									echo '<i>' . isohtmlentities($suchname) . '</i>';
-								}
-								
-								if( $strasse ) {
-									echo '<br />';
-									echo isohtmlentities($strasse);
-								}
-								
-								if( $plz || $ort ) {
-									echo '<br />';
-									echo isohtmlentities($plz) . ' ' . isohtmlentities($ort);
-									if( $stadtteil ) {
-										echo '-' . isohtmlentities($stadtteil);
-									}
-								}
-					
-								if( $land ) {
-									echo '<br /><i>' . isohtmlentities($land) . '</i>';
-								}
-			
-							echo '</td>';
-						echo '</tr>';
-						
-						/* telefon */
-						if( $anspr_tel )
-						{
-							echo '<tr>';
-								echo '<td valign="top">Telefon:&nbsp;</td>';
-								echo '<td valign="top">' .isohtmlentities($anspr_tel). '</td>';
-							echo '</tr>';
-						}
-	
-						/* fax */
-						if( $anspr_fax )
-						{
-							echo '<tr>';
-								echo '<td valign="top">Fax:&nbsp;</td>';
-								echo '<td valign="top">' .isohtmlentities($anspr_fax). '</td>';
-							echo '</tr>';
-						}
-	
-						/* ansprechpartner */
-						if( $anspr_name )
-						{
-							echo '<tr>';
-								echo '<td valign="top">Kontakt:&nbsp;</td>';
-								echo '<td valign="top">' .isohtmlentities($anspr_name). '</td>';
-							echo '</tr>';
-						}
-						
-						if( $anspr_zeit )
-						{
-							echo '<tr>';
-								echo '<td valign="top">Sprechzeiten:&nbsp;</td>';
-								echo '<td valign="top">' .isohtmlentities($anspr_zeit). '</td>';
-							echo '</tr>';
-						}
-	
-						/* email*/
-						if( $anspr_mail_link )
-						{
-							echo '<tr>';
-								echo '<td valign="top">EMail:&nbsp;</td>';
-								echo "<td valign=\"top\">" .$anspr_mail_link. '</td>';
-							echo '</tr>';
-						}
-						
-						/* internet */
-						if( $homepage )
-						{
-							echo '<tr>';
-								echo '<td valign="top" nowrap="nowrap">Der Anbieter im Internet:&nbsp;</td>';
-								echo "<td valign=\"top\"><a href=\"$homepage\" target=\"_blank\"><i>" .isohtmlspecialchars($homepage). '</i></a></td>';
-							echo '</tr>';
-						}
-		
-						/* stichwoerter */
-						if( sizeof($stichwoerter) ) {
-							echo $this->framework->writeStichwoerter($db, 'anbieter', $stichwoerter);
-						}
-	
-						/* anbieter nr. */
-						echo '<tr>';
-							echo '<td valign="top">Anbieter-Nr.:&nbsp;</td>';
-							echo "<td valign=\"top\">";
-								if( $din_nr ) {
-									echo isohtmlentities($din_nr);
-								}
-								else {
-									echo $id;
-								}
-							echo '</td>';
-						echo '</tr>';
-						
-					echo '</table>';
-					
-					// -- 12:43 26.05.2014 der Link "zeige alle anbieter" ist nun oben unter dem Logo
-					//$qsuchname = strtr($suchname, ':,', '  ');
-					//while( strpos($qsuchname, '  ')!==false ) $qsuchname = str_replace('  ', ' ', $qsuchname);
-					//echo '&nbsp;<br />Sie m&ouml;chten alle Angebote dieses Anbieters sehen? <a href="' .$this->framework->getUrl('search', array('q'=>$qsuchname)). '">Hier klicken</a>!<br />';
-					
-
-			
-			echo '<p class="wisy_anbieter_footer '.$this->framework->getAllowFeedbackClass().'">';
-				echo 'Erstellt:&nbsp;' . $this->framework->formatDatum($date_created) . ', Ge&auml;ndert:&nbsp;' . $this->framework->formatDatum($date_modified);
-			echo '</p>';
-	
 	}
 	
 	function render()
 	{
-		$anbieter_id = intval($_GET['id']);
+		$id = intval($_GET['id']);
 
 		$db = new DB_Admin();
 
 		// link to another anbieter?
-		$db->query("SELECT attr_id FROM anbieter_verweis WHERE primary_id=$anbieter_id ORDER BY structure_pos");
-		if( $db->next_record() )
-		{
-			$anbieter_id = intval($db->f('attr_id'));
+		$db->query("SELECT attr_id FROM anbieter_verweis WHERE primary_id=$id ORDER BY structure_pos");
+		if( $db->next_record() ) {
+			$id = intval($db->f('attr_id'));
 		}
 
-		// check for existance, get title
-		$db->query("SELECT suchname FROM anbieter WHERE id=$anbieter_id");
-		if( !$db->next_record() ) {
-			$this->framework->error404(); // record does not exist, reporta normal 404 error, not a "Soft 404", see  http://goo.gl/IKMnm -- für nicht-freigeschaltete Datensätze, s. [here]
+		// load anbieter
+		$db->query("SELECT * FROM anbieter WHERE id=$id");
+		if( !$db->next_record() || $db->f('freigeschaltet')!=1 ) {
+			$this->framework->error404(); // record does not exist/is not active, report a normal 404 error, not a "Soft 404", see  http://goo.gl/IKMnm -- für nicht-freigeschaltete Datensätze, s. [here]
 		}
-		$anbieter_suchname = $db->fs('suchname');
-
+		$din_nr			= $db->fs('din_nr');
+		$suchname		= $db->fs('suchname');
+		$firmenportraet	= trim($db->fs('firmenportraet'));
+		$date_created	= $db->fs('date_created');
+		$date_modified	= $db->fs('date_modified');
+		$stichwoerter	= $this->framework->loadStichwoerter($db, 'anbieter', $id);
+		$seals			= $this->framework->getSeals($db, array('anbieterId'=>$id, 'break'=>' '));
+		
 		// promoted?
 		if( intval($_GET['promoted']) > 0 )
 		{
 			$promoter =& createWisyObject('WISY_PROMOTE_CLASS', $this->framework);
-			$promoter->logPromotedRecordClick(intval($_GET['promoted']), $anbieter_id);
+			$promoter->logPromotedRecordClick(intval($_GET['promoted']), $id);
 		}
 		
 		// page out
 		headerDoCache();
 		echo $this->framework->getPrologue(array(	
-													'title'		=>	$anbieter_suchname,  
-													'canonical'	=>	$this->framework->getUrl('a', array('id'=>$anbieter_id)),
+													'title'		=>	$suchname,  
+													'canonical'	=>	$this->framework->getUrl('a', array('id'=>$id)),
 													'bodyClass'	=>	'wisyp_anbieter',
 											));
 		echo $this->framework->getSearchField();
 
-			echo '<div id="wisy_resultarea">';
-				$this->renderDetails($db, $anbieter_id);
+		// start the result area
+		// --------------------------------------------------------------------
+		
+		echo '<div id="wisy_resultarea"><div id="wisy_resultcol1">';
+		
+		echo '<p class="noprint">';
+			echo '<a href="javascript:history.back();">&laquo; Zur&uuml;ck</a>';
+		echo '</p>';
+		echo '<h1>' . isohtmlentities($suchname) . '</h1>';
+		flush();
+		
+		if( $firmenportraet != '' ) {
+			$wiki2html =& createWisyObject('WISY_WIKI2HTML_CLASS', $this->framework);
+			echo $wiki2html->run($firmenportraet);
+		}
+
+		if( sizeof($stichwoerter) ) {
+			echo '<table cellpadding="0" cellspacing="0" border="0" class="">';
+				echo $this->framework->writeStichwoerter($db, 'anbieter', $stichwoerter);
+			echo '</table>';
+		}
+								
+		echo '<p class="wisy_anbieter_footer '.$this->framework->getAllowFeedbackClass().'">';
+		 // no content, but must be present as the feedback stuff is created here via JavaScript
+		echo '</p>';		
+
+		// break the result area: start second column!
+		// --------------------------------------------------------------------
+		
+		echo '</div><div id="wisy_resultcol2">';
+		
+		echo '<div class="wisy_vcard">';
+			echo '<div class="wisy_vcardtitle">Anbieteradresse</div>';
+			echo '<div class="wisy_vcardcontent">';
+				echo $this->renderCard($db, $id, 0, array('logo'=>true, 'logoLinkToAnbieter'=>false));
 			echo '</div>';
+		echo '</div>';
+		
+		if( $seals )
+		{
+			echo '<div style="text-align:center;">';
+				echo $seals;
+			echo '</div>';
+		}
+
+		echo '<div style="text-align:center; padding-top:1em;">';
+				$qsuchname = strtr($suchname, ':,', '  ');
+				while( strpos($qsuchname, '  ')!==false ) $qsuchname = str_replace('  ', ' ', $qsuchname);
+				$tagsuggestorObj =& createWisyObject('WISY_TAGSUGGESTOR_CLASS', $this->framework); 
+				$freq = $tagsuggestorObj->getTagFreq($qsuchname); if( $freq <= 0 ) $freq = '';
+					echo '<a class="wisy_showalloffers" href="' .$this->framework->getUrl('search', array('q'=>$qsuchname)). '">'
+						. "Zeige alle $freq Angebote"
+						. '</a>';
+		echo '</div>';
+							
+		echo '<div class="wisy_vcard">';
+			$anbieter_nr = $din_nr? isohtmlentities($din_nr) : $id;
+			echo '<div class="wisy_vcardtitle">Anbieternummer: '.$anbieter_nr.'</div>';
+			echo '<div class="wisy_vcardcontent">';
+				echo 'Erstellt:&nbsp;' . $this->framework->formatDatum($date_created) . ', Ge&auml;ndert:&nbsp;' . $this->framework->formatDatum($date_modified);
+			echo '</div>';
+		echo '</div>';
+								
+
+							
+		// end the result area
+		// --------------------------------------------------------------------
+		
+		echo '</div></div>';
 
 		
 		
 		$copyrightClass =& createWisyObject('WISY_COPYRIGHT_CLASS', $this->framework);
-		$copyrightClass->renderCopyright($db, 'anbieter', $anbieter_id);
+		$copyrightClass->renderCopyright($db, 'anbieter', $id);
 		
 		echo $this->framework->getEpilogue();
 	}
