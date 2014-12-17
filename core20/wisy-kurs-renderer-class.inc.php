@@ -200,7 +200,7 @@ class WISY_KURS_RENDERER_CLASS
 				if( $allAvailDurchfCnt > $renderedDurchf )
 				{
 					$missinglDurchfCnt = $allAvailDurchfCnt-$renderedDurchf;
-					$linkText = $missinglDurchfCnt==1? "1 abgelaufene Durchf&uuml;hrung anzeigen" : "$missinglDurchfCnt abgelaufene Durchf&uuml;hrungen anzeigen";
+					$linkText = $missinglDurchfCnt==1? "1 abgelaufene Durchf&uuml;hrung einblenden" : "$missinglDurchfCnt abgelaufene Durchf&uuml;hrungen einblenden"; // 'einblenden' ist besser als 'anzeigen', da dies impliziert, dass die aktuellen Kurse auch in der Liste bleiben
 					echo "<p class=\"noprint\"><a href=\"".$this->framework->getUrl('k', array('id'=>$kursId, 'showalldurchf'=>1))."#showalldurchf\">$linkText...</a></p>";
 				}
 			}
