@@ -642,12 +642,12 @@ class WISY_DURCHF_CLASS
 					$cell .= '<div style="font-size: 11px;">' . $wiki2html->run($record['bemerkungen']) . '</div>';
 				}
 				
-				if( $cell == $this->seeAboveOrt && $details ) {
+				if( strip_tags($cell) == $this->seeAboveOrt && $details ) {
 					echo '<div class="noprint">'.$cell.'</div><small class="printonly">s.o.</small>';
 				}
 				else if( $cell ) {
 					echo $cell;
-					$this->seeAboveOrt = $cell;
+					$this->seeAboveOrt = strip_tags($cell); // ignore tags as there are many remarks differung only in the Link-URLs - which are not visible in print
 				}
 				else {
 					echo 'k. A.';
