@@ -579,7 +579,7 @@ print
 		border: 1px solid red;
 	}
 	
-	span.printonly, i.printonly, em.printonly {
+	span.printonly, i.printonly, em.printonly, small.printonly {
 		display: inline !important;
 	}
 	

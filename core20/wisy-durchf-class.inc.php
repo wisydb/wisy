@@ -17,6 +17,7 @@ class WISY_DURCHF_CLASS
 			'durchf.plz.deny'  => $this->framework->iniRead('durchf.plz.deny',  ''),
 			'durchf.plz.order' => $this->framework->iniRead('durchf.plz.order', '')
 		));
+		$this->resetSeeAbove();
 	}
 
 	function shy($text)
@@ -414,6 +415,12 @@ class WISY_DURCHF_CLASS
 		return false;
 	}
 
+	function resetSeeAbove()
+	{
+		$this->seeAboveArt = '<unset>';
+		$this->seeAboveOrt = '<unset>';
+	}
+
 	function formatDurchfuehrung(&$db, $kursId, $durchfuehrungId, $details = 0, $anbieterId = 0, $showAllDurchf = 1, $addText='', $addParam = 0)
 	{
 		global $wisyPortalSpalten;
@@ -544,7 +551,14 @@ class WISY_DURCHF_CLASS
 					}
 				}
 				
-				echo $cell;
+				if( $cell == $this->seeAboveArt && $details ) {
+					echo '<span class="noprint">'.$cell.'</span><small class="printonly">s.o.</small>';
+				}
+				else {
+					echo $cell;
+					$this->seeAboveArt = $cell;
+				}
+				
 								
 			echo '</td>' . "\n";
 		}
@@ -628,7 +642,17 @@ class WISY_DURCHF_CLASS
 					$cell .= '<div style="font-size: 11px;">' . $wiki2html->run($record['bemerkungen']) . '</div>';
 				}
 				
-				echo $cell? $cell : 'k. A.';
+				if( $cell == $this->seeAboveOrt && $details ) {
+					echo '<div class="noprint">'.$cell.'</div><small class="printonly">s.o.</small>';
+				}
+				else if( $cell ) {
+					echo $cell;
+					$this->seeAboveOrt = $cell;
+				}
+				else {
+					echo 'k. A.';
+					$this->seeAboveOrt = '<unset>';
+				}
 			}
 			else
 			{

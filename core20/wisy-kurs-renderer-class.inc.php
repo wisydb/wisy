@@ -164,10 +164,11 @@ class WISY_KURS_RENDERER_CLASS
 						if (($wisyPortalSpalten & 64) > 0)	{ echo '<th>Kurs-Nr.</th>';			}
 					echo '</tr>';
 					
-					
+					/*
 					$maxDurchf = intval($this->framework->iniRead('details.durchf.max'));
 					if( $maxDurchf <= 0 || $showAllDurchf )
 						$maxDurchf = 1000;
+					*/
 					
 					$renderedDurchf = 0;
 					for( $d = 0; $d < sizeof($durchfuehrungenIds); $d++ )
@@ -185,18 +186,22 @@ class WISY_KURS_RENDERER_CLASS
 														)
 													);
 							$renderedDurchf++;
+							/*
 							if( $renderedDurchf >= $maxDurchf )
 							{
 								break;
 							}
+							*/
 						echo '</tr>';
 					}
 				echo '</table>';
 				
 				$allAvailDurchfCnt = sizeof($durchfClass->getDurchfuehrungIds($db, $kursId, true));
-				if( $renderedDurchf < $allAvailDurchfCnt )
+				if( $allAvailDurchfCnt > $renderedDurchf )
 				{
-					echo "<p><a href=\"".$this->framework->getUrl('k', array('id'=>$kursId, 'showalldurchf'=>1))."#showalldurchf\">Weitere Durchführungen anzeigen ...</a></p>";
+					$missinglDurchfCnt = $allAvailDurchfCnt-$renderedDurchf;
+					$linkText = $missinglDurchfCnt==1? "1 abgelaufene Durchf&uuml;hrung anzeigen" : "$missinglDurchfCnt abgelaufene Durchf&uuml;hrungen anzeigen";
+					echo "<p class=\"noprint\"><a href=\"".$this->framework->getUrl('k', array('id'=>$kursId, 'showalldurchf'=>1))."#showalldurchf\">$linkText...</a></p>";
 				}
 			}
 	
