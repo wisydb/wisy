@@ -185,6 +185,71 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 		return $ret;
 	}
 	
+	protected function getOffersOverviewPart($sql, $tag_type_bits, $addparam)
+	{
+		$html = '';
+		$db = new DB_Admin();
+		$db->query(str_replace('__BITS__', $tag_type_bits, $sql));
+		while( $db->next_record() )
+		{
+			$tag_id = $db->f('tag_id');
+			$tag_name = $db->f('tag_name');
+			$tag_type = $db->f('tag_type');
+			
+			$keyword_descr = '';	// TODO: setup these values
+			$help_id = 0;
+			$freq = 0;
+			
+			$html .= $this->searchRenderer->formatItem($tag_name, $keyword_descr, $tag_type, $help_id, $freq, $addparam);
+
+			$html .= '<br />';
+		}
+		return $html;
+	}
+	
+	protected function writeOffersOverview($tag_suchname)
+	{
+
+		$this->searchRenderer = createWisyObject('WISY_SEARCH_RENDERER_CLASS', $this->framework);
+		
+		// get SQL query to read all current offers
+		$searcher =& createWisyObject('WISY_SEARCH_CLASS', $this->framework);		
+		$searcher->prepare($tag_suchname);
+		if( !$searcher->ok() ) { echo 'WTF';return; } // error - offerer not found
+		$sql = $searcher->getKurseRecordsSql('kurse.id');
+		
+		// create SQL query to get all unique keywords
+		$sql = "SELECT DISTINCT k.tag_id, t.tag_name, t.tag_type 
+		                   FROM x_kurse_tags k 
+		              LEFT JOIN x_tags t ON k.tag_id=t.tag_id 
+		                  WHERE k.kurs_id IN($sql) AND t.tag_type&__BITS__
+		               ORDER BY t.tag_name";
+
+		// render ...
+		$html = $this->getOffersOverviewPart($sql, 1 // Abschluesse
+												, array('hidetagtypestr'=>1, 'qprefix'=>"$tag_suchname, "));
+		if( $html )
+		{
+			echo '<h1>Abschl&uuml;sse - aktuelle Angebote</h1>';
+			echo $html;
+		}
+		
+		$html = $this->getOffersOverviewPart($sql, 0x0000FFFF	// alles, ausser Sachstichworten (0, implizit ausgeschlossen) und ausser
+												& ~1 			// Abschluesse
+												& ~4			// Qualitaetszertifikate (werden rechts als Bild dargestellt)
+												& ~32 & ~64		// Synonyme
+												& ~128			// Thema
+												& ~256			// Anbieter (ist natuerlich immer derselbe)
+												& ~512			// Ort
+												, array('showtagtype'=>1, 'qprefix'=>"$tag_suchname, "));
+		if( $html )
+		{
+			echo '<h1>Besondere Kursarten - aktuelle Angebote</h1>';
+			echo $html;
+		}
+
+	} 
+	
 	public function render()
 	{
 		$id = intval($_GET['id']);
@@ -207,7 +272,7 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 		$firmenportraet	= trim($db->fs('firmenportraet'));
 		$date_created	= $db->fs('date_created');
 		$date_modified	= $db->fs('date_modified');
-		$stichwoerter	= $this->framework->loadStichwoerter($db, 'anbieter', $id);
+		//$stichwoerter	= $this->framework->loadStichwoerter($db, 'anbieter', $id);
 		$seals			= $this->framework->getSeals($db, array('anbieterId'=>$id, 'break'=>' '));
 		
 		// promoted?
@@ -242,15 +307,20 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 			echo $wiki2html->run($firmenportraet);
 		}
 
+		// current offers overview
 		$tag_suchname = strtr($suchname, ':,', '  ');
 		while( strpos($tag_suchname, '  ')!==false ) $tag_suchname = str_replace('  ', ' ', $tag_suchname);
 						
-		// uebersicht stichwoerter 
+		$this->writeOffersOverview($tag_suchname);
+
+		// keyword overview
+		/*
 		if( sizeof($stichwoerter) ) {
 			echo '<table cellpadding="0" cellspacing="0" border="0" class="">';
 				echo $this->framework->writeStichwoerter($db, 'anbieter', $stichwoerter);
 			echo '</table>';
 		}
+		*/
 								
 		echo '<p class="wisy_anbieter_footer '.$this->framework->getAllowFeedbackClass().'">';
 		 // no content, but must be present as the feedback stuff is created here via JavaScript
