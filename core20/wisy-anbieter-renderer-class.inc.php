@@ -18,14 +18,14 @@ class WISY_ANBIETER_RENDERER_CLASS
 		$this->framework =& $framework;
 	}
 	
-	function trimLength($str, $max_length)
+	protected function trimLength($str, $max_length)
 	{
 		if( substr($str, 0, 7)=='http://' )
 			$str = substr($str, 7);
 		return shortenurl($str, $max_length);
 	}
 
-	function createMailtoLink($adr, $kursId=0)
+	public function createMailtoLink($adr, $kursId=0)
 	{
 		// create base
 		$link = 'mailto:'.$adr;
@@ -54,7 +54,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		return $link;
 	}
 	
-	function fit_to_rect($orgw, $orgh, $maxw, $maxh, &$scaledw, &$scaledh)
+	protected function fit_to_rect($orgw, $orgh, $maxw, $maxh, &$scaledw, &$scaledh)
 	{
 		$scaledw = $orgw;
 		$scaledh = $orgh;
@@ -71,7 +71,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 	}
 
 	
-	function renderCard(&$db, $anbieterId, $kursId, $param)
+	public function renderCard(&$db, $anbieterId, $kursId, $param)
 	{
 		global $wisyPortal;
 		global $wisyPortalEinstellungen;

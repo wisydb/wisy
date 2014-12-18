@@ -22,14 +22,14 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 		$this->framework =& $framework;
 	}
 	
-	function trimLength($str, $max_length)
+	protected function trimLength($str, $max_length)
 	{
 		if( substr($str, 0, 7)=='http://' )
 			$str = substr($str, 7);
 		return shortenurl($str, $max_length);
 	}
 
-	function createMailtoLink($adr, $kursId=0)
+	public function createMailtoLink($adr, $kursId=0) // called from search renderer
 	{
 		// create base
 		$link = 'mailto:'.$adr;
@@ -58,7 +58,7 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 		return $link;
 	}
 	
-	function fit_to_rect($orgw, $orgh, $maxw, $maxh, &$scaledw, &$scaledh)
+	protected function fit_to_rect($orgw, $orgh, $maxw, $maxh, &$scaledw, &$scaledh)
 	{
 		$scaledw = $orgw;
 		$scaledh = $orgh;
@@ -75,7 +75,7 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 	}
 
 	
-	function renderCard(&$db, $anbieterId, $kursId, $param)
+	public function renderCard(&$db, $anbieterId, $kursId, $param) // called from kurs renderer
 	{
 		global $wisyPortal;
 		global $wisyPortalEinstellungen;
@@ -185,7 +185,7 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 		return $ret;
 	}
 	
-	function render()
+	public function render()
 	{
 		$id = intval($_GET['id']);
 
@@ -242,6 +242,10 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 			echo $wiki2html->run($firmenportraet);
 		}
 
+		$tag_suchname = strtr($suchname, ':,', '  ');
+		while( strpos($tag_suchname, '  ')!==false ) $tag_suchname = str_replace('  ', ' ', $tag_suchname);
+						
+		// uebersicht stichwoerter 
 		if( sizeof($stichwoerter) ) {
 			echo '<table cellpadding="0" cellspacing="0" border="0" class="">';
 				echo $this->framework->writeStichwoerter($db, 'anbieter', $stichwoerter);
@@ -272,11 +276,9 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 		}
 
 		echo '<div style="text-align:center; padding-top:1em;">';
-				$qsuchname = strtr($suchname, ':,', '  ');
-				while( strpos($qsuchname, '  ')!==false ) $qsuchname = str_replace('  ', ' ', $qsuchname);
 				$tagsuggestorObj =& createWisyObject('WISY_TAGSUGGESTOR_CLASS', $this->framework); 
-				$freq = $tagsuggestorObj->getTagFreq($qsuchname); if( $freq <= 0 ) $freq = '';
-					echo '<a class="wisy_showalloffers" href="' .$this->framework->getUrl('search', array('q'=>$qsuchname)). '">'
+				$freq = $tagsuggestorObj->getTagFreq($tag_suchname); if( $freq <= 0 ) $freq = '';
+					echo '<a class="wisy_showalloffers" href="' .$this->framework->getUrl('search', array('q'=>$tag_suchname)). '">'
 						. "Zeige alle $freq Angebote"
 						. '</a>';
 		echo '</div>';
