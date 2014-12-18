@@ -45,20 +45,21 @@ $codes_stichwort_eigenschaften =
 	.'2###Förderungsart###'
 	.'4###Qualitätszertifikat###'
 	.'8###Zielgruppe###'
-	.'32768###Unterrichtsart###'		// hinzugefügt 2014-10-29 10:30 
+	.'32768###Unterrichtsart###'			// hinzugefügt 2014-10-29 10:30 
 	.'16###Abschlussart###'
 	.'32###verstecktes Synonym###'
 	.'64###Synonym###'
-	.'128###Veranstaltungsort###'		// wird von der Redaktion/von Juergen verwendet - aber: wozu soll das sein? (bp)
-	//.'256###Termin###'				// wird nicht verwendet - wozu soll das sein? (bp)
-	.'256###Volltext Titel###'
-	.'512###Volltext Beschreibung###'
+	.'128###Veranstaltungsort###'			// wird von der Redaktion/von Juergen verwendet - aber: wozu soll das sein? (bp) ACHTUNG: Wird in tag_type anders verwendet!
+	//.'256###Termin###'					// wird nicht verwendet - wozu soll das sein? (bp)
+	.'256###Volltext Titel###'				// ACHTUNG: Wird in tag_type anders verwendet!
+	.'512###Volltext Beschreibung###'		// ACHTUNG: Wird in tag_type anders verwendet!
 	.'1024###Sonstiges Merkmal###'
 	.'2048###Verwaltungsstichwort###'
 	.'4096###Thema###'
-	.'8192###Schlagwort nicht verwenden###'		// 8192 war mal "Hierarchie", "Schlagwort nicht verwenden" war mal bit 32 -- in beiden Fällen: wozu soll das sein? (bp)
-	.'16384###Anbieterstichwort';				// sollte mal exklusiv die Kurse infizieren, wenn bei einem Anbieter verwendet, aktuell (12/2014) nicht verwendet, alle nicht-versteckten Stichwoerter infizieren die Kurse, wenn einem Anbieter zugeordnet
-
+	.'8192###Schlagwort nicht verwenden###'	// 8192 war mal "Hierarchie", "Schlagwort nicht verwenden" war mal bit 32 -- in beiden Fällen: wozu soll das sein? (bp)
+	.'16384###Anbieterstichwort';			// sollte mal exklusiv die Kurse infizieren, wenn bei einem Anbieter verwendet, aktuell (12/2014) nicht verwendet, alle nicht-versteckten Stichwoerter infizieren die Kurse, wenn einem Anbieter zugeordnet
+											// ACHTUNG: Werte ab 0x10000 werden in tag_type anders verwendet!
+										
 global $hidden_stichwort_eigenschaften;
 $hidden_stichwort_eigenschaften = 32 + 128 + 256 + 512 + 2048 + 4096 + 8192;
 
