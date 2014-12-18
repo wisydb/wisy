@@ -334,8 +334,10 @@ class WISY_SEARCH_RENDERER_CLASS
 		}
 	}
 	
-	function formatItem($tag_name, $tag_descr, $tag_type, $tag_help, $tag_freq)
+	function formatItem($tag_name, $tag_descr, $tag_type, $tag_help, $tag_freq, $addparam=0)
 	{
+		if( !is_array($addparam) ) $addparam = array();
+		
 		/* see also (***) in the JavaScript part*/
 		$row_class   = 'ac_normal';
 		$row_prefix  = '';
@@ -358,9 +360,14 @@ class WISY_SEARCH_RENDERER_CLASS
 		else if( $tag_type & 1024 )	{ $row_class = "ac_sonstigesmerkmal";     $row_postfix = 'sonstiges Merkmal'; }
 		else if( $tag_type & 32768 ){ $row_class = "ac_unterrichtsart";       $row_postfix = 'Unterrichtsart'; }
 	
+		if( $addparam['hidetagtypestr'] ) {
+			$row_postfix = '';
+		}
+
 		/* frequency, end base type */ 
-		if( $tag_descr )
+		if( $tag_descr ) {
 			$row_postfix = $tag_descr;
+		}
 			
 		if( $tag_freq > 0 )
 		{
@@ -395,7 +402,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		}
 		
 		return '<span class="' .$row_class. '">' .
-				$row_prefix . ' <a href="' . $this->framework->getUrl('search', array('q'=>$tag_name)) . '">' . isohtmlspecialchars($tag_name) . '</a> ' . $row_postfix .
+				$row_prefix . ' <a href="' . $this->framework->getUrl('search', array('q'=>$addparam['qprefix'].$tag_name)) . '">' . isohtmlspecialchars($tag_name) . '</a> ' . $row_postfix .
 			   '</span>';
 	}
 	
