@@ -222,6 +222,8 @@ function formatItem(row)
 									else							{ row_postfix = 'Anbieter'; }
 								  }
 		else if( tag_type & 512 ) { row_class = "ac_ort";                  row_postfix = 'Ort'; }
+		else if( tag_type & 1024 ) { row_class = "ac_sonstigesmerkmal";    row_postfix = 'sonstiges Merkmal'; }
+		else if( tag_type & 32768 ) { row_class = "ac_unterrichtsart";     row_postfix = 'Unterrichtsart'; }
 	
 		/* frequency, end base type */
 		if( tag_descr != '' )

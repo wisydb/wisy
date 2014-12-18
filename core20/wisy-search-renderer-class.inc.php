@@ -342,19 +342,21 @@ class WISY_SEARCH_RENDERER_CLASS
 		$row_postfix = '';
 		
 		/* base type */
-		     if( $tag_type &   1 ) { $row_class = "ac_abschluss";		     $row_postfix = 'Abschluss'; }
-		else if( $tag_type &   2 ) { $row_class = "ac_foerderung";		     $row_postfix = 'F&ouml;rderung'; }
-		else if( $tag_type &   4 ) { $row_class = "ac_qualitaetszertifikat"; $row_postfix = 'Qualit&auml;tszertifikat'; }
-		else if( $tag_type &   8 ) { $row_class = "ac_zielgruppe";		     $row_postfix = 'Zielgruppe'; }
-		else if( $tag_type &  16 ) { $row_class = "ac_abschlussart";		 $row_postfix = 'Abschlussart'; }
-		else if( $tag_type & 128 ) { $row_class = "ac_thema";		 		 $row_postfix = 'Thema'; }
-		else if( $tag_type & 256 ) { $row_class = "ac_anbieter";		     
+		     if( $tag_type &   1 )	{ $row_class = "ac_abschluss";		     $row_postfix = 'Abschluss'; }
+		else if( $tag_type &   2 )	{ $row_class = "ac_foerderung";		     $row_postfix = 'F&ouml;rderung'; }
+		else if( $tag_type &   4 )	{ $row_class = "ac_qualitaetszertifikat";$row_postfix = 'Qualit&auml;tszertifikat'; }
+		else if( $tag_type &   8 )	{ $row_class = "ac_zielgruppe";		     $row_postfix = 'Zielgruppe'; }
+		else if( $tag_type &  16 )	{ $row_class = "ac_abschlussart";		 $row_postfix = 'Abschlussart'; }
+		else if( $tag_type & 128 )	{ $row_class = "ac_thema";		 		 $row_postfix = 'Thema'; }
+		else if( $tag_type & 256 )	{ $row_class = "ac_anbieter";		     
 									      if( $tag_type &  0x10000 ) { $row_postfix = 'Trainer'; }
 									 else if( $tag_type &  0x20000 ) { $row_postfix = 'Beratungsstelle'; }
 									 else if( $tag_type & 0x400000 ) { $row_postfix = 'Anbieterverweis'; }
 									 else							 { $row_postfix = 'Anbieter'; }
-								   }
-		else if( $tag_type & 512 ) { $row_class = "ac_ort";                  $row_postfix = 'Ort'; }
+								    }
+		else if( $tag_type & 512 )	{ $row_class = "ac_ort";                  $row_postfix = 'Ort'; }
+		else if( $tag_type & 1024 )	{ $row_class = "ac_sonstigesmerkmal";     $row_postfix = 'sonstiges Merkmal'; }
+		else if( $tag_type & 32768 ){ $row_class = "ac_unterrichtsart";       $row_postfix = 'Unterrichtsart'; }
 	
 		/* frequency, end base type */ 
 		if( $tag_descr )
