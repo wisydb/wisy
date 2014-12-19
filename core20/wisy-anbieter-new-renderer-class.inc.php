@@ -192,17 +192,19 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 		$db->query(str_replace('__BITS__', $tag_type_bits, $sql));
 		while( $db->next_record() )
 		{
+			$html .= $html==''? '' : '<br />';
+		
 			$tag_id = $db->f('tag_id');
 			$tag_name = $db->f('tag_name');
 			$tag_type = $db->f('tag_type');
+			$tag_descr = $db->f('tag_descr');
+			$tag_help = $db->f('tag_help');
 			
 			$keyword_descr = '';	// TODO: setup these values
-			$help_id = 0;
-			$freq = 0;
 			
-			$html .= $this->searchRenderer->formatItem($tag_name, $keyword_descr, $tag_type, $help_id, $freq, $addparam);
+			$html .= $this->searchRenderer->formatItem($tag_name, $tag_descr, $tag_type, $tag_help, $freq, $addparam);
 
-			$html .= '<br />';
+			
 		}
 		return $html;
 	}
@@ -219,7 +221,7 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 		$sql = $searcher->getKurseRecordsSql('kurse.id');
 		
 		// create SQL query to get all unique keywords
-		$sql = "SELECT DISTINCT k.tag_id, t.tag_name, t.tag_type 
+		$sql = "SELECT DISTINCT k.tag_id, t.tag_name, t.tag_type, t.tag_descr, t.tag_help 
 		                   FROM x_kurse_tags k 
 		              LEFT JOIN x_tags t ON k.tag_id=t.tag_id 
 		                  WHERE k.kurs_id IN($sql) AND t.tag_type&__BITS__
@@ -231,7 +233,9 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 		if( $html )
 		{
 			echo '<h1>Abschl&uuml;sse - aktuelle Angebote</h1>';
-			echo $html;
+			echo '<p>';
+				echo $html;
+			echo '<p>';
 		}
 		
 		$html = $this->getOffersOverviewPart($sql, 0x0000FFFF	// alles, ausser Sachstichworten (0, implizit ausgeschlossen) und ausser
@@ -245,7 +249,9 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 		if( $html )
 		{
 			echo '<h1>Besondere Kursarten - aktuelle Angebote</h1>';
-			echo $html;
+			echo '<p>';
+				echo $html;
+			echo '</p>';
 		}
 
 	} 
