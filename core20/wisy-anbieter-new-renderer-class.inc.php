@@ -256,6 +256,31 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 
 	} 
 	
+	protected function renderMap($anbieter_id)
+	{
+		$map =& createWisyObject('WISY_OPENSTREETMAP_CLASS', $this->framework); // die Karte zeigt auch Orte abgelaufener Angebote, man koennte das Aendern, aber ob das Probleme loest oder neue aufwirft ist unklar ... ;-)
+		
+		$unique = array();
+		$db = new DB_Admin();
+		$sql = "SELECT * 
+		          FROM durchfuehrung 
+		         WHERE id IN(SELECT secondary_id FROM kurse_durchfuehrung WHERE primary_id IN(SELECT id FROM kurse WHERE anbieter=".intval($anbieter_id)."))";
+		$db->query($sql);
+		while( $db->next_record() ) {
+			$record = $db->Record;
+			$unique_id = $record['strasse'].'-'.$record['plz'].'-'.$record['ort'].'-'.$record['land'];
+			if( !isset($unique_adr[$unique_id]) ) {
+				$unique_adr[$unique_id] = $record;
+			}
+		}
+
+		foreach( $unique_adr as $unique_id=>$record ) {
+			$map->addPoint2($record, 0);
+		}
+		
+		echo $map->render();
+	}
+	
 	public function render()
 	{
 		$id = intval($_GET['id']);
@@ -345,6 +370,10 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 			echo '</div>';
 		echo '</div>';
 		
+		// map
+		$this->renderMap($id);
+		
+		// seals
 		if( $seals )
 		{
 			echo '<div style="text-align:center;">';
