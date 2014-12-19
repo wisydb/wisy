@@ -34,15 +34,78 @@ class WISY_TAGSUGGESTOR_CLASS
 		return $ret;
 	}
 	
-
-	function getTagFreq($q_tag_name)
-	{	
-		$temp = $this->suggestTags($q_tag_name);
-		$freq = 0;
-		for( $i = 0; $i < sizeof($temp); $i++ ) {
-			$freq += $temp[$i]['tag_freq'];
+	public function keyword2tagName($keyword)
+	{
+		// function takes keywords or an offerer name and converts it into a tag by just removing the characters ":" and "," and double spaces
+		$tag = strtr($keyword, ':,', '  ');
+		while( strpos($tag, '  ')!==false ) {
+			$tag = str_replace('  ', ' ', $tag);
 		}
-		return $freq;
+		return $tag;
+	}
+	
+	public function getTagId($keyword_or_tag_name)
+	{
+		// returns the tag id for a given keyword/offerer name/tag name
+		$tag = $this->keyword2tagName($keyword_or_tag_name);
+		$this->db2->query("SELECT tag_id FROM x_tags WHERE tag_name=".$this->db2->quote($tag));
+		if( $this->db2->next_record() ) {
+			return $this->db2->f('tag_id');
+		}
+		return 0;
+	}
+
+	public function getWisyPortalTagId()
+	{
+		if( !isset($this->getWisyPortalTagId_cache) ) {	
+			if( $GLOBALS['wisyPortalFilter']['stdkursfilter']!='' ) {
+				$this->getWisyPortalTagId_cache = $this->getTagId('.portal'.$GLOBALS['wisyPortalId']);
+			}
+			else {
+				$this->getWisyPortalTagId_cache = 0;
+			}
+		}
+		return $this->getWisyPortalTagId_cache;
+	}
+
+	public function getTagFreq($tag_ids_arr)
+	{	
+		if( sizeof($tag_ids_arr) == 1 )
+		{
+			$portalIdCond = '';
+			if( $GLOBALS['wisyPortalFilter']['stdkursfilter']!='' ) {
+				$portalIdCond = ' AND portal_id=' . $GLOBALS['wisyPortalId'] . ' ';
+			}
+			$this->db2->query("SELECT tag_freq FROM x_tags_freq WHERE tag_id=".intval($tag_ids_arr[0]) . $portalIdCond); // x_tags_freq only contains recent offers, date checking is not required
+			if( $this->db2->next_record() ) {
+				return $this->db2->f('tag_freq');
+			}
+		}
+		else if( sizeof($tag_ids_arr) > 1 )
+		{
+			$portalTagId = $this->getWisyPortalTagId();
+			if( $portalTagId ) {
+				$tag_ids_arr[] = $portalTagId;
+			}
+
+			$sql = "SELECT DISTINCT t.kurs_id AS cnt 
+			          FROM x_kurse_tags t
+			          LEFT JOIN x_kurse k ON t.kurs_id=k.kurs_id
+			         WHERE t.tag_id=" . intval($tag_ids_arr[0]);
+			for( $i = 1; $i < sizeof($tag_ids_arr); $i++ ) {
+				$sql .= " AND t.kurs_id IN(SELECT kurs_id FROM x_kurse_tags WHERE tag_id=".intval($tag_ids_arr[$i]) . ") ";
+			}
+			$sql .= " AND k.beginn>=".$this->db2->quote(strftime("%Y-%m-%d"));
+
+			$freq = 0;
+			$this->db2->query($sql);
+			while( $this->db2->next_record() ) {
+				$freq++;
+			}
+			return $freq;
+		}
+	
+		return 0;
 	}
 
 

@@ -200,7 +200,7 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 			$tag_descr = $db->f('tag_descr');
 			$tag_help = $db->f('tag_help');
 			
-			$keyword_descr = '';	// TODO: setup these values
+			$freq = $this->tagsuggestorObj->getTagFreq(array($this->tag_suchname_id, $tag_id));
 			
 			$html .= $this->searchRenderer->formatItem($tag_name, $tag_descr, $tag_type, $tag_help, $freq, $addparam);
 
@@ -314,9 +314,10 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 		}
 
 		// current offers overview
-		$tag_suchname = strtr($suchname, ':,', '  ');
-		while( strpos($tag_suchname, '  ')!==false ) $tag_suchname = str_replace('  ', ' ', $tag_suchname);
-						
+		$this->tagsuggestorObj =& createWisyObject('WISY_TAGSUGGESTOR_CLASS', $this->framework); 
+		$tag_suchname = $this->tagsuggestorObj->keyword2tagName($suchname);
+		$this->tag_suchname_id = $this->tagsuggestorObj->getTagId($tag_suchname);
+
 		$this->writeOffersOverview($tag_suchname);
 
 		// keyword overview
@@ -352,8 +353,7 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 		}
 
 		echo '<div style="text-align:center; padding-top:1em;">';
-				$tagsuggestorObj =& createWisyObject('WISY_TAGSUGGESTOR_CLASS', $this->framework); 
-				$freq = $tagsuggestorObj->getTagFreq($tag_suchname); if( $freq <= 0 ) $freq = '';
+				$freq = $this->tagsuggestorObj->getTagFreq(array($this->tag_suchname_id)); if( $freq <= 0 ) $freq = '';
 					echo '<a class="wisy_showalloffers" href="' .$this->framework->getUrl('search', array('q'=>$tag_suchname)). '">'
 						. "Zeige alle $freq Angebote"
 						. '</a>';
