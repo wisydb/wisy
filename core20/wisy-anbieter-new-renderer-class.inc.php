@@ -330,6 +330,7 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 											));
 		echo $this->framework->getSearchField();
 
+
 		// start the result area
 		// --------------------------------------------------------------------
 		
@@ -340,7 +341,7 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 		echo '</p>';
 		echo '<h1>' . isohtmlentities($suchname) . '</h1>';
 		flush();
-		
+
 		if( $firmenportraet != '' ) {
 			$wiki2html =& createWisyObject('WISY_WIKI2HTML_CLASS', $this->framework);
 			echo $wiki2html->run($firmenportraet);
@@ -361,7 +362,7 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 			echo '</table>';
 		}
 		*/
-								
+					
 		echo '<p class="wisy_anbieter_footer '.$this->framework->getAllowFeedbackClass().'">';
 		 // no content, but must be present as the feedback stuff is created here via JavaScript
 		echo '</p>';		
@@ -377,9 +378,7 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 				echo $this->renderCard($db, $anbieter_id, 0, array('logo'=>true, 'logoLinkToAnbieter'=>false));
 			echo '</div>';
 		echo '</div>';
-		
-		// map
-		$this->renderMap($anbieter_id);
+
 		
 		// seals
 		if( $vollst >= 50 && $this->framework->iniRead('details.complseal', 1) )
@@ -394,7 +393,7 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 			}
 			$seals .= ' <img src="'.$img.'" alt="Siegel" border="0" title="'.$title.'" />';
 		}
-		
+
 		if( $seals )
 		{
 			echo '<div style="text-align:center;">';
@@ -402,15 +401,17 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 			echo '</div>';
 		}
 
-
-
 		echo '<div style="text-align:center; padding-top:1em;">';
 				$freq = $this->tagsuggestorObj->getTagFreq(array($this->tag_suchname_id)); if( $freq <= 0 ) $freq = '';
 					echo '<a class="wisy_showalloffers" href="' .$this->framework->getUrl('search', array('q'=>$tag_suchname)). '">'
 						. "Zeige alle $freq Angebote"
 						. '</a>';
 		echo '</div>';
-							
+
+		// map
+		$this->renderMap($anbieter_id);
+		
+		// meta			
 		echo '<div class="wisy_vcard">';
 			$anbieter_nr = $din_nr? isohtmlentities($din_nr) : $anbieter_id;
 			echo '<div class="wisy_vcardtitle">Anbieternummer: '.$anbieter_nr.'</div>';
@@ -440,6 +441,7 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 							
 		// end the result area
 		// --------------------------------------------------------------------
+		
 		
 		echo '</div></div>';
 
