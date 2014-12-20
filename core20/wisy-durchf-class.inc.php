@@ -6,7 +6,7 @@ class WISY_DURCHF_CLASS
 {
 	var $framework;
 	
-	private $plzfilterObj;
+	protected $plzfilterObj;
 
 	function __construct(&$framework)
 	{
@@ -103,7 +103,7 @@ class WISY_DURCHF_CLASS
 	}
 	*/	
 
-	private function formatArtSpalte($stichwoerter_arr, $details)
+	protected function formatArtSpalte($stichwoerter_arr, $details)
 	{
 		// Array Stichwörter/Tags => Bilder/Text erzeugen
 		// (wir verwenden hier die Informationen aus der stichworttabelle anstelle von x_tags, da diese einfacher zur Verfügung stehen und
@@ -405,7 +405,7 @@ class WISY_DURCHF_CLASS
 		return $durchfuehrungenIds;
 	}
 
-	private function stichw_in_array(&$arr, $id)
+	protected function stichw_in_array(&$arr, $id)
 	{
 		foreach( $arr as $index=>$values ) {
 			if( $values['id'] == $id ) {
