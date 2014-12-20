@@ -209,7 +209,7 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 		return $html;
 	}
 	
-	protected function writeOffersOverview($tag_suchname)
+	protected function writeOffersOverview($anbieter_id, $tag_suchname)
 	{
 
 		$this->searchRenderer = createWisyObject('WISY_SEARCH_RENDERER_CLASS', $this->framework);
@@ -254,6 +254,12 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 			echo '</p>';
 		}
 
+		if( $this->framework->getEditAnbieterId() == $anbieter_id )
+		{
+			echo '<div class="wisy_edittoolbar">';
+				echo '<p>Hinweis f&uuml;r den Anbieter:</p><p>Die Werte werden ca. <b>einmal t&auml;glich</b> neu berechnet.</p>';
+			echo '</div>';
+		}
 	} 
 	
 	protected function renderMap($anbieter_id)
@@ -283,41 +289,44 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 	
 	public function render()
 	{
-		$id = intval($_GET['id']);
+		$anbieter_id = intval($_GET['id']);
 
 		$db = new DB_Admin();
 
 		// link to another anbieter?
-		$db->query("SELECT attr_id FROM anbieter_verweis WHERE primary_id=$id ORDER BY structure_pos");
+		$db->query("SELECT attr_id FROM anbieter_verweis WHERE primary_id=$anbieter_id ORDER BY structure_pos");
 		if( $db->next_record() ) {
-			$id = intval($db->f('attr_id'));
+			$anbieter_id = intval($db->f('attr_id'));
 		}
 
 		// load anbieter
-		$db->query("SELECT * FROM anbieter WHERE id=$id");
+		$db->query("SELECT * FROM anbieter WHERE id=$anbieter_id");
 		if( !$db->next_record() || $db->f('freigeschaltet')!=1 ) {
-			$this->framework->error404(); // record does not exist/is not active, report a normal 404 error, not a "Soft 404", see  http://goo.gl/IKMnm -- für nicht-freigeschaltete Datensätze, s. [here]
+			$this->framework->error404(); // record does not exist/is not active, report a normal 404 error, not a "Soft 404", see  http://goo.gl/IKMnm -- fuer nicht-freigeschaltete Datensaetze, s. [here]
 		}
-		$din_nr			= $db->fs('din_nr');
-		$suchname		= $db->fs('suchname');
-		$firmenportraet	= trim($db->fs('firmenportraet'));
-		$date_created	= $db->fs('date_created');
-		$date_modified	= $db->fs('date_modified');
-		//$stichwoerter	= $this->framework->loadStichwoerter($db, 'anbieter', $id);
-		$seals			= $this->framework->getSeals($db, array('anbieterId'=>$id, 'break'=>' '));
+		$din_nr			= $db->f('din_nr');
+		$suchname		= $db->f('suchname');
+		$firmenportraet	= trim($db->f('firmenportraet'));
+		$date_created	= $db->f('date_created');
+		$date_modified	= $db->f('date_modified');
+		//$stichwoerter	= $this->framework->loadStichwoerter($db, 'anbieter', $anbieter_id);
+		$vollst			= $db->f('vollstaendigkeit');
+		$anbieter_settings = explodeSettings($db->f('settings'));
+		$seals			= $this->framework->getSeals($db, array('anbieterId'=>$anbieter_id, 'break'=>' '));
+		print_r($anbieter_settings);
 		
 		// promoted?
 		if( intval($_GET['promoted']) > 0 )
 		{
 			$promoter =& createWisyObject('WISY_PROMOTE_CLASS', $this->framework);
-			$promoter->logPromotedRecordClick(intval($_GET['promoted']), $id);
+			$promoter->logPromotedRecordClick(intval($_GET['promoted']), $anbieter_id);
 		}
 		
 		// page out
 		headerDoCache();
 		echo $this->framework->getPrologue(array(	
 													'title'		=>	$suchname,  
-													'canonical'	=>	$this->framework->getUrl('a', array('id'=>$id)),
+													'canonical'	=>	$this->framework->getUrl('a', array('id'=>$anbieter_id)),
 													'bodyClass'	=>	'wisyp_anbieter',
 											));
 		echo $this->framework->getSearchField();
@@ -343,7 +352,7 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 		$tag_suchname = $this->tagsuggestorObj->keyword2tagName($suchname);
 		$this->tag_suchname_id = $this->tagsuggestorObj->getTagId($tag_suchname);
 
-		$this->writeOffersOverview($tag_suchname);
+		$this->writeOffersOverview($anbieter_id, $tag_suchname);
 
 		// keyword overview
 		/*
@@ -366,20 +375,35 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 		echo '<div class="wisy_vcard">';
 			echo '<div class="wisy_vcardtitle">Anbieteradresse</div>';
 			echo '<div class="wisy_vcardcontent">';
-				echo $this->renderCard($db, $id, 0, array('logo'=>true, 'logoLinkToAnbieter'=>false));
+				echo $this->renderCard($db, $anbieter_id, 0, array('logo'=>true, 'logoLinkToAnbieter'=>false));
 			echo '</div>';
 		echo '</div>';
 		
 		// map
-		$this->renderMap($id);
+		$this->renderMap($anbieter_id);
 		
 		// seals
+		if( $vollst >= 50 && $this->framework->iniRead('details.complseal', 1) )
+		{
+			if( $vollst >= 90 ) {
+				$img = "core20/img/compl90.png";
+				$title = '&Uuml;bererf&uuml;llt die WISY-Kriterien';
+			}
+			else {
+				$img = "core20/img/compl50.png";
+				$title = 'Erf&uuml;llt die WISY-Kriterien';
+			}
+			$seals .= ' <img src="'.$img.'" alt="Siegel" border="0" title="'.$title.'" />';
+		}
+		
 		if( $seals )
 		{
 			echo '<div style="text-align:center;">';
 				echo $seals;
 			echo '</div>';
 		}
+
+
 
 		echo '<div style="text-align:center; padding-top:1em;">';
 				$freq = $this->tagsuggestorObj->getTagFreq(array($this->tag_suchname_id)); if( $freq <= 0 ) $freq = '';
@@ -389,14 +413,31 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 		echo '</div>';
 							
 		echo '<div class="wisy_vcard">';
-			$anbieter_nr = $din_nr? isohtmlentities($din_nr) : $id;
+			$anbieter_nr = $din_nr? isohtmlentities($din_nr) : $anbieter_id;
 			echo '<div class="wisy_vcardtitle">Anbieternummer: '.$anbieter_nr.'</div>';
 			echo '<div class="wisy_vcardcontent">';
 				echo 'Erstellt:&nbsp;' . $this->framework->formatDatum($date_created) . ', Ge&auml;ndert:&nbsp;' . $this->framework->formatDatum($date_modified);
 			echo '</div>';
 		echo '</div>';
 								
-
+		if( $this->framework->getEditAnbieterId() == $anbieter_id )
+		{
+			echo '<br /><div class="wisy_edittoolbar">';
+				if( $vollst >= 1 ) {
+					echo '<p>Hinweis für den Anbieter:</p><p>Die <b>Vollst&auml;ndigkeit</b> Ihrer aktiven Kurse liegt durchschnittlich bei <b>'.$vollst.'%</b> ';
+					
+					$min_vollst = intval($anbieter_settings['vollstaendigkeit.min']);
+					$max_vollst = intval($anbieter_settings['vollstaendigkeit.max']);
+					if( $min_vollst >= 1 && $max_vollst >= 1 ) {
+						echo ' im <b>Bereich von ' . $min_vollst .'-'.$max_vollst . '%</b>';
+					}
+					echo '.';
+				}
+				echo ' Um die Vollst&auml;ndigkeit zu erh&ouml;hen klicken Sie oben links auf &quot;alle Kurse&quot; und bearbeiten 
+				 Sie die Kurse, v.a. die mit den schlechteren Vollst&auml;ndigkeiten.</p>';
+				echo '<p>Die Vollst&auml;ndigkeiten werden ca. einmal t&auml;glich berechnet; ab 50% Vollst&auml;ndigkeit werden entspr. Logos an dieser Stelle eingeblendet.</p>';
+			echo '</div>';
+		}
 							
 		// end the result area
 		// --------------------------------------------------------------------
@@ -406,7 +447,7 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 		
 		
 		$copyrightClass =& createWisyObject('WISY_COPYRIGHT_CLASS', $this->framework);
-		$copyrightClass->renderCopyright($db, 'anbieter', $id);
+		$copyrightClass->renderCopyright($db, 'anbieter', $anbieter_id);
 		
 		echo $this->framework->getEpilogue();
 	}
