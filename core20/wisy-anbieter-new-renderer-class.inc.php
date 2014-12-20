@@ -313,7 +313,6 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 		$vollst			= $db->f('vollstaendigkeit');
 		$anbieter_settings = explodeSettings($db->f('settings'));
 		$seals			= $this->framework->getSeals($db, array('anbieterId'=>$anbieter_id, 'break'=>' '));
-		print_r($anbieter_settings);
 		
 		// promoted?
 		if( intval($_GET['promoted']) > 0 )
