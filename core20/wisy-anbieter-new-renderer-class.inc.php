@@ -381,19 +381,6 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 
 		
 		// seals
-		if( $vollst >= 50 && $this->framework->iniRead('details.complseal', 1) )
-		{
-			if( $vollst >= 90 ) {
-				$img = "core20/img/compl90.png";
-				$title = '&Uuml;bererf&uuml;llt die WISY-Kriterien zur Vollst&auml;ndigkeit der Kursdaten';
-			}
-			else {
-				$img = "core20/img/compl50.png";
-				$title = 'Erf&uuml;llt die WISY-Kriterien zur Vollst&auml;ndigkeit der Kursdaten';
-			}
-			$seals .= ' <img src="'.$img.'" alt="Siegel" border="0" title="'.$title.'" />';
-		}
-
 		if( $seals )
 		{
 			echo '<div style="text-align:center;">';
@@ -401,11 +388,35 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 			echo '</div>';
 		}
 
-		echo '<div style="text-align:center; padding-top:1em;">';
+		// show all offers
+		echo '<div style="padding-top:1em;">';
+				
+				echo '<table border="0" width="100%"><tr><td width="30%"></td><td valign="middle" align="right">';
+				
+				if( $vollst >= 50 && $this->framework->iniRead('details.complseal', 1) )
+				{
+					if( $vollst >= 90 ) {
+						$img = "core20/img/compl90.png";
+						$title = '&Uuml;bererf&uuml;llt die WISY-Kriterien zur Vollst&auml;ndigkeit der Kursdaten';
+						$bgcol = '#acc73a';
+					}
+					else {
+						$img = "core20/img/compl50.png";
+						$title = 'Erf&uuml;llt die WISY-Kriterien zur Vollst&auml;ndigkeit der Kursdaten';
+						$bgcol = '#afafaf';
+					}
+					echo ' <img src="'.$img.'" alt="Siegel" border="0" width="60" height="60" title="'.$title.'" />';
+				}
+				
+				echo '</td><td valign="middle" align="left" nowrap="nowrap">&nbsp;';
+
 				$freq = $this->tagsuggestorObj->getTagFreq(array($this->tag_suchname_id)); if( $freq <= 0 ) $freq = '';
-					echo '<a class="wisy_showalloffers" href="' .$this->framework->getUrl('search', array('q'=>$tag_suchname)). '">'
+					echo '<a class="wisy_showalloffers" style="padding:16px 8px; background-color:'.$bgcol.';" href="' .$this->framework->getUrl('search', array('q'=>$tag_suchname)). '">'
 						. "Zeige alle $freq Angebote"
 						. '</a>';
+				
+				echo '</td><td width="30%"></td></tr></table>';
+				
 		echo '</div>';
 
 		// map
