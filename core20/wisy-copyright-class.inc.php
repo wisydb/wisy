@@ -65,10 +65,7 @@ class WISY_COPYRIGHT_CLASS
 		}
 	
 		// render
-		if( $copyright != '' )
-		{
-			echo '<p id="wisy_copyright_footer">' . $copyright . '</p>';
-		}
+		echo '<p id="wisy_copyright_footer">' . ($copyright? $copyright : '&nbsp;') . '</p>';
 	}
 	
 	private function unifyDomain($domain)
