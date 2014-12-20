@@ -385,11 +385,11 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 		{
 			if( $vollst >= 90 ) {
 				$img = "core20/img/compl90.png";
-				$title = '&Uuml;bererf&uuml;llt die WISY-Kriterien';
+				$title = '&Uuml;bererf&uuml;llt die WISY-Kriterien zur Vollst&auml;ndigkeit der Kursdaten';
 			}
 			else {
 				$img = "core20/img/compl50.png";
-				$title = 'Erf&uuml;llt die WISY-Kriterien';
+				$title = 'Erf&uuml;llt die WISY-Kriterien zur Vollst&auml;ndigkeit der Kursdaten';
 			}
 			$seals .= ' <img src="'.$img.'" alt="Siegel" border="0" title="'.$title.'" />';
 		}
