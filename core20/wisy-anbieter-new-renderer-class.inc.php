@@ -241,6 +241,8 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 		$html = $this->getOffersOverviewPart($sql, 0x0000FFFF	// alles, ausser Sachstichworten (0, implizit ausgeschlossen) und ausser
 												& ~1 			// Abschluesse
 												& ~4			// Qualitaetszertifikate (werden rechts als Bild dargestellt)
+												& ~8			// Zielgruppe (2014-12-21 18:32 ausgeschlossen)
+												& ~16			// Abschlussart (2014-12-21 18:32 ausgeschlossen)
 												& ~32 & ~64		// Synonyme
 												& ~128			// Thema
 												& ~256			// Anbieter (ist natuerlich immer derselbe)
