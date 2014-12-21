@@ -427,7 +427,9 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 			$anbieter_nr = $din_nr? isohtmlentities($din_nr) : $anbieter_id;
 			echo '<div class="wisy_vcardtitle">Anbieternummer: '.$anbieter_nr.'</div>';
 			echo '<div class="wisy_vcardcontent">';
-				echo 'Erstellt:&nbsp;' . $this->framework->formatDatum($date_created) . ', Ge&auml;ndert:&nbsp;' . $this->framework->formatDatum($date_modified);
+				$fmt_created = $this->framework->formatDatum($date_created);
+				$fmt_modified = $this->framework->formatDatum($date_modified);
+				echo 'Erstellt:&nbsp;' . ($fmt_created? $fmt_created : 'k.A.') . ', Ge&auml;ndert:&nbsp;' . ($fmt_modified? $fmt_modified : 'k.A.');
 			echo '</div>';
 		echo '</div>';
 								
