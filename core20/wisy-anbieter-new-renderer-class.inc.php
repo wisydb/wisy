@@ -391,36 +391,60 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 		}
 
 		// show all offers
-		echo '<div style="padding-top:1em;">';
-				
-				echo '<table border="0" width="100%"><tr><td width="30%"></td><td valign="middle" align="right">';
+		echo '<div class="wisy_vcard">';
+			$freq = $this->tagsuggestorObj->getTagFreq(array($this->tag_suchname_id)); if( $freq <= 0 ) $freq = '';
+			echo '<div class="wisy_vcardtitle">'.$freq.($freq==1? ' aktuelles Angebot' : ' aktuelle Angebote').'</div>';
+			echo '<div class="wisy_vcardcontent">';
+
+				$title = '';
 				
 				if( $vollst >= 50 && $this->framework->iniRead('details.complseal', 1) )
 				{
-					if( $vollst >= 90 ) {
-						$img = "core20/img/compl90.png";
-						$title = '&Uuml;bererf&uuml;llt die WISY-Kriterien zur Vollst&auml;ndigkeit der Kursdaten';
-						$bgcol = '#acc73a';
-					}
-					else {
-						$img = "core20/img/compl50.png";
-						$title = 'Erf&uuml;llt die WISY-Kriterien zur Vollst&auml;ndigkeit der Kursdaten';
-						$bgcol = '#afafaf';
-					}
-					echo ' <img src="'.$img.'" alt="Siegel" border="0" width="60" height="60" title="'.$title.'" />';
+					echo '<table border="0"><tr><td valign="middle" align="right">';
+						if( $vollst >= 90 ) {
+							$img = "core20/img/compl90.png";
+							$title = 'Dies Kurse dieses Anbieters &uuml;bererf&uuml;llen die WISY-Kriterien zur Vollst&auml;ndigkeit der Kursdaten - ';
+						}
+						else {
+							$img = "core20/img/compl50.png";
+							$title = 'Dies Kurse dieses Anbieters erf&uuml;llen die WISY-Kriterien zur Vollst&auml;ndigkeit der Kursdaten - ';
+						}
+						echo ' <img src="'.$img.'" alt="" border="0" width="55" height="55" title="" />';
+					echo '</td><td valign="middle" align="left">';
+						echo $title;
 				}
 				
-				echo '</td><td valign="middle" align="left" nowrap="nowrap">&nbsp;';
-
-				$freq = $this->tagsuggestorObj->getTagFreq(array($this->tag_suchname_id)); if( $freq <= 0 ) $freq = '';
-					echo '<a class="wisy_showalloffers" style="padding:16px 8px; background-color:'.$bgcol.';" href="' .$this->framework->getUrl('search', array('q'=>$tag_suchname)). '">'
+				echo '<a href="' .$this->framework->getUrl('search', array('q'=>$tag_suchname)). '">'
 						. "Zeige alle $freq Angebote"
-						. '</a>';
+					. '</a>';
 				
-				echo '</td><td width="30%"></td></tr></table>';
+				if( $title )
+				{
+					echo '</td></tr></table>';
+				}
 				
-		echo '</div>';
+			echo '</div>';
+		echo '</div>';		
 
+		if( $this->framework->getEditAnbieterId() == $anbieter_id )
+		{
+			echo '<div class="wisy_edittoolbar">';
+				if( $vollst >= 1 ) {
+					echo '<p>Hinweis für den Anbieter:</p><p>Die <b>Vollst&auml;ndigkeit</b> Ihrer '.$freq.' aktuellen Angebote liegt durchschnittlich bei <b>'.$vollst.'%</b> ';
+					
+					$min_vollst = intval($anbieter_settings['vollstaendigkeit.min']);
+					$max_vollst = intval($anbieter_settings['vollstaendigkeit.max']);
+					if( $min_vollst >= 1 && $max_vollst >= 1 ) {
+						echo ' im <b>Bereich von ' . $min_vollst .'-'.$max_vollst . '%</b>';
+					}
+					echo '.';
+				}
+				echo ' Um die Vollst&auml;ndigkeit zu erh&ouml;hen klicken Sie oben links auf &quot;alle Kurse&quot; und bearbeiten 
+				 Sie die Angebote, v.a. die mit den schlechteren Vollst&auml;ndigkeiten.</p>';
+				echo '<p>Die Vollst&auml;ndigkeiten werden ca. einmal t&auml;glich berechnet; ab 50% Vollst&auml;ndigkeit werden entspr. Logos an dieser Stelle eingeblendet.</p>';
+			echo '</div>';
+		}
+		
 		// map
 		$this->renderMap($anbieter_id);
 		
@@ -435,24 +459,7 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 			echo '</div>';
 		echo '</div>';
 								
-		if( $this->framework->getEditAnbieterId() == $anbieter_id )
-		{
-			echo '<br /><div class="wisy_edittoolbar">';
-				if( $vollst >= 1 ) {
-					echo '<p>Hinweis für den Anbieter:</p><p>Die <b>Vollst&auml;ndigkeit</b> Ihrer aktiven Kurse liegt durchschnittlich bei <b>'.$vollst.'%</b> ';
-					
-					$min_vollst = intval($anbieter_settings['vollstaendigkeit.min']);
-					$max_vollst = intval($anbieter_settings['vollstaendigkeit.max']);
-					if( $min_vollst >= 1 && $max_vollst >= 1 ) {
-						echo ' im <b>Bereich von ' . $min_vollst .'-'.$max_vollst . '%</b>';
-					}
-					echo '.';
-				}
-				echo ' Um die Vollst&auml;ndigkeit zu erh&ouml;hen klicken Sie oben links auf &quot;alle Kurse&quot; und bearbeiten 
-				 Sie die Kurse, v.a. die mit den schlechteren Vollst&auml;ndigkeiten.</p>';
-				echo '<p>Die Vollst&auml;ndigkeiten werden ca. einmal t&auml;glich berechnet; ab 50% Vollst&auml;ndigkeit werden entspr. Logos an dieser Stelle eingeblendet.</p>';
-			echo '</div>';
-		}
+
 							
 		// end the result area
 		// --------------------------------------------------------------------
