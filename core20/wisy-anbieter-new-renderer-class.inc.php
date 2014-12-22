@@ -400,18 +400,24 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 				
 				if( $vollst >= 50 && $this->framework->iniRead('details.complseal', 1) )
 				{
-					echo '<table border="0"><tr><td valign="middle" align="right">';
-						if( $vollst >= 90 ) {
-							$img = "core20/img/compl90.png";
-							$title = 'Dies Kurse dieses Anbieters &uuml;bererf&uuml;llen die WISY-Kriterien zur Vollst&auml;ndigkeit der Kursdaten - ';
-						}
-						else {
-							$img = "core20/img/compl50.png";
-							$title = 'Dies Kurse dieses Anbieters erf&uuml;llen die WISY-Kriterien zur Vollst&auml;ndigkeit der Kursdaten - ';
-						}
-						echo ' <img src="'.$img.'" alt="" border="0" width="55" height="55" title="" />';
-					echo '</td><td valign="middle" align="left">';
-						echo $title;
+					if( $vollst >= 90 ) {
+						$img = "core20/img/compl90.png";
+						$title = 'Die Kursbeschreibungen dieses Anbieters &uuml;bertreffen die WISY-Kriterien zur Vollst&auml;ndigkeit der Kursdaten - ';
+					}
+					else {
+						$img = "core20/img/compl50.png";
+						$title = 'Die Kursbeschreibungen dieses Anbieters erf&uuml;llen die WISY-Kriterien zur Vollst&auml;ndigkeit der Kursdaten - ';
+					}
+				}
+				
+				if( $img || $title )
+				{
+					echo '<table border="0"><tr>';
+						echo '<td>';
+							echo ' <img src="'.$img.'" alt="" border="0" width="55" height="55" title="" />';
+						echo '</td>';
+						echo '<td>';
+							echo $title;
 				}
 				
 				echo '<a href="' .$this->framework->getUrl('search', array('q'=>$tag_suchname)). '">'
