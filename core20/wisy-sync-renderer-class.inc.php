@@ -1040,13 +1040,12 @@ class WISY_SYNC_RENDERER_CLASS
 					$portalTagId = $values['portal_tag'];
 					if( $portalTagId && sizeof($result[$portalTagId]) )
 					{
-						//$einstcache_tagfilter = ' (t.tag_id IN(' . implode(', ', array_keys( $result[$portalTagId] ) ) . ')) ';
 						$portalIdFor = $portalId;
 					}
 					else
 					{
-						//$einstcache_tagfilter = ' (1) ';
 						$portalIdFor = 0;
+						$portalTagId = 0;
 					}
 					
 					// write the x_tags_freq table

@@ -139,6 +139,9 @@ class WISY_TAGSUGGESTOR_CLASS
 			if( $GLOBALS['wisyPortalFilter']['stdkursfilter']!='' ) {
 				$portalIdCond = ' AND f.portal_id=' . $GLOBALS['wisyPortalId'] . ' ';
 			}
+			else {
+				$portalIdCond = ' AND f.portal_id=0 ';
+			}
 			
 			$ret = array();
 			$tags_done  = array();
