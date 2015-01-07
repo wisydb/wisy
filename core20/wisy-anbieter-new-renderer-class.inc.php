@@ -332,6 +332,9 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 											));
 		echo $this->framework->getSearchField();
 
+		$this->tagsuggestorObj =& createWisyObject('WISY_TAGSUGGESTOR_CLASS', $this->framework); 
+		$tag_suchname = $this->tagsuggestorObj->keyword2tagName($suchname);
+		$this->tag_suchname_id = $this->tagsuggestorObj->getTagId($tag_suchname);
 
 		// start the result area
 		// --------------------------------------------------------------------
@@ -349,10 +352,17 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 			echo $wiki2html->run($firmenportraet);
 		}
 
+		// link "show all offers"
+		$freq = $this->tagsuggestorObj->getTagFreq(array($this->tag_suchname_id)); if( $freq <= 0 ) $freq = '';
+		echo '<h1>Alle Angebote</h1>'
+		.	'<p>'
+		.		'<a href="' .$this->framework->getUrl('search', array('q'=>$tag_suchname)). '">'
+		.			"Zeige alle $freq Angebote des Anbieters"
+		.		'</a>'
+		. 	'</p>';		
+
 		// current offers overview
-		$this->tagsuggestorObj =& createWisyObject('WISY_TAGSUGGESTOR_CLASS', $this->framework); 
-		$tag_suchname = $this->tagsuggestorObj->keyword2tagName($suchname);
-		$this->tag_suchname_id = $this->tagsuggestorObj->getTagId($tag_suchname);
+
 
 		$this->writeOffersOverview($anbieter_id, $tag_suchname);
 
@@ -392,7 +402,6 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 
 		// show all offers
 		echo '<div class="wisy_vcard">';
-			$freq = $this->tagsuggestorObj->getTagFreq(array($this->tag_suchname_id)); if( $freq <= 0 ) $freq = '';
 			echo '<div class="wisy_vcardtitle">'.$freq.($freq==1? ' aktuelles Angebot' : ' aktuelle Angebote').'</div>';
 			echo '<div class="wisy_vcardcontent">';
 
@@ -420,9 +429,7 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 							echo $title;
 				}
 				
-				echo '<a href="' .$this->framework->getUrl('search', array('q'=>$tag_suchname)). '">'
-						. "Zeige alle $freq Angebote"
-					. '</a>';
+
 				
 				if( $title )
 				{
