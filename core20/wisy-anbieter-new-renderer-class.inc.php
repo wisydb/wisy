@@ -264,6 +264,57 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 		}
 	} 
 	
+	
+	protected function renderSealsOverview($anbieter_id, $pruefsiegel_seit)
+	{
+		$img_seals = '';
+		$txt_seals = '';
+
+		$seit = intval(substr($pruefsiegel_seit, 0, 4));
+		$seit = $seit>1900? "Gepr&uuml;fte Weiterbildungseinrichtung seit $seit" : "Gepr&uuml;fte Weiterbildungseinrichtung";
+		
+		// get all seals
+
+		$db = new DB_Admin;
+		$db->query("SELECT a.attr_id AS sealId, s.stichwort AS title, s.glossar AS glossarId FROM anbieter_stichwort a, stichwoerter s WHERE a.primary_id=" . $anbieter_id . " AND a.attr_id=s.id AND s.eigenschaften=" .DEF_STICHWORTTYP_QZERTIFIKAT. " ORDER BY a.structure_pos;");
+		while( $db->next_record() )
+		{
+			$sealId = $db->f('sealId');
+			$glossarId = $db->f('glossarId');
+			$glossarLink = $glossarId>0? (' <a href="' . $this->framework->getHelpUrl($glossarId) . '" class="wisy_help" title="Hilfe">i</a>') : '';
+			$title = $db->f('title');
+
+			$img = "files/seals/$sealId-large.gif";
+			if( @file_exists($img) )
+			{
+				$img_seals .= $img_seals==''? '' : '<br /><br />';
+				$img_seals .= "<img src=\"$img\" border=\"0\" alt=\"Pr&uuml;siegel\" title=\"$title\" /><br />";
+				$img_seals .= $title . $glossarLink;
+				if( $seit ) { $img_seals .= '<br />'  . $seit; $seit = ''; }
+			}
+			else
+			{
+				$txt_seals .= $txt_seals==''? '' : '<br />';
+				$txt_seals .= $title . $glossarLink;
+			}
+						
+		}
+	
+		$ret = $img_seals;
+
+		if( $txt_seals!= '' ) {
+			$ret .= '<br />' . $txt_seals;
+		}
+
+		return $ret;
+
+
+
+	
+		return $ret;
+	}
+	
+	
 	protected function renderMap($anbieter_id)
 	{
 		$map =& createWisyObject('WISY_OPENSTREETMAP_CLASS', $this->framework); // die Karte zeigt auch Orte abgelaufener Angebote, man koennte das Aendern, aber ob das Probleme loest oder neue aufwirft ist unklar ... ;-)
@@ -314,7 +365,7 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 		//$stichwoerter	= $this->framework->loadStichwoerter($db, 'anbieter', $anbieter_id);
 		$vollst			= $db->f('vollstaendigkeit');
 		$anbieter_settings = explodeSettings($db->f('settings'));
-		$seals			= $this->framework->getSeals($db, array('anbieterId'=>$anbieter_id, 'break'=>' '));
+		$pruefsiegel_seit = $db->f('pruefsiegel_seit');
 		
 		// promoted?
 		if( intval($_GET['promoted']) > 0 )
@@ -354,10 +405,10 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 
 		// link "show all offers"
 		$freq = $this->tagsuggestorObj->getTagFreq(array($this->tag_suchname_id)); if( $freq <= 0 ) $freq = '';
-		echo '<h1>Alle Angebote</h1>'
+		echo '<h1>'.$freq.($freq==1? ' aktuelles Angebot' : ' aktuelle Angebote').'</h1>'
 		.	'<p>'
 		.		'<a href="' .$this->framework->getUrl('search', array('q'=>$tag_suchname)). '">'
-		.			"Zeige alle $freq Angebote des Anbieters"
+		.			"Zeige alle aktuellen Angebote des Anbieters..."
 		.		'</a>'
 		. 	'</p>';		
 
@@ -391,57 +442,32 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 			echo '</div>';
 		echo '</div>';
 
-		
-		// seals
-		if( $seals )
+		// vollst.
+		$title = '';
+		if( $vollst >= 50 && $this->framework->iniRead('details.complseal', 1) )
 		{
-			echo '<div style="text-align:center;">';
-				echo $seals;
-			echo '</div>';
+			if( $vollst >= 90 ) {
+				$img = "core20/img/compl90.png";
+				$title = 'Die Kursbeschreibungen dieses Anbieters &uuml;bertreffen die WISY-Kriterien zur Vollst&auml;ndigkeit der Kursdaten';
+			}
+			else {
+				$img = "core20/img/compl50.png";
+				$title = 'Die Kursbeschreibungen dieses Anbieters erf&uuml;llen die WISY-Kriterien zur Vollst&auml;ndigkeit der Kursdaten';
+			}
 		}
-
-		// show all offers
-		echo '<div class="wisy_vcard">';
-			echo '<div class="wisy_vcardtitle">'.$freq.($freq==1? ' aktuelles Angebot' : ' aktuelle Angebote').'</div>';
-			echo '<div class="wisy_vcardcontent">';
-
-				$title = '';
-				
-				if( $vollst >= 50 && $this->framework->iniRead('details.complseal', 1) )
-				{
-					if( $vollst >= 90 ) {
-						$img = "core20/img/compl90.png";
-						$title = 'Die Kursbeschreibungen dieses Anbieters &uuml;bertreffen die WISY-Kriterien zur Vollst&auml;ndigkeit der Kursdaten - ';
-					}
-					else {
-						$img = "core20/img/compl50.png";
-						$title = 'Die Kursbeschreibungen dieses Anbieters erf&uuml;llen die WISY-Kriterien zur Vollst&auml;ndigkeit der Kursdaten - ';
-					}
-				}
-				
-				if( $img || $title )
-				{
-					echo '<table border="0"><tr>';
-						echo '<td>';
-							echo ' <img src="'.$img.'" alt="" border="0" width="55" height="55" title="" />';
-						echo '</td>';
-						echo '<td>';
-							echo $title;
-				}
-				
-
-				
-				if( $title )
-				{
-					echo '</td></tr></table>';
-				}
-				
-			echo '</div>';
-		echo '</div>';		
-
+		if( $title )
+		{
+			echo '<table><tr><td valign="middle">';
+				echo '<img align="left" hspace="4" src="'.$img.'" alt="" border="0" width="55" height="55" title="" />';
+			echo '</td><td style="word-break: normal !important;">'; // <- this is a hack, the hamburg CSS is really out of order ...
+				echo $title;
+				echo '&nbsp;<a href="' . $this->framework->getHelpUrl(3369) . '" class="wisy_help" title="Hilfe">i</a>';
+			echo '</td></tr></table>';
+		}
+		
 		if( $this->framework->getEditAnbieterId() == $anbieter_id )
 		{
-			echo '<div class="wisy_edittoolbar">';
+			echo '<br /><div class="wisy_edittoolbar">';
 				if( $vollst >= 1 ) {
 					echo '<p>Hinweis für den Anbieter:</p><p>Die <b>Vollst&auml;ndigkeit</b> Ihrer '.$freq.' aktuellen Angebote liegt durchschnittlich bei <b>'.$vollst.'%</b> ';
 					
@@ -456,7 +482,28 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 				 Sie die Angebote, v.a. die mit den schlechteren Vollst&auml;ndigkeiten.</p>';
 				echo '<p>Die Vollst&auml;ndigkeiten werden ca. einmal t&auml;glich berechnet; ab 50% Vollst&auml;ndigkeit werden entspr. Logos an dieser Stelle eingeblendet.</p>';
 			echo '</div>';
-		}
+		}		
+		
+		// seals
+		echo '<div class="wisy_vcard">';
+			echo '<div class="wisy_vcardtitle">Qualitätsmerkmale</div>';
+			echo '<div class="wisy_vcardcontent">';
+
+
+
+				$seals = $this->renderSealsOverview($anbieter_id, $pruefsiegel_seit);			
+				if( $seals )
+				{
+					echo '<div style="text-align:center;">';
+						echo $seals;
+					echo '</div>';
+				}			
+				
+			echo '</div>';
+			
+		echo '</div>';		
+
+
 		
 		// map
 		$this->renderMap($anbieter_id);
