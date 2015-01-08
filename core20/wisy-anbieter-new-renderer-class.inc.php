@@ -485,23 +485,18 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 		}		
 		
 		// seals
-		echo '<div class="wisy_vcard">';
-			echo '<div class="wisy_vcardtitle">Qualitätsmerkmale</div>';
-			echo '<div class="wisy_vcardcontent">';
-
-
-
-				$seals = $this->renderSealsOverview($anbieter_id, $pruefsiegel_seit);			
-				if( $seals )
-				{
+		$seals = $this->renderSealsOverview($anbieter_id, $pruefsiegel_seit);			
+		if( $seals )
+		{
+			echo '<div class="wisy_vcard">';
+				echo '<div class="wisy_vcardtitle">Qualit&auml;tsmerkmale</div>';
+				echo '<div class="wisy_vcardcontent">';
 					echo '<div style="text-align:center;">';
 						echo $seals;
 					echo '</div>';
-				}			
-				
-			echo '</div>';
-			
-		echo '</div>';		
+				echo '</div>';
+			echo '</div>';		
+		}			
 
 
 		
