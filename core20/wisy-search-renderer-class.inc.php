@@ -457,7 +457,7 @@ class WISY_SEARCH_RENDERER_CLASS
 				}
 			echo '</div>';
 		}
-
+		
 		$sqlCount = $searcher->getKurseCount();
 		if( $sqlCount )
 		{
@@ -480,10 +480,12 @@ class WISY_SEARCH_RENDERER_CLASS
 
 			// render head
 			echo '<p>';
-				if( $queryString == '' )
+				if( $queryString == '' ) {
 					echo '<b>Aktuelle Angebote:</b>';
-				else
-					echo $sqlCount==1? "<b>1 Angebot</b> zum Suchauftrag:" : "<b>$sqlCount Angebote</b> zum Suchauftrag:";
+				}
+				else {
+					echo $sqlCount==1? "<b>1 Angebot</b> zum Suchauftrag:" : "<b>$sqlCount Angebote</b> zum Suchauftrag <i>".isohtmlspecialchars(trim($queryString, ', '))."</i>:";
+				}
 
 				if( $pagesel )
 				{
