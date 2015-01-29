@@ -958,8 +958,8 @@ class WISY_EDIT_RENDERER_CLASS
 			else if( $kursId == 0 ) // neuer Kurs?
 			{
 				$db = new DB_Admin;
-				$db->query("SELECT id FROM kurse WHERE titel=".$db->quote(trim($kurs['titel']))." AND anbieter=".intval($_SESSION['loggedInAnbieterId']));
-				if( $db->next_record() )
+				$db->query("SELECT id FROM kurse WHERE freigeschaltet IN (0,1,3,4) AND titel=".$db->quote(trim($kurs['titel']))." AND anbieter=".intval($_SESSION['loggedInAnbieterId']));
+				if( $db->next_record() )			// ^^^^^^^^^^^^^^^^^^^^^^^^^^^ otherwise, if there is a deleted and an available offer, we may get the deleted one - which is not editable!
 				{
 					$andere_kurs_id = $db->fs('id');
 					if( $this->isEditable($andere_kurs_id)=='yes' )
