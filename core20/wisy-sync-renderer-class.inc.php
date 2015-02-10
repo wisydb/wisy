@@ -1121,7 +1121,7 @@ class WISY_SYNC_RENDERER_CLASS
 
 		// use the following for debugging only ...
 		$this->dbgCond = "";
-		if( substr($host, -6)=='.local' )
+		if( substr($host, -6)=='.localx' )
 		{
 			$this->dbgCond = " ORDER BY date_modified DESC LIMIT 500";
 			$this->log("********** WARNING: $host: incomplete update forced!");

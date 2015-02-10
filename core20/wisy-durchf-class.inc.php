@@ -375,16 +375,34 @@ class WISY_DURCHF_CLASS
 		return $ret;
 	}
 	
-	function getDurchfuehrungIds(&$db, $kursId, $sabg = 0 /*1=auch abgelaufene Durchfuehrungen anzeigen*/)
+	function getDurchfuehrungIds(&$db, $kursId, $sabg = 0 /*1=abgel. Df immer anzeigen, 0=abgel. Df nur anzeigen  wenn keine aktuellen vorhanden*/)
 	{
 		// "ORDER BY beginn='0000-00-00 00:00:00'" stellt Kurse ohne Datum ans Ende
 		// (der erste Versuch, "STRCMP(beginn,'0000-00-00 00:00:00') DESC" klappte auf der Server (MySQL 4.1.10a) nicht)
-		for( $test = ($sabg?1:0); $test <= 1; $test++ )
+		for( $test = ($sabg?2:0); $test <= 2; $test++ )
 		{
 			switch( $test )
 			{
-				case 0: $where = " AND (beginn>='".strftime("%Y-%m-%d 00:00:00")."' OR (beginn='0000-00-00 00:00:00' AND beginnoptionen>0))";	break;
-				case 1: $where = ""; break;
+				case 0:
+					// nur Kurse anzeigen, die noch nicht begonnen haben
+					$where = " AND (beginn>='".strftime("%Y-%m-%d 00:00:00")."' OR (beginn='0000-00-00 00:00:00' AND beginnoptionen>0))";	
+					break;
+				
+				case 1:
+					// Stichwort 315/"Einstieg beis kursende Möglich"
+					$db->query("SELECT attr_id FROM kurse_stichwort WHERE primary_id=$kursId AND attr_id=315");
+					if( $db->next_record() ) {
+						$where = " AND (ende>='".strftime("%Y-%m-%d 00:00:00")."')";
+					}
+					else {
+						continue;
+					}
+					break;
+				
+				case 2: 
+					// alle Kurse anzeigen
+					$where = ""; 
+					break;
 			}
 			
 			$durchfuehrungenIds = array();
@@ -461,7 +479,8 @@ class WISY_DURCHF_CLASS
 		$beginnsql		= $record['beginn'];
 		$beginn			= $this->framework->formatDatum($beginnsql);
 		$beginnoptionen = $this->formatBeginnoptionen($record['beginnoptionen']);
-		$ende			= $details? $this->framework->formatDatum($record['ende']) : '';
+		$endesql		= $record['ende'];
+		$ende			= $details? $this->framework->formatDatum($endesql) : '';
 		$zeit_von		= $details? $record['zeit_von'] : ''; if( $zeit_von=='00:00' ) $zeit_von = '';
 		$zeit_bis		= $details? $record['zeit_bis'] : ''; if( $zeit_bis=='00:00' ) $zeit_bis = '';
 		$bg_nummer = $db -> f('bg_nummer');
@@ -470,9 +489,19 @@ class WISY_DURCHF_CLASS
 		// termin abgelaufen?
 		$termin_abgelaufen = false;
 		$heute_datum = strftime("%Y-%m-%d 00:00:00");
-		if( $beginnsql > '0000-00-00 00:00:00' && $beginnsql < $heute_datum ) {
-			$termin_abgelaufen = true;	
+		if( $this->stichw_in_array($addParam['stichwoerter'], 315 /*Einstieg bis Kursende möglich?*/ ) 
+		 && $endesql > '0000-00-00 00:00:00' )
+		{
+			if( $endesql < $heute_datum ) {
+				$termin_abgelaufen = true;
+			}
 		}
+		else if( $beginnsql > '0000-00-00 00:00:00' ) {
+			if( $beginnsql < $heute_datum ) {
+				$termin_abgelaufen = true;	
+			}
+		}
+
 		
 		if (($wisyPortalSpalten & 2) > 0)
 		{
