@@ -240,7 +240,22 @@ class WISY_SEARCH_CLASS
 						$this->rawWhere .= '(0)';
 					}
 					break;
-					
+				
+				case 'nr':
+					// search for durchfuehrungsnummer
+					$nrSearcher = createWisyObject('WISY_SEARCH_NR_CLASS', $this->framework);
+					$ids = $nrSearcher->nr2id($value);
+					$this->rawCanCache = false; // no caching as we have different results for login/no login
+					$this->rawWhere .= $this->rawWhere? ' AND ' : ' WHERE ';
+					if( sizeof($ids) >= 1 ) {
+						$this->rawWhere .= "(x_kurse.kurs_id IN (".implode(',', $ids)."))";
+						$abgelaufeneKurseAnzeigen = 'void'; // implicitly show expired results if a number was searched
+					}
+					else {
+						$this->rawWhere .= '(0)';
+					}							
+					break;
+				
 				case 'bei':
 					if( preg_match('/^\s*(\d+(\.\d+)?)\s*\/\s*(\d+(\.\d+)?)\s*$/', $value, $matches) ) // angabe lat/lng
 					{
