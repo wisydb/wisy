@@ -15,7 +15,7 @@ Author:
 
 
 // changing the CMS version will force reloading of .js and .css files  
-define('CMS_VERSION', '5.72');
+define('CMS_VERSION', '5.73');
 
 
 
