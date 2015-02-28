@@ -46,6 +46,25 @@ class WISY_INTELLISEARCH_CLASS
 			return;
 		}
 
+		// try a nr:-search
+		if( intval($this->framework->iniRead('intellisearch.nr', 0))==1 )
+		{
+			$nrSearcher = createWisyObject('WISY_SEARCH_NR_CLASS', $this->framework);
+			$ids = $nrSearcher->nr2id($this->searcher->tokens['cond'][0]['value']);
+			if( sizeof($ids) )
+			{
+				$changed_query = 'nr:' . $this->searcher->tokens['cond'][0]['value'];
+				$this->searcher->prepare($changed_query);
+				$this->kurseCount = $this->searcher->getKurseCount();
+				if( $this->kurseCount > 0 )
+				{
+					$this->changed_query = $changed_query;
+					$this->suggestions = array();
+					return; // success with nr:-search :-)
+				}
+			}
+		}
+
 		// try to perform a fulltext search
 		$fulltextSetting = intval($this->framework->iniRead('intellisearch.fulltext', 0));
 		if( ($fulltextSetting == 1 && sizeof($this->suggestions) == 0)
