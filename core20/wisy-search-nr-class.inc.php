@@ -34,8 +34,6 @@ class WISY_SEARCH_NR_CLASS
 			$sql .= ' AND k.anbieter='.intval($editAnbieterId);
 		}
 		
-		echo $sql;
-	
 		$ret = array();
 		$this->db->query($sql);
 		while( $this->db->next_record() ) 
