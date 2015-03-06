@@ -33,8 +33,12 @@ class IMP_UPLOADER_CLASS
 	function shorthand_to_int($str)
 	{
 		$str = trim($str);
-		if( substr($str, -1)=='M' ) {
+		if( substr($str, -1)=='K' ) {
+			return intval(str_replace('K', '', $str)) * 1024;
+		} elseif( substr($str, -1)=='M' ) {
 			return intval(str_replace('M', '', $str)) * 1024 * 1024;
+		} elseif( substr($str, -1)=='G' ) {
+			return intval(str_replace('G', '', $str)) * 1024 * 1024 * 1024;
 		}
 		else {
 			return intval($str);
