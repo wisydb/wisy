@@ -350,7 +350,7 @@ input.wisy_hinted {
 
 
 /*******************************************************************************
-autocomplete styles
+autocomplete styles v1
 *******************************************************************************/
 
 .ac_results {
@@ -408,6 +408,75 @@ autocomplete styles
 	/*hier koennte man einzelne typen speziell formatieren ...*/
 }
 
+
+/*******************************************************************************
+autocomplete styles v2
+*******************************************************************************/
+
+/* jQuery UI autocompleter */
+.ui-helper-hidden-accessible { display: none; }
+
+.ac_results_v2 { max-height: 400px; overflow-y: auto; }
+.ac_results_v2 li { padding: 2px 4px; }
+.ac_results_v2 li > a { display: block; padding: 2px 0; cursor: default; }
+.ac_results_v2 .ui-state-focus { background-color: #444; color: #fff; }
+
+.ac_results_v2 .tag_name { margin-right: 1em; }
+.ac_results_v2 .tag_count { font-size: 10px; color: #666; margin-right: 0.5em;  }
+.ac_results_v2 .tag_type { font-size: 10px; color: #444; }
+
+.ac_results_v2 .ui-state-focus .tag_name { color: #fff!important; }
+.ac_results_v2 .ui-state-focus .tag_count { color: #aaa!important; }
+.ac_results_v2 .ui-state-focus .tag_type { color: #ddd!important; }
+
+.ac_results_v2 .ac_more a { color: #000; font-weight: bold; }
+.ac_results_v2 .ui-state-focus .ac_more a { color: #fff; }
+
+.ac_results_v2 .ac_headline .tag_name,
+.ac_results_v2 .ac_more .tag_name { width: 100%; }
+
+/* Vorschläge im Hauptfenster */
+.wisy_tagtable { border-spacing: 1px; }
+.wisy_tagtable th { 
+	color: #000;
+	background-color: #E2E2E2;
+	padding: 3px 5px 3px 5px;
+	text-align: left;
+	border-bottom: 1px solid #000;
+}
+.wisy_tagtable th.titel { width: 52%; }
+.wisy_tagtable .tag_count { float: right; }
+.wisy_tagtable th.art { width: 10%; }
+.wisy_tagtable th.gruppe { width: 24%; }
+.wisy_tagtable th.info { width: 14%; }
+.wisy_tagtable td { vertical-align: bottom; padding: 2px 4px; }
+.wisy_tagtable .ac_indent .td.tag_name { padding-left: 20px; }
+.wisy_tagtable .ac_indent .td.tag_name:before { content: '\2192'; position: absolute; left: 5px; }
+
+/* Allgemeine Auszeichnungen */
+.ac_abschluss .tag_name a, tr.ac_abschluss { font-weight: bold; }
+.ac_foerderung .tag_name a, tr.ac_foerderung { font-weight: bold; color: red; }
+.ac_suggestion { color: #444; }
+.ui-state-focus .ac_suggestion { color: #ddd; }
+
+.ac_anbieter .tag_type { color: green; }
+.ac_foerderung .tag_type { font-weight: bold; }
+.ac_thema .tag_type { font-weight: bold; }
+
+.ac_normal .tag_name, .ac_normal .tag_name a,
+.ac_abschluss .tag_name, .ac_abschluss .tag_name a  { color: #000; }
+.ac_anbieter .tag_name, .ac_anbieter .tag_name a { color: green; }
+.ac_qualitaetszertifikat .tag_name { color: #3E7AB8; }
+
+.ac_ort .tag_type,
+.ac_zielgruppe .tag_type,
+.ac_qualitaetszertifikat .tag_type,
+.ac_unterrichtsart .tag_type { color: #3E7AB8; }
+
+.tag_count, .tag_groups { color: #000; font-weight: normal!important; font-style: normal!important; }
+.tag_info a { color: #666; font-weight: bold; }
+.ac_anbieter .tag_info a { font-weight: normal; }
+.tag_info a:hover { color: #3e7ab8; }
 
 
 /*******************************************************************************

@@ -303,6 +303,239 @@ function initAutocomplete()
 	});
 }
 
+/*****************************************************************************
+ * autocomplete stuff v2 (using jquery ui autocomplete. new in 2015)
+ * activate by setting search.suggest.v2 = 1
+ * Uses functions of autocomplete v1 where possible
+ *****************************************************************************/
+
+
+if (jQuery.ui)
+{
+	function formatItem_v2(row)
+	{
+		var tag_name  = row[0];
+		var tag_descr = row[1];
+		var tag_type  = row[2];
+		var tag_help  = row[3];
+		var tag_freq  = row[4];
+	
+		/* see also (***) in the PHP part */
+		row_class = 'ac_normal';
+		row_type = 'Sachstichwort';
+		row_count = '';
+		row_count_prefix = (tag_freq == 1) ? ' Kurs zum' : ' Kurse zum';
+		row_info = '';
+		row_prefix = '';
+
+		if( tag_help == -1 )
+		{
+			/* add the Headline */
+			row_class = 'ac_headline';
+			row_type = '';
+			tag_name = '<strong>' + tag_descr + '</strong>';
+		}
+		else if( tag_help == 1 )
+		{
+			/* add the "more" link */
+			row_class = 'ac_more';
+			row_type = '';
+			tag_name = '<a href="" onclick="return clickAutocompleteMore(&#39;' + encodeURIComponent(tag_name) + '&#39;)">' + tag_descr + '</a>';
+		}
+		else
+		{
+			/* base type */
+				 if( tag_type &   1 ) { row_class = "ac_abschluss";            row_type = 'Abschluss'; }
+			else if( tag_type &   2 ) { row_class = "ac_foerderung";           row_type = 'F&ouml;rderung'; row_count_prefix = (tag_freq == 1) ? ' Kurs zur' : ' Kurse zur';  }
+			else if( tag_type &   4 ) { row_class = "ac_qualitaetszertifikat"; row_type = 'Qualit&auml;tsmerkmal'; }
+			else if( tag_type &   8 ) { row_class = "ac_zielgruppe";           row_type = 'Zielgruppe'; row_count_prefix = (tag_freq == 1) ? ' Kurs zur' : ' Kurse zur'; }
+			else if( tag_type &  16 ) { row_class = "ac_abschlussart";         row_type = 'Abschlussart'; row_count_prefix = (tag_freq == 1) ? ' Kurs zur' : ' Kurse zur'; }
+			else if( tag_type & 128 ) { row_class = "ac_thema";                row_type = 'Thema'; }
+			else if( tag_type & 256 ) { row_class = "ac_anbieter";
+										     if( tag_type &  0x20000 )	{ row_type = 'Beratungsstelle';  row_count_prefix = (tag_freq == 1) ? ' Kurs von der' : ' Kurse von der';  }
+										else if( tag_type & 0x400000 )	{ row_type = 'Tr&auml;gerverweis'; }
+										else							{ row_type = 'Tr&auml;ger'; row_count_prefix = (tag_freq == 1) ? ' Kurs vom' : ' Kurse vom'; }
+									  }
+			else if( tag_type & 512 ) { row_class = "ac_ort";                  row_type = 'Kursort'; row_count_prefix = (tag_freq == 1) ? ' Kurs am' : ' Kurse am'; }
+			else if( tag_type & 32768){ row_class = "ac_unterrichtsart";	   row_type = 'Unterrichtsart'; row_count_prefix = (tag_freq == 1) ? ' Kurs zur' : ' Kurse zur'; }
+	
+			/* frequency, end base type */
+			if( tag_descr != '' ) row_type = tag_descr;
+		
+			if( tag_freq > 0 )
+			{
+				row_count = tag_freq;
+				if(row_count_prefix == '')
+				{
+					row_count += (tag_freq == 1) ? ' Kurs' : ' Kurse';
+				} 
+				else
+				{
+					row_count += row_count_prefix;
+				}
+			}
+		
+			/* additional flags */
+			if( tag_type & 0x10000000 ) row_class += " ac_indent";
+		
+			else if( tag_type & 0x20000000 )
+			{
+				row_prefix = 'Meinten Sie: ';
+				row_class += " ac_suggestion";
+			}
+		
+			/* help link */
+			if( tag_help != 0 )
+			{
+				/* note: a single semicolon disturbs the highlighter as well as a single quote! */
+				row_info = ' <a class="wisy_help" href="" onclick="return clickAutocompleteHelp(' + tag_help + ', &#39;' + encodeURIComponent(tag_name) + '&#39;)">&nbsp;i&nbsp;</a>';
+			}
+		}
+	
+		return '<span class="row '+row_class+'">' + 
+					'<span class="tag_name">' + row_prefix + tag_name + '</span>' + 
+					'<span class="tag_count">' + row_count + '</span>' +
+					'<span class="tag_type">' + row_type + '</span>' +
+					'<span class="tag_info">' + row_info + '</span>' +
+				'</span>';
+	}
+
+	function ac_sourcecallback(request, response_callback)
+	{	
+		// calculate the new source url
+		var url = "autosuggest?q=" + encodeURIComponent(extractLast(request.term)) + "&limit=512&timestamp=" + new Date().getTime();
+	
+		// ask the server for suggestions
+		$.get(url, function(data)
+		{
+		
+			// Daten aufbereiten
+			data = data.split("\n");
+		
+			var response_data = [];
+			for(var i = 0; i < data.length; i++)
+			{
+				if(data[i] != "")
+				{
+					var row = data[i].split("|");
+					response_data.push({ label: formatItem_v2(row), value: row[0] });
+				}
+			}
+			response_callback(response_data);
+		});
+	}
+
+	function ac_selectcallback(event, ui) {
+	
+		// Standardverhalten (Value ins Eingabefeld schreiben) bei Überschrift und Mehrlink der Ergebnisliste ausschalten
+		// Ebenso bei Klick auf "wisy_help"
+		var $span = $(ui.item.label);
+		var $to = $(event.toElement);
+		if($span.hasClass('ac_headline') || $span.hasClass('ac_more') || $to.hasClass('wisy_help'))
+		{
+			event.preventDefault();
+			if($span.hasClass('ac_more')) $span.find('a').click();
+		} 
+		else
+		{
+	
+			// Neuen Autocomplete-Wert nach evtl. bereits vorhandenen einfügen
+			var terms = split( this.value );
+			// remove the current input
+			terms.pop();
+			// add the selected item
+			terms.push( ui.item.value );
+			// add placeholder to get the comma-and-space at the end
+			terms.push( "" );
+			this.value = terms.join( ", " );
+			return false;
+		}
+	}
+
+	function ac_focuscallback(event, ui)
+	{
+		event.preventDefault();
+	}
+
+	function initAutocomplete_v2() {
+		$(".ac_keyword").each(function()
+		{
+				var jqObj = $(this);
+				jqObj.autocomplete(
+				{
+						source:		ac_sourcecallback
+					,	theinput:	jqObj
+					,	html:		true
+					,	select:		ac_selectcallback
+					,	focus:		ac_focuscallback 
+				});
+			}
+		);
+	}
+	$.widget( "custom.autocomplete", $.ui.autocomplete, {
+		_renderMenu: function( ul, items )
+		{
+			var that = this;
+			$.each( items, function( index, item )
+			{
+				that._renderItemData( ul, item );
+			});
+			// Streifen
+			$( ul ).addClass('ac_results ac_results_v2').find( "li:odd" ).addClass( "ac_odd" );
+			$( ul ).find( "li:even" ).addClass( "ac_even" );
+		},
+		_resizeMenu: function()
+		{
+			this.menu.element.outerWidth(500);
+		}
+	});
+	function split( val ) { return val.split( /,\s*/ ); }
+	function extractLast( term ) { return split( term ).pop(); }
+}
+ 
+
+/******************************************************************************
+jQuery UI Autocomplete HTML Extension 
+Copyright 2010, Scott González (http://scottgonzalez.com)
+Dual licensed under the MIT or GPL Version 2 licenses. 
+http://github.com/scottgonzalez/jquery-ui-extensions
+******************************************************************************/
+
+if (jQuery.ui)
+{
+	(function( $ ) {
+
+	var proto = $.ui.autocomplete.prototype,
+		initSource = proto._initSource;
+
+	function filter( array, term ) {
+		var matcher = new RegExp( $.ui.autocomplete.escapeRegex(term), "i" );
+		return $.grep( array, function(value) {
+			return matcher.test( $( "<div>" ).html( value.label || value.value || value ).text() );
+		});
+	}
+
+	$.extend( proto, {
+		_initSource: function() {
+			if ( this.options.html && $.isArray(this.options.source) ) {
+				this.source = function( request, response ) {
+					response( filter( this.options.source, request.term ) );
+				};
+			} else {
+				initSource.call( this );
+			}
+		},
+
+		_renderItem: function( ul, item) {
+			return $( "<li></li>" )
+				.data( "item.autocomplete", item )
+				.append( $( "<a></a>" )[ this.options.html ? "html" : "text" ]( item.label ) )
+				.appendTo( ul );
+		}
+	});
+
+	})( jQuery );
+}
 
 
 /*****************************************************************************
@@ -311,7 +544,16 @@ function initAutocomplete()
 
 function advEmbeddingViaAjaxDone()
 {
-	initAutocomplete();
+	// Init autocomplete function
+	// Use v2 if available
+	if(jQuery.ui)
+	{ 
+		initAutocomplete_v2();
+	}
+	else
+	{
+		initAutocomplete();
+	}
 
 	// fade from normal to adv
 	$("#wisy_searcharea").hide('slow'); 
@@ -594,11 +836,19 @@ $().ready(function()
 		}
 	}
 	
-	// init autocomplete
-	initAutocomplete();
+	// Init autocomplete function
+	// Use v2 if available
+	if(jQuery.ui)
+	{
+		initAutocomplete_v2();
+	}
+	else
+	{
+		initAutocomplete();
+	}
 
 	// init dropdown
-	if ($.browser.msie && $.browser.version == '6.0') {
+	if ($.browser && $.browser.msie && $.browser.version == '6.0') {
     	$("ul.dropdown li").dropdown();
 	}	
 	

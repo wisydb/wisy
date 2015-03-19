@@ -406,6 +406,80 @@ class WISY_SEARCH_RENDERER_CLASS
 			   '</span>';
 	}
 	
+	function formatItem_v2($tag_name, $tag_descr, $tag_type, $tag_help, $tag_freq, $tag_anbieter_id=false, $tag_groups='', $tr_class='')
+	{
+		/* see also (***) in the JavaScript part*/
+		$row_class   = 'ac_normal';
+		$row_type  = 'Lernziel';
+		$row_count = '';
+		$row_count_prefix = ($tag_freq == 1) ? ' Kurs zum' : ' Kurse zum';
+		$row_info = '';
+		$row_prefix = '';
+		$row_postfix = '';
+		$row_groups = '';
+	
+		/* base type */
+		     if( $tag_type &   1 ) { $row_class = "ac_abschluss";		     $row_type = 'Abschluss'; }
+		else if( $tag_type &   2 ) { $row_class = "ac_foerderung";		     $row_type = 'F&ouml;rderung'; $row_count_prefix = ($tag_freq == 1) ? ' Kurs zur' : ' Kurse zur'; }
+		else if( $tag_type &   4 ) { $row_class = "ac_qualitaetszertifikat"; $row_type = 'Qualit&auml;tsmerkmal'; }
+		else if( $tag_type &   8 ) { $row_class = "ac_zielgruppe";		     $row_type = 'Zielgruppe'; $row_count_prefix = ($tag_freq == 1) ? ' Kurs zur' : ' Kurse zur'; }
+		else if( $tag_type &  16 ) { $row_class = "ac_abschlussart";		 $row_type = 'Abschlussart'; $row_count_prefix = ($tag_freq == 1) ? ' Kurs zur' : ' Kurse zur'; }
+		else if( $tag_type &  64 ) { $row_class = "ac_synonym";				 $row_type = 'Verweis'; }
+		else if( $tag_type & 128 ) { $row_class = "ac_thema";		 		 $row_type = 'Thema'; }
+		else if( $tag_type & 256 ) { $row_class = "ac_anbieter";		     
+									      if( $tag_type &  0x20000 ) { $row_type = 'Beratungsstelle'; $row_count_prefix = ($tag_freq == 1) ? ' Kurs von der' : ' Kurse von der'; }
+									 else if( $tag_type & 0x400000 ) { $row_type = 'Tr&auml;gerverweis'; }
+									 else							 { $row_type = 'Tr&auml;ger'; $row_count_prefix = ($tag_freq == 1) ? ' Kurs vom' : ' Kurse vom'; }
+								   }
+		else if( $tag_type & 512 ) { $row_class = "ac_ort";                  $row_type = 'Kursort'; $row_count_prefix = ($tag_freq == 1) ? ' Kurs am' : ' Kurse am'; }
+		else if( $tag_type & 32768){ $row_class = "ac_unterrichtsart";		 $row_type = 'Unterrichtsart'; $row_count_prefix = ($tag_freq == 1) ? ' Kurs zur' : ' Kurse zur'; }
+
+		if( $tag_descr ) $row_postfix .= ' <span class="ac_tag_type">('. $tag_descr .')</span>';
+		
+	
+		if( $tag_freq > 0 ) {
+			$row_count = $tag_freq;
+			if($row_count_prefix == '') {
+				$row_count .= ($tag_freq == 1) ? ' Kurs' : ' Kurse';
+			} else {
+				$row_count .= $row_count_prefix;
+			}
+		}
+
+		/* additional flags */
+		if( $tag_type & 0x10000000 )
+		{
+			$row_prefix = '&nbsp; &nbsp; &nbsp; &nbsp; &#8594; ';
+			$row_class .= " ac_indent";
+		}	
+		else if( $tag_type & 0x20000000 )
+		{
+			$row_prefix = 'Meinten Sie: ';
+		}
+		else
+		{
+			$row_prefix = ''; //13.05.2014 was: 'Suche nach '
+		}
+	
+		if( $tag_groups ) $row_groups = implode(', ', $tag_groups);
+	
+		if( $tag_help )
+		{
+			$row_info = '<a href="' . $this->framework->getUrl('g', array('id'=>$tag_help, 'q'=>$tag_name)) . '">Zeige Erkl&auml;rung</a>';
+		} else if( $tag_type & 256 && $tag_anbieter_id ) {
+			$row_info = '<a href="' . $this->framework->getUrl('a', array('id'=>$tag_anbieter_id)) . '">Zeige Tr&auml;gerprofil</a>';
+		}
+	
+		$row_class = $row_class . ' ' . $tr_class;
+	
+		return '<tr class="' .$row_class. '">' .
+					'<td class="tag_name">'. $row_prefix .'<a href="' . $this->framework->getUrl('search', array('q'=>$tag_name)) . '">' . isohtmlspecialchars($tag_name) . '</a>'. $row_postfix .'<span class="tag_count">'. $row_count .'</span></td>' . 
+					'<td class="tag_type">'. $row_type .'</td>' .
+					'<td class="tag_groups">'. $row_groups .'</td>' . 
+					'<td class="tag_info">'. $row_info . '</td>' .
+			   '</tr>';
+	}
+	
 	function renderTagliste($queryString)
 	{
 		$tagsuggestor =& createWisyObject('WISY_TAGSUGGESTOR_CLASS', $this->framework);
@@ -413,6 +487,28 @@ class WISY_SEARCH_RENDERER_CLASS
 
 		if( sizeof($suggestions) ) 
 		{
+			if($this->framework->iniRead('search.suggest.v2') == 1)
+			{
+				echo 'Gefundene Rechercheziele - verfeinern Sie Ihren Suchauftrag:';
+				echo '<table class="wisy_tagtable">';
+				echo '	<thead>';
+				echo '		<tr>'.
+								'<th class="titel">Rechercheziele <span class="tag_count">Angebote dazu</span></th>'.
+								'<th class="art">Kategorie</th>'.
+								'<th class="gruppe">Oberbegriffe</th>'.
+								'<th class="info">Zusatzinfo</th>'.
+							'</tr>';
+				echo '	</thead>';
+				echo '	<tbody>';
+				for( $i = 0; $i < sizeof($suggestions); $i++ )
+				{
+					$tr_class = ($i%2) ? 'ac_even' : 'ac_odd';
+					echo $this->formatItem_v2($suggestions[$i]['tag'], $suggestions[$i]['tag_descr'], $suggestions[$i]['tag_type'], intval($suggestions[$i]['tag_help']), intval($suggestions[$i]['tag_freq']), $suggestions[$i]['tag_anbieter_id'], $suggestions[$i]['tag_groups'], $tr_class);
+				}
+				echo '	</tbody>';
+				echo '</table>';
+			}
+			
 			echo 'Gefundene Rechercheziele - verfeinern Sie Ihren Suchauftrag:';
 			echo '<ul>';
 				for( $i = 0; $i < sizeof($suggestions); $i++ )

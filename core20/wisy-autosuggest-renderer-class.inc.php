@@ -74,8 +74,26 @@ class WISY_AUTOSUGGEST_RENDERER_CLASS
 			default:
 				// return as simple text, one tag per line, used by the site's AutoSuggest
 				$tags = $tagsuggestor->suggestTags($querystring, array('max'=>10));
+				
+				if($this->framework->iniRead('search.suggest.v2') == 1)
+				{
+				
+					// add Headline and MoreLink at the beginning
+					array_unshift($tags, array(
+						'tag' => $querystring,
+						'tag_descr' => 'Suchvorschl&auml;ge:',
+						'tag_type'	=> 0,
+						'tag_help'	=> -1 // indicates "headline"
+					),
+					array(
+						'tag'	=>	$querystring,
+						'tag_descr' => sizeof($tags)? 'Alle Vorschl&auml;ge im Hauptfenster anzeigen ...' : 'Keine Treffer',
+						'tag_type'	=> 0,
+						'tag_help'	=> 1 // indicates "more"
+					));	
+				}
 
-				// addMoreLink
+				// addMoreLink at the end
 				$tags[] = array(
 					'tag'	=>	$querystring,
 					'tag_descr' => sizeof($tags)? 'Alle Vorschl&auml;ge im Hauptfenster anzeigen ...' : 'Keine Treffer',
