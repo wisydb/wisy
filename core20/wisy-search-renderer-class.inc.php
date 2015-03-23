@@ -508,14 +508,16 @@ class WISY_SEARCH_RENDERER_CLASS
 				echo '	</tbody>';
 				echo '</table>';
 			}
-			
-			echo 'Gefundene Rechercheziele - verfeinern Sie Ihren Suchauftrag:';
-			echo '<ul>';
-				for( $i = 0; $i < sizeof($suggestions); $i++ )
-				{
-					echo '<li>' . $this->formatItem($suggestions[$i]['tag'], $suggestions[$i]['tag_descr'], $suggestions[$i]['tag_type'], intval($suggestions[$i]['tag_help']), intval($suggestions[$i]['tag_freq'])) . '</li>';
-				}
-			echo '</ul>';
+			else
+			{
+				echo 'Gefundene Rechercheziele - verfeinern Sie Ihren Suchauftrag:';
+				echo '<ul>';
+					for( $i = 0; $i < sizeof($suggestions); $i++ )
+					{
+						echo '<li>' . $this->formatItem($suggestions[$i]['tag'], $suggestions[$i]['tag_descr'], $suggestions[$i]['tag_type'], intval($suggestions[$i]['tag_help']), intval($suggestions[$i]['tag_freq'])) . '</li>';
+					}
+				echo '</ul>';
+			}
 		}
 		else
 		{
