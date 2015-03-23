@@ -791,8 +791,17 @@ class WISY_FRAMEWORK_CLASS
 	{
 		// return all JavaScript files as an array
 		$ret = array();
-		$ret[] = 'jquery-1.4.3.min.js';
-		$ret[] = 'jquery.autocomplete.min.js';
+		
+		if($this->iniRead('search.suggest.v2') == 1)
+		{
+			$ret[] = '/admin/lib/jquery/js/jquery-1.10.2.min.js';
+			$ret[] = '/admin/lib/jquery/js/jquery-ui-1.10.4.custom.min.js';
+		}
+		else
+		{
+			$ret[] = 'jquery-1.4.3.min.js';
+			$ret[] = 'jquery.autocomplete.min.js';
+		}
 		$ret[] = 'jquery.wisy.js' . $this->includeVersion;
 		
 		return $ret;

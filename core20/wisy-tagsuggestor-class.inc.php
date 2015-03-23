@@ -10,6 +10,8 @@ class WISY_TAGSUGGESTOR_CLASS
 		$this->framework	=& $framework;
 		$this->db			= new DB_Admin;
 		$this->db2			= new DB_Admin;
+		$this->db3			= new DB_Admin;
+		$this->db4			= new DB_Admin;
 	}
 
 	
@@ -165,6 +167,8 @@ class WISY_TAGSUGGESTOR_CLASS
 					$tag_type = intval($this->db->f('tag_type'));
 					$tag_help = intval($this->db->f('tag_help'));
 					$tag_freq = intval($this->db->f('tag_freq'));
+					$tag_anbieter_id = '';
+					$tag_groups = array();
 					
 					if( !$tags_done [ $tag_name ]   // kein Tag zweimal ausgeben (koennte passieren, wenn es sowohl durch die buchstabenadditive und duch die fehlertolerante Suche gefunden wuerde)
 					 && !$links_done[ $tag_name ] ) // wenn zuvor auf ein lemma via Synonym verwiesen wurde, dieses Lemma nicht noch einmal einzeln hinzufügen
@@ -188,6 +192,36 @@ class WISY_TAGSUGGESTOR_CLASS
 													'tag_type'=>$this->db2->f('tag_type'), 
 													'tag_help'=>$this->db2->f('tag_help'), 
 													'tag_freq'=>$this->db2->f('tag_freq'));
+							}
+						}
+						
+						if($this->framework->iniRead('search.suggest.v2') == 1)
+						{
+							// Anbieter-ID abfragen
+							if( $tag_type&256 )
+							{
+								$this->db3->query("SELECT id FROM anbieter WHERE suchname='". $tag_name ."'");
+								$this->db3->next_record();
+								$tag_anbieter_id = $this->db3->fs('id');
+							}
+					
+							// "Unterbegriff von" ermitteln
+							{
+								// 1. Anhand $tag_name in stichwoerter die stichwort-ID ermitteln
+								$this->db4->query("SELECT id FROM stichwoerter WHERE stichwort='". $tag_name ."'");
+								$this->db4->next_record();
+								$stichwort_id = $this->db4->fs('id');
+						
+								// 2. in stichwoerter_verweis2 Oberbegriffe finden
+								$this->db4->query("SELECT id, stichwort, primary_id 
+													FROM stichwoerter_verweis2 
+													LEFT JOIN stichwoerter ON id=primary_id
+													WHERE attr_id = '". $stichwort_id ."'");
+											
+								while( $this->db4->next_record() )
+								{
+									$tag_groups[] = $this->db4->f('stichwort');
+								}
 							}
 						}
 							
@@ -214,11 +248,18 @@ class WISY_TAGSUGGESTOR_CLASS
 						if( sizeof($names) == 1 && !$has_man_sug /* manual suggestions should always be shown*/ )
 						{
 							// ... only one destination as a simple synonym: directly follow 1-dest-only-synonyms
-							$ret[] = array(	'tag' => $tag_name, 
+							$tag_array = array(	'tag' => $tag_name, 
 											'tag_descr'=>$names[0]['tag_descr'],
 											'tag_type' => ($names[0]['tag_type'] & ~64) | $fuzzy,
 											'tag_help'=>intval($names[0]['tag_help']),
 											'tag_freq'=>intval($names[0]['tag_freq']) /*the link itself has no freq*/	);
+											
+							if($this->framework->iniRead('search.suggest.v2') == 1)
+							{
+								$tag_array['tag_anbieter_id'] = $tag_anbieter_id;
+								$tag_array['tag_groups'] = $tag_groups;
+							}
+							$ret[] = $tag_array;
 						}
 						else if( sizeof($names) >= 1 ) 
 						{
@@ -227,22 +268,37 @@ class WISY_TAGSUGGESTOR_CLASS
 							for( $n = 0; $n < sizeof($names); $n++ )
 							{
 								$dest = $names[$n]['tag_name'];
-								$ret[] = array(	'tag' => $dest, 
+								$tag_array = array(	'tag' => $dest, 
 												'tag_descr'=>$names[$n]['tag_descr'],
 												'tag_type' => ($names[$n]['tag_type'] & ~64) | 0x10000000, 
 												'tag_help'=>intval($names[$n]['tag_help']),
 												'tag_freq'=>intval($names[$n]['tag_freq']) /*the link itself has no freq*/	);
+												
+								if($this->framework->iniRead('search.suggest.v2') == 1)
+								{
+									$tag_array['tag_anbieter_id'] = $tag_anbieter_id;
+									$tag_array['tag_groups'] = $tag_groups;
+								}
+								$ret[] = $tag_array;
+												
 								$links_done[ $dest ] = 1;
 							}
 						}
 						else
 						{
 							// ... simple lemma
-							$ret[] = array(	'tag' 		=> $tag_name, 
+							$tag_array = array(	'tag' 		=> $tag_name, 
 											'tag_descr' => $tag_descr, 
 											'tag_type'	=> $tag_type | $fuzzy, 
 											'tag_help'	=> intval($tag_help),
 											'tag_freq'	=> $tag_freq	);
+
+							if($this->framework->iniRead('search.suggest.v2') == 1)
+							{
+								$tag_array['tag_anbieter_id'] = $tag_anbieter_id;
+								$tag_array['tag_groups'] = $tag_groups;
+							}
+							$ret[] = $tag_array;
 						}
 					}
 				}
