@@ -432,6 +432,7 @@ class WISY_SEARCH_RENDERER_CLASS
 									 else							 { $row_type = 'Tr&auml;ger'; $row_count_prefix = ($tag_freq == 1) ? ' Kurs vom' : ' Kurse vom'; }
 								   }
 		else if( $tag_type & 512 ) { $row_class = "ac_ort";                  $row_type = 'Kursort'; $row_count_prefix = ($tag_freq == 1) ? ' Kurs am' : ' Kurse am'; }
+		else if( $tag_type & 1024) { $row_class = "ac_merkmal";			 	 $row_type = 'Kursmerkmal'; }
 		else if( $tag_type & 32768){ $row_class = "ac_unterrichtsart";		 $row_type = 'Unterrichtsart'; $row_count_prefix = ($tag_freq == 1) ? ' Kurs zur' : ' Kurse zur'; }
 
 		if( $tag_descr ) $row_postfix .= ' <span class="ac_tag_type">('. $tag_descr .')</span>';

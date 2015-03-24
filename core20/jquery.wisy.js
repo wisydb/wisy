@@ -327,6 +327,7 @@ if (jQuery.ui)
 		row_count_prefix = (tag_freq == 1) ? ' Kurs zum' : ' Kurse zum';
 		row_info = '';
 		row_prefix = '';
+		row_postfix = '';
 
 		if( tag_help == -1 )
 		{
@@ -357,10 +358,11 @@ if (jQuery.ui)
 										else							{ row_type = 'Tr&auml;ger'; row_count_prefix = (tag_freq == 1) ? ' Kurs vom' : ' Kurse vom'; }
 									  }
 			else if( tag_type & 512 ) { row_class = "ac_ort";                  row_type = 'Kursort'; row_count_prefix = (tag_freq == 1) ? ' Kurs am' : ' Kurse am'; }
+			else if( tag_type & 1024) { row_class = "ac_merkmal"; 			   row_type = 'Kursmerkmal'; }
 			else if( tag_type & 32768){ row_class = "ac_unterrichtsart";	   row_type = 'Unterrichtsart'; row_count_prefix = (tag_freq == 1) ? ' Kurs zur' : ' Kurse zur'; }
 	
 			/* frequency, end base type */
-			if( tag_descr != '' ) row_type = tag_descr;
+			if( tag_descr != '' ) row_postfix = ' (' + tag_descr + ')';
 		
 			if( tag_freq > 0 )
 			{
@@ -393,7 +395,7 @@ if (jQuery.ui)
 		}
 	
 		return '<span class="row '+row_class+'">' + 
-					'<span class="tag_name">' + row_prefix + tag_name + '</span>' + 
+					'<span class="tag_name">' + row_prefix + tag_name + row_postfix + '</span>' + 
 					'<span class="tag_count">' + row_count + '</span>' +
 					'<span class="tag_type">' + row_type + '</span>' +
 					'<span class="tag_info">' + row_info + '</span>' +

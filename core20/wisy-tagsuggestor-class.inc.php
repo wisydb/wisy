@@ -200,7 +200,7 @@ class WISY_TAGSUGGESTOR_CLASS
 							// Anbieter-ID abfragen
 							if( $tag_type&256 )
 							{
-								$this->db3->query("SELECT id FROM anbieter WHERE suchname='". $tag_name ."'");
+								$this->db3->query("SELECT id FROM anbieter WHERE suchname=". $this->db3->quote($tag_name));
 								$this->db3->next_record();
 								$tag_anbieter_id = $this->db3->fs('id');
 							}
@@ -208,7 +208,7 @@ class WISY_TAGSUGGESTOR_CLASS
 							// "Unterbegriff von" ermitteln
 							{
 								// 1. Anhand $tag_name in stichwoerter die stichwort-ID ermitteln
-								$this->db4->query("SELECT id FROM stichwoerter WHERE stichwort='". $tag_name ."'");
+								$this->db4->query("SELECT id FROM stichwoerter WHERE stichwort=". $this->db4->quote($tag_name));
 								$this->db4->next_record();
 								$stichwort_id = $this->db4->fs('id');
 						
@@ -216,7 +216,7 @@ class WISY_TAGSUGGESTOR_CLASS
 								$this->db4->query("SELECT id, stichwort, primary_id 
 													FROM stichwoerter_verweis2 
 													LEFT JOIN stichwoerter ON id=primary_id
-													WHERE attr_id = '". $stichwort_id ."'");
+													WHERE attr_id = $stichwort_id");
 											
 								while( $this->db4->next_record() )
 								{
