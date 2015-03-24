@@ -209,18 +209,20 @@ class WISY_TAGSUGGESTOR_CLASS
 							{
 								// 1. Anhand $tag_name in stichwoerter die stichwort-ID ermitteln
 								$this->db4->query("SELECT id FROM stichwoerter WHERE stichwort=". $this->db4->quote($tag_name));
-								$this->db4->next_record();
-								$stichwort_id = $this->db4->fs('id');
-						
-								// 2. in stichwoerter_verweis2 Oberbegriffe finden
-								$this->db4->query("SELECT id, stichwort, primary_id 
-													FROM stichwoerter_verweis2 
-													LEFT JOIN stichwoerter ON id=primary_id
-													WHERE attr_id = $stichwort_id");
-											
-								while( $this->db4->next_record() )
+								if( $this->db4->next_record() )
 								{
-									$tag_groups[] = $this->db4->f('stichwort');
+									$stichwort_id = $this->db4->fs('id');
+						
+									// 2. in stichwoerter_verweis2 Oberbegriffe finden
+									$this->db4->query("SELECT id, stichwort, primary_id 
+														FROM stichwoerter_verweis2 
+														LEFT JOIN stichwoerter ON id=primary_id
+														WHERE attr_id = " . intval($stichwort_id) );
+											
+									while( $this->db4->next_record() )
+									{
+										$tag_groups[] = $this->db4->f('stichwort');
+									}
 								}
 							}
 						}
