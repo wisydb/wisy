@@ -444,12 +444,12 @@ autocomplete styles v2
 	text-align: left;
 	border-bottom: 1px solid #000;
 }
-.wisy_tagtable th.titel { width: 52%; }
+.wisy_tagtable th.titel { width: 60%; }
 .wisy_tagtable .tag_count { float: right; }
 .wisy_tagtable th.art { width: 10%; }
-.wisy_tagtable th.gruppe { width: 24%; }
-.wisy_tagtable th.info { width: 14%; }
-.wisy_tagtable td { vertical-align: bottom; padding: 2px 4px; }
+.wisy_tagtable th.gruppe { width: 15%; }
+.wisy_tagtable th.info { width: 15%; }
+.wisy_tagtable td { vertical-align: top; padding: 2px 4px; }
 .wisy_tagtable .ac_indent .td.tag_name { padding-left: 20px; }
 .wisy_tagtable .ac_indent .td.tag_name:before { content: '\2192'; position: absolute; left: 5px; }
 
@@ -477,6 +477,12 @@ autocomplete styles v2
 .tag_info a { color: #666; font-weight: bold; }
 .ac_anbieter .tag_info a { font-weight: normal; }
 .tag_info a:hover { color: #3e7ab8; }
+
+/* Hervorhebung des Suchstrings */
+.tag_name em {
+	border-bottom: 1px solid #3E7AB8;
+	font-style: inherit;
+}
 
 
 /*******************************************************************************

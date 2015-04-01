@@ -312,7 +312,7 @@ function initAutocomplete()
 
 if (jQuery.ui)
 {
-	function formatItem_v2(row)
+	function formatItem_v2(row, request_term)
 	{
 		var tag_name  = row[0];
 		var tag_descr = row[1];
@@ -393,6 +393,10 @@ if (jQuery.ui)
 				row_info = ' <a class="wisy_help" href="" onclick="return clickAutocompleteHelp(' + tag_help + ', &#39;' + encodeURIComponent(tag_name) + '&#39;)">&nbsp;i&nbsp;</a>';
 			}
 		}
+		
+		// highlight search string
+		var regex = new RegExp("(?![^&;]+;)(?!<[^<>]*)(" + request_term.replace(/([\^\$\(\)\[\]\{\}\*\.\+\?\|\\])/gi, "\\$1") + ")(?![^<>]*>)(?![^&;]+;)", "gi");
+		tag_name = tag_name.replace(regex, "<em>$1</em>");
 	
 		return '<span class="row '+row_class+'">' + 
 					'<span class="tag_name">' + row_prefix + tag_name + row_postfix + '</span>' + 
@@ -405,7 +409,8 @@ if (jQuery.ui)
 	function ac_sourcecallback(request, response_callback)
 	{	
 		// calculate the new source url
-		var url = "autosuggest?q=" + encodeURIComponent(extractLast(request.term)) + "&limit=512&timestamp=" + new Date().getTime();
+		var request_term = extractLast(request.term);
+		var url = "autosuggest?q=" + encodeURIComponent(request_term) + "&limit=512&timestamp=" + new Date().getTime();
 	
 		// ask the server for suggestions
 		$.get(url, function(data)
@@ -420,7 +425,7 @@ if (jQuery.ui)
 				if(data[i] != "")
 				{
 					var row = data[i].split("|");
-					response_data.push({ label: formatItem_v2(row), value: row[0] });
+					response_data.push({ label: formatItem_v2(row, request_term), value: row[0] });
 				}
 			}
 			response_callback(response_data);
