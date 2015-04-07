@@ -1126,7 +1126,7 @@ class WISY_FRAMEWORK_CLASS
 				echo $this->replacePlaceholders($this->iniRead('searcharea.advlink', $DEFAULT_ADVLINK_HTML)) . "\n";
 				echo $this->replacePlaceholders($this->iniRead('searcharea.html', $DEFAULT_RIGHT_HTML)) . "\n";
 			echo '</form>' . "\n";
-			echo '<div class="wisy_searchhints" data-favlink="' . $mailfav . '">' .  $this->replacePlaceholders($this->iniRead('searcharea.hint', $DEFAULT_BOTTOM_HINT)) . '</div>' . "\n";
+			echo '<div class="wisy_searchhints" data-favlink="' . isohtmlspecialchars($mailfav) . '">' .  $this->replacePlaceholders($this->iniRead('searcharea.hint', $DEFAULT_BOTTOM_HINT)) . '</div>' . "\n";
 		echo '</div>' . "\n\n";
 	
 		echo $this->replacePlaceholders( $this->iniRead('searcharea.below', '') ); // deprecated!

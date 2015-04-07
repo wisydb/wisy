@@ -112,13 +112,13 @@ class WISY_SEARCH_RENDERER_CLASS
 			echo 'Gehe zu Seite ';
 		
 			if( $prevurl ) {
-				echo "<a href=\"$prevurl\">&laquo;</a> ";
+				echo "<a href=\"" . isohtmlspecialchars($prevurl) . "\">&laquo;</a> ";
 			}
 	
 			echo $pagesel;
 	
 			if( $nexturl ) {
-				echo " <a href=\"$nexturl\">&raquo;</a>";
+				echo " <a href=\"" . isohtmlspecialchars($nexturl) . "\">&raquo;</a>";
 			}
 		echo '</span>' . "\n";
 	}
