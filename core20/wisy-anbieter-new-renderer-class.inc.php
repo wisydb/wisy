@@ -457,8 +457,8 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 		}
 		if( $title )
 		{
-			echo '<table><tr><td valign="middle">';
-				echo '<img align="left" hspace="4" src="'.$img.'" alt="" border="0" width="55" height="55" title="" />';
+			echo '<table><tr><td' . html3(' valign="middle"') . '>';
+				echo '<img ' . html3(' align="left" hspace="4" border="0" ') . ' src="'.$img.'" alt="" width="55" height="55" title="" />';
 			echo '</td><td style="word-break: normal !important;">'; // <- this is a hack, the hamburg CSS is really out of order ...
 				echo $title;
 				echo '&nbsp;<a href="' . $this->framework->getHelpUrl(3369) . '" class="wisy_help" title="Hilfe">i</a>';

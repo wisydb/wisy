@@ -532,7 +532,7 @@ class WISY_FRAMEWORK_CLASS
 				 || ($stichwoerter[$s]['eigenschaften'] & intval($codes_array[$c])) )
 				{
 					if( !$anythingOfThisCode ) {
-						$ret .= '<tr><td valign="top">' . $codes_array[$c+1] . ':&nbsp;</td><td valign="top">';
+						$ret .= '<tr><td'.html3(' valign="top"').'>' . $codes_array[$c+1] . ':&nbsp;</td><td'.html3(' valign="top"').'>';
 					}
 					else {
 						$ret .= '<br />';

@@ -605,7 +605,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			flush();
 
 			// render table start
-			echo "\n".'<table class="wisy_list" cellpadding="0" cellspacing="0" border="0" width="100%">' . "\n";
+			echo "\n".'<table class="wisy_list"' . html3(' cellpadding="0" cellspacing="0" border="0" width="100%"') . '>' . "\n";
 			
 			// render column titles
 			echo '  <tr>' . "\n";
@@ -817,7 +817,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			flush();
 			
 			// render column titles
-			echo "\n".'<table class="wisy_list" cellpadding="0" cellspacing="0" border="0" width="100%">' . "\n";
+			echo "\n".'<table class="wisy_list"' . html3(' cellpadding="0" cellspacing="0" border="0" width="100%"') . '>' . "\n";
 			echo '  <tr>' . "\n";
 				$this->renderColumnTitle('Anbieter',	'a', 	$orderBy,	311);
 				$this->renderColumnTitle('Strasse',		's', 	$orderBy,	0);

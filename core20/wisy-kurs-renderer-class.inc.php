@@ -117,14 +117,14 @@ class WISY_KURS_RENDERER_CLASS
 			if (($wisyPortalSpalten & 128) > 0)
 			{
 				$rows .= '<tr>';
-					$rows .= '<td valign="top">Bildungsurlaubsnummer:&nbsp;</td>';
-					$rows .= '<td valign="top">' .($bu_nummer? 'Ja' : 'Nein'). '</td>';
+					$rows .= '<td' . html3(' valign="top"') . '>Bildungsurlaubsnummer:&nbsp;</td>';
+					$rows .= '<td' . html3(' valign="top"') . '>' .($bu_nummer? 'Ja' : 'Nein'). '</td>';
 				$rows .= '</tr>';
 			}
 
 			if( $rows != '' ) 
 			{
-				echo '<table cellpadding="0" cellspacing="0" border="0">' . $rows . '</table>';
+				echo '<table' . html3(' cellpadding="0" cellspacing="0" border="0"') . '>' . $rows . '</table>';
 			}
 
 			// Durchfuehrungen vorbereiten
@@ -154,7 +154,7 @@ class WISY_KURS_RENDERER_CLASS
 			// Durchfuehrungen ausgeben
 			if( sizeof($durchfuehrungenIds) )
 			{
-				echo '<table cellpadding="0" cellspacing="0" border="0" class="wisy_list">';
+				echo '<table class="wisy_list"' . html3(' cellpadding="0" cellspacing="0" border="0"') . '>';
 					echo '<tr>';
 						if (($wisyPortalSpalten & 2) > 0)	{ echo '<th>Termin</th>';			}
 						if (($wisyPortalSpalten & 4) > 0)	{ echo '<th>Dauer</th>';			}

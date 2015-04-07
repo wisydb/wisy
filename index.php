@@ -58,6 +58,10 @@ $db = new DB_Admin;
 function isohtmlspecialchars($a, $f=ENT_COMPAT) { return htmlspecialchars($a, $f, 'ISO-8859-1'); }
 function isohtmlentities    ($a, $f=ENT_COMPAT) { return htmlentities    ($a, $f, 'ISO-8859-1'); }
 
+// temporary functions for switching between html5/html3.2 rendering
+function html5($h) { return $GLOBALS['wisyPortalEinstellungen']['html5']? $h : ''; }
+function html3($h) { return $GLOBALS['wisyPortalEinstellungen']['html5']? '' : $h; }
+
 function explodeSettings__($in, &$out, $follow_includes)
 {
 	$in = strtr($in, "\r\t", "\n ");
