@@ -406,7 +406,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			   '</span>';
 	}
 	
-	function formatItem_v2($tag_name, $tag_descr, $tag_type, $tag_help, $tag_freq, $tag_anbieter_id=false, $tag_groups='', $tr_class='')
+	function formatItem_v2($tag_name, $tag_descr, $tag_type, $tag_help, $tag_freq, $tag_anbieter_id=false, $tag_groups='', $tr_class='', $queryString='')
 	{
 		/* see also (***) in the JavaScript part*/
 		$row_class   = 'ac_normal';
@@ -462,7 +462,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			$row_prefix = ''; //13.05.2014 was: 'Suche nach '
 		}
 	
-		if( $tag_groups ) $row_groups = implode(', ', $tag_groups);
+		if( $tag_groups ) $row_groups = implode('<br />', $tag_groups);
 	
 		if( $tag_help )
 		{
@@ -472,9 +472,18 @@ class WISY_SEARCH_RENDERER_CLASS
 		}
 	
 		$row_class = $row_class . ' ' . $tr_class;
+		
+		// highlight search string
+		$tag_name = isohtmlspecialchars($tag_name);
+		if($queryString != '') {
+			//$tag_name_highlighted = str_ireplace($queryString, "<strong>$queryString</strong>", $tag_name);
+			$tag_name_highlighted = preg_replace("/".preg_quote($queryString, "/")."/i", "<em>$0</em>", $tag_name);
+		} else {
+			$tag_name_highlighted = $tag_name;
+		}
 	
 		return '<tr class="' .$row_class. '">' .
-					'<td class="tag_name">'. $row_prefix .'<a href="' . $this->framework->getUrl('search', array('q'=>$tag_name)) . '">' . isohtmlspecialchars($tag_name) . '</a>'. $row_postfix .'<span class="tag_count">'. $row_count .'</span></td>' . 
+					'<td class="tag_name">'. $row_prefix .'<a href="' . $this->framework->getUrl('search', array('q'=>$tag_name)) . '">' . $tag_name_highlighted . '</a>'. $row_postfix .'<span class="tag_count">'. $row_count .'</span></td>' . 
 					'<td class="tag_type">'. $row_type .'</td>' .
 					'<td class="tag_groups">'. $row_groups .'</td>' . 
 					'<td class="tag_info">'. $row_info . '</td>' .
@@ -504,7 +513,7 @@ class WISY_SEARCH_RENDERER_CLASS
 				for( $i = 0; $i < sizeof($suggestions); $i++ )
 				{
 					$tr_class = ($i%2) ? 'ac_even' : 'ac_odd';
-					echo $this->formatItem_v2($suggestions[$i]['tag'], $suggestions[$i]['tag_descr'], $suggestions[$i]['tag_type'], intval($suggestions[$i]['tag_help']), intval($suggestions[$i]['tag_freq']), $suggestions[$i]['tag_anbieter_id'], $suggestions[$i]['tag_groups'], $tr_class);
+					echo $this->formatItem_v2($suggestions[$i]['tag'], $suggestions[$i]['tag_descr'], $suggestions[$i]['tag_type'], intval($suggestions[$i]['tag_help']), intval($suggestions[$i]['tag_freq']), $suggestions[$i]['tag_anbieter_id'], $suggestions[$i]['tag_groups'], $tr_class, $queryString);
 				}
 				echo '	</tbody>';
 				echo '</table>';
