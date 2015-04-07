@@ -5,7 +5,7 @@
  ******************************************************************************
  * Verwendetes Format:
  *
- *	<?xml version="1.0" encoding="ISO-8859-1"?>
+ *	<?xml version="1.0" encoding="ISO-8859-15"?>
  *	<rss version="2.0">
  *		<channel>
  *			<title>".html_entity_decode($wisyPortalKurzname)."</title>
@@ -156,7 +156,7 @@ class WISY_RSS_RENDERER_CLASS
 		$queryHtmlLong  = $queryHtml==''? ''                  : " - Anfrage: $queryHtml";
 		$queryHtmlShort = $queryHtml==''? ' - aktuelle Kurse' : " - $queryHtml";
 
-		$ret  = "<?"."xml version=\"1.0\" encoding=\"ISO-8859-1\" ?".">\n";
+		$ret  = "<?"."xml version=\"1.0\" encoding=\"ISO-8859-15\" ?".">\n";
 		$ret .= "<rss version=\"2.0\">\n";
 		$ret .= "  <channel>\n";
 		$ret .= "    <title>".isohtmlspecialchars($wisyPortalKurzname)."$queryHtmlShort</title>\n";

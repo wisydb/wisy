@@ -15,3 +15,8 @@ RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_FILENAME} !-l
 RewriteRule ^(.*)$ /index.php [L,QSA]
+
+AddDefaultCharset ISO-8859-15
+AddCharset ISO-8859-15 .html
+AddCharset ISO-8859-15 .php
+

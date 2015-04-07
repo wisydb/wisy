@@ -458,7 +458,7 @@ class WISY_ADVANCED_RENDERER_CLASS
 		
 		if( intval($_GET['ajax']) )
 		{
-			header('Content-type: text/html; charset=ISO-8859-1');
+			header('Content-type: text/html; charset=ISO-8859-15');
 			$this->renderForm();
 		}
 		else
