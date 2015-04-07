@@ -391,7 +391,7 @@ class LOG_RENDERER_CLASS
 		
 		if( isset($_REQUEST['l']) )
 		{
-			header('Content-Type: text/html; charset=iso-8859-15'); // otherwise the ajax request will be interpreted as UTF-8
+			header('Content-Type: text/html; charset=iso-8859-1'); // otherwise the ajax request will be interpreted as UTF-8
 			$this->renderAjaxDetails($_REQUEST['l']);
 			return;
 		}
@@ -485,7 +485,7 @@ class LOG_RENDERER_CLASS
 		}
 		else
 		{	
-			header('Content-Type: text/html; charset=iso-8859-15'); // otherwise the ajax request will be interpreted as UTF-8
+			header('Content-Type: text/html; charset=iso-8859-1'); // otherwise the ajax request will be interpreted as UTF-8
 		}
 		
 		// rows out

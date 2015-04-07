@@ -184,7 +184,7 @@ function euaNewOpen()
     // create window content
     code =	'<html>\n\n'
     +			'<head>\n'
-    +				'<meta http-equiv="content-type" content="text/html; charset=iso-8859-15" />\n'
+    +				'<meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />\n'
     +				'<title>' + htmlconstant('_NEWGRANTTITLE') + '</title>\n'
     +			'</head>\n\n'
     +			'<body>'

@@ -72,7 +72,7 @@ class ADMIN_SITE_CLASS
 		echo "<!DOCTYPE html>\n"; // without a doctype, the Internet Explorer does not support newer features, eg. CSS child selectors; the simple doctype "html" is used eg. by heise, mozilla and others. should be enought.
 		echo "<html>\n\n";
 			echo "<head>\n";
-				echo "<meta http-equiv=\"content-type\" content=\"text/html; charset=iso-8859-15\" />\n";
+				echo "<meta http-equiv=\"content-type\" content=\"text/html; charset=iso-8859-1\" />\n";
 				echo '<title>' . ($this->title? $this->title : htmlconstant('_CONST_SYSTEMNAME'))  . "</title>\n";
 				if( ($favicon=regGet('logo.favicon.url', '')) ) {
 					echo '<link rel="shortcut icon" type="image/ico" href="' .$favicon. '" />' . "\n";

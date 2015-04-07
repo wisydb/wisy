@@ -931,7 +931,7 @@ class WISY_SEARCH_RENDERER_CLASS
 
 		if( intval($_GET['ajax']) )
 		{
-			header('Content-type: text/html; charset=ISO-8859-15');
+			header('Content-type: text/html; charset=ISO-8859-1');
 		}
 		else
 		{

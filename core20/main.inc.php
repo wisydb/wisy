@@ -3,7 +3,7 @@
 /******************************************************************************
  WISY 2.0
  ******************************************************************************
- Kodierungung dieses Quelltextes ist ISO 8859-15, _nicht_ UTF-8!
+ Kodierungung dieses Quelltextes ist ISO 8859-1, _nicht_ UTF-8!
  
  Alle Anfragen laufen über /core20/main.inc.php in der folgenden Form:
  

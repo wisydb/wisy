@@ -908,7 +908,7 @@ class WISY_FRAMEWORK_CLASS
 			$bodyStart	= '<!DOCTYPE html>' . "\n"
 						. '<html lang="de">' . "\n"
 						. '<head>' . "\n"
-						. '<meta http-equiv="content-type" content="text/html; charset=ISO-8859-15" />' . "\n"
+						. '<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1" />' . "\n"
 						. '__HEADTAGS__' 
 						. '</head>' . "\n"
 						. '<body__BODYATTR__>' . "\n"

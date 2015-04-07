@@ -15,7 +15,7 @@ class G_JSON_CLASS
 		}
 	
 		// convert a UTF-8-encoded string to a JSON-encoded string.
-		// to use this with strings encoded with ISO-8859-15, call utf8_encode() before
+		// to use this with strings encoded with ISO-8859-1, call utf8_encode() before
 		$oldEnc = mb_internal_encoding();
 		mb_internal_encoding("UTF-8");
 			static $convmap = array(0x80, 0xFFFF, 0, 0xFFFF);
