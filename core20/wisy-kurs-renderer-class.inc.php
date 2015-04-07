@@ -132,7 +132,7 @@ class WISY_KURS_RENDERER_CLASS
 			
 			$showAllDurchf = intval($_GET['showalldurchf'])==1? 1 : 0;
 			if( $showAllDurchf )
-				echo '<a name="showalldurchf"></a>';
+				echo '<a id="showalldurchf"></a>';
 			
 			$durchfClass =& createWisyObject('WISY_DURCHF_CLASS', $this->framework);
 			$durchfuehrungenIds = $durchfClass->getDurchfuehrungIds($db, $kursId, $showAllDurchf);

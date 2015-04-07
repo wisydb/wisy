@@ -951,7 +951,7 @@ class WISY_FRAMEWORK_CLASS
 		$ret = $bodyStart . "\n";
 		
 		$ret .= "\n<!-- content area -->\n";
-		$ret .= '<a name="wisy_contentareaAnchor"></a><div id="wisy_contentarea">' . "\n";
+		$ret .= '<a id="wisy_contentareaAnchor"></a><div id="wisy_contentarea">' . "\n";
 
 		// anbieter-Toolbar
 		if( $this->editSessionStarted )

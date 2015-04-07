@@ -11,3 +11,11 @@ config.inc.php
 # ignore private scripts and directories, eg. local2github.prv.sh
 *.prv*
 
+# ignore OS X files
+*.DS_Store
+
+# ignore Eclipse files
+.buildpath
+.project
+.settings
+.settings/*

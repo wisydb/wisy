@@ -62,7 +62,7 @@ class WISY_GLOSSAR_RENDERER_CLASS
 		echo '<div id="wisy_resultarea" class="' .$classes. '">';
 
 			// render head
-			echo '<a name="top"></a>'; // make [[toplinks()]] work
+			echo '<a id="top"></a>'; // make [[toplinks()]] work
 			echo '<p class="noprint">';
 				echo '<a href="javascript:history.back();">&laquo; Zur&uuml;ck</a>';
 				echo $this->framework->getLinkList('help.link', ' &middot; ');
