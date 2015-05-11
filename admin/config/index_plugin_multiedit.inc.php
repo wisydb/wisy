@@ -153,6 +153,7 @@ class MULTIEDIT_PLUGIN_CLASS
 					}
 					
 					$options .= "field__user_grp__settext###Benutzergruppe: setze auf 'Parameter2'###";
+					$options .= "field__user_access__settext###Rechte: setze auf 'Parameter2'###";
 					
 					$options .= "nop2######";
 					$options .= "add_journal###Journaleintrag hinzufügen###";
@@ -366,6 +367,9 @@ class MULTIEDIT_PLUGIN_CLASS
 		
 		if( $field == 'user_grp' ) {
 			$rowdescr = 'Benutzergruppe';
+		}
+		if( $field == 'user_access' ) {
+			$rowdescr = 'Rechte';
 		}
 		else for( $r = 0; $r < sizeof($table_def->rows); $r++ ) {
 			if( $table_def->rows[$r]->name == $field ) { $rowdescr = trim($table_def->rows[$r]->descr); break; }

@@ -12,7 +12,9 @@ define('_EXP_TMALLERNEN',              "1001 mal Lernen");
 define('_INDEX_PLUGIN_ANBIETER_0',     "MultiEdit");
 define('_INDEX_PLUGIN_ANBIETER_1',     "Rundschreiben");
 define('_INDEX_PLUGIN_KURSE_0',        "MultiEdit");
-define('_INDEX_PLUGIN_STICHWOERTER_0', "Baum");
+define('_INDEX_PLUGIN_STICHWOERTER_0', "MultiEdit");
+define('_INDEX_PLUGIN_STICHWOERTER_1', "Baum");
 define('_PRINT_ANBIETER_DETAILS',      "Detailansicht wie im Portal");
 define('_PRINT_KURSE_DETAILS',         "Detailansicht wie im Portal");
 define('_PRINT_KURSE_LIST',            "Listenansicht wie im Portal");
+

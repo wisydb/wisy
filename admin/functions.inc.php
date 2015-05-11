@@ -621,9 +621,10 @@ function access_to_human($access)
 	for( $i = 8; $i >= 0; $i-- ) {
 		$ret .= ($access & (1<<$i))? substr($chars, $i, 1) : '-';
 		if( $i==6 || $i==3 ) {
-			$ret .= ' ';
+			$ret .= '';
 		}
 	}
+	$ret .= ' ('.$access.')';
 	return $ret;
 }
 
