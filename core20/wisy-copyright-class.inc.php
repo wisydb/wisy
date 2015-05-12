@@ -15,6 +15,24 @@ class WISY_COPYRIGHT_CLASS
 	{
 		$copyright = '';
 	
+		// search group id for a special modifier
+		$group_settings = array();
+		if( $copyright == '' )
+		{
+			$sql = "SELECT s.settings x, a.user_modified m FROM user_grp s, $table a
+					 WHERE a.user_grp=s.id AND a.id=$recordId;";
+			$db->query($sql);
+			if( $db->next_record() )
+			{
+				$group_settings = explodeSettings($db->fs('x'));
+				$user_modified = intval($db->fs('m'));
+				if( $group_settings["copyright.{$table}.modifiedby.{$user_modified}"] != '' )
+				{
+					$copyright = $group_settings["copyright.{$table}.modifiedby.{$user_modified}"];
+				}
+			}
+		}
+	
 		// search by stichwort
 		if( $copyright == '' && ($table=='kurse' || $table=='anbieter') )
 		{
@@ -51,16 +69,9 @@ class WISY_COPYRIGHT_CLASS
 		// search by group id
 		if( $copyright == '' )
 		{
-			$sql = "SELECT s.settings x FROM user_grp s, $table a
-					 WHERE a.user_grp=s.id AND a.id=$recordId;";
-			$db->query($sql);
-			if( $db->next_record() )
+			if( $group_settings["copyright.$table"] != '' )
 			{
-				$test = explodeSettings($db->fs('x'));
-				if( $test["copyright.$table"] != '' )
-				{
-					$copyright = $test["copyright.$table"];
-				}
+				$copyright = $group_settings["copyright.$table"];
 			}
 		}
 	
