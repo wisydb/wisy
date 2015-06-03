@@ -187,10 +187,23 @@ function clickAutocompleteMore(tag_name_encoded)
 	location.href = 'search?ie=UTF-8&show=tags&q=' + tag_name_encoded;
 }
 
+function htmlspecialchars(text)
+{
+	var map = {
+		'&': '&amp;',
+		'<': '&lt;',
+		'>': '&gt;',
+		'"': '&quot;',
+		"'": '&#039;'
+	};
+
+	return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+}
+
 function formatItem(row)
 {
-	var tag_name  = row[0];
-	var tag_descr = row[1];
+	var tag_name  = row[0]; // this is plain text, so take care on output! (eg. you may want to strip or escape HTML)
+	var tag_descr = row[1]; // this is already HTML
 	var tag_type  = row[2];
 	var tag_help  = row[3];
 	var tag_freq  = row[4];
@@ -257,6 +270,8 @@ function formatItem(row)
 			row_postfix +=
 			 ' <a class="wisy_help" href="" onclick="return clickAutocompleteHelp(' + tag_help + ', &#39;' + encodeURIComponent(tag_name) + '&#39;)">&nbsp;i&nbsp;</a>';
 		}
+		
+		tag_name = htmlspecialchars(tag_name);
 	}
 	
 	return '<span class="'+row_class+'">' + row_prefix + tag_name + row_postfix + '</span>';
@@ -314,8 +329,8 @@ if (jQuery.ui)
 {
 	function formatItem_v2(row, request_term)
 	{
-		var tag_name  = row[0];
-		var tag_descr = row[1];
+		var tag_name  = row[0]; // this is plain text, so take care on output! (eg. you may want to strip or escape HTML)
+		var tag_descr = row[1]; // this is already HTML
 		var tag_type  = row[2];
 		var tag_help  = row[3];
 		var tag_freq  = row[4];
@@ -392,6 +407,8 @@ if (jQuery.ui)
 				/* note: a single semicolon disturbs the highlighter as well as a single quote! */
 				row_info = ' <a class="wisy_help" href="" onclick="return clickAutocompleteHelp(' + tag_help + ', &#39;' + encodeURIComponent(tag_name) + '&#39;)">&nbsp;i&nbsp;</a>';
 			}
+			
+			tag_name = htmlspecialchars(tag_name);
 		}
 		
 		// highlight search string
