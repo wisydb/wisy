@@ -820,7 +820,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			echo "\n".'<table class="wisy_list"' . html3(' cellpadding="0" cellspacing="0" border="0" width="100%"') . '>' . "\n";
 			echo '  <tr>' . "\n";
 				$this->renderColumnTitle('Anbieter',	'a', 	$orderBy,	311);
-				$this->renderColumnTitle('Strasse',		's', 	$orderBy,	0);
+				$this->renderColumnTitle('Stra&szlig;e','s', 	$orderBy,	0);
 				$this->renderColumnTitle('PLZ',			'p',	$orderBy,	0);
 				$this->renderColumnTitle('Ort',			'o',	$orderBy,	0);
 				$this->renderColumnTitle('Homepage',	'h',	$orderBy,	0);

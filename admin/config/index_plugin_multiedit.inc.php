@@ -130,7 +130,7 @@ class MULTIEDIT_PLUGIN_CLASS
 						$options .= "field__anbieter__setsattr###Anbieter: setze auf 'Parameter2'###";
 						$options .= "nop2######";
 						
-						$options .= "field__freigeschaltet__setenum###Status: setze auf 'Paramteter2'###";
+						$options .= "field__freigeschaltet__setenum###Status: setze auf 'Parameter2'###";
 						$options .= "add_journal###Journaleintrag hinzufügen###";
 						$options .= "dfield__beginn__setdate###Beginn: setze auf 'Parameter2'###";
 						$options .= "del_old_durchf###Abgelaufene Durchführungen LÖSCHEN###";
