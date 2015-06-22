@@ -998,7 +998,7 @@ class ADDRESS_PATTERN_CLASS extends TXTREPLACERRULE_CLASS
 		$sql .= " as ergebnis from anbieter where id = ".intval($arguments[1]).";";
 		$los = @mysql_query($sql);
 		if( $los ) {
-			$ausgabe = mysql_result($los, 0, "ergebnis");
+			$ausgabe = @mysql_result($los, 0, "ergebnis");
 			return htmlsmartentities($ausgabe, '', 0);
 		}
 		else {
