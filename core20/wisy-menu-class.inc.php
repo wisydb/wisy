@@ -67,9 +67,10 @@ class WISY_MENU_CLASS
 		// constructor
 		$this->framework =& $framework;
 		$this->prefix = $param['prefix'];
+		$this->db = new DB_Admin;
 	}
 	
-	// Themengebiet Item erzeugen - Tools
+	// Themengebiet Items erzeugen (deprecated)
 	// --------------------------------------------------------------------
 
 	function handleLevel($startIndex, $level, $aparam)
@@ -120,9 +121,6 @@ class WISY_MENU_CLASS
 		return -1;
 	}
 
-	// Themengebiet Item erzeugen
-	// --------------------------------------------------------------------
-
 	function &createRootThemenItems($title, $startIdOrKuerzel, $aparam, $level)
 	{	
 		global $g_themen;
@@ -131,11 +129,11 @@ class WISY_MENU_CLASS
 		if( !is_array($g_themen) )
 		{
 			$g_themen = array();
-			$db = new DB_Admin;
+			
 			$sql = "SELECT id, kuerzel_sorted, thema FROM themen ORDER BY kuerzel_sorted;";
-			$db->query($sql); 
-			while( $db->next_record() ) 
-				$g_themen[] = $db->Record;
+			$this->db->query($sql); 
+			while( $this->db->next_record() ) 
+				$g_themen[] = $this->db->Record;
 		}
 
 		// find starting thema (id has the form <int>, kuerzel has the form "<level>.[<level> ...]"
@@ -172,6 +170,59 @@ class WISY_MENU_CLASS
 		return $ret;
 	}
 	
+	// Stichwort Items erzeugen
+	// --------------------------------------------------------------------
+	
+	protected function &addKeywordsRecursive($keywordId, $level, $addChildren)
+	{
+		global $g_keywords;
+		
+		// add the item itself
+		$title = $g_keywords[ $keywordId ];
+		$url = 'search?q=' . urlencode(g_sync_removeSpecialChars($title));
+		$item = new WISY_MENU_ITEM($title, $url, '', $level);
+		
+		// check, if there are child items
+		if( $addChildren ) 
+		{
+			$attr_ids = array();
+			$this->db->query("SELECT attr_id FROM stichwoerter_verweis2 WHERE primary_id=$keywordId ORDER BY structure_pos;");
+			while( $this->db->next_record() ) {
+				$attr_ids[] = $this->db->f('attr_id');
+			}
+		
+			for( $a = 0; $a < sizeof($attr_ids); $a++ ) {
+				$item->children[] =& $this->addKeywordsRecursive($attr_ids[$a], $level+1, $addChildren);
+			}
+		}		
+		
+		return $item;
+	}
+	
+	protected function &createKeywordItems($keywordIds, $level) // $keywordIds: comma separated list of keywords, a `+` indicates that children should be added, too 
+	{
+		$keywordIds = str_replace(' ', '', $keywordIds); // remove all spaces for easier parsing
+		if( ($p=strpos($keywordIds, ';'))!==false ) { $keywordIds = substr($keywordIds, 0, $p); } // allow comments after a `;` (this is undocumented stuff!)
+		$keywordIds = explode(',', $keywordIds);
+		$ret_items = array();
+		for( $k = 0; $k < sizeof($keywordIds); $k++ ) 
+		{
+			$addChildren = false;
+			$keywordId = $keywordIds[$k];
+			if( substr($keywordId, -1) == '+' ) { $addChildren = true; $keywordId = substr($keywordId, 0, -1); }
+			$keywordId = intval($keywordId);
+			
+			$ret_items[] =& $this->addKeywordsRecursive($keywordId, $level, $addChildren);
+		}
+		
+		return $ret_items;
+	
+		
+	}
+	
+	// Misc.
+	// --------------------------------------------------------------------
+			
 	function explodeMenuParam($param, &$title, &$url, &$aparam)
 	{
 		$title = '';
@@ -227,15 +278,14 @@ class WISY_MENU_CLASS
 			if( !is_array($g_keywords) )
 			{
 				$g_keywords = array();
-				$db = new DB_Admin;
-				$db->query("SELECT id, stichwort FROM stichwoerter;");
-				while( $db->next_record() )
-					$g_keywords[ $db->f('id') ] = $db->fs('stichwort');
+				$this->db->query("SELECT id, stichwort FROM stichwoerter;");
+				while( $this->db->next_record() ) {
+					$g_keywords[ $this->db->f('id') ] = $this->db->fs('stichwort');
+				}
 			}
 			
-			$keywordId = intval(substr($url, 8));
-			$title = $g_keywords[ $keywordId ];
-			$url = 'search?q=' . urlencode(g_sync_removeSpecialChars($title));
+			$keywordIds = substr($url, 8); // comma separated list of keywords, a `+` indicates that children should be added, too 
+			return $this->createKeywordItems($keywordIds, $level);
 		}
 
 		if( $title == '' )
