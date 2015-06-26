@@ -183,7 +183,7 @@ class WISY_MENU_CLASS
 		$item = new WISY_MENU_ITEM($title, $url, '', $level);
 		
 		// check, if there are child items
-		if( $addChildren ) 
+		if( $addChildren > 0 ) 
 		{
 			$attr_ids = array();
 			$this->db->query("SELECT attr_id FROM stichwoerter_verweis2 WHERE primary_id=$keywordId ORDER BY structure_pos;");
@@ -192,7 +192,7 @@ class WISY_MENU_CLASS
 			}
 		
 			for( $a = 0; $a < sizeof($attr_ids); $a++ ) {
-				$item->children[] =& $this->addKeywordsRecursive($attr_ids[$a], $level+1, $addChildren);
+				$item->children[] =& $this->addKeywordsRecursive($attr_ids[$a], $level+1, $addChildren-1);
 			}
 		}		
 		
@@ -207,9 +207,9 @@ class WISY_MENU_CLASS
 		$ret_items = array();
 		for( $k = 0; $k < sizeof($keywordIds); $k++ ) 
 		{
-			$addChildren = false;
+			$addChildren = 0;
 			$keywordId = $keywordIds[$k];
-			if( substr($keywordId, -1) == '+' ) { $addChildren = true; $keywordId = substr($keywordId, 0, -1); }
+			if( ($p=strpos($keywordId, '+')) !== false ) { $addChildren = intval(substr($keywordId, $p+1)); if($addChildren<=0) {$addChildren=666;} $keywordId = substr($keywordId, 0, $p); }
 			$keywordId = intval($keywordId);
 			
 			$ret_items[] =& $this->addKeywordsRecursive($keywordId, $level, $addChildren);
