@@ -47,7 +47,7 @@ $ratgeber->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,			'notizen',			'Journal', ''
 
 
 /*** THEMEN ***/
-$themen = new Table_Def_Class(TABLE_PRIMARY|TABLE_SYNCABLE,	'themen',			'Themen');
+$themen = new Table_Def_Class(TABLE_SYNCABLE,				'themen',			'Themen');
 $themen->add_row(TABLE_TEXT|TABLE_SUMMARY|TABLE_LIST|TABLE_MUST,
 															'thema',			'Thema', '', '', '', array('ctrl.size'=>'10-20-60', 'layout.bg.class'=>'e_bglite', 'layout.descr.class'=>'e_bolder', 'ctrl.class'=>'e_bolder'));
 $themen->add_row(TABLE_TEXT|TABLE_LIST|TABLE_MUST|TABLE_UNIQUE|TABLE_NEWSECTION,
