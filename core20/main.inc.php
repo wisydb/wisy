@@ -11,7 +11,7 @@
  search?q=<query>&offset=<o>	Ergebnisses ab Offset anzeigen, <o>=0, 20 ...
  k<id>							Kurs <id> anzeigen
  a<id>							Anbieter <id> anzeigen
- g<id>							Glossareintrag <id> anzeigen
+ g<id>							Ratgeberseite <id> anzeigen
  sync?<type>&pw=				Index synchronisieren
  
  Weitere, nicht unmittelbar sichtbare Anfragen:

@@ -125,7 +125,7 @@ class WISY_WIKI2HTML_CLASS extends WIKI2HTML_CLASS
 		}
 		else
 		{
-			return 'Dieser Glossareintrag existiert nicht.';
+			return 'Diese Seite existiert nicht.';
 		}
 	}
 

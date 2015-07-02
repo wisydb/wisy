@@ -30,19 +30,19 @@ else {
 
 
 
-/*** GLOSSAR ***/
-$glossar = new Table_Def_Class(TABLE_PRIMARY,				'glossar',			'Glossar');
+/*** RATGEBER ***/
+$ratgeber = new Table_Def_Class(TABLE_PRIMARY,				'glossar',			'Ratgeber');
 if( $use_neweditor ) {
-	$glossar->add_row(TABLE_ENUM,								'freigeschaltet',	'ABC-Index', 2, '2###Nein###1###Ja', '', array('layout.join'=>1));
+	$ratgeber->add_row(TABLE_ENUM,								'freigeschaltet',	'ABC-Index', 2, '2###Nein###1###Ja', '', array('layout.join'=>1));
 }
-$glossar->add_row(TABLE_TEXT|TABLE_SUMMARY|TABLE_LIST|TABLE_MUST|TABLE_UNIQUE,
+$ratgeber->add_row(TABLE_TEXT|TABLE_SUMMARY|TABLE_LIST|TABLE_MUST|TABLE_UNIQUE,
 															'begriff',			'Begriff', '', '', '', array('ctrl.size'=>'10-20-60', 'layout.bg.class'=>'e_bglite', 'layout.descr.class'=>'e_bolder', 'ctrl.class'=>'e_bolder'));
 if( !$use_neweditor ) {
-	$glossar->add_row(TABLE_ENUM,								'freigeschaltet',	'ABC-Index', 2, '2###Nein###1###Ja');
+	$ratgeber->add_row(TABLE_ENUM,								'freigeschaltet',	'ABC-Index', 2, '2###Nein###1###Ja');
 }
-$glossar->add_row(TABLE_TEXTAREA|TABLE_WIKI|TABLE_NEWSECTION,'erklaerung',		'Erklärung', '', '', '', array('ctrl.rows'=>20));
-$glossar->add_row(TABLE_TEXT,								'wikipedia',		'Stichw. Wikipedia', '', '', '', array('ctrl.size'=>'10-20-60'));
-$glossar->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,			'notizen',			'Journal', '', '', '', array('layout.section'=>1));
+$ratgeber->add_row(TABLE_TEXTAREA|TABLE_WIKI|TABLE_NEWSECTION,'erklaerung',		'Erklärung', '', '', '', array('ctrl.rows'=>20));
+$ratgeber->add_row(TABLE_TEXT,								'wikipedia',		'Stichw. Wikipedia', '', '', '', array('ctrl.size'=>'10-20-60'));
+$ratgeber->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,			'notizen',			'Journal', '', '', '', array('layout.section'=>1));
 
 
 
@@ -52,7 +52,7 @@ $themen->add_row(TABLE_TEXT|TABLE_SUMMARY|TABLE_LIST|TABLE_MUST,
 															'thema',			'Thema', '', '', '', array('ctrl.size'=>'10-20-60', 'layout.bg.class'=>'e_bglite', 'layout.descr.class'=>'e_bolder', 'ctrl.class'=>'e_bolder'));
 $themen->add_row(TABLE_TEXT|TABLE_LIST|TABLE_MUST|TABLE_UNIQUE|TABLE_NEWSECTION,
 															'kuerzel',			'Kürzel', 0, 0, 'Klassifizierung', array('ctrl.size'=>'4-10-40', 'layout.section'=>'Klassifizierung'));
-$themen->add_row(TABLE_SATTR,								'glossar',			'Glossar', 0, $glossar);
+$themen->add_row(TABLE_SATTR,								'glossar',			'Ratgeberseite', 0, $ratgeber);
 $themen->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,			'scope_note',		'Scope note');
 $themen->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,			'algorithmus',		'Algorithmus');
 $themen->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,			'notizen',			'Journal', '', '', '', array('layout.section'=>1));
@@ -67,7 +67,7 @@ $stichwoerter->add_row(TABLE_MATTR|TABLE_SHOWREF,							'verweis',			'Synonym fü
 $stichwoerter->add_row(TABLE_MATTR|TABLE_SHOWREF,							'verweis2',			'Oberbegriff für', 0, 0 /*set below*/, '', array('help.tooltip'=>'Das aktuelle Stichwort wird automatisch vergeben, wenn eines der hier angegebenen Stichwörter vergeben wird', 'ref.name'=>'Unterbegriff von'));
 $stichwoerter->add_row(TABLE_ENUM|TABLE_SUMMARY|TABLE_LIST|TABLE_NEWSECTION,'eigenschaften',	'Typ', 0, $codes_stichwort_eigenschaften, 'Klassifizierung', array('layout.section'=>'Klassifizierung'));
 $stichwoerter->add_row(TABLE_SATTR,											'thema',			'Thema', 0, $themen);
-$stichwoerter->add_row(TABLE_SATTR,											'glossar',			'Glossar', 0, $glossar);
+$stichwoerter->add_row(TABLE_SATTR,											'glossar',			'Ratgeberseite', 0, $ratgeber);
 $stichwoerter->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,						'scope_note',		'Scope note');
 $stichwoerter->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,						'algorithmus',		'Algorithmus');
 $stichwoerter->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,						'notizen',			'Journal', '', '', '', array('layout.section'=>1));
@@ -373,9 +373,9 @@ $Table_Def[] = $anbieter;
 $Table_Def[] = $anbieter_billing;
 $Table_Def[] = $anbieter_promote;
 $Table_Def[] = $anbieter_promote_log;
-$Table_Def[] = $themen;
+$Table_Def[] = $ratgeber;
 $Table_Def[] = $stichwoerter;
-$Table_Def[] = $glossar;
+$Table_Def[] = $themen;
 $Table_Def[] = $portale;
 $Table_Def[] = $feedback;
 $Table_Def[] = $apikeys;
