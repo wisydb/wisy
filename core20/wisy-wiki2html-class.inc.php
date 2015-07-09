@@ -8,107 +8,6 @@ require_once("admin/wiki2html.inc.php");
 
 class WISY_WIKI2HTML_CLASS extends WIKI2HTML_CLASS
 {
-	/* create keywords overviews
-	 **************************************************************************/
-	
-	protected function renderKeywordsLink($keywordId, $format)
-	{
-		$title = $this->keywords[ $keywordId ];
-		$url = 'search?q=' . urlencode(g_sync_removeSpecialChars($title));
-		return str_replace('%s', '<a href="'.$url.'">' . isohtmlspecialchars($title) .  '</a>', $format);
-	}
-	
-	protected function renderKeywordsDivRecursive($keywordId, $level, $addChildren)
-	{
-		switch( $level )
-		{
-			case 0:
-				$format = '<b>%s</b>';
-				
-				break;
-			
-			case 1:
-				$format = '%s';
-				
-				break;
-			
-			default:
-				$format = '<small>%s</small>';
-				
-				break;
-		}
-	
-		// add the item itself
-		
-		
-		$ret .= str_repeat('&nbsp;&nbsp;&nbsp;&nbsp;', $level);
-
-		$ret .= $this->renderKeywordsLink($keywordId, $format);
-
-		$ret .= '<br />';
-		
-
-		// check, if there are child items
-		if( $addChildren > 0 ) 
-		{
-			$attr_ids = array();
-			$this->db->query("SELECT attr_id FROM stichwoerter_verweis2 WHERE primary_id=$keywordId ORDER BY structure_pos;");
-			while( $this->db->next_record() ) {
-				$attr_ids[] = $this->db->f('attr_id');
-			}
-		
-			for( $a = 0; $a < sizeof($attr_ids); $a++ ) {
-				$ret .= $this->renderKeywordsDivRecursive($attr_ids[$a], $level+1, $addChildren-1);
-				
-			}
-		}
-		
-		return $ret;
-	}
-	
-	protected function renderKeywordsDiv($keywordIdsOrg) // $keywordIds: comma separated list of keywords, a `+` indicates that children should be added, too 
-	{
-		$ret = '';
-		
-		if( !is_array($this->keywords) )
-		{
-			$this->keywords = array();
-			$this->db->query("SELECT id, stichwort FROM stichwoerter;");
-			while( $this->db->next_record() ) {
-				$this->keywords[ $this->db->f('id') ] = $this->db->fs('stichwort');
-			}
-		}
-		
-
-		$keywordIds = str_replace(' ', '', $keywordIdsOrg); // remove all spaces for easier parsing
-		if( ($p=strpos($keywordIds, ';'))!==false ) { $keywordIds = substr($keywordIds, 0, $p); } // allow comments after a `;` (this is undocumented stuff!)
-		$keywordIds = explode(',', $keywordIds);
-		$ret_items = array();
-		for( $k = 0; $k < sizeof($keywordIds); $k++ ) 
-		{
-			$addChildren = 0;
-			$keywordId = $keywordIds[$k];
-			if( ($p=strpos($keywordId, '+')) !== false ) { $addChildren = intval(substr($keywordId, $p+1)); if($addChildren<=0) {$addChildren=666;} $keywordId = substr($keywordId, 0, $p); }
-			$keywordId = intval($keywordId);
-			
-			$temp = $this->renderKeywordsDivRecursive($keywordId, 0, $addChildren);
-			if( $temp != '' ) {
-				$ret .= '<p>'.$temp.'</p>';
-			}
-
-		}		
-		
-		if( $ret == '' ) 
-		{
-			$ret = '<p>Keine Stichw. gefunden f&uuml;r <i>[[keyword('.htmlspecialchars($keywordIdsOrg).')]]</i></p>';
-		}
-		
-		return $ret;
-	}
-	
-	/* misc.
-	 **************************************************************************/
-	 
 	function __construct(&$framework)
 	{
 		$this->db = new DB_Admin;
@@ -175,8 +74,8 @@ class WISY_WIKI2HTML_CLASS extends WIKI2HTML_CLASS
 		}
 		else if( $name == 'keyword' )
 		{
-			$keywordIds = $param; // comma separated list of keywords, a `+` indicates that children should be added, too 
-			$ret = $this->renderKeywordsDiv($keywordIds);
+			$ob =& createWisyObject('WISY_KEYWORDTABLE_CLASS', $this->framework, array('args'=>$param));
+			$ret = $ob->getHtml();
 			$state = 2; // returned value is a paragraph
 		}
 		else

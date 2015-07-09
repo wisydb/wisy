@@ -589,6 +589,43 @@ ul.dropdown ul *.dir {
 }
 
 
+/*******************************************************************************
+ ratgeber
+ ******************************************************************************/
+
+table.wisy_glskey {
+	border-spacing: 1px;
+	margin-top: 1em;
+	margin-bottom: 1em;
+	width: 90%;
+	border-bottom: 1px solid #bbb;
+}
+
+table.wisy_glskey tr td.kt_colcount { /* column "count" */
+  text-align: right;
+  white-space: nowrap;
+}
+
+table.wisy_glskey tr.kt_abschluss td.kt_colcat {
+  font-weight: bold;
+}
+
+table.wisy_glskey thead tr td {
+  background-color:#bbb;
+  padding:0.2em 0.5em;
+  font-weight: bold;
+  color: white;
+  white-space: nowrap;
+}
+
+table.wisy_glskey tbody tr:nth-child(even) {
+  background-color:#eee;
+}
+
+table.wisy_glskey tbody tr td {
+  vertical-align: top;
+}
+
 
 /*******************************************************************************
  accessibility
