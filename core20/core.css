@@ -597,9 +597,15 @@ table.wisy_glskey {
 	border-spacing: 1px;
 	margin-top: 1em;
 	margin-bottom: 1em;
-	width: 90%;
+	max-width: 90%;
 	border-bottom: 1px solid #bbb;
 }
+
+table.wisy_glskey tr td.kt_coltitle small { /* column "count" */
+  color: #aaa;
+  font-style: italic;
+}
+
 
 table.wisy_glskey tr td.kt_colcount { /* column "count" */
   text-align: right;

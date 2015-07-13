@@ -29,13 +29,14 @@ class WISY_KEYWORDTABLE_CLASS
 		$this->db = new DB_Admin;
 		$this->framework =& $framework;
 		$this->args = $addparam['args'];
+		$this->selfGlossarId = intval($addparam['selfGlossarId']);
 		$this->rownum = 0;
 		$this->tagSuggestor =& createWisyObject('WISY_TAGSUGGESTOR_CLASS', $framework);
 		
 		if( !is_array(WISY_KEYWORDTABLE_CLASS::$keywords) )
 		{
 			WISY_KEYWORDTABLE_CLASS::$keywords = array();
-			$this->db->query("SELECT id, stichwort, eigenschaften, zusatzinfo FROM stichwoerter;");
+			$this->db->query("SELECT id, stichwort, eigenschaften, zusatzinfo, glossar FROM stichwoerter;");
 			while( $this->db->next_record() ) {
 				WISY_KEYWORDTABLE_CLASS::$keywords[ $this->db->f('id') ] = $this->db->Record;
 			}
@@ -53,6 +54,7 @@ class WISY_KEYWORDTABLE_CLASS
 		$url = 'search?q=' . urlencode(g_sync_removeSpecialChars($title));
 		$zusatzinfo = WISY_KEYWORDTABLE_CLASS::$keywords[ $keywordId ]['zusatzinfo'];
 		$tag_type = WISY_KEYWORDTABLE_CLASS::$keywords[ $keywordId ]['eigenschaften'];
+		$glossarId = WISY_KEYWORDTABLE_CLASS::$keywords[ $keywordId ]['glossar'];
 				
 		// get tag ID for the given keyword
 		$tag_id = 0;
@@ -83,7 +85,7 @@ class WISY_KEYWORDTABLE_CLASS
 		
 		// render
 		$ret = '<tr class="'.$row_class.'">';
-			$ret .= '<td style="padding-left:'.intval($level*2).'em">';
+			$ret .= '<td class="kt_coltitle" style="padding-left:'.intval($level*2).'em">';
 				
 				if( $hasChildren ) {
 					if( $expanded ) {
@@ -104,6 +106,11 @@ class WISY_KEYWORDTABLE_CLASS
 				
 				if( $tag_freq > 0 ) { $ret .= '</a>'; }
 				if( $level == 0 ) { $ret .= '</b>'; }
+				
+				if( $zusatzinfo )
+				{
+					$ret .= ' <small>(' . isohtmlspecialchars($zusatzinfo) . ')</small>';
+				}
 		
 			$ret .= '</td>';
 			
@@ -116,10 +123,16 @@ class WISY_KEYWORDTABLE_CLASS
 				$ret .= $row_type;
 			$ret .= '</td>';
 			
-			$ret .= '<td>';
-				$ret .= isohtmlspecialchars($zusatzinfo);
+			$ret .= '<td class="kt_colhelp">';
+				if( $glossarId && $glossarId != $this->selfGlossarId ) {
+					$ret .= '<a href="' . $this->framework->getHelpUrl($glossarId) . '" class="wisy_help" title="Hilfe">i</a>';
+				}
+				else {	
+					$ret .= '&nbsp;';
+				}
 			$ret .= '</td>';
-
+			
+			
 			
 		$ret .= '</tr>';
 
@@ -195,14 +208,13 @@ class WISY_KEYWORDTABLE_CLASS
 			$ret = '<tr><td colspan="4"><i>Keine aktuellen Angebote.</i></td></tr>';
 		}
 
-
 		$ret = '<table class="wisy_glskey">'
 			.		'<thead>'
 			.			'<tr>'
-			.				'<td>Rechercheziele</td>'
+			.				'<td class="kt_coltitle">Rechercheziele</td>'
 			.				'<td class="kt_colcount">Angebote</td>'
 			.				'<td class="kt_colcat">Kategorie</td>'
-			.				'<td>Zusatzinfo</td>'
+			.				'<td class="kt_colhelp">&nbsp;</td>'
 			.			'<tr>'
 			.		'</thead>'
 			.		'<tbody>'
