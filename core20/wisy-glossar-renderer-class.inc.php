@@ -74,7 +74,7 @@ class WISY_GLOSSAR_RENDERER_CLASS
 			
 			if( $erklaerung != '' )
 			{
-				$wiki2html =& createWisyObject('WISY_WIKI2HTML_CLASS', $this->framework);
+				$wiki2html =& createWisyObject('WISY_WIKI2HTML_CLASS', $this->framework, array('selfGlossarId'=>$glossar_id));
 				echo $wiki2html->run($erklaerung);
 			}
 			

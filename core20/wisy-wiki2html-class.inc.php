@@ -8,10 +8,12 @@ require_once("admin/wiki2html.inc.php");
 
 class WISY_WIKI2HTML_CLASS extends WIKI2HTML_CLASS
 {
-	function __construct(&$framework)
+	function __construct(&$framework, $addparam)
 	{
 		$this->db = new DB_Admin;
 		$this->framework =& $framework;
+		if( !is_array($addparam) ) { $addparam = array(); }
+		$this->selfGlossarId = intval($addparam['selfGlossarId']); // may be 0 if the page is not a glossar entry
 		parent::WIKI2HTML_CLASS();
 	}
 
@@ -74,7 +76,7 @@ class WISY_WIKI2HTML_CLASS extends WIKI2HTML_CLASS
 		}
 		else if( $name == 'keyword' )
 		{
-			$ob =& createWisyObject('WISY_KEYWORDTABLE_CLASS', $this->framework, array('args'=>$param));
+			$ob =& createWisyObject('WISY_KEYWORDTABLE_CLASS', $this->framework, array('args'=>$param, 'selfGlossarId'=>$this->selfGlossarId));
 			$ret = $ob->getHtml();
 			$state = 2; // returned value is a paragraph
 		}

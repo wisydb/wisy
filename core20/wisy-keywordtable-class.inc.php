@@ -29,7 +29,7 @@ class WISY_KEYWORDTABLE_CLASS
 		$this->db = new DB_Admin;
 		$this->framework =& $framework;
 		$this->args = $addparam['args'];
-		$this->selfGlossarId = intval($addparam['selfGlossarId']);
+		$this->selfGlossarId = intval($addparam['selfGlossarId']); // may be 0 if the page is not a glossar entry
 		$this->rownum = 0;
 		$this->tagSuggestor =& createWisyObject('WISY_TAGSUGGESTOR_CLASS', $framework);
 		
