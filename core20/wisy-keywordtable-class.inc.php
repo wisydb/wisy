@@ -125,7 +125,7 @@ class WISY_KEYWORDTABLE_CLASS
 			
 			$ret .= '<td class="kt_colhelp">';
 				if( $glossarId && $glossarId != $this->selfGlossarId ) {
-					$ret .= '<a href="' . $this->framework->getHelpUrl($glossarId) . '" class="wisy_help" title="Hilfe">i</a>';
+					$ret .= '<a href="' . $this->framework->getHelpUrl($glossarId) . '" class="wisy_help" title="Ratgeber">i</a>';
 				}
 				else {	
 					$ret .= '&nbsp;';

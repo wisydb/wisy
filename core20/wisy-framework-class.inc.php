@@ -525,7 +525,7 @@ class WISY_FRAMEWORK_CLASS
 				$glossarLink = '';
 				$glossarId = $this->glossarDb($db, 'stichwoerter', $stichwoerter[$s]['id']);
 				if( $glossarId ) {
-					$glossarLink = ' <a href="' . $this->getHelpUrl($glossarId) . '" class="wisy_help" title="Hilfe">i</a>';
+					$glossarLink = ' <a href="' . $this->getHelpUrl($glossarId) . '" class="wisy_help" title="Ratgeber">i</a>';
 				}
 				
 				if( ($stichwoerter[$s]['eigenschaften']==0 && intval($codes_array[$c])==0 && $glossarLink)
