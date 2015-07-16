@@ -32,6 +32,7 @@ class WISY_KEYWORDTABLE_CLASS
 		$this->selfGlossarId = intval($addparam['selfGlossarId']); // may be 0 if the page is not a glossar entry
 		$this->rownum = 0;
 		$this->tagSuggestor =& createWisyObject('WISY_TAGSUGGESTOR_CLASS', $framework);
+		$this->searchRenderer =& createWisyObject('WISY_SEARCH_RENDERER_CLASS', $framework);
 		
 		if( !is_array(WISY_KEYWORDTABLE_CLASS::$keywords) )
 		{
@@ -69,24 +70,10 @@ class WISY_KEYWORDTABLE_CLASS
 			return '';
 		}
 		
-		$row_count_prefix = ($tag_freq == 1) ? ' Kurs zum' : ' Kurse zum';
-		$row_type = 'Lernziel';
-		$row_class = 'kt_normal';
-		
-		     if( $tag_type &   1 ) { $row_class = "kt_abschluss";		     $row_type = 'Abschluss'; }
-		else if( $tag_type &   2 ) { $row_class = "kt_foerderung";		     $row_type = 'F&ouml;rderung'; $row_count_prefix = ($tag_freq == 1) ? ' Kurs zur' : ' Kurse zur'; }
-		else if( $tag_type &   4 ) { $row_class = "kt_qualitaetszertifikat"; $row_type = 'Qualit&auml;tsmerkmal'; }
-		else if( $tag_type &   8 ) { $row_class = "kt_zielgruppe";		     $row_type = 'Zielgruppe'; $row_count_prefix = ($tag_freq == 1) ? ' Kurs zur' : ' Kurse zur'; }
-		else if( $tag_type &  16 ) { $row_class = "kt_abschlussart";		 $row_type = 'Abschlussart'; $row_count_prefix = ($tag_freq == 1) ? ' Kurs zur' : ' Kurse zur'; }
-		else if( $tag_type &  64 ) { $row_class = "kt_synonym";				 $row_type = 'Verweis'; }
-		else if( $tag_type & 128 ) { $row_class = "kt_thema";		 		 $row_type = 'Thema'; }
-		else if( $tag_type & 1024) { $row_class = "kt_merkmal";			 	 $row_type = 'Kursmerkmal'; }
-		else if( $tag_type & 32768){ $row_class = "kt_unterrichtsart";		 $row_type = 'Unterrichtsart'; $row_count_prefix = ($tag_freq == 1) ? ' Kurs zur' : ' Kurse zur'; }
-		
 		// render
-		$ret = '<tr class="'.$row_class.'">';
-			$ret .= '<td class="kt_coltitle" style="padding-left:'.intval($level*2).'em">';
-				
+		$ret = '<tr>';
+			$ret .= '<td style="padding-left:'.intval($level*2).'em">';
+			
 				if( $hasChildren ) {
 					if( $expanded ) {
 						$ret .= $icon_arr_down . ' ';
@@ -98,41 +85,12 @@ class WISY_KEYWORDTABLE_CLASS
 				else {
 					$ret .= $icon_empty . ' ';
 				}
+								
+				$ret .= $this->searchRenderer->formatItem($title, $zusatzinfo, $tag_type, 
+					$glossarId != $this->selfGlossarId? $glossarId : 0, 
+					$tag_freq);
 
-				if( $level == 0 ) { $ret .= '<b>'; }
-				if( $tag_freq > 0 ) { $ret .= '<a href="'.$url.'">'; }
-				
-					$ret .= isohtmlspecialchars($title);
-				
-				if( $tag_freq > 0 ) { $ret .= '</a>'; }
-				if( $level == 0 ) { $ret .= '</b>'; }
-				
-				if( $zusatzinfo )
-				{
-					$ret .= ' <small>(' . isohtmlspecialchars($zusatzinfo) . ')</small>';
-				}
-		
 			$ret .= '</td>';
-			
-			$ret .= '<td class="kt_colcount">';
-				$ret .= $tag_freq;
-				$ret .= $row_count_prefix;
-			$ret .= '</td>';
-
-			$ret .= '<td class="kt_colcat">';
-				$ret .= $row_type;
-			$ret .= '</td>';
-			
-			$ret .= '<td class="kt_colhelp">';
-				if( $glossarId && $glossarId != $this->selfGlossarId ) {
-					$ret .= '<a href="' . $this->framework->getHelpUrl($glossarId) . '" class="wisy_help" title="Ratgeber">i</a>';
-				}
-				else {	
-					$ret .= '&nbsp;';
-				}
-			$ret .= '</td>';
-			
-			
 			
 		$ret .= '</tr>';
 
@@ -205,16 +163,13 @@ class WISY_KEYWORDTABLE_CLASS
 		// done, surround the result by a table
 		if( $ret == '' ) 
 		{
-			$ret = '<tr><td colspan="4"><i>Keine aktuellen Angebote.</i></td></tr>';
+			$ret = '<tr><td><i>Keine aktuellen Angebote.</i></td></tr>';
 		}
 
 		$ret = '<table class="wisy_glskey">'
 			.		'<thead>'
 			.			'<tr>'
-			.				'<td class="kt_coltitle">Rechercheziele</td>'
-			.				'<td class="kt_colcount">Angebote</td>'
-			.				'<td class="kt_colcat">Kategorie</td>'
-			.				'<td class="kt_colhelp">&nbsp;</td>'
+			.				'<td>Rechercheziele</td>'
 			.			'<tr>'
 			.		'</thead>'
 			.		'<tbody>'

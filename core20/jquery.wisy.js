@@ -222,7 +222,7 @@ function formatItem(row)
 	else
 	{
 		/* base type */
-		     if( tag_type &   1 ) { row_class = "ac_abschluss";            row_postfix = 'Abschluss'; }
+		     if( tag_type &   1 ) { row_class = "ac_abschluss";            row_postfix = '<b>Abschluss</b>'; }
 		else if( tag_type &   2 ) { row_class = "ac_foerderung";           row_postfix = 'F&ouml;rderung'; }
 		else if( tag_type &   4 ) { row_class = "ac_qualitaetszertifikat"; row_postfix = 'Qualit&auml;tszertifikat'; }
 		else if( tag_type &   8 ) { row_class = "ac_zielgruppe";           row_postfix = 'Zielgruppe'; }

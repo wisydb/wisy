@@ -402,7 +402,7 @@ autocomplete styles v1
 .ac_tag_type {
 	font-size: 11px;
 	font-style: italic;
-	color: #AAA;
+	color: #999;
 }
 .ac_anbieter .ac_tag_type {
 	/*hier koennte man einzelne typen speziell formatieren ...*/
@@ -599,21 +599,6 @@ table.wisy_glskey {
 	margin-bottom: 1em;
 	max-width: 90%;
 	border-bottom: 1px solid #bbb;
-}
-
-table.wisy_glskey tr td.kt_coltitle small { /* column "count" */
-  color: #aaa;
-  font-style: italic;
-}
-
-
-table.wisy_glskey tr td.kt_colcount { /* column "count" */
-  text-align: right;
-  white-space: nowrap;
-}
-
-table.wisy_glskey tr.kt_abschluss td.kt_colcat {
-  font-weight: bold;
 }
 
 table.wisy_glskey thead tr td {

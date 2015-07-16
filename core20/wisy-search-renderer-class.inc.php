@@ -344,7 +344,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		$row_postfix = '';
 		
 		/* base type */
-		     if( $tag_type &   1 )	{ $row_class = "ac_abschluss";		     $row_postfix = 'Abschluss'; }
+		     if( $tag_type &   1 )	{ $row_class = "ac_abschluss";		     $row_postfix = '<b>Abschluss</b>'; }
 		else if( $tag_type &   2 )	{ $row_class = "ac_foerderung";		     $row_postfix = 'F&ouml;rderung'; }
 		else if( $tag_type &   4 )	{ $row_class = "ac_qualitaetszertifikat";$row_postfix = 'Qualit&auml;tszertifikat'; }
 		else if( $tag_type &   8 )	{ $row_class = "ac_zielgruppe";		     $row_postfix = 'Zielgruppe'; }
@@ -398,7 +398,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		if( $tag_help != 0 )
 		{
 			$row_postfix .=
-			 " <a class=\"wisy_help\" href=\"" . $this->framework->getUrl('g', array('id'=>$tag_help, 'q'=>$tag_name)) . "\">&nbsp;i&nbsp;</a>";
+			 " <a class=\"wisy_help\" href=\"" . $this->framework->getUrl('g', array('id'=>$tag_help, 'q'=>$tag_name)) . "\" title=\"Ratgeber\">&nbsp;i&nbsp;</a>";
 		}
 		
 		return '<span class="' .$row_class. '">' .
