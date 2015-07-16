@@ -173,14 +173,36 @@ class WISY_MENU_CLASS
 	// Stichwort Items erzeugen
 	// --------------------------------------------------------------------
 	
-	protected function &addKeywordsRecursive($keywordId, $level, $addChildren)
+	protected function &addKeywordsRecursive($manualTitle, $keywordId, $level, $addChildren)
 	{
 		global $g_keywords;
 		
 		// add the item itself
-		$title = $g_keywords[ $keywordId ];
-		$url = 'search?q=' . urlencode(g_sync_removeSpecialChars($title));
-		$item = new WISY_MENU_ITEM($title, $url, '', $level);
+		if( strpos($keywordId, '&') !== false ) 
+		{
+			$autoTitle = '';
+			$url = '';
+			$temp = explode('&', $keywordId);
+			for( $i = 0; $i < sizeof($temp); $i++ ) {
+				$currKeywordId = intval($temp[$i]);
+				if( $currKeywordId > 0 ) {
+					$autoTitle .= $autoTitle==''? '' : ' ';
+					$autoTitle .= $g_keywords[ $currKeywordId ];
+					$url .= $url==''? '' : urlencode(', ');
+					$url .= urlencode(g_sync_removeSpecialChars($g_keywords[ $currKeywordId ]));
+				}
+			}
+			$url = 'search?q=' . $url;
+			$addChildren = false;
+		}
+		else
+		{
+			$keywordId = intval($keywordId);
+			$autoTitle = $g_keywords[ $keywordId ];
+			$url = 'search?q=' . urlencode(g_sync_removeSpecialChars($g_keywords[ $keywordId ]));
+		}
+		
+		$item = new WISY_MENU_ITEM($manualTitle!=''? $manualTitle : $autoTitle, $url, '', $level);
 		
 		// check, if there are child items
 		if( $addChildren > 0 ) 
@@ -192,14 +214,14 @@ class WISY_MENU_CLASS
 			}
 		
 			for( $a = 0; $a < sizeof($attr_ids); $a++ ) {
-				$item->children[] =& $this->addKeywordsRecursive($attr_ids[$a], $level+1, $addChildren-1);
+				$item->children[] =& $this->addKeywordsRecursive('', $attr_ids[$a], $level+1, $addChildren-1);
 			}
 		}		
 		
 		return $item;
 	}
 	
-	protected function &createKeywordItems($keywordIds, $level) // $keywordIds: comma separated list of keywords, a `+` indicates that children should be added, too 
+	protected function &createKeywordItems($title, $keywordIds, $level) // $title: may be empty, $keywordIds: comma separated list of keywords, a `+` indicates that children should be added, too 
 	{
 		$keywordIds = str_replace(' ', '', $keywordIds); // remove all spaces for easier parsing
 		if( ($p=strpos($keywordIds, ';'))!==false ) { $keywordIds = substr($keywordIds, 0, $p); } // allow comments after a `;` (this is undocumented stuff!)
@@ -210,9 +232,8 @@ class WISY_MENU_CLASS
 			$addChildren = 0;
 			$keywordId = $keywordIds[$k];
 			if( ($p=strpos($keywordId, '+')) !== false ) { $addChildren = intval(substr($keywordId, $p+1)); if($addChildren<=0) {$addChildren=666;} $keywordId = substr($keywordId, 0, $p); }
-			$keywordId = intval($keywordId);
 			
-			$ret_items[] =& $this->addKeywordsRecursive($keywordId, $level, $addChildren);
+			$ret_items[] =& $this->addKeywordsRecursive($k==0? $title : '', $keywordId, $level, $addChildren);
 		}
 		
 		return $ret_items;
@@ -285,7 +306,7 @@ class WISY_MENU_CLASS
 			}
 			
 			$keywordIds = substr($url, 8); // comma separated list of keywords, a `+` indicates that children should be added, too 
-			return $this->createKeywordItems($keywordIds, $level);
+			return $this->createKeywordItems($title, $keywordIds, $level);
 		}
 
 		if( $title == '' )
