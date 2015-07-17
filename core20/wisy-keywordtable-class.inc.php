@@ -23,6 +23,7 @@ With args as:
 class WISY_KEYWORDTABLE_CLASS
 {
 	protected static $keywords;
+	protected static $sw_modified;
 
 	function __construct(&$framework, $addparam)
 	{
@@ -33,7 +34,8 @@ class WISY_KEYWORDTABLE_CLASS
 		$this->rownum = 0;
 		$this->tagSuggestor =& createWisyObject('WISY_TAGSUGGESTOR_CLASS', $framework);
 		$this->searchRenderer =& createWisyObject('WISY_SEARCH_RENDERER_CLASS', $framework);
-		
+		$this->dbCache		=& createWisyObject('WISY_CACHE_CLASS', $this->framework, array('table'=>'x_cache_search', 'itemLifetimeSeconds'=>5*60*60)); // reset after 5 hours, needed to get updated tag frequencies
+
 		if( !is_array(WISY_KEYWORDTABLE_CLASS::$keywords) )
 		{
 			WISY_KEYWORDTABLE_CLASS::$keywords = array();
@@ -41,6 +43,12 @@ class WISY_KEYWORDTABLE_CLASS
 			while( $this->db->next_record() ) {
 				WISY_KEYWORDTABLE_CLASS::$keywords[ $this->db->f('id') ] = $this->db->Record;
 			}
+
+			WISY_KEYWORDTABLE_CLASS::$sw_modified = '0000-00-00 00:00:00';
+			$this->db->query("SELECT MAX(date_modified) d FROM stichwoerter;");
+			if( $this->db->next_record() ) {
+				WISY_KEYWORDTABLE_CLASS::$sw_modified = $this->db->f('d');
+			}			
 		}		
 	}
 
@@ -128,6 +136,14 @@ class WISY_KEYWORDTABLE_CLASS
 	
 	public function getHtml()
 	{
+		// is the result in the cache?
+		$cacheVersion = '1';
+		$cacheKey = "wisykwt.$cacheVersion.".$GLOBALS['wisyPortalId'].".$this->args".".".WISY_KEYWORDTABLE_CLASS::$sw_modified;
+		if( ($ret=$this->dbCache->lookup($cacheKey))!='' ) {
+			return $ret;
+		}
+	
+		// prepare html
 		$ret = '';
 		
 		// parse keywordId string ...
@@ -177,6 +193,10 @@ class WISY_KEYWORDTABLE_CLASS
 			.		'</tbody>'
 			. '</table>';
 		
+		// add to cache
+		$this->dbCache->insert($cacheKey, $ret);		
+
+		// done
 		return $ret;
 	}
 	
