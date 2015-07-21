@@ -137,7 +137,7 @@ class WISY_KEYWORDTABLE_CLASS
 	public function getHtml()
 	{
 		// is the result in the cache?
-		$cacheVersion = '1';
+		$cacheVersion = 'v2';
 		$cacheKey = "wisykwt.$cacheVersion.".$GLOBALS['wisyPortalId'].".$this->args".".".WISY_KEYWORDTABLE_CLASS::$sw_modified;
 		if( ($ret=$this->dbCache->lookup($cacheKey))!='' ) {
 			return $ret;
@@ -170,7 +170,7 @@ class WISY_KEYWORDTABLE_CLASS
 		{
 			$expand = 0;
 			$keywordId = $keywordIds[$k];
-			if( ($p=strpos($keywordId, '+')) !== false ) { $expand = intval(substr($keywordId, $p+1)); if($expand<=0) {$expand=666;} $keywordId = substr($keywordId, 0, $p); }
+			if( ($p=strpos($keywordId, '+')) !== false ) { $expand = intval(substr($keywordId, $p+1)); if($expand<=0) {$expand=5; /*avoid too deep recursions*/} $keywordId = substr($keywordId, 0, $p); }
 			$keywordId = intval($keywordId);
 			
 			$ret .= $this->getKeywordsDivRecursive($keywordId, 0, $expand);

@@ -231,7 +231,7 @@ class WISY_MENU_CLASS
 		{
 			$addChildren = 0;
 			$keywordId = $keywordIds[$k];
-			if( ($p=strpos($keywordId, '+')) !== false ) { $addChildren = intval(substr($keywordId, $p+1)); if($addChildren<=0) {$addChildren=666;} $keywordId = substr($keywordId, 0, $p); }
+			if( ($p=strpos($keywordId, '+')) !== false ) { $addChildren = intval(substr($keywordId, $p+1)); if($addChildren<=0) {$addChildren=5 /*avoid too deep recursions*/;} $keywordId = substr($keywordId, 0, $p); }
 			
 			$ret_items[] =& $this->addKeywordsRecursive($k==0? $title : '', $keywordId, $level, $addChildren);
 		}
@@ -323,7 +323,7 @@ class WISY_MENU_CLASS
 		global $wisyPortalEinstellungen;
 		global $wisyPortalModified;
 		
-		$cacheKey = $wisyPortalModified . ' ' .strftime('%Y-%m-%d %H:00:00'). ' v5'; // the key changes if the portal record is updated or at least every hour (remember __DATE__ etc.)
+		$cacheKey = $wisyPortalModified . ' ' .strftime('%Y-%m-%d %H:00:00'). ' v6'; // the key changes if the portal record is updated or at least every hour (remember __DATE__ etc.)
 		if( $this->framework->cacheRead("menu.{$this->prefix}.key", '')==$cacheKey )
 		{
 			// read the menu from the cache ...
