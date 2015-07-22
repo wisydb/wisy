@@ -35,6 +35,7 @@ class WISY_KEYWORDTABLE_CLASS
 		$this->tagSuggestor =& createWisyObject('WISY_TAGSUGGESTOR_CLASS', $framework);
 		$this->searchRenderer =& createWisyObject('WISY_SEARCH_RENDERER_CLASS', $framework);
 		$this->dbCache		=& createWisyObject('WISY_CACHE_CLASS', $this->framework, array('table'=>'x_cache_search', 'itemLifetimeSeconds'=>5*60*60)); // reset after 5 hours, needed to get updated tag frequencies
+		$this->start = $this->framework->microtime_float();
 
 		if( !is_array(WISY_KEYWORDTABLE_CLASS::$keywords) )
 		{
@@ -108,6 +109,14 @@ class WISY_KEYWORDTABLE_CLASS
 	
 	protected function getKeywordsDivRecursive($keywordId, $level, $expand)
 	{
+		// check for timeout
+		$timeout_after_s = 5.000;
+		if( $this->framework->microtime_float() - $this->start > $timeout_after_s ) {
+			$ret .= '<tr><td>Timeout, Erstellung der Tabelle abgebrochen.</td></tr>';
+			return $ret;
+		}
+		
+		
 		// check for children
 		$child_ids = array();
 		$this->db->query("SELECT attr_id FROM stichwoerter_verweis2 WHERE primary_id=$keywordId ORDER BY structure_pos;");
@@ -137,11 +146,13 @@ class WISY_KEYWORDTABLE_CLASS
 	public function getHtml()
 	{
 		// is the result in the cache?
-		$cacheVersion = 'v2';
+		$cacheVersion = 'v3';
 		$cacheKey = "wisykwt.$cacheVersion.".$GLOBALS['wisyPortalId'].".$this->args".".".WISY_KEYWORDTABLE_CLASS::$sw_modified;
 		if( ($ret=$this->dbCache->lookup($cacheKey))!='' ) {
+			$ret = str_replace('<div class="wisy_glskeytime">', '<div class="wisy_glskeytime">Cached, ', $ret);
 			return $ret;
 		}
+		
 	
 		// prepare html
 		$ret = '';
@@ -193,6 +204,10 @@ class WISY_KEYWORDTABLE_CLASS
 			.		'</tbody>'
 			. '</table>';
 		
+		$secneeded = $this->framework->microtime_float() - $this->start;
+		$secneeded_str = sprintf("%1.3f", $secneeded); $secneeded_str = str_replace('.', ',', $secneeded_str);
+		$ret .= '<div class="wisy_glskeytime">Erstellt '.strftime('%Y-%m-%d %H:%M:%S').' in '.$secneeded_str.' s</div>';
+
 		// add to cache
 		$this->dbCache->insert($cacheKey, $ret);		
 

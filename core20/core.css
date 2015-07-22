@@ -596,7 +596,7 @@ ul.dropdown ul *.dir {
 table.wisy_glskey {
 	border-spacing: 1px;
 	margin-top: 1em;
-	margin-bottom: 1em;
+	margin-bottom: 0em;
 	max-width: 90%;
 	border-bottom: 1px solid #bbb;
 }
@@ -617,6 +617,11 @@ table.wisy_glskey tbody tr td {
   vertical-align: top;
 }
 
+div.wisy_glskeytime { /*this class is temporary; when removing it, add the border to table.wisy_glskey */
+	margin-bottom: 1em;
+	font-size: 11px;
+	color: #e4e4e4;
+}
 
 /*******************************************************************************
  accessibility

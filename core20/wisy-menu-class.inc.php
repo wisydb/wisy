@@ -208,10 +208,12 @@ class WISY_MENU_CLASS
 		if( $addChildren > 0 ) 
 		{
 			$attr_ids = array();
+			/*
 			$this->db->query("SELECT attr_id FROM stichwoerter_verweis2 WHERE primary_id=$keywordId ORDER BY structure_pos;");
 			while( $this->db->next_record() ) {
 				$attr_ids[] = $this->db->f('attr_id');
 			}
+			*/
 		
 			for( $a = 0; $a < sizeof($attr_ids); $a++ ) {
 				$item->children[] =& $this->addKeywordsRecursive('', $attr_ids[$a], $level+1, $addChildren-1);

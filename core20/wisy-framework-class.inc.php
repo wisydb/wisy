@@ -30,7 +30,7 @@ class WISY_FRAMEWORK_CLASS
 	function __construct($baseObject, $addParam)
 	{
 		// constructor
-		$this->includeVersion = '?iv=113'; // change the number on larger changes in included CSS and/or JS files.  May be empty.
+		$this->includeVersion = '?iv=114'; // change the number on larger changes in included CSS and/or JS files.  May be empty.
 		
 		// init edit stuff
 		$this->editCookieName		= 'wisyEdit20';
