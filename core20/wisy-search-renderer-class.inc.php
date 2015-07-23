@@ -358,7 +358,7 @@ class WISY_SEARCH_RENDERER_CLASS
 										 else							    { $row_preposition = ' zum '; $row_postfix = 'Anbieter'; }
 								    }
 		else if( $tag_type & 512 )	{ $row_class = "ac_ort";                  $row_preposition = ' zum '; $row_postfix = 'Ort'; }
-		else if( $tag_type & 1024 )	{ $row_class = "ac_sonstigesmerkmal";     $row_preposition = ' zu ';  $row_postfix = 'sonstiges Merkmal'; }
+		else if( $tag_type & 1024 )	{ $row_class = "ac_sonstigesmerkmal";     $row_preposition = ' zum';  $row_postfix = 'sonstigen Merkmal'; }
 		else if( $tag_type & 32768 ){ $row_class = "ac_unterrichtsart";       $row_preposition = ' zur '; $row_postfix = 'Unterrichtsart'; }
 	
 		if( $addparam['hidetagtypestr'] ) {
@@ -366,13 +366,14 @@ class WISY_SEARCH_RENDERER_CLASS
 		}
 
 		/* frequency, end base type */ 
-		if( $tag_descr ) {
-			$row_preposition = ', '; $row_postfix = $tag_descr;
-		}
-			
 		if( $tag_freq > 0 )
 		{
 			$row_postfix = ($tag_freq==1? '1 Kurs' : "$tag_freq Kurse") . $row_preposition . $row_postfix;
+		}
+		
+		if( $tag_descr ) 
+		{
+			$row_postfix = $tag_descr . ', ' . $row_postfix;
 		}
 		
 		if( $row_postfix != '' )
