@@ -68,6 +68,7 @@ class WISY_MENU_CLASS
 		$this->framework =& $framework;
 		$this->prefix = $param['prefix'];
 		$this->db = new DB_Admin;
+		$this->start_s = $this->framework->microtime_float();
 	}
 	
 	// Themengebiet Items erzeugen (deprecated)
@@ -177,6 +178,12 @@ class WISY_MENU_CLASS
 	{
 		global $g_keywords;
 		
+		// check for timeout
+		$timeout_after_s = 5.000;
+		if( $this->framework->microtime_float() - $this->start_s > $timeout_after_s ) {
+			return new WISY_MENU_ITEM('Timeout error', '', '', $level);;
+		}		
+		
 		// add the item itself
 		if( strpos($keywordId, '&') !== false ) 
 		{
@@ -208,12 +215,10 @@ class WISY_MENU_CLASS
 		if( $addChildren > 0 ) 
 		{
 			$attr_ids = array();
-			/*
 			$this->db->query("SELECT attr_id FROM stichwoerter_verweis2 WHERE primary_id=$keywordId ORDER BY structure_pos;");
 			while( $this->db->next_record() ) {
 				$attr_ids[] = $this->db->f('attr_id');
 			}
-			*/
 		
 			for( $a = 0; $a < sizeof($attr_ids); $a++ ) {
 				$item->children[] =& $this->addKeywordsRecursive('', $attr_ids[$a], $level+1, $addChildren-1);
@@ -325,11 +330,11 @@ class WISY_MENU_CLASS
 		global $wisyPortalEinstellungen;
 		global $wisyPortalModified;
 		
-		$cacheKey = $wisyPortalModified . ' ' .strftime('%Y-%m-%d %H:00:00'). ' v6'; // the key changes if the portal record is updated or at least every hour (remember __DATE__ etc.)
+		$cacheKey = $wisyPortalModified . ' ' .strftime('%Y-%m-%d %H:00:00'). ' v7'; // the key changes if the portal record is updated or at least every hour (remember __DATE__ etc.)
 		if( $this->framework->cacheRead("menu.{$this->prefix}.key", '')==$cacheKey )
 		{
 			// read the menu from the cache ...
-			$ret = $this->framework->cacheRead("menu.{$this->prefix}.cache");
+			$ret = '<!-- dropdown read from cache -->' . $this->framework->cacheRead("menu.{$this->prefix}.cache");
 		}
 		else
 		{
@@ -378,6 +383,11 @@ class WISY_MENU_CLASS
 					$ret .= $root->children[$i]->getHtml();
 				}
 			$ret .= '</ul>';
+			
+			// add time
+			$secneeded = $this->framework->microtime_float() - $this->start_s;
+			$ret = sprintf("<!-- dropdown creation time: %1.3f s -->", $secneeded) . $ret;
+			
 			
 			// write the complete menu to the cache
 			$this->framework->cacheWrite("menu.{$this->prefix}.key", $cacheKey);
