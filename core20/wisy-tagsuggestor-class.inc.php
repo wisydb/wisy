@@ -78,6 +78,9 @@ class WISY_TAGSUGGESTOR_CLASS
 			if( $GLOBALS['wisyPortalFilter']['stdkursfilter']!='' ) {
 				$portalIdCond = ' AND portal_id=' . $GLOBALS['wisyPortalId'] . ' ';
 			}
+			else {
+				$portalIdCond = ' AND portal_id=0 ';
+			}
 			$this->db2->query("SELECT tag_freq FROM x_tags_freq WHERE tag_id=".intval($tag_ids_arr[0]) . $portalIdCond); // x_tags_freq only contains recent offers, date checking is not required
 			if( $this->db2->next_record() ) {
 				return $this->db2->f('tag_freq');
