@@ -454,7 +454,9 @@ class WISY_SYNC_RENDERER_CLASS
 		require_once("admin/eql.inc.php");
 		require_once("admin/config/codes.inc.php");
 		require_once('admin/config/trigger_kurse.inc.php');
-
+	
+		$db = new DB_Admin;
+		
 		// setup vars
 		$this->framework		=& $framework;
 		$this->statetable		= new WISY_SYNC_STATETABLE_CLASS($this->framework);
@@ -466,7 +468,49 @@ class WISY_SYNC_RENDERER_CLASS
 		$this->tagescodes		= array(''/*0*/, 'Ganztags'/*1*/, 'Vormittags'/*2*/, 'Nachmittags'/*3*/, 'Abends'/*4*/, 'Wochenende'/*5*/);
 		$this->today_datetime   = strftime("%Y-%m-%d %H:%M:%S");
 		$this->today_datenotime = substr($this->today_datetime, 0, 10);
+		
+		// create hash stichwort => übergeordneteStichwörter
+		$this->verweis2 = array();
+		$db->query("SELECT primary_id, attr_id FROM stichwoerter_verweis2 LEFT JOIN stichwoerter ON attr_id=id WHERE eigenschaften&(32|64)=0;");
+		while( $db->next_record() ) {
+			$this->verweis2[ $db->f('attr_id') ][] = $db->f('primary_id');
+		}
+		
+		$this->flatenArray($this->verweis2);
 	}
+	
+	
+	protected function flatenArray(&$ids)
+	{
+		// function expects an array as $id => $super_ids
+		// for each $id it then scans all $super_ids and checks if they exists as a $id - if so, these $super_ids are added to the original $id, too.
+		// recursive function.
+		$this->in_work = array();
+		foreach( $ids as $id => $super_ids )
+		{
+			$this->flatenArray__($ids, $id);
+		}
+	}
+	protected function flatenArray__(&$ids, $id)
+	{
+		if( $this->in_work[$id] ) { return; } $this->in_work[$id] = 1; // avoid dead lock and speed up things
+		foreach( $ids[$id] as $super_id )
+		{
+			if( is_array($ids[$super_id]) ) 
+			{
+				$this->flatenArray__($ids, $super_id);
+				for( $k = 0; $k < sizeof($ids[$super_id]); $k++ )
+				{
+					$to_add = $ids[$super_id][$k];
+					if( !in_array($to_add, $ids[$id]) )
+					{
+						$ids[$id][] = $to_add;
+					}
+				}
+			}
+		}
+	}
+	
 	
 	function log($str)
 	{
@@ -644,15 +688,16 @@ class WISY_SYNC_RENDERER_CLASS
 				if( $tag_id ) $tag_ids[] = $tag_id;
 			}			
 			
-			// add AutoStichwort
+			// add AutoStichwort (d.h. zu einem Stichwort die uebergeordneten Stichwoerter automatisch hinzufuegen)
 			// siehe hierzu die Anmerkungen in wisy-durchf-class.inc.php bei [1]
-			if( sizeof($all_stichwort_ids) )
+			foreach( $all_stichwort_ids as $stichwort_id )
 			{
-				$db2->query("SELECT primary_id FROM stichwoerter_verweis2 WHERE attr_id IN(" . implode(',', $all_stichwort_ids) . ");");
-				while( $db2->next_record() )
+				if( is_array($this->verweis2[$stichwort_id]) )
 				{
-					$stichwort_id = intval($db2->f('primary_id'));
-					$this->stichw2tag->lookupTagIds($stichwort_id, $tag_ids);
+					foreach( $this->verweis2[$stichwort_id] as $stichwort_id2 )
+					{
+						$this->stichw2tag->lookupTagIds($stichwort_id2, $tag_ids);
+					}
 				}
 			}
 			
