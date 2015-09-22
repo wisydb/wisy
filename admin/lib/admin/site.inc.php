@@ -358,7 +358,7 @@ class ADMIN_SITE_CLASS
 		global $transentities;
 		
 		if( !is_array($transentities) ) {
-			$transentities = array_flip(get_html_translation_table(HTML_ENTITIES));
+			$transentities = array_flip(get_html_translation_table(HTML_ENTITIES, ENT_COMPAT|ENT_HTML401, 'ISO-8859-1'));
 		}
 		
 		return strtr($str, $transentities);

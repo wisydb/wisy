@@ -125,7 +125,7 @@ function plugin_edit_access(&$param)
 			$code .= ";SUPERVISOR;$allgroups;SYSTEM;LOCALIZELANG,LOCALIZEENTRIES,EXPORT,IMPORT".plugin_edit_access_get_add_rules('addrules.system')."\";euar=\"";
 			
 			$i = 0;
-			$ent = get_html_translation_table(HTML_ENTITIES);
+			$ent = get_html_translation_table(HTML_ENTITIES, ENT_COMPAT|ENT_HTML401, 'ISO-8859-1');
 			$ent = array_flip($ent);
 			reset($transl);
 			while( list($k, $v) = each($transl) ) {
