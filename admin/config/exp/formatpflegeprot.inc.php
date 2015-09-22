@@ -27,36 +27,6 @@ Ihr Name
 __EOT__;
 
 
-/*****************************************************************************
- * nachrichten ueber externen server senden
- *****************************************************************************/
-
-
-
-// $host includes host and path and filename
-// ex: "myserver.com/this/is/path/to/file.php"
-// $query is the POST query data
-// ex: "a=thisstring&number=46&string=thatstring
-// $others is any extra headers you want to send
-// ex: "Accept-Encoding: compress, gzip\r\n"
-function post($host,$query,$others='')
-{
-   $path=explode('/',$host);
-   $host=$path[0];
-   unset($path[0]);
-   $path='/'.(implode('/',$path));
-   $post="POST $path HTTP/1.1\r\nHost: $host\r\nContent-type: application/x-www-form-urlencoded\r\n${others}User-Agent: Mozilla 4.0\r\nContent-length: ".strlen($query)."\r\nConnection: close\r\n\r\n$query";
-   $h=fsockopen($host,80);
-   fwrite($h,$post);
-   for($a=0,$r='';!$a;){
-       $b=fread($h,8192);
-       $r.=$b;
-       $a=(($b=='')?1:0);
-   }
-   fclose($h);
-   return $r;
-}
-
 
 /*****************************************************************************
  * Funktionen aus dem Portal, Rueckgabe ASCII anstelle von HTML
@@ -839,37 +809,10 @@ class EXP_FORMATPFLEGEPROT_CLASS extends EXP_PLUGIN_CLASS
 				return 0;
 			}
 			
-			
-		
-			if( 1 )
+			if( !@mail($to, $subject, $text, "From: {$from}\r\nReply-To: {$from}") )
 			{
-				post('www.silverjuke.net/wisymail.php',
-						'to=' 		. urlencode($to)
-					.	'&from=' 	. urlencode($from)
-					.	'&subject=' . urlencode($subject)
-					.	'&text=' 	. urlencode($text)
-					.	'&rand='	. rand() );
-			}
-			else
-			{
-				$handle = @fopen('http:/'.'/www.silverjuke.net/wisymail.php'
-				
-					.	'?to=' 		. urlencode($to)
-					.	'&from=' 	. urlencode($from)
-					.	'&subject=' . urlencode($subject)
-					.	'&text=' 	. urlencode($text)
-					.	'&rand='	. rand()
-					
-					, 	'r' );
-				
-				if( !$handle )
-				{
-					// seems to work anyway
-					//$this->log("FEHLER: Kann Mail nicht versenden (fopen() schlug fehl).");
-					return 0;
-				}
-				
-				fclose($handle);
+				$this->log("FEHLER: E-Mail an $to wurde nicht zur Auslieferung akzeptiert.");
+				return 0;
 			}
 		}
 		
