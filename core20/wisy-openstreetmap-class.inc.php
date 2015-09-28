@@ -391,7 +391,7 @@ class WISY_OPENSTREETMAP_CLASS
 		// call geocoder
 		$obj = new G_GEOCODE();
 		if( $addto == 'temp' ) {
-			$obj->set_nominatim_url('http://open.mapquestapi.com/nominatim/v1/search');
+			//$obj->set_nominatim_url('http://open.mapquestapi.com/nominatim/v1/search'); -- 2015-09-28 15:48 this server has problems, stay on default
 		}
 		$coord = $obj->geocode($q_arr);
 		//$coord['dbg_geocoder'] = $obj->get_nominatim_url();
