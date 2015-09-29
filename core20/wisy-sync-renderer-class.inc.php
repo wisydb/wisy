@@ -1147,6 +1147,7 @@ class WISY_SYNC_RENDERER_CLASS
 	
 	function render()
 	{
+		$overall_time = microtime(true);
 		headerDoCache(0);
 		header("Content-type: text/plain");
 
@@ -1208,7 +1209,7 @@ class WISY_SYNC_RENDERER_CLASS
 
 					// if this is not reached the script may be limited by some server limits: Script-Time, CPU-Time, Memory ...
 					// plesae note that kursportal.domainfactory-kunde.de has 5 minutes CPU-time whoile the other domains have only one.
-					$this->log(sprintf('done. max. memory: %1.1f MB', memory_get_peak_usage(true)/1048576));
+					$this->log(sprintf('done. max. memory: %1.1f MB, time: %1.0f minutes', memory_get_peak_usage(true)/1048576, (microtime(true)-$overall_time)/60));
 					
 		// release exclusive access
 		$this->statetable->releaseUpdatestick();
