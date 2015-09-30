@@ -1153,6 +1153,9 @@ class WISY_SYNC_RENDERER_CLASS
 
 		$host = $_SERVER['HTTP_HOST'];
 		
+		// print common information
+		$this->log(sprintf("sync script started, PHP version: %s", phpversion()));
+		
 		// check the apikey
 		// the apikey must be set in the portal settings of the domain this script is executed on.
 		if( $_GET['apikey'] != $this->framework->iniRead('apikey', 'none') )
