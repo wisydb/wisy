@@ -221,7 +221,7 @@ function selectPortalOrFwd301()
 	}
 	
 	// nothing found at all - go to fallback (domain containing an "*") or show an error
-	$sql = "SELECT domains FROM portale WHERE domains LIKE '%*%';";
+	$sql = "SELECT * FROM portale WHERE domains LIKE '%*%';";
 	$db->query($sql);
 	if( $db->next_record() )
 	{
