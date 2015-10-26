@@ -668,7 +668,7 @@ class EXP_FORMATPFLEGEPROT_CLASS extends EXP_PLUGIN_CLASS
 			// durchfuehrungen...
 			for( $d = 0; $d < sizeof($kurse[$k]['durchf']); $d++ )
 			{
-				$ret .= "\nKurs-Nr:     " . $kurse[$k]['durchf'][$d]['nr'];
+				$ret .= "\nAng.-Nr:     " . $kurse[$k]['durchf'][$d]['nr'];
 				$ret .= "\n  Termin:    " . $kurse[$k]['durchf'][$d]['termin'];
 				$ret .= "\n  Dauer:     " . $kurse[$k]['durchf'][$d]['dauer'];
 				$ret .= "\n  Art:       " . $kurse[$k]['durchf'][$d]['art'];

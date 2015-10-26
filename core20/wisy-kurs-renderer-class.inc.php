@@ -161,7 +161,7 @@ class WISY_KURS_RENDERER_CLASS
 						if (($wisyPortalSpalten & 8) > 0)	{ echo '<th>Art</th>';				}
 						if (($wisyPortalSpalten & 16) > 0)	{ echo '<th>Preis</th>';			}
 						if (($wisyPortalSpalten & 32) > 0)	{ echo '<th>Ort/Bemerkungen</th>';	}
-						if (($wisyPortalSpalten & 64) > 0)	{ echo '<th>Kurs-Nr.</th>';			}
+						if (($wisyPortalSpalten & 64) > 0)	{ echo '<th>Ang.-Nr.</th>';			}
 					echo '</tr>';
 					
 					/*

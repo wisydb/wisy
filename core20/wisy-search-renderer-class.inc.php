@@ -621,7 +621,7 @@ class WISY_SEARCH_RENDERER_CLASS
 				if (($wisyPortalSpalten & 8)  > 0) {	$this->renderColumnTitle('Art',				'',		$orderBy,	1967);			$colspan++; }
 				if (($wisyPortalSpalten & 16) > 0) {	$this->renderColumnTitle('Preis',			'p',	$orderBy,	309);			$colspan++; }
 				if (($wisyPortalSpalten & 32) > 0) {	$this->renderColumnTitle('Ort',				'o', 	$orderBy,	1936);			$colspan++; }
-				if (($wisyPortalSpalten & 64) > 0) {	$this->renderColumnTitle('Kurs-Nr.',		'', 	$orderBy,	0);				$colspan++; }
+				if (($wisyPortalSpalten & 64) > 0) {	$this->renderColumnTitle('Ang.-Nr.',		'', 	$orderBy,	0);				$colspan++; }
 				if (($wisyPortalSpalten & 128)> 0) { 	$this->renderColumnTitle('BU',				'', 	$orderBy,	0);				$colspan++; }
 				if( $info['lat'] && $info['lng'] ) {    $this->renderColumnTitle('Entfernung',		'', 	$orderBy,	0);				$colspan++; $this->hasDistanceColumn = true; $this->baseLat = $info['lat']; $this->baseLng = $info['lng'];  }
 			echo '  </tr>' . "\n";
