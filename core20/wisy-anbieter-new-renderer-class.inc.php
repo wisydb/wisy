@@ -359,6 +359,7 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 		}
 		$din_nr			= $db->f('din_nr');
 		$suchname		= $db->f('suchname');
+		$typ            = intval($db->f('typ'));
 		$firmenportraet	= trim($db->f('firmenportraet'));
 		$date_created	= $db->f('date_created');
 		$date_modified	= $db->f('date_modified');
@@ -376,10 +377,17 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 		
 		// page out
 		headerDoCache();
+
+		$bodyClass = 'wisyp_anbieter';
+		if( $typ == 2 ) 
+		{
+			$bodyClass .= ' wisyp_beratungsstelle';
+		}
+		
 		echo $this->framework->getPrologue(array(	
 													'title'		=>	$suchname,  
 													'canonical'	=>	$this->framework->getUrl('a', array('id'=>$anbieter_id)),
-													'bodyClass'	=>	'wisyp_anbieter',
+													'bodyClass'	=>	$bodyClass,
 											));
 		echo $this->framework->getSearchField();
 

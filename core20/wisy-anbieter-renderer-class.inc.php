@@ -440,11 +440,13 @@ class WISY_ANBIETER_RENDERER_CLASS
 		}
 
 		// check for existance, get title
-		$db->query("SELECT suchname FROM anbieter WHERE id=$anbieter_id");
+		$db->query("SELECT suchname, typ FROM anbieter WHERE id=$anbieter_id");
 		if( !$db->next_record() ) {
 			$this->framework->error404(); // record does not exist, reporta normal 404 error, not a "Soft 404", see  http://goo.gl/IKMnm -- für nicht-freigeschaltete Datensätze, s. [here]
 		}
 		$anbieter_suchname = $db->fs('suchname');
+		$typ               = intval($db->f('typ'));
+
 
 		// promoted?
 		if( intval($_GET['promoted']) > 0 )
@@ -455,10 +457,16 @@ class WISY_ANBIETER_RENDERER_CLASS
 		
 		// page out
 		headerDoCache();
+		
+		$bodyClass = 'wisyp_anbieter';
+		if( $typ == 2 )
+		{
+			$bodyClass .= ' wisyp_beratungsstelle';
+		}
 		echo $this->framework->getPrologue(array(	
 													'title'		=>	$anbieter_suchname,  
 													'canonical'	=>	$this->framework->getUrl('a', array('id'=>$anbieter_id)),
-													'bodyClass'	=>	'wisyp_anbieter',
+													'bodyClass'	=>	$bodyClass,
 											));
 		echo $this->framework->getSearchField();
 
