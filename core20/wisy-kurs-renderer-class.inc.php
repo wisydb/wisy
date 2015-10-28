@@ -22,7 +22,7 @@ class WISY_KURS_RENDERER_CLASS
 
 		// query DB
 		$db = new DB_Admin();
-		$db->query("SELECT	k.freigeschaltet, k.titel, k.org_titel, k.beschreibung, k.anbieter, k.date_created, k.date_modified, k.bu_nummer, k.fu_knr, k.azwv_knr, a.pflege_pweinst
+		$db->query("SELECT	k.freigeschaltet, k.titel, k.org_titel, k.beschreibung, k.anbieter, k.date_created, k.date_modified, k.bu_nummer, k.fu_knr, k.azwv_knr, a.pflege_pweinst, a.typ
 						FROM kurse k
 						LEFT JOIN anbieter a ON a.id=k.anbieter
 						WHERE k.id=$kursId"); // "a.suchname" etc. kann mit "LEFT JOIN anbieter a ON a.id=k.anbieter" zus. abgefragt werden
@@ -37,6 +37,7 @@ class WISY_KURS_RENDERER_CLASS
 		$date_modified		= $db->f('date_modified');
 		$bu_nummer 			= $db->f('bu_nummer');
 		$pflege_pweinst		= intval($db->f('pflege_pweinst'));
+		$anbieter_typ		= intval($db->f('typ'));
 		$record				= $db->Record;
 		
 		// promoted?
@@ -48,7 +49,14 @@ class WISY_KURS_RENDERER_CLASS
 
 		// page start
 		headerDoCache();
-		echo $this->framework->getPrologue(array('title'=>$title, 'canonical' => $this->framework->getUrl('k', array('id'=>$kursId)), 'bodyClass'=>'wisyp_kurs'));
+		
+		$bodyClass = 'wisyp_kurs';
+		if( $anbieter_typ == 2 )
+		{
+			$bodyClass .= ' wisyp_kurs_beratungsstelle';
+		}
+		
+		echo $this->framework->getPrologue(array('title'=>$title, 'canonical' => $this->framework->getUrl('k', array('id'=>$kursId)), 'bodyClass'=>$bodyClass));
 		echo $this->framework->getSearchField();
 		
 		// start the result area

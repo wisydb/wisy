@@ -461,7 +461,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		$bodyClass = 'wisyp_anbieter';
 		if( $typ == 2 )
 		{
-			$bodyClass .= ' wisyp_beratungsstelle';
+			$bodyClass .= ' wisyp_anbieter_beratungsstelle';
 		}
 		echo $this->framework->getPrologue(array(	
 													'title'		=>	$anbieter_suchname,  
