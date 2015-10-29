@@ -71,20 +71,21 @@ class WISY_KURS_RENDERER_CLASS
 			
 			echo '<p class="noprint">' 
 			.	 	'<a href="javascript:history.back();">&laquo; Zur&uuml;ck</a>'
-			.	 '</p>'
-			.    '<h1>' . isohtmlentities($title);
+			.	 '</p>';
 			
-			if( $this->framework->iniRead('fav.use', 0) ) {
-				echo '<span class="fav_add" data-favid="'.$kursId.'"></span>';
-			}		
-			
+			echo '<h1>';
+				if( $anbieter_typ == 2 ) echo '<span class="wisy_icon_beratungsstelle">Beratungangebot<span class="dp">:</span></span> ';
+				echo isohtmlentities($title);
+				if( $this->framework->iniRead('fav.use', 0) ) {
+					echo '<span class="fav_add" data-favid="'.$kursId.'"></span>';
+				}		
 			echo '</h1>';
 			
-				if( $originaltitel != '' && $originaltitel != $title )
-				{
-					echo '<p><i>' . /*'Originaltitel: ' .*/ isohtmlspecialchars($originaltitel) . '</i></p>';
-				}
-			
+			if( $originaltitel != '' && $originaltitel != $title )
+			{
+				echo '<p><i>' . /*'Originaltitel: ' .*/ isohtmlspecialchars($originaltitel) . '</i></p>';
+			}
+		
 
 			flush();
 			

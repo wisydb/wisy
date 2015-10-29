@@ -123,13 +123,12 @@ class WISY_SEARCH_RENDERER_CLASS
 		echo '</span>' . "\n";
 	}
 	
-	function renderAnbieterCell(&$db2, $currAnbieterId, $param)
+	protected function renderAnbieterCell2(&$db2, $record, $param)
 	{
-		$db2->query("SELECT suchname, pruefsiegel_seit, anspr_tel FROM anbieter WHERE id=$currAnbieterId");
-		$db2->next_record();
-		$anbieterName = $db2->fs('suchname');
-		$pruefsiegel_seit = $db2->f('pruefsiegel_seit');
-		$anspr_tel = $db2->fs('anspr_tel');
+		$currAnbieterId = $record['id'];
+		$anbieterName = $record['suchname'];
+		$pruefsiegel_seit = $record['pruefsiegel_seit'];
+		$anspr_tel = $record['anspr_tel'];
 
 		echo '    <td class="wisy_anbieter">';
 			echo $this->framework->getSeals($db2, array('anbieterId'=>$currAnbieterId, 'seit'=>$pruefsiegel_seit, 'size'=>'small'));
@@ -250,6 +249,10 @@ class WISY_SEARCH_RENDERER_CLASS
 			echo "  <tr$class>\n";
 
 				// SPALTE: kurstitel
+				$db->query("SELECT id, suchname, pruefsiegel_seit, anspr_tel, typ FROM anbieter WHERE id=$currAnbieterId");
+				$db->next_record();
+				$anbieter_record = $db->Record;
+					
 				echo '    <td class="wisy_kurstitel">';
 					$aparam = array('id'=>$currKursId, 'q'=>$param['q']);
 					if( $param['promoted'] ) {$aparam['promoted'] = $currKursId;}
@@ -264,6 +267,8 @@ class WISY_SEARCH_RENDERER_CLASS
 							if( $currKursFreigeschaltet == 0 ) { echo '<em>Kurs in Vorbereitung:</em><br />'; }
 							if( $currKursFreigeschaltet == 2 ) { echo '<em>Gesperrt:</em><br />'; }
 							if( $currKursFreigeschaltet == 3 ) { echo '<em>Abgelaufen:</em><br />'; }
+							
+							if( $anbieter_record['typ'] == 2 ) echo '<span class="wisy_icon_beratungsstelle">Beratungsangebot<span class="dp">:</span></span> ';
 							
 							echo isohtmlspecialchars($record['titel']);
 						
@@ -281,7 +286,8 @@ class WISY_SEARCH_RENDERER_CLASS
 				if (($wisyPortalSpalten & 1) > 0)
 				{
 					// SPALTE: anbieter
-					$this->renderAnbieterCell($db, $currAnbieterId, array('q'=>$param['q'], 'addPhone'=>true, 'promoted'=>$param['promoted'], 'kurs_id'=>$currKursId));
+
+					$this->renderAnbieterCell2($db, $anbieter_record, array('q'=>$param['q'], 'addPhone'=>true, 'promoted'=>$param['promoted'], 'kurs_id'=>$currKursId));
 				}
 				
 				// SPALTEN: durchfuehrung
@@ -838,7 +844,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			while( list($i, $record) = each($records['records']) )
 			{
 				echo '  <tr>' . "\n";
-					$this->renderAnbieterCell($db2, $record['id'], array('q'=>$queryString, 'addPhone'=>false, 'clickableName'=>true));
+					$this->renderAnbieterCell2($db2, $record, array('q'=>$queryString, 'addPhone'=>false, 'clickableName'=>true));
 					echo '<td>';
 						echo isohtmlspecialchars($record['strasse']);
 					echo '</td>';
