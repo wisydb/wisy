@@ -146,13 +146,13 @@ class WISY_KURS_RENDERER_CLASS
 			$durchfuehrungenIds = $durchfClass->getDurchfuehrungIds($db, $kursId, $showAllDurchf);
 			echo '<p>';
 				if( sizeof($durchfuehrungenIds)==0 ) {
-					echo $this->framework->iniRead('durchf.msg.keinedf', 'F&uuml;r dieses Angebot ist momentan keine Durchf&uuml;hrung bekannt.');
+					echo $this->framework->iniRead('durchf.msg.keinedf', 'F&uuml;r dieses Angebot ist momentan keine Zeit und kein Ort bekannt.');
 				}
 				else if( sizeof($durchfuehrungenIds) == 1 ) {
-					echo 'F&uuml;r dieses Angebot ist momentan eine Durchf&uuml;hrung bekannt:';
+					echo 'F&uuml;r dieses Angebot ist momentan eine Zeit bzw. Ort bekannt:';
 				}
 				else {
-					echo 'F&uuml;r dieses Angebot sind momentan ' .sizeof($durchfuehrungenIds). ' Durchf&uuml;hrungen bekannt:';
+					echo 'F&uuml;r dieses Angebot sind momentan ' .sizeof($durchfuehrungenIds). ' Zeiten bzw. Orte bekannt:';
 				}
 			echo '</p>';
 		
