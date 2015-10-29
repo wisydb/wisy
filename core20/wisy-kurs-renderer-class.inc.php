@@ -132,11 +132,11 @@ class WISY_KURS_RENDERER_CLASS
 
 			if( $rows != '' ) 
 			{
-				echo '<table' . html3(' cellpadding="0" cellspacing="0" border="0"') . '>' . $rows . '</table>';
+				echo '<table class="wisy_stichwlist"' . html3(' cellpadding="0" cellspacing="0" border="0"') . '>' . $rows . '</table>';
 			}
 
 			// Durchfuehrungen vorbereiten
-			echo '<h1 class="wisy_df_headline">Termine</h1>';
+			echo '<h1 class="wisy_df_headline">Zeiten, Orte</h1>';
 			
 			$showAllDurchf = intval($_GET['showalldurchf'])==1? 1 : 0;
 			if( $showAllDurchf )
@@ -164,11 +164,11 @@ class WISY_KURS_RENDERER_CLASS
 			{
 				echo '<table class="wisy_list"' . html3(' cellpadding="0" cellspacing="0" border="0"') . '>';
 					echo '<tr>';
-						if (($wisyPortalSpalten & 2) > 0)	{ echo '<th>Termin</th>';			}
+						if (($wisyPortalSpalten & 2) > 0)	{ echo '<th>Zeiten</th>';			}
 						if (($wisyPortalSpalten & 4) > 0)	{ echo '<th>Dauer</th>';			}
 						if (($wisyPortalSpalten & 8) > 0)	{ echo '<th>Art</th>';				}
 						if (($wisyPortalSpalten & 16) > 0)	{ echo '<th>Preis</th>';			}
-						if (($wisyPortalSpalten & 32) > 0)	{ echo '<th>Ort/Bemerkungen</th>';	}
+						if (($wisyPortalSpalten & 32) > 0)	{ echo '<th>Ort, Bemerkungen</th>';	}
 						if (($wisyPortalSpalten & 64) > 0)	{ echo '<th>Ang.-Nr.</th>';			}
 					echo '</tr>';
 					

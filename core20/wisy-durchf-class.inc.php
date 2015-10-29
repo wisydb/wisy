@@ -507,41 +507,54 @@ class WISY_DURCHF_CLASS
 		{
 			echo "    <td$terminAttr>";
 			
+			$cell = '';
+			
 			if( $beginn )
 			{
-				if( $termin_abgelaufen ) { echo '<span class="wisy_datum_abgel">'; }
-			    	echo ($ende && $beginn!=$ende)? "$beginn - $ende" : $beginn;
-			    if( $termin_abgelaufen ) { echo '</span>'; }
+				if( $termin_abgelaufen ) { $cell .= '<span class="wisy_datum_abgel">'; }
+			    	$cell .= ($ende && $beginn!=$ende)? "$beginn - $ende" : $beginn;
+			    if( $termin_abgelaufen ) { $cell .= '</span>'; }
 			    
-				if( $beginnoptionen ) { echo "<br /><small>$beginnoptionen</small>"; }
+				if( $beginnoptionen ) { $cell .= "<br /><small>$beginnoptionen</small>"; }
 			}
 			else if( $beginnoptionen )
 			{
-				echo $beginnoptionen;
-			}
-			else
-			{
-				echo 'k. A.';
+				$cell .= $beginnoptionen;
 			}
 			
 			if( $addParam['record']['freigeschaltet'] == 4 )
 			{
-				echo "<br /><small>dauerhaftes Angebot</small>"; 
+				$small = ''; $smallend = '';
+				if( $cell != '' ) { $cell .= '<br />'; $small = '<small>'; $smallend = '</small>'; }
+				
+				$cell .= "{$small}dauerhaftes Angebot{$smallend}"; 
 			}
 			
 			if( $zeit_von && $zeit_bis ) {
-				echo "<br /><small>$zeit_von - $zeit_bis Uhr</small>"; 
+				$small = ''; $smallend = '';
+				if( $cell != '' ) { $cell .= '<br />'; $small = '<small>'; $smallend = '</small>'; }
+				
+				$cell .= "{$small}$zeit_von - $zeit_bis Uhr{$smallend}"; 
 			}
 			else if( $zeit_von ) {
-				echo "<br /><small>$zeit_von Uhr</small>"; 
+				$small = ''; $smallend = '';
+				if( $cell != '' ) { $cell .= '<br />'; $small = '<small>'; $smallend = '</small>'; }
+				
+				$cell .= "{$small}$zeit_von Uhr{$smallend}"; 
 			}
 			
 			if( $addText ) // z.B. für "2 weitere Durchführungen ..."
 			{
-				echo '<br />' . $addText;
+				$cell .= $cell!=''? '<br />' : '';
+				$cell .= $addText;
 			}
 			
-			echo '</td>' . "\n";
+			if( $cell == '' )
+			{
+				$cell .= 'k. A.'; 
+			}
+			
+			echo $cell . '</td>' . "\n";
 		}
 		
 		if (($wisyPortalSpalten & 4) > 0)
