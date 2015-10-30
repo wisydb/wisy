@@ -263,7 +263,13 @@ span.wisy_datum_abgel {
 	text-decoration: line-through;
 }
 
+img.seal, img.seal_small {
+ border:0;
+}
 
+img.seal_small {
+ float: right;
+}
 
 /*******************************************************************************
 advanced form
