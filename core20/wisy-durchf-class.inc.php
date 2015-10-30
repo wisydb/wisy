@@ -475,7 +475,7 @@ class WISY_DURCHF_CLASS
 		if( $addParam['record']['azwv_knr'] ) 	{ if(!$this->stichw_in_array($addParam['stichwoerter'], 3207)) { $addParam['stichwoerter'][] = array('id'=>3207); } }
 	    
 		// termin
-		$terminAttr = $details? '' : ' nowrap="nowrap"';
+		$terminAttr = $details? '' : ' '.html3('nowrap="nowrap"');
 		$beginnsql		= $record['beginn'];
 		$beginn			= $this->framework->formatDatum($beginnsql);
 		$beginnoptionen = $this->formatBeginnoptionen($record['beginnoptionen']);
@@ -560,7 +560,7 @@ class WISY_DURCHF_CLASS
 		if (($wisyPortalSpalten & 4) > 0)
 		{
 			// dauer
-			echo '    <td nowrap="nowrap">';
+			echo '    <td '.html3(' nowrap="nowrap"') . '>';
 				echo $this->formatDauer($record['dauer'], $record['stunden'], '%1<br /><small>(%2)</small>');
 			echo '</td>' . "\n";
 		}
@@ -568,7 +568,7 @@ class WISY_DURCHF_CLASS
 		if (($wisyPortalSpalten & 8) > 0)
 		{
 			// tagescode / bildungsurlaub / teilnehmende
-			$tagescodeAttr = $details? '' : ' align="center"';
+			$tagescodeAttr = $details? '' : ' '.html3('align="center"');
 			echo "    <td$tagescodeAttr>";
 	
 				$cell = '';
