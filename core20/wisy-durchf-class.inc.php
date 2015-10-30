@@ -568,7 +568,7 @@ class WISY_DURCHF_CLASS
 		if (($wisyPortalSpalten & 8) > 0)
 		{
 			// tagescode / bildungsurlaub / teilnehmende
-			$tagescodeAttr = $details? '' : ' '.html3('align="center"');
+			$tagescodeAttr = $details? '' : ' '.html3('align="center"').' class="type"';
 			echo "    <td$tagescodeAttr>";
 	
 				$cell = '';

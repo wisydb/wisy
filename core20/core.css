@@ -230,6 +230,10 @@ wisy_list etc.
   border-bottom: 1px solid #E2E2E2;
 }
 
+.wisy_list td.type {
+	text-align: center;
+}
+
 .wisy_list tr.wisy_even td {
 }
 
