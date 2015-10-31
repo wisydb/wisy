@@ -281,8 +281,8 @@ class WISY_OPENSTREETMAP_CLASS
 
 		// decide, which library to use
 		$ret  = "\n"
-			.	"<link rel=\"stylesheet\" href=\"core20/lib/leaflet-0.7/leaflet.css\" />\n"
-			.	"<link rel=\"stylesheet\" href=\"core20/wisy-openstreetmap-3.css\" />\n"
+			.	"<link property=\"stylesheet\" rel=\"stylesheet\" href=\"core20/lib/leaflet-0.7/leaflet.css\" />\n"
+			.	"<link property=\"stylesheet\" rel=\"stylesheet\" href=\"core20/wisy-openstreetmap-3.css\" />\n"
 			.	"<script src=\"core20/lib/leaflet-0.7/leaflet.js\"></script>\n" // type is required in html4 but not in html5
 			.	"<script src=\"core20/wisy-openstreetmap-3.js\"></script>\n"
 			.	"<script>\n  $marker_js\n  osm_map_here();\n</script>\n";
