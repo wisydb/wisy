@@ -101,6 +101,13 @@ h1.wisy_df_headline {
 	margin-top: 1em;
 }
 
+#anbieterlogo {
+  border: 0;
+  margin-top: 5px;
+  max-width: 200px;
+  max-height: 70px;
+}
+
 /*******************************************************************************
 wisy_searcharea
 *******************************************************************************/
@@ -223,6 +230,10 @@ wisy_list etc.
   border-bottom: 1px solid #E2E2E2;
 }
 
+.wisy_list td.type {
+	text-align: center;
+}
+
 .wisy_list tr.wisy_even td {
 }
 
@@ -263,7 +274,13 @@ span.wisy_datum_abgel {
 	text-decoration: line-through;
 }
 
+img.seal, img.seal_small {
+ border:0;
+}
 
+img.seal_small {
+ float: right;
+}
 
 /*******************************************************************************
 advanced form
