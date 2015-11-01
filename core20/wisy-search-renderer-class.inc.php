@@ -144,7 +144,9 @@ class WISY_SEARCH_RENDERER_CLASS
 			
 				if( $param['clickableName'] ) echo '<a href="'.$this->framework->getUrl('a', $aparam).'">';
 					
-					if( $record['typ'] == 2 ) echo '<span class="wisy_icon_beratungsstelle">Beratungsstelle<span class="dp">:</span></span> ';
+					if( $param['addIcon'] ) {
+						if( $record['typ'] == 2 ) echo '<span class="wisy_icon_beratungsstelle">Beratungsstelle<span class="dp">:</span></span> ';
+					}
 					
 					echo isohtmlspecialchars($anbieterName);
 					
@@ -846,7 +848,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			while( list($i, $record) = each($records['records']) )
 			{
 				echo '  <tr>' . "\n";
-					$this->renderAnbieterCell2($db2, $record, array('q'=>$queryString, 'addPhone'=>false, 'clickableName'=>true));
+					$this->renderAnbieterCell2($db2, $record, array('q'=>$queryString, 'addPhone'=>false, 'clickableName'=>true, 'addIcon'=>true));
 					echo '<td>';
 						echo isohtmlspecialchars($record['strasse']);
 					echo '</td>';
