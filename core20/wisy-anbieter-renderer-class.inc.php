@@ -209,6 +209,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		$anspr_name		= $db->fs('anspr_name');
 		$anspr_email	= $db->fs('anspr_email');
 		$anspr_zeit		= $db->fs('anspr_zeit');
+		$typ            = intval($db->f('typ'));
 		
 		$ob = new G_BLOB_CLASS($db->fs('logo'));
 		$logo_name		= $ob->name;
@@ -251,7 +252,10 @@ class WISY_ANBIETER_RENDERER_CLASS
 		
 		// do what to do ...
 
-					echo '<h1>' . isohtmlentities($suchname) . '</h1>';
+					echo '<h1>';
+						if( $typ == 2 ) echo '<span class="wisy_icon_beratungsstelle">Beratungsstelle<span class="dp">:</span></span> ';
+						echo isohtmlentities($suchname);
+					echo '</h1>';
 
 				
 					//if( ($logo_w && $logo_h && $logo_name != '')

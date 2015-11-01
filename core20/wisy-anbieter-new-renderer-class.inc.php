@@ -403,7 +403,10 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 		echo '<p class="noprint">';
 			echo '<a href="javascript:history.back();">&laquo; Zur&uuml;ck</a>';
 		echo '</p>';
-		echo '<h1>' . isohtmlentities($suchname) . '</h1>';
+		echo '<h1>';
+			if( $typ == 2 ) echo '<span class="wisy_icon_beratungsstelle">Beratungsstelle<span class="dp">:</span></span> ';
+			echo isohtmlentities($suchname);
+		echo '</h1>';
 		flush();
 
 		if( $firmenportraet != '' ) {

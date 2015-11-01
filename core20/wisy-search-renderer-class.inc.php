@@ -144,6 +144,8 @@ class WISY_SEARCH_RENDERER_CLASS
 			
 				if( $param['clickableName'] ) echo '<a href="'.$this->framework->getUrl('a', $aparam).'">';
 					
+					if( $record['typ'] == 2 ) echo '<span class="wisy_icon_beratungsstelle">Beratungsstelle<span class="dp">:</span></span> ';
+					
 					echo isohtmlspecialchars($anbieterName);
 					
 				if( $param['clickableName'] ) echo '</a>';
