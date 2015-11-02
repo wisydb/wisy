@@ -250,10 +250,12 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 												, array('showtagtype'=>1, 'qprefix'=>"$tag_suchname, "));
 		if( $html )
 		{
+			echo '<div class="wisy_besondere_kursarten">';
 			echo '<h1>Besondere Kursarten - aktuelle Angebote</h1>';
 			echo '<p>';
 				echo $html;
 			echo '</p>';
+			echo '</div>';
 		}
 
 		if( $this->framework->getEditAnbieterId() == $anbieter_id )
