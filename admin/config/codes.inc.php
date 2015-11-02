@@ -230,18 +230,20 @@ function berechne_wochentage($beginn, $ende)
 {
 	$wochentag1 = berechne_wochentag($beginn);
 	$wochentag2 = berechne_wochentag($ende=='0000-00-00 00:00:00'? $beginn : $ende);
-	return $wochentag1|$wochentag2; /*einfache Berechnung - für  die komplexe, diese Zeile einfach auskommentieren*/ 
+	return $wochentag1|$wochentag2; /*einfache Berechnung - für die komplexe muss der Code unten anstelle dieser Zeile ausgefuehrt werden*/ 
 	
-	if( $wochentag1==0 || $wochentag2 == 0 ) { return 0; /*fehler*/ }
-	if( $wochentag1&(32+64) || $wochentag2&(32+64) ) { return $wochentag1|$wochentag2; /*wochenende-spezialfall*/ }
+	/*
+	if( $wochentag1==0 || $wochentag2 == 0 ) { return 0; } // error
+	if( $wochentag1&(32+64) || $wochentag2&(32+64) ) { return $wochentag1|$wochentag2; } // wochenende-spezialfall
 	for( $wochentage = 0, $curr = $wochentag1, $i = 0; $i < 7; $i++ )
 	{
 		$wochentage |= $curr;
-		if( $curr == $wochentag2 ) break; /*done*/
-		$curr = $curr * 2; /*nächstes wochentagssbit*/
-		if( $curr > 64 ) $curr = 1; /*nach sonntag kommt montag*/
+		if( $curr == $wochentag2 ) break; // done
+		$curr = $curr * 2; // naechstes wochentagssbit
+		if( $curr > 64 ) $curr = 1; // nach sonntag kommt montag
 	}
 	return $wochentage;
+	*/
 }
 
 function berechne_dauer($start, $ende)
