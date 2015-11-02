@@ -1039,17 +1039,25 @@ class WISY_SEARCH_RENDERER_CLASS
 				$editor =& createWisyObject('WISY_EDIT_RENDERER_CLASS', $this->framework);
 				$adminAnbieterUserIds = $editor->getAdminAnbieterUserIds();
 				
+				// get a list of all offers that are not "gesperrt"
 				$temp = '0';
 				$titles = array();
 				$db = new DB_Admin;
 				$db->query("SELECT id, titel FROM kurse WHERE anbieter=$loggedInAnbieterId AND user_created IN (".implode(',',$adminAnbieterUserIds).") AND freigeschaltet!=2;");
 				while( $db->next_record() )
-					{ $currId = intval($db->f('id')); $titles[ $currId ] = $db->fs('titel'); $temp .= ', ' . $currId; }
+				{ 
+					$currId = intval($db->f('id')); $titles[ $currId ] = $db->fs('titel'); $temp .= ', ' . $currId;
+				}
 				
+				// compare the 'offers that are not "gesperrt"' against the ones that are in the search index
+				$liveIds = array();
 				$db->query("SELECT kurs_id FROM x_kurse WHERE kurs_id IN($temp)");
 				while( $db->next_record() )
+				{
 					$liveIds[ $db->f('kurs_id') ] = 1;
+				}
 				
+				// show 'offers that are not "gesperrt"' which are _not_ in the search index (eg. just created offers) below the normal search result
 				echo '<p><span class="wisy_edittoolbar" title="Um einen neuen Kurs hinzuzufügen, klicken Sie oben auf &quot;Neuer Kurs&quot;">Kurse in Vorbereitung:</span>&nbsp; ';
 					$out = 0;
 					reset( $titles );
