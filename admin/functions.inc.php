@@ -426,8 +426,7 @@ function form_control_datetime($name, $sqldate_, $type = 'date', $readonly = 0)
 		}
 		
 		$size = $type=='datetime'? 22 : 12;
-		
-		echo "<input type=\"$text\" name=\"$name\" value=\"$value\" title=\"$title\" size=\"$size\" maxlength=\"32\" />";
+		echo "<input type=\"text\" name=\"$name\" value=\"$value\" title=\"$title\" size=\"$size\" maxlength=\"32\" />";
 	}
 }
 
