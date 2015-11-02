@@ -368,7 +368,7 @@ class WISY_SEARCH_RENDERER_CLASS
 										 else							    { $row_preposition = ' zum '; $row_postfix = 'Anbieter'; }
 								    }
 		else if( $tag_type & 512 )	{ $row_class = "ac_ort";                  $row_preposition = ' zum '; $row_postfix = 'Ort'; }
-		else if( $tag_type & 1024 )	{ $row_class = "ac_sonstigesmerkmal";     $row_preposition = ' zum';  $row_postfix = 'sonstigen Merkmal'; }
+		else if( $tag_type & 1024 )	{ $row_class = "ac_sonstigesmerkmal";     $row_preposition = ' zum '; $row_postfix = 'sonstigen Merkmal'; }
 		else if( $tag_type & 32768 ){ $row_class = "ac_unterrichtsart";       $row_preposition = ' zur '; $row_postfix = 'Unterrichtsart'; }
 	
 		if( $addparam['hidetagtypestr'] ) {
