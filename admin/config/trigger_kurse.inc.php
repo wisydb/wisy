@@ -64,6 +64,7 @@ function update_alle_anbieter_vollst(&$param)
 		
 		$kurse_cnt = 0;
 		$kurse_sum_vollst = 0;
+		$new_min_vollst_id = 0;
 		$new_min_vollst =  666;
 		$new_max_vollst = -666;
 		$db2->query("SELECT id, vollstaendigkeit FROM kurse WHERE anbieter=$anbieter_id AND (freigeschaltet=1 OR freigeschaltet=4) AND vollstaendigkeit>=1 AND vollstaendigkeit<=100");
