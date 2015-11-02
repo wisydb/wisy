@@ -636,6 +636,7 @@ function call_plugin($phpfile, &$param)
 	global $g_plugins;
 	
 	if( !$g_plugins[$phpfile] ) {
+		$pluginfunc = ''; // will be overwritten by the following require()-statement
 		require_once($phpfile);
 		$g_plugins[$phpfile] = $pluginfunc;
 	}
