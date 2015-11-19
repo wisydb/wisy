@@ -53,7 +53,7 @@ class WISY_KEYWORDTABLE_CLASS
 		}		
 	}
 
-	protected function getKeywordsRow($keywordId, $level, $hasChildren, $expanded, $showempty)
+	protected function getKeywordsRow($keywordId, $level, $hasChildren, $expanded, $showempty, $defhidden)
 	{
 		// collect common information
 		$icon_arr_down = '&#9660;';
@@ -80,16 +80,18 @@ class WISY_KEYWORDTABLE_CLASS
 		}
 		
 		// render
-		$ret = '<tr>';
+		$trstyle = '';
+		if( $defhidden ) {
+			$trstyle = 'style="display:none;"';
+		}
+		
+		$ret = "<tr data-indent=\"$level\" $trstyle>";
 			$ret .= '<td style="padding-left:'.intval($level*2).'em">';
 			
 				if( $hasChildren ) {
-					if( $expanded ) {
-						$ret .= $icon_arr_down . ' ';
-					}
-					else {
-						$ret .= $icon_arr_right . ' ';
-					}
+					$ret .= "<a href=\"#\" class=\"wisy_glskeyexp\" data-glskeyaction=\"".($expanded? "shrink":"expand")."\">";
+						$ret .= $expanded? $icon_arr_down : $icon_arr_right;
+					$ret .= "</a>";
 				}
 				else {
 					$ret .= $icon_empty . ' ';
@@ -107,15 +109,13 @@ class WISY_KEYWORDTABLE_CLASS
 		return $ret;
 	}
 	
-	protected function getKeywordsDivRecursive($keywordId, $level, $expand)
+	protected function getKeywordsDivRecursive($keywordId, $level, $expand, $defhidden = false)
 	{
 		// check for timeout
 		$timeout_after_s = 5.000;
 		if( $this->framework->microtime_float() - $this->start > $timeout_after_s ) {
-			$ret .= '<tr><td>Timeout, Erstellung der Tabelle abgebrochen.</td></tr>';
-			return $ret;
+			return '<tr><td>Timeout, Erstellung der Tabelle abgebrochen.</td></tr>';
 		}
-		
 		
 		// check for children
 		$child_ids = array();
@@ -129,16 +129,16 @@ class WISY_KEYWORDTABLE_CLASS
 			$showempty = true;
 		}
 
-		// add the item itself
-		$ret = $this->getKeywordsRow($keywordId, $level, sizeof($child_ids)!=0, $expand, $showempty);
-		
-		// add children
-		if( $expand > 0 ) 
-		{
-			for( $a = 0; $a < sizeof($child_ids); $a++ ) {
-				$ret .= $this->getKeywordsDivRecursive($child_ids[$a], $level+1, $expand-1);
-			}
+
+		// get HTML code for the children
+		$childrenHTML = '';
+		for( $a = 0; $a < sizeof($child_ids); $a++ ) {
+			$childrenHTML .= $this->getKeywordsDivRecursive($child_ids[$a], $level+1, $expand-1, $expand > 0? false : true);
 		}
+		
+		// add the item itself
+		$ret = $this->getKeywordsRow($keywordId, $level, $childrenHTML!='', $expand, $showempty, $defhidden);
+		$ret .= $childrenHTML;
 		
 		return $ret;
 	}
@@ -148,11 +148,10 @@ class WISY_KEYWORDTABLE_CLASS
 		// is the result in the cache?
 		$cacheVersion = 'v4';
 		$cacheKey = "wisykwt.$cacheVersion.".$GLOBALS['wisyPortalId'].".$this->args".".".WISY_KEYWORDTABLE_CLASS::$sw_modified;
-		if( ($ret=$this->dbCache->lookup($cacheKey))!='' ) {
+		if( ($ret=$this->dbCache->lookup($cacheKey))!='' && substr($_SERVER['HTTP_HOST'], -6)!='.local' ) {
 			$ret = str_replace('<div class="wisy_glskeytime">', '<div class="wisy_glskeytime">Cached, ', $ret);
 			return $ret;
 		}
-		
 	
 		// prepare html
 		$ret = '';

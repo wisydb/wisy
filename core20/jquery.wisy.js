@@ -846,6 +846,67 @@ function add_chars(jqObj, chars1, chars2)
 
 
 /*****************************************************************************
+ * the keywords() functions in the ratgeber
+ *****************************************************************************/
+
+function wisy_glskeyexp()
+{
+	var jqAClick = $(this);
+	var jqTrClick = jqAClick.parent().parent();
+	
+	var action = jqAClick.attr('data-glskeyaction');
+	var indentClick = parseInt(jqTrClick.attr('data-indent'));
+	
+	var show = true;
+	if( action == 'shrink' )
+	{
+		jqAClick.html('&nbsp;&#9654;');
+		jqAClick.attr('data-glskeyaction', 'expand');
+		show = false;
+
+	}
+	else if( action == 'expand' )
+	{
+		jqAClick.html('&#9660;');
+		jqAClick.attr('data-glskeyaction', 'shrink');
+		show = true;
+	}
+	
+	jqTrCurr = jqTrClick.next();
+	var indentShow = indentClick + 1;
+	while( jqTrCurr.length )
+	{
+		var indentCurr = jqTrCurr.attr('data-indent');
+		if( indentCurr <= indentClick ) {
+			break; // done, this row is no child
+		}
+		
+		if( show && indentCurr==indentShow ) 
+		{ 
+			jqTrCurr.show();
+		}
+		else 
+		{ 
+			jqTrCurr.hide();
+		}
+		
+		jqACurr = jqTrCurr.find('a.wisy_glskeyexp');
+		jqACurr.html('&nbsp;&#9654;');
+		jqACurr.attr('data-glskeyaction', 'expand');		
+		
+		jqTrCurr = jqTrCurr.next();
+	}
+	
+	return false; // no default link processing
+}
+
+function initRatgeber()
+{
+	$("a.wisy_glskeyexp").click(wisy_glskeyexp);
+}
+
+
+/*****************************************************************************
  * main entry point
  *****************************************************************************/
 
@@ -888,8 +949,11 @@ $().ready(function()
 	// we should add the parameter behind the hash "#ordere=" or sth. like that.
 	// initPaginateViaAjax();
 	
-	// init feedback stuff
+	// init feedback and fav. stuff
 	initFeedback();
 	fav_init();
+	
+	// init ratgeber stuff
+	initRatgeber();
 });
 
