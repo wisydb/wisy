@@ -846,6 +846,18 @@ class WISY_FRAMEWORK_CLASS
 		return $ret;
 	}
 	
+	function getMobileAlternateTag($requestedPage = "")
+	{
+		$mobile_url = array_map("trim", (explode("|", $this->iniRead('meta.mobile_url', ""))));
+		$mobile_maxresolution = (intval($mobile_url[1]) > 0) ? $mobile_url[1] : 640;
+		$mobile_url = $mobile_url[0];
+	
+		if(str_replace("http://", "", $mobile_url) != "")
+			$ret .= '<link rel="alternate" media="only screen and (max-width: '.$mobile_maxresolution.'px)" href="'.$mobile_url.'/'.$requestedPage.'" >' . "\n"; // $requestedPage may be empty for homepage
+			
+		return $ret;
+	}
+	
 	function getBodyClasses($bodyClass)
 	{
 		// we assign one or more classes to the body tag;
@@ -927,7 +939,7 @@ class WISY_FRAMEWORK_CLASS
 		}
 		
 		// replace ALL placeholders
-		$bodyStart = str_replace('__HEADTAGS__', $this->getTitleTags($param['title']) . $this->getFaviconTags() . $this->getOpensearchTags() . $this->getRSSTags() . $this->getCSSTags() . $this->getCanonicalTag($param['canonical']) . $this->getJSHeadTags(), $bodyStart);
+		$bodyStart = str_replace('__HEADTAGS__', $this->getTitleTags($param['title']) . $this->getFaviconTags() . $this->getOpensearchTags() . $this->getRSSTags() . $this->getCSSTags() . $this->getCanonicalTag($param['canonical']) . $this->getMobileAlternateTag($param['canonical']) . $this->getJSHeadTags(), $bodyStart);
 		$bodyStart = str_replace('__BODYATTR__', ' ' . $this->getJSOnload(). ' class="' . $this->getBodyClasses($param['bodyClass']) . '"', $bodyStart);
 		$bodyStart = $this->replacePlaceholders($bodyStart);
 		$i1 = strpos($bodyStart, "<!-- include ");
