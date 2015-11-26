@@ -33,7 +33,6 @@ class WISY_KEYWORDTABLE_CLASS
 		$this->selfGlossarId = intval($addparam['selfGlossarId']); // may be 0 if the page is not a glossar entry
 		$this->rownum = 0;
 		$this->tagSuggestor =& createWisyObject('WISY_TAGSUGGESTOR_CLASS', $framework);
-		$this->searchRenderer =& createWisyObject('WISY_SEARCH_RENDERER_CLASS', $framework);
 		$this->dbCache		=& createWisyObject('WISY_CACHE_CLASS', $this->framework, array('table'=>'x_cache_search', 'itemLifetimeSeconds'=>5*60*60)); // reset after 5 hours, needed to get updated tag frequencies
 		$this->start = $this->framework->microtime_float();
 
@@ -53,12 +52,64 @@ class WISY_KEYWORDTABLE_CLASS
 		}		
 	}
 
+	function formatItem($tag_name, $tag_descr, $tag_type, $tag_help, $tag_freq)
+	{
+		/* base type */
+		$row_class   = 'ac_normal';
+		$row_preposition = '';
+		$row_postfix = '';
+		     if( $tag_type &   1 )	{ $row_class = "ac_abschluss";		      $row_preposition = ' zum '; $row_postfix = '<b>Abschluss</b>'; }
+		else if( $tag_type &   2 )	{ $row_class = "ac_foerderung";		      $row_preposition = ' zur '; $row_postfix = 'F&ouml;rderung'; }
+		else if( $tag_type &   4 )	{ $row_class = "ac_qualitaetszertifikat"; $row_preposition = ' zum '; $row_postfix = 'Qualit&auml;tszertifikat'; }
+		else if( $tag_type &   8 )	{ $row_class = "ac_zielgruppe";		      $row_preposition = ' zur '; $row_postfix = 'Zielgruppe'; }
+		else if( $tag_type &  16 )	{ $row_class = "ac_abschlussart";		  $row_preposition = ' zur '; $row_postfix = 'Abschlussart'; }
+		else if( $tag_type & 128 )	{ $row_class = "ac_thema";		 		  $row_preposition = ' zum '; $row_postfix = 'Thema'; }
+		else if( $tag_type & 256 )	{ $row_class = "ac_anbieter";		     
+											  if( $tag_type &  0x10000 )    { $row_preposition = ' zum '; $row_postfix = 'Trainer'; }
+										 else if( $tag_type &  0x20000 )    { $row_preposition = ' zur '; $row_postfix = 'Beratungsstelle'; }
+										 else if( $tag_type & 0x400000 )    { $row_preposition = ' zum '; $row_postfix = 'Anbieterverweis'; }
+										 else							    { $row_preposition = ' zum '; $row_postfix = 'Anbieter'; }
+								    }
+		else if( $tag_type & 512 )	{ $row_class = "ac_ort";                  $row_preposition = ' zum '; $row_postfix = 'Ort'; }
+		else if( $tag_type & 1024 )	{ $row_class = "ac_sonstigesmerkmal";     $row_preposition = ' zum '; $row_postfix = 'sonstigen Merkmal'; }
+		else if( $tag_type & 32768 ){ $row_class = "ac_unterrichtsart";       $row_preposition = ' zur '; $row_postfix = 'Unterrichtsart'; }
+	
+		/*col1*/
+		$ret .= '<span class="' .$row_class. '">';
+			$ret .= ' <a href="' . $this->framework->getUrl('search', array('q'=>$tag_name)) . '">' . isohtmlspecialchars($tag_name) . '</a> ';
+		$ret .= '</span>';
+		
+		/*col2*/
+		$ret .= '</td><td align="right" nowrap="nowrap">';
+		$ret .= ($tag_freq==1? '1 Kurs' : "$tag_freq Kurse");
+		
+		/*col3*/
+		$ret .= '</td><td nowrap="nowrap">';		
+		$ret .= $row_preposition . $row_postfix;
+		
+		/*col4*/
+		$ret .= '</td><td width="35%">';
+		if( $tag_descr ) {
+			$ret .= ' <span class="">' . $tag_descr . '</span> ';
+		}
+		
+		/*col5*/
+		$ret .= '</td><td nowrap="nowrap">';
+		if( $tag_help != 0 )
+		{
+			$ret .=
+			 "<a class=\"wisy_help\" href=\"" . $this->framework->getUrl('g', array('id'=>$tag_help, 'q'=>$tag_name)) . "\" title=\"Ratgeber\">&nbsp;i&nbsp;</a>";
+		}		
+		
+		return $ret;
+	}
+	
 	protected function getKeywordsRow($keywordId, $level, $hasChildren, $expanded, $showempty, $defhidden)
 	{
 		// collect common information
 		$icon_arr_down = '&#9660;';
 		$icon_arr_right = '&nbsp;&#9654;';
-		$icon_empty = '&nbsp;&middot;&nbsp;';
+		$icon_empty = '&nbsp;&bull;&nbsp;';
 				
 		$title = WISY_KEYWORDTABLE_CLASS::$keywords[ $keywordId ]['stichwort'];
 		$url = 'search?q=' . urlencode(g_sync_removeSpecialChars($title));
@@ -86,7 +137,7 @@ class WISY_KEYWORDTABLE_CLASS
 		}
 		
 		$ret = "<tr data-indent=\"$level\" $trstyle>";
-			$ret .= '<td style="padding-left:'.intval($level*2).'em">';
+			$ret .= '<td style="padding-left:'.intval($level*2).'em" width="45%">';
 			
 				if( $hasChildren ) {
 					$ret .= "<a href=\"#\" class=\"wisy_glskeyexp\" data-glskeyaction=\"".($expanded? "shrink":"expand")."\">";
@@ -97,7 +148,7 @@ class WISY_KEYWORDTABLE_CLASS
 					$ret .= $icon_empty . ' ';
 				}
 								
-				$ret .= $this->searchRenderer->formatItem($title, $zusatzinfo, $tag_type, 
+				$ret .= $this->formatItem($title, $zusatzinfo, $tag_type, 
 					$glossarId != $this->selfGlossarId? $glossarId : 0, 
 					$tag_freq);
 
@@ -196,6 +247,9 @@ class WISY_KEYWORDTABLE_CLASS
 			.		'<thead>'
 			.			'<tr>'
 			.				'<td>Rechercheziele</td>'
+			.				'<td align="right">Angebote</td>'	
+			.				'<td>Kategorie</td>'		
+			.				'<td colspan="2">Zusatzinfo</td>'	
 			.			'<tr>'
 			.		'</thead>'
 			.		'<tbody>'
