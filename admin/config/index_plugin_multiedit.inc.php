@@ -17,6 +17,7 @@
 require_once('functions.inc.php');
 require_once('eql.inc.php');
 
+
 function form_control_text__($name, $value, $width, $maxlen) // the parameter order has changed with admin-5, if admin-5 gets the default, we can get rid of this crappy function
 {
 	if( intval(CMS_VERSION) >= 5 )
@@ -29,10 +30,12 @@ function form_control_text__($name, $value, $width, $maxlen) // the parameter or
 	}
 }
 
+
 class MULTIEDIT_PLUGIN_CLASS
 {
 	var $tableName;
 	var $allIdsCount;
+	
 	
 	function getFieldActions($table, $prefix)
 	{
@@ -90,6 +93,7 @@ class MULTIEDIT_PLUGIN_CLASS
 		
 		return $ret;
 	}
+	
 	
 	function renderDefaultPage($msg, $msg_type = 'e' /*error*/)
 	{
@@ -217,6 +221,7 @@ class MULTIEDIT_PLUGIN_CLASS
 		$site->pageEnd();
 	}
 
+
 	function renderStatusPage($msg, $popdown = 0)
 	{
 		global $site;
@@ -252,6 +257,7 @@ class MULTIEDIT_PLUGIN_CLASS
 		$site->pageEnd();
 	}
 
+
 	function getFieldEnum($rowdef, $value)
 	{
 		global $site;
@@ -267,14 +273,17 @@ class MULTIEDIT_PLUGIN_CLASS
 		exit();
 	}
 
-	private function is_integer2($v) {
-	   $i = intval($v);
-	   if ("$i" == "$v") {
-		 return TRUE;
-	   } else {
-		 return FALSE;
-	   }
-	 }
+
+	private function is_integer2($v) 
+	{
+		$i = intval($v);
+		if ("$i" == "$v") {
+			return TRUE;
+		} else {
+			return FALSE;
+		}
+	}
+ 
  
 	private function getFieldAttrs($rowdef, $value)
 	{
@@ -352,6 +361,7 @@ class MULTIEDIT_PLUGIN_CLASS
 			exit();
 		}
 	}
+	
 	
 	private function do_field_action($localTableName, $allIdsStr, $action, $param1, $param2)
 	{
@@ -501,6 +511,7 @@ class MULTIEDIT_PLUGIN_CLASS
 				break;
 		}
 	}
+	
 	
 	function main($tableName)
 	{
@@ -693,7 +704,5 @@ class MULTIEDIT_PLUGIN_CLASS
 		exit();
 	}
 };
-
-
 
 

@@ -11,6 +11,7 @@ define('_EXP_PFLEGEPROT',              "Pflegeprotokoll");
 define('_EXP_TMALLERNEN',              "1001 mal Lernen");
 define('_INDEX_PLUGIN_ANBIETER_0',     "MultiEdit");
 define('_INDEX_PLUGIN_ANBIETER_1',     "Rundschreiben");
+define('_INDEX_PLUGIN_GLOSSAR_0',      "MultiEdit");
 define('_INDEX_PLUGIN_KURSE_0',        "MultiEdit");
 define('_INDEX_PLUGIN_STICHWOERTER_0', "MultiEdit");
 define('_INDEX_PLUGIN_STICHWOERTER_1', "Baum");
