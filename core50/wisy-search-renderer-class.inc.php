@@ -272,7 +272,7 @@ class WISY_SEARCH_RENDERER_CLASS
 							if( $currKursFreigeschaltet == 2 ) { echo '<em>Gesperrt:</em><br />'; }
 							if( $currKursFreigeschaltet == 3 ) { echo '<em>Abgelaufen:</em><br />'; }
 							
-							if( $anbieter_record['typ'] == 2 ) echo '<span class="wisy_icon_beratungsstelle">Beratungsangebot<span class="dp">:</span></span> ';
+							if( $anbieter_record['typ'] == 2 ) echo '<span class="wisy_icon_beratungsstelle">Beratung<span class="dp">:</span></span> ';
 							
 							echo isohtmlspecialchars($record['titel']);
 						

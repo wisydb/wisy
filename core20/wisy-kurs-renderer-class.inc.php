@@ -82,7 +82,7 @@ class WISY_KURS_RENDERER_CLASS
 			.	 '</p>';
 			
 			echo '<h1>';
-				if( $anbieter_typ == 2 ) echo '<span class="wisy_icon_beratungsstelle">Beratungsangebot<span class="dp">:</span></span> ';
+				if( $anbieter_typ == 2 ) echo '<span class="wisy_icon_beratungsstelle">Beratung<span class="dp">:</span></span> ';
 				if( $displayAbschluss && $isAbschluss ) echo '<span class="wisy_icon_abschluss">Abschluss<span class="dp">:</span></span> ';
 				echo isohtmlentities($title);
 				if( $this->framework->iniRead('fav.use', 0) ) {
