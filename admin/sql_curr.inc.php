@@ -97,7 +97,7 @@ class DB_Sql
 			return 0;
 		}
 		
-		@mysql_query('SET MAX_JOIN_SIZE=32000000;', $link_id);	// sollte ausreichen, sehr komplexe Abfragen im Red.System werden einen Fehler erzeugen, aber das ist dann auch i.O.
+		@mysql_query('SET MAX_JOIN_SIZE=64000000;', $link_id);	// sollte ausreichen, sehr komplexe Abfragen im Red.System werden einen Fehler erzeugen, aber das ist dann auch i.O.
 		@mysql_query('SET SQL_BIG_SELECTS=0;', $link_id);		// joins>MAX_JOIN_SIZE erlauben?
 		return $link_id;
 	}
