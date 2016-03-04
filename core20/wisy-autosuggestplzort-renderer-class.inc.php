@@ -42,11 +42,13 @@ class WISY_AUTOSUGGESTPLZORT_RENDERER_CLASS
 		while( $db->next_record() ) {
 			$plz = $db->f('plz');
 			$ort = $db->f('ort');
-			if( isset($orte[$ort]) ) {
-				$orte[$ort][] = $plz;
-			}
-			else if( $this->plzfilterObj->is_valid_plz($plz) ) {
-				$orte[$ort] = array($plz);
+			if( $this->plzfilterObj->is_valid_plz($plz) ) {
+				if( isset($orte[$ort]) ) {
+					$orte[$ort][] = $plz;
+				}
+				else {
+					$orte[$ort] = array($plz);
+				}
 			}
 		}
 
