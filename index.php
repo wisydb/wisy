@@ -166,12 +166,10 @@ function selectPortalOrFwd301()
 	// some special domain handling
 	if( substr($ist_domain, 0, 7)=='sandbox' ) // remove sandbox prefix
 	{
-		$ist_domain = substr($ist_domain, 7 + 1 /*dot or minus*/ );
-		$do_fwd = false;
-	}
-	else if( substr($ist_domain, 0, 8)=='sandbox1' || substr($ist_domain, 0, 8)=='sandbox2' || substr($ist_domain, 0, 8)=='sandbox3' ) // remove sandbox prefix
-	{
-		$ist_domain = substr($ist_domain, 8 + 1 /*dot or minus*/ );
+		if( substr($ist_domain, 0, 8)=='sandbox1' || substr($ist_domain, 0, 8)=='sandbox2' || substr($ist_domain, 0, 8)=='sandbox3' )
+			$ist_domain = substr($ist_domain, 8 + 1 /*dot or minus*/ );
+		else
+			$ist_domain = substr($ist_domain, 7 + 1 /*dot or minus*/ );
 		$do_fwd = false;
 	}
 	else if( substr($ist_domain, -6)=='.local' ) // ... special domain needed for development
