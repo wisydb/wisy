@@ -53,6 +53,7 @@ class WISY_AUTOSUGGESTPLZORT_RENDERER_CLASS
 		}
 
 		// convert to array as plz=>ort
+		$make_unique = 1;
 		$tags = array();
 		foreach( $orte as $ort=>$plzArr )
 		{
@@ -62,7 +63,8 @@ class WISY_AUTOSUGGESTPLZORT_RENDERER_CLASS
 				$plzStr = $this->combinePlz($plzArr[0], $plzArr[sizeof($plzArr)-1]);
 			}
 			
-			$tags[$plzStr] = $ort;
+			$tags[$plzStr.'/'.$make_unique] = utf8_encode($plzStr) . '|' . utf8_encode($ort); // add a unique string to the plz to allow multiple ORTs with the same PLZs
+			$make_unique++;
 		}
 
 		ksort($tags);
@@ -73,7 +75,7 @@ class WISY_AUTOSUGGESTPLZORT_RENDERER_CLASS
 					
 		foreach( $tags as $key=>$value )
 		{
-			echo utf8_encode($key) . '|' . utf8_encode($value) . "\n";
+			echo $value . "\n";
 		}
 	}
 }

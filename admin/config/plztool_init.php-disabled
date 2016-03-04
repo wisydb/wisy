@@ -203,13 +203,13 @@ class PLZTOOL_INIT_CLASS
 				$buffer = explode("\t", $buffer);
 				$plz	   = trim(strval($buffer[1]));
 				$ort	   = trim(utf8_decode($buffer[4]));
-				if( $plz_added[$plz] ) {
+				if( $plz_added[$plz.$ort] ) {
 					echo "WARNUNG: PLZ $plz ist nicht eindeutig!<br />";
 				}
 				else if( $buffer && intval($plz) > 0 && $ort != '' && $line > 1 /*first line contains column names*/ )
 				{
 					$this->db->query("INSERT INTO plztool2 (plz,ort) VALUES (".$this->db->quote($plz).",".$this->db->quote($ort).")");
-					$plz_added[$plz] = $ort;
+					$plz_added[$plz.$ort] = $ort;
 				}
 			}
 		
@@ -243,8 +243,8 @@ if( isset($_GET['initplz']) )
 	echo 'Initializing...<br />';
 	$plzInitObj = new PLZTOOL_INIT_CLASS;
 	
-	$plzInitObj->empty_sgv();
-	$plzInitObj->init_sgv();
+	//$plzInitObj->empty_sgv();
+	//$plzInitObj->init_sgv();
 	
 	$plzInitObj->empty_plz();
 	$plzInitObj->init_plz();
