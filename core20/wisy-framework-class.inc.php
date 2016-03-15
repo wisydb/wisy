@@ -489,7 +489,7 @@ class WISY_FRAMEWORK_CLASS
 		require_once('admin/config/codes.inc.php'); // fuer hidden_stichwort_eigenschaften
 		global $hidden_stichwort_eigenschaften;
 		
-		$sql = "SELECT id, stichwort, eigenschaften FROM stichwoerter LEFT JOIN {$table}_stichwort ON id=attr_id WHERE primary_id=$id AND (eigenschaften & $hidden_stichwort_eigenschaften)=0 ORDER BY structure_pos;";
+		$sql = "SELECT id, stichwort, eigenschaften, zusatzinfo FROM stichwoerter LEFT JOIN {$table}_stichwort ON id=attr_id WHERE primary_id=$id AND (eigenschaften & $hidden_stichwort_eigenschaften)=0 ORDER BY structure_pos;";
 		$db->query($sql);
 		while( $db->next_record() )
 		{
@@ -552,6 +552,10 @@ class WISY_FRAMEWORK_CLASS
 						$ret .= '</a>';
 					}
 					
+					if( $stichwoerter[$s]['zusatzinfo'] != '' ) {
+						$ret .= ' <span class="ac_tag_type">(' . isohtmlspecialchars($stichwoerter[$s]['zusatzinfo']) . ')</span>';
+					}
+
 					$ret .= $glossarLink;
 					
 					$anythingOfThisCode	= 1;
