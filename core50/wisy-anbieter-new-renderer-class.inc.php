@@ -482,7 +482,7 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 		{
 			echo '<br /><div class="wisy_edittoolbar">';
 				if( $vollst >= 1 ) {
-					echo '<p>Hinweis für den Anbieter:</p><p>Die <b>Vollst&auml;ndigkeit</b> Ihrer '.$freq.' aktuellen Angebote liegt durchschnittlich bei <b>'.$vollst.'%</b> ';
+					echo '<p>Hinweis fÃ¼r den Anbieter:</p><p>Die <b>Vollst&auml;ndigkeit</b> Ihrer '.$freq.' aktuellen Angebote liegt durchschnittlich bei <b>'.$vollst.'%</b> ';
 					
 					$min_vollst = intval($anbieter_settings['vollstaendigkeit.min']);
 					$max_vollst = intval($anbieter_settings['vollstaendigkeit.max']);

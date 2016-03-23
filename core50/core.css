@@ -452,7 +452,7 @@ autocomplete styles v2
 .ac_results_v2 .ac_headline .tag_name,
 .ac_results_v2 .ac_more .tag_name { width: 100%; }
 
-/* Vorschläge im Hauptfenster */
+/* VorschlÃ¤ge im Hauptfenster */
 .wisy_tagtable { border-spacing: 1px; }
 .wisy_tagtable th { 
 	color: #000;
@@ -720,7 +720,7 @@ print
 		display: block !important;
 	}
 	
-	/* implizit verwendete Klassen und IDs, die in der Druckausgabe besondere Berücksichtigung finden sollen */
+	/* implizit verwendete Klassen und IDs, die in der Druckausgabe besondere BerÃ¼cksichtigung finden sollen */
 	.wisy_help, .wisy_rss_link, .wisy_paginate, #wisy_searcharea {
 		display: none !important;
 	}	
@@ -736,7 +736,7 @@ print
 		border-bottom: 1px solid #000;
 	}
 	
-	/* einige Schriftgrössen korrigieren */	
+	/* einige SchriftgrÃ¶ssen korrigieren */	
 	body {
 		font-size: 15px; /*org: 12px*/
 	}

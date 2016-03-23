@@ -57,7 +57,7 @@ class WISY_EDIT_TOOLS_CLASS
 		$stopwords = $this->framework->iniRead($iniKey, 'default');
 		if( $stopwords == 'default' ) {
 			// use default stopwords
-			$stopwords = 'Pausengetr‰nke, Verkehr, HVV, S-Bahn, U-Bahn';
+			$stopwords = 'Pausengetr√§nke, Verkehr, HVV, S-Bahn, U-Bahn';
 		}
 		
 		if( $stopwords != '0' ) {

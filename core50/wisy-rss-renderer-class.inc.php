@@ -168,7 +168,7 @@ class WISY_RSS_RENDERER_CLASS
 		{
 			if( $searcher->tokens['show'] == 'anbieter' )
 			{
-				$records = $searcher->getAnbieterRecords(0 /*offset immer 0*/, 10 /*immer 10 eintraege*/, 'creatd' /*sortierung immer nach erstellungsdatum (sonst kommt "nichts neues" bzw. das neue kommt zu sp‰t)*/);
+				$records = $searcher->getAnbieterRecords(0 /*offset immer 0*/, 10 /*immer 10 eintraege*/, 'creatd' /*sortierung immer nach erstellungsdatum (sonst kommt "nichts neues" bzw. das neue kommt zu sp√§t)*/);
 				while( list($i, $record) = each($records['records']) )
 				{
 					// beschreibung erstellen
@@ -193,7 +193,7 @@ class WISY_RSS_RENDERER_CLASS
 			{
 				$durchfClass =& createWisyObject('WISY_DURCHF_CLASS', $this->framework);
 				
-				$records = $searcher->getKurseRecords(0 /*offset immer 0*/, 10 /*immer 10 eintraege*/, 'creatd' /*sortierung immer nach "beginnaenderungsdatum" (sonst kommt "nichts neues" bzw. das neue kommt zu sp‰t)*/);
+				$records = $searcher->getKurseRecords(0 /*offset immer 0*/, 10 /*immer 10 eintraege*/, 'creatd' /*sortierung immer nach "beginnaenderungsdatum" (sonst kommt "nichts neues" bzw. das neue kommt zu sp√§t)*/);
 				while( list($i, $record) = each($records['records']) )
 				{
 					// beschreibung erstellen

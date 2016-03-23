@@ -5,8 +5,8 @@
 WISY_SEARCH_CLASS wird verwendet, um genau spezifizierte Suchen zu starten oder
 um Informationen zu Suchen zu erhalten.
 
-WISY_SEARCH_CLASS führt keine alternativen Suchen durch (z.B. eine Volltextsuche,
-wenn die normale Suche keinen Erfolg brachte). Wenn dies gewünscht ist, ist dies 
+WISY_SEARCH_CLASS fÃ¼hrt keine alternativen Suchen durch (z.B. eine Volltextsuche,
+wenn die normale Suche keinen Erfolg brachte). Wenn dies gewÃ¼nscht ist, ist dies 
 die Aufgabe des Aufrufenden Programmteils.
 
 Beispiele zur Verwendung:
@@ -281,7 +281,7 @@ class WISY_SEARCH_CLASS
 						$radius_meters = $km * 1000.0;
 						
 						$radius_lat = $radius_meters / 111320.0; // Abstand zwischen zwei Breitengraden: 111,32 km  (weltweit)
-						$radius_lng = $radius_meters /  71460.0; // Abstand zwischen zwei Längengraden :  71,46 km  (im mittel in Deutschland)
+						$radius_lng = $radius_meters /  71460.0; // Abstand zwischen zwei LÃ¤ngengraden :  71,46 km  (im mittel in Deutschland)
 						
 						$min_lat = intval( ($lat - $radius_lat)*1000000 );
 						$max_lat = intval( ($lat + $radius_lat)*1000000 );
@@ -383,9 +383,9 @@ class WISY_SEARCH_CLASS
 					break;
 				
 				case 'volltext':
-					// volltextsuche, aktuell gibt es ein Volltextindex über kurse.titel und kurse.beschreibung; dieser
+					// volltextsuche, aktuell gibt es ein Volltextindex Ã¼ber kurse.titel und kurse.beschreibung; dieser
 					// wird vom core10 *nicht* verwendet und vom redaktionssystem wohl eher selten.
-					// aktuell nehmen wird diesen Index einfach, sollten wir hier aber etwas anderes benötigen, 
+					// aktuell nehmen wird diesen Index einfach, sollten wir hier aber etwas anderes benÃ¶tigen, 
 					// kann der alte Volltextindex verworfen werden. ALSO:
 					if( $value != '' )
 					{
@@ -406,7 +406,7 @@ class WISY_SEARCH_CLASS
 			}			
 		}
 		
-		/* -- leere Anfragen sind für "diese kurse beginnen morgen" notwendig, leere Anfragen sind _kein_ Fehler!
+		/* -- leere Anfragen sind fÃ¼r "diese kurse beginnen morgen" notwendig, leere Anfragen sind _kein_ Fehler!
 		if( !is_array($this->error) && $this->rawWhere=='' )
 		{
 			$this->error = array('id'=>'empty_query');
@@ -556,7 +556,7 @@ class WISY_SEARCH_CLASS
 						case 'pd':		$orderBy = 'x_kurse.preis DESC';							break;
 						case 'o':		$orderBy = "x_kurse.ort_sortonly='', x_kurse.ort_sortonly";	break;	// sortiere nach ort
 						case 'od':		$orderBy = "x_kurse.ort_sortonly DESC";						break;
-						case 'creat':	$orderBy = 'x_kurse.begmod_date';							break;	// sortiere nach beginnaenderungsdatum (hauptsächlich für die RSS-Feeds interessant)
+						case 'creat':	$orderBy = 'x_kurse.begmod_date';							break;	// sortiere nach beginnaenderungsdatum (hauptsÃ¤chlich fÃ¼r die RSS-Feeds interessant)
 						case 'creatd':	$orderBy = 'x_kurse.begmod_date DESC';						break;
 						case 'rand':	$orderBy = 'RAND()';										break;
 						default:		$orderBy = 'kurse.id';										die('invalid order!');
@@ -645,7 +645,7 @@ class WISY_SEARCH_CLASS
 				case 't':		$orderBy = "anspr_tel";									break;
 				case 'td':		$orderBy = "anspr_tel DESC";							break;
 				
-				// sortiere nach erstellungsdatum (hauptsächlich für die RSS-Feeds interessant)
+				// sortiere nach erstellungsdatum (hauptsÃ¤chlich fÃ¼r die RSS-Feeds interessant)
 				case 'creat':	$orderBy = 'date_created';								break;
 				case 'creatd':	$orderBy = 'date_created DESC';							break;
 

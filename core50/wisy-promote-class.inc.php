@@ -111,7 +111,7 @@ class WISY_PROMOTE_CLASS
 		}
 
 		// DONE
-		/* - EDIT 05.03.2011: cache objekte werde nach ca. 30 minuten wieder freigegeben; wenn in dieser Zeit noch Kurse zusätzlich promoted werden ist es halt glück für die Anbieter ...
+		/* - EDIT 05.03.2011: cache objekte werde nach ca. 30 minuten wieder freigegeben; wenn in dieser Zeit noch Kurse zusÃ¤tzlich promoted werden ist es halt glÃ¼ck fÃ¼r die Anbieter ...
 		if( $cleanupCache )
 		{
 			$dbCache =& createWisyObject('WISY_CACHE_CLASS', $this->framework, array('table' => 'x_cache_search'));

@@ -22,7 +22,7 @@ class WISY_GLOSSAR_RENDERER_CLASS
 		}
 		else
 		{
-			return 'http:/'.'/de.m.wikipedia.org/w/index.php?title='.urlencode($artikel).''; // 28.10.2013 weiterleitung auf die Mobilversion - auch auf dem Desktop, s. Mail von Jürgen vom 26.10.2013
+			return 'http:/'.'/de.m.wikipedia.org/w/index.php?title='.urlencode($artikel).''; // 28.10.2013 weiterleitung auf die Mobilversion - auch auf dem Desktop, s. Mail von JÃ¼rgen vom 26.10.2013
 		}
 	}
 	
@@ -40,7 +40,7 @@ class WISY_GLOSSAR_RENDERER_CLASS
 		$erklaerung = $db->fs('erklaerung');
 		$wikipedia = $db->fs('wikipedia');
 
-		// Wenn es keine Erklärung, aber eine Wikipedia-Seite gibt -> Weiterleitung auf die entspr. Wikipedia-Seite
+		// Wenn es keine ErklÃ¤rung, aber eine Wikipedia-Seite gibt -> Weiterleitung auf die entspr. Wikipedia-Seite
 		if( $erklaerung == '' && $wikipedia != '' )
 		{
 			header('Location: ' . $this->getWikipediaUrl($wikipedia));

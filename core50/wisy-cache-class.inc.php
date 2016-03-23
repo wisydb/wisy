@@ -6,13 +6,13 @@
  * konkret gibt es die fogenden Caches:
  *
  * x_cache_search	dieser Cache wird komplett verworfen, wenn irgendwelche
- *                  ƒnderungen von der Redaktion vorgenommen werden; dieser
- *                  Cache ist also - zumindest in der Woche tags¸ber - sehr
- *                  kurzlebig.  Auﬂerdem wird der Cache bei den n‰chtlichen
- *                  Aufr‰umarbeiten komplett verworfen, damit Anfragen wie
- *                  "beginnt morgen" neu erzeugt werden kˆnnen.
- * x_cache_rss		dieser Cache wird f¸r RSS-Anfragen verwendet, er wird nicht
- *                  bei jeder ƒnderung der Redaktion verworfen, sondern nur
+ *                  √Ñnderungen von der Redaktion vorgenommen werden; dieser
+ *                  Cache ist also - zumindest in der Woche tags√ºber - sehr
+ *                  kurzlebig.  Au√üerdem wird der Cache bei den n√§chtlichen
+ *                  Aufr√§umarbeiten komplett verworfen, damit Anfragen wie
+ *                  "beginnt morgen" neu erzeugt werden k√∂nnen.
+ * x_cache_rss		dieser Cache wird f√ºr RSS-Anfragen verwendet, er wird nicht
+ *                  bei jeder √Ñnderung der Redaktion verworfen, sondern nur
  *                  einmal nachts.
  ******************************************************************************
  * Details zu x_cache_search:            
@@ -20,13 +20,13 @@
  * eine Log-Auswertung via $framework->log() am 18.09.2009 brachte die folgende 
  * Statistik:
  *
- * cleanups: 728  (wenn die WISY-Datenbank von der Redaktion ge‰ndert wird,
+ * cleanups: 728  (wenn die WISY-Datenbank von der Redaktion ge√§ndert wird,
  *                wird der Cache verworfen)
  * inserts:  3801 (nach einer erfolgend Suche)
  * hits:     1780 (eine gesparte Suche)
  *
  * da ein Inserts und die Cleanups im Millisekonden bereich liegen, die Hits
- * aber im schnitt eine Sekunde dauern (speziell die h‰ufigen Abfragen der 
+ * aber im schnitt eine Sekunde dauern (speziell die h√§ufigen Abfragen der 
  * Startseite dauern etwas, wenn es einen Portalfilter gibt), lohnt sind das 
  * ganze wohl:
  *

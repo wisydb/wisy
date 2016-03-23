@@ -3,16 +3,16 @@
 /******************************************************************************
  WISY 2.0
  ******************************************************************************
- Einfacher Passwortschutz für ein Portal, z.B. für Testzwecke.
+ Einfacher Passwortschutz fÃ¼r ein Portal, z.B. fÃ¼r Testzwecke.
  
  s.a. http://php.net/manual/de/features.http-auth.php ... was in der Praxis
- nicht klappt, wenn PHP als CGI wie unter domainfactory läuft (was durchaus
+ nicht klappt, wenn PHP als CGI wie unter domainfactory lÃ¤uft (was durchaus
  performant ist - und flexibel!)
  ******************************************************************************
  Achtung: Geringe Sicherheit!
  
  Das Passwort wird im Klartext in der Datenbank gespeichert und im Cookie
- nur durch ein einfaches md5() ohne salt etc. geschützt!
+ nur durch ein einfaches md5() ohne salt etc. geschÃ¼tzt!
  ******************************************************************************/
 
 

@@ -223,7 +223,7 @@ class WISY_KURS_RENDERER_CLASS
 				}
 			}
 	
-			// vollst‰ndigkeit feedback, editieren etc.
+			// vollst√§ndigkeit feedback, editieren etc.
 			echo '<p class="wisy_kurse_footer ' .$this->framework->getAllowFeedbackClass(). '">';
 				
 				if( $vollst['msg'] != '' )

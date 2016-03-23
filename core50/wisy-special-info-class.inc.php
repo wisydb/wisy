@@ -4,8 +4,8 @@
  WISY 2.0
  ******************************************************************************
  Spezielle Informationen berechnen und cachen.
- Hierzu gehören z.B. die Förderungsmöglichkeiten, die für ein bestimmtes
- Portal tatsächlich zur Verfügung stehen
+ Hierzu gehÃ¶ren z.B. die FÃ¶rderungsmÃ¶glichkeiten, die fÃ¼r ein bestimmtes
+ Portal tatsÃ¤chlich zur VerfÃ¼gung stehen
  ******************************************************************************/
 
 

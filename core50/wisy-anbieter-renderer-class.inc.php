@@ -266,7 +266,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 							if( $logo_w && $logo_h && $logo_name != '' )
 							{
 								$title = "";
-								/* - aufgrund der inneren konsistenz das logo nicht anklickbar gestalten - es ist ansonsten verwirrend, ob es zum portait oder zur homepage führt ...
+								/* - aufgrund der inneren konsistenz das logo nicht anklickbar gestalten - es ist ansonsten verwirrend, ob es zum portait oder zur homepage fÃ¼hrt ...
 								if( $homepage ) {
 									echo "<a href=\"$homepage\" target=\"_blank\">";
 									$title = "Der Anbieter im Internet";
@@ -446,7 +446,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		// check for existance, get title
 		$db->query("SELECT suchname, typ FROM anbieter WHERE id=$anbieter_id");
 		if( !$db->next_record() ) {
-			$this->framework->error404(); // record does not exist, reporta normal 404 error, not a "Soft 404", see  http://goo.gl/IKMnm -- für nicht-freigeschaltete Datensätze, s. [here]
+			$this->framework->error404(); // record does not exist, reporta normal 404 error, not a "Soft 404", see  http://goo.gl/IKMnm -- fÃ¼r nicht-freigeschaltete DatensÃ¤tze, s. [here]
 		}
 		$anbieter_suchname = $db->fs('suchname');
 		$typ               = intval($db->f('typ'));

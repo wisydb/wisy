@@ -73,11 +73,11 @@ class WISY_EDIT_FORGOTPW_CLASS
 						$f_mailbody = 
 "Hallo $f_email -
 
-Sie, oder jemand der sich als Kursanbieter auf __HTTP_HOST__ bzw. __NAME__ ausgegeben hat, haben unter http://__HTTP_HOST__/edit ein neues Passwort für Ihren Account beantragt.
+Sie, oder jemand der sich als Kursanbieter auf __HTTP_HOST__ bzw. __NAME__ ausgegeben hat, haben unter http://__HTTP_HOST__/edit ein neues Passwort fÃ¼r Ihren Account beantragt.
 
 Wenn Sie KEIN neus Passwort beantragt haben, oder wenn Ihnen Ihr altes Passwort zwischenzeitlich wieder eingefallen ist, ignorieren und loeschen Sie bitte diese E-Mail.
 
-Nur WENN Sie ein neues Passwort beantragt haben, klicken Sie bitte auf den folgenden Verweis, um ein neues Passwort zu erhalten und sich damit wieder in Ihrem Account einloggen zu können: $f_link 
+Nur WENN Sie ein neues Passwort beantragt haben, klicken Sie bitte auf den folgenden Verweis, um ein neues Passwort zu erhalten und sich damit wieder in Ihrem Account einloggen zu kÃ¶nnen: $f_link 
 
 Mit freundlichen Gruessen,
 __NAME__";
@@ -89,7 +89,7 @@ __NAME__";
 						if( $this->sendMail($f_email, $f_subject, $f_mailbody) )
 						{
 							$msg= 'Wir haben an die bei uns hinterlegte E-Mail-Adresse <b>erfolgreich</b> ein neues Passwort gesandt. 
-								   Bitte überprüfen Sie nun Ihren E-Mail-Account ('.isohtmlspecialchars($f_email_shortened).') und folgen Sie den dort angegebenen Anweisungen.';
+								   Bitte Ã¼berprÃ¼fen Sie nun Ihren E-Mail-Account ('.isohtmlspecialchars($f_email_shortened).') und folgen Sie den dort angegebenen Anweisungen.';
 						}
 						else
 						{
@@ -138,9 +138,9 @@ __NAME__";
 				
 				$this->dbCache->insert('forgotpw.'.$_REQUEST['c'], 0);
 				
-				$msg = "Ihr <b>neues Passwort</b> für den Login als Anbieter <i>".isohtmlspecialchars($anbieterSuchname)."</i> lautet:<br /><br /> 
+				$msg = "Ihr <b>neues Passwort</b> fÃ¼r den Login als Anbieter <i>".isohtmlspecialchars($anbieterSuchname)."</i> lautet:<br /><br /> 
 					<b style=\"font-size: 14pt;\">$newpassword</b><br /><br />Bitte merken sie sich das Passwort jetzt oder notieren Sie es an einem sicheren Platz. 
-					Danach können Sie sich mit Ihrem neuen Passwort <a href=\"edit?action=login&amp;as=".urlencode($anbieterSuchname)."\"><b>hier einloggen</b></a>.";
+					Danach kÃ¶nnen Sie sich mit Ihrem neuen Passwort <a href=\"edit?action=login&amp;as=".urlencode($anbieterSuchname)."\"><b>hier einloggen</b></a>.";
 				$showForm = false;
 				
 				$logwriter->log('anbieter', $anbieterId, $this->adminAnbieterUserId, 'resetpw');

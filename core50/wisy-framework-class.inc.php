@@ -144,7 +144,7 @@ class WISY_FRAMEWORK_CLASS
 			echo '
 						<div class="wisy_topnote">
 							<p><b>Fehler 404 - Seite nicht gefunden</b></p>
-							<p>Entschuldigung, aber die von Ihnen gewünschte Seite konnte leider nicht gefunden werden. Sie können jedoch ...
+							<p>Entschuldigung, aber die von Ihnen gewÃ¼nschte Seite konnte leider nicht gefunden werden. Sie kÃ¶nnen jedoch ...
 							<ul>
 								<li><a href="http://'.$_SERVER['HTTP_HOST'].'">Die Startseite von '.$_SERVER['HTTP_HOST'].' aufrufen ...</a></li>
 								<li><a href="javascript:history.back();">Zur&uuml;ck zur zuletzt besuchten Seite wechseln ...</a></li>
@@ -209,17 +209,17 @@ class WISY_FRAMEWORK_CLASS
 		$str = strtolower($str);
 	
 		// convert accented characters
-		$str = strtr($str,	'áàâåãæçéèêëíìîïñóòôõøúùûýÿ',
+		$str = strtr($str,	'Ã¡Ã Ã¢Ã¥Ã£Ã¦Ã§Ã©Ã¨ÃªÃ«Ã­Ã¬Ã®Ã¯Ã±Ã³Ã²Ã´ÃµÃ¸ÃºÃ¹Ã»Ã½Ã¿',
 							'aaaaaaceeeeiiiinooooouuuyy');
 	
 		// convert german umlaute
-		$str = strtr($str,	array('ä'=>'ae', 'ö'=>'oe', 'ü'=>'ue', 'ß'=>'ss'));
+		$str = strtr($str,	array('Ã¤'=>'ae', 'Ã¶'=>'oe', 'Ã¼'=>'ue', 'ÃŸ'=>'ss'));
 	
 		// convert numbers to a 'natural' sorting order
 		$str = preg_replace_callback('/[0-9]+/', array($this, 'normalizeNatsortCallback'), $str);
 	
 		// strip special characters
-		$str = strtr($str,	'\'\\!"§$%&/(){}[]=?+*~#,;.:-_<>|@€©®£¥  ',
+		$str = strtr($str,	'\'\\!"Â§$%&/(){}[]=?+*~#,;.:-_<>|@Â€Â©Â®Â£Â¥  ',
 							'                                        ');
 	
 		// remove spaces
@@ -379,8 +379,8 @@ class WISY_FRAMEWORK_CLASS
 	function getEditAnbieterId()
 	{
 		return $this->editSessionStarted? intval($_SESSION['loggedInAnbieterId']) : -1;
-				// nicht "0" zurückgeben, da es kurse gibt, die "0" als anbieter haben;
-				// ein Vergleich mit kursId==getEditAnbieterId() würde dann eine unerwartete Übereinstimmung bringen ...
+				// nicht "0" zurÃ¼ckgeben, da es kurse gibt, die "0" als anbieter haben;
+				// ein Vergleich mit kursId==getEditAnbieterId() wÃ¼rde dann eine unerwartete Ãœbereinstimmung bringen ...
 	}
 	
 
@@ -573,17 +573,17 @@ class WISY_FRAMEWORK_CLASS
 	function getVollstaendigkeitMsg(&$db, $recordId, $scope = '')
 	{
 		// Einstellungen der zug. Gruppe und Kursvollstaendigkeit laden
-		// die Einstellungen können etwa wie folgt aussehen:
+		// die Einstellungen kÃ¶nnen etwa wie folgt aussehen:
 		/*
 		quality.portal.warn.percent= 80
-		quality.portal.warn.msg    = Informationen lückenhaft (nur __PERCENT__% Vollständigkeit)
+		quality.portal.warn.msg    = Informationen lÃ¼ckenhaft (nur __PERCENT__% VollstÃ¤ndigkeit)
 		quality.portal.bad.percent = 50
-		quality.portal.bad.msg     = Informationen unzureichend (nur __PERCENT__% Vollständigkeit)
+		quality.portal.bad.msg     = Informationen unzureichend (nur __PERCENT__% VollstÃ¤ndigkeit)
 		quality.edit.warn.percent  = 80
-		quality.edit.warn.msg      = Informationen lückenhaft (nur __PERCENT__% Vollständigkeit)
+		quality.edit.warn.msg      = Informationen lÃ¼ckenhaft (nur __PERCENT__% VollstÃ¤ndigkeit)
 		quality.edit.bad.percent   = 50
-		quality.edit.bad.msg       = Informationen unzureichend (nur __PERCENT__% Vollständigkeit)
-		quality.edit.bad.banner    = Informationen unzureichend (nur __PERCENT__% Vollständigkeit) - gelistet aus Gründen der Marktübersicht
+		quality.edit.bad.msg       = Informationen unzureichend (nur __PERCENT__% VollstÃ¤ndigkeit)
+		quality.edit.bad.banner    = Informationen unzureichend (nur __PERCENT__% VollstÃ¤ndigkeit) - gelistet aus GrÃ¼nden der MarktÃ¼bersicht
 		*/
 	
 		
@@ -618,7 +618,7 @@ class WISY_FRAMEWORK_CLASS
 	function getAllowFeedbackClass()
 	{
 		if( !$this->iniRead('feedback.disable', 0) 
-		 && !$this->editSessionStarted /*keine Feedback-Funktion für angemeldete Anbieter - die Anbieter sind die Adressaten, nicht die Absender*/ )
+		 && !$this->editSessionStarted /*keine Feedback-Funktion fÃ¼r angemeldete Anbieter - die Anbieter sind die Adressaten, nicht die Absender*/ )
 		{
 			return 'wisy_allow_feedback';
 		}
@@ -876,7 +876,7 @@ class WISY_FRAMEWORK_CLASS
 		$added = array();
 		$q_org = $this->getParam('q', '');
 		$q = strtolower($q_org);
-		$q = strtr($q, array('ä'=>'ae', 'ö'=>'oe', 'ü'=>'ue', 'ß'=>'ss'));
+		$q = strtr($q, array('Ã¤'=>'ae', 'Ã¶'=>'oe', 'Ã¼'=>'ue', 'ÃŸ'=>'ss'));
 		$q = preg_replace('/[^a-z,]/', '', $q);
 		$q = explode(',', $q);
 		for( $i = 0; $i < sizeof($q); $i++ )
@@ -1117,7 +1117,7 @@ class WISY_FRAMEWORK_CLASS
 		$DEFAULT_PLACEHOLDER	= '';
 		$DEFAULT_ADVLINK_HTML	= '<a href="advanced?q=__Q_URLENCODE__" id="wisy_advlink">Erweitern</a>';
 		$DEFAULT_RIGHT_HTML		= '| <a href="javascript:window.print();">Drucken</a>';
-		$DEFAULT_BOTTOM_HINT	= 'bitte <strong>Suchwörter</strong> eingeben - z.B. Englisch, VHS, Bildungsurlaub, ...';
+		$DEFAULT_BOTTOM_HINT	= 'bitte <strong>SuchwÃ¶rter</strong> eingeben - z.B. Englisch, VHS, Bildungsurlaub, ...';
 		
 		echo "\n";
 		echo '<div id="wisy_searcharea">' . "\n";
@@ -1160,7 +1160,7 @@ class WISY_FRAMEWORK_CLASS
 		switch( $wisyRequestedFile )
 		{
 			// homepage
-			// (in WISY 2.0 gibt es keine Datei "index.php", diese wird vom Framework aber als Synonym für "Homepage" verwendet)
+			// (in WISY 2.0 gibt es keine Datei "index.php", diese wird vom Framework aber als Synonym fÃ¼r "Homepage" verwendet)
 			case 'index.php':
 				for( $i = 1; $i <= 9; $i++ ) 
 				{

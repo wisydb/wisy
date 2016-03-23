@@ -13,7 +13,7 @@ class WISY_ADVANCED_RENDERER_CLASS
 		$this->presets['q'] = array
 			(
 				'type'			=> 'text',
-				'descr'			=> '<strong>Suchwörter:</strong>',
+				'descr'			=> '<strong>SuchwÃ¶rter:</strong>',
 				'autocomplete'	=>	'ac_keyword',
 			);
 		$this->presets['datum'] = array
@@ -22,14 +22,14 @@ class WISY_ADVANCED_RENDERER_CLASS
 				'function'	=> 'Datum:',
 				'descr'		=> '<strong>Beginndatum:</strong>',
 				'options' 	=> array(
-					'Alles' 				=> 'auch abgelaufene Angebote berücksichtigen',
+					'Alles' 				=> 'auch abgelaufene Angebote berÃ¼cksichtigen',
 					$dates['vorgestern']	=> 'ab vorgestern',
 					$dates['gestern']		=> 'ab gestern',
 					''						=> 'ab heute',
 					$dates['morgen']		=> 'ab morgen',
-					$dates['uebermorgen']	=> 'ab übermorgen',
-					$dates['montag1']		=> 'nächste Woche &ndash; ab Montag, ' . $dates['montag1'],
-					$dates['montag2']		=> 'übernächste Woche &ndash; ab Montag, ' . $dates['montag2'],
+					$dates['uebermorgen']	=> 'ab Ã¼bermorgen',
+					$dates['montag1']		=> 'nÃ¤chste Woche &ndash; ab Montag, ' . $dates['montag1'],
+					$dates['montag2']		=> 'Ã¼bernÃ¤chste Woche &ndash; ab Montag, ' . $dates['montag2'],
 					$dates['montag3']		=> 'in 3 Wochen &ndash; ab Montag, ' . $dates['montag3'],
 					$dates['montag4']		=> 'in 4 Wochen &ndash; ab Montag, ' . $dates['montag4'],
 					$dates['montag5']		=> 'in 5 Wochen &ndash; ab Montag, ' . $dates['montag5'],
@@ -153,7 +153,7 @@ class WISY_ADVANCED_RENDERER_CLASS
 			$this->presets['foerderung'] = array
 				(
 					'type'		=> 'taglist',
-					'descr'		=> 'Förderung:',
+					'descr'		=> 'FÃ¶rderung:',
 					'options'	=>	$foerderungen
 				);
 		}
@@ -175,7 +175,7 @@ class WISY_ADVANCED_RENDERER_CLASS
 			$this->presets['qualitaetszertifikat'] = array
 				(
 					'type'		=> 'taglist',
-					'descr'		=> 'Qualitätszertifikat:',
+					'descr'		=> 'QualitÃ¤tszertifikat:',
 					'options'	=>	$qualitaetszertifikate
 				);
 		}
@@ -209,7 +209,7 @@ class WISY_ADVANCED_RENDERER_CLASS
 
 	private function getSpezielleStichw($flag)
 	{
-		// nur die stichwörter zurückgeben, die im aktuellem Portal auch vervendet werden!
+		// nur die stichwÃ¶rter zurÃ¼ckgeben, die im aktuellem Portal auch vervendet werden!
 		$keyPrefix = "advStichw.$flag";
 		$magic = strftime("%Y-%m-%d-v5-").md5($GLOBALS['wisyPortalFilter']['stdkursfilter']);
 		if( $this->framework->cacheRead("adv_stichw.$flag.magic") != $magic )
@@ -246,7 +246,7 @@ class WISY_ADVANCED_RENDERER_CLASS
 		$ret['morgen'] = strftime('%d.%m.%Y', $heute+$onedaysec);
 		$ret['uebermorgen'] = strftime('%d.%m.%Y', $heute+$onedaysec*2);
 		
-		// nächsten Montag herausfinden
+		// nÃ¤chsten Montag herausfinden
 		$test = $heute + $onedaysec;
 		while( 1 )
 		{

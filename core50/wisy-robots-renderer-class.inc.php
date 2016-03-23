@@ -54,7 +54,7 @@ class WISY_ROBOTS_RENDERER_CLASS
 
 	function renderHoneypot()
 	{
-		// "/terrapin" ist unser "Honeypot" für Bots, die sich nicht an die Regeln halten; 
+		// "/terrapin" ist unser "Honeypot" fÃ¼r Bots, die sich nicht an die Regeln halten; 
 		// derzeit nehmen wir keine Sanktionen vor, einfach nur mal beobachten ...
 		// (log wurde schon in render() geschrieben)
 
@@ -120,9 +120,9 @@ class WISY_ROBOTS_RENDERER_CLASS
 		$this->urlsAdded = 0;
 		
 		// grenzen fuer sitemaps:
-		// - max. 10 MB für die unkomprimierte Sitemap
+		// - max. 10 MB fÃ¼r die unkomprimierte Sitemap
 		// - max. 50000 URLs pro Sitemap		
-		// wir setzen unsere grenzen etwas weiter unten an, damit der Server nicht zu arg belastet wird, für die meisten portale sollten 20000 _aktuelle_ Urls aber absolut ausreichen
+		// wir setzen unsere grenzen etwas weiter unten an, damit der Server nicht zu arg belastet wird, fÃ¼r die meisten portale sollten 20000 _aktuelle_ Urls aber absolut ausreichen
 		$maxUrls = 25000;
 
 		// dump homepage
