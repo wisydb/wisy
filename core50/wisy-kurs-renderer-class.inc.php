@@ -28,16 +28,16 @@ class WISY_KURS_RENDERER_CLASS
 						WHERE k.id=$kursId"); // "a.suchname" etc. kann mit "LEFT JOIN anbieter a ON a.id=k.anbieter" zus. abgefragt werden
 		if( !$db->next_record() )
 			$this->framework->error404();
-		$title 				= $db->fs('titel');
-		$originaltitel		= $db->fs('org_titel');
-		$freigeschaltet 	= intval($db->f('freigeschaltet'));
-		$beschreibung		= $db->fs('beschreibung');
-		$anbieterId			= intval($db->f('anbieter'));
-		$date_created		= $db->f('date_created');
-		$date_modified		= $db->f('date_modified');
-		$bu_nummer 			= $db->f('bu_nummer');
-		$pflege_pweinst		= intval($db->f('pflege_pweinst'));
-		$anbieter_typ		= intval($db->f('typ'));
+		$title 				= $db->f8('titel');
+		$originaltitel		= $db->f8('org_titel');
+		$freigeschaltet 	= intval($db->f8('freigeschaltet'));
+		$beschreibung		= $db->f8('beschreibung');
+		$anbieterId			= intval($db->f8('anbieter'));
+		$date_created		= $db->f8('date_created');
+		$date_modified		= $db->f8('date_modified');
+		$bu_nummer 			= $db->f8('bu_nummer');
+		$pflege_pweinst		= intval($db->f8('pflege_pweinst'));
+		$anbieter_typ		= intval($db->f8('typ'));
 		$record				= $db->Record;
 		
 		// promoted?

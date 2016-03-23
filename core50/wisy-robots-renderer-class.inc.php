@@ -150,7 +150,7 @@ class WISY_ROBOTS_RENDERER_CLASS
 			$searcher->db->query($sql);
 			while( $searcher->db->next_record() )
 			{
-				$sitemap .= $this->addUrl('k'.$searcher->db->f('id'), strtotime($searcher->db->f('date_modified')), 'monthly');
+				$sitemap .= $this->addUrl('k'.$searcher->db->f8('id'), strtotime($searcher->db->f8('date_modified')), 'monthly');
 				if( $this->urlsAdded >= $maxUrls )
 				{
 					$sitemap .= "<!-- stop adding URLs, max of $maxUrls reached -->\n";

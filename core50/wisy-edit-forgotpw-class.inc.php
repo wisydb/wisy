@@ -48,8 +48,8 @@ class WISY_EDIT_FORGOTPW_CLASS
 			$db->query($sql);
 			if( $db->next_record() )
 			{
-				$f_id = $db->fs('id');
-				$f_email = $db->fs('pflege_email');
+				$f_id = $db->f8('id');
+				$f_email = $db->f8('pflege_email');
 				if( !$db->next_record() ) 
 				{
 					if( $f_email != '' )
@@ -130,9 +130,9 @@ __NAME__";
 			$db->query("SELECT id, suchname, notizen FROM anbieter WHERE id=$anbieterId AND pflege_pweinst&1;");
 			if( $db->next_record() )
 			{
-				$anbieterSuchname = $db->fs('suchname');
+				$anbieterSuchname = $db->f8('suchname');
 				$newpassword = genpassword();
-				$notizen = strftime('%d.%m.%y') . ": Neues Passwort mit Passwort-Vergessen-Funktion generiert\n" . $db->fs('notizen');
+				$notizen = strftime('%d.%m.%y') . ": Neues Passwort mit Passwort-Vergessen-Funktion generiert\n" . $db->f8('notizen');
 				
 				$db->query("UPDATE anbieter SET pflege_passwort=".$db->quote(crypt($newpassword)).", notizen=".$db->quote($notizen)." WHERE id=$anbieterId;");
 				

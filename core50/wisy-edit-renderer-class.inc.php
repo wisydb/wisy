@@ -58,7 +58,7 @@ class WISY_EDIT_RENDERER_CLASS
 			$db->query("SELECT settings x FROM anbieter WHERE id=".intval($_SESSION['loggedInAnbieterId']));
 			if( $db->next_record() )
 			{
-				$this->_anbieter_ini_settings = explodeSettings($db->fs('x'));
+				$this->_anbieter_ini_settings = explodeSettings($db->f8('x'));
 			}
 		}
 		
@@ -118,7 +118,7 @@ class WISY_EDIT_RENDERER_CLASS
 				$db->query("SELECT pflege_pweinst FROM anbieter WHERE id=$anbieter_id;");
 				if( $db->next_record() )
 				{
-					$this->cachePwEinst = $db->f('pflege_pweinst');
+					$this->cachePwEinst = $db->f8('pflege_pweinst');
 				}
 			} 
 		}
@@ -240,7 +240,7 @@ class WISY_EDIT_RENDERER_CLASS
 			// add stichwort
 			$db->query("SELECT MAX(structure_pos) AS sp FROM kurse_stichwort WHERE primary_id=$kursId;");
 			$db->next_record();
-			$structurePos = intval($db->f('sp'))+1;
+			$structurePos = intval($db->f8('sp'))+1;
 			$db->query("INSERT INTO kurse_stichwort (primary_id, attr_id, structure_pos) VALUES($kursId, $newStichwId, $structurePos);");
 		}
 		else if( $oldStichwId>0 && $newStichwId==0 )
@@ -259,7 +259,7 @@ class WISY_EDIT_RENDERER_CLASS
 		$db = new DB_Admin;
 		$db->query("SELECT DISTINCT attr_id FROM kurse_stichwort LEFT JOIN kurse ON id=primary_id WHERE anbieter=$anbieter_id;");
 		while($db->next_record() ) {
-			$alleStichw .= ($alleStichw==''? '' : ', ') .  $db->f('attr_id'); 
+			$alleStichw .= ($alleStichw==''? '' : ', ') .  $db->f8('attr_id'); 
 		}
 		
 		// kuerzlich geloeschte stichworte hinzufuegen (falls z.B. der letzte Kurse mit einem best. Abschluss geloescht wurde - dieser Abschluss darf dann dennoch wieder vergeben werden)
@@ -276,9 +276,9 @@ class WISY_EDIT_RENDERER_CLASS
 			$db->query("SELECT id, eigenschaften, stichwort FROM stichwoerter WHERE id IN($alleStichw) ORDER BY stichwort_sorted;");
 			while( $db->next_record() )
 			{
-				$id = intval($db->f('id'));
-				$eigenschaften = intval($db->f('eigenschaften'));
-				$stichwort = $db->fs('stichwort');
+				$id = intval($db->f8('id'));
+				$eigenschaften = intval($db->f8('eigenschaften'));
+				$stichwort = $db->f8('stichwort');
 				if( $eigenschaften & 1 )
 				{
 					$retAbschluesse .= ($retAbschluesse?'###' : '') . $id . '###' . htmlspecialchars($stichwort);
@@ -352,7 +352,7 @@ class WISY_EDIT_RENDERER_CLASS
 				$db->query("SELECT anbieter FROM kurse WHERE id=$kursId");
 				if( $db->next_record() )
 				{
-					if( $this->framework->getEditAnbieterId() == $db->f('anbieter') )
+					if( $this->framework->getEditAnbieterId() == $db->f8('anbieter') )
 					{
 						$ret .=  ' | <a href="edit?action=ek&amp;id=' . $kursId . '">Kurs bearbeiten</a>';
 					}
@@ -396,15 +396,15 @@ class WISY_EDIT_RENDERER_CLASS
 			return 'no'; // bad record ID - not editable
 		}
 			
-		if( $db->f('anbieter')!=$_SESSION['loggedInAnbieterId'] )
+		if( $db->f8('anbieter')!=$_SESSION['loggedInAnbieterId'] )
 		{
 			return 'loginneeded'; // may be editable, but bad login data
 		}
 		
-		if( $db->f('freigeschaltet') == 1 /*freigeschaltet*/ 
-		 || $db->f('freigeschaltet') == 4 /*dauerhaft*/ 
-		 || $db->f('freigeschaltet') == 3 /*abgelaufen*/
-		 ||	($db->f('freigeschaltet') == 0 /*in Vorbereitung*/ ) ) // Kurse in Vorbereitung sollen über Direktlinks editierbar sein, daher an dieser Stelle keine Überprüfung, ob der Kurs von getAdminAnbieterUserIds() angelegt wurde, s. https://mail.google.com/mail/#all/132aa92c4ec2cda7
+		if( $db->f8('freigeschaltet') == 1 /*freigeschaltet*/ 
+		 || $db->f8('freigeschaltet') == 4 /*dauerhaft*/ 
+		 || $db->f8('freigeschaltet') == 3 /*abgelaufen*/
+		 ||	($db->f8('freigeschaltet') == 0 /*in Vorbereitung*/ ) ) // Kurse in Vorbereitung sollen über Direktlinks editierbar sein, daher an dieser Stelle keine Überprüfung, ob der Kurs von getAdminAnbieterUserIds() angelegt wurde, s. https://mail.google.com/mail/#all/132aa92c4ec2cda7
 		{
 			return 'yes'; // editable
 		}
@@ -447,7 +447,7 @@ class WISY_EDIT_RENDERER_CLASS
 			// Anbieter ID in name konvertieren (neuer Auftrag vom 13.09.2012)
 			$db->query("SELECT suchname FROM anbieter WHERE id=".intval($anbieterSuchname));
 			if( $db->next_record() ) {
-				$anbieterSuchname = $db->fs('suchname');
+				$anbieterSuchname = $db->f8('suchname');
 			}
 			
 			$login_as = false;
@@ -462,17 +462,17 @@ class WISY_EDIT_RENDERER_CLASS
 				$db->query($sql);
 				if( $db->next_record() )
 				{
-					$dbPw = $db->fs('password');
+					$dbPw = $db->f8('password');
 					if( crypt($temp[1], $dbPw) == $dbPw )
 					{
 						require_once('admin/acl.inc.php');
-						if( acl_check_access('kurse.COMMON', -1, ACL_EDIT, $db->f('id')) )
+						if( acl_check_access('kurse.COMMON', -1, ACL_EDIT, $db->f8('id')) )
 						{
 							$db->query("SELECT id FROM anbieter WHERE suchname='".addslashes($anbieterSuchname)."'");
 							if( $db->next_record() )
 							{
 								$logwriter->addData('loginname', $temp[0] . ' as ' . $anbieterSuchname);
-								$loggedInAnbieterId = intval($db->f('id'));
+								$loggedInAnbieterId = intval($db->f8('id'));
 								$login_as = true;
 							}
 						}
@@ -487,12 +487,12 @@ class WISY_EDIT_RENDERER_CLASS
 				$db->query("SELECT pflege_passwort, pflege_pweinst, id FROM anbieter WHERE suchname='".addslashes($anbieterSuchname)."'");
 				if( $db->next_record() )
 				{
-					$dbPw = $db->f('pflege_passwort');
-					$dbPwEinst = intval($db->f('pflege_pweinst'));
+					$dbPw = $db->f8('pflege_passwort');
+					$dbPwEinst = intval($db->f8('pflege_pweinst'));
 					if( crypt($_REQUEST['wepw'], $dbPw) == $dbPw 
 					 && $dbPwEinst&1 /*freigeschaltet?*/ )
 					{
-						$loggedInAnbieterId = intval($db->f('id'));;
+						$loggedInAnbieterId = intval($db->f8('id'));;
 					}
 					else
 					{
@@ -510,7 +510,7 @@ class WISY_EDIT_RENDERER_CLASS
 				$db->query("SELECT id FROM anbieter WHERE suchname='".addslashes($anbieterSuchname)."'");
 				$db->next_record();
 				
-				$logwriter->log('anbieter', intval($db->f('id')), $this->getAdminAnbieterUserId20(), 'loginfailed');
+				$logwriter->log('anbieter', intval($db->f8('id')), $this->getAdminAnbieterUserId20(), 'loginfailed');
 				
 				$loginError = 'bad_pw';
 			}
@@ -548,7 +548,7 @@ class WISY_EDIT_RENDERER_CLASS
 				$db->query($sql);
 				if( $db->next_record() )
 				{
-					$anbieterSuchname = $db->fs('suchname');
+					$anbieterSuchname = $db->f8('suchname');
 				}
 				$fwd = "edit?action=ek&id=".intval($_REQUEST['id']);
 				$secureLogin = $fwd;
@@ -707,11 +707,11 @@ class WISY_EDIT_RENDERER_CLASS
 			$db->query("SELECT kurse.id, titel, promote_active, promote_mode, promote_param FROM anbieter_promote LEFT JOIN kurse ON kurse.id=kurs_id WHERE anbieter_id=".$_SESSION['loggedInAnbieterId']. " AND portal_id=$wisyPortalId ORDER BY titel;");
 			while( $db->next_record() )
 			{
-				$kurs_id = intval($db->f('id'));
-				$titel   = $db->f('titel');
-				$promote_active  = intval($db->f('promote_active'));
-				$promote_mode    = $db->f('promote_mode');
-				$promote_param   = $db->f('promote_param');
+				$kurs_id = intval($db->f8('id'));
+				$titel   = $db->f8('titel');
+				$promote_active  = intval($db->f8('promote_active'));
+				$promote_mode    = $db->f8('promote_mode');
+				$promote_param   = $db->f8('promote_param');
 				echo '<tr>';
 					echo '<td valign="top">';
 					
@@ -779,7 +779,7 @@ class WISY_EDIT_RENDERER_CLASS
 		if( $db->next_record() )
 		{
 			$kurs = $db->Record;
-			if( $db->f('freigeschaltet')==0 /*in vorbereitung*/ && $db->f('user_created')==$this->getAdminAnbieterUserId20() )
+			if( $db->f8('freigeschaltet')==0 /*in vorbereitung*/ && $db->f8('user_created')==$this->getAdminAnbieterUserId20() )
 			{
 				$kurs['rights_editTitel'] = true;
 				$kurs['rights_editAbschluss'] = true;
@@ -813,8 +813,8 @@ class WISY_EDIT_RENDERER_CLASS
 		$db->query("SELECT s.id, s.eigenschaften FROM stichwoerter s LEFT JOIN kurse_stichwort ks ON s.id=ks.attr_id WHERE ks.primary_id=$kursId AND s.eigenschaften&3 ORDER BY ks.structure_pos;");
 		while( $db->next_record() )
 		{
-			$eigenschaften = intval($db->f('eigenschaften'));
-			$id = intval($db->f('id'));
+			$eigenschaften = intval($db->f8('eigenschaften'));
+			$id = intval($db->f8('id'));
 			if( $eigenschaften&1 && $kurs['abschluss'] == 0 )  $kurs['abschluss'] = $id;
 			if( $eigenschaften&2 && $kurs['foerderung'] == 0 )  $kurs['foerderung'] = $id;
 		}
@@ -823,9 +823,9 @@ class WISY_EDIT_RENDERER_CLASS
 		global $wisyPortalId;
 		$db->query("SELECT * FROM anbieter_promote WHERE kurs_id=$kursId AND portal_id=$wisyPortalId");
 		$db->next_record(); // may be unexistant ... in this case the lines below evaluate to zero/emptyString
-		$kurs['promote_active'] = intval($db->f('promote_active'));
-		$kurs['promote_mode']   = $db->fs('promote_mode');
-		$kurs['promote_param']  = $db->fs('promote_param');
+		$kurs['promote_active'] = intval($db->f8('promote_active'));
+		$kurs['promote_mode']   = $db->f8('promote_mode');
+		$kurs['promote_param']  = $db->f8('promote_param');
 		
 		return $kurs;
 	}
@@ -961,7 +961,7 @@ class WISY_EDIT_RENDERER_CLASS
 				$db->query("SELECT id FROM kurse WHERE freigeschaltet IN (0,1,3,4) AND titel=".$db->quote(trim($kurs['titel']))." AND anbieter=".intval($_SESSION['loggedInAnbieterId']));
 				if( $db->next_record() )			// ^^^^^^^^^^^^^^^^^^^^^^^^^^^ otherwise, if there is a deleted and an available offer, we may get the deleted one - which is not editable!
 				{
-					$andere_kurs_id = $db->fs('id');
+					$andere_kurs_id = $db->f8('id');
 					if( $this->isEditable($andere_kurs_id)=='yes' )
 					{
 						// meine knappe Variante wäre gewesen: "Ein Kurse mit dem Titel <i><titel><i> <b>ist bereits vorhanden.</b> Bitte ändern Sie den bestehenden Kurs und fügen dort ggf. Durchführungen hinzu. <a>bestehenden Kurs bearbeiten</a>"
@@ -1227,8 +1227,8 @@ class WISY_EDIT_RENDERER_CLASS
 			$anbieter = intval($_SESSION['loggedInAnbieterId']);
 			$db->query("SELECT user_grp, user_access FROM anbieter WHERE id=$anbieter;");
 			$db->next_record();
-			$user_grp = intval($db->f('user_grp'));
-			$user_access =  intval($db->f('user_access'));
+			$user_grp = intval($db->f8('user_grp'));
+			$user_access =  intval($db->f8('user_access'));
 			$db->query("INSERT INTO kurse  (user_created, date_created, user_modified, date_modified, user_grp,  user_access,  anbieter,  freigeschaltet) 
 									VALUES ($user, 		  '$today',     $user,         '$today',      $user_grp, $user_access, $anbieter, 0)
 									;");
@@ -1265,8 +1265,8 @@ class WISY_EDIT_RENDERER_CLASS
 				// neue Durchführung!				
 				$db->query("SELECT user_grp, user_access FROM kurse WHERE id=$kursId;");
 				$db->next_record();
-				$user_grp = intval($db->f('user_grp'));
-				$user_access =  intval($db->f('user_access'));
+				$user_grp = intval($db->f8('user_grp'));
+				$user_access =  intval($db->f8('user_access'));
 
 				$db->query("INSERT INTO durchfuehrung (user_created, date_created, user_modified, date_modified, user_grp, user_access) VALUES ($user, '$today', $user, '$today', $user_grp, $user_access)");
 				$newDurchf['id'] = $db->insert_id();
@@ -1276,7 +1276,7 @@ class WISY_EDIT_RENDERER_CLASS
 				$db->query("SELECT MAX(structure_pos) AS temp FROM kurse_durchfuehrung WHERE primary_id=$kursId");
 				$db->next_record();
 				
-				$db->query("INSERT INTO kurse_durchfuehrung (primary_id, secondary_id, structure_pos) VALUES ($kursId, ".$newDurchf['id'].", ".($db->f('temp')+1).")");
+				$db->query("INSERT INTO kurse_durchfuehrung (primary_id, secondary_id, structure_pos) VALUES ($kursId, ".$newDurchf['id'].", ".($db->f8('temp')+1).")");
 				
 				$isNew = true;
 				
@@ -1441,7 +1441,7 @@ class WISY_EDIT_RENDERER_CLASS
 		$db->query("SELECT freigeschaltet FROM kurse WHERE id=$kursId;");
 		if( $db->next_record() )
 		{
-			$oldFreigeschaltet = $db->f('freigeschaltet');
+			$oldFreigeschaltet = $db->f8('freigeschaltet');
 			
 			// neuen Wert fuer "freigeschaltet" setzen
 			$db->query("UPDATE kurse SET freigeschaltet=2, user_modified={$user}, date_modified='{$today}' WHERE id=$kursId;");
@@ -1561,7 +1561,7 @@ class WISY_EDIT_RENDERER_CLASS
 		{
 			$db->query("SELECT pflege_msg FROM anbieter WHERE id=".$_SESSION['loggedInAnbieterId']);
 			$db->next_record();
-			$msg = trim($db->fs('pflege_msg'));
+			$msg = trim($db->f8('pflege_msg'));
 			if( $msg != '' )
 			{
 				echo '<div id="pflege_msg"><h1>Nachricht vom Portalbetreiber</h1>';
@@ -1997,7 +1997,7 @@ class WISY_EDIT_RENDERER_CLASS
 		if( !$db->next_record() )
 			return ''; // AGB record does not exist
 
-		$temp = $db->fs('erklaerung');
+		$temp = $db->f8('erklaerung');
 		if( $temp == '' )
 			return ''; // AGB are empty
 			
@@ -2052,8 +2052,8 @@ class WISY_EDIT_RENDERER_CLASS
 		$db = new DB_Admin;
 		$db->query("SELECT begriff, erklaerung FROM glossar WHERE id=".$agb_glossar_entry);
 		$db->next_record();
-		$begriff = $db->fs('begriff');
-		$erklaerung = $db->fs('erklaerung');
+		$begriff = $db->f8('begriff');
+		$erklaerung = $db->f8('erklaerung');
 
 		echo $this->framework->getPrologue(array('title'=>$begriff, 'bodyClass'=>'wisyp_edit'));
 			

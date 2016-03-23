@@ -79,7 +79,7 @@ class WISY_CACHE_CLASS
 			if( $this->itemLifetimeSeconds > 0 )
 			{
 				$deleteIfOlder = strftime("%Y-%m-%d %H:%M:%S", time()-$this->itemLifetimeSeconds);
-				if( $this->db->f('cdateinserted') < $deleteIfOlder )
+				if( $this->db->f8('cdateinserted') < $deleteIfOlder )
 				{
 					$this->db->query("DELETE FROM $this->table WHERE cdateinserted<'$deleteIfOlder';");
 					return "";
@@ -87,9 +87,9 @@ class WISY_CACHE_CLASS
 			}
 			
 			if( $this->storeBlobs )
-				return $this->db->f('cvalue');
+				return $this->db->f8('cvalue');
 			else
-				return $this->db->fs('cvalue');
+				return $this->db->f8('cvalue');
 		}
 		
 		return "";

@@ -36,9 +36,9 @@ class WISY_GLOSSAR_RENDERER_CLASS
 		if( !$db->next_record() )
 			$this->framework->error404();
 
-		$begriff = $db->fs('begriff');
-		$erklaerung = $db->fs('erklaerung');
-		$wikipedia = $db->fs('wikipedia');
+		$begriff = $db->f8('begriff');
+		$erklaerung = $db->f8('erklaerung');
+		$wikipedia = $db->f8('wikipedia');
 
 		// Wenn es keine Erklärung, aber eine Wikipedia-Seite gibt -> Weiterleitung auf die entspr. Wikipedia-Seite
 		if( $erklaerung == '' && $wikipedia != '' )

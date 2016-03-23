@@ -41,13 +41,13 @@ class WISY_KEYWORDTABLE_CLASS
 			WISY_KEYWORDTABLE_CLASS::$keywords = array();
 			$this->db->query("SELECT id, stichwort, eigenschaften, zusatzinfo, glossar FROM stichwoerter;");
 			while( $this->db->next_record() ) {
-				WISY_KEYWORDTABLE_CLASS::$keywords[ $this->db->f('id') ] = $this->db->Record;
+				WISY_KEYWORDTABLE_CLASS::$keywords[ $this->db->f8('id') ] = $this->db->Record;
 			}
 
 			WISY_KEYWORDTABLE_CLASS::$sw_modified = '0000-00-00 00:00:00';
 			$this->db->query("SELECT MAX(date_modified) d FROM stichwoerter;");
 			if( $this->db->next_record() ) {
-				WISY_KEYWORDTABLE_CLASS::$sw_modified = $this->db->f('d');
+				WISY_KEYWORDTABLE_CLASS::$sw_modified = $this->db->f8('d');
 			}			
 		}		
 	}
@@ -124,7 +124,7 @@ class WISY_KEYWORDTABLE_CLASS
 		$tag_id = 0;
 		$this->db->query("SELECT tag_id, tag_type FROM x_tags WHERE tag_name=".$this->db->quote($title));
 		if( $this->db->next_record() ) {
-			$tag_id = $this->db->f('tag_id');
+			$tag_id = $this->db->f8('tag_id');
 		} 
 		
 		// get row type, class etc.
@@ -175,7 +175,7 @@ class WISY_KEYWORDTABLE_CLASS
 		$child_ids = array();
 		$this->db->query("SELECT attr_id FROM stichwoerter_verweis2 WHERE primary_id=$keywordId ORDER BY structure_pos;");
 		while( $this->db->next_record() ) {
-			$child_ids[] = $this->db->f('attr_id');
+			$child_ids[] = $this->db->f8('attr_id');
 		}
 
 		$showempty = $this->showempty;

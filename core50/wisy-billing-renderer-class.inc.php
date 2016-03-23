@@ -46,9 +46,9 @@ class WISY_BILLING_RENDERER_CLASS
 		$db = new DB_Admin;
 		$db->query("SELECT user_created, user_grp, user_access FROM portale WHERE id=$wisyPortalId;");
 		$db->next_record();
-		$user_created = intval($db->f('user_created'));
-		$user_grp     = intval($db->f('user_grp'));
-		$user_access  = intval($db->f('user_access'));
+		$user_created = intval($db->f8('user_created'));
+		$user_grp     = intval($db->f8('user_grp'));
+		$user_access  = intval($db->f8('user_access'));
 		
 		// Eintrag in Log schreiben
 		$todayHour     = strftime("%Y-%m-%d %H:%M:%S");

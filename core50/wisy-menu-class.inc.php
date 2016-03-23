@@ -217,7 +217,7 @@ class WISY_MENU_CLASS
 			$attr_ids = array();
 			$this->db->query("SELECT attr_id FROM stichwoerter_verweis2 WHERE primary_id=$keywordId ORDER BY structure_pos;");
 			while( $this->db->next_record() ) {
-				$attr_ids[] = $this->db->f('attr_id');
+				$attr_ids[] = $this->db->f8('attr_id');
 			}
 		
 			for( $a = 0; $a < sizeof($attr_ids); $a++ ) {
@@ -308,7 +308,7 @@ class WISY_MENU_CLASS
 				$g_keywords = array();
 				$this->db->query("SELECT id, stichwort FROM stichwoerter;");
 				while( $this->db->next_record() ) {
-					$g_keywords[ $this->db->f('id') ] = $this->db->fs('stichwort');
+					$g_keywords[ $this->db->f8('id') ] = $this->db->f8('stichwort');
 				}
 			}
 			

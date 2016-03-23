@@ -43,7 +43,7 @@ class WISY_FEEDBACK_RENDERER_CLASS
 		if( $db->next_record() )
 		{
 			// modify an existing record (only adding a description is allowed)
-			$id = intval($db->f('id'));
+			$id = intval($db->f8('id'));
 			if( $descr != '' )
 			{
 				$db->query("UPDATE feedback SET descr='".addslashes($descr)."' WHERE id=$id;");
@@ -59,7 +59,7 @@ class WISY_FEEDBACK_RENDERER_CLASS
 
 		$db->query("SELECT user_grp FROM portale WHERE id=".$GLOBALS['wisyPortalId']);
 		$db->next_record();
-		$user_grp = intval($db->f('user_grp'));
+		$user_grp = intval($db->f8('user_grp'));
 
 		$user_access = 511; // =0777, was: 508=0774, however, this would require supervisor settings to modify the feedback settings
 		$db->query("INSERT INTO feedback (url, ip, rating, descr, date_created, date_modified, user_grp, user_access) 

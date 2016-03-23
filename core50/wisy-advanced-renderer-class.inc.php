@@ -226,7 +226,7 @@ class WISY_ADVANCED_RENDERER_CLASS
 		$db->query("SELECT stichwort FROM stichwoerter WHERE id IN ($ids_str) ORDER BY stichwort_sorted;");
 		while( $db->next_record() )
 		{
-			$stichw = htmlspecialchars($db->fs('stichwort'));
+			$stichw = htmlspecialchars($db->f8('stichwort'));
 			$stichw = trim(strtr($stichw, array(': '=>' ', ':'=>' ', ', '=>' ', ','=>' ')));
 			
 			$ret[ $stichw ] = $stichw;

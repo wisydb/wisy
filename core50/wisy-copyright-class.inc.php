@@ -24,8 +24,8 @@ class WISY_COPYRIGHT_CLASS
 			$db->query($sql);
 			if( $db->next_record() )
 			{
-				$group_settings = explodeSettings($db->fs('x'));
-				$user_modified = intval($db->fs('m'));
+				$group_settings = explodeSettings($db->f8('x'));
+				$user_modified = intval($db->f8('m'));
 				if( $group_settings["copyright.{$table}.modifiedby.{$user_modified}"] != '' )
 				{
 					$copyright = $group_settings["copyright.{$table}.modifiedby.{$user_modified}"];
@@ -41,7 +41,7 @@ class WISY_COPYRIGHT_CLASS
 			$db->query($sql);
 			while( $db->next_record() )
 			{
-				$test = explodeSettings($db->fs('x'));
+				$test = explodeSettings($db->f8('x'));
 				if( $test["copyright.$table"] != '' )
 				{
 					$copyright = $test["copyright.$table"];
@@ -58,7 +58,7 @@ class WISY_COPYRIGHT_CLASS
 			$db->query($sql);
 			if( $db->next_record() )
 			{
-				$test = explodeSettings($db->fs('x'));
+				$test = explodeSettings($db->f8('x'));
 				if( $test["copyright.$table"] != '' )
 				{
 					$copyright = $test["copyright.$table"];
@@ -104,7 +104,7 @@ class WISY_COPYRIGHT_CLASS
 			$db->query($sql);
 			if( $db->next_record() )
 			{
-				$test = explodeSettings($db->fs('x'));
+				$test = explodeSettings($db->f8('x'));
 				if( $test["useredit.url"] != '' )
 				{
 					$editurl = $test["useredit.url"];
@@ -120,7 +120,7 @@ class WISY_COPYRIGHT_CLASS
 			$db->query($sql);
 			if( $db->next_record() )
 			{
-				$test = explodeSettings($db->fs('x'));
+				$test = explodeSettings($db->f8('x'));
 				if( $test["useredit.url"] != '' )
 				{
 					$editurl = $test["useredit.url"];

@@ -409,7 +409,7 @@ class WISY_FRAMEWORK_CLASS
 		$seals = array();
 		$db->query("SELECT a.attr_id AS sealId, s.glossar AS glossarId FROM anbieter_stichwort a, stichwoerter s WHERE a.primary_id=" . intval($vars['anbieterId']) . " AND a.attr_id=s.id AND s.eigenschaften=" .DEF_STICHWORTTYP_QZERTIFIKAT. " ORDER BY a.structure_pos;");
 		while( $db->next_record() )
-			$seals[] = array($db->f('sealId'), $db->f('glossarId'));
+			$seals[] = array($db->f8('sealId'), $db->f8('glossarId'));
 	
 		// no seals? -> done.
 		if( sizeof($seals) == 0 )
@@ -421,7 +421,7 @@ class WISY_FRAMEWORK_CLASS
 		{
 			$db->query("SELECT pruefsiegel_seit FROM anbieter WHERE id=" . intval($vars['anbieterId']));
 			$db->next_record();
-			$seit = intval(substr($db->f('pruefsiegel_seit'), 0, 4));
+			$seit = intval(substr($db->f8('pruefsiegel_seit'), 0, 4));
 		}
 		$title = $seit? "Gepr&uuml;fte Weiterbildungseinrichtung seit $seit" : "Gepr&uuml;fte Weiterbildungseinrichtung";
 	
@@ -469,10 +469,10 @@ class WISY_FRAMEWORK_CLASS
 		$field = $table=='stichwoerter'? 'stichwort' : 'thema';
 		$db->query("SELECT glossar, $field FROM $table WHERE id=$id");
 		if( $db->next_record() ) {
-			if( !($glossarId=$db->f('glossar')) ) {
-				$db->query("SELECT id FROM glossar WHERE begriff='" .addslashes($db->fs($field)). "'");
+			if( !($glossarId=$db->f8('glossar')) ) {
+				$db->query("SELECT id FROM glossar WHERE begriff='" .addslashes($db->f8($field)). "'");
 				if( $db->next_record() ) {
-					$glossarId = $db->f('id');
+					$glossarId = $db->f8('id');
 				}
 			}
 		}
@@ -591,8 +591,8 @@ class WISY_FRAMEWORK_CLASS
 				WHERE k.user_grp=g.id AND k.id=$recordId";
 		$db->query($sql); if( !$db->next_record() ) return array();
 	
-		$settings			= explodeSettings($db->fs('s'));
-		$vollstaendigkeit	= intval($db->f('v'));  if( $vollstaendigkeit <= 0 ) return;
+		$settings			= explodeSettings($db->f8('s'));
+		$vollstaendigkeit	= intval($db->f8('v'));  if( $vollstaendigkeit <= 0 ) return;
 		$ret				= array();
 	
 		if( $vollstaendigkeit <= intval($settings["$scope.bad.percent"]) )

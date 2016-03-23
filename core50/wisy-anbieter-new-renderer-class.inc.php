@@ -2,7 +2,7 @@
 
 
 
-require_once('admin/wiki2html.inc.php');
+require_once('admin/wiki2html8.inc.php');
 require_once('admin/classes.inc.php');
 
 
@@ -82,26 +82,26 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 		
 		// load anbieter
 		$db->query("SELECT * FROM anbieter WHERE id=$anbieterId");
-		if( !$db->next_record() || $db->f('freigeschaltet')!=1 ) {
+		if( !$db->next_record() || $db->f8('freigeschaltet')!=1 ) {
 			return 'Dieser Anbieterdatensatz existiert nicht oder nicht mehr oder ist nicht freigeschaltet.';
 		}
 		
 		$kursId			= intval($kursId);
-		$suchname		= $db->fs('suchname');
-		$postname		= $db->fs('postname');
-		$strasse		= $db->fs('strasse');
-		$plz			= $db->fs('plz');
-		$ort			= $db->fs('ort');
-		$stadtteil		= $db->fs('stadtteil');
-		$land			= $db->fs('land');
-		$anspr_tel		= $db->fs('anspr_tel');
-		$anspr_fax		= $db->fs('anspr_fax');
-		$anspr_name		= $db->fs('anspr_name');
-		$anspr_email	= $db->fs('anspr_email');
-		$anspr_zeit		= $db->fs('anspr_zeit');
-		$homepage		= $db->fs('homepage');
+		$suchname		= $db->f8('suchname');
+		$postname		= $db->f8('postname');
+		$strasse		= $db->f8('strasse');
+		$plz			= $db->f8('plz');
+		$ort			= $db->f8('ort');
+		$stadtteil		= $db->f8('stadtteil');
+		$land			= $db->f8('land');
+		$anspr_tel		= $db->f8('anspr_tel');
+		$anspr_fax		= $db->f8('anspr_fax');
+		$anspr_name		= $db->f8('anspr_name');
+		$anspr_email	= $db->f8('anspr_email');
+		$anspr_zeit		= $db->f8('anspr_zeit');
+		$homepage		= $db->f8('homepage');
 		
-		$ob = new G_BLOB_CLASS($db->fs('logo'));
+		$ob = new G_BLOB_CLASS($db->f8('logo'));
 		$logo_name		= $ob->name;
 		$logo_w			= $ob->w;
 		$logo_h			= $ob->h;
@@ -194,11 +194,11 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 		{
 			$html .= $html==''? '' : '<br />';
 		
-			$tag_id = $db->f('tag_id');
-			$tag_name = $db->f('tag_name');
-			$tag_type = $db->f('tag_type');
-			$tag_descr = $db->f('tag_descr');
-			$tag_help = $db->f('tag_help');
+			$tag_id = $db->f8('tag_id');
+			$tag_name = $db->f8('tag_name');
+			$tag_type = $db->f8('tag_type');
+			$tag_descr = $db->f8('tag_descr');
+			$tag_help = $db->f8('tag_help');
 			
 			$freq = $this->tagsuggestorObj->getTagFreq(array($this->tag_suchname_id, $tag_id));
 			
@@ -281,10 +281,10 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 		$db->query("SELECT a.attr_id AS sealId, s.stichwort AS title, s.glossar AS glossarId FROM anbieter_stichwort a, stichwoerter s WHERE a.primary_id=" . $anbieter_id . " AND a.attr_id=s.id AND s.eigenschaften=" .DEF_STICHWORTTYP_QZERTIFIKAT. " ORDER BY a.structure_pos;");
 		while( $db->next_record() )
 		{
-			$sealId = $db->f('sealId');
-			$glossarId = $db->f('glossarId');
+			$sealId = $db->f8('sealId');
+			$glossarId = $db->f8('glossarId');
 			$glossarLink = $glossarId>0? (' <a href="' . $this->framework->getHelpUrl($glossarId) . '" class="wisy_help" title="Hilfe">i</a>') : '';
-			$title = $db->f('title');
+			$title = $db->f8('title');
 
 			$img = "files/seals/$sealId-large.gif";
 			if( @file_exists($img) )
@@ -351,24 +351,24 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 		// link to another anbieter?
 		$db->query("SELECT attr_id FROM anbieter_verweis WHERE primary_id=$anbieter_id ORDER BY structure_pos");
 		if( $db->next_record() ) {
-			$anbieter_id = intval($db->f('attr_id'));
+			$anbieter_id = intval($db->f8('attr_id'));
 		}
 
 		// load anbieter
 		$db->query("SELECT * FROM anbieter WHERE id=$anbieter_id");
-		if( !$db->next_record() || $db->f('freigeschaltet')!=1 ) {
+		if( !$db->next_record() || $db->f8('freigeschaltet')!=1 ) {
 			$this->framework->error404(); // record does not exist/is not active, report a normal 404 error, not a "Soft 404", see  http://goo.gl/IKMnm -- fuer nicht-freigeschaltete Datensaetze, s. [here]
 		}
-		$din_nr			= $db->f('din_nr');
-		$suchname		= $db->f('suchname');
-		$typ            = intval($db->f('typ'));
-		$firmenportraet	= trim($db->f('firmenportraet'));
-		$date_created	= $db->f('date_created');
-		$date_modified	= $db->f('date_modified');
+		$din_nr			= $db->f8('din_nr');
+		$suchname		= $db->f8('suchname');
+		$typ            = intval($db->f8('typ'));
+		$firmenportraet	= trim($db->f8('firmenportraet'));
+		$date_created	= $db->f8('date_created');
+		$date_modified	= $db->f8('date_modified');
 		//$stichwoerter	= $this->framework->loadStichwoerter($db, 'anbieter', $anbieter_id);
-		$vollst			= $db->f('vollstaendigkeit');
-		$anbieter_settings = explodeSettings($db->f('settings'));
-		$pruefsiegel_seit = $db->f('pruefsiegel_seit');
+		$vollst			= $db->f8('vollstaendigkeit');
+		$anbieter_settings = explodeSettings($db->f8('settings'));
+		$pruefsiegel_seit = $db->f8('pruefsiegel_seit');
 		
 		// promoted?
 		if( intval($_GET['promoted']) > 0 )

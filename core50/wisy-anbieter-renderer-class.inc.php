@@ -2,7 +2,7 @@
 
 
 
-require_once('admin/wiki2html.inc.php');
+require_once('admin/wiki2html8.inc.php');
 require_once('admin/classes.inc.php');
 
 
@@ -78,26 +78,26 @@ class WISY_ANBIETER_RENDERER_CLASS
 		
 		// load anbieter
 		$db->query("SELECT * FROM anbieter WHERE id=$anbieterId");
-		if( !$db->next_record() || $db->f('freigeschaltet')!=1 ) {
+		if( !$db->next_record() || $db->f8('freigeschaltet')!=1 ) {
 			return 'Dieser Anbieterdatensatz existiert nicht oder nicht mehr oder ist nicht freigeschaltet.';
 		}
 		
 		$kursId			= intval($kursId);
-		$suchname		= $db->fs('suchname');
-		$postname		= $db->fs('postname');
-		$strasse		= $db->fs('strasse');
-		$plz			= $db->fs('plz');
-		$ort			= $db->fs('ort');
-		$stadtteil		= $db->fs('stadtteil');
-		$land			= $db->fs('land');
-		$anspr_tel		= $db->fs('anspr_tel');
-		$anspr_fax		= $db->fs('anspr_fax');
-		$anspr_name		= $db->fs('anspr_name');
-		$anspr_email	= $db->fs('anspr_email');
-		$anspr_zeit		= $db->fs('anspr_zeit');
-		$homepage		= $db->fs('homepage');
+		$suchname		= $db->f8('suchname');
+		$postname		= $db->f8('postname');
+		$strasse		= $db->f8('strasse');
+		$plz			= $db->f8('plz');
+		$ort			= $db->f8('ort');
+		$stadtteil		= $db->f8('stadtteil');
+		$land			= $db->f8('land');
+		$anspr_tel		= $db->f8('anspr_tel');
+		$anspr_fax		= $db->f8('anspr_fax');
+		$anspr_name		= $db->f8('anspr_name');
+		$anspr_email	= $db->f8('anspr_email');
+		$anspr_zeit		= $db->f8('anspr_zeit');
+		$homepage		= $db->f8('homepage');
 		
-		$ob = new G_BLOB_CLASS($db->fs('logo'));
+		$ob = new G_BLOB_CLASS($db->f8('logo'));
 		$logo_name		= $ob->name;
 		$logo_w			= $ob->w;
 		$logo_h			= $ob->h;
@@ -191,35 +191,35 @@ class WISY_ANBIETER_RENDERER_CLASS
 		
 		// load anbieter
 		$db->query("SELECT * FROM anbieter WHERE id=$id");
-		if( !$db->next_record() || $db->f('freigeschaltet')!=1 ) {
+		if( !$db->next_record() || $db->f8('freigeschaltet')!=1 ) {
 			echo 'Dieser Anbieterdatensatz ist nicht freigeschaltet.'; // it exists, however, we've checked this [here]
 			return;
 		}
 		
-		$din_nr			= $db->fs('din_nr');
-		$suchname		= $db->fs('suchname');
-		$postname		= $db->fs('postname');
-		$strasse		= $db->fs('strasse');
-		$plz			= $db->fs('plz');
-		$ort			= $db->fs('ort');
-		$stadtteil		= $db->fs('stadtteil');
-		$land			= $db->fs('land');
-		$anspr_tel		= $db->fs('anspr_tel');
-		$anspr_fax		= $db->fs('anspr_fax');
-		$anspr_name		= $db->fs('anspr_name');
-		$anspr_email	= $db->fs('anspr_email');
-		$anspr_zeit		= $db->fs('anspr_zeit');
-		$typ            = intval($db->f('typ'));
+		$din_nr			= $db->f8('din_nr');
+		$suchname		= $db->f8('suchname');
+		$postname		= $db->f8('postname');
+		$strasse		= $db->f8('strasse');
+		$plz			= $db->f8('plz');
+		$ort			= $db->f8('ort');
+		$stadtteil		= $db->f8('stadtteil');
+		$land			= $db->f8('land');
+		$anspr_tel		= $db->f8('anspr_tel');
+		$anspr_fax		= $db->f8('anspr_fax');
+		$anspr_name		= $db->f8('anspr_name');
+		$anspr_email	= $db->f8('anspr_email');
+		$anspr_zeit		= $db->f8('anspr_zeit');
+		$typ            = intval($db->f8('typ'));
 		
-		$ob = new G_BLOB_CLASS($db->fs('logo'));
+		$ob = new G_BLOB_CLASS($db->f8('logo'));
 		$logo_name		= $ob->name;
 		$logo_w			= $ob->w;
 		$logo_h			= $ob->h;
 
-		$firmenportraet	= trim($db->fs('firmenportraet'));
-		$date_created	= $db->fs('date_created');
-		$date_modified	= $db->fs('date_modified');
-		$homepage		= $db->fs('homepage');
+		$firmenportraet	= trim($db->f8('firmenportraet'));
+		$date_created	= $db->f8('date_created');
+		$date_modified	= $db->f8('date_modified');
+		$homepage		= $db->f8('homepage');
 
 		if( $homepage ) {
 			if( substr($homepage, 0, 5) != 'http:'
@@ -440,7 +440,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		$db->query("SELECT attr_id FROM anbieter_verweis WHERE primary_id=$anbieter_id ORDER BY structure_pos");
 		if( $db->next_record() )
 		{
-			$anbieter_id = intval($db->f('attr_id'));
+			$anbieter_id = intval($db->f8('attr_id'));
 		}
 
 		// check for existance, get title
@@ -448,8 +448,8 @@ class WISY_ANBIETER_RENDERER_CLASS
 		if( !$db->next_record() ) {
 			$this->framework->error404(); // record does not exist, reporta normal 404 error, not a "Soft 404", see  http://goo.gl/IKMnm -- für nicht-freigeschaltete Datensätze, s. [here]
 		}
-		$anbieter_suchname = $db->fs('suchname');
-		$typ               = intval($db->f('typ'));
+		$anbieter_suchname = $db->f8('suchname');
+		$typ               = intval($db->f8('typ'));
 
 
 		// promoted?

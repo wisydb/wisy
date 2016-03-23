@@ -480,7 +480,7 @@ class WISY_SEARCH_CLASS
 					$sql = "SELECT COUNT(DISTINCT x_kurse.kurs_id) AS cnt FROM x_kurse " . $this->rawJoinKurse . $this->rawJoin . $this->rawWhere;
 					$this->db->query($sql);
 					if( $this->db->next_record() )
-						$ret = intval($this->db->f('cnt'));
+						$ret = intval($this->db->f8('cnt'));
 					$this->db->free();
 					
 					// add to cache
@@ -598,7 +598,7 @@ class WISY_SEARCH_CLASS
 				while( $this->db->next_record() )
 				{
 					$this->anbieterIds .= $this->anbieterIds==''? '' :', ';
-					$this->anbieterIds .= intval($this->db->f('anbieter'));
+					$this->anbieterIds .= intval($this->db->f8('anbieter'));
 					$ret++;
 				}
 				$this->db->free();
@@ -742,16 +742,16 @@ class WISY_SEARCH_CLASS
 			$this->db->query("SELECT tag_id, tag_type FROM x_tags WHERE tag_name='".addslashes($tag_name)."';");
 			if( $this->db->next_record() )
 			{
-				$tag_type = $this->db->f('tag_type');
+				$tag_type = $this->db->f8('tag_type');
 				if( $tag_type & 64 )
 				{
 					// synonym - ein lookup klappt nur, wenn es nur _genau_ ein synonym gibt
-					$temp_id   = $this->db->f('tag_id');
+					$temp_id   = $this->db->f8('tag_id');
 					$syn_ids = array();
 					$this->db->query("SELECT t.tag_id FROM x_tags t LEFT JOIN x_tags_syn s ON s.lemma_id=t.tag_id WHERE s.tag_id=$temp_id");
 					while( $this->db->next_record() )
 					{
-						$syn_ids[] = $this->db->f('tag_id');
+						$syn_ids[] = $this->db->f8('tag_id');
 					}
 					
 					if( sizeof( $syn_ids ) == 1 )
@@ -762,7 +762,7 @@ class WISY_SEARCH_CLASS
 				else
 				{
 					// normales lemma
-					$tag_id   = $this->db->f('tag_id');
+					$tag_id   = $this->db->f8('tag_id');
 				}
 			}
 		}

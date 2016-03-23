@@ -411,8 +411,8 @@ class WISY_DURCHF_CLASS
 						 ORDER BY beginn='0000-00-00 00:00:00', beginn, beginnoptionen, structure_pos");
 			while( $db->next_record() )
 			{
-				if( $this->plzfilterObj->is_valid_plz($db->fs('plz')) ) {
-					$durchfuehrungenIds[] = $db->fs('secondary_id');
+				if( $this->plzfilterObj->is_valid_plz($db->f8('plz')) ) {
+					$durchfuehrungenIds[] = $db->f8('secondary_id');
 				}
 			}
 			
@@ -483,8 +483,8 @@ class WISY_DURCHF_CLASS
 		$ende			= $details? $this->framework->formatDatum($endesql) : '';
 		$zeit_von		= $details? $record['zeit_von'] : ''; if( $zeit_von=='00:00' ) $zeit_von = '';
 		$zeit_bis		= $details? $record['zeit_bis'] : ''; if( $zeit_bis=='00:00' ) $zeit_bis = '';
-		$bg_nummer = $db -> f('bg_nummer');
-		$bg_nummer_count = $db -> f('bg_nummer_count');
+		$bg_nummer = $db->f8('bg_nummer');
+		$bg_nummer_count = $db->f8('bg_nummer_count');
 		
 		// termin abgelaufen?
 		$termin_abgelaufen = false;
