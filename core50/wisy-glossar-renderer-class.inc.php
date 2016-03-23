@@ -67,7 +67,7 @@ class WISY_GLOSSAR_RENDERER_CLASS
 				echo '<a href="javascript:history.back();">&laquo; Zur&uuml;ck</a>';
 				echo $this->framework->getLinkList('help.link', ' &middot; ');
 			echo '</p>';
-			echo '<h1>' . isohtmlspecialchars($begriff) . '</h1>';
+			echo '<h1>' . htmlspecialchars($begriff) . '</h1>';
 			flush();
 	
 			// render entry
@@ -85,7 +85,7 @@ class WISY_GLOSSAR_RENDERER_CLASS
 				$isB2b = (substr($wikipedia, 0, 4) == 'b2b:')? true : false;
 				
 				echo '<p>';
-					echo 'Weitere Informationen zu diesem Thema finden Sie <a href="'.isohtmlspecialchars($this->getWikipediaUrl($wikipedia)).'" target="_blank">';
+					echo 'Weitere Informationen zu diesem Thema finden Sie <a href="'.htmlspecialchars($this->getWikipediaUrl($wikipedia)).'" target="_blank">';
 						echo ' ' . ($isB2b? 'im Weiterbildungs-WIKI' : 'in der Wikipedia');
 					echo '</a>';
 				echo '</p>';

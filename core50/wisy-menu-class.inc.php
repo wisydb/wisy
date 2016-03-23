@@ -33,7 +33,7 @@ class WISY_MENU_ITEM
 		if( sizeof($this->children) ) $liClass = ' class="dir"';
 		$ret = "<li$liClass>";
 		
-			if( $this->url ) $ret .= '<a href="'.isohtmlspecialchars($this->url). /*convert "&" in URLs to "&amp;" in HTML*/
+			if( $this->url ) $ret .= '<a href="'.htmlspecialchars($this->url). /*convert "&" in URLs to "&amp;" in HTML*/
 									'"'.$this->aparam.'>'; 
 			$ret .= $this->title;
 			if( $this->url ) $ret .= '</a>';
@@ -82,7 +82,7 @@ class WISY_MENU_CLASS
 		
 		$thema = $g_themen[$startIndex]['thema'];
 		
-		$title = isohtmlspecialchars($thema);
+		$title = htmlspecialchars($thema);
 		
 		$q = g_sync_removeSpecialChars($thema);
 		

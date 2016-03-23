@@ -151,7 +151,7 @@ class WISY_FRAMEWORK_CLASS
 							</ul>
 						</div>
 						<p>
-							(die angeforderte Seite war <i>'.isohtmlspecialchars($uri).'</i> in <i>/'.isohtmlspecialchars($wisyCore).'</i> auf <i>' .$_SERVER['HTTP_HOST']. '</i>)
+							(die angeforderte Seite war <i>'.htmlspecialchars($uri).'</i> in <i>/'.htmlspecialchars($wisyCore).'</i> auf <i>' .$_SERVER['HTTP_HOST']. '</i>)
 						</p>
 				';
 			
@@ -336,7 +336,7 @@ class WISY_FRAMEWORK_CLASS
 		}
 		else if( $placeholder == '__Q_HTMLENCODE__' )
 		{
-			return isohtmlspecialchars( rtrim( $this->getParam('q', ''), ', ') );
+			return htmlspecialchars( rtrim( $this->getParam('q', ''), ', ') );
 		}
 		else if( $placeholder == '__Q_URLENCODE__' )
 		{
@@ -553,7 +553,7 @@ class WISY_FRAMEWORK_CLASS
 					}
 					
 					if( $stichwoerter[$s]['zusatzinfo'] != '' ) {
-						$ret .= ' <span class="ac_tag_type">(' . isohtmlspecialchars($stichwoerter[$s]['zusatzinfo']) . ')</span>';
+						$ret .= ' <span class="ac_tag_type">(' . htmlspecialchars($stichwoerter[$s]['zusatzinfo']) . ')</span>';
 					}
 
 					$ret .= $glossarLink;
@@ -567,7 +567,7 @@ class WISY_FRAMEWORK_CLASS
 			}
 		}
 		
-		return $ret;
+		return utf8_encode($ret); // UTF-8 encode because the source file (admin/config/codes.inc.php) is still ISO-encoded
 	}
 
 	function getVollstaendigkeitMsg(&$db, $recordId, $scope = '')
@@ -671,7 +671,7 @@ class WISY_FRAMEWORK_CLASS
 	function getTitleTags($pageTitleNoHtml)
 	{
 		// get the <title> tag - WISY 5.0 is only added to easily check it we're using the new core, this can be removed as soon as there are other methods for easy recognize
-		return "<title>WISY 5.0 - " .isohtmlspecialchars($this->getTitleString($pageTitleNoHtml)). "</title>\n";
+		return "<title>WISY 5.0 - " .htmlspecialchars($this->getTitleString($pageTitleNoHtml)). "</title>\n";
 	}
 	
 	function getFaviconFile()
@@ -709,7 +709,7 @@ class WISY_FRAMEWORK_CLASS
 		$opensearchFile = $this->getOpensearchFile();
 		if( $opensearchFile )
 		{
-			$ret .= '<link rel="search" type="application/opensearchdescription+xml" href="' . $opensearchFile . '" title="' .isohtmlspecialchars($wisyPortalKurzname). '" />' . "\n";
+			$ret .= '<link rel="search" type="application/opensearchdescription+xml" href="' . $opensearchFile . '" title="' .htmlspecialchars($wisyPortalKurzname). '" />' . "\n";
 		}
 		
 		return $ret;
@@ -732,7 +732,7 @@ class WISY_FRAMEWORK_CLASS
 			global $wisyPortalKurzname;
 			$q = rtrim($this->getParam('q', ''), ', ');
 			$title = $wisyPortalKurzname . ' - ' . ($q==''? 'aktuelle Kurse' : $q);
-			$ret .= '<link rel="alternate" type="application/rss+xml" title="'.isohtmlspecialchars($title).'" href="' .$this->getRSSFile(). '" />' . "\n";
+			$ret .= '<link rel="alternate" type="application/rss+xml" title="'.htmlspecialchars($title).'" href="' .$this->getRSSFile(). '" />' . "\n";
 		}
 		
 		return $ret;
@@ -834,7 +834,7 @@ class WISY_FRAMEWORK_CLASS
 		if( ($onload=$this->iniRead('onload')) != '' ) { $ret .= ' onload="' .$onload. '" '; }
 		
 		if( !$this->askfwd ) { $this->askfwd = strval($_REQUEST['askfwd']); }
-		if(  $this->askfwd ) { $ret .= ' data-askfwd="' . isohtmlspecialchars($this->askfwd) . '" '; }
+		if(  $this->askfwd ) { $ret .= ' data-askfwd="' . htmlspecialchars($this->askfwd) . '" '; }
 		
 		return $ret;
 	}
@@ -1143,7 +1143,7 @@ class WISY_FRAMEWORK_CLASS
 				echo $this->replacePlaceholders($this->iniRead('searcharea.advlink', $DEFAULT_ADVLINK_HTML)) . "\n";
 				echo $this->replacePlaceholders($this->iniRead('searcharea.html', $DEFAULT_RIGHT_HTML)) . "\n";
 			echo '</form>' . "\n";
-			echo '<div class="wisy_searchhints" data-favlink="' . isohtmlspecialchars($mailfav) . '">' .  $this->replacePlaceholders($this->iniRead('searcharea.hint', $DEFAULT_BOTTOM_HINT)) . '</div>' . "\n";
+			echo '<div class="wisy_searchhints" data-favlink="' . htmlspecialchars($mailfav) . '">' .  $this->replacePlaceholders($this->iniRead('searcharea.hint', $DEFAULT_BOTTOM_HINT)) . '</div>' . "\n";
 		echo '</div>' . "\n\n";
 	
 		echo $this->replacePlaceholders( $this->iniRead('searcharea.below', '') ); // deprecated!

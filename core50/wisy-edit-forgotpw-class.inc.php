@@ -89,11 +89,11 @@ __NAME__";
 						if( $this->sendMail($f_email, $f_subject, $f_mailbody) )
 						{
 							$msg= 'Wir haben an die bei uns hinterlegte E-Mail-Adresse <b>erfolgreich</b> ein neues Passwort gesandt. 
-								   Bitte überprüfen Sie nun Ihren E-Mail-Account ('.isohtmlspecialchars($f_email_shortened).') und folgen Sie den dort angegebenen Anweisungen.';
+								   Bitte überprüfen Sie nun Ihren E-Mail-Account ('.htmlspecialchars($f_email_shortened).') und folgen Sie den dort angegebenen Anweisungen.';
 						}
 						else
 						{
-							$msg = '<b>Fehler:</b> Kann die E-Mails mit dem neuen Passwort nicht an '.isohtmlspecialchars($f_email_shortened).' versenden; bitte wenden Sie sich direkt an uns.';
+							$msg = '<b>Fehler:</b> Kann die E-Mails mit dem neuen Passwort nicht an '.htmlspecialchars($f_email_shortened).' versenden; bitte wenden Sie sich direkt an uns.';
 							$logwriter->addData('error', 'Kann E-Mail nicht senden.');
 							$showForm = false;
 						}
@@ -138,7 +138,7 @@ __NAME__";
 				
 				$this->dbCache->insert('forgotpw.'.$_REQUEST['c'], 0);
 				
-				$msg = "Ihr <b>neues Passwort</b> für den Login als Anbieter <i>".isohtmlspecialchars($anbieterSuchname)."</i> lautet:<br /><br /> 
+				$msg = "Ihr <b>neues Passwort</b> für den Login als Anbieter <i>".htmlspecialchars($anbieterSuchname)."</i> lautet:<br /><br /> 
 					<b style=\"font-size: 14pt;\">$newpassword</b><br /><br />Bitte merken sie sich das Passwort jetzt oder notieren Sie es an einem sicheren Platz. 
 					Danach können Sie sich mit Ihrem neuen Passwort <a href=\"edit?action=login&amp;as=".urlencode($anbieterSuchname)."\"><b>hier einloggen</b></a>.";
 				$showForm = false;
@@ -175,7 +175,7 @@ __NAME__";
 					echo "<input type=\"hidden\" name=\"pwsubseq\" value=\"1\" />";
 					echo '<tr>';
 						echo '<td nowrap="nowrap">Anbietername oder -ID oder E-Mail-Adresse:</td>';
-						echo "<td><input type=\"text\" name=\"as\" value=\"".isohtmlspecialchars($anbieterSuchname)."\" size=\"50\" /></td>";
+						echo "<td><input type=\"text\" name=\"as\" value=\"".htmlspecialchars($anbieterSuchname)."\" size=\"50\" /></td>";
 					echo '</tr>';
 					echo '<tr>';
 						echo '<td nowrap="nowrap">';
@@ -213,9 +213,9 @@ __NAME__";
 		if( substr($_SERVER['HTTP_HOST'], -6)=='.local' )
 		{
 			echo '<pre>';
-				echo 'To: ' . isohtmlspecialchars($to) . "\n";
-				echo 'Subject: ' . isohtmlspecialchars($subject) . "\n\n";
-				echo isohtmlspecialchars($text);
+				echo 'To: ' . htmlspecialchars($to) . "\n";
+				echo 'Subject: ' . htmlspecialchars($subject) . "\n\n";
+				echo htmlspecialchars($text);
 			echo '</pre>';
 			return true;
 		}

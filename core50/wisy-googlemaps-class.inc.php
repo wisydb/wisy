@@ -355,7 +355,7 @@ class WISY_GOOGLEMAPS_CLASS
 				
 				if( sizeof($this->adr) > 1 )
 				{
-					$this->adr[$i]['descr'] .= '<br /><br /><small><a title="'.isohtmlentities($nextShortDescr).'" href="javascript:gm_panToNext();">Nächster Ort...</small></a>';
+					$this->adr[$i]['descr'] .= '<br /><br /><small><a title="'.htmlentities($nextShortDescr).'" href="javascript:gm_panToNext();">Nächster Ort...</small></a>';
 				}
 				
 				$allInfo .= "gm_allAdr[$i]='{$this->adr[$i]['highQ']}';gm_allDescr[$i]='{$this->adr[$i]['descr']}';";

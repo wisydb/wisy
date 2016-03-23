@@ -211,7 +211,7 @@ class WISY_DURCHF_CLASS
 			return '';
 		}
 		else if( $codes_beginnoptionen_array[$opt] ) {
-			return $codes_beginnoptionen_array[$opt];
+			return utf8_encode($codes_beginnoptionen_array[$opt]); // UTF-8 encode because the source file (admin/config/codes.inc.php) is still ISO-encoded
 		}
 		else {
 			return '';
@@ -255,7 +255,7 @@ class WISY_DURCHF_CLASS
 			}
 		}
 		
-		return $ret;
+		return utf8_encode($ret); // UTF-8 encode because the source file (admin/config/codes.inc.php) is still ISO-encoded
 	}
 
 	function formatDauer($dauer, $stunden, $mask2 = '%1 (%2)') // return as HTML
@@ -305,7 +305,7 @@ class WISY_DURCHF_CLASS
 		else {
 			$ret = 'k. A.';
 		}
-		return $ret;
+		return utf8_encode($ret); // UTF-8 encode because the source file (admin/config/codes.inc.php) is still ISO-encoded
 	}
 
 	function formatPreis($preis, $sonderpreis, $sonderpreistage, $beginn, $preishinweise_str, $html = 1, $addParam = 0)
@@ -364,7 +364,7 @@ class WISY_DURCHF_CLASS
 			{	
 				$preishinweise_out = implode(', ', $preishinweise_arr);
 				if( $html ) {
-					$ret .= '<br /><small>' . isohtmlentities($preishinweise_out) . '</small>';
+					$ret .= '<br /><small>' . htmlentities($preishinweise_out) . '</small>';
 				}
 				else {
 					$ret .= " ($preishinweise_out)";
@@ -638,17 +638,17 @@ class WISY_DURCHF_CLASS
 			$land		= $record['land'];
 			if( $ort && $stadtteil ) {
 				if( strpos($ort, $stadtteil)===false ) {
-					$ort = isohtmlentities($ort) . '-' . isohtmlentities($stadtteil);
+					$ort = htmlentities($ort) . '-' . htmlentities($stadtteil);
 				}
 				else {
-					$ort = isohtmlentities($ort);
+					$ort = htmlentities($ort);
 				}
 			}
 			else if( $ort ) {
-				$ort = isohtmlentities($ort);
+				$ort = htmlentities($ort);
 			}
 			else if( $stadtteil ) {
-				$ort = isohtmlentities($stadtteil);
+				$ort = htmlentities($stadtteil);
 				$stadt = $stadtteil;
 			}
 			else {
@@ -666,7 +666,7 @@ class WISY_DURCHF_CLASS
 				$cell = '';
 				
 				if( $strasse ) {
-					$cell = isohtmlentities($strasse);
+					$cell = htmlentities($strasse);
 				}
 				
 				if( $ort ) {
@@ -676,7 +676,7 @@ class WISY_DURCHF_CLASS
 	
 				if( $land ) {
 					$cell .= $cell? '<br />' : '';
-					$cell .= '<i>' . isohtmlentities($land) . '</i>';
+					$cell .= '<i>' . htmlentities($land) . '</i>';
 				}
 
 				if( $has_bemerkungen ) {
@@ -710,7 +710,7 @@ class WISY_DURCHF_CLASS
 			// nr
 			echo "    <td>";
 			$nr = $record['nr'];
-			echo $nr? isohtmlentities($nr) : 'k. A.';
+			echo $nr? htmlentities($nr) : 'k. A.';
 			echo '</td>' . "\n";
 		}
 	}

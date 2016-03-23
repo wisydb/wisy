@@ -33,7 +33,7 @@ class WISY_TREE_RENDERER_CLASS
 				$kuerzel_sorted = $db->fs('kuerzel_sorted');
 				$thema = $db->fs('thema');
 				
-				$title = isohtmlspecialchars($thema);
+				$title = htmlspecialchars($thema);
 				
 				$q = g_sync_removeSpecialChars($thema);
 				

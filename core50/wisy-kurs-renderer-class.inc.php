@@ -84,7 +84,7 @@ class WISY_KURS_RENDERER_CLASS
 			echo '<h1>';
 				if( $anbieter_typ == 2 ) echo '<span class="wisy_icon_beratungsstelle">Beratung<span class="dp">:</span></span> ';
 				if( $displayAbschluss && $isAbschluss ) echo '<span class="wisy_icon_abschluss">Abschluss<span class="dp">:</span></span> ';
-				echo isohtmlentities($title);
+				echo htmlentities($title);
 				if( $this->framework->iniRead('fav.use', 0) ) {
 					echo '<span class="fav_add" data-favid="'.$kursId.'"></span>';
 				}		
@@ -92,7 +92,7 @@ class WISY_KURS_RENDERER_CLASS
 			
 			if( $originaltitel != '' && $originaltitel != $title )
 			{
-				echo '<p><i>' . /*'Originaltitel: ' .*/ isohtmlspecialchars($originaltitel) . '</i></p>';
+				echo '<p><i>' . /*'Originaltitel: ' .*/ htmlspecialchars($originaltitel) . '</i></p>';
 			}
 		
 
@@ -234,7 +234,7 @@ class WISY_KURS_RENDERER_CLASS
 				/*
 				if( $originaltitel != '' && $originaltitel != $title )
 				{
-					echo 'Originaltitel: ' . isohtmlspecialchars($originaltitel) . ' &ndash; ';
+					echo 'Originaltitel: ' . htmlspecialchars($originaltitel) . ' &ndash; ';
 				}
 				*/
 				

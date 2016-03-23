@@ -64,7 +64,7 @@ class WISY_WIKI2HTML_CLASS extends WIKI2HTML_CLASS
 					$ret .= '<p><big><b>'.$thisChar.'</b></big></p>';
 					$lastChar = $thisChar;
 				}
-				$begriff = isohtmlentities($db->fs('begriff'));
+				$begriff = htmlentities($db->fs('begriff'));
 				$idtemp = $db->f('id');
 				
 				$ret .= $pStarted? '<br />' : '<p>';

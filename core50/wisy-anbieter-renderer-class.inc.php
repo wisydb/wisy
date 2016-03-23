@@ -104,39 +104,39 @@ class WISY_ANBIETER_RENDERER_CLASS
 		
 		// do what to do ...
 		$ret  = '';
-		$ret .= '<i>'. isohtmlentities($postname? $postname : $suchname) . '</i>';
+		$ret .= '<i>'. htmlentities($postname? $postname : $suchname) . '</i>';
 
 		if( $strasse )
-			$ret .= '<br />' . isohtmlentities($strasse);
+			$ret .= '<br />' . htmlentities($strasse);
 
 		if( $plz || $ort )
-			$ret .= '<br />' . isohtmlentities($plz) . ' ' . isohtmlentities($ort);
+			$ret .= '<br />' . htmlentities($plz) . ' ' . htmlentities($ort);
 
 		if( $stadtteil ) {
 			$ret .= ($plz||$ort)? '-' : '<br />';
-			$ret .= isohtmlentities($stadtteil);
+			$ret .= htmlentities($stadtteil);
 		}
 
 		if( $land ) {
 			$ret .= ($plz||$ort||$stadtteil)? ', ' : '<br />';
-			$ret .= isohtmlentities($land);
+			$ret .= htmlentities($land);
 		}
 
 		if( $anspr_tel )
-			$ret .= '<br />Tel:&nbsp;'.isohtmlentities($anspr_tel);
+			$ret .= '<br />Tel:&nbsp;'.htmlentities($anspr_tel);
 
 		if( $anspr_fax )
-			$ret .= '<br />Fax:&nbsp;'.isohtmlentities($anspr_fax);
+			$ret .= '<br />Fax:&nbsp;'.htmlentities($anspr_fax);
 
 		if( $anspr_name || $anspr_zeit )
 		{
 			$ret .= '<br /><small>';
 				if( $anspr_name )
-					$ret .= 'Kontakt: ' . isohtmlentities($anspr_name);
+					$ret .= 'Kontakt: ' . htmlentities($anspr_name);
 				if( $anspr_zeit )
 				{
 					$ret .= $anspr_name? ', ' : '';
-					$ret .= isohtmlentities($anspr_zeit);
+					$ret .= htmlentities($anspr_zeit);
 				}
 			$ret .= '</small>';
 		}
@@ -148,13 +148,13 @@ class WISY_ANBIETER_RENDERER_CLASS
 			 	$homepage = 'http:/'.'/'.$homepage;
 			}
 			
-			$ret .= "<br /><a href=\"$homepage\" target=\"_blank\"><i>" .isohtmlentities($this->trimLength($homepage, $MAX_URL_LEN)). '</i></a>';
+			$ret .= "<br /><a href=\"$homepage\" target=\"_blank\"><i>" .htmlentities($this->trimLength($homepage, $MAX_URL_LEN)). '</i></a>';
 		}
 		
 		/* email*/
 		if( $anspr_email )
 		{ 
-			$ret .= "<br /><a href=\"".$this->createMailtoLink($anspr_email, $kursId)."\">" .isohtmlentities($this->trimLength($anspr_email, $MAX_URL_LEN  )). '</a>';
+			$ret .= "<br /><a href=\"".$this->createMailtoLink($anspr_email, $kursId)."\">" .htmlentities($this->trimLength($anspr_email, $MAX_URL_LEN  )). '</a>';
 		}
 		
 		/* logo */
@@ -236,7 +236,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		// prepare contact link
 		if( $anspr_email )
 		{
-			$anspr_mail_link = "<a href=\"" . $this->createMailtoLink($anspr_email) . "\"><i>" .isohtmlentities($anspr_email). '</i></a>';
+			$anspr_mail_link = "<a href=\"" . $this->createMailtoLink($anspr_email) . "\"><i>" .htmlentities($anspr_email). '</i></a>';
 		}
 	
 
@@ -254,7 +254,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 
 					echo '<h1>';
 						if( $typ == 2 ) echo '<span class="wisy_icon_beratungsstelle">Beratungsstelle<span class="dp">:</span></span> ';
-						echo isohtmlentities($suchname);
+						echo htmlentities($suchname);
 					echo '</h1>';
 
 				
@@ -318,27 +318,27 @@ class WISY_ANBIETER_RENDERER_CLASS
 							echo '<td valign="top">';
 							
 								if( $postname ) {
-									echo '<i>' . isohtmlentities($postname) . '</i>';
+									echo '<i>' . htmlentities($postname) . '</i>';
 								}
 								else {
-									echo '<i>' . isohtmlentities($suchname) . '</i>';
+									echo '<i>' . htmlentities($suchname) . '</i>';
 								}
 								
 								if( $strasse ) {
 									echo '<br />';
-									echo isohtmlentities($strasse);
+									echo htmlentities($strasse);
 								}
 								
 								if( $plz || $ort ) {
 									echo '<br />';
-									echo isohtmlentities($plz) . ' ' . isohtmlentities($ort);
+									echo htmlentities($plz) . ' ' . htmlentities($ort);
 									if( $stadtteil ) {
-										echo '-' . isohtmlentities($stadtteil);
+										echo '-' . htmlentities($stadtteil);
 									}
 								}
 					
 								if( $land ) {
-									echo '<br /><i>' . isohtmlentities($land) . '</i>';
+									echo '<br /><i>' . htmlentities($land) . '</i>';
 								}
 			
 							echo '</td>';
@@ -349,7 +349,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 						{
 							echo '<tr>';
 								echo '<td valign="top">Telefon:&nbsp;</td>';
-								echo '<td valign="top">' .isohtmlentities($anspr_tel). '</td>';
+								echo '<td valign="top">' .htmlentities($anspr_tel). '</td>';
 							echo '</tr>';
 						}
 	
@@ -358,7 +358,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 						{
 							echo '<tr>';
 								echo '<td valign="top">Fax:&nbsp;</td>';
-								echo '<td valign="top">' .isohtmlentities($anspr_fax). '</td>';
+								echo '<td valign="top">' .htmlentities($anspr_fax). '</td>';
 							echo '</tr>';
 						}
 	
@@ -367,7 +367,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 						{
 							echo '<tr>';
 								echo '<td valign="top">Kontakt:&nbsp;</td>';
-								echo '<td valign="top">' .isohtmlentities($anspr_name). '</td>';
+								echo '<td valign="top">' .htmlentities($anspr_name). '</td>';
 							echo '</tr>';
 						}
 						
@@ -375,7 +375,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 						{
 							echo '<tr>';
 								echo '<td valign="top">Sprechzeiten:&nbsp;</td>';
-								echo '<td valign="top">' .isohtmlentities($anspr_zeit). '</td>';
+								echo '<td valign="top">' .htmlentities($anspr_zeit). '</td>';
 							echo '</tr>';
 						}
 	
@@ -393,7 +393,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 						{
 							echo '<tr>';
 								echo '<td valign="top" nowrap="nowrap">Der Anbieter im Internet:&nbsp;</td>';
-								echo "<td valign=\"top\"><a href=\"$homepage\" target=\"_blank\"><i>" .isohtmlspecialchars($homepage). '</i></a></td>';
+								echo "<td valign=\"top\"><a href=\"$homepage\" target=\"_blank\"><i>" .htmlspecialchars($homepage). '</i></a></td>';
 							echo '</tr>';
 						}
 		
@@ -407,7 +407,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 							echo '<td valign="top">Anbieter-Nr.:&nbsp;</td>';
 							echo "<td valign=\"top\">";
 								if( $din_nr ) {
-									echo isohtmlentities($din_nr);
+									echo htmlentities($din_nr);
 								}
 								else {
 									echo $id;

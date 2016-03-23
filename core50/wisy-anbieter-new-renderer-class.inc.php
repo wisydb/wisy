@@ -108,39 +108,39 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 		
 		// do what to do ...
 		$ret  = '';
-		$ret .= '<i>'. isohtmlentities($postname? $postname : $suchname) . '</i>';
+		$ret .= '<i>'. htmlentities($postname? $postname : $suchname) . '</i>';
 
 		if( $strasse )
-			$ret .= '<br />' . isohtmlentities($strasse);
+			$ret .= '<br />' . htmlentities($strasse);
 
 		if( $plz || $ort )
-			$ret .= '<br />' . isohtmlentities($plz) . ' ' . isohtmlentities($ort);
+			$ret .= '<br />' . htmlentities($plz) . ' ' . htmlentities($ort);
 
 		if( $stadtteil ) {
 			$ret .= ($plz||$ort)? '-' : '<br />';
-			$ret .= isohtmlentities($stadtteil);
+			$ret .= htmlentities($stadtteil);
 		}
 
 		if( $land ) {
 			$ret .= ($plz||$ort||$stadtteil)? ', ' : '<br />';
-			$ret .= isohtmlentities($land);
+			$ret .= htmlentities($land);
 		}
 
 		if( $anspr_tel )
-			$ret .= '<br />Tel:&nbsp;'.isohtmlentities($anspr_tel);
+			$ret .= '<br />Tel:&nbsp;'.htmlentities($anspr_tel);
 
 		if( $anspr_fax )
-			$ret .= '<br />Fax:&nbsp;'.isohtmlentities($anspr_fax);
+			$ret .= '<br />Fax:&nbsp;'.htmlentities($anspr_fax);
 
 		if( $anspr_name || $anspr_zeit )
 		{
 			$ret .= '<br /><small>';
 				if( $anspr_name )
-					$ret .= 'Kontakt: ' . isohtmlentities($anspr_name);
+					$ret .= 'Kontakt: ' . htmlentities($anspr_name);
 				if( $anspr_zeit )
 				{
 					$ret .= $anspr_name? ', ' : '';
-					$ret .= isohtmlentities($anspr_zeit);
+					$ret .= htmlentities($anspr_zeit);
 				}
 			$ret .= '</small>';
 		}
@@ -152,13 +152,13 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 			 	$homepage = 'http:/'.'/'.$homepage;
 			}
 			
-			$ret .= "<br /><a href=\"$homepage\" target=\"_blank\"><i>" .isohtmlentities($this->trimLength($homepage, $MAX_URL_LEN)). '</i></a>';
+			$ret .= "<br /><a href=\"$homepage\" target=\"_blank\"><i>" .htmlentities($this->trimLength($homepage, $MAX_URL_LEN)). '</i></a>';
 		}
 		
 		/* email*/
 		if( $anspr_email )
 		{ 
-			$ret .= "<br /><a href=\"".$this->createMailtoLink($anspr_email, $kursId)."\">" .isohtmlentities($this->trimLength($anspr_email, $MAX_URL_LEN  )). '</a>';
+			$ret .= "<br /><a href=\"".$this->createMailtoLink($anspr_email, $kursId)."\">" .htmlentities($this->trimLength($anspr_email, $MAX_URL_LEN  )). '</a>';
 		}
 		
 		/* logo */
@@ -407,7 +407,7 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 		echo '</p>';
 		echo '<h1>';
 			if( $typ == 2 ) echo '<span class="wisy_icon_beratungsstelle">Beratungsstelle<span class="dp">:</span></span> ';
-			echo isohtmlentities($suchname);
+			echo htmlentities($suchname);
 		echo '</h1>';
 		flush();
 
@@ -518,7 +518,7 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 		
 		// meta			
 		echo '<div class="wisy_vcard">';
-			$anbieter_nr = $din_nr? isohtmlentities($din_nr) : $anbieter_id;
+			$anbieter_nr = $din_nr? htmlentities($din_nr) : $anbieter_id;
 			echo '<div class="wisy_vcardtitle">Anbieternummer: '.$anbieter_nr.'</div>';
 			echo '<div class="wisy_vcardcontent">';
 				$fmt_created = $this->framework->formatDatum($date_created);
