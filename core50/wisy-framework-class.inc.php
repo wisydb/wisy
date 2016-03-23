@@ -355,7 +355,13 @@ class WISY_FRAMEWORK_CLASS
 		return preg_replace_callback('/__[A-Z0-9_]+?__/', array($this, 'replacePlaceholders_Callback'), $snippet);
 	}	
 
-	
+	function cleanClassname($input)
+	{
+		$output = strtolower($input);
+		$output = strtr($output, array('ä'=>'ae', 'ö'=>'oe', 'ü'=>'ue', 'ß'=>'ss'));
+		$output = preg_replace('/[^a-z,]/', '', $output);
+		return $output;
+	}
 
 
 	/******************************************************************************

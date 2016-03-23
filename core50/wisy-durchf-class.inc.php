@@ -475,7 +475,6 @@ class WISY_DURCHF_CLASS
 		if( $addParam['record']['azwv_knr'] ) 	{ if(!$this->stichw_in_array($addParam['stichwoerter'], 3207)) { $addParam['stichwoerter'][] = array('id'=>3207); } }
 	    
 		// termin
-		$terminAttr = $details? '' : ' '.html3('nowrap="nowrap"');
 		$beginnsql		= $record['beginn'];
 		$beginn			= $this->framework->formatDatum($beginnsql);
 		$beginnoptionen = $this->formatBeginnoptionen($record['beginnoptionen']);
@@ -505,7 +504,7 @@ class WISY_DURCHF_CLASS
 		
 		if (($wisyPortalSpalten & 2) > 0)
 		{
-			echo "    <td$terminAttr>";
+			echo '    <td class="wisyr_termin" data-title="Termin">';
 			
 			$cell = '';
 			
@@ -560,7 +559,7 @@ class WISY_DURCHF_CLASS
 		if (($wisyPortalSpalten & 4) > 0)
 		{
 			// dauer
-			echo '    <td '.html3(' nowrap="nowrap"') . '>';
+			echo '    <td class="wisyr_dauer" data-title="Dauer">';
 				echo $this->formatDauer($record['dauer'], $record['stunden'], '%1<br /><small>(%2)</small>');
 			echo '</td>' . "\n";
 		}
@@ -568,8 +567,7 @@ class WISY_DURCHF_CLASS
 		if (($wisyPortalSpalten & 8) > 0)
 		{
 			// tagescode / bildungsurlaub / teilnehmende
-			$tagescodeAttr = $details? '' : ' '.html3('align="center"').' class="type"';
-			echo "    <td$tagescodeAttr>";
+			echo '    <td class="wisyr_art" data-title="Art">';
 	
 				$cell = '';
 				
@@ -608,8 +606,7 @@ class WISY_DURCHF_CLASS
 		if (($wisyPortalSpalten & 16) > 0)
 		{
 			// preis
-			$preisAttr = '';//($details && $record['preishinweise']!='')? ' align=\"right\"' : ' nowrap="nowrap"';
-			echo "    <td$preisAttr>";
+			echo '    <td class="wisyr_preis" data-title="Preis">';
 				$temp = $this->formatPreis($record['preis'],
 					$record['sonderpreis'], $record['sonderpreistage'], 
 					$record['beginn'], $details? $record['preishinweise'] : '',
@@ -627,7 +624,7 @@ class WISY_DURCHF_CLASS
 		{
 			// ort / bemerkungen
 			$has_bemerkungen = trim($record['bemerkungen'])? true : false;
-			echo "    <td>";
+			echo '    <td class="wisyr_ort" data-title="Ort">';
 			
 			// get ort
 			$strasse	= $record['strasse'];
@@ -708,7 +705,7 @@ class WISY_DURCHF_CLASS
 		{
 	
 			// nr
-			echo "    <td>";
+			echo '    <td class="wisyr_nr" data-title="Nr">';
 			$nr = $record['nr'];
 			echo $nr? htmlentities($nr) : 'k. A.';
 			echo '</td>' . "\n";

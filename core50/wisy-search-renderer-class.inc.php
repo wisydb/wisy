@@ -67,13 +67,8 @@ class WISY_SEARCH_RENDERER_CLASS
 	
 	function renderColumnTitle($title, $sollOrder, $istOrder, $info=0)
 	{
-		$th_class = '';
-		if( $sollOrder == 't' ) {
-			$th_class = 'wisy_anbieter'; // needed to add "white-space: normal" to the parent of the fav icon; see core.css
-		}
-		$th_class = $th_class? " class=\"$th_class\"" : '';
-	
-		echo "    <th$th_class>";
+		// Add column title class for use in responsive CSS
+		echo '    <th class="wisyr_'. $this->framework->cleanClassname($title) .'">';
 			
 			if( $sollOrder )
 			{
@@ -130,7 +125,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		$pruefsiegel_seit = $record['pruefsiegel_seit'];
 		$anspr_tel = $record['anspr_tel'];
 
-		echo '    <td class="wisy_anbieter">';
+		echo '    <td class="wisy_anbieter wisyr_anbieter" data-title="Anbieter">';
 			echo $this->framework->getSeals($db2, array('anbieterId'=>$currAnbieterId, 'seit'=>$pruefsiegel_seit, 'size'=>'small'));
 			
 			if( $anbieterName )
@@ -259,7 +254,7 @@ class WISY_SEARCH_RENDERER_CLASS
 				$db->next_record();
 				$anbieter_record = $db->Record;
 					
-				echo '    <td class="wisy_kurstitel">';
+				echo '    <td class="wisy_kurstitel wisyr_angebot" data-title="Angebot">';
 					$aparam = array('id'=>$currKursId, 'q'=>$param['q']);
 					if( $param['promoted'] ) {$aparam['promoted'] = $currKursId;}
 					
@@ -314,7 +309,7 @@ class WISY_SEARCH_RENDERER_CLASS
 				// SPALTE: Entfernung
 				if( $this->hasDistanceColumn )
 				{
-					$cell = '<td>';
+					$cell = '<td class="wisyr_entfernung" data-title="Entfernung">';
 					if( isset($distances[$currKursId]) )
 					{
 						$meters = $distances[$currKursId];
@@ -622,10 +617,10 @@ class WISY_SEARCH_RENDERER_CLASS
 			flush();
 
 			// render table start
-			echo "\n".'<table class="wisy_list"' . html3(' cellpadding="0" cellspacing="0" border="0" width="100%"') . '>' . "\n";
+			echo "\n".'<table class="wisy_list">' . "\n";
 			
 			// render column titles
-			echo '  <tr>' . "\n";
+			echo '  <thead><tr>' . "\n";
 				$colspan = 0;
 				$this->hasDistanceColumn = false;
 												   {	$this->renderColumnTitle('Angebot',			't', 	$orderBy,	1333);			$colspan++; }
@@ -638,7 +633,7 @@ class WISY_SEARCH_RENDERER_CLASS
 				if (($wisyPortalSpalten & 64) > 0) {	$this->renderColumnTitle('Ang.-Nr.',		'', 	$orderBy,	0);				$colspan++; }
 				if (($wisyPortalSpalten & 128)> 0) { 	$this->renderColumnTitle('BU',				'', 	$orderBy,	0);				$colspan++; }
 				if( $info['lat'] && $info['lng'] ) {    $this->renderColumnTitle('Entfernung',		'', 	$orderBy,	0);				$colspan++; $this->hasDistanceColumn = true; $this->baseLat = $info['lat']; $this->baseLng = $info['lng'];  }
-			echo '  </tr>' . "\n";
+			echo '  </tr></thead>' . "\n";
 			
 			// render promoted records
 			$records2 = array();
@@ -834,16 +829,16 @@ class WISY_SEARCH_RENDERER_CLASS
 			flush();
 			
 			// render column titles
-			echo "\n".'<table class="wisy_list"' . html3(' cellpadding="0" cellspacing="0" border="0" width="100%"') . '>' . "\n";
-			echo '  <tr>' . "\n";
+			echo "\n".'<table class="wisy_list">' . "\n";
+			echo '  <thead><tr>' . "\n";
 				$this->renderColumnTitle('Anbieter',	'a', 	$orderBy,	311);
-				$this->renderColumnTitle('Stra&szlig;e','s', 	$orderBy,	0);
+				$this->renderColumnTitle('Straße',		's', 	$orderBy,	0);
 				$this->renderColumnTitle('PLZ',			'p',	$orderBy,	0);
 				$this->renderColumnTitle('Ort',			'o',	$orderBy,	0);
 				$this->renderColumnTitle('Homepage',	'h',	$orderBy,	0);
 				$this->renderColumnTitle('E-Mail',		'e',	$orderBy,	0);
 				$this->renderColumnTitle('Telefon',		't',	$orderBy,	0);
-			echo '  </tr>' . "\n";
+			echo '  </tr></thead>' . "\n";
 
 			// render records
 			$records = $searcher->getAnbieterRecords($offset, $this->rows, $orderBy);
@@ -853,16 +848,16 @@ class WISY_SEARCH_RENDERER_CLASS
 			{
 				echo '  <tr>' . "\n";
 					$this->renderAnbieterCell2($db2, $record, array('q'=>$queryString, 'addPhone'=>false, 'clickableName'=>true, 'addIcon'=>true));
-					echo '<td>';
+					echo '<td class="wisyr_strasse" data-title="Straße">';
 						echo htmlspecialchars($record['strasse']);
 					echo '</td>';
-					echo '<td>';
+					echo '<td class="wisyr_plz" data-title="PLZ">';
 						echo htmlspecialchars($record['plz']);
 					echo '</td>';
-					echo '<td>';
+					echo '<td class="wisyr_ort" data-title="Ort">';
 						echo htmlspecialchars($record['ort']);
 					echo '</td>';
-					echo '<td>';
+					echo '<td class="wisyr_homepage" data-title="Homepage">';
 						$link = $record['homepage'];
 						if( $link != '' )
 						{
@@ -871,12 +866,12 @@ class WISY_SEARCH_RENDERER_CLASS
 							echo '<a href="'.$link.'" target="_blank">Homepage</a>';
 						}
 					echo '</td>';
-					echo '<td>';
+					echo '<td class="wisyr_email" data-title="E-Mail">';
 						$link = $record['anspr_email'];
 						if( $link != '' )
 							echo '<a href="' . $anbieterRenderer->createMailtoLink($link) . '" target="_blank">E-Mail</a>';
 					echo '</td>';
-					echo '<td>';
+					echo '<td class="wisyr_telefon" data-title="Telefon">';
 						echo htmlspecialchars($record['anspr_tel']);
 					echo '</td>';
 				echo '  </tr>' . "\n";
