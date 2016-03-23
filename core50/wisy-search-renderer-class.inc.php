@@ -226,6 +226,8 @@ class WISY_SEARCH_RENDERER_CLASS
 		// go through result
 		$durchfClass =& createWisyObject('WISY_DURCHF_CLASS', $this->framework);
 		
+		$kursAnalyzer =& createWisyObject('WISY_KURS_ANALYZER_CLASS', $this->framework);
+		
 		$fav_use = $this->framework->iniRead('fav.use', 0);
 		
 		$rows = 0;
@@ -273,6 +275,8 @@ class WISY_SEARCH_RENDERER_CLASS
 							if( $currKursFreigeschaltet == 3 ) { echo '<em>Abgelaufen:</em><br />'; }
 							
 							if( $anbieter_record['typ'] == 2 ) echo '<span class="wisy_icon_beratungsstelle">Beratung<span class="dp">:</span></span> ';
+							
+							if($this->framework->iniRead('label.abschluss', 0) && count($kursAnalyzer->loadKeywordsAbschluss($db, 'kurse', $currKursId))) echo '<span class="wisy_icon_abschluss">Abschluss<span class="dp">:</span></span> ';
 							
 							echo isohtmlspecialchars($record['titel']);
 						

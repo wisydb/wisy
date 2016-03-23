@@ -50,11 +50,19 @@ class WISY_KURS_RENDERER_CLASS
 		// page start
 		headerDoCache();
 		
+		$displayAbschluss = $this->framework->iniRead('label.abschluss', 0);
+		if($displayAbschluss) {
+			$kursAnalyzer =& createWisyObject('WISY_KURS_ANALYZER_CLASS', $this->framework);
+			$isAbschluss = count($kursAnalyzer->loadKeywordsAbschluss($db, 'kurse', $kursId));
+		}
+		
 		$bodyClass = 'wisyp_kurs';
 		if( $anbieter_typ == 2 )
 		{
 			$bodyClass .= ' wisyp_kurs_beratungsstelle';
-		}
+		} elseif($displayAbschluss && $isAbschluss) {
+			$bodyClass .= ' wisyp_kurs_abschluss';	
+		}	
 		
 		echo $this->framework->getPrologue(array('title'=>$title, 'canonical' => $this->framework->getUrl('k', array('id'=>$kursId)), 'bodyClass'=>$bodyClass));
 		echo $this->framework->getSearchField();
@@ -75,6 +83,7 @@ class WISY_KURS_RENDERER_CLASS
 			
 			echo '<h1>';
 				if( $anbieter_typ == 2 ) echo '<span class="wisy_icon_beratungsstelle">Beratung<span class="dp">:</span></span> ';
+				if( $displayAbschluss && $isAbschluss ) echo '<span class="wisy_icon_abschluss">Abschluss<span class="dp">:</span></span> ';
 				echo isohtmlentities($title);
 				if( $this->framework->iniRead('fav.use', 0) ) {
 					echo '<span class="fav_add" data-favid="'.$kursId.'"></span>';
