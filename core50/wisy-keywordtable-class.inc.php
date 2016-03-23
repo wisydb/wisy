@@ -114,9 +114,9 @@ class WISY_KEYWORDTABLE_CLASS
 		$icon_arr_right = '&nbsp;&#9654;';
 		$icon_empty = '&nbsp;&bull;&nbsp;';
 				
-		$title = WISY_KEYWORDTABLE_CLASS::$keywords[ $keywordId ]['stichwort'];
+		$title = utf8_encode(WISY_KEYWORDTABLE_CLASS::$keywords[ $keywordId ]['stichwort']);
 		$url = 'search?q=' . urlencode(g_sync_removeSpecialChars($title));
-		$zusatzinfo = WISY_KEYWORDTABLE_CLASS::$keywords[ $keywordId ]['zusatzinfo'];
+		$zusatzinfo = utf8_encode(WISY_KEYWORDTABLE_CLASS::$keywords[ $keywordId ]['zusatzinfo']);
 		$tag_type = WISY_KEYWORDTABLE_CLASS::$keywords[ $keywordId ]['eigenschaften'];
 		$glossarId = WISY_KEYWORDTABLE_CLASS::$keywords[ $keywordId ]['glossar'];
 				
@@ -251,7 +251,7 @@ class WISY_KEYWORDTABLE_CLASS
 			.			'<tr>'
 			.				'<td width="90%">Rechercheziele</td>'
 			.				'<td width="10%">Ratgeber</td>'	
-			.			'<tr>'
+			.			'</tr>'
 			.		'</thead>'
 			.		'<tbody>'
 			.			$ret

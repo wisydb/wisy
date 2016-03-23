@@ -712,7 +712,7 @@ class TRANSL_SQUAREBRACKET_CLASS extends TXTREPLACERRULE_CLASS
 		}
 
 		if( $hash ) {
-			$param['href'] .= '#content'.urlencode(utf8htmlentities($hash));
+			$param['href'] .= '#content'.urlencode(htmlentities($hash));
 		}
 	}
 
