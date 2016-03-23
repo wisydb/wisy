@@ -364,7 +364,7 @@ class WISY_DURCHF_CLASS
 			{	
 				$preishinweise_out = implode(', ', $preishinweise_arr);
 				if( $html ) {
-					$ret .= '<br /><small>' . utf8htmlentities($preishinweise_out) . '</small>';
+					$ret .= '<br /><small>' . htmlentities($preishinweise_out) . '</small>';
 				}
 				else {
 					$ret .= " ($preishinweise_out)";
@@ -638,17 +638,17 @@ class WISY_DURCHF_CLASS
 			$land		= $record['land'];
 			if( $ort && $stadtteil ) {
 				if( strpos($ort, $stadtteil)===false ) {
-					$ort = utf8htmlentities($ort) . '-' . utf8htmlentities($stadtteil);
+					$ort = htmlentities($ort) . '-' . htmlentities($stadtteil);
 				}
 				else {
-					$ort = utf8htmlentities($ort);
+					$ort = htmlentities($ort);
 				}
 			}
 			else if( $ort ) {
-				$ort = utf8htmlentities($ort);
+				$ort = htmlentities($ort);
 			}
 			else if( $stadtteil ) {
-				$ort = utf8htmlentities($stadtteil);
+				$ort = htmlentities($stadtteil);
 				$stadt = $stadtteil;
 			}
 			else {
@@ -666,7 +666,7 @@ class WISY_DURCHF_CLASS
 				$cell = '';
 				
 				if( $strasse ) {
-					$cell = utf8htmlentities($strasse);
+					$cell = htmlentities($strasse);
 				}
 				
 				if( $ort ) {
@@ -676,7 +676,7 @@ class WISY_DURCHF_CLASS
 	
 				if( $land ) {
 					$cell .= $cell? '<br />' : '';
-					$cell .= '<i>' . utf8htmlentities($land) . '</i>';
+					$cell .= '<i>' . htmlentities($land) . '</i>';
 				}
 
 				if( $has_bemerkungen ) {
@@ -710,7 +710,7 @@ class WISY_DURCHF_CLASS
 			// nr
 			echo "    <td>";
 			$nr = $record['nr'];
-			echo $nr? utf8htmlentities($nr) : 'k. A.';
+			echo $nr? htmlentities($nr) : 'k. A.';
 			echo '</td>' . "\n";
 		}
 	}
