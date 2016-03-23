@@ -37,6 +37,12 @@ if( !function_exists('isohtmlspecialchars') ) {
 	function isohtmlentities    ($a, $f=ENT_COMPAT) { return htmlentities    ($a, $f, 'ISO-8859-1'); }
 }
 
+// wrappers for converting from ISO-8859-1 encoded DB to utf-8 encoded HTML output for core50
+if( !function_exists('utf8htmlspecialchars') ) {
+	function utf8htmlspecialchars($a) { return htmlspecialchars(utf8_encode($a)); }
+	function utf8htmlentities    ($a) { return htmlentities    (utf8_encode($a)); }
+}
+
 
 // load classes as SCOPE_NAME_CLASS from /lib/scope/name.php or from /config/scope/name.php
 spl_autoload_register('cms_autoload');

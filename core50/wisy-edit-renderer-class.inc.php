@@ -192,7 +192,7 @@ class WISY_EDIT_RENDERER_CLASS
 		$ret = sql_date_from_human($val, 'dateopt');
 		if( $ret=='0000-00-00 00:00:00' && $val!='' )
 		{
-			$error_array[] = "Fehler: Ung&uuml;ltiges Datum <i>".htmlspecialchars($val)."</i> - geben Sie das Datum bitte in der Form <i>tt.mm.jjjj</i> an.";
+			$error_array[] = "Fehler: Ung&uuml;ltiges Datum <i>".utf8htmlspecialchars($val)."</i> - geben Sie das Datum bitte in der Form <i>tt.mm.jjjj</i> an.";
 			return $ret;
 		}
 		
@@ -211,7 +211,7 @@ class WISY_EDIT_RENDERER_CLASS
 		$mm = intval($mm);
 		if( $hh<0 || $hh>23 || $mm<0 || $mm>59 )
 		{
-			$error_array[] = "Fehler: Ung&uuml;ltige Zeitangabe <i>".htmlspecialchars($val)."</i> - geben Sie die Zeit bitte in der Form <i>hh:mm</i> an.";
+			$error_array[] = "Fehler: Ung&uuml;ltige Zeitangabe <i>".utf8htmlspecialchars($val)."</i> - geben Sie die Zeit bitte in der Form <i>hh:mm</i> an.";
 			return $val; // error
 		}
 		
@@ -281,11 +281,11 @@ class WISY_EDIT_RENDERER_CLASS
 				$stichwort = $db->f8('stichwort');
 				if( $eigenschaften & 1 )
 				{
-					$retAbschluesse .= ($retAbschluesse?'###' : '') . $id . '###' . htmlspecialchars($stichwort);
+					$retAbschluesse .= ($retAbschluesse?'###' : '') . $id . '###' . utf8htmlspecialchars($stichwort);
 				}
 				else if( $eigenschaften & 2 )
 				{
-					$retFoerderungen .= ($retFoerderungen?'###' : '') . $id . '###' . htmlspecialchars($stichwort);
+					$retFoerderungen .= ($retFoerderungen?'###' : '') . $id . '###' . utf8htmlspecialchars($stichwort);
 				}
 			}
 		}
@@ -293,13 +293,13 @@ class WISY_EDIT_RENDERER_CLASS
 	
 	function controlHidden($name, $value)
 	{
-		echo "<input type=\"hidden\" name=\"$name\" value=\"" . htmlentities($value) . "\" />";
+		echo "<input type=\"hidden\" name=\"$name\" value=\"" . utf8htmlentities($value) . "\" />";
 	}
 	
 	function controlText($name, $value, $size = 8, $maxlen = 255, $tooltip = '', $valuehint = '')
 	{
 		$em = intval($size*.6 + .5);
-		echo "<input style=\"width: {$em}em\" type=\"text\" name=\"$name\" value=\"" . htmlentities($value!=''? $value : $valuehint) . "\" size=\"$size\" maxlength=\"$maxlen\" title=\"{$tooltip}\"";
+		echo "<input style=\"width: {$em}em\" type=\"text\" name=\"$name\" value=\"" . utf8htmlentities($value!=''? $value : $valuehint) . "\" size=\"$size\" maxlength=\"$maxlen\" title=\"{$tooltip}\"";
 		if( $valuehint ) {
 			echo " onfocus=\"if(this.value=='$valuehint'){this.value='';this.className='normal';}return true;\"";
 			echo " onblur=\"if(this.value==''){this.value='$valuehint';this.className='wisy_hinted';}return true;\"";
@@ -334,7 +334,7 @@ class WISY_EDIT_RENDERER_CLASS
 			$maxlen = 30;
 			if(strlen($name) > $maxlen ) $name = trim(substr($name, 0, $maxlen-5)) . '..';
 			$ret .= '<div style="float: right;">eingeloggt als: '
-				 .		'<a href="' .$this->framework->getUrl('a', array('id'=>$_SESSION['loggedInAnbieterId'], 'q'=>$this->framework->getParam('q'))). '">' . htmlspecialchars($name) . '</a>'
+				 .		'<a href="' .$this->framework->getUrl('a', array('id'=>$_SESSION['loggedInAnbieterId'], 'q'=>$this->framework->getParam('q'))). '">' . utf8htmlspecialchars($name) . '</a>'
 				 .		' | <a href="'.$this->framework->getUrl('edit', array('action'=>'logout')) . '">Logout</a>'
 				 .	'</div>';
 		
@@ -589,7 +589,7 @@ class WISY_EDIT_RENDERER_CLASS
 			{
 				$url = 'edit?as=' . urlencode($anbieterSuchname) . '&fwd=' .urlencode($fwd). '&bwd=' . urlencode($this->bwd);
 				echo  '<p class="wisy_topnote">Um alle Funktionen im Login-Bereich nutzen zu können, <b>aktivieren Sie bitte jetzt Javascript in Ihrem Browser.</b> '
-					. 'Danach <a href="'.htmlspecialchars($url).'">melden Sie sich bitte erneut an ...</a></p>';
+					. 'Danach <a href="'.utf8htmlspecialchars($url).'">melden Sie sich bitte erneut an ...</a></p>';
 				$showLoginForm = false;
 			}
 			else
@@ -603,18 +603,18 @@ class WISY_EDIT_RENDERER_CLASS
 					echo '<table>';
 						echo "<input type=\"hidden\" name=\"action\" value=\"loginSubseq\" />";
 						echo "<script type=\"text/javascript\"><!--\ndocument.write('<input type=\"hidden\" name=\"javascript\" value=\"enabled\" />');\n/"."/--></script>";
-						echo "<input type=\"hidden\" name=\"fwd\" value=\"".htmlspecialchars($fwd)."\" />";
-						echo "<input type=\"hidden\" name=\"bwd\" value=\"".htmlspecialchars($this->bwd)."\" />";
+						echo "<input type=\"hidden\" name=\"fwd\" value=\"".utf8htmlspecialchars($fwd)."\" />";
+						echo "<input type=\"hidden\" name=\"bwd\" value=\"".utf8htmlspecialchars($this->bwd)."\" />";
 						echo '<tr>';
 							echo '<td nowrap="nowrap">Anbietername oder -ID:</td>';
-							echo "<td><input type=\"text\" name=\"as\" value=\"".htmlspecialchars($anbieterSuchname)."\" size=\"50\" /></td>";
+							echo "<td><input type=\"text\" name=\"as\" value=\"".utf8htmlspecialchars($anbieterSuchname)."\" size=\"50\" /></td>";
 						echo '</tr>';
 						echo '<tr>';
 							echo '<td align="right">Passwort:</td>';
 							echo '<td nowrap="nowrap">';
 								echo '<input type="password" name="wepw" value="" size="30" />';
 																																// der Anbietername wird _nicht_ weitergegeben, damit ein Missbrauch mehr als nur einen Klick erfordert.
-								echo ' <a href="'.htmlspecialchars($this->framework->getUrl('edit', array('action'=>'forgotpw' /*, 'as'=>$anbieterSuchname*/))).'">Passwort vergessen?</a>';
+								echo ' <a href="'.utf8htmlspecialchars($this->framework->getUrl('edit', array('action'=>'forgotpw' /*, 'as'=>$anbieterSuchname*/))).'">Passwort vergessen?</a>';
 								
 							echo '</td>';
 						echo '</tr>';
@@ -715,7 +715,7 @@ class WISY_EDIT_RENDERER_CLASS
 				echo '<tr>';
 					echo '<td valign="top">';
 					
-						echo '<a href="'.$this->framework->getUrl('edit', array('action'=>'ek', 'id'=>$kurs_id)).'">' . htmlspecialchars($titel) . '</a>';
+						echo '<a href="'.$this->framework->getUrl('edit', array('action'=>'ek', 'id'=>$kurs_id)).'">' . utf8htmlspecialchars($titel) . '</a>';
 						
 					echo '</td><td valign="top" nowrap="nowrap">';
 						
@@ -968,7 +968,7 @@ class WISY_EDIT_RENDERER_CLASS
 						$otherUrl = $this->framework->getUrl('edit', array('action'=>'ek', 'id'=>$andere_kurs_id));
 						$kurs['error'][] = 
 							'
-							Fehler: Ein Kurs mit dem Titel <i>'.htmlspecialchars($kurs['titel']).'</i> <b>ist bereits vorhanden</b>. 
+							Fehler: Ein Kurs mit dem Titel <i>'.utf8htmlspecialchars($kurs['titel']).'</i> <b>ist bereits vorhanden</b>. 
 							Um Verwirrungen zu vermeiden, können Sie das folgende tun:<br /><br />
 							
 							&bull; <b>Sie wollen weitere Termine des Kurses angelegen?</b> <a href="'.$otherUrl.'">Gehen Sie zum bereits vorhandenen Kurs</a> - 
@@ -1213,7 +1213,7 @@ class WISY_EDIT_RENDERER_CLASS
 			// die Änderung ist KEINE BAGATELLE - Nicht-Bagatelländerung erlaubt?
 			if( $this->canEditBagatelleOnly() )
 			{
-				$newData['error'][] = 'Fehler: Der angemeldete Benutzer hat <b>nicht das Recht</b> diese Änderungen am Feld <i>'.htmlspecialchars($this->keine_bagatelle_why).'</i> vorzunehmen.<br />
+				$newData['error'][] = 'Fehler: Der angemeldete Benutzer hat <b>nicht das Recht</b> diese Änderungen am Feld <i>'.utf8htmlspecialchars($this->keine_bagatelle_why).'</i> vorzunehmen.<br />
 									   Es dürfen nur Datum und Preis und andere Felder in gewissen Grenzen geändert werden. 
 									   <a href="'.$this->framework->getHelpUrl($this->framework->iniRead('useredit.help.norights', '20')).'" target="_blank">Weitere Informationen hierzu ...</a><br />';
 				return;
@@ -1532,7 +1532,7 @@ class WISY_EDIT_RENDERER_CLASS
 			}
 			else
 			{
-				$msg = 'Der Kurs <a href="'.$this->framework->getUrl('k', array('id'=>$kurs['id'])).'">'.htmlspecialchars($kurs['titel']).'</a> wurde <b>erfolgreich gespeichert.</b>';
+				$msg = 'Der Kurs <a href="'.$this->framework->getUrl('k', array('id'=>$kurs['id'])).'">'.utf8htmlspecialchars($kurs['titel']).'</a> wurde <b>erfolgreich gespeichert.</b>';
 				$temp = $this->renderVollstMsg($kurs['id'], false);
 				$msg .= ($temp? '<br /><br />' : '') . $temp;
 				
@@ -1588,7 +1588,7 @@ class WISY_EDIT_RENDERER_CLASS
 			echo '<input type="hidden" name="action" value="ek" /> ' . "\n";
 			echo '<input type="hidden" name="subseq" value="1" /> ' . "\n";
 			echo '<input type="hidden" name="id" value="'.$kurs['id'].'" /> ' . "\n";
-			echo '<input type="hidden" name="bwd" value="'.htmlspecialchars($this->bwd).'" /> ' . "\n";
+			echo '<input type="hidden" name="bwd" value="'.utf8htmlspecialchars($this->bwd).'" /> ' . "\n";
 		
 			if( $showForm )
 			{
@@ -1606,7 +1606,7 @@ class WISY_EDIT_RENDERER_CLASS
 							}
 							else
 							{
-								echo '<strong>' .  htmlspecialchars($kurs['titel']) . '</strong>';
+								echo '<strong>' .  utf8htmlspecialchars($kurs['titel']) . '</strong>';
 								$this->controlHidden('titel', $kurs['titel']);
 							}
 
@@ -1640,7 +1640,7 @@ class WISY_EDIT_RENDERER_CLASS
 							// originaltitel
 							if( $kurs['org_titel'] != '' && $kurs['org_titel'] != $kurs['titel'] )
 							{
-								echo '<br /><small style="color: #AAA;">Originaltitel: '.htmlspecialchars($kurs['org_titel']).'</small>';
+								echo '<br /><small style="color: #AAA;">Originaltitel: '.utf8htmlspecialchars($kurs['org_titel']).'</small>';
 							}
 							
 							echo '<br />&nbsp;';
@@ -1648,8 +1648,8 @@ class WISY_EDIT_RENDERER_CLASS
 							// ... Foerderung
 							echo "<div class=\"editFoerderungDiv\" $styleFoerderung>";
 								echo '<table cellpadding="0" cellspacing="2" border="0">';
-									echo '<tr><td>Bildungsurlaubs-Nr.:</td><td><input type="text" name="bu_nummer" value="'.htmlspecialchars($kurs['bu_nummer']).'" /> <small>(Nötig zur Anzeige als Bildungsurlaub/Freistellung)</small></td></tr>';
-									echo '<tr><td>AZWV-Nr.:</td><td><input type="text" name="azwv_knr" value="'.htmlspecialchars($kurs['azwv_knr']).'" />  <small>(Nötig zur Suche nach Bildungsgutschein)</small></td></tr>';
+									echo '<tr><td>Bildungsurlaubs-Nr.:</td><td><input type="text" name="bu_nummer" value="'.utf8htmlspecialchars($kurs['bu_nummer']).'" /> <small>(Nötig zur Anzeige als Bildungsurlaub/Freistellung)</small></td></tr>';
+									echo '<tr><td>AZWV-Nr.:</td><td><input type="text" name="azwv_knr" value="'.utf8htmlspecialchars($kurs['azwv_knr']).'" />  <small>(Nötig zur Suche nach Bildungsgutschein)</small></td></tr>';
 									if( $foerderungsOptionen != '' )
 									{
 										echo '<tr><td>sonstige Förderung:</td><td>'; 
@@ -1663,7 +1663,7 @@ class WISY_EDIT_RENDERER_CLASS
 							// ... Fernunterricht
 							echo "<div class=\"editFernunterrichtDiv\" $styleFernunterricht>";
 								echo '<table cellpadding="0" cellspacing="2" border="0">';
-									echo '<tr><td>ZFU-Fernunterrichts-Nr.:</td><td><input type="text" name="fu_knr" value="'.htmlspecialchars($kurs['fu_knr']).'" /> <small>(Nötig zur Anzeige als Fernunterricht)</small></td></tr>';
+									echo '<tr><td>ZFU-Fernunterrichts-Nr.:</td><td><input type="text" name="fu_knr" value="'.utf8htmlspecialchars($kurs['fu_knr']).'" /> <small>(Nötig zur Anzeige als Fernunterricht)</small></td></tr>';
 								echo '</table>';
 								echo '&nbsp;';
 							echo '</div>';
@@ -1756,7 +1756,7 @@ class WISY_EDIT_RENDERER_CLASS
 						echo '<td>';
 							echo '<div style="border-top: 2px solid black; border-left: 2px solid black; padding-top: 6px;  padding-left: 6px; margin-bottom: 1.4em; width: 99%;">';
 								echo $this->renderEditorToolbar(false);
-								echo '<textarea name="beschreibung" rows="14" style="border: 0; width: 99%; border-top: 1px solid #ddd;">' . htmlspecialchars($kurs['beschreibung']) . '</textarea>';
+								echo '<textarea name="beschreibung" rows="14" style="border: 0; width: 99%; border-top: 1px solid #ddd;">' . utf8htmlspecialchars($kurs['beschreibung']) . '</textarea>';
 							echo '</div>';
 						echo '</td>';
 					echo '</tr>';
@@ -1932,7 +1932,7 @@ class WISY_EDIT_RENDERER_CLASS
 
 												echo "<div class=\"editAdvOrtDiv\" $style>";
 													echo $this->renderEditorToolbar(true);
-													echo "<textarea name=\"bemerkungen[]\" title=\"Geben Sie hier die Kurs-URL oder sonstige Hinweise ein zur Durchführung ein\" cols=\"40\" rows=\"3\" style=\"width: 90%; border: 1px solid #ddd;\" />" . htmlentities($durchf['bemerkungen']) . '</textarea>';
+													echo "<textarea name=\"bemerkungen[]\" title=\"Geben Sie hier die Kurs-URL oder sonstige Hinweise ein zur Durchführung ein\" cols=\"40\" rows=\"3\" style=\"width: 90%; border: 1px solid #ddd;\" />" . utf8htmlentities($durchf['bemerkungen']) . '</textarea>';
 												echo '<div>';
 											
 											echo '</td>';
@@ -2058,7 +2058,7 @@ class WISY_EDIT_RENDERER_CLASS
 		echo $this->framework->getPrologue(array('title'=>$begriff, 'bodyClass'=>'wisyp_edit'));
 			
 			echo '<a name="top"></a>'; // make [[toplinks()]] work
-			echo '<h1>' . htmlspecialchars($begriff) . '</h1>';
+			echo '<h1>' . utf8htmlspecialchars($begriff) . '</h1>';
 			$wiki2html =& createWisyObject('WISY_WIKI2HTML_CLASS', $this->framework);
 			$wiki2html->forceBlankTarget = true;
 			echo $wiki2html->run($erklaerung);
@@ -2072,8 +2072,8 @@ class WISY_EDIT_RENDERER_CLASS
 			}
 			
 			echo '<form action="edit" method="post">';
-				echo '<input type="hidden" name="fwd" value="'.htmlspecialchars($fwd).'" />';
-				echo '<input type="hidden" name="agb_hash" value="'.htmlspecialchars($this->_agb_get_hash()).'" />';
+				echo '<input type="hidden" name="fwd" value="'.utf8htmlspecialchars($fwd).'" />';
+				echo '<input type="hidden" name="agb_hash" value="'.utf8htmlspecialchars($this->_agb_get_hash()).'" />';
 				echo '<input type="submit" name="agb_accepted" value="OK - Ich stimme allen Bedingungen ZU" />';
 				echo ' &nbsp; ';
 				echo '<input type="submit" name="agb_not_accepted" value="Abbruch - Ich stimme einigen Bedingungen NICHT ZU" />';

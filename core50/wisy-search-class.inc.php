@@ -294,7 +294,7 @@ class WISY_SEARCH_CLASS
 						
 						if( isset($_COOKIE['debug']) )
 						{
-							echo '<p style="background-color: orange;">gi: ' . htmlspecialchars(print_r($gi, true)) . '</p>';
+							echo '<p style="background-color: orange;">gi: ' . utf8htmlspecialchars(print_r($gi, true)) . '</p>';
 						}
 
 						// remember some stuff for the getInfo() function (needed eg. for the "distance"-column)
@@ -487,7 +487,7 @@ class WISY_SEARCH_CLASS
 					$this->dbCache->insert($cacheKey, serialize($ret));
 
 					if( isset($_COOKIE['debug']) ) {
-						echo '<p style="background-color: yellow;">getKurseCount(): ' .htmlspecialchars($sql). '</p>';
+						echo '<p style="background-color: yellow;">getKurseCount(): ' .utf8htmlspecialchars($sql). '</p>';
 					}
 				}
 					
@@ -575,7 +575,7 @@ class WISY_SEARCH_CLASS
 					$this->dbCache->insert($cacheKey, serialize($ret));
 					
 					if( isset($_COOKIE['debug']) ) {
-						echo '<p style="background-color: yellow;">getKurseRecords(): ' .htmlspecialchars($sql). '</p>';
+						echo '<p style="background-color: yellow;">getKurseRecords(): ' .utf8htmlspecialchars($sql). '</p>';
 					}
 				}
 			
@@ -659,7 +659,7 @@ class WISY_SEARCH_CLASS
 			
 			if( isset($_COOKIE['debug']) )
 			{
-				echo '<p style="background-color: yellow;">' .htmlspecialchars($sql). '</p>';
+				echo '<p style="background-color: yellow;">' .utf8htmlspecialchars($sql). '</p>';
 			}
 			
 			

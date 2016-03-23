@@ -85,17 +85,17 @@ class WISY_RSS_RENDERER_CLASS
 					$stadtteil      = $db->f8('stadtteil');
 					if( $ort!='' && $stadtteil!='' ) {
 						if( strpos($ort, $stadtteil)===false ) {
-							$ort = htmlentities($ort) . '-' . htmlentities($stadtteil);
+							$ort = utf8htmlentities($ort) . '-' . utf8htmlentities($stadtteil);
 						}
 						else {
-							$ort = htmlentities($ort);
+							$ort = utf8htmlentities($ort);
 						}
 					}
 					else if( $ort!='' ) {
-						$ort = htmlentities($ort);
+						$ort = utf8htmlentities($ort);
 					}
 					else if( $stadtteil!='' ) {
-						$ort = htmlentities($stadtteil);
+						$ort = utf8htmlentities($stadtteil);
 					}
 					else {
 						$ort = '';
@@ -152,15 +152,15 @@ class WISY_RSS_RENDERER_CLASS
 		$searcher =& createWisyObject('WISY_SEARCH_CLASS', $this->framework);
 		$searcher->prepare($this->queryString);
 
-		$queryHtml = htmlspecialchars($this->queryString);
+		$queryHtml = utf8htmlspecialchars($this->queryString);
 		$queryHtmlLong  = $queryHtml==''? ''                  : " - Anfrage: $queryHtml";
 		$queryHtmlShort = $queryHtml==''? ' - aktuelle Kurse' : " - $queryHtml";
 
 		$ret  = "<?"."xml version=\"1.0\" encoding=\"ISO-8859-1\" ?".">\n";
 		$ret .= "<rss version=\"2.0\">\n";
 		$ret .= "  <channel>\n";
-		$ret .= "    <title>".htmlspecialchars($wisyPortalKurzname)."$queryHtmlShort</title>\n";
-		$ret .= "    <description>".htmlspecialchars($wisyPortalName)."$queryHtmlLong</description>\n";
+		$ret .= "    <title>".utf8htmlspecialchars($wisyPortalKurzname)."$queryHtmlShort</title>\n";
+		$ret .= "    <description>".utf8htmlspecialchars($wisyPortalName)."$queryHtmlLong</description>\n";
 		$ret .= "    <link>{$this->absPath}search?q=".urlencode($this->queryString)."</link>\n";
 		$ret .= "    <lastBuildDate>".date("D, d M Y G:i:s O")."</lastBuildDate>\n";
 
@@ -174,15 +174,15 @@ class WISY_RSS_RENDERER_CLASS
 					// beschreibung erstellen
 					$descrHtml  = '';
 					$descrHtml .= "Aufgenommen: " . $this->framework->formatDatum($record['date_created']) . ' - ';
-					$descrHtml .= "Ort: " . htmlspecialchars($record['ort']? $record['ort'] : 'k. A.') . '<br />';
-					$descrHtml .= '<a href="' . $this->absPath.'a'.$record['id'] . '">weitere Informationen auf '.htmlspecialchars($this->domain).' ...</a>';
+					$descrHtml .= "Ort: " . utf8htmlspecialchars($record['ort']? $record['ort'] : 'k. A.') . '<br />';
+					$descrHtml .= '<a href="' . $this->absPath.'a'.$record['id'] . '">weitere Informationen auf '.utf8htmlspecialchars($this->domain).' ...</a>';
 					
 					// itemdatum: es kommen nur neu erfasste anbieter in das RSS, daher hier einfach das erstellungsdatum
 					$pubDate_str = $record['date_created'];
 					
 					// item erzeugen
 					$ret .= "      <item>\n";
-					$ret .= "        <title>".htmlspecialchars($record['suchname'])."</title>\n";
+					$ret .= "        <title>".utf8htmlspecialchars($record['suchname'])."</title>\n";
 					$ret .= "        <description><![CDATA[$descrHtml]]></description>\n";
 					$ret .= "        <link>{$this->absPath}a".$record['id']."</link>\n";
 					$ret .= "        <pubDate>".date("D, d M Y G:i:s O", strtotime($pubDate_str))."</pubDate>\n";
@@ -199,7 +199,7 @@ class WISY_RSS_RENDERER_CLASS
 					// beschreibung erstellen
 					$descrHtml = '';
 					$descrHtml .= $this->createDurchfuehrungContent($db2, $durchfClass, array('record'=>$record));
-					$descrHtml .= '<a href="' . $this->absPath.'k'.$record['id'] . '">weitere Informationen auf '.htmlspecialchars($this->domain).' ...</a>';
+					$descrHtml .= '<a href="' . $this->absPath.'k'.$record['id'] . '">weitere Informationen auf '.utf8htmlspecialchars($this->domain).' ...</a>';
 				
 					// itemdatum: da wir neue durchfuerungen erwischen moechten, ist dies das "beginnaenderungsdatum"
 					$pubDate_str = $record['begmod_date'];
@@ -208,7 +208,7 @@ class WISY_RSS_RENDERER_CLASS
 					
 					// item erzeugen
 					$ret .= "      <item>\n";
-					$ret .= "        <title>".htmlspecialchars($record['titel'])."</title>\n";
+					$ret .= "        <title>".utf8htmlspecialchars($record['titel'])."</title>\n";
 					$ret .= "        <description><![CDATA[$descrHtml]]></description>\n";
 					$ret .= "        <link>{$this->absPath}k".$record['id']."</link>\n";
 					$ret .= "        <pubDate>".date("D, d M Y G:i:s O", strtotime($pubDate_str))."</pubDate>\n";
@@ -242,7 +242,7 @@ class WISY_RSS_RENDERER_CLASS
 		
 		if( 0 )
 		{
-			echo nl2br(htmlspecialchars($ret));
+			echo nl2br(utf8htmlspecialchars($ret));
 		}
 		else
 		{

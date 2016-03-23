@@ -1,5 +1,7 @@
 <?php if( !defined('IN_WISY') ) die('!IN_WISY');
 
+require_once('admin/classes.inc.php');
+
 /******************************************************************************
  WISY 2.0
  ******************************************************************************
@@ -151,7 +153,7 @@ class WISY_FRAMEWORK_CLASS
 							</ul>
 						</div>
 						<p>
-							(die angeforderte Seite war <i>'.htmlspecialchars($uri).'</i> in <i>/'.htmlspecialchars($wisyCore).'</i> auf <i>' .$_SERVER['HTTP_HOST']. '</i>)
+							(die angeforderte Seite war <i>'.utf8htmlspecialchars($uri).'</i> in <i>/'.utf8htmlspecialchars($wisyCore).'</i> auf <i>' .$_SERVER['HTTP_HOST']. '</i>)
 						</p>
 				';
 			
@@ -245,7 +247,7 @@ class WISY_FRAMEWORK_CLASS
 	function getUrl($page, $param = 0)
 	{
 		// create any url; addparam is an array of additional parameters 
-		// parameters are encoded using urlencode, however, the whole URL is _not_ HTML-save, you need to call htmlentities() to convert & to &amp;
+		// parameters are encoded using urlencode, however, the whole URL is _not_ HTML-save, you need to call utf8htmlentities() to convert & to &amp;
 		
 		// if $param is no array, create an empty one
 		if( !is_array($param) )
@@ -336,7 +338,7 @@ class WISY_FRAMEWORK_CLASS
 		}
 		else if( $placeholder == '__Q_HTMLENCODE__' )
 		{
-			return htmlspecialchars( rtrim( $this->getParam('q', ''), ', ') );
+			return utf8htmlspecialchars( rtrim( $this->getParam('q', ''), ', ') );
 		}
 		else if( $placeholder == '__Q_URLENCODE__' )
 		{
@@ -553,7 +555,7 @@ class WISY_FRAMEWORK_CLASS
 					}
 					
 					if( $stichwoerter[$s]['zusatzinfo'] != '' ) {
-						$ret .= ' <span class="ac_tag_type">(' . htmlspecialchars($stichwoerter[$s]['zusatzinfo']) . ')</span>';
+						$ret .= ' <span class="ac_tag_type">(' . utf8htmlspecialchars($stichwoerter[$s]['zusatzinfo']) . ')</span>';
 					}
 
 					$ret .= $glossarLink;
@@ -671,7 +673,7 @@ class WISY_FRAMEWORK_CLASS
 	function getTitleTags($pageTitleNoHtml)
 	{
 		// get the <title> tag - WISY 5.0 is only added to easily check it we're using the new core, this can be removed as soon as there are other methods for easy recognize
-		return "<title>WISY 5.0 - " .htmlspecialchars($this->getTitleString($pageTitleNoHtml)). "</title>\n";
+		return "<title>WISY 5.0 - " .utf8htmlspecialchars($this->getTitleString($pageTitleNoHtml)). "</title>\n";
 	}
 	
 	function getFaviconFile()
@@ -709,7 +711,7 @@ class WISY_FRAMEWORK_CLASS
 		$opensearchFile = $this->getOpensearchFile();
 		if( $opensearchFile )
 		{
-			$ret .= '<link rel="search" type="application/opensearchdescription+xml" href="' . $opensearchFile . '" title="' .htmlspecialchars($wisyPortalKurzname). '" />' . "\n";
+			$ret .= '<link rel="search" type="application/opensearchdescription+xml" href="' . $opensearchFile . '" title="' .utf8htmlspecialchars($wisyPortalKurzname). '" />' . "\n";
 		}
 		
 		return $ret;
@@ -732,7 +734,7 @@ class WISY_FRAMEWORK_CLASS
 			global $wisyPortalKurzname;
 			$q = rtrim($this->getParam('q', ''), ', ');
 			$title = $wisyPortalKurzname . ' - ' . ($q==''? 'aktuelle Kurse' : $q);
-			$ret .= '<link rel="alternate" type="application/rss+xml" title="'.htmlspecialchars($title).'" href="' .$this->getRSSFile(). '" />' . "\n";
+			$ret .= '<link rel="alternate" type="application/rss+xml" title="'.utf8htmlspecialchars($title).'" href="' .$this->getRSSFile(). '" />' . "\n";
 		}
 		
 		return $ret;
@@ -834,7 +836,7 @@ class WISY_FRAMEWORK_CLASS
 		if( ($onload=$this->iniRead('onload')) != '' ) { $ret .= ' onload="' .$onload. '" '; }
 		
 		if( !$this->askfwd ) { $this->askfwd = strval($_REQUEST['askfwd']); }
-		if(  $this->askfwd ) { $ret .= ' data-askfwd="' . htmlspecialchars($this->askfwd) . '" '; }
+		if(  $this->askfwd ) { $ret .= ' data-askfwd="' . utf8htmlspecialchars($this->askfwd) . '" '; }
 		
 		return $ret;
 	}
@@ -1143,7 +1145,7 @@ class WISY_FRAMEWORK_CLASS
 				echo $this->replacePlaceholders($this->iniRead('searcharea.advlink', $DEFAULT_ADVLINK_HTML)) . "\n";
 				echo $this->replacePlaceholders($this->iniRead('searcharea.html', $DEFAULT_RIGHT_HTML)) . "\n";
 			echo '</form>' . "\n";
-			echo '<div class="wisy_searchhints" data-favlink="' . htmlspecialchars($mailfav) . '">' .  $this->replacePlaceholders($this->iniRead('searcharea.hint', $DEFAULT_BOTTOM_HINT)) . '</div>' . "\n";
+			echo '<div class="wisy_searchhints" data-favlink="' . utf8htmlspecialchars($mailfav) . '">' .  $this->replacePlaceholders($this->iniRead('searcharea.hint', $DEFAULT_BOTTOM_HINT)) . '</div>' . "\n";
 		echo '</div>' . "\n\n";
 	
 		echo $this->replacePlaceholders( $this->iniRead('searcharea.below', '') ); // deprecated!

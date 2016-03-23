@@ -17,7 +17,7 @@ class WISY_SEARCH_RENDERER_CLASS
 
 	function pageSelLink($baseUrl, $currRowsPerPage, $currPageNumber, $hilite)
 	{
-		$ret = $hilite? '<strong>' : '<a href="' . htmlentities($baseUrl) . intval($currPageNumber*$currRowsPerPage) . '">';
+		$ret = $hilite? '<strong>' : '<a href="' . utf8htmlentities($baseUrl) . intval($currPageNumber*$currRowsPerPage) . '">';
 			$ret .= intval($currPageNumber+1);
 		$ret .= $hilite? '</strong> ' : '</a> ';
 		return $ret;
@@ -89,7 +89,7 @@ class WISY_SEARCH_RENDERER_CLASS
 					$icon = '';
 				}
 				
-				echo '<a href="' . htmlspecialchars($this->framework->getUrl('search', array('q'=>$this->framework->getParam('q', ''), 'order'=>$newOrder))) . '" title="Liste nach diesem Kriterium sortieren" class="wisy_orderby">';
+				echo '<a href="' . utf8htmlspecialchars($this->framework->getUrl('search', array('q'=>$this->framework->getParam('q', ''), 'order'=>$newOrder))) . '" title="Liste nach diesem Kriterium sortieren" class="wisy_orderby">';
 			}
 			
 			echo $title;
@@ -101,7 +101,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			
 			if( $info > 0 )
 			{
-				echo ' <a href="' . htmlspecialchars($this->framework->getHelpUrl($info)) . '" title="Hilfe" class="wisy_help">i</a>';
+				echo ' <a href="' . utf8htmlspecialchars($this->framework->getHelpUrl($info)) . '" title="Hilfe" class="wisy_help">i</a>';
 			}
 		echo '</th>' . "\n";
 	}
@@ -112,13 +112,13 @@ class WISY_SEARCH_RENDERER_CLASS
 			echo 'Gehe zu Seite ';
 		
 			if( $prevurl ) {
-				echo "<a href=\"" . htmlspecialchars($prevurl) . "\">&laquo;</a> ";
+				echo "<a href=\"" . utf8htmlspecialchars($prevurl) . "\">&laquo;</a> ";
 			}
 	
 			echo $pagesel;
 	
 			if( $nexturl ) {
-				echo " <a href=\"" . htmlspecialchars($nexturl) . "\">&raquo;</a>";
+				echo " <a href=\"" . utf8htmlspecialchars($nexturl) . "\">&raquo;</a>";
 			}
 		echo '</span>' . "\n";
 	}
@@ -148,7 +148,7 @@ class WISY_SEARCH_RENDERER_CLASS
 						if( $record['typ'] == 2 ) echo '<span class="wisy_icon_beratungsstelle">Beratungsstelle<span class="dp">:</span></span> ';
 					}
 					
-					echo htmlspecialchars($anbieterName);
+					echo utf8htmlspecialchars($anbieterName);
 					
 				if( $param['clickableName'] ) echo '</a>';
 
@@ -156,7 +156,7 @@ class WISY_SEARCH_RENDERER_CLASS
 				{
 					// $anspr_tel = str_replace(' ', '', $anspr_tel); // macht Aerger, da in den Telefonnummern teilw. Erklaerungen/Preise mitstehen. Auskommentiert am 5.9.2008 (bp)
 					$anspr_tel = str_replace('/', ' / ', $anspr_tel);
-					echo ',<small> ' . htmlspecialchars($anspr_tel) . '</small>';
+					echo ',<small> ' . utf8htmlspecialchars($anspr_tel) . '</small>';
 				}
 				
 				if( !$param['clickableName'] )  echo '<small> - <a href="'.$this->framework->getUrl('a', $aparam).'">Anbieterprofil...</a></small>';
@@ -278,7 +278,7 @@ class WISY_SEARCH_RENDERER_CLASS
 							
 							if($this->framework->iniRead('label.abschluss', 0) && count($kursAnalyzer->loadKeywordsAbschluss($db, 'kurse', $currKursId))) echo '<span class="wisy_icon_abschluss">Abschluss<span class="dp">:</span></span> ';
 							
-							echo htmlspecialchars($record['titel']);
+							echo utf8htmlspecialchars($record['titel']);
 						
 					echo '</a>';
 					if( $loggedInAnbieterId == $currAnbieterId )
@@ -419,7 +419,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		}
 		
 		return '<span class="' .$row_class. '">' .
-				$row_prefix . ' <a href="' . $this->framework->getUrl('search', array('q'=>$addparam['qprefix'].$tag_name)) . '">' . htmlspecialchars($tag_name) . '</a> ' . $row_postfix .
+				$row_prefix . ' <a href="' . $this->framework->getUrl('search', array('q'=>$addparam['qprefix'].$tag_name)) . '">' . utf8htmlspecialchars($tag_name) . '</a> ' . $row_postfix .
 			   '</span>';
 	}
 	
@@ -491,7 +491,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		$row_class = $row_class . ' ' . $tr_class;
 		
 		// highlight search string
-		$tag_name = htmlspecialchars($tag_name);
+		$tag_name = utf8htmlspecialchars($tag_name);
 		if($queryString != '') {
 			//$tag_name_highlighted = str_ireplace($queryString, "<strong>$queryString</strong>", $tag_name);
 			$tag_name_highlighted = preg_replace("/".preg_quote($queryString, "/")."/i", "<em>$0</em>", $tag_name);
@@ -565,7 +565,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			echo '<div class="wisy_suggestions">';
 				if( $info['changed_query'] )
 				{
-					echo '<b>Hinweis:</b> Der Suchauftrag wurde abgeändert in <i><a href="'.$this->framework->getUrl('search', array('q'=>$info['changed_query'])).'">'.htmlspecialchars($info['changed_query']).'</a></i>';
+					echo '<b>Hinweis:</b> Der Suchauftrag wurde abgeändert in <i><a href="'.$this->framework->getUrl('search', array('q'=>$info['changed_query'])).'">'.utf8htmlspecialchars($info['changed_query']).'</a></i>';
 					if( sizeof($info['suggestions']) ) 
 						echo ' &ndash; ';
 				}
@@ -609,7 +609,7 @@ class WISY_SEARCH_RENDERER_CLASS
 					echo '<b>Aktuelle Angebote:</b>';
 				}
 				else {
-					echo $sqlCount==1? "<b>1 Angebot</b> zum Suchauftrag:" : "<b>$sqlCount Angebote</b> zum Suchauftrag <i>".htmlspecialchars(trim($queryString, ', '))."</i>:";
+					echo $sqlCount==1? "<b>1 Angebot</b> zum Suchauftrag:" : "<b>$sqlCount Angebote</b> zum Suchauftrag <i>".utf8htmlspecialchars(trim($queryString, ', '))."</i>:";
 				}
 
 				if( $pagesel )
@@ -693,7 +693,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			echo '<p>';
 				echo $sqlCount==1? "<b>1 Angebot</b> zum Suchauftrag" : "<b>$sqlCount Angebote</b> zum Suchauftrag";
 
-				if( $queryString ) echo ' <i class="printonly">' . htmlspecialchars(trim($queryString, ', ')) . '</i>';
+				if( $queryString ) echo ' <i class="printonly">' . utf8htmlspecialchars(trim($queryString, ', ')) . '</i>';
 
 				if( !$this->framework->editSessionStarted ) // nur für eine bessere Übersicht wird das folgende im Edit-Modus unterdrückt
 				{
@@ -729,7 +729,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			{
 				$temp = trim($queryString, ', ');
 				echo '<p class="wisy_topnote">';
-					echo 'Keine aktuellen Datensätze für <em>&quot;'  . htmlspecialchars($temp) . '&quot;</em> gefunden.<br /><br />';
+					echo 'Keine aktuellen Datensätze für <em>&quot;'  . utf8htmlspecialchars($temp) . '&quot;</em> gefunden.<br /><br />';
 					echo '<a href="' . $this->framework->getUrl('search', array('q'=>"$temp, Datum:Alles")) . '">Suche wiederholen und dabei <b>auch abgelaufene Kurse berücksichtigen</b> ...</a>';
 				echo "</p>\n";
 			}
@@ -854,13 +854,13 @@ class WISY_SEARCH_RENDERER_CLASS
 				echo '  <tr>' . "\n";
 					$this->renderAnbieterCell2($db2, $record, array('q'=>$queryString, 'addPhone'=>false, 'clickableName'=>true, 'addIcon'=>true));
 					echo '<td>';
-						echo htmlspecialchars($record['strasse']);
+						echo utf8htmlspecialchars($record['strasse']);
 					echo '</td>';
 					echo '<td>';
-						echo htmlspecialchars($record['plz']);
+						echo utf8htmlspecialchars($record['plz']);
 					echo '</td>';
 					echo '<td>';
-						echo htmlspecialchars($record['ort']);
+						echo utf8htmlspecialchars($record['ort']);
 					echo '</td>';
 					echo '<td>';
 						$link = $record['homepage'];
@@ -877,7 +877,7 @@ class WISY_SEARCH_RENDERER_CLASS
 							echo '<a href="' . $anbieterRenderer->createMailtoLink($link) . '" target="_blank">E-Mail</a>';
 					echo '</td>';
 					echo '<td>';
-						echo htmlspecialchars($record['anspr_tel']);
+						echo utf8htmlspecialchars($record['anspr_tel']);
 					echo '</td>';
 				echo '  </tr>' . "\n";
 			}
@@ -890,7 +890,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			echo '<p>';
 				echo "<b>$sqlCount Anbieter</b> zum Suchauftrag";
 
-				if( $queryString ) echo ' <i class="printonly">' . htmlspecialchars(trim($queryString, ', ')) . '</i>';
+				if( $queryString ) echo ' <i class="printonly">' . utf8htmlspecialchars(trim($queryString, ', ')) . '</i>';
 
 				$info = $searcher->getInfo();
 				$secneeded = sprintf("%1.3f", $info['secneeded']); $secneeded = str_replace('.', ',', $secneeded);
@@ -910,7 +910,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		}
 		else /* if( sqlCount ) */
 		{
-			echo '<p class="wisy_topnote">Keine Datensätze für <em>&quot;'.htmlspecialchars(trim($queryString, ', ')).'&quot;</em> gefunden.</p>' . "\n";
+			echo '<p class="wisy_topnote">Keine Datensätze für <em>&quot;'.utf8htmlspecialchars(trim($queryString, ', ')).'&quot;</em> gefunden.</p>' . "\n";
 		}
 	}
 	
@@ -993,11 +993,11 @@ class WISY_SEARCH_RENDERER_CLASS
 				switch( $error['id'] )
 				{
 					case 'tag_not_found':
-						echo '<p class="wisy_topnote">Ihre Suche nach &quot;' .htmlspecialchars(trim($queryString, ', ')). '&quot; liefert keine Treffer.</p>' . "\n";
+						echo '<p class="wisy_topnote">Ihre Suche nach &quot;' .utf8htmlspecialchars(trim($queryString, ', ')). '&quot; liefert keine Treffer.</p>' . "\n";
 						break;
 				
 					case 'field_not_found':
-						echo '<p class="wisy_topnote">Das zu durchsuchende Feld &quot;'.htmlspecialchars($error['field']).'&quot; ist unbekannt oder falsch geschrieben.</p>' . "\n";
+						echo '<p class="wisy_topnote">Das zu durchsuchende Feld &quot;'.utf8htmlspecialchars($error['field']).'&quot; ist unbekannt oder falsch geschrieben.</p>' . "\n";
 						break;
 				
 					case 'missing_fulltext':
@@ -1006,7 +1006,7 @@ class WISY_SEARCH_RENDERER_CLASS
 				
 					case 'bad_location':
 						echo 	'<p class="wisy_topnote">'
-							.		' Die Ortsangabe <em>bei:'.htmlspecialchars($error['field']).'</em> konnte nicht lokalisiert werden (Status='.htmlspecialchars($error['status']).').'
+							.		' Die Ortsangabe <em>bei:'.utf8htmlspecialchars($error['field']).'</em> konnte nicht lokalisiert werden (Status='.utf8htmlspecialchars($error['status']).').'
 							.	'</p>' . "\n";
 						break;
 						
@@ -1016,7 +1016,7 @@ class WISY_SEARCH_RENDERER_CLASS
 						$ist_accuracy = intval($error['ist_accuracy']);
 						$soll_accuracy = intval($error['soll_accuracy']);
 						echo 	'<p class="wisy_topnote">'
-							.		' Die Ortsangabe <em>bei:'.htmlspecialchars($error['field']).'</em> wurde als '
+							.		' Die Ortsangabe <em>bei:'.utf8htmlspecialchars($error['field']).'</em> wurde als '
 							.		' wurde als <em>'.$accuracies[$ist_accuracy].' ('.$ist_accuracy.')</em> klassifiziert und ist damit zu ungenau. '
 							.		' Erforderlich ist mindestens die Genauigkeit <em>'.$accuracies[$soll_accuracy].'</em>. '
 							.	'</p>' . "\n";
@@ -1070,7 +1070,7 @@ class WISY_SEARCH_RENDERER_CLASS
 						if( !$liveIds[ $currId ] )
 						{
 							echo $out? ' &ndash; ' : '';
-							echo '<a href="k'.$currId.'">' . htmlspecialchars($currTitel) . '</a>';
+							echo '<a href="k'.$currId.'">' . utf8htmlspecialchars($currTitel) . '</a>';
 
 							$out++; 
 						}

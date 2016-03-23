@@ -108,7 +108,7 @@ class G_GEOCODE
 		
 		if( !is_array($this->geocode_ret) ) {
 		
-			// echo htmlspecialchars(print_r($data,true));
+			// echo utf8htmlspecialchars(print_r($data,true));
 			return array('error'=>'err_geocode_badxml');
 		}
 		

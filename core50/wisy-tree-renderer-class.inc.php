@@ -33,7 +33,7 @@ class WISY_TREE_RENDERER_CLASS
 				$kuerzel_sorted = $db->f8('kuerzel_sorted');
 				$thema = $db->f8('thema');
 				
-				$title = htmlspecialchars($thema);
+				$title = utf8htmlspecialchars($thema);
 				
 				$q = g_sync_removeSpecialChars($thema);
 				

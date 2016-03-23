@@ -226,7 +226,7 @@ class WISY_ADVANCED_RENDERER_CLASS
 		$db->query("SELECT stichwort FROM stichwoerter WHERE id IN ($ids_str) ORDER BY stichwort_sorted;");
 		while( $db->next_record() )
 		{
-			$stichw = htmlspecialchars($db->f8('stichwort'));
+			$stichw = utf8htmlspecialchars($db->f8('stichwort'));
 			$stichw = trim(strtr($stichw, array(': '=>' ', ':'=>' ', ', '=>' ', ','=>' ')));
 			
 			$ret[ $stichw ] = $stichw;
@@ -364,7 +364,7 @@ class WISY_ADVANCED_RENDERER_CLASS
 										if( $preset['type'] == 'text' )
 										{
 											$autocomplete = $preset['autocomplete']? ' class="'.$preset['autocomplete'].'" ' : '';
-											echo "<input type=\"text\" name=\"adv_$field_name\" id=\"adv_$field_name\" $autocomplete value=\"" .htmlspecialchars($presets_curr[$field_name]). "\" />";
+											echo "<input type=\"text\" name=\"adv_$field_name\" id=\"adv_$field_name\" $autocomplete value=\"" .utf8htmlspecialchars($presets_curr[$field_name]). "\" />";
 										}
 										else
 										{
