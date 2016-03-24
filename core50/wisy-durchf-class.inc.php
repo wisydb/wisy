@@ -514,7 +514,7 @@ class WISY_DURCHF_CLASS
 			    	$cell .= ($ende && $beginn!=$ende)? "$beginn - $ende" : $beginn;
 			    if( $termin_abgelaufen ) { $cell .= '</span>'; }
 			    
-				if( $beginnoptionen ) { $cell .= "<br /><small>$beginnoptionen</small>"; }
+				if( $beginnoptionen ) { $cell .= "<span class=\"wisyr_termin_beginn\">$beginnoptionen</span>"; }
 			}
 			else if( $beginnoptionen )
 			{
@@ -522,29 +522,19 @@ class WISY_DURCHF_CLASS
 			}
 			
 			if( $addParam['record']['freigeschaltet'] == 4 )
-			{
-				$small = ''; $smallend = '';
-				if( $cell != '' ) { $cell .= '<br />'; $small = '<small>'; $smallend = '</small>'; }
-				
-				$cell .= "{$small}dauerhaftes Angebot{$smallend}"; 
+			{				
+				$cell .= '<span class="wisyr_termin_dauerhaft">dauerhaftes Angebot</span>'; 
 			}
 			
-			if( $zeit_von && $zeit_bis ) {
-				$small = ''; $smallend = '';
-				if( $cell != '' ) { $cell .= '<br />'; $small = '<small>'; $smallend = '</small>'; }
-				
-				$cell .= "{$small}$zeit_von - $zeit_bis Uhr{$smallend}"; 
+			if( $zeit_von && $zeit_bis ) {				
+				$cell .= "<span class=\"wisyr_termin_zeit\">$zeit_von - $zeit_bis Uhr</span>"; 
 			}
 			else if( $zeit_von ) {
-				$small = ''; $smallend = '';
-				if( $cell != '' ) { $cell .= '<br />'; $small = '<small>'; $smallend = '</small>'; }
-				
-				$cell .= "{$small}$zeit_von Uhr{$smallend}"; 
+				$cell .= "<span class=\"wisyr_termin_zeit\">$zeit_von Uhr</span>"; 
 			}
 			
 			if( $addText ) // z.B. für "2 weitere Durchführungen ..."
 			{
-				$cell .= $cell!=''? '<br />' : '';
 				$cell .= $addText;
 			}
 			
@@ -560,7 +550,7 @@ class WISY_DURCHF_CLASS
 		{
 			// dauer
 			echo '    <td class="wisyr_dauer" data-title="Dauer">';
-				echo $this->formatDauer($record['dauer'], $record['stunden'], '%1<br /><small>(%2)</small>');
+				echo $this->formatDauer($record['dauer'], $record['stunden'], '%1 <span class="wisyr_dauer_detail">(%2)</span>');
 			echo '</td>' . "\n";
 		}
 		

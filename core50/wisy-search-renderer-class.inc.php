@@ -151,10 +151,10 @@ class WISY_SEARCH_RENDERER_CLASS
 				{
 					// $anspr_tel = str_replace(' ', '', $anspr_tel); // macht Aerger, da in den Telefonnummern teilw. Erklaerungen/Preise mitstehen. Auskommentiert am 5.9.2008 (bp)
 					$anspr_tel = str_replace('/', ' / ', $anspr_tel);
-					echo ',<small> ' . htmlspecialchars($anspr_tel) . '</small>';
+					echo ',<span class="wisyr_anbieter_telefon"> ' . htmlspecialchars($anspr_tel) . '</span>';
 				}
 				
-				if( !$param['clickableName'] )  echo '<small> - <a href="'.$this->framework->getUrl('a', $aparam).'">Anbieterprofil...</a></small>';
+				if( !$param['clickableName'] )  echo '<span class="wisyr_anbieter_profil"> - <a href="'.$this->framework->getUrl('a', $aparam).'">Anbieterprofil...</a></span>';
 			}
 			else
 			{
@@ -297,10 +297,10 @@ class WISY_SEARCH_RENDERER_CLASS
 				$addText = '';
 				if( sizeof($durchfuehrungenIds) > 1 )
 				{
-					$addText = '<small><a href="' .$this->framework->getUrl('k', $aparam). '">';
+					$addText = '<span class="wisyr_termin_weitere"><a href="' .$this->framework->getUrl('k', $aparam). '">';
 						$temp = sizeof($durchfuehrungenIds) - 1;
 						$addText .= $temp==1? "1 weiterer..." : "$temp weitere...";
-					$addText .= '</a></small>';
+					$addText .= '</a></span>';
 				}
 				
 				$stichwoerter = $this->framework->loadStichwoerter($db, 'kurse', $currKursId);
