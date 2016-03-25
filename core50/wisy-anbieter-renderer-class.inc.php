@@ -310,91 +310,57 @@ class WISY_ANBIETER_RENDERER_CLASS
 						echo $wiki2html->run($firmenportraet);
 					}
 					
-					echo '<table cellpadding="0" cellspacing="0" border="0" class="">';
+					echo '<dl class="wisyr_anbieteradresse">';
 					
 						/* adresse */
-						echo '<tr>';
-							echo '<td valign="top">Adresse:&nbsp;</td>';
-							echo '<td valign="top">';
-							
-								if( $postname ) {
-									echo '<i>' . htmlentities($postname) . '</i>';
-								}
-								else {
-									echo '<i>' . htmlentities($suchname) . '</i>';
-								}
-								
-								if( $strasse ) {
-									echo '<br />';
-									echo htmlentities($strasse);
-								}
-								
-								if( $plz || $ort ) {
-									echo '<br />';
-									echo htmlentities($plz) . ' ' . htmlentities($ort);
-									if( $stadtteil ) {
-										echo '-' . htmlentities($stadtteil);
-									}
-								}
-					
-								if( $land ) {
-									echo '<br /><i>' . htmlentities($land) . '</i>';
-								}
-			
-							echo '</td>';
-						echo '</tr>';
+						echo '<dt>Adresse</dt>';
+						echo '<dd>';
+							echo $postname ? htmlentities($postname) : htmlentities($suchname);
+							if( $strasse ) { echo '<br />' . htmlentities($strasse); }
+							if( $plz || $ort ) { echo '<br />' . htmlentities($plz) . ' ' . htmlentities($ort); }
+							if( $stadtteil ) { echo '-' . htmlentities($stadtteil); }
+							if( $land ) { echo '<br />' . htmlentities($land); }
+						echo '</dd>';
 						
 						/* telefon */
 						if( $anspr_tel )
 						{
-							echo '<tr>';
-								echo '<td valign="top">Telefon:&nbsp;</td>';
-								echo '<td valign="top">' .htmlentities($anspr_tel). '</td>';
-							echo '</tr>';
+							echo '<dt>Telefon</dt>';
+							echo '<dd>' .htmlentities($anspr_tel). '</dd>';
 						}
 	
 						/* fax */
 						if( $anspr_fax )
 						{
-							echo '<tr>';
-								echo '<td valign="top">Fax:&nbsp;</td>';
-								echo '<td valign="top">' .htmlentities($anspr_fax). '</td>';
-							echo '</tr>';
+							echo '<dt>Fax</dt>';
+							echo '<dd>' .htmlentities($anspr_fax). '</dd>';
 						}
 	
 						/* ansprechpartner */
 						if( $anspr_name )
 						{
-							echo '<tr>';
-								echo '<td valign="top">Kontakt:&nbsp;</td>';
-								echo '<td valign="top">' .htmlentities($anspr_name). '</td>';
-							echo '</tr>';
+							echo '<dt>Kontakt</dt>';
+							echo '<dd>' .htmlentities($anspr_name). '</d>';
 						}
 						
 						if( $anspr_zeit )
 						{
-							echo '<tr>';
-								echo '<td valign="top">Sprechzeiten:&nbsp;</td>';
-								echo '<td valign="top">' .htmlentities($anspr_zeit). '</td>';
-							echo '</tr>';
+							echo '<dt>Sprechzeiten</dt>';
+							echo '<dd>' .htmlentities($anspr_zeit). '</dd>';
 						}
 	
 						/* email*/
 						if( $anspr_mail_link )
 						{
-							echo '<tr>';
-								echo '<td valign="top">EMail:&nbsp;</td>';
-								echo "<td valign=\"top\">" .$anspr_mail_link. '</td>';
-							echo '</tr>';
+							echo '<dt>EMail</dt>';
+							echo "<dd>" .$anspr_mail_link. '</dd>';
 						}
 						
 						/* internet */
 						if( $homepage )
 						{
-							echo '<tr>';
-								echo '<td valign="top" nowrap="nowrap">Der Anbieter im Internet:&nbsp;</td>';
-								echo "<td valign=\"top\"><a href=\"$homepage\" target=\"_blank\"><i>" .htmlspecialchars($homepage). '</i></a></td>';
-							echo '</tr>';
+							echo '<dt>Der Anbieter im Internet</dt>';
+							echo "<dd><a href=\"$homepage\" target=\"_blank\">" .htmlspecialchars($homepage). '</a></dd>';
 						}
 		
 						/* stichwoerter */
@@ -403,19 +369,17 @@ class WISY_ANBIETER_RENDERER_CLASS
 						}
 	
 						/* anbieter nr. */
-						echo '<tr>';
-							echo '<td valign="top">Anbieter-Nr.:&nbsp;</td>';
-							echo "<td valign=\"top\">";
-								if( $din_nr ) {
-									echo htmlentities($din_nr);
-								}
-								else {
-									echo $id;
-								}
-							echo '</td>';
-						echo '</tr>';
+						echo '<dt>Anbieter-Nr.</dt>';
+						echo "<dd>";
+							if( $din_nr ) {
+								echo htmlentities($din_nr);
+							}
+							else {
+								echo $id;
+							}
+						echo '</dd>';
 						
-					echo '</table>';
+					echo '</dl>';
 					
 					// -- 12:43 26.05.2014 der Link "zeige alle anbieter" ist nun oben unter dem Logo
 					//$qsuchname = strtr($suchname, ':,', '  ');

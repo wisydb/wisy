@@ -617,7 +617,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			flush();
 
 			// render table start
-			echo "\n".'<table class="wisy_list">' . "\n";
+			echo "\n".'<table class="wisy_list wisyr_kursliste">' . "\n";
 			
 			// render column titles
 			echo '  <thead><tr>' . "\n";
@@ -829,7 +829,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			flush();
 			
 			// render column titles
-			echo "\n".'<table class="wisy_list">' . "\n";
+			echo "\n".'<table class="wisy_list wisyr_anbieterliste">' . "\n";
 			echo '  <thead><tr>' . "\n";
 				$this->renderColumnTitle('Anbieter',	'a', 	$orderBy,	311);
 				$this->renderColumnTitle('Straße',		's', 	$orderBy,	0);

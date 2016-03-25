@@ -172,7 +172,7 @@ class WISY_KURS_RENDERER_CLASS
 			// Durchfuehrungen ausgeben
 			if( sizeof($durchfuehrungenIds) )
 			{
-				echo '<table class="wisy_list"' . html3(' cellpadding="0" cellspacing="0" border="0"') . '>';
+				echo '<table class="wisy_list wisyr_durchfuehrungen"><thead>';
 					echo '<tr>';
 						if (($wisyPortalSpalten & 2) > 0)	{ echo '<th>Zeiten</th>';			}
 						if (($wisyPortalSpalten & 4) > 0)	{ echo '<th>Dauer</th>';			}
@@ -180,7 +180,7 @@ class WISY_KURS_RENDERER_CLASS
 						if (($wisyPortalSpalten & 16) > 0)	{ echo '<th>Preis</th>';			}
 						if (($wisyPortalSpalten & 32) > 0)	{ echo '<th>Ort, Bemerkungen</th>';	}
 						if (($wisyPortalSpalten & 64) > 0)	{ echo '<th>Ang.-Nr.</th>';			}
-					echo '</tr>';
+					echo '</tr></thead>';
 					
 					/*
 					$maxDurchf = intval($this->framework->iniRead('details.durchf.max'));
