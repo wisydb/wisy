@@ -825,7 +825,7 @@ class WISY_FRAMEWORK_CLASS
 		$js = $this->getJSFiles();
 		for( $i = 0; $i < sizeof($js); $i++ )
 		{	
-			$ret .= '<script type="text/javascript" src="'.$js[$i].'"></script>' . "\n";
+			$ret .= '<script type="text/javascript" src="'.$js[$i].'" charset="utf-8"></script>' . "\n";
 		}
 		
 		return $ret;

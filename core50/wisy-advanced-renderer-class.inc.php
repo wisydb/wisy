@@ -344,23 +344,30 @@ class WISY_ADVANCED_RENDERER_CLASS
 			</div>
 			<div id="adv_body">
 				<form action="advanced" method="get">
-					<table width="100%">
+					<div id="adv_form">
 						<?php
 							
 							reset($this->presets);
+							$fieldsets_open = 0;
 							while( list($field_name, $preset) = each($this->presets) )
 							{
 								if( isset($preset['decoration']['headline_left']) )
 								{
-									echo 	'<tr>'
-										.		'<td><small>&nbsp;</small><br /><span class="headline_left">'.$preset['decoration']['headline_left'].'</span></td>'
-										.		'<td valign="bottom"><span class="headline_right">'.$preset['decoration']['headline_right'].'</span></td>'
-										.	'</tr>';
+									if($fieldsets_open > 0) {
+										echo '</fieldset>';
+										$fieldsets_open -= 1;
+									}
+									$fieldsets_open += 1;
+									echo 	'<fieldset>';
+									if(trim($preset['decoration']['headline_left'] != '')) {
+										echo '<legend><span class="headline_left">'.$preset['decoration']['headline_left'].'</span>';
+										echo ' <span class="headline_right">'.$preset['decoration']['headline_right'].'</span></legend>';
+									}
 								}
 								
-								echo '<tr>';
-									echo '<td width="10%" nowrap="nowrap"><label for="adv_' . $field_name . '">' .$preset['descr']. '</label></td>';
-									echo '<td>';
+								echo '<div class="formrow">';
+									echo '<label for="adv_' . $field_name . '">' .$preset['descr']. '</label>';
+									echo '<div class="formfield">';
 										if( $preset['type'] == 'text' )
 										{
 											$autocomplete = $preset['autocomplete']? ' class="'.$preset['autocomplete'].'" ' : '';
@@ -377,13 +384,16 @@ class WISY_ADVANCED_RENDERER_CLASS
 												}
 											echo '</select>';
 										}
-									echo '</td>';
-								echo '</tr>';
+									echo '</div>';
+								echo '</div>';
+							}
+							if($fieldsets_open > 0) {
+								echo '</fieldset>';
+								$fieldsets_open -= 1;
 							}
 							
-						?></tr>
-
-					</table>
+						?>
+					</div>
 		
 					<div id="adv_buttons">
 						<input type="hidden" name="adv_subseq" value="1" />
@@ -458,7 +468,7 @@ class WISY_ADVANCED_RENDERER_CLASS
 		
 		if( intval($_GET['ajax']) )
 		{
-			header('Content-type: text/html; charset=ISO-8859-1');
+			header('Content-type: text/html; charset=utf-8');
 			$this->renderForm();
 		}
 		else
