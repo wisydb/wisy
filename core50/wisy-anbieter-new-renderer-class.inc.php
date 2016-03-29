@@ -172,7 +172,7 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 			if( $logo_w && $logo_h && $logo_name != '' )
 			{
 				$this->fit_to_rect($logo_w, $logo_h, 128, 64, $logo_w, $logo_h);
-				$ret .= "<img ".html3('vspace="5"')." src=\"{$wisyPortal}admin/media.php/logo/anbieter/$anbieterId/".urlencode($logo_name)."\" style=\"width: ".$logo_w."px; height: ".$logo_h."px;\" ".html3('border="0"')." alt=\"Anbieter Logo\" title=\"\" id=\"anbieterlogo\"/>";
+				$ret .= "<img src=\"{$wisyPortal}admin/media.php/logo/anbieter/$anbieterId/".urlencode($logo_name)."\" style=\"width: ".$logo_w."px; height: ".$logo_h."px;\" alt=\"Anbieter Logo\" title=\"\" id=\"anbieterlogo\"/>";
 				
 				if( $param['logoLinkToAnbieter'] ) 
 					$ret .= '<span class="noprint"><br /></span>';
@@ -470,8 +470,8 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 		}
 		if( $title )
 		{
-			echo '<table><tr><td' . html3(' valign="middle"') . '>';
-				echo '<img ' . html3(' align="left" hspace="4" border="0" ') . ' src="'.$img.'" alt="" width="55" height="55" title="" />';
+			echo '<table><tr><td>';
+				echo '<img src="'.$img.'" alt="" width="55" height="55" title="" />';
 			echo '</td><td style="word-break: normal !important;">'; // <- this is a hack, the hamburg CSS is really out of order ...
 				echo $title;
 				echo '&nbsp;<a href="' . $this->framework->getHelpUrl(3369) . '" class="wisy_help" title="Hilfe">i</a>';

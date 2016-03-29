@@ -135,14 +135,14 @@ class WISY_KURS_RENDERER_CLASS
 			if (($wisyPortalSpalten & 128) > 0)
 			{
 				$rows .= '<tr>';
-					$rows .= '<td' . html3(' valign="top"') . '>Bildungsurlaubsnummer:&nbsp;</td>';
-					$rows .= '<td' . html3(' valign="top"') . '>' .($bu_nummer? 'Ja' : 'Nein'). '</td>';
+					$rows .= '<td>Bildungsurlaubsnummer:&nbsp;</td>';
+					$rows .= '<td>' .($bu_nummer? 'Ja' : 'Nein'). '</td>';
 				$rows .= '</tr>';
 			}
 
 			if( $rows != '' ) 
 			{
-				echo '<table class="wisy_stichwlist"' . html3(' cellpadding="0" cellspacing="0" border="0"') . '>' . $rows . '</table>';
+				echo '<table class="wisy_stichwlist">' . $rows . '</table>';
 			}
 
 			// Durchfuehrungen vorbereiten

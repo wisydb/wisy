@@ -447,7 +447,7 @@ class WISY_FRAMEWORK_CLASS
 				if( @file_exists($img) )
 				{
 					$ret .= '<a href="' . $this->getHelpUrl($glossarId) . '" class="help">';
-						$ret .= "<img ".html3('align="right"')." src=\"$img\" ".html3('border="0"')." alt=\"Pr&uuml;siegel\" title=\"$title\" class=\"seal_small\"/>";
+						$ret .= "<img src=\"$img\" alt=\"Pr&uuml;siegel\" title=\"$title\" class=\"seal_small\"/>";
 					$ret .= '</a>';
 					$sealsOut++;
 					break; // only one logo in small view
@@ -459,7 +459,7 @@ class WISY_FRAMEWORK_CLASS
 				if( @file_exists($img) )
 				{
 					$ret .= $sealsOut? $vars['break'] : '';
-					$ret .= "<img src=\"$img\" ".html3('border="0"')." alt=\"Pr&uuml;siegel\" title=\"$title\" class=\"seal\" />";
+					$ret .= "<img src=\"$img\" alt=\"Pr&uuml;siegel\" title=\"$title\" class=\"seal\" />";
 					$sealsOut++;
 				}
 			}
