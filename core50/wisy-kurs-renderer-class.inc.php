@@ -134,15 +134,13 @@ class WISY_KURS_RENDERER_CLASS
 			// ... Bildungsurlaubsnummer 
 			if (($wisyPortalSpalten & 128) > 0)
 			{
-				$rows .= '<tr>';
-					$rows .= '<td>Bildungsurlaubsnummer:&nbsp;</td>';
-					$rows .= '<td>' .($bu_nummer? 'Ja' : 'Nein'). '</td>';
-				$rows .= '</tr>';
+				$rows .= '<dt>Bildungsurlaubsnummer:&nbsp;</dt>';
+				$rows .= '<dd>' .($bu_nummer? 'Ja' : 'Nein'). '</dd>';
 			}
 
 			if( $rows != '' ) 
 			{
-				echo '<table class="wisy_stichwlist">' . $rows . '</table>';
+				echo '<dl class="wisy_stichwlist">' . $rows . '</dl>';
 			}
 
 			// Durchfuehrungen vorbereiten

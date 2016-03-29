@@ -429,15 +429,6 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 
 
 		$this->writeOffersOverview($anbieter_id, $tag_suchname);
-
-		// keyword overview
-		/*
-		if( sizeof($stichwoerter) ) {
-			echo '<table cellpadding="0" cellspacing="0" border="0" class="">';
-				echo $this->framework->writeStichwoerter($db, 'anbieter', $stichwoerter);
-			echo '</table>';
-		}
-		*/
 					
 		echo '<p class="wisy_anbieter_footer '.$this->framework->getAllowFeedbackClass().'">';
 		 // no content, but must be present as the feedback stuff is created here via JavaScript
