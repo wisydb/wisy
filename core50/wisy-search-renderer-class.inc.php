@@ -297,7 +297,7 @@ class WISY_SEARCH_RENDERER_CLASS
 				$addText = '';
 				if( sizeof($durchfuehrungenIds) > 1 )
 				{
-					$addText = '<span class="wisyr_termin_weitere"><a href="' .$this->framework->getUrl('k', $aparam). '">';
+					$addText = ' <span class="wisyr_termin_weitere"><a href="' .$this->framework->getUrl('k', $aparam). '">';
 						$temp = sizeof($durchfuehrungenIds) - 1;
 						$addText .= $temp==1? "1 weiterer..." : "$temp weitere...";
 					$addText .= '</a></span>';

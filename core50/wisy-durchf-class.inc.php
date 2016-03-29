@@ -510,11 +510,11 @@ class WISY_DURCHF_CLASS
 			
 			if( $beginn )
 			{
-				if( $termin_abgelaufen ) { $cell .= '<span class="wisy_datum_abgel">'; }
+				if( $termin_abgelaufen ) { $cell .= ' <span class="wisy_datum_abgel">'; }
 			    	$cell .= ($ende && $beginn!=$ende)? "$beginn - $ende" : $beginn;
 			    if( $termin_abgelaufen ) { $cell .= '</span>'; }
 			    
-				if( $beginnoptionen ) { $cell .= "<span class=\"wisyr_termin_beginn\">$beginnoptionen</span>"; }
+				if( $beginnoptionen ) { $cell .= " <span class=\"wisyr_termin_beginn\">$beginnoptionen</span>"; }
 			}
 			else if( $beginnoptionen )
 			{
@@ -523,14 +523,14 @@ class WISY_DURCHF_CLASS
 			
 			if( $addParam['record']['freigeschaltet'] == 4 )
 			{				
-				$cell .= '<span class="wisyr_termin_dauerhaft">dauerhaftes Angebot</span>'; 
+				$cell .= ' <span class="wisyr_termin_dauerhaft">dauerhaftes Angebot</span>'; 
 			}
 			
 			if( $zeit_von && $zeit_bis ) {				
-				$cell .= "<span class=\"wisyr_termin_zeit\">$zeit_von - $zeit_bis Uhr</span>"; 
+				$cell .= " <span class=\"wisyr_termin_zeit\">$zeit_von - $zeit_bis Uhr</span>"; 
 			}
 			else if( $zeit_von ) {
-				$cell .= "<span class=\"wisyr_termin_zeit\">$zeit_von Uhr</span>"; 
+				$cell .= " <span class=\"wisyr_termin_zeit\">$zeit_von Uhr</span>"; 
 			}
 			
 			if( $addText ) // z.B. für "2 weitere Durchführungen ..."
