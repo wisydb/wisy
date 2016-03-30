@@ -89,7 +89,7 @@ function fav_update_bar()
 		{
 			str += '<a href="' + mailto + '" title="Favoriten per E-Mail versenden" class="fav_send">&#9993;</a> '; // Unicode #9993 = Letter
 		}
-		str += '<small> <a href="javascript:fav_delete_all()" title="Alle Favoriten löschen">&times;</a></small>';
+		str += ' <a href="javascript:fav_delete_all()" title="Alle Favoriten löschen">&times;</a>';
 		
 		$('.wisy_searchhints').html(str + ' | ' + g_fav_bar_orig);
 		

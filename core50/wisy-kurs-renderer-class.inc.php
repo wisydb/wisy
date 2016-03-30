@@ -281,7 +281,7 @@ class WISY_KURS_RENDERER_CLASS
 			$anbieterRenderer =& createWisyObject('WISY_ANBIETER_RENDERER_CLASS', $this->framework);
 			echo '<div class="wisy_vcard">';
 				echo '<div class="wisy_vcardtitle">Anbieteradresse</div>';
-				echo '<div class="wisy_vcardcontent">';
+				echo '<div class="wisy_vcardcontent" itemscope itemtype="http://schema.org/Organization">';
 					echo $anbieterRenderer->renderCard($db, $anbieterId, $kursId, array('logo'=>true, 'logoLinkToAnbieter'=>true));
 				echo '</div>';
 			echo '</div>';
@@ -300,7 +300,7 @@ class WISY_KURS_RENDERER_CLASS
 			{
 				echo '<div class="wisy_vcard">';
 					echo '<div class="wisy_vcardtitle">Allgemeine Fragen zur Weiterbildung</div>';
-					echo '<div class="wisy_vcardcontent">';
+					echo '<div class="wisy_vcardcontent" itemscope itemtype="http://schema.org/Organization">';
 						if( $betreiber_id )   echo $anbieterRenderer->renderCard($db, $betreiber_id, $kursId, array('logo'=>true));
 						if( $betreiber_html ) echo $betreiber_html;
 					echo '</div>';

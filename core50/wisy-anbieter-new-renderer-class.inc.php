@@ -107,7 +107,7 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 		$logo_h			= $ob->h;
 		
 		// do what to do ...
-		$ret  = '';
+		$ret  = '<d';
 		$ret .= '<i>'. htmlentities($postname? $postname : $suchname) . '</i>';
 
 		if( $strasse )
@@ -134,7 +134,7 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 
 		if( $anspr_name || $anspr_zeit )
 		{
-			$ret .= '<br /><small>';
+			$ret .= '<br />';
 				if( $anspr_name )
 					$ret .= 'Kontakt: ' . htmlentities($anspr_name);
 				if( $anspr_zeit )
@@ -142,7 +142,6 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 					$ret .= $anspr_name? ', ' : '';
 					$ret .= htmlentities($anspr_zeit);
 				}
-			$ret .= '</small>';
 		}
 			
 		$MAX_URL_LEN = 31;
@@ -441,7 +440,7 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 		
 		echo '<div class="wisy_vcard">';
 			echo '<div class="wisy_vcardtitle">Anbieteradresse</div>';
-			echo '<div class="wisy_vcardcontent">';
+			echo '<div class="wisy_vcardcontent" itemscope itemtype="http://schema.org/Organization">';
 				echo $this->renderCard($db, $anbieter_id, 0, array('logo'=>true, 'logoLinkToAnbieter'=>false));
 			echo '</div>';
 		echo '</div>';
