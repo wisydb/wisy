@@ -107,41 +107,53 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 		$logo_h			= $ob->h;
 		
 		// do what to do ...
-		$ret  = '<d';
-		$ret .= '<i>'. htmlentities($postname? $postname : $suchname) . '</i>';
+		$ret .= '<div class="wisyr_anbieter_name" itemprop="name">'. htmlentities($postname? $postname : $suchname) . '</div>'
+		$ret .= '<div itemprop="address" itemscope itemtype="http://schema.org/PostalAddress">';
 
 		if( $strasse )
-			$ret .= '<br />' . htmlentities($strasse);
+			$ret .= '<div class="wisyr_anbieter_strasse" itemprop="streetAddress">' . htmlentities($strasse) . '</div>';
 
-		if( $plz || $ort )
-			$ret .= '<br />' . htmlentities($plz) . ' ' . htmlentities($ort);
+		if( $plz || $ort || $stadtteil || $land )
+			$ret .= '<div class="wisyr_anbieter_ort">';
+			
+		if( $plz )
+			$ret .= '<span class="wisyr_anbieter_plz" itemprop="postalCode">' . htmlentities($plz) . '</span>';	
+
+		if( $ort )
+			$ret .= ' <span class="wisyr_anbieter_ort" itemprop="addressLocality">' . htmlentities($ort) . '</span>';
 
 		if( $stadtteil ) {
-			$ret .= ($plz||$ort)? '-' : '<br />';
-			$ret .= htmlentities($stadtteil);
+			$ret .= ($plz||$ort)? '-' : '';
+			$ret .= ' <span class="wisyr_anbieter_stadtteil">' . htmlentities($stadtteil) . '</span>';
 		}
 
 		if( $land ) {
-			$ret .= ($plz||$ort||$stadtteil)? ', ' : '<br />';
-			$ret .= htmlentities($land);
+			$ret .= ($plz||$ort||$stadtteil)? ', ' : '';
+			$ret .= ' <span class="wisyr_anbieter_land" itemprop="adressRegion">' . htmlentities($land) . '</span>';
 		}
+		
+		if( $plz || $ort || $stadtteil || $land )
+			$ret .= '</div>';	
+		
+		$ret .= '</div>';
 
 		if( $anspr_tel )
-			$ret .= '<br />Tel:&nbsp;'.htmlentities($anspr_tel);
+			$ret .= '<div class="wisyr_anbieter_telefon">Tel:&nbsp;<span itemprop="telephone">'.htmlentities($anspr_tel) . '</span></div>';
 
 		if( $anspr_fax )
-			$ret .= '<br />Fax:&nbsp;'.htmlentities($anspr_fax);
+			$ret .= '<div class="wisyr_anbieter_fax">Fax:&nbsp;<span itemprop="faxNumber">'.htmlentities($anspr_fax) . '</span></div>';
 
 		if( $anspr_name || $anspr_zeit )
 		{
-			$ret .= '<br />';
+			$ret .= '<div class="wisyr_anbieter_ansprechpartner" itemprop="contactPoint" itemscope itemtype="http://schema.org/ContactPoint">';
 				if( $anspr_name )
-					$ret .= 'Kontakt: ' . htmlentities($anspr_name);
+					$ret .= '<span>Kontakt: ' . htmlentities($anspr_name) . '</span>';
 				if( $anspr_zeit )
 				{
 					$ret .= $anspr_name? ', ' : '';
-					$ret .= htmlentities($anspr_zeit);
+					$ret .= '<span itemprop="hoursAvailable">' . htmlentities($anspr_zeit) . '</span>';
 				}
+			$ret .= '</div>';
 		}
 			
 		$MAX_URL_LEN = 31;
@@ -151,19 +163,17 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 			 	$homepage = 'http:/'.'/'.$homepage;
 			}
 			
-			$ret .= "<br /><a href=\"$homepage\" target=\"_blank\"><i>" .htmlentities($this->trimLength($homepage, $MAX_URL_LEN)). '</i></a>';
+			$ret .= "<div class=\"wisyr_anbieter_homepage\" itemprop=\"url\"><a href=\"$homepage\" target=\"_blank\">" .htmlentities($this->trimLength($homepage, $MAX_URL_LEN)). '</a></div>';
 		}
 		
 		/* email*/
 		if( $anspr_email )
-		{ 
-			$ret .= "<br /><a href=\"".$this->createMailtoLink($anspr_email, $kursId)."\">" .htmlentities($this->trimLength($anspr_email, $MAX_URL_LEN  )). '</a>';
-		}
+			$ret .= "<div class=\"wisyr_anbieter_email\" itemprop=\"email\"><a href=\"".$this->createMailtoLink($anspr_email, $kursId)."\">" .htmlentities($this->trimLength($anspr_email, $MAX_URL_LEN  )). '</a></div>';
 		
 		/* logo */
 		if( $param['logo'] )
 		{
-			$ret .= '<br />';
+			$ret .= '<div class="wisyr_anbieter_logo">';
 			
 			if( $param['logoLinkToAnbieter'] )
 				$ret .= '<a href="'.$this->framework->getUrl('a', array('id'=>$anbieterId)).'">';
@@ -171,14 +181,13 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 			if( $logo_w && $logo_h && $logo_name != '' )
 			{
 				$this->fit_to_rect($logo_w, $logo_h, 128, 64, $logo_w, $logo_h);
-				$ret .= "<img src=\"{$wisyPortal}admin/media.php/logo/anbieter/$anbieterId/".urlencode($logo_name)."\" style=\"width: ".$logo_w."px; height: ".$logo_h."px;\" alt=\"Anbieter Logo\" title=\"\" id=\"anbieterlogo\"/>";
-				
-				if( $param['logoLinkToAnbieter'] ) 
-					$ret .= '<span class="noprint"><br /></span>';
+				$ret .= "<span itemprop=\"logo\"><img src=\"{$wisyPortal}admin/media.php/logo/anbieter/$anbieterId/".urlencode($logo_name)."\" style=\"width: ".$logo_w."px; height: ".$logo_h."px;\" alt=\"Anbieter Logo\" title=\"\" id=\"anbieterlogo\"/></span>";
 			}
 			
 			if( $param['logoLinkToAnbieter'] )
-				$ret .= '<i class="noprint">Anbieterdetails anzeigen...</i></a>';
+				$ret .= 'Anbieterdetails anzeigen...</a>';
+			
+			$ret .= '</div>';
 		}
 		
 		return $ret;
