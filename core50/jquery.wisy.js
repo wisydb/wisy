@@ -136,8 +136,6 @@ function fav_delete_all()
 	
 	g_all_fav = {};
 	fav_save_cookie();
-	
-	console.log('fkjdsflk');
 	window.location.reload(true);
 }
 
