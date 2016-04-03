@@ -622,6 +622,53 @@ function advEmbedViaAjax()
 	return false;
 }
 
+function filterEmbeddingViaAjaxDone()
+{
+	// show filter form
+	$("#filterEmbedded").show(500);
+	
+	// remove the loading indicatiot
+	$("#wisy_searchinput").removeClass('filter_loading');
+	
+	// ajaxify the "close" button
+	$("#filter_close").click(function()
+	{
+		// hide filter form
+		$('#wisy_searchinput').removeClass('filter_open');
+		$("#filterEmbedded").hide(300, function(){ $("#filterEmbedded").remove() });
+		
+		// done
+		return false;
+	});
+}
+
+function filterEmbedViaAjax()
+{
+	// Close Filter form if already open
+	if($("#wisy_searchinput").hasClass('filter_open')) {
+		$('#wisy_searchinput').removeClass('filter_open');
+		$("#filterEmbedded").hide(300, function(){ $("#filterEmbedded").remove() });
+		return false;
+	}
+	
+	// add the loading indicator and active indicator
+	$("#wisy_searchinput").addClass('filter_open filter_loading');
+	
+	// create query string
+	var q = $("#wisy_searchinput").val(); // for some reasons, q is UTF-8 encoded, so we use this charset as ie= below
+	if( $("#wisy_beiinput").length ) {
+		var bei = $("#wisy_beiinput").val(); if( bei != '' ) { q += ', bei:' + bei; }
+		var km  = $("#wisy_kmselect").val(); if( km  != '' ) { q += ', km:'  + km;  }
+	}
+	
+	// create and load the advanced options
+	var justnow = new Date();
+	var rnd = justnow.getTime();	
+	$("#wisy_searcharea").after('<div id="filterEmbedded" style="display: none;"></div>');
+	$("#filterEmbedded").load('filter?ajax=1&ie=UTF-8&rnd='+rnd+'&q='+encodeURIComponent(q), filterEmbeddingViaAjaxDone);
+	return false;
+}
+
 
 /*****************************************************************************
  * index pagination stuff
@@ -943,6 +990,9 @@ $().ready(function()
 	
 	// handle "advanced search" via ajax
 	$("#wisy_advlink").click(advEmbedViaAjax);
+	
+	// handle "filter search" via ajax
+	$("#wisy_filterlink").click(filterEmbedViaAjax);
 	
 	// handle "paginate" via ajax
 	// currently, we NO NOT do so as this fails the "back button" to work correctly. Eg. the order and the page is not set when clicking a result and going back to the list.

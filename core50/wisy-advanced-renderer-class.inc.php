@@ -209,7 +209,7 @@ class WISY_ADVANCED_RENDERER_CLASS
 
 	private function getSpezielleStichw($flag)
 	{
-		// nur die stichwörter zurückgeben, die im aktuellem Portal auch vervendet werden!
+		// nur die stichwörter zurückgeben, die im aktuellem Portal auch verwendet werden!
 		$keyPrefix = "advStichw.$flag";
 		$magic = strftime("%Y-%m-%d-v5-").md5($GLOBALS['wisyPortalFilter']['stdkursfilter']);
 		if( $this->framework->cacheRead("adv_stichw.$flag.magic") != $magic )

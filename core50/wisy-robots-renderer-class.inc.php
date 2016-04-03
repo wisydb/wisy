@@ -95,6 +95,7 @@ class WISY_ROBOTS_RENDERER_CLASS
 			// for all other spiders
 			echo "User-agent: *\n";
 			echo "Disallow: /advanced\n";
+			echo "Disallow: /filter\n";
 			echo "Disallow: /edit\n";
 			echo "Disallow: /rss\n";
 			echo "Disallow: /terrapin\n";

@@ -1123,6 +1123,7 @@ class WISY_FRAMEWORK_CLASS
 		// echo the search field
 		$DEFAULT_PLACEHOLDER	= '';
 		$DEFAULT_ADVLINK_HTML	= '<a href="advanced?q=__Q_URLENCODE__" id="wisy_advlink">Erweitern</a>';
+		$DEFAULT_FILTERLINK_HTML= '<a href="filter?q=__Q_URLENCODE__" id="wisy_filterlink">Filtern</a>';
 		$DEFAULT_RIGHT_HTML		= '| <a href="javascript:window.print();">Drucken</a>';
 		$DEFAULT_BOTTOM_HINT	= 'bitte <strong>Suchwörter</strong> eingeben - z.B. Englisch, VHS, Bildungsurlaub, ...';
 		
@@ -1147,6 +1148,7 @@ class WISY_FRAMEWORK_CLASS
 				}
 				
 				echo $this->replacePlaceholders($this->iniRead('searcharea.advlink', $DEFAULT_ADVLINK_HTML)) . "\n";
+				echo $this->replacePlaceholders($this->iniRead('searcharea.filterlink', $DEFAULT_FILTERLINK_HTML)) . "\n";
 				echo $this->replacePlaceholders($this->iniRead('searcharea.html', $DEFAULT_RIGHT_HTML)) . "\n";
 			echo '</form>' . "\n";
 			echo '<div class="wisy_searchhints" data-favlink="' . htmlspecialchars($mailfav) . '">' .  $this->replacePlaceholders($this->iniRead('searcharea.hint', $DEFAULT_BOTTOM_HINT)) . '</div>' . "\n";
@@ -1206,6 +1208,9 @@ class WISY_FRAMEWORK_CLASS
 			
 			case 'advanced':
 				return createWisyObject('WISY_ADVANCED_RENDERER_CLASS', $this);
+				
+			case 'filter':
+				return createWisyObject('WISY_ADVANCED_FILTER_RENDERER_CLASS', $this);
 	
 			case 'tree':
 				return createWisyObject('WISY_TREE_RENDERER_CLASS', $this);
