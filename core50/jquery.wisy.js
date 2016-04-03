@@ -59,17 +59,12 @@ function fav_save_cookie()
 
 
 
-var g_fav_bar_orig = 'unset';
-function fav_update_bar()
+function fav_list_functions()
 {
-	if( g_fav_bar_orig == 'unset' ) {
-		g_fav_bar_orig = $('.wisy_searchhints').html();
-	}
-	
 	var cnt = fav_count();
 	if( cnt > 0 )
 	{
-		var mailto = $('.wisy_searchhints').attr('data-favlink');
+		var mailto = $('#favlistlink').attr('data-favlink');
 		if( mailto != '' )
 		{
 			mailto += 'search?q=favprint%253A';
@@ -80,28 +75,39 @@ function fav_update_bar()
 			}
 		}
 		
-		str = '';
-		str += '<a href="search?q=Fav%3A" title="Favoriten anzeigen">';
-			str += '<span class="fav_item fav_selected">&#9733;</span> ';
-			str += cnt + (cnt==1? ' Favorit' : ' Favoriten');
-		str += '</a> ';
+		str = '<span class="wisyr_fav_functions">';
+		str += 'Ihre Merkliste enthält ' + cnt + (cnt==1? ' Eintrag ' : ' Einträge ');
 		if( mailto != '' ) 
 		{
-			str += '<a href="' + mailto + '" title="Favoriten per E-Mail versenden" class="fav_send">&#9993;</a> '; // Unicode #9993 = Letter
+			str += '<a class="fav_functions_mailsend" href="' + mailto + '" title="Merkliste per E-Mail versenden" class="fav_send">Merkliste per E-Mail versenden</a> ';
 		}
-		str += ' <a href="javascript:fav_delete_all()" title="Alle Favoriten löschen">&times;</a>';
+		str += ' <a class="fav_functions_deleteall" href="javascript:fav_delete_all()" title="Gesamte Merkliste löschen">Gesamte Merkliste löschen</a>';
+		str += '</span>';
 		
-		$('.wisy_searchhints').html(str + ' | ' + g_fav_bar_orig);
+		$('.wisyr_angebote_zum_suchauftrag').html(str);
+	}
+}
+
+function fav_update_bar()
+{	
+	var cnt = fav_count();
+	if( cnt > 0 )
+	{
+		str = '<a href="search?q=Fav%3A" title="Merkliste anzeigen">';
+			str += '<span class="fav_item fav_selected">&#9733;</span> ';
+			str += '<span class="favlistlink_title">Merkliste (' + cnt + ')</span>';
+		str += '</a> ';
+		
+		$('#favlistlink').html(str);
 		
 		$('.fav_hide').hide();
 	}
 	else
 	{
-		$('.wisy_searchhints').html(g_fav_bar_orig);
+		$('#favlistlink').html('');
 		$('.fav_hide').show();
 	}
 }
-
 
 
 function fav_click(jsObj, id)
@@ -118,20 +124,21 @@ function fav_click(jsObj, id)
 		fav_update_bar();
 		
 		if( $.cookie('fav_init_hint') != 1 ) {
-			alert('Ihr Favorit wurde auf diesem Computer gespeichert. Um alle Favoriten anzuzeigen, klicken Sie auf das entsprechende Symbol beim Suchfeld.');
+			alert('Ihr Favorit wurde auf diesem Computer gespeichert. Um ihre Merkliste anzuzeigen, klicken Sie auf "Merkliste" oben rechts.');
 			$.cookie('fav_init_hint', 1, { expires: 30 }); 
 		}
 	}
 }
 function fav_delete_all()
 {
-	if( !confirm('Alle gespeicherten Favoriten löschen?') )
+	if( !confirm('Gesamte Merkliste löschen?') )
 		return false;
 	
 	g_all_fav = {};
 	fav_save_cookie();
-	fav_update_bar();
-	$('.fav_selected').removeClass('fav_selected');
+	
+	console.log('fkjdsflk');
+	window.location.reload(true);
 }
 
 
@@ -165,6 +172,10 @@ function fav_init()
 	
 	if( fav_count() ) {
 		fav_update_bar();
+		
+		if( $('body').hasClass('wisyq_fav') ) {
+			fav_list_functions();
+		}
 	}
 }
  

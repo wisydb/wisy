@@ -601,10 +601,13 @@ class WISY_SEARCH_RENDERER_CLASS
 			// render head
 			echo '<p>';
 				if( $queryString == '' ) {
-					echo '<b>Aktuelle Angebote:</b>';
+					echo '<span class="wisyr_aktuelle_angebote">Aktuelle Angebote</span>';
 				}
 				else {
-					echo $sqlCount==1? "<b>1 Angebot</b> zum Suchauftrag:" : "<b>$sqlCount Angebote</b> zum Suchauftrag <i>".htmlspecialchars(trim($queryString, ', '))."</i>:";
+					echo '<span class="wisyr_angebote_zum_suchauftrag">';
+					echo $sqlCount==1? '<span class="wisyr_anzahl_angebote">1 Angebot</span> zum Suchauftrag ' : '<span class="wisyr_anzahl_angebote">' . $sqlCount . ' Angebote</span> zum Suchauftrag ';
+					echo '<span class="wisyr_angebote_suchauftrag">"' . htmlspecialchars(trim($queryString, ', ')) . '"</span>';
+					echo '</span>';
 				}
 
 				if( $pagesel )
@@ -684,39 +687,13 @@ class WISY_SEARCH_RENDERER_CLASS
 			// main table end
 			echo '</table>' . "\n\n";
 			flush();
-
-			echo '<p>';
-				echo $sqlCount==1? "<b>1 Angebot</b> zum Suchauftrag" : "<b>$sqlCount Angebote</b> zum Suchauftrag";
-
-				if( $queryString ) echo ' <i class="printonly">' . htmlspecialchars(trim($queryString, ', ')) . '</i>';
-
-				if( !$this->framework->editSessionStarted ) // nur für eine bessere Übersicht wird das folgende im Edit-Modus unterdrückt
-				{
-					$addTimeInfo = '';
-					if( is_object($promoter) )
-					{
-						$addTimeInfo = sprintf("%1.3f", $promoter->secneeded); $addTimeInfo = str_replace('.', ',', $addTimeInfo);
-						$addTimeInfo = " + $addTimeInfo";
-					}
-
-					$info = $searcher->getInfo(); // re-read the information for an updated second counter
-					$secneeded = sprintf("%1.3f", $info['secneeded']); $secneeded = str_replace('.', ',', $secneeded);
-					echo "<span class=\"noprint\"> in $secneeded $addTimeInfo Sekunden</span> ";
-
-					$temp = $this->framework->getRSSLink();
-					if( $temp )
-					{
-						echo ' <span class="noprint">&ndash;</span> ' . $temp;
-					}
-				}				
-						
-				
-				if( $pagesel )
-				{
-					$this->renderPagination($prevurl, $nexturl, $pagesel);
-				}
-				
-			echo '</p>' . "\n";
+			
+			if( $pagesel )
+			{
+				echo '<p>';
+				$this->renderPagination($prevurl, $nexturl, $pagesel);
+				echo '</p>';
+			}
 		}
 		else 
 		{
@@ -819,7 +796,9 @@ class WISY_SEARCH_RENDERER_CLASS
 
 			// render head
 			echo '<p>';
-				echo "<b>$sqlCount Anbieter</b> zum Suchauftrag:";
+				echo '<span class="wisyr_anbieter_zum_suchauftrag">';
+				echo '<span class="wisyr_anzahl_anbieter">' . $sqlCount . ' Anbieter</span> zum Suchauftrag';
+				echo '</span>';
 
 				if( $pagesel )
 				{
@@ -882,26 +861,12 @@ class WISY_SEARCH_RENDERER_CLASS
 			flush();
 
 			// render tail
-			echo '<p>';
-				echo "<b>$sqlCount Anbieter</b> zum Suchauftrag";
-
-				if( $queryString ) echo ' <i class="printonly">' . htmlspecialchars(trim($queryString, ', ')) . '</i>';
-
-				$info = $searcher->getInfo();
-				$secneeded = sprintf("%1.3f", $info['secneeded']); $secneeded = str_replace('.', ',', $secneeded);
-				echo "<span class=\"noprint\"> in $secneeded Sekunden</span> ";
-				
-				$temp = $this->framework->getRSSLink();
-				if( $temp )
-				{
-					echo ' <span class="noprint">&ndash;</span> ' . $temp;
-				}
-
-				if( $pagesel )
-				{
-					$this->renderPagination($prevurl, $nexturl, $pagesel);
-				}
-			echo '</p>' . "\n";
+			if( $pagesel )
+			{
+				echo '<p>';
+				$this->renderPagination($prevurl, $nexturl, $pagesel);
+				echo '</p>';
+			}
 		}
 		else /* if( sqlCount ) */
 		{

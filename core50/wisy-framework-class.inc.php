@@ -346,6 +346,25 @@ class WISY_FRAMEWORK_CLASS
 		{
 			return '__CONTENT__'; // just leave  this as it is, __CONTENT__ is handled separately
 		}
+		else if( $placeholder == '__FAVLISTLINK__' )
+		{
+			if( $this->iniRead('fav.use', 0) )
+			{
+				// link to send favourites
+				$mailfav = '';
+				if( $this->iniRead('fav.mail', '1') ) {
+					$mailsubject = $this->iniRead('fav.mail.subject', 'Kursliste von __HOST__');
+					$mailsubject = str_replace('__HOST__', $_SERVER['HTTP_HOST'], $mailsubject);
+					$mailbody = $this->iniRead('fav.mail.body', "Das ist meine Kursliste zum Ausdrucken von __HOST__:\n\nhttp://__HOST__/");
+					$mailbody = str_replace('__HOST__', $_SERVER['HTTP_HOST'], $mailbody);
+					$mailfav = 'mailto:?subject='.rawurlencode($mailsubject).'&body='.rawurlencode($mailbody);
+				}
+				return '<span id="favlistlink" data-favlink="' . htmlspecialchars($mailfav) . '"></span>';
+			}
+			else {
+				return '';
+			}
+		}
 		
 		return "Unbekannt: $placeholder";
 	}
@@ -1110,20 +1129,10 @@ class WISY_FRAMEWORK_CLASS
 			$q .= ' ';
 		}
 
-		// link to send favourites
-		$mailfav = '';
-		if( $this->iniRead('fav.mail', '1') ) {
-			$mailsubject = $this->iniRead('fav.mail.subject', 'Kursliste von __HOST__');
-			$mailsubject = str_replace('__HOST__', $_SERVER['HTTP_HOST'], $mailsubject);
-			$mailbody = $this->iniRead('fav.mail.body', "Das ist meine Kursliste zum Ausdrucken von __HOST__:\n\nhttp://__HOST__/");
-			$mailbody = str_replace('__HOST__', $_SERVER['HTTP_HOST'], $mailbody);
-			$mailfav = 'mailto:?subject='.rawurlencode($mailsubject).'&body='.rawurlencode($mailbody);
-		}
-
 		// echo the search field
 		$DEFAULT_PLACEHOLDER	= '';
 		$DEFAULT_ADVLINK_HTML	= '<a href="advanced?q=__Q_URLENCODE__" id="wisy_advlink">Erweitern</a>';
-		$DEFAULT_FILTERLINK_HTML= '<a href="filter?q=__Q_URLENCODE__" id="wisy_filterlink">Filtern</a>';
+		$DEFAULT_FILTERLINK_HTML= '<a href="filter?q=__Q_URLENCODE__" id="wisy_filterlink">Suche anpassen</a>';
 		$DEFAULT_RIGHT_HTML		= '| <a href="javascript:window.print();">Drucken</a>';
 		$DEFAULT_BOTTOM_HINT	= 'bitte <strong>Suchwörter</strong> eingeben - z.B. Englisch, VHS, Bildungsurlaub, ...';
 		
@@ -1148,10 +1157,9 @@ class WISY_FRAMEWORK_CLASS
 				}
 				
 				echo $this->replacePlaceholders($this->iniRead('searcharea.advlink', $DEFAULT_ADVLINK_HTML)) . "\n";
-				echo $this->replacePlaceholders($this->iniRead('searcharea.filterlink', $DEFAULT_FILTERLINK_HTML)) . "\n";
 				echo $this->replacePlaceholders($this->iniRead('searcharea.html', $DEFAULT_RIGHT_HTML)) . "\n";
 			echo '</form>' . "\n";
-			echo '<div class="wisy_searchhints" data-favlink="' . htmlspecialchars($mailfav) . '">' .  $this->replacePlaceholders($this->iniRead('searcharea.hint', $DEFAULT_BOTTOM_HINT)) . '</div>' . "\n";
+			echo '<div class="wisy_searchhints">' .  $this->replacePlaceholders($this->iniRead('searcharea.hint', $DEFAULT_BOTTOM_HINT)) . '</div>' . "\n";
 		echo '</div>' . "\n\n";
 	
 		echo $this->replacePlaceholders( $this->iniRead('searcharea.below', '') ); // deprecated!
