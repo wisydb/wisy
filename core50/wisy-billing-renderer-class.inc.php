@@ -30,7 +30,7 @@ class WISY_BILLING_RENDERER_CLASS
 	{
 		global $wisyPortalId;
 
-		// zähler erhöhen, pausierte werbung freischalten
+		// zÃ¤hler erhÃ¶hen, pausierte werbung freischalten
 		if( $credits_to_add > 0 )
 		{
 			$promoter =& createWisyObject('WISY_PROMOTE_CLASS', $this->framework);
@@ -42,13 +42,13 @@ class WISY_BILLING_RENDERER_CLASS
 			$promoter->setAllPromotionsActive($anbieterId, 1);
 		}
 		
-		// user_created, user_grp und user_access werden aus dem Portaldatensatz übernehmen
+		// user_created, user_grp und user_access werden aus dem Portaldatensatz Ã¼bernehmen
 		$db = new DB_Admin;
 		$db->query("SELECT user_created, user_grp, user_access FROM portale WHERE id=$wisyPortalId;");
 		$db->next_record();
-		$user_created = intval($db->f('user_created'));
-		$user_grp     = intval($db->f('user_grp'));
-		$user_access  = intval($db->f('user_access'));
+		$user_created = intval($db->f8('user_created'));
+		$user_grp     = intval($db->f8('user_grp'));
+		$user_access  = intval($db->f8('user_access'));
 		
 		// Eintrag in Log schreiben
 		$todayHour     = strftime("%Y-%m-%d %H:%M:%S");
@@ -70,7 +70,7 @@ class WISY_BILLING_RENDERER_CLASS
 		$price   = $this->allPrices[0][1];
 
 		// button erzeugen
-		// möglichen felder:
+		// mÃ¶glichen felder:
 		// https://cms.paypal.com/us/cgi-bin/?cmd=_render-content&content_ID=developer/e_howto_html_Appx_websitestandard_htmlvariables
 		// weitere infos:
 		// http://www.pdncommunity.com/pdn/board/message?board.id=de&thread.id=2108
@@ -97,7 +97,7 @@ class WISY_BILLING_RENDERER_CLASS
 
 		// render ....
 		echo '<p>';
-			echo 'Einblendungen können über PayPal gekauft werden. PayPal akzeptiert alle gängigen Kreditkarten und die Bezahlung per Überweisung. Klicken Sie einfach auf das folgende Symbol:';
+			echo 'Einblendungen kÃ¶nnen Ã¼ber PayPal gekauft werden. PayPal akzeptiert alle gÃ¤ngigen Kreditkarten und die Bezahlung per Ãœberweisung. Klicken Sie einfach auf das folgende Symbol:';
 		echo '</p>';
 		echo $button;
 	}
@@ -108,8 +108,8 @@ class WISY_BILLING_RENDERER_CLASS
 		// https://cms.paypal.com/us/cgi-bin/?cmd=_render-content&content_ID=developer/howto_admin_overview
 
 		// zum Testen:
-		// - www.sandbox.paypal.com anstelle von www.paypal.com wählen, das IPN-Testtool unter https://developer.paypal.com/
-		// - eCheck complete wählen
+		// - www.sandbox.paypal.com anstelle von www.paypal.com wÃ¤hlen, das IPN-Testtool unter https://developer.paypal.com/
+		// - eCheck complete wÃ¤hlen
 		// - receiver_email : michaels@weiterbildung-hamburg.de
 		// -  mc_currency   : EUR
 		// - item_number    : 1-1000

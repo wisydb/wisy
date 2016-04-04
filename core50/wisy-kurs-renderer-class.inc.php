@@ -28,16 +28,16 @@ class WISY_KURS_RENDERER_CLASS
 						WHERE k.id=$kursId"); // "a.suchname" etc. kann mit "LEFT JOIN anbieter a ON a.id=k.anbieter" zus. abgefragt werden
 		if( !$db->next_record() )
 			$this->framework->error404();
-		$title 				= $db->fs('titel');
-		$originaltitel		= $db->fs('org_titel');
-		$freigeschaltet 	= intval($db->f('freigeschaltet'));
-		$beschreibung		= $db->fs('beschreibung');
-		$anbieterId			= intval($db->f('anbieter'));
-		$date_created		= $db->f('date_created');
-		$date_modified		= $db->f('date_modified');
-		$bu_nummer 			= $db->f('bu_nummer');
-		$pflege_pweinst		= intval($db->f('pflege_pweinst'));
-		$anbieter_typ		= intval($db->f('typ'));
+		$title 				= $db->f8('titel');
+		$originaltitel		= $db->f8('org_titel');
+		$freigeschaltet 	= intval($db->f8('freigeschaltet'));
+		$beschreibung		= $db->f8('beschreibung');
+		$anbieterId			= intval($db->f8('anbieter'));
+		$date_created		= $db->f8('date_created');
+		$date_modified		= $db->f8('date_modified');
+		$bu_nummer 			= $db->f8('bu_nummer');
+		$pflege_pweinst		= intval($db->f8('pflege_pweinst'));
+		$anbieter_typ		= intval($db->f8('typ'));
 		$record				= $db->Record;
 		
 		// promoted?
@@ -50,11 +50,19 @@ class WISY_KURS_RENDERER_CLASS
 		// page start
 		headerDoCache();
 		
+		$displayAbschluss = $this->framework->iniRead('label.abschluss', 0);
+		if($displayAbschluss) {
+			$kursAnalyzer =& createWisyObject('WISY_KURS_ANALYZER_CLASS', $this->framework);
+			$isAbschluss = count($kursAnalyzer->loadKeywordsAbschluss($db, 'kurse', $kursId));
+		}
+		
 		$bodyClass = 'wisyp_kurs';
 		if( $anbieter_typ == 2 )
 		{
 			$bodyClass .= ' wisyp_kurs_beratungsstelle';
-		}
+		} elseif($displayAbschluss && $isAbschluss) {
+			$bodyClass .= ' wisyp_kurs_abschluss';	
+		}	
 		
 		echo $this->framework->getPrologue(array('title'=>$title, 'canonical' => $this->framework->getUrl('k', array('id'=>$kursId)), 'bodyClass'=>$bodyClass));
 		echo $this->framework->getSearchField();
@@ -75,7 +83,8 @@ class WISY_KURS_RENDERER_CLASS
 			
 			echo '<h1>';
 				if( $anbieter_typ == 2 ) echo '<span class="wisy_icon_beratungsstelle">Beratung<span class="dp">:</span></span> ';
-				echo isohtmlentities($title);
+				if( $displayAbschluss && $isAbschluss ) echo '<span class="wisy_icon_abschluss">Abschluss<span class="dp">:</span></span> ';
+				echo htmlentities($title);
 				if( $this->framework->iniRead('fav.use', 0) ) {
 					echo '<span class="fav_add" data-favid="'.$kursId.'"></span>';
 				}		
@@ -83,7 +92,7 @@ class WISY_KURS_RENDERER_CLASS
 			
 			if( $originaltitel != '' && $originaltitel != $title )
 			{
-				echo '<p><i>' . /*'Originaltitel: ' .*/ isohtmlspecialchars($originaltitel) . '</i></p>';
+				echo '<p><i>' . /*'Originaltitel: ' .*/ htmlspecialchars($originaltitel) . '</i></p>';
 			}
 		
 
@@ -125,15 +134,13 @@ class WISY_KURS_RENDERER_CLASS
 			// ... Bildungsurlaubsnummer 
 			if (($wisyPortalSpalten & 128) > 0)
 			{
-				$rows .= '<tr>';
-					$rows .= '<td' . html3(' valign="top"') . '>Bildungsurlaubsnummer:&nbsp;</td>';
-					$rows .= '<td' . html3(' valign="top"') . '>' .($bu_nummer? 'Ja' : 'Nein'). '</td>';
-				$rows .= '</tr>';
+				$rows .= '<dt>Bildungsurlaubsnummer:&nbsp;</dt>';
+				$rows .= '<dd>' .($bu_nummer? 'Ja' : 'Nein'). '</dd>';
 			}
 
 			if( $rows != '' ) 
 			{
-				echo '<table class="wisy_stichwlist"' . html3(' cellpadding="0" cellspacing="0" border="0"') . '>' . $rows . '</table>';
+				echo '<dl class="wisy_stichwlist">' . $rows . '</dl>';
 			}
 
 			// Durchfuehrungen vorbereiten
@@ -163,7 +170,7 @@ class WISY_KURS_RENDERER_CLASS
 			// Durchfuehrungen ausgeben
 			if( sizeof($durchfuehrungenIds) )
 			{
-				echo '<table class="wisy_list"' . html3(' cellpadding="0" cellspacing="0" border="0"') . '>';
+				echo '<table class="wisy_list wisyr_durchfuehrungen"><thead>';
 					echo '<tr>';
 						if (($wisyPortalSpalten & 2) > 0)	{ echo '<th>Zeiten</th>';			}
 						if (($wisyPortalSpalten & 4) > 0)	{ echo '<th>Dauer</th>';			}
@@ -171,7 +178,7 @@ class WISY_KURS_RENDERER_CLASS
 						if (($wisyPortalSpalten & 16) > 0)	{ echo '<th>Preis</th>';			}
 						if (($wisyPortalSpalten & 32) > 0)	{ echo '<th>Ort, Bemerkungen</th>';	}
 						if (($wisyPortalSpalten & 64) > 0)	{ echo '<th>Ang.-Nr.</th>';			}
-					echo '</tr>';
+					echo '</tr></thead>';
 					
 					/*
 					$maxDurchf = intval($this->framework->iniRead('details.durchf.max'));
@@ -214,7 +221,7 @@ class WISY_KURS_RENDERER_CLASS
 				}
 			}
 	
-			// vollst‰ndigkeit feedback, editieren etc.
+			// vollst√§ndigkeit feedback, editieren etc.
 			echo '<p class="wisy_kurse_footer ' .$this->framework->getAllowFeedbackClass(). '">';
 				
 				if( $vollst['msg'] != '' )
@@ -225,7 +232,7 @@ class WISY_KURS_RENDERER_CLASS
 				/*
 				if( $originaltitel != '' && $originaltitel != $title )
 				{
-					echo 'Originaltitel: ' . isohtmlspecialchars($originaltitel) . ' &ndash; ';
+					echo 'Originaltitel: ' . htmlspecialchars($originaltitel) . ' &ndash; ';
 				}
 				*/
 				
@@ -274,7 +281,7 @@ class WISY_KURS_RENDERER_CLASS
 			$anbieterRenderer =& createWisyObject('WISY_ANBIETER_RENDERER_CLASS', $this->framework);
 			echo '<div class="wisy_vcard">';
 				echo '<div class="wisy_vcardtitle">Anbieteradresse</div>';
-				echo '<div class="wisy_vcardcontent">';
+				echo '<div class="wisy_vcardcontent" itemscope itemtype="http://schema.org/Organization">';
 					echo $anbieterRenderer->renderCard($db, $anbieterId, $kursId, array('logo'=>true, 'logoLinkToAnbieter'=>true));
 				echo '</div>';
 			echo '</div>';
@@ -293,7 +300,7 @@ class WISY_KURS_RENDERER_CLASS
 			{
 				echo '<div class="wisy_vcard">';
 					echo '<div class="wisy_vcardtitle">Allgemeine Fragen zur Weiterbildung</div>';
-					echo '<div class="wisy_vcardcontent">';
+					echo '<div class="wisy_vcardcontent" itemscope itemtype="http://schema.org/Organization">';
 						if( $betreiber_id )   echo $anbieterRenderer->renderCard($db, $betreiber_id, $kursId, array('logo'=>true));
 						if( $betreiber_html ) echo $betreiber_html;
 					echo '</div>';

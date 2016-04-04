@@ -73,7 +73,7 @@ class WISY_SYNC_STATETABLE_CLASS
 		$sql = "SELECT svalue FROM x_state WHERE skey='".addslashes($key)."';";
 		$this->db->query($sql);
 		if( $this->db->next_record() )
-			$ret = $this->db->fs('svalue');
+			$ret = $this->db->f8('svalue');
 		return $ret;
 	}
 	function writeState($key, $val)
@@ -148,7 +148,7 @@ class TAGTABLE_CLASS
 			$this->db->query("SELECT tag_id, tag_type, tag_help, tag_descr FROM x_tags WHERE tag_name='".addslashes($tag_name)."';");
 			if( $this->db->next_record() )
 			{
-				$this->tags[ $tag_name ] = array( intval($this->db->f('tag_id')), intval($this->db->f('tag_type')), intval($this->db->f('tag_help')), $this->db->fs('tag_descr') );
+				$this->tags[ $tag_name ] = array( intval($this->db->f8('tag_id')), intval($this->db->f8('tag_type')), intval($this->db->f8('tag_help')), $this->db->f8('tag_descr') );
 			}
 			else
 			{
@@ -206,7 +206,7 @@ class TAGTABLE_CLASS
 		// add all synonyms and all portal tags; they should be preserved as the function is used to delete tags
 		$this->db->query("SELECT tag_id FROM x_tags WHERE tag_type & 64;");
 		while( $this->db->next_record() )
-			$ret .= ', ' . $this->db->f('tag_id');
+			$ret .= ', ' . $this->db->f8('tag_id');
 		
 		return $ret;
 	}
@@ -272,23 +272,23 @@ class ATTR2TAG_CLASS
 			$curr_tag_descr = '';
 			if( $this->table == 'stichwoerter' )
 			{
-				$curr_tag_type = intval($this->db->f('eigenschaften')) & (1+2+4+8+16+1024+32768) /*flags, s.o.*/;
-				$curr_tag_help = intval($this->db->f('glossar'));
-				$curr_tag_descr = $this->db->fs('zusatzinfo');
+				$curr_tag_type = intval($this->db->f8('eigenschaften')) & (1+2+4+8+16+1024+32768) /*flags, s.o.*/;
+				$curr_tag_help = intval($this->db->f8('glossar'));
+				$curr_tag_descr = $this->db->f8('zusatzinfo');
 			}
 			else if( $this->table == 'anbieter' )
 			{
 				$curr_tag_type = 256 								// maintype: Anbieter
-						+		(intval($this->db->f('typ'))<<16);	// subtype:  0=Anbieter,  1=Trainer, 2=Betratungsstelle, 64=Namensverweisung/Synonym
+						+		(intval($this->db->f8('typ'))<<16);	// subtype:  0=Anbieter,  1=Trainer, 2=Betratungsstelle, 64=Namensverweisung/Synonym
 				
 			}
 			
 			// do insert
 			$this->cache[ $attr_id ][ 'names' ] = array();
-			$this->cache[ $attr_id ][ 'names' ][] = array(g_sync_removeSpecialChars($this->db->fs($this->field)), $curr_tag_type, $curr_tag_help, $curr_tag_descr);
+			$this->cache[ $attr_id ][ 'names' ][] = array(g_sync_removeSpecialChars($this->db->f8($this->field)), $curr_tag_type, $curr_tag_help, $curr_tag_descr);
 			if( $this->table == 'themen' )
 			{
-				$attr_kuerzel = $this->db->fs('kuerzel_sorted');
+				$attr_kuerzel = $this->db->f8('kuerzel_sorted');
 				$sql = '';
 				for( $slen = strlen($attr_kuerzel) - 10; $slen > 0; $slen -= 10 )
 				{
@@ -303,13 +303,13 @@ class ATTR2TAG_CLASS
 					$this->db->query($sql);
 					while( $this->db->next_record() )
 					{
-						$this->cache[ $attr_id ][ 'names' ][] = array(g_sync_removeSpecialChars($this->db->fs('thema')), $curr_tag_type, 0);
+						$this->cache[ $attr_id ][ 'names' ][] = array(g_sync_removeSpecialChars($this->db->f8('thema')), $curr_tag_type, 0);
 					}
 				}
 			}
 			else if( $this->table == 'anbieter' )
 			{
-				$this->cache[ $attr_id ][ 'sorted' ] = $this->db->fs('suchname_sorted');
+				$this->cache[ $attr_id ][ 'sorted' ] = $this->db->f8('suchname_sorted');
 			}
 		}
 		
@@ -362,11 +362,11 @@ class KURS2PORTALTAG_CLASS
 		$db->query("SELECT id, einstellungen, einstcache, filter FROM portale;");
 		while( $db->next_record() )
 		{
-			$portal_id		= $db->f('id');
+			$portal_id		= $db->f8('id');
 			$portal_tag		= 0;
-			$einstellungen	= explodeSettings($db->fs('einstellungen'));
-			$einstcache		= explodeSettings($db->fs('einstcache'));
-			$filter			= explodeSettings($db->fs('filter'));
+			$einstellungen	= explodeSettings($db->f8('einstellungen'));
+			$einstcache		= explodeSettings($db->f8('einstcache'));
+			$filter			= explodeSettings($db->f8('filter'));
 
 			if( $einstellungen['core'] == '20' && $filter['stdkursfilter'] != '' )
 			{
@@ -379,7 +379,7 @@ class KURS2PORTALTAG_CLASS
 				$statetable->updateUpdatestick();
 				
 				while( $db2->next_record() ) {
-					$this->portaltags[ $db2->f('id') ][] = $portal_tag;
+					$this->portaltags[ $db2->f8('id') ][] = $portal_tag;
 				}
 				
 				if( $einstellungen['durchf.plz.hardfilter'] ) {
@@ -473,7 +473,7 @@ class WISY_SYNC_RENDERER_CLASS
 		$this->verweis2 = array();
 		$db->query("SELECT primary_id, attr_id FROM stichwoerter_verweis2 LEFT JOIN stichwoerter ON attr_id=id WHERE eigenschaften&(32|64)=0;");
 		while( $db->next_record() ) {
-			$this->verweis2[ $db->f('attr_id') ][] = $db->f('primary_id');
+			$this->verweis2[ $db->f8('attr_id') ][] = $db->f8('primary_id');
 		}
 		
 		$this->flatenArray($this->verweis2);
@@ -536,15 +536,15 @@ class WISY_SYNC_RENDERER_CLASS
 		$db->query("SELECT id, stichwort, eigenschaften FROM stichwoerter WHERE eigenschaften=32 OR eigenschaften=64;"); // !!! in "eigenschaften" gilt: 32 = versteckte Synonyme, 64 =normale Synonyme
 		while( $db->next_record() )
 		{
-			$synonym = g_sync_removeSpecialChars($db->fs('stichwort'));
-			$synonym_id = intval($db->f('id'));
-			$eigenschaften = intval($db->f('eigenschaften'));
+			$synonym = g_sync_removeSpecialChars($db->f8('stichwort'));
+			$synonym_id = intval($db->f8('id'));
+			$eigenschaften = intval($db->f8('eigenschaften'));
 			$dest_found = false;
 
 			$db2->query("SELECT stichwort FROM stichwoerter LEFT JOIN stichwoerter_verweis v ON id=v.attr_id WHERE v.primary_id=$synonym_id");
 			while( $db2->next_record() )
 			{	
-				$cur = g_sync_removeSpecialChars($db2->fs('stichwort'));
+				$cur = g_sync_removeSpecialChars($db2->f8('stichwort'));
 				$cur_id = $this->tagtable->lookup($cur);
 				if( $cur_id ) { $dest_found = true; $tableValues[] = array($synonym, $cur_id); }
 			}
@@ -557,14 +557,14 @@ class WISY_SYNC_RENDERER_CLASS
 		$db->query("SELECT suchname, id FROM anbieter WHERE typ=64;"); // 64 = Synonym
 		while( $db->next_record() )
 		{
-			$synonym = g_sync_removeSpecialChars($db->fs('suchname'));
-			$synonym_id = intval($db->f('id'));
+			$synonym = g_sync_removeSpecialChars($db->f8('suchname'));
+			$synonym_id = intval($db->f8('id'));
 			$dest_found = false;
 			
 			$db2->query("SELECT suchname FROM anbieter LEFT JOIN anbieter_verweis v ON id=v.attr_id WHERE v.primary_id=$synonym_id");
 			while( $db2->next_record() )
 			{
-				$cur = g_sync_removeSpecialChars($db2->fs('suchname'));
+				$cur = g_sync_removeSpecialChars($db2->f8('suchname'));
 				$cur_id = $this->tagtable->lookup($cur);
 				if( $cur_id ) { $dest_found = true; $tableValues[] = array($synonym, $cur_id); }
 			}
@@ -643,19 +643,19 @@ class WISY_SYNC_RENDERER_CLASS
 		$kurs_cnt = 0;
 		while( $db->next_record() )
 		{
-			$kurs_id 		= intval($db->fs('id'));							if( ($kurs_cnt % 100 ) == 0 ) { echo "... $kurs_cnt ff ...\n"; $this->statetable->updateUpdateStick(); }
-			$anbieter_id	= intval($db->fs('anbieter'));						if( $anbieter_id <= 0 ) { $this->log("ERROR: kein Anbieter angegeben fuer Kurs ID $kurs_id."); }
-			$freigeschaltet	= intval($db->fs('freigeschaltet'));
+			$kurs_id 		= intval($db->f8('id'));							if( ($kurs_cnt % 100 ) == 0 ) { echo "... $kurs_cnt ff ...\n"; $this->statetable->updateUpdateStick(); }
+			$anbieter_id	= intval($db->f8('anbieter'));						if( $anbieter_id <= 0 ) { $this->log("ERROR: kein Anbieter angegeben fuer Kurs ID $kurs_id."); }
+			$freigeschaltet	= intval($db->f8('freigeschaltet'));
 			
 			// convert thema, stichw, anbieter etc. to tag IDs
 			$tag_ids = array();
-			$this->themen2tag->  lookupTagIds(intval($db->f('thema')),    $tag_ids);
+			$this->themen2tag->  lookupTagIds(intval($db->f8('thema')),    $tag_ids);
 			$this->anbieter2tag->lookupTagIds($anbieter_id, $tag_ids);
 			$db2->query("SELECT attr_id FROM kurse_stichwort WHERE primary_id=$kurs_id");
 			$all_stichwort_ids = array();
 			while( $db2->next_record() )
 			{
-				$stichwort_id = intval($db2->f('attr_id'));
+				$stichwort_id = intval($db2->f8('attr_id'));
 				$all_stichwort_ids[] = $stichwort_id;
 				$this->stichw2tag->lookupTagIds($stichwort_id, $tag_ids);
 			}
@@ -663,26 +663,26 @@ class WISY_SYNC_RENDERER_CLASS
 			$db2->query("SELECT attr_id FROM anbieter_stichwort WHERE primary_id=$anbieter_id;");
 			while( $db2->next_record() )
 			{
-				$stichwort_id = intval($db2->f('attr_id'));
+				$stichwort_id = intval($db2->f8('attr_id'));
 				$all_stichwort_ids[] = $stichwort_id;
 				$this->stichw2tag->lookupTagIds($stichwort_id, $tag_ids);
 			}		
 			
 			// spezielle Nummern erzeugen spezielle Tags
 			// siehe hierzu die Anmerkungen in wisy-durchf-class.inc.php bei [1]
-			if( $db->f('bu_nummer') != '' ) 
+			if( $db->f8('bu_nummer') != '' ) 
 			{
 				$tag_id = $this->tagtable->lookupOrInsert('Bildungsurlaub', 2 /*foerderungsart*/);
 				if( $tag_id ) $tag_ids[] = $tag_id;
 			}
 
-			if( $db->f('fu_knr') != '' ) 
+			if( $db->f8('fu_knr') != '' ) 
 			{
 				$tag_id = $this->tagtable->lookupOrInsert('Fernunterricht', 0 /*sachstichw*/);
 				if( $tag_id ) $tag_ids[] = $tag_id;
 			}
 			
-			if( $db->f('azwv_knr') != '' ) 
+			if( $db->f8('azwv_knr') != '' ) 
 			{
 				$tag_id = $this->tagtable->lookupOrInsert('Bildungsgutschein', 2 /*foerderungsart*/);
 				if( $tag_id ) $tag_ids[] = $tag_id;
@@ -717,14 +717,14 @@ class WISY_SYNC_RENDERER_CLASS
 			while( $db2->next_record() )
 			{
 				// ... stadtteil / ort als Tag anlegen
-				$strasse   		= $db2->fs('strasse');
-				$plz 			= $db2->fs('plz'); if( $plz == '00000' ) $plz = '';
-				$ort       		= $db2->fs('ort');
-				$stadtteil 		= $db2->fs('stadtteil');
-				$land 			= $db2->fs('land');
-				$beginn			= $db2->fs('beginn');
-				$ende			= $db2->fs('ende');
-				$d_kurstage  	= intval($db2->f('kurstage'));
+				$strasse   		= $db2->f8('strasse');
+				$plz 			= $db2->f8('plz'); if( $plz == '00000' ) $plz = '';
+				$ort       		= $db2->f8('ort');
+				$stadtteil 		= $db2->f8('stadtteil');
+				$land 			= $db2->f8('land');
+				$beginn			= $db2->f8('beginn');
+				$ende			= $db2->f8('ende');
+				$d_kurstage  	= intval($db2->f8('kurstage'));
 				if( strpos($stadtteil, ',')===false && strpos($ort, ',')===false
 				 && strpos($stadtteil, ':')===false && strpos($ort, ':')===false  // do not add suspicious fields -- there is no reason for a comma in stadtteil/ort
 				) 
@@ -784,7 +784,7 @@ class WISY_SYNC_RENDERER_CLASS
 				}
 				//$at_least_one_durchf = true;
 				
-				$d_beginnoptionen = intval($db2->f('beginnoptionen'));
+				$d_beginnoptionen = intval($db2->f8('beginnoptionen'));
 				if( $d_beginnoptionen & 512 )
 				{
 					$tag_id = $this->tagtable->lookupOrInsert('Startgarantie', 0);
@@ -794,21 +794,21 @@ class WISY_SYNC_RENDERER_CLASS
 				// HACK: tagescode und dauer in Quelle berechnen
 				// (dies sollte besser ausserhalb des Portals im Redaktionssystem passieren, aber hier ist es so schoen praktisch, da die Trigger sowieso aufgerufen werden)
 				$write_back = '';
-				$d_tagescode = berechne_tagescode($db2->f('zeit_von'), $db2->f('zeit_bis'), $d_kurstage);
-				if( $d_tagescode != intval($db2->f('tagescode')) )
+				$d_tagescode = berechne_tagescode($db2->f8('zeit_von'), $db2->f8('zeit_bis'), $d_kurstage);
+				if( $d_tagescode != intval($db2->f8('tagescode')) )
 				{
 					$write_back = " tagescode=$d_tagescode ";
 				}
 
 				$d_dauer = berechne_dauer($beginn, $ende);
-				if( $d_dauer != intval($db2->f('dauer')) )
+				if( $d_dauer != intval($db2->f8('dauer')) )
 				{
 					$write_back = " dauer=$d_dauer ";
 				}
 				
 				if( $write_back != '' )
 				{
-					$sql = "UPDATE durchfuehrung SET $write_back WHERE id=".$db2->f('did');
+					$sql = "UPDATE durchfuehrung SET $write_back WHERE id=".$db2->f8('did');
 					$db3->query($sql);
 				}
 				
@@ -819,7 +819,7 @@ class WISY_SYNC_RENDERER_CLASS
 				}				
 
 				// hoechsten preis setzen ("hoechsten" wg. spam verhinderung, keine Ausnutzung besonderheiten des Systems)
-				$d_preis = intval($db2->f('preis'));
+				$d_preis = intval($db2->f8('preis'));
 				if( $d_preis != -1 && ($d_preis > $k_preis || $k_preis == -1) )
 				{
 					$k_preis = $d_preis;
@@ -893,14 +893,14 @@ class WISY_SYNC_RENDERER_CLASS
 			$db2->query("SELECT begmod_hash, begmod_date FROM x_kurse WHERE kurs_id=$kurs_id;");
 			if( $db2->next_record() )
 			{
-				$begmod_hash = $db2->f('begmod_hash');
-				$begmod_date = $db2->f('begmod_date'); 
+				$begmod_hash = $db2->f8('begmod_hash');
+				$begmod_date = $db2->f8('begmod_date'); 
 			}
 			else
 			{
 				$db2->query("INSERT INTO x_kurse (kurs_id) VALUES ($kurs_id);");
 				$begmod_hash = '';
-				$begmod_date = $db->f('date_modified');
+				$begmod_date = $db->f8('date_modified');
 			}
 
 			// "Beginnaenderungsdatum" aktualisieren
@@ -909,7 +909,7 @@ class WISY_SYNC_RENDERER_CLASS
 			{
 				if( !in_array($d_beginn[$i], $begmod_hash) )
 				{
-					$begmod_date = $db->f('date_modified');
+					$begmod_date = $db->f8('date_modified');
 					break;
 				}
 			}
@@ -1070,7 +1070,7 @@ class WISY_SYNC_RENDERER_CLASS
 			$db->query("SELECT s.tag_id, s.lemma_id FROM x_tags_syn s LEFT JOIN x_tags t ON s.tag_id=t.tag_id WHERE NOT(t.tag_type&32);");
 			while( $db->next_record() )
 			{
-				$rev_syn[ $db->fs('lemma_id') ][] = $db->fs('tag_id');
+				$rev_syn[ $db->f8('lemma_id') ][] = $db->f8('tag_id');
 			}
 																				$this->statetable->updateUpdatestick();			
 			// TAG_FREQ: write the stuff

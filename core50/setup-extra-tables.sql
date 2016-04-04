@@ -16,7 +16,7 @@ SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 -- --------------------------------------------------------
 
 --
--- Tabellenstruktur für Tabelle `x_cache_search`
+-- Tabellenstruktur fÃ¼r Tabelle `x_cache_search`
 --
 
 CREATE TABLE `x_cache_search` (
@@ -30,7 +30,7 @@ CREATE TABLE `x_cache_search` (
 -- --------------------------------------------------------
 
 --
--- Tabellenstruktur für Tabelle `x_kurse`
+-- Tabellenstruktur fÃ¼r Tabelle `x_kurse`
 --
 
 CREATE TABLE `x_kurse` (
@@ -49,7 +49,7 @@ CREATE TABLE `x_kurse` (
 -- --------------------------------------------------------
 
 --
--- Tabellenstruktur für Tabelle `x_kurse_tags`
+-- Tabellenstruktur fÃ¼r Tabelle `x_kurse_tags`
 --
 
 CREATE TABLE `x_kurse_tags` (
@@ -62,7 +62,7 @@ CREATE TABLE `x_kurse_tags` (
 -- --------------------------------------------------------
 
 --
--- Tabellenstruktur für Tabelle `x_state`
+-- Tabellenstruktur fÃ¼r Tabelle `x_state`
 --
 
 CREATE TABLE `x_state` (
@@ -74,7 +74,7 @@ CREATE TABLE `x_state` (
 -- --------------------------------------------------------
 
 --
--- Tabellenstruktur für Tabelle `x_tags`
+-- Tabellenstruktur fÃ¼r Tabelle `x_tags`
 --
 
 CREATE TABLE `x_tags` (
@@ -90,7 +90,7 @@ CREATE TABLE `x_tags` (
 -- --------------------------------------------------------
 
 --
--- Tabellenstruktur für Tabelle `x_tags_syn`
+-- Tabellenstruktur fÃ¼r Tabelle `x_tags_syn`
 --
 
 CREATE TABLE `x_tags_syn` (

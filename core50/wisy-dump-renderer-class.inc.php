@@ -26,7 +26,7 @@ class WISY_DUMP_RENDERER_CLASS
 			$db->query($sql);
 			if( $db->next_record() )
 			{
-				$css = $db->fs('css');
+				$css = $db->f8('css');
 				header("Content-type: text/css");
 				header("Content-length: " . strlen($css));
 				headerDoCache();

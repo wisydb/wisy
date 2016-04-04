@@ -30,10 +30,10 @@ class WISY_TREE_RENDERER_CLASS
 			$db->query($sql);
 			while( $db->next_record() )
 			{
-				$kuerzel_sorted = $db->fs('kuerzel_sorted');
-				$thema = $db->fs('thema');
+				$kuerzel_sorted = $db->f8('kuerzel_sorted');
+				$thema = $db->f8('thema');
 				
-				$title = isohtmlspecialchars($thema);
+				$title = htmlspecialchars($thema);
 				
 				$q = g_sync_removeSpecialChars($thema);
 				

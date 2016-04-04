@@ -59,17 +59,12 @@ function fav_save_cookie()
 
 
 
-var g_fav_bar_orig = 'unset';
-function fav_update_bar()
+function fav_list_functions()
 {
-	if( g_fav_bar_orig == 'unset' ) {
-		g_fav_bar_orig = $('.wisy_searchhints').html();
-	}
-	
 	var cnt = fav_count();
 	if( cnt > 0 )
 	{
-		var mailto = $('.wisy_searchhints').attr('data-favlink');
+		var mailto = $('#favlistlink').attr('data-favlink');
 		if( mailto != '' )
 		{
 			mailto += 'search?q=favprint%253A';
@@ -80,28 +75,39 @@ function fav_update_bar()
 			}
 		}
 		
-		str = '';
-		str += '<a href="search?q=Fav%3A" title="Favoriten anzeigen">';
-			str += '<span class="fav_item fav_selected">&#9733;</span> ';
-			str += cnt + (cnt==1? ' Favorit' : ' Favoriten');
-		str += '</a> ';
+		str = '<span class="wisyr_fav_functions">';
+		str += 'Ihre Merkliste enthÃ¤lt ' + cnt + (cnt==1? ' Eintrag ' : ' EintrÃ¤ge ');
 		if( mailto != '' ) 
 		{
-			str += '<a href="' + mailto + '" title="Favoriten per E-Mail versenden" class="fav_send">&#9993;</a> '; // Unicode #9993 = Letter
+			str += '<a class="fav_functions_mailsend" href="' + mailto + '" title="Merkliste per E-Mail versenden" class="fav_send">Merkliste per E-Mail versenden</a> ';
 		}
-		str += '<small> <a href="javascript:fav_delete_all()" title="Alle Favoriten löschen">&times;</a></small>';
+		str += ' <a class="fav_functions_deleteall" href="javascript:fav_delete_all()" title="Gesamte Merkliste lÃ¶schen">Gesamte Merkliste lÃ¶schen</a>';
+		str += '</span>';
 		
-		$('.wisy_searchhints').html(str + ' | ' + g_fav_bar_orig);
+		$('.wisyr_angebote_zum_suchauftrag').html(str);
+	}
+}
+
+function fav_update_bar()
+{	
+	var cnt = fav_count();
+	if( cnt > 0 )
+	{
+		str = '<a href="search?q=Fav%3A" title="Merkliste anzeigen">';
+			str += '<span class="fav_item fav_selected">&#9733;</span> ';
+			str += '<span class="favlistlink_title">Merkliste (' + cnt + ')</span>';
+		str += '</a> ';
+		
+		$('#favlistlink').html(str);
 		
 		$('.fav_hide').hide();
 	}
 	else
 	{
-		$('.wisy_searchhints').html(g_fav_bar_orig);
+		$('#favlistlink').html('');
 		$('.fav_hide').show();
 	}
 }
-
 
 
 function fav_click(jsObj, id)
@@ -118,20 +124,19 @@ function fav_click(jsObj, id)
 		fav_update_bar();
 		
 		if( $.cookie('fav_init_hint') != 1 ) {
-			alert('Ihr Favorit wurde auf diesem Computer gespeichert. Um alle Favoriten anzuzeigen, klicken Sie auf das entsprechende Symbol beim Suchfeld.');
+			alert('Ihr Favorit wurde auf diesem Computer gespeichert. Um ihre Merkliste anzuzeigen, klicken Sie auf "Merkliste" oben rechts.');
 			$.cookie('fav_init_hint', 1, { expires: 30 }); 
 		}
 	}
 }
 function fav_delete_all()
 {
-	if( !confirm('Alle gespeicherten Favoriten löschen?') )
+	if( !confirm('Gesamte Merkliste lÃ¶schen?') )
 		return false;
 	
 	g_all_fav = {};
 	fav_save_cookie();
-	fav_update_bar();
-	$('.fav_selected').removeClass('fav_selected');
+	window.location.reload(true);
 }
 
 
@@ -165,6 +170,10 @@ function fav_init()
 	
 	if( fav_count() ) {
 		fav_update_bar();
+		
+		if( $('body').hasClass('wisyq_fav') ) {
+			fav_list_functions();
+		}
 	}
 }
  
@@ -455,7 +464,7 @@ if (jQuery.ui)
 
 	function ac_selectcallback(event, ui) {
 	
-		// Standardverhalten (Value ins Eingabefeld schreiben) bei Überschrift und Mehrlink der Ergebnisliste ausschalten
+		// Standardverhalten (Value ins Eingabefeld schreiben) bei Ãœberschrift und Mehrlink der Ergebnisliste ausschalten
 		// Ebenso bei Klick auf "wisy_help"
 		var $span = $(ui.item.label);
 		var $to = $(event.toElement);
@@ -467,7 +476,7 @@ if (jQuery.ui)
 		else
 		{
 	
-			// Neuen Autocomplete-Wert nach evtl. bereits vorhandenen einfügen
+			// Neuen Autocomplete-Wert nach evtl. bereits vorhandenen einfÃ¼gen
 			var terms = split( this.value );
 			// remove the current input
 			terms.pop();
@@ -524,7 +533,7 @@ if (jQuery.ui)
 
 /******************************************************************************
 jQuery UI Autocomplete HTML Extension 
-Copyright 2010, Scott González (http://scottgonzalez.com)
+Copyright 2010, Scott GonzÃ¡lez (http://scottgonzalez.com)
 Dual licensed under the MIT or GPL Version 2 licenses. 
 http://github.com/scottgonzalez/jquery-ui-extensions
 ******************************************************************************/
@@ -619,6 +628,53 @@ function advEmbedViaAjax()
 	var rnd = justnow.getTime();	
 	$("#wisy_searcharea").after('<div id="advEmbedded" style="display: none;"></div>');
 	$("#advEmbedded").load('advanced?ajax=1&ie=UTF-8&rnd='+rnd+'&q='+encodeURIComponent(q), advEmbeddingViaAjaxDone);
+	return false;
+}
+
+function filterEmbeddingViaAjaxDone()
+{
+	// show filter form
+	$("#filterEmbedded").show(500);
+	
+	// remove the loading indicatiot
+	$("#wisy_searchinput").removeClass('filter_loading');
+	
+	// ajaxify the "close" button
+	$("#filter_close").click(function()
+	{
+		// hide filter form
+		$('#wisy_searchinput').removeClass('filter_open');
+		$("#filterEmbedded").hide(300, function(){ $("#filterEmbedded").remove() });
+		
+		// done
+		return false;
+	});
+}
+
+function filterEmbedViaAjax()
+{
+	// Close Filter form if already open
+	if($("#wisy_searchinput").hasClass('filter_open')) {
+		$('#wisy_searchinput').removeClass('filter_open');
+		$("#filterEmbedded").hide(300, function(){ $("#filterEmbedded").remove() });
+		return false;
+	}
+	
+	// add the loading indicator and active indicator
+	$("#wisy_searchinput").addClass('filter_open filter_loading');
+	
+	// create query string
+	var q = $("#wisy_searchinput").val(); // for some reasons, q is UTF-8 encoded, so we use this charset as ie= below
+	if( $("#wisy_beiinput").length ) {
+		var bei = $("#wisy_beiinput").val(); if( bei != '' ) { q += ', bei:' + bei; }
+		var km  = $("#wisy_kmselect").val(); if( km  != '' ) { q += ', km:'  + km;  }
+	}
+	
+	// create and load the advanced options
+	var justnow = new Date();
+	var rnd = justnow.getTime();	
+	$("#wisy_searcharea").after('<div id="filterEmbedded" style="display: none;"></div>');
+	$("#filterEmbedded").load('filter?ajax=1&ie=UTF-8&rnd='+rnd+'&q='+encodeURIComponent(q), filterEmbeddingViaAjaxDone);
 	return false;
 }
 
@@ -721,10 +777,10 @@ function editDurchfLoeschen(jqObj)
 {
 	if( $('.editDurchfRow').size() == 1 )
 	{
-		alert("Diese Durchführung kann nicht gelöscht werden, da ein Kurs mindestens eine Durchführung haben muss.\n\nWenn Sie den Kurs komplett löschen möchten, verwenden Sie die Option \"Kurs löschen\" ganz unten auf dieser Seite.");
+		alert("Diese DurchfÃ¼hrung kann nicht gelÃ¶scht werden, da ein Kurs mindestens eine DurchfÃ¼hrung haben muss.\n\nWenn Sie den Kurs komplett lÃ¶schen mÃ¶chten, verwenden Sie die Option \"Kurs lÃ¶schen\" ganz unten auf dieser Seite.");
 		return;
 	}
-	else if( confirm("Diese Durchführung löschen?") )
+	else if( confirm("Diese DurchfÃ¼hrung lÃ¶schen?") )
 	{
 		editFindDurchfRow(jqObj).remove();
 	}
@@ -741,7 +797,7 @@ function editDurchfKopieren(jqObj)
 
 function editKursLoeschen(jqObj)
 {
-	if( confirm("Wenn Sie einen Kurs löschen möchten, wird zunächst ein Sperrvermerk gesetzt; beim nächsten Index-Update wird der Kurs dann inkl. aller Durchführungen komplett gelöscht. Dieser Vorgang kann nicht rückgängig gemacht werden!\n\nDen kompletten Kurs inkl. ALLER Durchführungen löschen?") )
+	if( confirm("Wenn Sie einen Kurs lÃ¶schen mÃ¶chten, wird zunÃ¤chst ein Sperrvermerk gesetzt; beim nÃ¤chsten Index-Update wird der Kurs dann inkl. aller DurchfÃ¼hrungen komplett gelÃ¶scht. Dieser Vorgang kann nicht rÃ¼ckgÃ¤ngig gemacht werden!\n\nDen kompletten Kurs inkl. ALLER DurchfÃ¼hrungen lÃ¶schen?") )
 	{
 		return true;
 	}
@@ -750,7 +806,7 @@ function editKursLoeschen(jqObj)
 
 function editWeekdays(jqObj)
 {
-	// jqObj ist der Text; ein click hierauf soll das nebenliegende <input type=hidden> ändern
+	// jqObj ist der Text; ein click hierauf soll das nebenliegende <input type=hidden> Ã¤ndern
 	var hiddenObj = jqObj.parent().find('input');
 	if( hiddenObj.val() == '1' )
 	{
@@ -786,22 +842,22 @@ function describeFeedback()
 	}
 	else
 	{
-		$('#wisy_feedback_line2').html('<strong style="color: green;">Vielen Dank für Ihren Kommentar!</strong>');
-		ajaxFeedback(0, descr); // Kommentar zur Bewertung hinzufügen; die Bewertung selbst (erster Parameter) wird an dieser Stelle ignoriert!
+		$('#wisy_feedback_line2').html('<strong style="color: green;">Vielen Dank fÃ¼r Ihren Kommentar!</strong>');
+		ajaxFeedback(0, descr); // Kommentar zur Bewertung hinzufÃ¼gen; die Bewertung selbst (erster Parameter) wird an dieser Stelle ignoriert!
 	}
 }
 
 function sendFeedback(rating)
 {
-	$('#wisy_feedback_yesno').html('&nbsp; &nbsp;<strong style="color: green;">Vielen Dank für Ihr Feedback!</strong>');
+	$('#wisy_feedback_yesno').html('&nbsp; &nbsp;<strong style="color: green;">Vielen Dank fÃ¼r Ihr Feedback!</strong>');
 	
 	if( rating == 0 )
 	{
 		$('#wisy_feedback_line1').after(
 				'<p id="wisy_feedback_line2">'
-			+		'Bitte schildern Sie uns noch kurz, warum diese Information nicht hilfreich war und was wir besser machen können:<br />'
+			+		'Bitte schildern Sie uns noch kurz, warum diese Information nicht hilfreich war und was wir besser machen kÃ¶nnen:<br />'
 				+	'<textarea id="wisy_feedback_descr" name="wisy_feedback_descr" rows="2" cols="20" style="width: 400px;"></textarea><br />'
-				+	'Wenn Sie eine Antwort wünschen, geben Sie bitte auch Ihre E-Mail-Adresse an.<br />'
+				+	'Wenn Sie eine Antwort wÃ¼nschen, geben Sie bitte auch Ihre E-Mail-Adresse an.<br />'
 				+	'<input type="submit" onclick="describeFeedback(); return false;" value="Kommentar senden" />'
 			+	'</p>'
 		);
@@ -813,7 +869,7 @@ function sendFeedback(rating)
 				'<p id="wisy_feedback_line2">'
 			+		'Bitte schildern Sie uns kurz, was hilfreich war, damit wir Bew&auml;hrtes bewahren und ausbauen:<br />'
 				+	'<textarea id="wisy_feedback_descr" name="wisy_feedback_descr" rows="2" cols="20" style="width: 400px;"></textarea><br />'
-				+	'Wenn Sie eine Antwort wünschen, geben Sie bitte auch Ihre E-Mail-Adresse an.<br />'
+				+	'Wenn Sie eine Antwort wÃ¼nschen, geben Sie bitte auch Ihre E-Mail-Adresse an.<br />'
 				+	'<input type="submit" onclick="describeFeedback(); return false;" value="Kommentar senden" />'
 			+	'</p>'
 		);
@@ -919,7 +975,7 @@ $().ready(function()
 	// check for forwarding
 	var askfwd = $('body').attr('data-askfwd');
 	if( typeof askfwd != 'undefined' ) {
-		if( confirm('Von dieser Webseite gibt es auch eine Mobilversion unter ' + askfwd + '. Möchten Sie jetzt dorthin wechseln?') ) {
+		if( confirm('Von dieser Webseite gibt es auch eine Mobilversion unter ' + askfwd + '. MÃ¶chten Sie jetzt dorthin wechseln?') ) {
 			window.location = askfwd;
 			return;
 		}
@@ -943,6 +999,9 @@ $().ready(function()
 	
 	// handle "advanced search" via ajax
 	$("#wisy_advlink").click(advEmbedViaAjax);
+	
+	// handle "filter search" via ajax
+	$("#wisy_filterlink").click(filterEmbedViaAjax);
 	
 	// handle "paginate" via ajax
 	// currently, we NO NOT do so as this fails the "back button" to work correctly. Eg. the order and the page is not set when clicking a result and going back to the list.

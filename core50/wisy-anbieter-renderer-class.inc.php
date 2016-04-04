@@ -2,7 +2,7 @@
 
 
 
-require_once('admin/wiki2html.inc.php');
+require_once('admin/wiki2html8.inc.php');
 require_once('admin/classes.inc.php');
 
 
@@ -78,67 +78,79 @@ class WISY_ANBIETER_RENDERER_CLASS
 		
 		// load anbieter
 		$db->query("SELECT * FROM anbieter WHERE id=$anbieterId");
-		if( !$db->next_record() || $db->f('freigeschaltet')!=1 ) {
+		if( !$db->next_record() || $db->f8('freigeschaltet')!=1 ) {
 			return 'Dieser Anbieterdatensatz existiert nicht oder nicht mehr oder ist nicht freigeschaltet.';
 		}
 		
 		$kursId			= intval($kursId);
-		$suchname		= $db->fs('suchname');
-		$postname		= $db->fs('postname');
-		$strasse		= $db->fs('strasse');
-		$plz			= $db->fs('plz');
-		$ort			= $db->fs('ort');
-		$stadtteil		= $db->fs('stadtteil');
-		$land			= $db->fs('land');
-		$anspr_tel		= $db->fs('anspr_tel');
-		$anspr_fax		= $db->fs('anspr_fax');
-		$anspr_name		= $db->fs('anspr_name');
-		$anspr_email	= $db->fs('anspr_email');
-		$anspr_zeit		= $db->fs('anspr_zeit');
-		$homepage		= $db->fs('homepage');
+		$suchname		= $db->f8('suchname');
+		$postname		= $db->f8('postname');
+		$strasse		= $db->f8('strasse');
+		$plz			= $db->f8('plz');
+		$ort			= $db->f8('ort');
+		$stadtteil		= $db->f8('stadtteil');
+		$land			= $db->f8('land');
+		$anspr_tel		= $db->f8('anspr_tel');
+		$anspr_fax		= $db->f8('anspr_fax');
+		$anspr_name		= $db->f8('anspr_name');
+		$anspr_email	= $db->f8('anspr_email');
+		$anspr_zeit		= $db->f8('anspr_zeit');
+		$homepage		= $db->f8('homepage');
 		
-		$ob = new G_BLOB_CLASS($db->fs('logo'));
+		$ob = new G_BLOB_CLASS($db->f8('logo'));
 		$logo_name		= $ob->name;
 		$logo_w			= $ob->w;
 		$logo_h			= $ob->h;
 		
 		// do what to do ...
 		$ret  = '';
-		$ret .= '<i>'. isohtmlentities($postname? $postname : $suchname) . '</i>';
+		$ret .= '<div class="wisyr_anbieter_name" itemprop="name">'. htmlentities($postname? $postname : $suchname) . '</div>';
+		$ret .= '<div itemprop="address" itemscope itemtype="http://schema.org/PostalAddress">';
 
 		if( $strasse )
-			$ret .= '<br />' . isohtmlentities($strasse);
+			$ret .= '<div class="wisyr_anbieter_strasse" itemprop="streetAddress">' . htmlentities($strasse) . '</div>';
 
-		if( $plz || $ort )
-			$ret .= '<br />' . isohtmlentities($plz) . ' ' . isohtmlentities($ort);
+		if( $plz || $ort || $stadtteil || $land )
+			$ret .= '<div class="wisyr_anbieter_ort">';
+		
+		if( $plz )
+			$ret .= '<span class="wisyr_anbieter_plz" itemprop="postalCode">' . htmlentities($plz) . '</span>';
+		
+		if( $ort )
+			$ret .= ' <span class="wisyr_anbieter_ort" itemprop="addressLocality">' . htmlentities($ort) . '</span>';
 
 		if( $stadtteil ) {
-			$ret .= ($plz||$ort)? '-' : '<br />';
-			$ret .= isohtmlentities($stadtteil);
+			$ret .= ($plz||$ort)? '-' : '';
+			$ret .= ' <span class="wisyr_anbieter_stadtteil">' . htmlentities($stadtteil) . '</span>';
 		}
 
 		if( $land ) {
-			$ret .= ($plz||$ort||$stadtteil)? ', ' : '<br />';
-			$ret .= isohtmlentities($land);
+			$ret .= ($plz||$ort||$stadtteil)? ', ' : '';
+			$ret .= ' <span class="wisyr_anbieter_land" itemprop="adressRegion">' . htmlentities($land) . '</span>';
 		}
+		
+		if( $plz || $ort || $stadtteil || $land )
+			$ret .= '</div>';
+		
+		$ret .= '</div>';
 
 		if( $anspr_tel )
-			$ret .= '<br />Tel:&nbsp;'.isohtmlentities($anspr_tel);
+			$ret .= '<div class="wisyr_anbieter_telefon">Tel:&nbsp;<span itemprop="telephone">'.htmlentities($anspr_tel) . '</span></div>';
 
 		if( $anspr_fax )
-			$ret .= '<br />Fax:&nbsp;'.isohtmlentities($anspr_fax);
+			$ret .= '<div class="wisyr_anbieter_fax">Fax:&nbsp;<span itemprop="faxNumber">'.htmlentities($anspr_fax) . '</span></div>';
 
 		if( $anspr_name || $anspr_zeit )
 		{
-			$ret .= '<br /><small>';
+			$ret .= '<div class="wisyr_anbieter_ansprechpartner" itemprop="contactPoint" itemscope itemtype="http://schema.org/ContactPoint">';
 				if( $anspr_name )
-					$ret .= 'Kontakt: ' . isohtmlentities($anspr_name);
+					$ret .= '<span>Kontakt: ' . htmlentities($anspr_name) . '</span>';
 				if( $anspr_zeit )
 				{
 					$ret .= $anspr_name? ', ' : '';
-					$ret .= isohtmlentities($anspr_zeit);
+					$ret .= '<span itemprop="hoursAvailable">' . htmlentities($anspr_zeit) . '</span>';
 				}
-			$ret .= '</small>';
+			$ret .= '</div>';
 		}
 			
 		$MAX_URL_LEN = 31;
@@ -148,19 +160,17 @@ class WISY_ANBIETER_RENDERER_CLASS
 			 	$homepage = 'http:/'.'/'.$homepage;
 			}
 			
-			$ret .= "<br /><a href=\"$homepage\" target=\"_blank\"><i>" .isohtmlentities($this->trimLength($homepage, $MAX_URL_LEN)). '</i></a>';
+			$ret .= "<div class=\"wisyr_anbieter_homepage\" itemprop=\"url\"><a href=\"$homepage\" target=\"_blank\">" .htmlentities($this->trimLength($homepage, $MAX_URL_LEN)). '</a></div>';
 		}
 		
 		/* email*/
 		if( $anspr_email )
-		{ 
-			$ret .= "<br /><a href=\"".$this->createMailtoLink($anspr_email, $kursId)."\">" .isohtmlentities($this->trimLength($anspr_email, $MAX_URL_LEN  )). '</a>';
-		}
+			$ret .= "<div class=\"wisyr_anbieter_email\" itemprop=\"email\"><a href=\"".$this->createMailtoLink($anspr_email, $kursId)."\">" .htmlentities($this->trimLength($anspr_email, $MAX_URL_LEN  )). '</a></div>';
 		
 		/* logo */
 		if( $param['logo'] )
 		{
-			$ret .= '<br />';
+			$ret .= '<div class="wisyr_anbieter_logo">';
 			
 			if( $param['logoLinkToAnbieter'] )
 				$ret .= '<a href="'.$this->framework->getUrl('a', array('id'=>$anbieterId)).'">';
@@ -168,14 +178,13 @@ class WISY_ANBIETER_RENDERER_CLASS
 			if( $logo_w && $logo_h && $logo_name != '' )
 			{
 				$this->fit_to_rect($logo_w, $logo_h, 128, 64, $logo_w, $logo_h);
-				$ret .= "<img ".html3('vspace="5"')." src=\"{$wisyPortal}admin/media.php/logo/anbieter/$anbieterId/".urlencode($logo_name)."\" style=\"width: ".$logo_w."px; height: ".$logo_h."px;\" ".html3('border="0"')." alt=\"Anbieter Logo\" title=\"\" id=\"anbieterlogo\"/>";
-				
-				if( $param['logoLinkToAnbieter'] ) 
-					$ret .= '<span class="noprint"><br /></span>';
+				$ret .= "<span itemprop=\"logo\"><img src=\"{$wisyPortal}admin/media.php/logo/anbieter/$anbieterId/".urlencode($logo_name)."\" style=\"width: ".$logo_w."px; height: ".$logo_h."px;\" alt=\"Anbieter Logo\" title=\"\" id=\"anbieterlogo\"/></span>";
 			}
 			
 			if( $param['logoLinkToAnbieter'] )
-				$ret .= '<i class="noprint">Anbieterdetails anzeigen...</i></a>';
+				$ret .= 'Anbieterdetails anzeigen...</a>';
+			
+			$ret .= '</div>';
 		}
 		
 		return $ret;
@@ -191,35 +200,35 @@ class WISY_ANBIETER_RENDERER_CLASS
 		
 		// load anbieter
 		$db->query("SELECT * FROM anbieter WHERE id=$id");
-		if( !$db->next_record() || $db->f('freigeschaltet')!=1 ) {
+		if( !$db->next_record() || $db->f8('freigeschaltet')!=1 ) {
 			echo 'Dieser Anbieterdatensatz ist nicht freigeschaltet.'; // it exists, however, we've checked this [here]
 			return;
 		}
 		
-		$din_nr			= $db->fs('din_nr');
-		$suchname		= $db->fs('suchname');
-		$postname		= $db->fs('postname');
-		$strasse		= $db->fs('strasse');
-		$plz			= $db->fs('plz');
-		$ort			= $db->fs('ort');
-		$stadtteil		= $db->fs('stadtteil');
-		$land			= $db->fs('land');
-		$anspr_tel		= $db->fs('anspr_tel');
-		$anspr_fax		= $db->fs('anspr_fax');
-		$anspr_name		= $db->fs('anspr_name');
-		$anspr_email	= $db->fs('anspr_email');
-		$anspr_zeit		= $db->fs('anspr_zeit');
-		$typ            = intval($db->f('typ'));
+		$din_nr			= $db->f8('din_nr');
+		$suchname		= $db->f8('suchname');
+		$postname		= $db->f8('postname');
+		$strasse		= $db->f8('strasse');
+		$plz			= $db->f8('plz');
+		$ort			= $db->f8('ort');
+		$stadtteil		= $db->f8('stadtteil');
+		$land			= $db->f8('land');
+		$anspr_tel		= $db->f8('anspr_tel');
+		$anspr_fax		= $db->f8('anspr_fax');
+		$anspr_name		= $db->f8('anspr_name');
+		$anspr_email	= $db->f8('anspr_email');
+		$anspr_zeit		= $db->f8('anspr_zeit');
+		$typ            = intval($db->f8('typ'));
 		
-		$ob = new G_BLOB_CLASS($db->fs('logo'));
+		$ob = new G_BLOB_CLASS($db->f8('logo'));
 		$logo_name		= $ob->name;
 		$logo_w			= $ob->w;
 		$logo_h			= $ob->h;
 
-		$firmenportraet	= trim($db->fs('firmenportraet'));
-		$date_created	= $db->fs('date_created');
-		$date_modified	= $db->fs('date_modified');
-		$homepage		= $db->fs('homepage');
+		$firmenportraet	= trim($db->f8('firmenportraet'));
+		$date_created	= $db->f8('date_created');
+		$date_modified	= $db->f8('date_modified');
+		$homepage		= $db->f8('homepage');
 
 		if( $homepage ) {
 			if( substr($homepage, 0, 5) != 'http:'
@@ -236,7 +245,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		// prepare contact link
 		if( $anspr_email )
 		{
-			$anspr_mail_link = "<a href=\"" . $this->createMailtoLink($anspr_email) . "\"><i>" .isohtmlentities($anspr_email). '</i></a>';
+			$anspr_mail_link = "<a href=\"" . $this->createMailtoLink($anspr_email) . "\"><i>" .htmlentities($anspr_email). '</i></a>';
 		}
 	
 
@@ -254,7 +263,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 
 					echo '<h1>';
 						if( $typ == 2 ) echo '<span class="wisy_icon_beratungsstelle">Beratungsstelle<span class="dp">:</span></span> ';
-						echo isohtmlentities($suchname);
+						echo htmlentities($suchname);
 					echo '</h1>';
 
 				
@@ -266,7 +275,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 							if( $logo_w && $logo_h && $logo_name != '' )
 							{
 								$title = "";
-								/* - aufgrund der inneren konsistenz das logo nicht anklickbar gestalten - es ist ansonsten verwirrend, ob es zum portait oder zur homepage führt ...
+								/* - aufgrund der inneren konsistenz das logo nicht anklickbar gestalten - es ist ansonsten verwirrend, ob es zum portait oder zur homepage fÃ¼hrt ...
 								if( $homepage ) {
 									echo "<a href=\"$homepage\" target=\"_blank\">";
 									$title = "Der Anbieter im Internet";
@@ -310,91 +319,57 @@ class WISY_ANBIETER_RENDERER_CLASS
 						echo $wiki2html->run($firmenportraet);
 					}
 					
-					echo '<table cellpadding="0" cellspacing="0" border="0" class="">';
+					echo '<dl class="wisyr_anbieteradresse">';
 					
 						/* adresse */
-						echo '<tr>';
-							echo '<td valign="top">Adresse:&nbsp;</td>';
-							echo '<td valign="top">';
-							
-								if( $postname ) {
-									echo '<i>' . isohtmlentities($postname) . '</i>';
-								}
-								else {
-									echo '<i>' . isohtmlentities($suchname) . '</i>';
-								}
-								
-								if( $strasse ) {
-									echo '<br />';
-									echo isohtmlentities($strasse);
-								}
-								
-								if( $plz || $ort ) {
-									echo '<br />';
-									echo isohtmlentities($plz) . ' ' . isohtmlentities($ort);
-									if( $stadtteil ) {
-										echo '-' . isohtmlentities($stadtteil);
-									}
-								}
-					
-								if( $land ) {
-									echo '<br /><i>' . isohtmlentities($land) . '</i>';
-								}
-			
-							echo '</td>';
-						echo '</tr>';
+						echo '<dt>Adresse</dt>';
+						echo '<dd>';
+							echo $postname ? htmlentities($postname) : htmlentities($suchname);
+							if( $strasse ) { echo '<br />' . htmlentities($strasse); }
+							if( $plz || $ort ) { echo '<br />' . htmlentities($plz) . ' ' . htmlentities($ort); }
+							if( $stadtteil ) { echo '-' . htmlentities($stadtteil); }
+							if( $land ) { echo '<br />' . htmlentities($land); }
+						echo '</dd>';
 						
 						/* telefon */
 						if( $anspr_tel )
 						{
-							echo '<tr>';
-								echo '<td valign="top">Telefon:&nbsp;</td>';
-								echo '<td valign="top">' .isohtmlentities($anspr_tel). '</td>';
-							echo '</tr>';
+							echo '<dt>Telefon</dt>';
+							echo '<dd>' .htmlentities($anspr_tel). '</dd>';
 						}
 	
 						/* fax */
 						if( $anspr_fax )
 						{
-							echo '<tr>';
-								echo '<td valign="top">Fax:&nbsp;</td>';
-								echo '<td valign="top">' .isohtmlentities($anspr_fax). '</td>';
-							echo '</tr>';
+							echo '<dt>Fax</dt>';
+							echo '<dd>' .htmlentities($anspr_fax). '</dd>';
 						}
 	
 						/* ansprechpartner */
 						if( $anspr_name )
 						{
-							echo '<tr>';
-								echo '<td valign="top">Kontakt:&nbsp;</td>';
-								echo '<td valign="top">' .isohtmlentities($anspr_name). '</td>';
-							echo '</tr>';
+							echo '<dt>Kontakt</dt>';
+							echo '<dd>' .htmlentities($anspr_name). '</d>';
 						}
 						
 						if( $anspr_zeit )
 						{
-							echo '<tr>';
-								echo '<td valign="top">Sprechzeiten:&nbsp;</td>';
-								echo '<td valign="top">' .isohtmlentities($anspr_zeit). '</td>';
-							echo '</tr>';
+							echo '<dt>Sprechzeiten</dt>';
+							echo '<dd>' .htmlentities($anspr_zeit). '</dd>';
 						}
 	
 						/* email*/
 						if( $anspr_mail_link )
 						{
-							echo '<tr>';
-								echo '<td valign="top">EMail:&nbsp;</td>';
-								echo "<td valign=\"top\">" .$anspr_mail_link. '</td>';
-							echo '</tr>';
+							echo '<dt>EMail</dt>';
+							echo "<dd>" .$anspr_mail_link. '</dd>';
 						}
 						
 						/* internet */
 						if( $homepage )
 						{
-							echo '<tr>';
-								echo '<td valign="top" nowrap="nowrap">Der Anbieter im Internet:&nbsp;</td>';
-								echo "<td valign=\"top\"><a href=\"$homepage\" target=\"_blank\"><i>" .isohtmlspecialchars($homepage). '</i></a></td>';
-							echo '</tr>';
+							echo '<dt>Der Anbieter im Internet</dt>';
+							echo "<dd><a href=\"$homepage\" target=\"_blank\">" .htmlspecialchars($homepage). '</a></dd>';
 						}
 		
 						/* stichwoerter */
@@ -403,19 +378,17 @@ class WISY_ANBIETER_RENDERER_CLASS
 						}
 	
 						/* anbieter nr. */
-						echo '<tr>';
-							echo '<td valign="top">Anbieter-Nr.:&nbsp;</td>';
-							echo "<td valign=\"top\">";
-								if( $din_nr ) {
-									echo isohtmlentities($din_nr);
-								}
-								else {
-									echo $id;
-								}
-							echo '</td>';
-						echo '</tr>';
+						echo '<dt>Anbieter-Nr.</dt>';
+						echo "<dd>";
+							if( $din_nr ) {
+								echo htmlentities($din_nr);
+							}
+							else {
+								echo $id;
+							}
+						echo '</dd>';
 						
-					echo '</table>';
+					echo '</dl>';
 					
 					// -- 12:43 26.05.2014 der Link "zeige alle anbieter" ist nun oben unter dem Logo
 					//$qsuchname = strtr($suchname, ':,', '  ');
@@ -440,16 +413,16 @@ class WISY_ANBIETER_RENDERER_CLASS
 		$db->query("SELECT attr_id FROM anbieter_verweis WHERE primary_id=$anbieter_id ORDER BY structure_pos");
 		if( $db->next_record() )
 		{
-			$anbieter_id = intval($db->f('attr_id'));
+			$anbieter_id = intval($db->f8('attr_id'));
 		}
 
 		// check for existance, get title
 		$db->query("SELECT suchname, typ FROM anbieter WHERE id=$anbieter_id");
 		if( !$db->next_record() ) {
-			$this->framework->error404(); // record does not exist, reporta normal 404 error, not a "Soft 404", see  http://goo.gl/IKMnm -- für nicht-freigeschaltete Datensätze, s. [here]
+			$this->framework->error404(); // record does not exist, reporta normal 404 error, not a "Soft 404", see  http://goo.gl/IKMnm -- fÃ¼r nicht-freigeschaltete DatensÃ¤tze, s. [here]
 		}
-		$anbieter_suchname = $db->fs('suchname');
-		$typ               = intval($db->f('typ'));
+		$anbieter_suchname = $db->f8('suchname');
+		$typ               = intval($db->f8('typ'));
 
 
 		// promoted?

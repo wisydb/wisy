@@ -38,7 +38,7 @@ class WISY_SEARCH_NR_CLASS
 		$this->db->query($sql);
 		while( $this->db->next_record() ) 
 		{
-			$ret[] = $this->db->f('id');
+			$ret[] = $this->db->f8('id');
 		}
 
 		return $ret;

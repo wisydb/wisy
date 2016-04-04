@@ -87,7 +87,7 @@ class WISY_GOOGLEMAPS_CLASS
 				/*lower abbr*/	/*full engl., sorted by this column*/
 				'australien'	=>	'Australia',
 				'kuba'			=>	'Cuba',
-				'ägypten'		=>	'Egypt',
+				'Ã¤gypten'		=>	'Egypt',
 				'f'				=>	'France',
 				'd'				=>	'Germany',
 				'i'				=>	'Italy',
@@ -105,11 +105,11 @@ class WISY_GOOGLEMAPS_CLASS
 				'e'				=>	'Spain',
 				's'				=>	'Sweden',
 				'tr'			=>	'Turkey',
-				'türkei'		=>	'Turkey',
+				'tÃ¼rkei'		=>	'Turkey',
 				'gb'			=>	'UK',
-				'großbrit'		=>	'UK',
-				'großbrit.'		=>	'UK',
-				'großbritanien'	=>	'UK',
+				'groÃŸbrit'		=>	'UK',
+				'groÃŸbrit.'		=>	'UK',
+				'groÃŸbritanien'	=>	'UK',
 				'us'			=>	'USA',
 			);
 			$temp = $g_countryTransl;
@@ -175,7 +175,7 @@ class WISY_GOOGLEMAPS_CLASS
 
 			// some basic corrections
 			
-			// zusätze bei der straße weglassen (etwa "Ecke Mateos Gag")
+			// zusÃ¤tze bei der straÃŸe weglassen (etwa "Ecke Mateos Gag")
 			$p = strpos($strasse, '(');
 			if( $p )
 			{
@@ -186,7 +186,7 @@ class WISY_GOOGLEMAPS_CLASS
 			if( intval($plz) == 0 )
 				$plz = '';
 			
-			// Quito/Ecuador o.ä. als Stadt ...
+			// Quito/Ecuador o.Ã¤. als Stadt ...
 			if( substr_count($stadt, '/')==1 )
 			{
 				$temp = explode('/', $stadt);
@@ -208,7 +208,7 @@ class WISY_GOOGLEMAPS_CLASS
 				$stadt = '';
 			}
 	
-			// ... einige Abk. auflösen
+			// ... einige Abk. auflÃ¶sen
 			if( $this->normaliseCountry($land) )
 				$land = $this->normaliseCountry($land);
 
@@ -355,7 +355,7 @@ class WISY_GOOGLEMAPS_CLASS
 				
 				if( sizeof($this->adr) > 1 )
 				{
-					$this->adr[$i]['descr'] .= '<br /><br /><small><a title="'.isohtmlentities($nextShortDescr).'" href="javascript:gm_panToNext();">Nächster Ort...</small></a>';
+					$this->adr[$i]['descr'] .= '<br /><br /><small><a title="'.htmlentities($nextShortDescr).'" href="javascript:gm_panToNext();">NÃ¤chster Ort...</small></a>';
 				}
 				
 				$allInfo .= "gm_allAdr[$i]='{$this->adr[$i]['highQ']}';gm_allDescr[$i]='{$this->adr[$i]['descr']}';";

@@ -210,6 +210,11 @@ class DB_Sql
 		return $this->Record[$Name];	// if possible, always use fs() instead of f() - this makes stuff compatible to SQLite
 										// stripslashes() is no longer needed, mysql_fetch_assoc() does _not_ add slashes (and has never done before)
 	}
+	
+	function f8($Name)
+	{
+		return utf8_encode($this->Record[$Name]);	// UTF-8 encode because the DB is still ISO-encoded. Used in core50
+	}
 
 	function affected_rows() 
 	{

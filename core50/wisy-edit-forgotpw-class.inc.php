@@ -48,8 +48,8 @@ class WISY_EDIT_FORGOTPW_CLASS
 			$db->query($sql);
 			if( $db->next_record() )
 			{
-				$f_id = $db->fs('id');
-				$f_email = $db->fs('pflege_email');
+				$f_id = $db->f8('id');
+				$f_email = $db->f8('pflege_email');
 				if( !$db->next_record() ) 
 				{
 					if( $f_email != '' )
@@ -73,11 +73,11 @@ class WISY_EDIT_FORGOTPW_CLASS
 						$f_mailbody = 
 "Hallo $f_email -
 
-Sie, oder jemand der sich als Kursanbieter auf __HTTP_HOST__ bzw. __NAME__ ausgegeben hat, haben unter http://__HTTP_HOST__/edit ein neues Passwort für Ihren Account beantragt.
+Sie, oder jemand der sich als Kursanbieter auf __HTTP_HOST__ bzw. __NAME__ ausgegeben hat, haben unter http://__HTTP_HOST__/edit ein neues Passwort fÃ¼r Ihren Account beantragt.
 
 Wenn Sie KEIN neus Passwort beantragt haben, oder wenn Ihnen Ihr altes Passwort zwischenzeitlich wieder eingefallen ist, ignorieren und loeschen Sie bitte diese E-Mail.
 
-Nur WENN Sie ein neues Passwort beantragt haben, klicken Sie bitte auf den folgenden Verweis, um ein neues Passwort zu erhalten und sich damit wieder in Ihrem Account einloggen zu können: $f_link 
+Nur WENN Sie ein neues Passwort beantragt haben, klicken Sie bitte auf den folgenden Verweis, um ein neues Passwort zu erhalten und sich damit wieder in Ihrem Account einloggen zu kÃ¶nnen: $f_link 
 
 Mit freundlichen Gruessen,
 __NAME__";
@@ -89,11 +89,11 @@ __NAME__";
 						if( $this->sendMail($f_email, $f_subject, $f_mailbody) )
 						{
 							$msg= 'Wir haben an die bei uns hinterlegte E-Mail-Adresse <b>erfolgreich</b> ein neues Passwort gesandt. 
-								   Bitte überprüfen Sie nun Ihren E-Mail-Account ('.isohtmlspecialchars($f_email_shortened).') und folgen Sie den dort angegebenen Anweisungen.';
+								   Bitte Ã¼berprÃ¼fen Sie nun Ihren E-Mail-Account ('.htmlspecialchars($f_email_shortened).') und folgen Sie den dort angegebenen Anweisungen.';
 						}
 						else
 						{
-							$msg = '<b>Fehler:</b> Kann die E-Mails mit dem neuen Passwort nicht an '.isohtmlspecialchars($f_email_shortened).' versenden; bitte wenden Sie sich direkt an uns.';
+							$msg = '<b>Fehler:</b> Kann die E-Mails mit dem neuen Passwort nicht an '.htmlspecialchars($f_email_shortened).' versenden; bitte wenden Sie sich direkt an uns.';
 							$logwriter->addData('error', 'Kann E-Mail nicht senden.');
 							$showForm = false;
 						}
@@ -130,17 +130,17 @@ __NAME__";
 			$db->query("SELECT id, suchname, notizen FROM anbieter WHERE id=$anbieterId AND pflege_pweinst&1;");
 			if( $db->next_record() )
 			{
-				$anbieterSuchname = $db->fs('suchname');
+				$anbieterSuchname = $db->f8('suchname');
 				$newpassword = genpassword();
-				$notizen = strftime('%d.%m.%y') . ": Neues Passwort mit Passwort-Vergessen-Funktion generiert\n" . $db->fs('notizen');
+				$notizen = strftime('%d.%m.%y') . ": Neues Passwort mit Passwort-Vergessen-Funktion generiert\n" . $db->f8('notizen');
 				
 				$db->query("UPDATE anbieter SET pflege_passwort=".$db->quote(crypt($newpassword)).", notizen=".$db->quote($notizen)." WHERE id=$anbieterId;");
 				
 				$this->dbCache->insert('forgotpw.'.$_REQUEST['c'], 0);
 				
-				$msg = "Ihr <b>neues Passwort</b> für den Login als Anbieter <i>".isohtmlspecialchars($anbieterSuchname)."</i> lautet:<br /><br /> 
+				$msg = "Ihr <b>neues Passwort</b> fÃ¼r den Login als Anbieter <i>".htmlspecialchars($anbieterSuchname)."</i> lautet:<br /><br /> 
 					<b style=\"font-size: 14pt;\">$newpassword</b><br /><br />Bitte merken sie sich das Passwort jetzt oder notieren Sie es an einem sicheren Platz. 
-					Danach können Sie sich mit Ihrem neuen Passwort <a href=\"edit?action=login&amp;as=".urlencode($anbieterSuchname)."\"><b>hier einloggen</b></a>.";
+					Danach kÃ¶nnen Sie sich mit Ihrem neuen Passwort <a href=\"edit?action=login&amp;as=".urlencode($anbieterSuchname)."\"><b>hier einloggen</b></a>.";
 				$showForm = false;
 				
 				$logwriter->log('anbieter', $anbieterId, $this->adminAnbieterUserId, 'resetpw');
@@ -175,7 +175,7 @@ __NAME__";
 					echo "<input type=\"hidden\" name=\"pwsubseq\" value=\"1\" />";
 					echo '<tr>';
 						echo '<td nowrap="nowrap">Anbietername oder -ID oder E-Mail-Adresse:</td>';
-						echo "<td><input type=\"text\" name=\"as\" value=\"".isohtmlspecialchars($anbieterSuchname)."\" size=\"50\" /></td>";
+						echo "<td><input type=\"text\" name=\"as\" value=\"".htmlspecialchars($anbieterSuchname)."\" size=\"50\" /></td>";
 					echo '</tr>';
 					echo '<tr>';
 						echo '<td nowrap="nowrap">';
@@ -213,9 +213,9 @@ __NAME__";
 		if( substr($_SERVER['HTTP_HOST'], -6)=='.local' )
 		{
 			echo '<pre>';
-				echo 'To: ' . isohtmlspecialchars($to) . "\n";
-				echo 'Subject: ' . isohtmlspecialchars($subject) . "\n\n";
-				echo isohtmlspecialchars($text);
+				echo 'To: ' . htmlspecialchars($to) . "\n";
+				echo 'Subject: ' . htmlspecialchars($subject) . "\n\n";
+				echo htmlspecialchars($text);
 			echo '</pre>';
 			return true;
 		}

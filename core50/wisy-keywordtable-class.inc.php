@@ -41,13 +41,13 @@ class WISY_KEYWORDTABLE_CLASS
 			WISY_KEYWORDTABLE_CLASS::$keywords = array();
 			$this->db->query("SELECT id, stichwort, eigenschaften, zusatzinfo, glossar FROM stichwoerter;");
 			while( $this->db->next_record() ) {
-				WISY_KEYWORDTABLE_CLASS::$keywords[ $this->db->f('id') ] = $this->db->Record;
+				WISY_KEYWORDTABLE_CLASS::$keywords[ $this->db->f8('id') ] = $this->db->Record;
 			}
 
 			WISY_KEYWORDTABLE_CLASS::$sw_modified = '0000-00-00 00:00:00';
 			$this->db->query("SELECT MAX(date_modified) d FROM stichwoerter;");
 			if( $this->db->next_record() ) {
-				WISY_KEYWORDTABLE_CLASS::$sw_modified = $this->db->f('d');
+				WISY_KEYWORDTABLE_CLASS::$sw_modified = $this->db->f8('d');
 			}			
 		}		
 	}
@@ -73,28 +73,31 @@ class WISY_KEYWORDTABLE_CLASS
 		else if( $tag_type & 512 )	{ $row_class = "ac_ort";                  $row_preposition = ' zum '; $row_postfix = 'Ort'; }
 		else if( $tag_type & 1024 )	{ $row_class = "ac_sonstigesmerkmal";     $row_preposition = ' zum '; $row_postfix = 'sonstigen Merkmal'; }
 		else if( $tag_type & 32768 ){ $row_class = "ac_unterrichtsart";       $row_preposition = ' zur '; $row_postfix = 'Unterrichtsart'; }
-	
+
+		/* frequency, end base type */
+		if( $tag_freq > 0 )
+		{
+			$row_postfix = ($tag_freq==1? '1 Kurs' : "$tag_freq Kurse") . $row_preposition . $row_postfix;
+		}
+
+		if( $tag_descr )
+		{
+			$row_postfix = $tag_descr . ', ' . $row_postfix;
+		}
+
+		if( $row_postfix != '' )
+		{
+			$row_postfix = ' <span class="ac_tag_type">(' . $row_postfix . ')</span> ';
+		}
+
 		/*col1*/
 		$ret .= '<span class="' .$row_class. '">';
-			$ret .= ' <a href="' . $this->framework->getUrl('search', array('q'=>$tag_name)) . '">' . isohtmlspecialchars($tag_name) . '</a> ';
+			$ret .= ' <a href="' . $this->framework->getUrl('search', array('q'=>$tag_name)) . '">' . htmlspecialchars($tag_name) . '</a> ';
+			$ret .= $row_postfix;
 		$ret .= '</span>';
 		
 		/*col2*/
-		$ret .= '</td><td align="right" nowrap="nowrap">';
-		$ret .= ($tag_freq==1? '1 Kurs' : "$tag_freq Kurse");
-		
-		/*col3*/
-		$ret .= '</td><td nowrap="nowrap">';		
-		$ret .= $row_preposition . $row_postfix;
-		
-		/*col4*/
-		$ret .= '</td><td width="35%">';
-		if( $tag_descr ) {
-			$ret .= ' <span class="">' . $tag_descr . '</span> ';
-		}
-		
-		/*col5*/
-		$ret .= '</td><td nowrap="nowrap">';
+		$ret .= '</td><td width="10%" nowrap="nowrap" align="center">';
 		if( $tag_help != 0 )
 		{
 			$ret .=
@@ -111,9 +114,9 @@ class WISY_KEYWORDTABLE_CLASS
 		$icon_arr_right = '&nbsp;&#9654;';
 		$icon_empty = '&nbsp;&bull;&nbsp;';
 				
-		$title = WISY_KEYWORDTABLE_CLASS::$keywords[ $keywordId ]['stichwort'];
+		$title = utf8_encode(WISY_KEYWORDTABLE_CLASS::$keywords[ $keywordId ]['stichwort']);
 		$url = 'search?q=' . urlencode(g_sync_removeSpecialChars($title));
-		$zusatzinfo = WISY_KEYWORDTABLE_CLASS::$keywords[ $keywordId ]['zusatzinfo'];
+		$zusatzinfo = utf8_encode(WISY_KEYWORDTABLE_CLASS::$keywords[ $keywordId ]['zusatzinfo']);
 		$tag_type = WISY_KEYWORDTABLE_CLASS::$keywords[ $keywordId ]['eigenschaften'];
 		$glossarId = WISY_KEYWORDTABLE_CLASS::$keywords[ $keywordId ]['glossar'];
 				
@@ -121,7 +124,7 @@ class WISY_KEYWORDTABLE_CLASS
 		$tag_id = 0;
 		$this->db->query("SELECT tag_id, tag_type FROM x_tags WHERE tag_name=".$this->db->quote($title));
 		if( $this->db->next_record() ) {
-			$tag_id = $this->db->f('tag_id');
+			$tag_id = $this->db->f8('tag_id');
 		} 
 		
 		// get row type, class etc.
@@ -137,7 +140,7 @@ class WISY_KEYWORDTABLE_CLASS
 		}
 		
 		$ret = "<tr data-indent=\"$level\" $trstyle>";
-			$ret .= '<td style="padding-left:'.intval($level*2).'em" width="45%">';
+			$ret .= '<td style="padding-left:'.intval($level*2).'em" width="90%">';
 			
 				if( $hasChildren ) {
 					$ret .= "<a href=\"#\" class=\"wisy_glskeyexp\" data-glskeyaction=\"".($expanded? "shrink":"expand")."\">";
@@ -172,7 +175,7 @@ class WISY_KEYWORDTABLE_CLASS
 		$child_ids = array();
 		$this->db->query("SELECT attr_id FROM stichwoerter_verweis2 WHERE primary_id=$keywordId ORDER BY structure_pos;");
 		while( $this->db->next_record() ) {
-			$child_ids[] = $this->db->f('attr_id');
+			$child_ids[] = $this->db->f8('attr_id');
 		}
 
 		$showempty = $this->showempty;
@@ -197,7 +200,7 @@ class WISY_KEYWORDTABLE_CLASS
 	public function getHtml()
 	{
 		// is the result in the cache?
-		$cacheVersion = 'v5';
+		$cacheVersion = 'v7';
 		$cacheKey = "wisykwt.$cacheVersion.".$GLOBALS['wisyPortalId'].".$this->args".".".WISY_KEYWORDTABLE_CLASS::$sw_modified;
 		if( ($ret=$this->dbCache->lookup($cacheKey))!='' && substr($_SERVER['HTTP_HOST'], -6)!='.local' ) {
 			$ret = str_replace('<div class="wisy_glskeytime">', '<div class="wisy_glskeytime">Cached, ', $ret);
@@ -246,11 +249,9 @@ class WISY_KEYWORDTABLE_CLASS
 		$ret = '<table class="wisy_glskey">'
 			.		'<thead>'
 			.			'<tr>'
-			.				'<td>Rechercheziele</td>'
-			.				'<td align="right">Angebote</td>'	
-			.				'<td>Kategorie</td>'		
-			.				'<td colspan="2">Zusatzinfo</td>'	
-			.			'<tr>'
+			.				'<td width="90%">Rechercheziele</td>'
+			.				'<td width="10%">Ratgeber</td>'	
+			.			'</tr>'
 			.		'</thead>'
 			.		'<tbody>'
 			.			$ret

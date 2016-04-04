@@ -89,8 +89,8 @@ class WISY_PROMOTE_CLASS
 		$this->db->query("SELECT promote_mode, promote_param FROM anbieter_promote WHERE anbieter_id=$anbieterId AND portal_id=$wisyPortalId AND promote_active=1;");
 		if( $this->db->next_record() )
 		{
-			$promote_mode = $this->db->f('promote_mode');
-			$promote_param = $this->db->f('promote_param');
+			$promote_mode = $this->db->f8('promote_mode');
+			$promote_param = $this->db->f8('promote_param');
 			$promote_active = 1;
 			switch( $promote_mode )
 			{
@@ -111,7 +111,7 @@ class WISY_PROMOTE_CLASS
 		}
 
 		// DONE
-		/* - EDIT 05.03.2011: cache objekte werde nach ca. 30 minuten wieder freigegeben; wenn in dieser Zeit noch Kurse zusätzlich promoted werden ist es halt glück für die Anbieter ...
+		/* - EDIT 05.03.2011: cache objekte werde nach ca. 30 minuten wieder freigegeben; wenn in dieser Zeit noch Kurse zusÃ¤tzlich promoted werden ist es halt glÃ¼ck fÃ¼r die Anbieter ...
 		if( $cleanupCache )
 		{
 			$dbCache =& createWisyObject('WISY_CACHE_CLASS', $this->framework, array('table' => 'x_cache_search'));
@@ -149,7 +149,7 @@ class WISY_PROMOTE_CLASS
 		global $wisyPortalId;
 		$this->db->query("SELECT lparam FROM anbieter_promote_log WHERE anbieter_id=$anbieterId AND portal_id=$wisyPortalId AND event_type=2001;");
 		$this->db->next_record();
-		$credits = intval($this->db->f('lparam'));
+		$credits = intval($this->db->f8('lparam'));
 		return $credits;
 	}
 	

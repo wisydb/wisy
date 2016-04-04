@@ -4,8 +4,8 @@
  WISY 2.0
  ******************************************************************************
  Spezielle Informationen berechnen und cachen.
- Hierzu gehören z.B. die Förderungsmöglichkeiten, die für ein bestimmtes
- Portal tatsächlich zur Verfügung stehen
+ Hierzu gehÃ¶ren z.B. die FÃ¶rderungsmÃ¶glichkeiten, die fÃ¼r ein bestimmtes
+ Portal tatsÃ¤chlich zur VerfÃ¼gung stehen
  ******************************************************************************/
 
 
@@ -28,7 +28,7 @@ class WISY_SPECIAL_INFO_CLASS
 		$db->query("SELECT stichwort, id FROM stichwoerter WHERE eigenschaften=$flag;");
 		while( $db->next_record() )
 		{
-			$stichw = $db->fs('stichwort');
+			$stichw = $db->f8('stichwort');
 			$stichw = trim(strtr($stichw, array(': '=>' '	,	
 												':'	=>' '	,
 												', '=>' '	,
@@ -39,7 +39,7 @@ class WISY_SPECIAL_INFO_CLASS
 			if( $searcher->getKurseCount() )
 			{
 				$ids_str .= $ids_str == ''? '' : ', ';
-				$ids_str .= intval($db->f('id'));
+				$ids_str .= intval($db->f8('id'));
 			}
 		}
 		

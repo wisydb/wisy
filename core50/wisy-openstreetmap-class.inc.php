@@ -108,7 +108,7 @@ class G_GEOCODE
 		
 		if( !is_array($this->geocode_ret) ) {
 		
-			// echo isohtmlspecialchars(print_r($data,true));
+			// echo htmlspecialchars(print_r($data,true));
 			return array('error'=>'err_geocode_badxml');
 		}
 		
@@ -155,7 +155,7 @@ class WISY_OPENSTREETMAP_CLASS
 				/*lower abbr*/	/*full engl., sorted by this column*/
 				'australien'	=>	'Australia',
 				'kuba'			=>	'Cuba',
-				'‰gypten'		=>	'Egypt',
+				'√§gypten'		=>	'Egypt',
 				'f'				=>	'France',
 				'd'				=>	'Germany',
 				'i'				=>	'Italy',
@@ -173,11 +173,11 @@ class WISY_OPENSTREETMAP_CLASS
 				'e'				=>	'Spain',
 				's'				=>	'Sweden',
 				'tr'			=>	'Turkey',
-				't¸rkei'		=>	'Turkey',
+				't√ºrkei'		=>	'Turkey',
 				'gb'			=>	'UK',
-				'groﬂbrit'		=>	'UK',
-				'groﬂbrit.'		=>	'UK',
-				'groﬂbritanien'	=>	'UK',
+				'gro√übrit'		=>	'UK',
+				'gro√übrit.'		=>	'UK',
+				'gro√übritanien'	=>	'UK',
 				'us'			=>	'USA',
 			);
 			$temp = $g_countryTransl;
@@ -321,13 +321,13 @@ class WISY_OPENSTREETMAP_CLASS
 			$land		= $adr['land'];
 			if( $strasse=='' && $ort=='' ) { return array('error'=>'err_nostreetnocity'); }
 
-			// zus‰tze bei der straﬂe weglassen (etwa "Ecke Mateos Gag")
+			// zus√§tze bei der stra√üe weglassen (etwa "Ecke Mateos Gag")
 			$p = strpos($strasse, '('); if( $p ) { $strasse = trim(substr($strasse, 0, $p)); }			
 
 			// ... manchmal wird die PLZ als 00000 angegeben
 			if( intval($plz) == 0 ) { $plz = ''; }
 
-			// Quito/Ecuador o.‰. als Ort ...
+			// Quito/Ecuador o.√§. als Ort ...
 			if( substr_count($ort, '/')==1 ) {
 				$temp = explode('/', $ort);
 				if( $land == '' ) {

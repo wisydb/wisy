@@ -6,13 +6,13 @@
  * konkret gibt es die fogenden Caches:
  *
  * x_cache_search	dieser Cache wird komplett verworfen, wenn irgendwelche
- *                  Änderungen von der Redaktion vorgenommen werden; dieser
- *                  Cache ist also - zumindest in der Woche tagsüber - sehr
- *                  kurzlebig.  Außerdem wird der Cache bei den nächtlichen
- *                  Aufräumarbeiten komplett verworfen, damit Anfragen wie
- *                  "beginnt morgen" neu erzeugt werden können.
- * x_cache_rss		dieser Cache wird für RSS-Anfragen verwendet, er wird nicht
- *                  bei jeder Änderung der Redaktion verworfen, sondern nur
+ *                  Ã„nderungen von der Redaktion vorgenommen werden; dieser
+ *                  Cache ist also - zumindest in der Woche tagsÃ¼ber - sehr
+ *                  kurzlebig.  AuÃŸerdem wird der Cache bei den nÃ¤chtlichen
+ *                  AufrÃ¤umarbeiten komplett verworfen, damit Anfragen wie
+ *                  "beginnt morgen" neu erzeugt werden kÃ¶nnen.
+ * x_cache_rss		dieser Cache wird fÃ¼r RSS-Anfragen verwendet, er wird nicht
+ *                  bei jeder Ã„nderung der Redaktion verworfen, sondern nur
  *                  einmal nachts.
  ******************************************************************************
  * Details zu x_cache_search:            
@@ -20,13 +20,13 @@
  * eine Log-Auswertung via $framework->log() am 18.09.2009 brachte die folgende 
  * Statistik:
  *
- * cleanups: 728  (wenn die WISY-Datenbank von der Redaktion geändert wird,
+ * cleanups: 728  (wenn die WISY-Datenbank von der Redaktion geÃ¤ndert wird,
  *                wird der Cache verworfen)
  * inserts:  3801 (nach einer erfolgend Suche)
  * hits:     1780 (eine gesparte Suche)
  *
  * da ein Inserts und die Cleanups im Millisekonden bereich liegen, die Hits
- * aber im schnitt eine Sekunde dauern (speziell die häufigen Abfragen der 
+ * aber im schnitt eine Sekunde dauern (speziell die hÃ¤ufigen Abfragen der 
  * Startseite dauern etwas, wenn es einen Portalfilter gibt), lohnt sind das 
  * ganze wohl:
  *
@@ -79,7 +79,7 @@ class WISY_CACHE_CLASS
 			if( $this->itemLifetimeSeconds > 0 )
 			{
 				$deleteIfOlder = strftime("%Y-%m-%d %H:%M:%S", time()-$this->itemLifetimeSeconds);
-				if( $this->db->f('cdateinserted') < $deleteIfOlder )
+				if( $this->db->f8('cdateinserted') < $deleteIfOlder )
 				{
 					$this->db->query("DELETE FROM $this->table WHERE cdateinserted<'$deleteIfOlder';");
 					return "";
@@ -87,9 +87,9 @@ class WISY_CACHE_CLASS
 			}
 			
 			if( $this->storeBlobs )
-				return $this->db->f('cvalue');
+				return $this->db->f8('cvalue');
 			else
-				return $this->db->fs('cvalue');
+				return $this->db->f8('cvalue');
 		}
 		
 		return "";

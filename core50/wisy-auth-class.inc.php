@@ -3,16 +3,16 @@
 /******************************************************************************
  WISY 2.0
  ******************************************************************************
- Einfacher Passwortschutz für ein Portal, z.B. für Testzwecke.
+ Einfacher Passwortschutz fÃ¼r ein Portal, z.B. fÃ¼r Testzwecke.
  
  s.a. http://php.net/manual/de/features.http-auth.php ... was in der Praxis
- nicht klappt, wenn PHP als CGI wie unter domainfactory läuft (was durchaus
+ nicht klappt, wenn PHP als CGI wie unter domainfactory lÃ¤uft (was durchaus
  performant ist - und flexibel!)
  ******************************************************************************
  Achtung: Geringe Sicherheit!
  
  Das Passwort wird im Klartext in der Datenbank gespeichert und im Cookie
- nur durch ein einfaches md5() ohne salt etc. geschützt!
+ nur durch ein einfaches md5() ohne salt etc. geschÃ¼tzt!
  ******************************************************************************/
 
 
@@ -50,7 +50,7 @@ class WISY_AUTH_CLASS
 					<body>
 						<form action="" method="post" style="text-align: center; margin: 3em;">
 							Um fortzufahren, geben Sie bitte einen g&uuml;tigen Benutzernamen und ein g&uuml;ltiges Passwort ein: <br />
-							Benutzername: <input name="wisyauth1" type="text" value="<?php echo isohtmlspecialchars($_REQUEST['wisyauth1']) ?>" /><br />
+							Benutzername: <input name="wisyauth1" type="text" value="<?php echo htmlspecialchars($_REQUEST['wisyauth1']) ?>" /><br />
 							Passwort: <input name="wisyauth2" type="password" value="" /><br />
 							<input type="submit" value=" OK " />
 						</form>

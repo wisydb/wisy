@@ -2,7 +2,7 @@
 
 
 
-require_once("admin/wiki2html.inc.php");
+require_once("admin/wiki2html8.inc.php");
 
 
 
@@ -36,7 +36,7 @@ class WISY_WIKI2HTML_CLASS extends WIKI2HTML_CLASS
 		{
 			$this->db->query("SELECT id FROM glossar WHERE begriff='".addslashes($title)."' OR id=".intval($title));
 			$this->db->next_record();
-			return $this->framework->getHelpUrl(intval($this->db->f('id')));
+			return $this->framework->getHelpUrl(intval($this->db->f8('id')));
 		}
 		else
 		{
@@ -56,7 +56,7 @@ class WISY_WIKI2HTML_CLASS extends WIKI2HTML_CLASS
 			$db->query("SELECT begriff, begriff_sorted, id FROM glossar WHERE erklaerung!='' AND freigeschaltet=1 ORDER BY begriff_sorted");
 			while( $db->next_record() )
 			{
-				$thisChar = strtoupper(substr($db->fs('begriff_sorted'), 0, 1));
+				$thisChar = strtoupper(substr($db->f8('begriff_sorted'), 0, 1));
 				if( $thisChar >= 'A' && $thisChar != $lastChar )
 				{
 					if( $pStarted ) {$ret .= '</p>'; $pStarted = false;}
@@ -64,8 +64,8 @@ class WISY_WIKI2HTML_CLASS extends WIKI2HTML_CLASS
 					$ret .= '<p><big><b>'.$thisChar.'</b></big></p>';
 					$lastChar = $thisChar;
 				}
-				$begriff = isohtmlentities($db->fs('begriff'));
-				$idtemp = $db->f('id');
+				$begriff = htmlentities($db->f8('begriff'));
+				$idtemp = $db->f8('id');
 				
 				$ret .= $pStarted? '<br />' : '<p>';
 				$ret .= "<a href=\"".$this->framework->getHelpUrl($idtemp)."\">$begriff</a>";

@@ -22,7 +22,7 @@ class WISY_GLOSSAR_RENDERER_CLASS
 		}
 		else
 		{
-			return 'http:/'.'/de.m.wikipedia.org/w/index.php?title='.urlencode($artikel).''; // 28.10.2013 weiterleitung auf die Mobilversion - auch auf dem Desktop, s. Mail von Jürgen vom 26.10.2013
+			return 'http:/'.'/de.m.wikipedia.org/w/index.php?title='.urlencode($artikel).''; // 28.10.2013 weiterleitung auf die Mobilversion - auch auf dem Desktop, s. Mail von JÃ¼rgen vom 26.10.2013
 		}
 	}
 	
@@ -36,11 +36,11 @@ class WISY_GLOSSAR_RENDERER_CLASS
 		if( !$db->next_record() )
 			$this->framework->error404();
 
-		$begriff = $db->fs('begriff');
-		$erklaerung = $db->fs('erklaerung');
-		$wikipedia = $db->fs('wikipedia');
+		$begriff = $db->f8('begriff');
+		$erklaerung = $db->f8('erklaerung');
+		$wikipedia = $db->f8('wikipedia');
 
-		// Wenn es keine Erklärung, aber eine Wikipedia-Seite gibt -> Weiterleitung auf die entspr. Wikipedia-Seite
+		// Wenn es keine ErklÃ¤rung, aber eine Wikipedia-Seite gibt -> Weiterleitung auf die entspr. Wikipedia-Seite
 		if( $erklaerung == '' && $wikipedia != '' )
 		{
 			header('Location: ' . $this->getWikipediaUrl($wikipedia));
@@ -67,7 +67,7 @@ class WISY_GLOSSAR_RENDERER_CLASS
 				echo '<a href="javascript:history.back();">&laquo; Zur&uuml;ck</a>';
 				echo $this->framework->getLinkList('help.link', ' &middot; ');
 			echo '</p>';
-			echo '<h1>' . isohtmlspecialchars($begriff) . '</h1>';
+			echo '<h1>' . htmlspecialchars($begriff) . '</h1>';
 			flush();
 	
 			// render entry
@@ -85,7 +85,7 @@ class WISY_GLOSSAR_RENDERER_CLASS
 				$isB2b = (substr($wikipedia, 0, 4) == 'b2b:')? true : false;
 				
 				echo '<p>';
-					echo 'Weitere Informationen zu diesem Thema finden Sie <a href="'.isohtmlspecialchars($this->getWikipediaUrl($wikipedia)).'" target="_blank">';
+					echo 'Weitere Informationen zu diesem Thema finden Sie <a href="'.htmlspecialchars($this->getWikipediaUrl($wikipedia)).'" target="_blank">';
 						echo ' ' . ($isB2b? 'im Weiterbildungs-WIKI' : 'in der Wikipedia');
 					echo '</a>';
 				echo '</p>';

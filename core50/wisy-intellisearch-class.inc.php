@@ -22,7 +22,7 @@ class WISY_INTELLISEARCH_CLASS
 	
 		$this->searcher->prepare($queryString);
 		if( $this->searcher->tokens['show'] != 'kurse' )
-			return; // die intelligente Suche greift aktuell nur für die Suche nach Kursen
+			return; // die intelligente Suche greift aktuell nur fÃ¼r die Suche nach Kursen
 	
 		$this->kurseCount = $this->searcher->getKurseCount();
 		if( $this->kurseCount > 0 )

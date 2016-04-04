@@ -13,7 +13,7 @@ class WISY_ADVANCED_RENDERER_CLASS
 		$this->presets['q'] = array
 			(
 				'type'			=> 'text',
-				'descr'			=> '<strong>Suchwörter:</strong>',
+				'descr'			=> '<strong>SuchwÃ¶rter:</strong>',
 				'autocomplete'	=>	'ac_keyword',
 			);
 		$this->presets['datum'] = array
@@ -22,14 +22,14 @@ class WISY_ADVANCED_RENDERER_CLASS
 				'function'	=> 'Datum:',
 				'descr'		=> '<strong>Beginndatum:</strong>',
 				'options' 	=> array(
-					'Alles' 				=> 'auch abgelaufene Angebote berücksichtigen',
+					'Alles' 				=> 'auch abgelaufene Angebote berÃ¼cksichtigen',
 					$dates['vorgestern']	=> 'ab vorgestern',
 					$dates['gestern']		=> 'ab gestern',
 					''						=> 'ab heute',
 					$dates['morgen']		=> 'ab morgen',
-					$dates['uebermorgen']	=> 'ab übermorgen',
-					$dates['montag1']		=> 'nächste Woche &ndash; ab Montag, ' . $dates['montag1'],
-					$dates['montag2']		=> 'übernächste Woche &ndash; ab Montag, ' . $dates['montag2'],
+					$dates['uebermorgen']	=> 'ab Ã¼bermorgen',
+					$dates['montag1']		=> 'nÃ¤chste Woche &ndash; ab Montag, ' . $dates['montag1'],
+					$dates['montag2']		=> 'Ã¼bernÃ¤chste Woche &ndash; ab Montag, ' . $dates['montag2'],
 					$dates['montag3']		=> 'in 3 Wochen &ndash; ab Montag, ' . $dates['montag3'],
 					$dates['montag4']		=> 'in 4 Wochen &ndash; ab Montag, ' . $dates['montag4'],
 					$dates['montag5']		=> 'in 5 Wochen &ndash; ab Montag, ' . $dates['montag5'],
@@ -153,7 +153,7 @@ class WISY_ADVANCED_RENDERER_CLASS
 			$this->presets['foerderung'] = array
 				(
 					'type'		=> 'taglist',
-					'descr'		=> 'Förderung:',
+					'descr'		=> 'FÃ¶rderung:',
 					'options'	=>	$foerderungen
 				);
 		}
@@ -175,7 +175,7 @@ class WISY_ADVANCED_RENDERER_CLASS
 			$this->presets['qualitaetszertifikat'] = array
 				(
 					'type'		=> 'taglist',
-					'descr'		=> 'Qualitätszertifikat:',
+					'descr'		=> 'QualitÃ¤tszertifikat:',
 					'options'	=>	$qualitaetszertifikate
 				);
 		}
@@ -209,7 +209,7 @@ class WISY_ADVANCED_RENDERER_CLASS
 
 	private function getSpezielleStichw($flag)
 	{
-		// nur die stichwörter zurückgeben, die im aktuellem Portal auch vervendet werden!
+		// nur die stichwÃ¶rter zurÃ¼ckgeben, die im aktuellem Portal auch verwendet werden!
 		$keyPrefix = "advStichw.$flag";
 		$magic = strftime("%Y-%m-%d-v5-").md5($GLOBALS['wisyPortalFilter']['stdkursfilter']);
 		if( $this->framework->cacheRead("adv_stichw.$flag.magic") != $magic )
@@ -226,7 +226,7 @@ class WISY_ADVANCED_RENDERER_CLASS
 		$db->query("SELECT stichwort FROM stichwoerter WHERE id IN ($ids_str) ORDER BY stichwort_sorted;");
 		while( $db->next_record() )
 		{
-			$stichw = isohtmlspecialchars($db->fs('stichwort'));
+			$stichw = htmlspecialchars($db->f8('stichwort'));
 			$stichw = trim(strtr($stichw, array(': '=>' ', ':'=>' ', ', '=>' ', ','=>' ')));
 			
 			$ret[ $stichw ] = $stichw;
@@ -246,7 +246,7 @@ class WISY_ADVANCED_RENDERER_CLASS
 		$ret['morgen'] = strftime('%d.%m.%Y', $heute+$onedaysec);
 		$ret['uebermorgen'] = strftime('%d.%m.%Y', $heute+$onedaysec*2);
 		
-		// nächsten Montag herausfinden
+		// nÃ¤chsten Montag herausfinden
 		$test = $heute + $onedaysec;
 		while( 1 )
 		{
@@ -344,27 +344,34 @@ class WISY_ADVANCED_RENDERER_CLASS
 			</div>
 			<div id="adv_body">
 				<form action="advanced" method="get">
-					<table width="100%">
+					<div id="adv_form">
 						<?php
 							
 							reset($this->presets);
+							$fieldsets_open = 0;
 							while( list($field_name, $preset) = each($this->presets) )
 							{
 								if( isset($preset['decoration']['headline_left']) )
 								{
-									echo 	'<tr>'
-										.		'<td><small>&nbsp;</small><br /><span class="headline_left">'.$preset['decoration']['headline_left'].'</span></td>'
-										.		'<td valign="bottom"><span class="headline_right">'.$preset['decoration']['headline_right'].'</span></td>'
-										.	'</tr>';
+									if($fieldsets_open > 0) {
+										echo '</fieldset>';
+										$fieldsets_open -= 1;
+									}
+									$fieldsets_open += 1;
+									echo 	'<fieldset>';
+									if(trim($preset['decoration']['headline_left'] != '')) {
+										echo '<legend><span class="headline_left">'.$preset['decoration']['headline_left'].'</span>';
+										echo ' <span class="headline_right">'.$preset['decoration']['headline_right'].'</span></legend>';
+									}
 								}
 								
-								echo '<tr>';
-									echo '<td width="10%" nowrap="nowrap"><label for="adv_' . $field_name . '">' .$preset['descr']. '</label></td>';
-									echo '<td>';
+								echo '<div class="formrow">';
+									echo '<label for="adv_' . $field_name . '">' .$preset['descr']. '</label>';
+									echo '<div class="formfield">';
 										if( $preset['type'] == 'text' )
 										{
 											$autocomplete = $preset['autocomplete']? ' class="'.$preset['autocomplete'].'" ' : '';
-											echo "<input type=\"text\" name=\"adv_$field_name\" id=\"adv_$field_name\" $autocomplete value=\"" .isohtmlspecialchars($presets_curr[$field_name]). "\" />";
+											echo "<input type=\"text\" name=\"adv_$field_name\" id=\"adv_$field_name\" $autocomplete value=\"" .htmlspecialchars($presets_curr[$field_name]). "\" />";
 										}
 										else
 										{
@@ -377,13 +384,16 @@ class WISY_ADVANCED_RENDERER_CLASS
 												}
 											echo '</select>';
 										}
-									echo '</td>';
-								echo '</tr>';
+									echo '</div>';
+								echo '</div>';
+							}
+							if($fieldsets_open > 0) {
+								echo '</fieldset>';
+								$fieldsets_open -= 1;
 							}
 							
-						?></tr>
-
-					</table>
+						?>
+					</div>
 		
 					<div id="adv_buttons">
 						<input type="hidden" name="adv_subseq" value="1" />
@@ -458,7 +468,7 @@ class WISY_ADVANCED_RENDERER_CLASS
 		
 		if( intval($_GET['ajax']) )
 		{
-			header('Content-type: text/html; charset=ISO-8859-1');
+			header('Content-type: text/html; charset=utf-8');
 			$this->renderForm();
 		}
 		else

@@ -144,14 +144,14 @@ class WISY_FRAMEWORK_CLASS
 			echo '
 						<div class="wisy_topnote">
 							<p><b>Fehler 404 - Seite nicht gefunden</b></p>
-							<p>Entschuldigung, aber die von Ihnen gewünschte Seite konnte leider nicht gefunden werden. Sie können jedoch ...
+							<p>Entschuldigung, aber die von Ihnen gewÃ¼nschte Seite konnte leider nicht gefunden werden. Sie kÃ¶nnen jedoch ...
 							<ul>
 								<li><a href="http://'.$_SERVER['HTTP_HOST'].'">Die Startseite von '.$_SERVER['HTTP_HOST'].' aufrufen ...</a></li>
 								<li><a href="javascript:history.back();">Zur&uuml;ck zur zuletzt besuchten Seite wechseln ...</a></li>
 							</ul>
 						</div>
 						<p>
-							(die angeforderte Seite war <i>'.isohtmlspecialchars($uri).'</i> in <i>/'.isohtmlspecialchars($wisyCore).'</i> auf <i>' .$_SERVER['HTTP_HOST']. '</i>)
+							(die angeforderte Seite war <i>'.htmlspecialchars($uri).'</i> in <i>/'.htmlspecialchars($wisyCore).'</i> auf <i>' .$_SERVER['HTTP_HOST']. '</i>)
 						</p>
 				';
 			
@@ -209,17 +209,17 @@ class WISY_FRAMEWORK_CLASS
 		$str = strtolower($str);
 	
 		// convert accented characters
-		$str = strtr($str,	'áàâåãæçéèêëíìîïñóòôõøúùûýÿ',
+		$str = strtr($str,	'Ã¡Ã Ã¢Ã¥Ã£Ã¦Ã§Ã©Ã¨ÃªÃ«Ã­Ã¬Ã®Ã¯Ã±Ã³Ã²Ã´ÃµÃ¸ÃºÃ¹Ã»Ã½Ã¿',
 							'aaaaaaceeeeiiiinooooouuuyy');
 	
 		// convert german umlaute
-		$str = strtr($str,	array('ä'=>'ae', 'ö'=>'oe', 'ü'=>'ue', 'ß'=>'ss'));
+		$str = strtr($str,	array('Ã¤'=>'ae', 'Ã¶'=>'oe', 'Ã¼'=>'ue', 'ÃŸ'=>'ss'));
 	
 		// convert numbers to a 'natural' sorting order
 		$str = preg_replace_callback('/[0-9]+/', array($this, 'normalizeNatsortCallback'), $str);
 	
 		// strip special characters
-		$str = strtr($str,	'\'\\!"§$%&/(){}[]=?+*~#,;.:-_<>|@€©®£¥  ',
+		$str = strtr($str,	'\'\\!"Â§$%&/(){}[]=?+*~#,;.:-_<>|@Â€Â©Â®Â£Â¥  ',
 							'                                        ');
 	
 		// remove spaces
@@ -336,7 +336,7 @@ class WISY_FRAMEWORK_CLASS
 		}
 		else if( $placeholder == '__Q_HTMLENCODE__' )
 		{
-			return isohtmlspecialchars( rtrim( $this->getParam('q', ''), ', ') );
+			return htmlspecialchars( rtrim( $this->getParam('q', ''), ', ') );
 		}
 		else if( $placeholder == '__Q_URLENCODE__' )
 		{
@@ -345,6 +345,25 @@ class WISY_FRAMEWORK_CLASS
 		else if( $placeholder == '__CONTENT__' )
 		{
 			return '__CONTENT__'; // just leave  this as it is, __CONTENT__ is handled separately
+		}
+		else if( $placeholder == '__FAVLISTLINK__' )
+		{
+			if( $this->iniRead('fav.use', 0) )
+			{
+				// link to send favourites
+				$mailfav = '';
+				if( $this->iniRead('fav.mail', '1') ) {
+					$mailsubject = $this->iniRead('fav.mail.subject', 'Kursliste von __HOST__');
+					$mailsubject = str_replace('__HOST__', $_SERVER['HTTP_HOST'], $mailsubject);
+					$mailbody = $this->iniRead('fav.mail.body', "Das ist meine Kursliste zum Ausdrucken von __HOST__:\n\nhttp://__HOST__/");
+					$mailbody = str_replace('__HOST__', $_SERVER['HTTP_HOST'], $mailbody);
+					$mailfav = 'mailto:?subject='.rawurlencode($mailsubject).'&body='.rawurlencode($mailbody);
+				}
+				return '<span id="favlistlink" data-favlink="' . htmlspecialchars($mailfav) . '"></span>';
+			}
+			else {
+				return '';
+			}
 		}
 		
 		return "Unbekannt: $placeholder";
@@ -355,7 +374,13 @@ class WISY_FRAMEWORK_CLASS
 		return preg_replace_callback('/__[A-Z0-9_]+?__/', array($this, 'replacePlaceholders_Callback'), $snippet);
 	}	
 
-	
+	function cleanClassname($input)
+	{
+		$output = strtolower($input);
+		$output = strtr($output, array('Ã¤'=>'ae', 'Ã¶'=>'oe', 'Ã¼'=>'ue', 'ÃŸ'=>'ss'));
+		$output = preg_replace('/[^a-z,]/', '', $output);
+		return $output;
+	}
 
 
 	/******************************************************************************
@@ -379,8 +404,8 @@ class WISY_FRAMEWORK_CLASS
 	function getEditAnbieterId()
 	{
 		return $this->editSessionStarted? intval($_SESSION['loggedInAnbieterId']) : -1;
-				// nicht "0" zurückgeben, da es kurse gibt, die "0" als anbieter haben;
-				// ein Vergleich mit kursId==getEditAnbieterId() würde dann eine unerwartete Übereinstimmung bringen ...
+				// nicht "0" zurÃ¼ckgeben, da es kurse gibt, die "0" als anbieter haben;
+				// ein Vergleich mit kursId==getEditAnbieterId() wÃ¼rde dann eine unerwartete Ãœbereinstimmung bringen ...
 	}
 	
 
@@ -409,7 +434,7 @@ class WISY_FRAMEWORK_CLASS
 		$seals = array();
 		$db->query("SELECT a.attr_id AS sealId, s.glossar AS glossarId FROM anbieter_stichwort a, stichwoerter s WHERE a.primary_id=" . intval($vars['anbieterId']) . " AND a.attr_id=s.id AND s.eigenschaften=" .DEF_STICHWORTTYP_QZERTIFIKAT. " ORDER BY a.structure_pos;");
 		while( $db->next_record() )
-			$seals[] = array($db->f('sealId'), $db->f('glossarId'));
+			$seals[] = array($db->f8('sealId'), $db->f8('glossarId'));
 	
 		// no seals? -> done.
 		if( sizeof($seals) == 0 )
@@ -421,7 +446,7 @@ class WISY_FRAMEWORK_CLASS
 		{
 			$db->query("SELECT pruefsiegel_seit FROM anbieter WHERE id=" . intval($vars['anbieterId']));
 			$db->next_record();
-			$seit = intval(substr($db->f('pruefsiegel_seit'), 0, 4));
+			$seit = intval(substr($db->f8('pruefsiegel_seit'), 0, 4));
 		}
 		$title = $seit? "Gepr&uuml;fte Weiterbildungseinrichtung seit $seit" : "Gepr&uuml;fte Weiterbildungseinrichtung";
 	
@@ -441,7 +466,7 @@ class WISY_FRAMEWORK_CLASS
 				if( @file_exists($img) )
 				{
 					$ret .= '<a href="' . $this->getHelpUrl($glossarId) . '" class="help">';
-						$ret .= "<img ".html3('align="right"')." src=\"$img\" ".html3('border="0"')." alt=\"Pr&uuml;siegel\" title=\"$title\" class=\"seal_small\"/>";
+						$ret .= "<img src=\"$img\" alt=\"Pr&uuml;siegel\" title=\"$title\" class=\"seal_small\"/>";
 					$ret .= '</a>';
 					$sealsOut++;
 					break; // only one logo in small view
@@ -453,7 +478,7 @@ class WISY_FRAMEWORK_CLASS
 				if( @file_exists($img) )
 				{
 					$ret .= $sealsOut? $vars['break'] : '';
-					$ret .= "<img src=\"$img\" ".html3('border="0"')." alt=\"Pr&uuml;siegel\" title=\"$title\" class=\"seal\" />";
+					$ret .= "<img src=\"$img\" alt=\"Pr&uuml;siegel\" title=\"$title\" class=\"seal\" />";
 					$sealsOut++;
 				}
 			}
@@ -469,10 +494,10 @@ class WISY_FRAMEWORK_CLASS
 		$field = $table=='stichwoerter'? 'stichwort' : 'thema';
 		$db->query("SELECT glossar, $field FROM $table WHERE id=$id");
 		if( $db->next_record() ) {
-			if( !($glossarId=$db->f('glossar')) ) {
-				$db->query("SELECT id FROM glossar WHERE begriff='" .addslashes($db->fs($field)). "'");
+			if( !($glossarId=$db->f8('glossar')) ) {
+				$db->query("SELECT id FROM glossar WHERE begriff='" .addslashes($db->f8($field)). "'");
 				if( $db->next_record() ) {
-					$glossarId = $db->f('id');
+					$glossarId = $db->f8('id');
 				}
 			}
 		}
@@ -489,7 +514,7 @@ class WISY_FRAMEWORK_CLASS
 		require_once('admin/config/codes.inc.php'); // fuer hidden_stichwort_eigenschaften
 		global $hidden_stichwort_eigenschaften;
 		
-		$sql = "SELECT id, stichwort, eigenschaften FROM stichwoerter LEFT JOIN {$table}_stichwort ON id=attr_id WHERE primary_id=$id AND (eigenschaften & $hidden_stichwort_eigenschaften)=0 ORDER BY structure_pos;";
+		$sql = "SELECT id, stichwort, eigenschaften, zusatzinfo FROM stichwoerter LEFT JOIN {$table}_stichwort ON id=attr_id WHERE primary_id=$id AND (eigenschaften & $hidden_stichwort_eigenschaften)=0 ORDER BY structure_pos;";
 		$db->query($sql);
 		while( $db->next_record() )
 		{
@@ -532,7 +557,7 @@ class WISY_FRAMEWORK_CLASS
 				 || ($stichwoerter[$s]['eigenschaften'] & intval($codes_array[$c])) )
 				{
 					if( !$anythingOfThisCode ) {
-						$ret .= '<tr class="wisy_stichwtyp'.$stichwoerter[$s]['eigenschaften'].'"><td'.html3(' valign="top"').'>' . $codes_array[$c+1] . ':&nbsp;</td><td'.html3(' valign="top"').'>';
+						$ret .= '<dt class="wisy_stichwtyp'.$stichwoerter[$s]['eigenschaften'].'">' . $codes_array[$c+1] . '</dt><dd>';
 					}
 					else {
 						$ret .= '<br />';
@@ -552,6 +577,10 @@ class WISY_FRAMEWORK_CLASS
 						$ret .= '</a>';
 					}
 					
+					if( $stichwoerter[$s]['zusatzinfo'] != '' ) {
+						$ret .= ' <span class="ac_tag_type">(' . htmlspecialchars($stichwoerter[$s]['zusatzinfo']) . ')</span>';
+					}
+
 					$ret .= $glossarLink;
 					
 					$anythingOfThisCode	= 1;
@@ -559,27 +588,27 @@ class WISY_FRAMEWORK_CLASS
 			}
 			
 			if( $anythingOfThisCode ) {
-				$ret .= '</td></tr>';
+				$ret .= '</dd>';
 			}
 		}
 		
-		return $ret;
+		return utf8_encode($ret); // UTF-8 encode because the source file (admin/config/codes.inc.php) is still ISO-encoded
 	}
 
 	function getVollstaendigkeitMsg(&$db, $recordId, $scope = '')
 	{
 		// Einstellungen der zug. Gruppe und Kursvollstaendigkeit laden
-		// die Einstellungen können etwa wie folgt aussehen:
+		// die Einstellungen kÃ¶nnen etwa wie folgt aussehen:
 		/*
 		quality.portal.warn.percent= 80
-		quality.portal.warn.msg    = Informationen lückenhaft (nur __PERCENT__% Vollständigkeit)
+		quality.portal.warn.msg    = Informationen lÃ¼ckenhaft (nur __PERCENT__% VollstÃ¤ndigkeit)
 		quality.portal.bad.percent = 50
-		quality.portal.bad.msg     = Informationen unzureichend (nur __PERCENT__% Vollständigkeit)
+		quality.portal.bad.msg     = Informationen unzureichend (nur __PERCENT__% VollstÃ¤ndigkeit)
 		quality.edit.warn.percent  = 80
-		quality.edit.warn.msg      = Informationen lückenhaft (nur __PERCENT__% Vollständigkeit)
+		quality.edit.warn.msg      = Informationen lÃ¼ckenhaft (nur __PERCENT__% VollstÃ¤ndigkeit)
 		quality.edit.bad.percent   = 50
-		quality.edit.bad.msg       = Informationen unzureichend (nur __PERCENT__% Vollständigkeit)
-		quality.edit.bad.banner    = Informationen unzureichend (nur __PERCENT__% Vollständigkeit) - gelistet aus Gründen der Marktübersicht
+		quality.edit.bad.msg       = Informationen unzureichend (nur __PERCENT__% VollstÃ¤ndigkeit)
+		quality.edit.bad.banner    = Informationen unzureichend (nur __PERCENT__% VollstÃ¤ndigkeit) - gelistet aus GrÃ¼nden der MarktÃ¼bersicht
 		*/
 	
 		
@@ -587,8 +616,8 @@ class WISY_FRAMEWORK_CLASS
 				WHERE k.user_grp=g.id AND k.id=$recordId";
 		$db->query($sql); if( !$db->next_record() ) return array();
 	
-		$settings			= explodeSettings($db->fs('s'));
-		$vollstaendigkeit	= intval($db->f('v'));  if( $vollstaendigkeit <= 0 ) return;
+		$settings			= explodeSettings($db->f8('s'));
+		$vollstaendigkeit	= intval($db->f8('v'));  if( $vollstaendigkeit <= 0 ) return;
 		$ret				= array();
 	
 		if( $vollstaendigkeit <= intval($settings["$scope.bad.percent"]) )
@@ -614,7 +643,7 @@ class WISY_FRAMEWORK_CLASS
 	function getAllowFeedbackClass()
 	{
 		if( !$this->iniRead('feedback.disable', 0) 
-		 && !$this->editSessionStarted /*keine Feedback-Funktion für angemeldete Anbieter - die Anbieter sind die Adressaten, nicht die Absender*/ )
+		 && !$this->editSessionStarted /*keine Feedback-Funktion fÃ¼r angemeldete Anbieter - die Anbieter sind die Adressaten, nicht die Absender*/ )
 		{
 			return 'wisy_allow_feedback';
 		}
@@ -667,7 +696,7 @@ class WISY_FRAMEWORK_CLASS
 	function getTitleTags($pageTitleNoHtml)
 	{
 		// get the <title> tag - WISY 5.0 is only added to easily check it we're using the new core, this can be removed as soon as there are other methods for easy recognize
-		return "<title>WISY 5.0 - " .isohtmlspecialchars($this->getTitleString($pageTitleNoHtml)). "</title>\n";
+		return "<title>WISY 5.0 - " .htmlspecialchars($this->getTitleString($pageTitleNoHtml)). "</title>\n";
 	}
 	
 	function getFaviconFile()
@@ -705,7 +734,7 @@ class WISY_FRAMEWORK_CLASS
 		$opensearchFile = $this->getOpensearchFile();
 		if( $opensearchFile )
 		{
-			$ret .= '<link rel="search" type="application/opensearchdescription+xml" href="' . $opensearchFile . '" title="' .isohtmlspecialchars($wisyPortalKurzname). '" />' . "\n";
+			$ret .= '<link rel="search" type="application/opensearchdescription+xml" href="' . $opensearchFile . '" title="' .htmlspecialchars($wisyPortalKurzname). '" />' . "\n";
 		}
 		
 		return $ret;
@@ -728,7 +757,7 @@ class WISY_FRAMEWORK_CLASS
 			global $wisyPortalKurzname;
 			$q = rtrim($this->getParam('q', ''), ', ');
 			$title = $wisyPortalKurzname . ' - ' . ($q==''? 'aktuelle Kurse' : $q);
-			$ret .= '<link rel="alternate" type="application/rss+xml" title="'.isohtmlspecialchars($title).'" href="' .$this->getRSSFile(). '" />' . "\n";
+			$ret .= '<link rel="alternate" type="application/rss+xml" title="'.htmlspecialchars($title).'" href="' .$this->getRSSFile(). '" />' . "\n";
 		}
 		
 		return $ret;
@@ -815,7 +844,7 @@ class WISY_FRAMEWORK_CLASS
 		$js = $this->getJSFiles();
 		for( $i = 0; $i < sizeof($js); $i++ )
 		{	
-			$ret .= '<script type="text/javascript" src="'.$js[$i].'"></script>' . "\n";
+			$ret .= '<script type="text/javascript" src="'.$js[$i].'" charset="utf-8"></script>' . "\n";
 		}
 		
 		return $ret;
@@ -830,7 +859,7 @@ class WISY_FRAMEWORK_CLASS
 		if( ($onload=$this->iniRead('onload')) != '' ) { $ret .= ' onload="' .$onload. '" '; }
 		
 		if( !$this->askfwd ) { $this->askfwd = strval($_REQUEST['askfwd']); }
-		if(  $this->askfwd ) { $ret .= ' data-askfwd="' . isohtmlspecialchars($this->askfwd) . '" '; }
+		if(  $this->askfwd ) { $ret .= ' data-askfwd="' . htmlspecialchars($this->askfwd) . '" '; }
 		
 		return $ret;
 	}
@@ -872,7 +901,7 @@ class WISY_FRAMEWORK_CLASS
 		$added = array();
 		$q_org = $this->getParam('q', '');
 		$q = strtolower($q_org);
-		$q = strtr($q, array('ä'=>'ae', 'ö'=>'oe', 'ü'=>'ue', 'ß'=>'ss'));
+		$q = strtr($q, array('Ã¤'=>'ae', 'Ã¶'=>'oe', 'Ã¼'=>'ue', 'ÃŸ'=>'ss'));
 		$q = preg_replace('/[^a-z,]/', '', $q);
 		$q = explode(',', $q);
 		for( $i = 0; $i < sizeof($q); $i++ )
@@ -920,7 +949,8 @@ class WISY_FRAMEWORK_CLASS
 			$bodyStart	= '<!DOCTYPE html>' . "\n"
 						. '<html lang="de">' . "\n"
 						. '<head>' . "\n"
-						. '<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1" />' . "\n"
+						. '<meta charset="UTF-8">' . "\n"
+						. '<meta name="viewport" content="width=device-width, initial-scale=1">' . "\n"
 						. '__HEADTAGS__' 
 						. '</head>' . "\n"
 						. '<body__BODYATTR__>' . "\n"
@@ -1099,21 +1129,12 @@ class WISY_FRAMEWORK_CLASS
 			$q .= ' ';
 		}
 
-		// link to send favourites
-		$mailfav = '';
-		if( $this->iniRead('fav.mail', '1') ) {
-			$mailsubject = $this->iniRead('fav.mail.subject', 'Kursliste von __HOST__');
-			$mailsubject = str_replace('__HOST__', $_SERVER['HTTP_HOST'], $mailsubject);
-			$mailbody = $this->iniRead('fav.mail.body', "Das ist meine Kursliste zum Ausdrucken von __HOST__:\n\nhttp://__HOST__/");
-			$mailbody = str_replace('__HOST__', $_SERVER['HTTP_HOST'], $mailbody);
-			$mailfav = 'mailto:?subject='.rawurlencode($mailsubject).'&body='.rawurlencode($mailbody);
-		}
-
 		// echo the search field
 		$DEFAULT_PLACEHOLDER	= '';
 		$DEFAULT_ADVLINK_HTML	= '<a href="advanced?q=__Q_URLENCODE__" id="wisy_advlink">Erweitern</a>';
+		$DEFAULT_FILTERLINK_HTML= '<a href="filter?q=__Q_URLENCODE__" id="wisy_filterlink">Suche anpassen</a>';
 		$DEFAULT_RIGHT_HTML		= '| <a href="javascript:window.print();">Drucken</a>';
-		$DEFAULT_BOTTOM_HINT	= 'bitte <strong>Suchwörter</strong> eingeben - z.B. Englisch, VHS, Bildungsurlaub, ...';
+		$DEFAULT_BOTTOM_HINT	= 'bitte <strong>SuchwÃ¶rter</strong> eingeben - z.B. Englisch, VHS, Bildungsurlaub, ...';
 		
 		echo "\n";
 		echo '<div id="wisy_searcharea">' . "\n";
@@ -1138,7 +1159,7 @@ class WISY_FRAMEWORK_CLASS
 				echo $this->replacePlaceholders($this->iniRead('searcharea.advlink', $DEFAULT_ADVLINK_HTML)) . "\n";
 				echo $this->replacePlaceholders($this->iniRead('searcharea.html', $DEFAULT_RIGHT_HTML)) . "\n";
 			echo '</form>' . "\n";
-			echo '<div class="wisy_searchhints" data-favlink="' . isohtmlspecialchars($mailfav) . '">' .  $this->replacePlaceholders($this->iniRead('searcharea.hint', $DEFAULT_BOTTOM_HINT)) . '</div>' . "\n";
+			echo '<div class="wisy_searchhints">' .  $this->replacePlaceholders($this->iniRead('searcharea.hint', $DEFAULT_BOTTOM_HINT)) . '</div>' . "\n";
 		echo '</div>' . "\n\n";
 	
 		echo $this->replacePlaceholders( $this->iniRead('searcharea.below', '') ); // deprecated!
@@ -1156,7 +1177,7 @@ class WISY_FRAMEWORK_CLASS
 		switch( $wisyRequestedFile )
 		{
 			// homepage
-			// (in WISY 2.0 gibt es keine Datei "index.php", diese wird vom Framework aber als Synonym für "Homepage" verwendet)
+			// (in WISY 2.0 gibt es keine Datei "index.php", diese wird vom Framework aber als Synonym fÃ¼r "Homepage" verwendet)
 			case 'index.php':
 				for( $i = 1; $i <= 9; $i++ ) 
 				{
@@ -1195,6 +1216,9 @@ class WISY_FRAMEWORK_CLASS
 			
 			case 'advanced':
 				return createWisyObject('WISY_ADVANCED_RENDERER_CLASS', $this);
+				
+			case 'filter':
+				return createWisyObject('WISY_ADVANCED_FILTER_RENDERER_CLASS', $this);
 	
 			case 'tree':
 				return createWisyObject('WISY_TREE_RENDERER_CLASS', $this);

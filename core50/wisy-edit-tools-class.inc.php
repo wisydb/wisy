@@ -29,7 +29,7 @@ class WISY_EDIT_TOOLS_CLASS
 		$db			= new DB_Admin;
 		$db->query("SELECT homepage FROM anbieter WHERE id=$anbieter;");
 		$db->next_record();
-		$homepage = $this->normalizeUrl($db->fs('homepage'));
+		$homepage = $this->normalizeUrl($db->f8('homepage'));
 		
 		foreach( $url_arr as $url )
 		{
@@ -57,7 +57,7 @@ class WISY_EDIT_TOOLS_CLASS
 		$stopwords = $this->framework->iniRead($iniKey, 'default');
 		if( $stopwords == 'default' ) {
 			// use default stopwords
-			$stopwords = 'Pausengetr‰nke, Verkehr, HVV, S-Bahn, U-Bahn';
+			$stopwords = 'Pausengetr√§nke, Verkehr, HVV, S-Bahn, U-Bahn';
 		}
 		
 		if( $stopwords != '0' ) {
