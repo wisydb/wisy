@@ -1,7 +1,7 @@
 <?php if( !defined('IN_WISY') ) die('!IN_WISY');
 
 /******************************************************************************
- WISY 2.0
+ WISY 5.0
  ******************************************************************************
  Globale Seite, hiervon existiert genau 1 Objekt
  ******************************************************************************/
@@ -1177,7 +1177,7 @@ class WISY_FRAMEWORK_CLASS
 		switch( $wisyRequestedFile )
 		{
 			// homepage
-			// (in WISY 2.0 gibt es keine Datei "index.php", diese wird vom Framework aber als Synonym für "Homepage" verwendet)
+			// (in WISY 5.0 gibt es keine Datei "index.php", diese wird vom Framework aber als Synonym für "Homepage" verwendet)
 			case 'index.php':
 				for( $i = 1; $i <= 9; $i++ ) 
 				{
