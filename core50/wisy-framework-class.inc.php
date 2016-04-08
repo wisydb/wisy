@@ -942,7 +942,7 @@ class WISY_FRAMEWORK_CLASS
 		if( !is_array($param) ) $param = array();
 		
 		// prepare the HTML-Page
-		$bodyStart = $GLOBALS['wisyPortalBodyStart'];
+		$bodyStart = utf8_encode($GLOBALS['wisyPortalBodyStart']);
 		if( strpos($bodyStart, '<html') === false )
 		{
 			// we got only an HTML-Snippet (part of the the body part), create a more complete HTML-page from this
@@ -1138,28 +1138,39 @@ class WISY_FRAMEWORK_CLASS
 		
 		echo "\n";
 		echo '<div id="wisy_searcharea">' . "\n";
-			echo '<form action="search" method="get">' . "\n";
-				echo '<input type="text" id="wisy_searchinput" class="ac_keyword" name="q" value="' .$q. '" placeholder="' . $this->iniRead('searcharea.placeholder', $DEFAULT_PLACEHOLDER) . '" />' . "\n";
-				if( $this->iniRead('searcharea.radiussearch', 0) )
-				{
-					echo '<input type="text" id="wisy_beiinput" class="ac_plzort" name="bei" value="' .$bei. '" placeholder="PLZ/Ort" />' . "\n";
-					echo '<select id="wisy_kmselect" name="km" >' . "\n";
-						foreach( $km_arr as $value=>$descr ) {
-							$selected = strval($km)==strval($value)? ' selected="selected"' : '';
-							echo "<option value=\"$value\"$selected>$descr</option>";
-						}
-					echo '</select>' . "\n";
-				}
-				echo '<input type="submit" id="wisy_searchbtn" value="Suche" />' . "\n";
-				if( $this->iniRead('searcharea.advlink', 1) )
-				{
-					echo '' . "\n";
-				}
+			echo '<div class="inner">' . "\n";
+				echo '<form action="search" method="get">' . "\n";
+					echo '<div class="formrow">';
+						echo '<label for="q">' . $this->iniRead('searcharea.placeholder', $DEFAULT_PLACEHOLDER) . '</label>';
+						echo '<input type="text" id="wisy_searchinput" class="ac_keyword" name="q" value="' .$q. '" placeholder="' . $this->iniRead('searcharea.placeholder', $DEFAULT_PLACEHOLDER) . '" />' . "\n";
+						echo '<div class="wisy_searchhints">' .  $this->replacePlaceholders($this->iniRead('searcharea.hint', $DEFAULT_BOTTOM_HINT)) . '</div>' . "\n";
+					echo '</div>';
+					if( $this->iniRead('searcharea.radiussearch', 0) )
+					{
+						echo '<div class="formrow">';
+							echo '<label for="bei">bei</label>';
+							echo '<input type="text" id="wisy_beiinput" class="ac_plzort" name="bei" value="' .$bei. '" placeholder="PLZ/Ort" />' . "\n";
+						echo '</div>';
+						echo '<div class="formrow">';
+							echo '<label for="km">km</label>';
+							echo '<select id="wisy_kmselect" name="km" >' . "\n";
+								foreach( $km_arr as $value=>$descr ) {
+									$selected = strval($km)==strval($value)? ' selected="selected"' : '';
+									echo "<option value=\"$value\"$selected>$descr</option>";
+								}
+							echo '</select>' . "\n";
+						echo '</div>';
+					}
+					echo '<input type="submit" id="wisy_searchbtn" value="' . $this->iniRead('searcharea.searchlabel', 'Suche') . '" />' . "\n";
+					if( $this->iniRead('searcharea.advlink', 1) )
+					{
+						echo '' . "\n";
+					}
 				
-				echo $this->replacePlaceholders($this->iniRead('searcharea.advlink', $DEFAULT_ADVLINK_HTML)) . "\n";
-				echo $this->replacePlaceholders($this->iniRead('searcharea.html', $DEFAULT_RIGHT_HTML)) . "\n";
-			echo '</form>' . "\n";
-			echo '<div class="wisy_searchhints">' .  $this->replacePlaceholders($this->iniRead('searcharea.hint', $DEFAULT_BOTTOM_HINT)) . '</div>' . "\n";
+					echo $this->replacePlaceholders($this->iniRead('searcharea.advlink', $DEFAULT_ADVLINK_HTML)) . "\n";
+					echo $this->replacePlaceholders($this->iniRead('searcharea.html', $DEFAULT_RIGHT_HTML)) . "\n";
+				echo '</form>' . "\n";
+			echo '</div>';
 		echo '</div>' . "\n\n";
 	
 		echo $this->replacePlaceholders( $this->iniRead('searcharea.below', '') ); // deprecated!
