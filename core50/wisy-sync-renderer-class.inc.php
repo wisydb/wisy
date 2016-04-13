@@ -45,6 +45,7 @@
  512        - Ort					(so nicht in stichwort.eigenschaften)
  1024       - sonstiges Merkmal		(gleicher Wert wie stichwort.eigenschaften)
  32768		- Unterrichtsart		(gleicher Wert wie stichwort.eigenschaften)
+ 65536		- Zertifikat			(gleicher Wert wie stichwort.eigenschaften)
  0x0sss0000	- Subtype				(verwendet fuer Anbieter)
  0x10000000 - Indent				(wird nur zur Laufzeit verwendet)
  0x20000000	- Fuzzy					(wird nur zur Laufzeit verwendet)
@@ -272,7 +273,7 @@ class ATTR2TAG_CLASS
 			$curr_tag_descr = '';
 			if( $this->table == 'stichwoerter' )
 			{
-				$curr_tag_type = intval($this->db->f8('eigenschaften')) & (1+2+4+8+16+1024+32768) /*flags, s.o.*/;
+				$curr_tag_type = intval($this->db->f8('eigenschaften')) & (1+2+4+8+16+1024+32768+65536) /*flags, s.o.*/;
 				$curr_tag_help = intval($this->db->f8('glossar'));
 				$curr_tag_descr = $this->db->f8('zusatzinfo');
 			}

@@ -472,6 +472,7 @@ autocomplete styles v2
 
 /* Allgemeine Auszeichnungen */
 .ac_abschluss .tag_name a, tr.ac_abschluss { font-weight: bold; }
+.ac_zertifikat .tag_name a, tr.ac_zertifikat { font-weight: bold; }
 .ac_foerderung .tag_name a, tr.ac_foerderung { font-weight: bold; color: red; }
 .ac_suggestion { color: #444; }
 .ui-state-focus .ac_suggestion { color: #ddd; }
@@ -482,6 +483,7 @@ autocomplete styles v2
 
 .ac_normal .tag_name, .ac_normal .tag_name a,
 .ac_abschluss .tag_name, .ac_abschluss .tag_name a  { color: #000; }
+.ac_zertifikat .tag_name, .ac_zertifikat .tag_name a  { color: #000; }
 .ac_anbieter .tag_name, .ac_anbieter .tag_name a { color: green; }
 .ac_qualitaetszertifikat .tag_name { color: #3E7AB8; }
 

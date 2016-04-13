@@ -56,12 +56,20 @@ class WISY_KURS_RENDERER_CLASS
 			$isAbschluss = count($kursAnalyzer->loadKeywordsAbschluss($db, 'kurse', $kursId));
 		}
 		
+		$displayZertifikat = $this->framework->iniRead('label.zertifikat', 0);
+		if($displayZertifikat) {
+			if(!is_object($kursAnalyzer)) { $kursAnalyzer =& createWisyObject('WISY_KURS_ANALYZER_CLASS', $this->framework); }
+			$isZertifikat = count($kursAnalyzer->loadKeywordsZertifikat($db, 'kurse', $kursId));
+		}
+			
 		$bodyClass = 'wisyp_kurs';
 		if( $anbieter_typ == 2 )
 		{
 			$bodyClass .= ' wisyp_kurs_beratungsstelle';
 		} elseif($displayAbschluss && $isAbschluss) {
 			$bodyClass .= ' wisyp_kurs_abschluss';	
+		} elseif($displayZertifikat && $isZertifikat) {
+			$bodyClass .= ' wisyp_kurs_zertifikat';	
 		}	
 		
 		echo $this->framework->getPrologue(array('title'=>$title, 'canonical' => $this->framework->getUrl('k', array('id'=>$kursId)), 'bodyClass'=>$bodyClass));
@@ -84,6 +92,7 @@ class WISY_KURS_RENDERER_CLASS
 			echo '<h1>';
 				if( $anbieter_typ == 2 ) echo '<span class="wisy_icon_beratungsstelle">Beratung<span class="dp">:</span></span> ';
 				if( $displayAbschluss && $isAbschluss ) echo '<span class="wisy_icon_abschluss">Abschluss<span class="dp">:</span></span> ';
+				if( $displayZertifikat && $isZertifikat ) echo '<span class="wisy_icon_zertifikat">Zertifikat<span class="dp">:</span></span> ';
 				echo htmlentities($title);
 				if( $this->framework->iniRead('fav.use', 0) ) {
 					echo '<span class="fav_add" data-favid="'.$kursId.'"></span>';
