@@ -1,7 +1,6 @@
 <?php if( !defined('IN_WISY') ) die('!IN_WISY');
 
 
-
 class WISY_KURS_ANALYZER_CLASS
 {
 	var $framework;

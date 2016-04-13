@@ -1,5 +1,6 @@
 <?php if( !defined('IN_WISY') ) die('!IN_WISY');
 
+
 /*****************************************************************************
  * WISY_SYNC_RENDERER_CLASS
  * automatische Synchronisation Datenbank -> Suchindex

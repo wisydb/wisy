@@ -2,7 +2,6 @@
 
 
 
-
 class WISY_SEARCH_RENDERER_CLASS
 {
 	var $framework;

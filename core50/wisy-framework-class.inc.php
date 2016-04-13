@@ -7,7 +7,6 @@
  ******************************************************************************/
 
 
-
 // Funktionen, die ohne irgendwelche instanzen laufen sollten
 function g_sync_removeSpecialChars($str)
 {

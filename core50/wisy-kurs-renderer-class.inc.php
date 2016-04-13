@@ -2,7 +2,6 @@
 
 
 
-
 class WISY_KURS_RENDERER_CLASS
 {
 	var $framework;
