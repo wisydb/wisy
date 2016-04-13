@@ -531,8 +531,9 @@ class WISY_FRAMEWORK_CLASS
 				if( ($stichwoerter[$s]['eigenschaften']==0 && intval($codes_array[$c])==0 && $glossarLink)
 				 || ($stichwoerter[$s]['eigenschaften'] & intval($codes_array[$c])) )
 				{
-					if( !$anythingOfThisCode ) {
-						$ret .= '<tr class="wisy_stichwtyp'.$stichwoerter[$s]['eigenschaften'].'"><td'.html3(' valign="top"').'>' . $codes_array[$c+1] . ':&nbsp;</td><td'.html3(' valign="top"').'>';
+				if( !$anythingOfThisCode ) {
+						$ret .= '<tr class="wisy_stichwtyp'.$stichwoerter[$s]['eigenschaften'].'"><td'.html3(' valign="top"').'><span class="text_keyword">' . $codes_array[$c+1]
+						. '<span class="dp">:</span></span>&nbsp;</td><td'.html3(' valign="top"').'>';
 					}
 					else {
 						$ret .= '<br />';

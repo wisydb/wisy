@@ -18,6 +18,11 @@ class WISY_KURS_ANALYZER_CLASS
 		return $this->loadKeywordsByType($db, $table, $kursId, 1);
 	}
 	
+	public function loadKeywordsZertifikat(&$db, $table, $kursId)
+	{
+		return $this->loadKeywordsByType($db, $table, $kursId, 65536);
+	}
+	
 	public function loadKeywordsVerwaltungsstichwort(&$db, $table, $kursId)
 	{
 		return $this->loadKeywordsByType($db, $table, $kursId, 2048);
@@ -28,11 +33,11 @@ class WISY_KURS_ANALYZER_CLASS
 		return $this->loadKeywordsByType($db, $table, $kursId, 1024);
 	}
 	
-	/* Sachstichwort: 0, Abschluss: 1, FÃ¶rderungsart: 2, QualitÃ¤tszertifikat: 4, Zielgruppe: 8,
+	/* Sachstichwort: 0, Abschluss: 1, Förderungsart: 2, Qualitätszertifikat: 4, Zielgruppe: 8,
 	 * Unterrichtsart: 32768, Abschlussart: 16, verstecktes Synonym: 32, Synonym: 64, Veranstaltungsort: 128,
-		* Volltext Titel: 256, Volltext Beschreibung: 512, Sonstiges Merkmal: 1024, Verwaltungsstichwort: 2048,
-		* Thema: 4096, Schlagwort nicht verwenden: 8192, Anbieterstichwort: 16384
-		* */
+	 * Volltext Titel: 256, Volltext Beschreibung: 512, Sonstiges Merkmal: 1024, Verwaltungsstichwort: 2048,
+	 * Thema: 4096, Schlagwort nicht verwenden: 8192, Anbieterstichwort: 16384, Zertifikat: 65536
+	 * */
 	protected function loadKeywordsByType(&$db, $table, $kursId, $typeId)
 	{
 		$ret = array();
