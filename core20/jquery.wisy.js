@@ -238,7 +238,8 @@ function formatItem(row)
 		else if( tag_type & 512 ) { row_class = "ac_ort";                  row_preposition = ' zum '; row_postfix = 'Ort'; }
 		else if( tag_type & 1024 ) { row_class = "ac_sonstigesmerkmal";    row_preposition = ' zum '; row_postfix = 'sonstigen Merkmal'; }
 		else if( tag_type & 32768 ) { row_class = "ac_unterrichtsart";     row_preposition = ' zur '; row_postfix = 'Unterrichtsart'; }
-	
+		else if( tag_type & 65536) { row_class = "ac_zertifikat";            row_preposition = ' zum '; row_postfix = '<b>Zertifikat</b>'; }
+		     
 		/* frequency, end base type */
 		if( tag_freq > 0 )
 		{
@@ -379,7 +380,8 @@ if (jQuery.ui)
 			else if( tag_type & 512 ) { row_class = "ac_ort";                  row_type = 'Kursort'; row_count_prefix = (tag_freq == 1) ? ' Kurs am' : ' Kurse am'; }
 			else if( tag_type & 1024) { row_class = "ac_merkmal"; 			   row_type = 'Kursmerkmal'; }
 			else if( tag_type & 32768){ row_class = "ac_unterrichtsart";	   row_type = 'Unterrichtsart'; row_count_prefix = (tag_freq == 1) ? ' Kurs zur' : ' Kurse zur'; }
-	
+			else if( tag_type & 65536){ row_class = "ac_zertifikat";	   row_type = 'Zertifikat'; }
+				 
 			/* frequency, end base type */
 			if( tag_descr != '' ) row_postfix = ' (' + tag_descr + ')';
 		

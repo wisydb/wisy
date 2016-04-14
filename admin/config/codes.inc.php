@@ -42,6 +42,7 @@ global $codes_stichwort_eigenschaften;
 $codes_stichwort_eigenschaften =
 	 '0###Sachstichwort###'
 	.'1###Abschluss###'
+	.'65536###Zertifikat###'
 	.'2###Förderungsart###'
 	.'4###Qualitätszertifikat###'
 	.'8###Zielgruppe###'
