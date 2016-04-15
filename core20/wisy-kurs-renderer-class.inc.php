@@ -276,7 +276,7 @@ class WISY_KURS_RENDERER_CLASS
 							echo $class? "<span class=\"$class\">" : '';
 								echo "<a href=\"" . 
 									$editurl
-								 .	$this->framework->getUrl('edit', array('action'=>'ek', 'id'=>$kursId))."\" $target title=\"$tooltip\">Bearbeiten</a>";
+								 .	$this->framework->getUrl('edit', array('action'=>'ek', 'id'=>$kursId))."\" $target title=\"$tooltip\">Kurs bearbeiten</a>";
 							echo $class? "</span>" : '';
 						echo '</span>';
 					}

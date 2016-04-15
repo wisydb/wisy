@@ -160,7 +160,14 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 		{ 
 			$ret .= "<br /><a href=\"".$this->createMailtoLink($anspr_email, $kursId)."\">" .isohtmlentities($this->trimLength($anspr_email, $MAX_URL_LEN  )). '</a>';
 		}
-		
+
+		/* edit link */
+		$loggedInAnbieterId = $this->framework->getEditAnbieterId();
+		if( $loggedInAnbieterId==$anbieterId ) 
+		{
+			$ret .= '<span class="noprint"><br /><a href="'.$this->framework->getUrl('edit', array('action'=>'ea')).'" class="wisy_edittoolbar">Profil bearbeiten</a></span>';
+		}
+
 		/* logo */
 		if( $param['logo'] )
 		{

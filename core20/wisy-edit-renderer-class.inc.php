@@ -40,6 +40,10 @@ class WISY_EDIT_RENDERER_CLASS
 			{
 				$this->bwd = 'k' . intval($_REQUEST['id']);
 			}
+			else if( $_REQUEST['action'] == 'ea' )
+			{
+				$this->bwd = 'a' . intval($_SESSION['loggedInAnbieterId']);
+			}			
 		}
 		
 		
@@ -345,8 +349,7 @@ class WISY_EDIT_RENDERER_CLASS
 			$ret .=  '<a href="' . $this->framework->getUrl('search', array('q'=>$q)) . '">Alle Kurse</a>';
 			
 			// link "kurs bearbeiten"
-			global $wisyRequestedFile;
-			if( $wisyRequestedFile[0] == 'k' && ($kursId=intval(substr($wisyRequestedFile, 1))) > 0 )
+			if( $GLOBALS['wisyRequestedFile'][0] == 'k' && ($kursId=intval(substr($GLOBALS['wisyRequestedFile'], 1))) > 0 )
 			{
 				$db = new DB_Admin;
 				$db->query("SELECT anbieter FROM kurse WHERE id=$kursId");
@@ -357,6 +360,10 @@ class WISY_EDIT_RENDERER_CLASS
 						$ret .=  ' | <a href="edit?action=ek&amp;id=' . $kursId . '">Kurs bearbeiten</a>';
 					}
 				}
+			}
+			else if( $GLOBALS['wisyRequestedFile'][0] == 'a' && ($_SESSION['loggedInAnbieterId'] == intval(substr($GLOBALS['wisyRequestedFile'], 1))) )
+			{
+				$ret .= ' | <a href="edit?action=ea">Profil bearbeiten</a> ';
 			}
 			
 			// link "neuer kurs"
@@ -1981,6 +1988,62 @@ class WISY_EDIT_RENDERER_CLASS
 
 		echo $this->framework->getEpilogue();
 	}
+
+
+	/**************************************************************************
+	 * Anbieterprofil bearbeiten
+	 **************************************************************************/
+	
+	function renderEditAnbieter()
+	{
+		$anbieterId = intval($_SESSION['loggedInAnbieterId']);
+		$topnotes   = array();
+		$showForm   = true;
+
+		// see what to do ...
+		if( $_POST['subseq'] == 1 && isset($_POST['cancel']) )
+		{
+			// ... a subsequent call: "Cancel" hit
+			header('Location: ' . $this->bwd);
+			exit();
+		}
+		else if( $_POST['subseq'] == 1 )
+		{
+			// ... save data
+		}
+		else
+		{
+			// ... first call
+		}
+		
+		// render form		
+		echo $this->framework->getPrologue(array('title'=>'Anbieterprofil bearbeiten', 'bodyClass'=>'wisyp_edit'));
+		echo '<h1>Anbieterprofil bearbeiten</h1>';
+
+		if( sizeof($topnotes) )
+		{
+			echo "<p class=\"wisy_topnote\">" .implode('<br />', $topnotes). "</p>";
+		}
+
+		echo '<form action="edit" method="post" name="anbieter">' . "\n";
+			echo '<input type="hidden" name="action" value="ea" /> ' . "\n";
+			echo '<input type="hidden" name="subseq" value="1" /> ' . "\n";
+			echo '<input type="hidden" name="bwd" value="'.isohtmlspecialchars($this->bwd).'" /> ' . "\n";		
+		
+			echo '<p>' . "\n";
+				if( $showForm )
+				{
+					echo '<input type="submit" value="OK - Anbieterprofil speichern" title="Alle Änderungen übernehmen und Anbieterprofil speichern" style="font-weight: bold;" /> ' . "\n";
+				}
+				
+				echo '<input type="submit" name="cancel" value="Abbruch" title="Änderungen verwerfen und Kurs nicht speichern" />' . "\n";
+			echo '</p>' . "\n";		
+		
+		echo '</form>' . "\n";
+		
+		echo $this->framework->getEpilogue();
+	}
+
 	
 	 /**************************************************************************
 	 * 20.09.2013 new AGB stuff
@@ -2127,6 +2190,10 @@ class WISY_EDIT_RENDERER_CLASS
 
 				case 'ek':
 					$this->renderEditKurs(intval($_REQUEST['id']) /*may be "0" for "new kurs"*/ );
+					break;
+
+				case 'ea':
+					$this->renderEditAnbieter(); // always edit the "logged in" anbieter
 					break;
 
 				case 'kt':
