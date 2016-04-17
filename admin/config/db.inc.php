@@ -130,18 +130,7 @@ if( !$use_neweditor ) {
 $anbieter->add_row(TABLE_INT|TABLE_EMPTYONNULL|TABLE_NEWSECTION,
 															'gruendungsjahr',	'Gründungsjahr', 0, '0###2200' /*0=leer, daher muss der Bereich ab dort derzeit (11/2013) erlaubt sein*/, 'Firmenporträt', array('layout.section'=>'Firmenporträt'));
 $anbieter->add_row(TABLE_ENUM,								'rechtsform',		'Rechtsform', 0,
-																				 '0######'
-																				.'1###GmbH###'
-																				.'2###GmbH gemeinnützig###'
-																				.'3###Verein###'
-																				.'4###Verein gemeinnützig###'
-																				.'5###Einzelunternehmen###'
-																				.'6###GBR###'
-																				.'7###Stiftung###'
-																				.'8###Anstalt öff. Rechts###'
-																				.'9###Körperschaft öff. Rechts###'
-																				.'10###Aktiengesellschaft###'
-																				.'11###Sonstige', '', array('layout.join'=>1));
+																				 $codes_rechtsform, '', array('layout.join'=>1));
 $anbieter->add_row(TABLE_TEXTAREA|TABLE_WIKI,				'firmenportraet',	'Firmenporträt');
 $anbieter->add_row(TABLE_BLOB,								'logo',				'Logo', '', '', '', array('layout.bg.class'=>'e_bgbottom'));
 $anbieter->add_row(TABLE_TEXT|TABLE_URL,					'homepage',			'Homepage', '', '', '', array('ctrl.size'=>'10-20-50'));
