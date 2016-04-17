@@ -218,7 +218,6 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 	
 	protected function writeOffersOverview($anbieter_id, $tag_suchname)
 	{
-
 		$this->searchRenderer = createWisyObject('WISY_SEARCH_RENDERER_CLASS', $this->framework);
 		
 		// get SQL query to read all current offers
@@ -423,19 +422,20 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 			echo $wiki2html->run($firmenportraet);
 		}
 
-		// link "show all offers"
-		$freq = $this->tagsuggestorObj->getTagFreq(array($this->tag_suchname_id)); if( $freq <= 0 ) $freq = '';
-		echo '<h1>'.$freq.($freq==1? ' aktuelles Angebot' : ' aktuelle Angebote').'</h1>'
-		.	'<p>'
-		.		'<a href="' .$this->framework->getUrl('search', array('q'=>$tag_suchname)). '">'
-		.			"Zeige alle aktuellen Angebote des Anbieters..."
-		.		'</a>'
-		. 	'</p>';		
+		if( substr($_SERVER['HTTP_HOST'], -6)!='.local' )
+		{
+			// link "show all offers"
+			$freq = $this->tagsuggestorObj->getTagFreq(array($this->tag_suchname_id)); if( $freq <= 0 ) $freq = '';
+			echo '<h1>'.$freq.($freq==1? ' aktuelles Angebot' : ' aktuelle Angebote').'</h1>'
+			.	'<p>'
+			.		'<a href="' .$this->framework->getUrl('search', array('q'=>$tag_suchname)). '">'
+			.			"Zeige alle aktuellen Angebote des Anbieters..."
+			.		'</a>'
+			. 	'</p>';		
 
-		// current offers overview
-
-
-		$this->writeOffersOverview($anbieter_id, $tag_suchname);
+			// current offers overview
+			$this->writeOffersOverview($anbieter_id, $tag_suchname);
+		}
 
 		// keyword overview
 		/*
