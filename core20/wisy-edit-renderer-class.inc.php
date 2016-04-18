@@ -2248,7 +2248,7 @@ class WISY_EDIT_RENDERER_CLASS
 
 					// Kundenkontakt
 					echo '<tr>';
-						echo '<td colspan="2">&nbsp;<br /><strong>Kundenkontakt:</strong></td>';		
+						echo '<td colspan="2">&nbsp;<br /><strong>Kundenkontakt:</strong> (öffentlich im Web sichtbar)</td>';		
 					echo '</tr>';					
 					echo '<tr>';
 						echo '<td width="10%" valign="top" nowrap="nowrap">Name:</td>';		
@@ -2283,7 +2283,7 @@ class WISY_EDIT_RENDERER_CLASS
 
 					// Pflegekontakt
 					echo '<tr>';
-						echo '<td colspan="2">&nbsp;<br /><strong>Pflegekontakt:</strong></td>';		
+						echo '<td colspan="2">&nbsp;<br /><strong>Pflegekontakt:</strong> (nur für die interne Datenredaktion)</td>';		
 					echo '</tr>';					
 					echo '<tr>';
 						echo '<td width="10%" valign="top" nowrap="nowrap">Name:</td>';		
