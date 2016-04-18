@@ -2320,7 +2320,20 @@ class WISY_EDIT_RENDERER_CLASS
 				}
 				
 				echo '<input type="submit" name="cancel" value="Abbruch" title="Änderungen verwerfen und Kurs nicht speichern" />' . "\n";
-			echo '</p>' . "\n";		
+			echo '</p>' . "\n";
+			
+			if( $showForm )
+			{
+				$a = '';
+				$aend = '';			
+				$email = $this->framework->iniRead('useredit.help.mail.to', '');
+				if( $email != '' ) {
+					$a    = "<a href=\"mailto:{$email}\">";
+					$aend = "</a>";
+				}
+
+				echo "<p>Änderungsbedarf in der Anbieterbeschreibung und weiteren Merkmalen bitte {$a}an die Redaktion mailen{$aend}.</p>";
+			}
 		
 		echo '</form>' . "\n";
 		
