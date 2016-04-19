@@ -429,21 +429,9 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 			if( $typ == 2 ) echo '<span class="wisy_icon_beratungsstelle">Beratungsstelle<span class="dp">:</span></span> ';
 			echo isohtmlentities($suchname);
 		echo '</h1>';
-		flush();
-
-		// firmenportait
-		if( $firmenportraet != '' ) {
-			$wiki2html =& createWisyObject('WISY_WIKI2HTML_CLASS', $this->framework);
-			echo $wiki2html->run($firmenportraet);
-		}
 
 		// leitung/rechtsform/gründung
 		$addinfo = '';
-
-		if( $leitung_name ) {
-			$addinfo .= $addinfo? ' - ' : '';
-			$addinfo .= 'Leitung: ' . isohtmlspecialchars($leitung_name);
-		}
 
 		if( $rechtsform > 0 ) {
 			require_once('admin/config/codes.inc.php'); // needed for $codes_rechtsform
@@ -462,8 +450,21 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 			$addinfo .= 'gegründet ' . intval($gruendungsjahr);
 		}
 
+		if( $leitung_name ) {
+			$addinfo .= $addinfo? ', ' : '';
+			$addinfo .= 'Leitung: ' . isohtmlspecialchars($leitung_name);
+		}
+
 		if( $addinfo ) {
 			echo '<p>' . $addinfo . '</p>';
+		}
+
+		// firmenportait
+		flush();
+
+		if( $firmenportraet != '' ) {
+			$wiki2html =& createWisyObject('WISY_WIKI2HTML_CLASS', $this->framework);
+			echo $wiki2html->run($firmenportraet);
 		}
 
 		// aktuelle kurse
