@@ -613,13 +613,13 @@ class WISY_EDIT_RENDERER_CLASS
 						echo "<input type=\"hidden\" name=\"fwd\" value=\"".isohtmlspecialchars($fwd)."\" />";
 						echo "<input type=\"hidden\" name=\"bwd\" value=\"".isohtmlspecialchars($this->bwd)."\" />";
 						echo '<tr>';
-							echo '<td nowrap="nowrap">Anbietername oder -ID:</td>';
-							echo "<td><input type=\"text\" name=\"as\" value=\"".isohtmlspecialchars($anbieterSuchname)."\" size=\"50\" /></td>";
+							echo '<td nowrap="nowrap">Anbietername oder -nummer:</td>';
+							echo "<td><input type=\"text\" name=\"as\" value=\"".isohtmlspecialchars($anbieterSuchname)."\" size=\"40\" /></td>";
 						echo '</tr>';
 						echo '<tr>';
 							echo '<td align="right">Passwort:</td>';
 							echo '<td nowrap="nowrap">';
-								echo '<input type="password" name="wepw" value="" size="30" />';
+								echo '<input type="password" name="wepw" value="" size="20" />';
 																																// der Anbietername wird _nicht_ weitergegeben, damit ein Missbrauch mehr als nur einen Klick erfordert.
 								echo ' <a href="'.isohtmlspecialchars($this->framework->getUrl('edit', array('action'=>'forgotpw' /*, 'as'=>$anbieterSuchname*/))).'">Passwort vergessen?</a>';
 								
@@ -2204,7 +2204,7 @@ class WISY_EDIT_RENDERER_CLASS
 						echo '<td width="90%" valign="top">' .  isohtmlspecialchars($anbieter['suchname']) . '</td>';
 					echo '</tr>';
 					echo '<tr>';
-						echo '<td width="10%" valign="top">ID:</td>';
+						echo '<td width="10%" valign="top">Anbieternummer:</td>';
 						echo '<td width="90%" valign="top">'.  isohtmlspecialchars($anbieter['id']) . '</td>';
 					echo '</tr>';
 					
