@@ -386,7 +386,10 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 		$vollst			= $db->f('vollstaendigkeit');
 		$anbieter_settings = explodeSettings($db->f('settings'));
 		$pruefsiegel_seit = $db->f('pruefsiegel_seit');
-		
+		$leitung_name   = $db->fs('leitung_name');
+		$gruendungsjahr = intval($db->fs('gruendungsjahr'));
+		$rechtsform     = intval($db->fs('rechtsform'));
+
 		// promoted?
 		if( intval($_GET['promoted']) > 0 )
 		{
@@ -428,11 +431,42 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 		echo '</h1>';
 		flush();
 
+		// firmenportait
 		if( $firmenportraet != '' ) {
 			$wiki2html =& createWisyObject('WISY_WIKI2HTML_CLASS', $this->framework);
 			echo $wiki2html->run($firmenportraet);
 		}
 
+		// leitung/rechtsform/gründung
+		$addinfo = '';
+
+		if( $leitung_name ) {
+			$addinfo .= $addinfo? ' - ' : '';
+			$addinfo .= 'Leitung: ' . isohtmlspecialchars($leitung_name);
+		}
+
+		if( $rechtsform > 0 ) {
+			require_once('admin/config/codes.inc.php'); // needed for $codes_rechtsform
+			$codes_array = explode('###', $GLOBALS['codes_rechtsform']);
+			for( $c = 0; $c < sizeof($codes_array); $c += 2 ) {
+				if( $codes_array[$c] == $rechtsform ) {
+					$addinfo .= $addinfo? ', ' : '';
+					$addinfo .= 'Rechtsform: ' . isohtmlspecialchars($codes_array[$c+1]);
+					break;
+				}
+			}
+		}
+
+		if( $gruendungsjahr > 0 ) {
+			$addinfo .= $addinfo? ', ' : '';
+			$addinfo .= 'gegründet ' . intval($gruendungsjahr);
+		}
+
+		if( $addinfo ) {
+			echo '<p>' . $addinfo . '</p>';
+		}
+
+		// aktuelle kurse
 		if( substr($_SERVER['HTTP_HOST'], -6)!='.local' )
 		{
 			// link "show all offers"
