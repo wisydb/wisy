@@ -378,6 +378,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		else if( $tag_type & 65536 ){ $row_class = "ac_zertifikat";       $row_preposition = ' zum '; $row_postfix = 'Zertifikat'; }
 	
 		if( $addparam['hidetagtypestr'] ) {
+			$row_preposition = '';
 			$row_postfix = '';
 		}
 
