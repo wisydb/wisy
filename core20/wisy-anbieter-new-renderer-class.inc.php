@@ -243,6 +243,16 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 				echo $html;
 			echo '<p>';
 		}
+
+		$html = $this->getOffersOverviewPart($sql, 65536 // Zertifikate
+												, array('hidetagtypestr'=>1, 'qprefix'=>"$tag_suchname, "));
+		if( $html )
+		{
+			echo '<h1>Zertifikate - aktuelle Angebote</h1>';
+			echo '<p>';
+				echo $html;
+			echo '<p>';
+		}
 		
 		$html = $this->getOffersOverviewPart($sql, 0x0000FFFF	// alles, ausser Sachstichworten (0, implizit ausgeschlossen) und ausser
 												& ~1 			// Abschluesse
@@ -253,6 +263,7 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 												& ~128			// Thema
 												& ~256			// Anbieter (ist natuerlich immer derselbe)
 												& ~512			// Ort
+												& ~65536		// Zertifikate
 												, array('showtagtype'=>1, 'qprefix'=>"$tag_suchname, "));
 		if( $html )
 		{
