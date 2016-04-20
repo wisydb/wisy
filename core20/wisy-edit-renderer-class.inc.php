@@ -2049,8 +2049,9 @@ class WISY_EDIT_RENDERER_CLASS
 			$anbieter['stadtteil'] = '';
 
 		// misc.
-		$anbieter['gruendungsjahr']	= intval($_POST['gruendungsjahr']);
 		$anbieter['rechtsform']		= intval($_POST['rechtsform']);
+		$anbieter['gruendungsjahr']	= intval($_POST['gruendungsjahr']);
+		$anbieter['leitung_name']	= $_POST['leitung_name'];
 		$anbieter['homepage']		= $_POST['homepage'];
 		$anbieter['anspr_name']		= $_POST['anspr_name'];
 		$anbieter['anspr_zeit']		= $_POST['anspr_zeit'];
@@ -2086,8 +2087,9 @@ class WISY_EDIT_RENDERER_CLASS
 		$logwriter = new LOG_WRITER_CLASS;
 		$logwriter->addDataFromTable('anbieter', $anbieterId, 'preparediff');
 		
-		if( $oldData['gruendungsjahr'] 	!= $newData['gruendungsjahr']
-		 || $oldData['rechtsform'] 		!= $newData['rechtsform']
+		if( $oldData['rechtsform']		!= $newData['rechtsform']
+		 || $oldData['gruendungsjahr']	!= $newData['gruendungsjahr']
+		 || $oldData['leitung_name']	!= $newData['leitung_name']
 		 || $oldData['homepage']      	!= $newData['homepage'] 
 		 || $oldData['strasse']      	!= $newData['strasse']
 		 || $oldData['plz']      		!= $newData['plz']
@@ -2105,8 +2107,9 @@ class WISY_EDIT_RENDERER_CLASS
 		 )
 		{
 			// update record
-			$sql = "UPDATE anbieter SET gruendungsjahr=".intval($newData['gruendungsjahr']).",
-									 rechtsform=".intval($newData['rechtsform']).", 
+			$sql = "UPDATE anbieter SET rechtsform=".intval($newData['rechtsform']).",
+									 gruendungsjahr=".intval($newData['gruendungsjahr']).",
+									 leitung_name='".addslashes($newData['leitung_name'])."',
 									 homepage='".addslashes($newData['homepage'])."', 
 									 strasse='".addslashes($newData['strasse'])."',
 									 plz='".addslashes($newData['plz'])."',
@@ -2210,18 +2213,24 @@ class WISY_EDIT_RENDERER_CLASS
 					
 					// firmenportrait
 					echo '<tr>';
-						echo '<td width="10%" valign="top">Gründungsjahr:</td>';		
+						echo '<td width="10%" valign="top">Rechtsform:</td>';
+						echo '<td width="90%" valign="top">';
+							$this->controlSelect('rechtsform', $anbieter['rechtsform'], $GLOBALS['codes_rechtsform']);
+						echo '</td>';
+					echo '</tr>';
+					echo '<tr>';
+						echo '<td width="10%" valign="top">Gründungsjahr:</td>';
 						echo '<td width="90%" valign="top">';
 							$ausgabe_jahr = $anbieter['gruendungsjahr']<=0? '' : $anbieter['gruendungsjahr'];
 							$this->controlText('gruendungsjahr', $ausgabe_jahr, 6, 4, '', '');
 						echo '</td>';
 					echo '</tr>';
 					echo '<tr>';
-						echo '<td width="10%" valign="top">Rechtsform:</td>';		
+						echo '<td width="10%" valign="top">Name des Leiters:</td>';
 						echo '<td width="90%" valign="top">';
-							$this->controlSelect('rechtsform', $anbieter['rechtsform'], $GLOBALS['codes_rechtsform']);
+							$this->controlText('leitung_name', $leitung_name, 50, 200, '', '');
 						echo '</td>';
-					echo '</tr>';										
+					echo '</tr>';
 					echo '<tr>';
 						echo '<td width="10%" valign="top">Homepage:</td>';		
 						echo '<td width="90%" valign="top">';
