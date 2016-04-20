@@ -2228,7 +2228,7 @@ class WISY_EDIT_RENDERER_CLASS
 					echo '<tr>';
 						echo '<td width="10%" valign="top">Name des Leiters:</td>';
 						echo '<td width="90%" valign="top">';
-							$this->controlText('leitung_name', $leitung_name, 50, 200, '', '');
+							$this->controlText('leitung_name', $anbieter['leitung_name'], 50, 200, '', '');
 						echo '</td>';
 					echo '</tr>';
 					echo '<tr>';
