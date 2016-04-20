@@ -199,9 +199,11 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 		$db->query(str_replace('__BITS__', $tag_type_bits, $sql));
 		while( $db->next_record() )
 		{
-			$html .= $html==''? '' : '<br />';
-		
 			$tag_id = $db->f('tag_id');
+			if( is_array($addparam['filter_tag_ids']) && !in_array($tag_id, $addparam['filter_tag_ids']) ) {
+				continue;
+			}
+
 			$tag_name = $db->f('tag_name');
 			$tag_type = $db->f('tag_type');
 			$tag_descr = $db->f('tag_descr');
@@ -209,6 +211,7 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 			
 			$freq = $this->tagsuggestorObj->getTagFreq(array($this->tag_suchname_id, $tag_id));
 			
+			$html .= $html==''? '' : '<br />';
 			$html .= $this->searchRenderer->formatItem($tag_name, $tag_descr, $tag_type, $tag_help, $freq, $addparam);
 
 			
@@ -254,6 +257,18 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 			echo '<p>';
 		}
 		
+		// besondere Kursarten - diese Liste enthält nur eine Auswahl von Stichworten, definiert von einer Liste von Stichwort-IDs
+		// (die zunächst in Tag-IDs konvertiert werden müssen)
+
+		$db = new DB_Admin;
+		$db->query("SELECT stichwort FROM stichwoerter WHERE id IN (16311,2827,2826,16851,3207,1,6013,7721,7720,810701,810691,810681,810671,810661,810611,810641,810651,806441,5469,1472)");
+		$temp = ''; while( $db->next_record() ) { $temp .= ($temp==''?'':', ') . $db->quote($db->f('stichwort')); }
+		$filter_tag_ids = array();
+		if( sizeof($temp) ) {
+			$db->query("SELECT tag_id FROM x_tags WHERE tag_name IN(".$temp.")");
+			while( $db->next_record() ) { $filter_tag_ids[] = $db->f('tag_id'); }
+		}
+
 		$html = $this->getOffersOverviewPart($sql, 0x0000FFFF	// alles, ausser Sachstichworten (0, implizit ausgeschlossen) und ausser
 												& ~1 			// Abschluesse
 												& ~4			// Qualitaetszertifikate (werden rechts als Bild dargestellt)
@@ -264,7 +279,7 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 												& ~256			// Anbieter (ist natuerlich immer derselbe)
 												& ~512			// Ort
 												& ~65536		// Zertifikate
-												, array('showtagtype'=>1, 'qprefix'=>"$tag_suchname, "));
+												, array('showtagtype'=>1, 'qprefix'=>"$tag_suchname, ", 'filter_tag_ids'=>$filter_tag_ids));
 		if( $html )
 		{
 			echo '<div class="wisy_besondere_kursarten">';
