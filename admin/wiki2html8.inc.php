@@ -174,7 +174,7 @@ function htmlsmartentities($str, $leave = '', $smartPunctuation = 1)
 
 	if( !is_array($g_transentities1) )
 	{
-		$g_transentities1			= array_flip(get_html_translation_table(HTML_ENTITIES, ENT_COMPAT|ENT_HTML5, 'UTF-8'));
+		$g_transentities1			= array_flip(get_html_translation_table(HTML_ENTITIES, ENT_COMPAT, 'UTF-8'));
 		$g_transentities1['&nbsp;'] = '/NoN-bReAkInG-sPaCe/';
 		$g_transentities1['&euro;'] = '€';
 		$g_transentities2			= array_flip($g_transentities1);
