@@ -1,7 +1,7 @@
 <?php if( !defined('IN_WISY') ) die('!IN_WISY');
 
 /******************************************************************************
- WISY 2.0
+ WISY 5.0
  ******************************************************************************
  Spezielle Informationen berechnen und cachen.
  Hierzu gehören z.B. die Förderungsmöglichkeiten, die für ein bestimmtes

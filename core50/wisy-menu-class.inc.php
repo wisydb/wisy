@@ -80,7 +80,7 @@ class WISY_MENU_CLASS
 
 		// add all children
 		
-		$thema = $g_themen[$startIndex]['thema'];
+		$thema = utf8_encode($g_themen[$startIndex]['thema']);
 		
 		$title = htmlspecialchars($thema);
 		
@@ -260,14 +260,14 @@ class WISY_MENU_CLASS
 		if( sizeof($param) == 3 )
 		{
 			// parameters are in the format "title | url | target='_blank'",  "title | url | onclick='...'" etc.
-			$title = trim($param[0]);
+			$title = utf8_encode(trim($param[0]));
 			$url = trim($param[1]);
 			$aparam = ' ' . $param[2] . ' ';
 		}
 		else if( sizeof($param) == 2 )
 		{
 			// parameters are in the format "title | url"
-			$title = trim($param[0]);
+			$title = utf8_encode(trim($param[0]));
 			$url = trim($param[1]);
 		}
 		else
@@ -281,7 +281,7 @@ class WISY_MENU_CLASS
 			else
 			{
 				// parameters are in the format "title"
-				$title = $param[0];
+				$title = utf8_encode($param[0]);
 			}
 		}
 	}
