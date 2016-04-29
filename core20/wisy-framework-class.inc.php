@@ -1123,7 +1123,7 @@ class WISY_FRAMEWORK_CLASS
 		echo "\n";
 		echo '<div id="wisy_searcharea">' . "\n";
 			echo '<form action="search" method="get">' . "\n";
-				echo '<input type="text" id="wisy_searchinput" class="ac_keyword" name="q" value="' .$q. '" placeholder="' . $this->iniRead('searcharea.placeholder', $DEFAULT_PLACEHOLDER) . '" />' . "\n";
+				echo '<input type="text" id="wisy_searchinput" class="ac_keyword" name="q" value="' .isohtmlspecialchars($q). '" placeholder="' . $this->iniRead('searcharea.placeholder', $DEFAULT_PLACEHOLDER) . '" />' . "\n";
 				if( $this->iniRead('searcharea.radiussearch', 0) )
 				{
 					echo '<input type="text" id="wisy_beiinput" class="ac_plzort" name="bei" value="' .$bei. '" placeholder="PLZ/Ort" />' . "\n";
