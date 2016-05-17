@@ -23,6 +23,8 @@ With args as:
 class WISY_KEYWORDTABLE_CLASS
 {
 	protected static $keywords;
+	protected static $keyword_children;
+	protected static $keyword_oberbegriffe;
 	protected static $sw_modified;
 
 	function __construct(&$framework, $addparam)
@@ -42,6 +44,16 @@ class WISY_KEYWORDTABLE_CLASS
 			$this->db->query("SELECT id, stichwort, eigenschaften, zusatzinfo, glossar FROM stichwoerter;");
 			while( $this->db->next_record() ) {
 				WISY_KEYWORDTABLE_CLASS::$keywords[ $this->db->f('id') ] = $this->db->Record;
+			}
+
+			WISY_KEYWORDTABLE_CLASS::$keyword_children = array();
+			WISY_KEYWORDTABLE_CLASS::$keyword_oberbegriffe = array();
+			$this->db->query("SELECT primary_id, attr_id FROM stichwoerter_verweis2 ORDER BY structure_pos;"); // attr_id = children
+			while( $this->db->next_record() ) {
+				$primary_id = $this->db->f('primary_id');
+				$attr_id = $this->db->f('attr_id');
+				WISY_KEYWORDTABLE_CLASS::$keyword_children[ $primary_id ][] = $attr_id;
+				WISY_KEYWORDTABLE_CLASS::$keyword_oberbegriffe[ $attr_id ][] = $primary_id;
 			}
 
 			WISY_KEYWORDTABLE_CLASS::$sw_modified = '0000-00-00 00:00:00';
@@ -96,14 +108,6 @@ class WISY_KEYWORDTABLE_CLASS
 			$ret .= $row_postfix;
 		$ret .= '</span>';
 		
-		/*col2*/
-		$ret .= '</td><td width="10%" nowrap="nowrap" align="center">';
-		if( $tag_help != 0 )
-		{
-			$ret .=
-			 "<a class=\"wisy_help\" href=\"" . $this->framework->getUrl('g', array('id'=>$tag_help, 'q'=>$tag_name)) . "\" title=\"Ratgeber\">&nbsp;i&nbsp;</a>";
-		}		
-		
 		return $ret;
 	}
 	
@@ -140,7 +144,10 @@ class WISY_KEYWORDTABLE_CLASS
 		}
 		
 		$ret = "<tr data-indent=\"$level\" $trstyle>";
-			$ret .= '<td style="padding-left:'.intval($level*2).'em" width="90%">';
+
+			// title
+
+			$ret .= '<td style="padding-left:'.intval($level*2).'em" width="60%">';
 			
 				if( $hasChildren ) {
 					$ret .= "<a href=\"#\" class=\"wisy_glskeyexp\" data-glskeyaction=\"".($expanded? "shrink":"expand")."\">";
@@ -150,13 +157,38 @@ class WISY_KEYWORDTABLE_CLASS
 				else {
 					$ret .= $icon_empty . ' ';
 				}
-								
+
+				$tag_help = $glossarId != $this->selfGlossarId? $glossarId : 0;
 				$ret .= $this->formatItem($title, $zusatzinfo, $tag_type, 
-					$glossarId != $this->selfGlossarId? $glossarId : 0, 
+					$tag_help,
 					$tag_freq);
 
 			$ret .= '</td>';
 			
+			// oberbegriffe
+
+			$ret .= '<td width="30%"><small>';
+				$oberbegr = WISY_KEYWORDTABLE_CLASS::$keyword_oberbegriffe[ $keywordId ];
+				if( is_array($oberbegr) ) {
+					$oberbegr_cnt = 0;
+					for( $i = 0; $i < sizeof($oberbegr); $i++ ) {
+						$ret .= $oberbegr_cnt? ', ' : '';
+						$ret .= WISY_KEYWORDTABLE_CLASS::$keywords[ $oberbegr[$i] ]['stichwort'];
+						$oberbegr_cnt++;
+					}
+				}
+			$ret .= '</small></td>';
+
+			// help link
+
+			$ret .= '<td width="10%" nowrap="nowrap" align="center">';
+				if( $tag_help != 0 )
+				{
+					$ret .=
+					 "<a class=\"wisy_help\" href=\"" . $this->framework->getUrl('g', array('id'=>$tag_help, 'q'=>$title)) . "\" title=\"Ratgeber\">&nbsp;i&nbsp;</a>";
+				}
+			$ret .= '</td>';
+
 		$ret .= '</tr>';
 
 		$this->rownum ++;
@@ -168,15 +200,12 @@ class WISY_KEYWORDTABLE_CLASS
 		// check for timeout
 		$timeout_after_s = 5.000;
 		if( $this->framework->microtime_float() - $this->start > $timeout_after_s ) {
-			return '<tr><td>Timeout, Erstellung der Tabelle abgebrochen.</td></tr>';
+			return '<tr><td colspan="3">Timeout, Erstellung der Tabelle abgebrochen.</td></tr>';
 		}
 		
 		// check for children
-		$child_ids = array();
-		$this->db->query("SELECT attr_id FROM stichwoerter_verweis2 WHERE primary_id=$keywordId ORDER BY structure_pos;");
-		while( $this->db->next_record() ) {
-			$child_ids[] = $this->db->f('attr_id');
-		}
+		$child_ids = WISY_KEYWORDTABLE_CLASS::$keyword_children[ $keywordId ];
+		if( !is_array($child_ids) ) { $child_ids = array(); }
 
 		$showempty = $this->showempty;
 		if( $level == 0 || (sizeof($child_ids)!=0 && $expand > 0) ) {
@@ -200,7 +229,7 @@ class WISY_KEYWORDTABLE_CLASS
 	public function getHtml()
 	{
 		// is the result in the cache?
-		$cacheVersion = 'v7';
+		$cacheVersion = 'v8';
 		$cacheKey = "wisykwt.$cacheVersion.".$GLOBALS['wisyPortalId'].".$this->args".".".WISY_KEYWORDTABLE_CLASS::$sw_modified;
 		if( ($ret=$this->dbCache->lookup($cacheKey))!='' && substr($_SERVER['HTTP_HOST'], -6)!='.local' ) {
 			$ret = str_replace('<div class="wisy_glskeytime">', '<div class="wisy_glskeytime">Cached, ', $ret);
@@ -243,13 +272,14 @@ class WISY_KEYWORDTABLE_CLASS
 		// done, surround the result by a table
 		if( $ret == '' ) 
 		{
-			$ret = '<tr><td><i>Keine aktuellen Angebote.</i></td></tr>';
+			$ret = '<tr><td colspan="3"><i>Keine aktuellen Angebote.</i></td></tr>';
 		}
 
 		$ret = '<table class="wisy_glskey">'
 			.		'<thead>'
 			.			'<tr>'
-			.				'<td width="90%">Rechercheziele</td>'
+			.				'<td width="60%">Rechercheziele</td>'
+			.				'<td width="30%">Oberbegriffe</td>'
 			.				'<td width="10%">Ratgeber</td>'	
 			.			'<tr>'
 			.		'</thead>'
