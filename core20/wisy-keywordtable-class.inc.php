@@ -25,6 +25,7 @@ class WISY_KEYWORDTABLE_CLASS
 	protected static $keywords;
 	protected static $keyword_children;
 	protected static $keyword_oberbegriffe;
+	protected static $keyword_oberbegr_use;
 	protected static $sw_modified;
 
 	function __construct(&$framework, $addparam)
@@ -60,7 +61,23 @@ class WISY_KEYWORDTABLE_CLASS
 			$this->db->query("SELECT MAX(date_modified) d FROM stichwoerter;");
 			if( $this->db->next_record() ) {
 				WISY_KEYWORDTABLE_CLASS::$sw_modified = $this->db->f('d');
-			}			
+			}
+
+			// a positive list of parent keywords to be displayed
+			WISY_KEYWORDTABLE_CLASS::$keyword_oberbegr_use = array(
+				  3949=>1, 813721=>1, 8595=>1, 813711=>1, 6905=>1, 641=>1 // Art
+				, 6468=>4, 15041=>4, 1745=>4 // Besonderheit
+			);
+
+			for( $i = 0; $i < sizeof(WISY_KEYWORDTABLE_CLASS::$keyword_children[ 8657 ]); $i++ ) { // add all children of keyword 'Prüfung'
+				WISY_KEYWORDTABLE_CLASS::$keyword_oberbegr_use[ WISY_KEYWORDTABLE_CLASS::$keyword_children[ 8657 ][ $i ] ] = 2;
+			}
+
+			for( $i = 0; $i < sizeof(WISY_KEYWORDTABLE_CLASS::$keyword_children[ 6010 ]); $i++ ) { // add all children of keyword 'Förderung'
+				WISY_KEYWORDTABLE_CLASS::$keyword_oberbegr_use[ WISY_KEYWORDTABLE_CLASS::$keyword_children[ 6010 ][ $i ] ] = 3;
+			}
+
+			asort(WISY_KEYWORDTABLE_CLASS::$keyword_oberbegr_use);
 		}		
 	}
 
@@ -147,7 +164,7 @@ class WISY_KEYWORDTABLE_CLASS
 
 			// title
 
-			$ret .= '<td style="padding-left:'.intval($level*2).'em" width="60%">';
+			$ret .= '<td style="padding-left:'.intval($level*2).'em" width="65%">';
 			
 				if( $hasChildren ) {
 					$ret .= "<a href=\"#\" class=\"wisy_glskeyexp\" data-glskeyaction=\"".($expanded? "shrink":"expand")."\">";
@@ -167,14 +184,21 @@ class WISY_KEYWORDTABLE_CLASS
 			
 			// oberbegriffe
 
-			$ret .= '<td width="30%"><small>';
+			$ret .= '<td width="25%"><small>';
 				$oberbegr = WISY_KEYWORDTABLE_CLASS::$keyword_oberbegriffe[ $keywordId ];
-				if( is_array($oberbegr) ) {
+				if( is_array($oberbegr) )
+				{
 					$oberbegr_cnt = 0;
-					for( $i = 0; $i < sizeof($oberbegr); $i++ ) {
-						$ret .= $oberbegr_cnt? ', ' : '';
-						$ret .= WISY_KEYWORDTABLE_CLASS::$keywords[ $oberbegr[$i] ]['stichwort'];
-						$oberbegr_cnt++;
+					$col_names = array('Art', 'Pr&uuml;fung', 'F&ouml;rderung', 'Besonderheit');
+					for( $i = 0; $i < sizeof($oberbegr); $i++ )
+					 {
+						if( WISY_KEYWORDTABLE_CLASS::$keyword_oberbegr_use[ $oberbegr[$i] ] )
+						{
+							$ret .= $oberbegr_cnt? ', ' : '';
+							$ret .= $col_names[ WISY_KEYWORDTABLE_CLASS::$keyword_oberbegr_use[ $oberbegr[$i] ] ] . ': ';
+							$ret .= WISY_KEYWORDTABLE_CLASS::$keywords[ $oberbegr[$i] ]['stichwort'];
+							$oberbegr_cnt++;
+						}
 					}
 				}
 			$ret .= '</small></td>';
@@ -278,8 +302,8 @@ class WISY_KEYWORDTABLE_CLASS
 		$ret = '<table class="wisy_glskey">'
 			.		'<thead>'
 			.			'<tr>'
-			.				'<td width="60%">Rechercheziele</td>'
-			.				'<td width="30%">Oberbegriffe</td>'
+			.				'<td width="65%">Rechercheziele</td>'
+			.				'<td width="25%">&nbsp;</td>'
 			.				'<td width="10%">Ratgeber</td>'	
 			.			'<tr>'
 			.		'</thead>'
