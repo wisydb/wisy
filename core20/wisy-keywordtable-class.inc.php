@@ -191,11 +191,18 @@ class WISY_KEYWORDTABLE_CLASS
 					$oberbegr_cnt = 0;
 					$last_col = -1;
 					$col_names = array('', 'Art', 'Pr&uuml;fung', 'F&ouml;rderung', 'Besonderheit');
+					$col_style = array('', '',    '',             'color:#D60008;',  '');
 					for( $i = 0; $i < sizeof($oberbegr); $i++ )
 					{
 						if( WISY_KEYWORDTABLE_CLASS::$keyword_oberbegr_use[ $oberbegr[$i] ] )
 						{
 							$ret .= $oberbegr_cnt? ', ' : '';
+
+							$span_close = '';
+							if( $col_style[ WISY_KEYWORDTABLE_CLASS::$keyword_oberbegr_use[ $oberbegr[$i] ] ] ) {
+								$ret .= '<span style="' . $col_style[ WISY_KEYWORDTABLE_CLASS::$keyword_oberbegr_use[ $oberbegr[$i] ] ] . '">';
+								$span_close = '</span>';
+							}
 
 							if( $last_col != WISY_KEYWORDTABLE_CLASS::$keyword_oberbegr_use[ $oberbegr[$i] ] ) {
 								$ret .= $col_names[ WISY_KEYWORDTABLE_CLASS::$keyword_oberbegr_use[ $oberbegr[$i] ] ] . ': ';
@@ -203,6 +210,9 @@ class WISY_KEYWORDTABLE_CLASS
 							}
 
 							$ret .= WISY_KEYWORDTABLE_CLASS::$keywords[ $oberbegr[$i] ]['stichwort'];
+							
+							$ret .= $span_close;
+							
 							$oberbegr_cnt++;
 						}
 					}
