@@ -164,7 +164,7 @@ class WISY_KEYWORDTABLE_CLASS
 
 			// title
 
-			$ret .= '<td style="padding-left:'.intval($level*2).'em" width="65%">';
+			$ret .= '<td style="padding-left:'.intval($level*2).'em" width="79%">';
 			
 				if( $hasChildren ) {
 					$ret .= "<a href=\"#\" class=\"wisy_glskeyexp\" data-glskeyaction=\"".($expanded? "shrink":"expand")."\">";
@@ -184,13 +184,13 @@ class WISY_KEYWORDTABLE_CLASS
 			
 			// oberbegriffe
 
-			$ret .= '<td width="25%"><small>';
+			$ret .= '<td width="20%"><small>';
 				$oberbegr = WISY_KEYWORDTABLE_CLASS::$keyword_oberbegriffe[ $keywordId ];
 				if( is_array($oberbegr) )
 				{
 					$oberbegr_cnt = 0;
 					$last_col = -1;
-					$col_names = array('', 'Art', 'Pr&uuml;fung', 'F&ouml;rderung', 'Besonderheit');
+					$col_names = array('', '',    'Pr&uuml;fung', 'F&ouml;rderung',  '');
 					$col_style = array('', '',    '',             'color:#D60008;',  '');
 					for( $i = 0; $i < sizeof($oberbegr); $i++ )
 					{
@@ -205,7 +205,10 @@ class WISY_KEYWORDTABLE_CLASS
 							}
 
 							if( $last_col != WISY_KEYWORDTABLE_CLASS::$keyword_oberbegr_use[ $oberbegr[$i] ] ) {
-								$ret .= $col_names[ WISY_KEYWORDTABLE_CLASS::$keyword_oberbegr_use[ $oberbegr[$i] ] ] . ': ';
+								$col_name = $col_names[ WISY_KEYWORDTABLE_CLASS::$keyword_oberbegr_use[ $oberbegr[$i] ] ];
+								if( $col_name ) {
+									$ret .= $col_name . ': ';
+								}
 								$last_col = WISY_KEYWORDTABLE_CLASS::$keyword_oberbegr_use[ $oberbegr[$i] ];
 							}
 
@@ -221,7 +224,7 @@ class WISY_KEYWORDTABLE_CLASS
 
 			// help link
 
-			$ret .= '<td width="10%" nowrap="nowrap" align="center">';
+			$ret .= '<td width="1%" nowrap="nowrap" align="center">';
 				if( $tag_help != 0 )
 				{
 					$ret .=
@@ -318,9 +321,9 @@ class WISY_KEYWORDTABLE_CLASS
 		$ret = '<table class="wisy_glskey">'
 			.		'<thead>'
 			.			'<tr>'
-			.				'<td width="65%">Rechercheziele</td>'
-			.				'<td width="25%">&nbsp;</td>'
-			.				'<td width="10%">Ratgeber</td>'	
+			.				'<td width="79%">Rechercheziele</td>'
+			.				'<td width="20%">&nbsp;</td>'
+			.				'<td width="1%">&nbsp;</td>'	
 			.			'<tr>'
 			.		'</thead>'
 			.		'<tbody>'
