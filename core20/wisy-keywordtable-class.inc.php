@@ -272,7 +272,7 @@ class WISY_KEYWORDTABLE_CLASS
 	public function getHtml()
 	{
 		// is the result in the cache?
-		$cacheVersion = 'v9';
+		$cacheVersion = 'v10';
 		$cacheKey = "wisykwt.$cacheVersion.".$GLOBALS['wisyPortalId'].".$this->args".".".WISY_KEYWORDTABLE_CLASS::$sw_modified;
 		if( ($ret=$this->dbCache->lookup($cacheKey))!='' && substr($_SERVER['HTTP_HOST'], -6)!='.local' ) {
 			$ret = str_replace('<div class="wisy_glskeytime">', '<div class="wisy_glskeytime">Cached, ', $ret);
