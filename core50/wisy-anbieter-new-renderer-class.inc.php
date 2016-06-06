@@ -107,7 +107,7 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 		$logo_h			= $ob->h;
 		
 		// do what to do ...
-		$ret .= '<div class="wisyr_anbieter_name" itemprop="name">'. htmlentities($postname? $postname : $suchname) . '</div>'
+		$ret .= '<div class="wisyr_anbieter_name" itemprop="name">'. htmlentities($postname? $postname : $suchname) . '</div>';
 		$ret .= '<div itemprop="address" itemscope itemtype="http://schema.org/PostalAddress">';
 
 		if( $strasse )
@@ -411,7 +411,7 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 		echo '<div id="wisy_resultarea"><div id="wisy_resultcol1">';
 		
 		echo '<p class="noprint">';
-			echo '<a href="javascript:history.back();">&laquo; Zur&uuml;ck</a>';
+			echo '<a class="wisyr_zurueck" href="javascript:history.back();">&laquo; Zur&uuml;ck</a>';
 		echo '</p>';
 		echo '<h1>';
 			if( $typ == 2 ) echo '<span class="wisy_icon_beratungsstelle">Beratungsstelle<span class="dp">:</span></span> ';

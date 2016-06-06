@@ -578,6 +578,7 @@ class WISY_EDIT_RENDERER_CLASS
 		echo $this->framework->getPrologue(array('title'=>'Login', 'bodyClass'=>'wisyp_edit'));
 		echo $this->framework->getSearchField();
 		
+			echo '<section id="loginform" class="maxwidth">';
 			echo '<h1>Login</h1>';
 
 			$showLoginForm = true;
@@ -636,6 +637,8 @@ class WISY_EDIT_RENDERER_CLASS
 					echo '<p>' . $temp . '</p>';
 				}
 			}
+			
+			echo '</section><!-- /#loginform -->';
 
 		echo $this->framework->getEpilogue();
 	}

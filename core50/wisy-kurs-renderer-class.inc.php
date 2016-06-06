@@ -85,7 +85,7 @@ class WISY_KURS_RENDERER_CLASS
 
 			
 			echo '<p class="noprint">' 
-			.	 	'<a href="javascript:history.back();">&laquo; Zur&uuml;ck</a>'
+			.	 	'<a class="wisyr_zurueck" href="javascript:history.back();">&laquo; Zur&uuml;ck</a>'
 			.	 '</p>';
 			
 			echo '<h1>';

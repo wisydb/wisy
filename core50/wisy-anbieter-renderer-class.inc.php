@@ -251,7 +251,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 
 		// render head
 		echo '<p class="noprint">';
-			echo '<a href="javascript:history.back();">&laquo; Zur&uuml;ck</a>';
+			echo '<a class="wisyr_zurueck" href="javascript:history.back();">&laquo; Zur&uuml;ck</a>';
 		echo '</p>';
 		
 		

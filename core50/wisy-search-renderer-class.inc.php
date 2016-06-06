@@ -100,9 +100,9 @@ class WISY_SEARCH_RENDERER_CLASS
 		echo '</th>' . "\n";
 	}
 	
-	function renderPagination($prevurl, $nexturl, $pagesel)
+	function renderPagination($prevurl, $nexturl, $pagesel, $extraclass)
 	{
-		echo ' <span class="wisy_paginate">';
+		echo ' <span class="wisy_paginate ' . $extraclass . '">';
 			echo 'Gehe zu Seite ';
 		
 			if( $prevurl ) {
@@ -614,7 +614,7 @@ class WISY_SEARCH_RENDERER_CLASS
 
 				if( $pagesel )
 				{
-					$this->renderPagination($prevurl, $nexturl, $pagesel);
+					$this->renderPagination($prevurl, $nexturl, $pagesel, 'wisyr_paginate_top');
 				}
 			echo '</p>' . "\n";
 			
@@ -693,7 +693,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			if( $pagesel )
 			{
 				echo '<p>';
-				$this->renderPagination($prevurl, $nexturl, $pagesel);
+				$this->renderPagination($prevurl, $nexturl, $pagesel, 'wisyr_paginate_bottom');
 				echo '</p>';
 			}
 		}
@@ -804,7 +804,7 @@ class WISY_SEARCH_RENDERER_CLASS
 
 				if( $pagesel )
 				{
-					$this->renderPagination($prevurl, $nexturl, $pagesel);
+					$this->renderPagination($prevurl, $nexturl, $pagesel, 'wisyr_paginate_top');
 				}
 			echo '</p>' . "\n";
 			flush();
@@ -866,7 +866,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			if( $pagesel )
 			{
 				echo '<p>';
-				$this->renderPagination($prevurl, $nexturl, $pagesel);
+				$this->renderPagination($prevurl, $nexturl, $pagesel, 'wisyr_paginate_bottom');
 				echo '</p>';
 			}
 		}

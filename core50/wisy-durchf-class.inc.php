@@ -427,15 +427,18 @@ class WISY_DURCHF_CLASS
 			
 			if( $beginn )
 			{
-				if( $termin_abgelaufen ) { $cell .= ' <span class="wisy_datum_abgel">'; }
-			    	$cell .= ($ende && $beginn!=$ende)? "$beginn - $ende" : $beginn;
-			    if( $termin_abgelaufen ) { $cell .= '</span>'; }
+				if( $termin_abgelaufen ) {
+					$cell .= '<span class="wisyr_termin_datum wisy_datum_abgel">';
+				} else {
+					$cell .= '<span class="wisyr_termin_datum">';
+				}
+			    $cell .= ($ende && $beginn!=$ende)? "$beginn - $ende" : $beginn . '</span>';
 			    
 				if( $beginnoptionen ) { $cell .= " <span class=\"wisyr_termin_beginn\">$beginnoptionen</span>"; }
 			}
 			else if( $beginnoptionen )
 			{
-				$cell .= $beginnoptionen;
+				$cell .= '<span class="wisyr_termin_optionen">' . $beginnoptionen . '</span>';
 			}
 			
 			if( $addParam['record']['freigeschaltet'] == 4 )
@@ -452,12 +455,12 @@ class WISY_DURCHF_CLASS
 			
 			if( $addText ) // z.B. für "2 weitere Durchführungen ..."
 			{
-				$cell .= $addText;
+				$cell .= '<span class="wisyr_termin_text">' . $addText . '</span>';
 			}
 			
 			if( $cell == '' )
 			{
-				$cell .= 'k. A.'; 
+				$cell .= '<span class="wisyr_termin_ka">k. A.</span>'; 
 			}
 			
 			echo $cell . '</td>' . "\n";
