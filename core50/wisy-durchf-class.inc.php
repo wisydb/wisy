@@ -49,12 +49,12 @@ class WISY_DURCHF_CLASS
 		{
 			// init Array with defaults
 			$this->imgTagArr = array(
-				'tc1'	=>	array('&#9673;', 	'Ganzt&auml;gig'),
-				'tc2'	=>	array('&#9680;',  	'Vormittags'),
-				'tc3'	=>	array('&#9681;', 	'Nachmittags'),
-				'tc4'	=>	array('&#9682;', 	'Abends'),
-				'tc5'	=>	array('<span class="wisyr_art_wochenende">WE</span>',		'Wochenende'),
-				1		=>	array('<span class="wisyr_art_bildungsurlaub">BU</span>',	'Bildungsurlaub'),
+				'tc1'	=>	array('<span class="wisyr_art_ganztaegig">&#9673;</span>',	 	'Ganzt&auml;gig'),
+				'tc2'	=>	array('<span class="wisyr_art_vormittags">&#9680;</span>',  	'Vormittags'),
+				'tc3'	=>	array('<span class="wisyr_art_nachmittags">&#9681;</span>', 	'Nachmittags'),
+				'tc4'	=>	array('<span class="wisyr_art_abends">&#9682;</span>',		 	'Abends'),
+				'tc5'	=>	array('<span class="wisyr_art_wochenende">WE</span>',			'Wochenende'),
+				1		=>	array('<span class="wisyr_art_bildungsurlaub">BU</span>',		'Bildungsurlaub'),
 				7721	=>	array('<span class="wisyr_art_fernunterricht">&#9993;</span>',	'Fernunterricht'),
 			);
 
@@ -428,9 +428,9 @@ class WISY_DURCHF_CLASS
 			if( $beginn )
 			{
 				if( $termin_abgelaufen ) {
-					$cell .= '<span class="wisyr_termin_datum wisy_datum_abgel">';
+					$cell .= '<span class="wisyr_termin_datum wisy_datum_abgel" data-title="Datum">';
 				} else {
-					$cell .= '<span class="wisyr_termin_datum">';
+					$cell .= '<span class="wisyr_termin_datum" data-title="Datum">';
 				}
 			    $cell .= ($ende && $beginn!=$ende)? "$beginn - $ende" : $beginn . '</span>';
 			    
@@ -447,7 +447,7 @@ class WISY_DURCHF_CLASS
 			}
 			
 			if( $zeit_von && $zeit_bis ) {				
-				$cell .= " <span class=\"wisyr_termin_zeit\">$zeit_von - $zeit_bis Uhr</span>"; 
+				$cell .= " <span class=\"wisyr_termin_zeit\" data-title=\"Zeit\">$zeit_von - $zeit_bis Uhr</span>"; 
 			}
 			else if( $zeit_von ) {
 				$cell .= " <span class=\"wisyr_termin_zeit\">$zeit_von Uhr</span>"; 
@@ -463,7 +463,7 @@ class WISY_DURCHF_CLASS
 				$cell .= '<span class="wisyr_termin_ka">k. A.</span>'; 
 			}
 			
-			echo $cell . '</td>' . "\n";
+			echo $cell . ' </td>' . "\n";
 		}
 		
 		if (($wisyPortalSpalten & 4) > 0)
@@ -471,7 +471,7 @@ class WISY_DURCHF_CLASS
 			// dauer
 			echo '    <td class="wisyr_dauer" data-title="Dauer">';
 				echo $this->formatDauer($record['dauer'], $record['stunden'], '%1 <span class="wisyr_dauer_detail">(%2)</span>');
-			echo '</td>' . "\n";
+			echo ' </td>' . "\n";
 		}
 		
 		if (($wisyPortalSpalten & 8) > 0)
@@ -509,7 +509,7 @@ class WISY_DURCHF_CLASS
 				}
 				
 								
-			echo '</td>' . "\n";
+			echo ' </td>' . "\n";
 		}
 		
 		if (($wisyPortalSpalten & 16) > 0)
@@ -526,7 +526,7 @@ class WISY_DURCHF_CLASS
 						)
 					);
 				echo $this->shy($temp);
-			echo '</td>' . "\n";
+			echo ' </td>' . "\n";
 		}
 		
 		if (($wisyPortalSpalten & 32) > 0)
@@ -587,7 +587,7 @@ class WISY_DURCHF_CLASS
 
 				if( $has_bemerkungen ) {
 					$wiki2html =& createWisyObject('WISY_WIKI2HTML_CLASS', $this->framework);
-					$cell .= '<div style="font-size: 11px;">' . $wiki2html->run($record['bemerkungen']) . '</div>';
+					$cell .= '<div class="wisyr_ort_bemerkungen">' . $wiki2html->run($record['bemerkungen']) . '</div>';
 				}
 				
 				if( strip_tags($cell) == $this->seeAboveOrt && $details ) {
@@ -607,7 +607,7 @@ class WISY_DURCHF_CLASS
 				echo $ort? $ort : 'k. A.';
 			}
 			
-			echo '</td>' . "\n";
+			echo ' </td>' . "\n";
 		}
 		
 		if (($wisyPortalSpalten & 64) > 0)
@@ -617,7 +617,7 @@ class WISY_DURCHF_CLASS
 			echo '    <td class="wisyr_nr" data-title="Nr">';
 			$nr = $record['nr'];
 			echo $nr? htmlentities($nr) : 'k. A.';
-			echo '</td>' . "\n";
+			echo ' </td>' . "\n";
 		}
 	}
 };
