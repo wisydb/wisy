@@ -72,6 +72,9 @@ class WISY_SEARCH_CLASS
 
 	function prepare($queryString)
 	{
+		// Convert utf-8 input back to ISO-8859-1 because the DB ist still encoded with ISO
+		$queryString = iconv("UTF-8", "ISO-8859-1//IGNORE", $queryString);
+		
 		// first, apply the stdkursfilter
 		global $wisyPortalFilter;
 		global $wisyPortalId;
