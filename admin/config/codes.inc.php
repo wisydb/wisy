@@ -36,12 +36,26 @@ $codes_beginnoptionen =
 	.'256###Termin noch offen###'		// war vor 10/2011: 256: "Beginn erfragen"
 	.'512###Startgarantie';				// war vor 10/2011: 512: "Beginnt garantiert", vor 10/2012: Abgeschafft und ab 10/2012 wieder "Startgarantie" ...
 	
-
+global $codes_rechtsform;
+$codes_rechtsform = 
+	 '0######'
+	.'1###GmbH###'
+	.'2###GmbH gemeinnützig###'
+	.'3###Verein###'
+	.'4###Verein gemeinnützig###'
+	.'5###Einzelunternehmen###'
+	.'6###GBR###'
+	.'7###Stiftung###'
+	.'8###Anstalt öff. Rechts###'
+	.'9###Körperschaft öff. Rechts###'
+	.'10###Aktiengesellschaft###'
+	.'11###Sonstige';
 
 global $codes_stichwort_eigenschaften;
 $codes_stichwort_eigenschaften =
 	 '0###Sachstichwort###'
 	.'1###Abschluss###'
+	.'65536###Zertifikat###'
 	.'2###Förderungsart###'
 	.'4###Qualitätszertifikat###'
 	.'8###Zielgruppe###'

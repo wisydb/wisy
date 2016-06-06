@@ -277,6 +277,7 @@ class WISY_SEARCH_RENDERER_CLASS
 							if( $anbieter_record['typ'] == 2 ) echo '<span class="wisy_icon_beratungsstelle">Beratung<span class="dp">:</span></span> ';
 							
 							if($this->framework->iniRead('label.abschluss', 0) && count($kursAnalyzer->loadKeywordsAbschluss($db, 'kurse', $currKursId))) echo '<span class="wisy_icon_abschluss">Abschluss<span class="dp">:</span></span> ';
+							if($this->framework->iniRead('label.zertifikat', 0) && count($kursAnalyzer->loadKeywordsZertifikat($db, 'kurse', $currKursId))) echo '<span class="wisy_icon_zertifikat">Zertifikat<span class="dp">:</span></span> ';
 							
 							echo isohtmlspecialchars($record['titel']);
 						
@@ -287,7 +288,7 @@ class WISY_SEARCH_RENDERER_CLASS
 						if( $vollst>=1 ) {
 							echo " <small class=\"wisy_editvollstcol\" title=\"Vollst&auml;ndigkeit der Kursdaten, bearbeiten Sie den Kurs, um die Vollst&auml;ndigkeit zu erh&ouml;hen\">($vollst% vollst&auml;ndig)</small>";
 						}
-						echo '<br><span class="wisy_edittoolbar"><a href="'.$this->framework->getUrl('edit', array('action'=>'ek', 'id'=>$currKursId)).'">Bearbeiten</a></span>';
+						echo '<br><span class="wisy_edittoolbar"><a href="'.$this->framework->getUrl('edit', array('action'=>'ek', 'id'=>$currKursId)).'">Kurs bearbeiten</a></span>';
 					}
 				echo '</td>' . "\n";
 
@@ -374,8 +375,10 @@ class WISY_SEARCH_RENDERER_CLASS
 		else if( $tag_type & 512 )	{ $row_class = "ac_ort";                  $row_preposition = ' zum '; $row_postfix = 'Ort'; }
 		else if( $tag_type & 1024 )	{ $row_class = "ac_sonstigesmerkmal";     $row_preposition = ' zum '; $row_postfix = 'sonstigen Merkmal'; }
 		else if( $tag_type & 32768 ){ $row_class = "ac_unterrichtsart";       $row_preposition = ' zur '; $row_postfix = 'Unterrichtsart'; }
+		else if( $tag_type & 65536 ){ $row_class = "ac_zertifikat";       $row_preposition = ' zum '; $row_postfix = 'Zertifikat'; }
 	
 		if( $addparam['hidetagtypestr'] ) {
+			$row_preposition = '';
 			$row_postfix = '';
 		}
 
@@ -451,6 +454,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		else if( $tag_type & 512 ) { $row_class = "ac_ort";                  $row_type = 'Kursort'; $row_count_prefix = ($tag_freq == 1) ? ' Kurs am' : ' Kurse am'; }
 		else if( $tag_type & 1024) { $row_class = "ac_merkmal";			 	 $row_type = 'Kursmerkmal'; }
 		else if( $tag_type & 32768){ $row_class = "ac_unterrichtsart";		 $row_type = 'Unterrichtsart'; $row_count_prefix = ($tag_freq == 1) ? ' Kurs zur' : ' Kurse zur'; }
+		else if( $tag_type & 65536){ $row_class = "ac_zertifikat";		 $row_type = 'Zertifikat'; }
 
 		if( $tag_descr ) $row_postfix .= ' <span class="ac_tag_type">('. $tag_descr .')</span>';
 		
@@ -780,7 +784,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			<td style="font-family: Verdana, Arial, Helvetica, sans-serif;font-size: 11px;color: #5F6796;font-weight: bold;">Bundesweite
 			Suche im InfoWeb Weiterbildung</td>
 			<td><input name="feldinhalt1" type="text" style="height: 22px;width: 150px;font-family: Verdana, Arial, Helvetica, sans-serif
-			;font-size: 11px;color: #000000;" value="' .  $queryString . '" onfocus="IWWBonFocusTextField(this,defaultKeywords)" onblur="IWWBonBlurTextField(this,defaultKeywords)"><input name="search" type
+			;font-size: 11px;color: #000000;" value="' .  isohtmlspecialchars($queryString) . '" onfocus="IWWBonFocusTextField(this,defaultKeywords)" onblur="IWWBonBlurTextField(this,defaultKeywords)"><input name="search" type
 			="button" style="font-family: Verdana, Arial, Helvetica, sans-serif;font-size: 9px;height: 22px;width: 90px;background-color:
 			 #A5AAC6;font-weight: bold;color: #FFFFFF;margin: 0px;border: 1px solid #FFFFFF;padding: 0px;" value="Suche starten" onClick=
 			"IWWBsearch(this)"></td>

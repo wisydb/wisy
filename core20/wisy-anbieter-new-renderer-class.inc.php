@@ -160,7 +160,14 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 		{ 
 			$ret .= "<br /><a href=\"".$this->createMailtoLink($anspr_email, $kursId)."\">" .isohtmlentities($this->trimLength($anspr_email, $MAX_URL_LEN  )). '</a>';
 		}
-		
+
+		/* edit link */
+		$loggedInAnbieterId = $this->framework->getEditAnbieterId();
+		if( $loggedInAnbieterId==$anbieterId ) 
+		{
+			$ret .= '<span class="noprint"><br /><a href="'.$this->framework->getUrl('edit', array('action'=>'ea')).'" class="wisy_edittoolbar">Profil bearbeiten</a></span>';
+		}
+
 		/* logo */
 		if( $param['logo'] )
 		{
@@ -192,9 +199,11 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 		$db->query(str_replace('__BITS__', $tag_type_bits, $sql));
 		while( $db->next_record() )
 		{
-			$html .= $html==''? '' : '<br />';
-		
 			$tag_id = $db->f('tag_id');
+			if( is_array($addparam['filter_tag_ids']) && !in_array($tag_id, $addparam['filter_tag_ids']) ) {
+				continue;
+			}
+
 			$tag_name = $db->f('tag_name');
 			$tag_type = $db->f('tag_type');
 			$tag_descr = $db->f('tag_descr');
@@ -202,6 +211,7 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 			
 			$freq = $this->tagsuggestorObj->getTagFreq(array($this->tag_suchname_id, $tag_id));
 			
+			$html .= $html==''? '' : '<br />';
 			$html .= $this->searchRenderer->formatItem($tag_name, $tag_descr, $tag_type, $tag_help, $freq, $addparam);
 
 			
@@ -211,7 +221,6 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 	
 	protected function writeOffersOverview($anbieter_id, $tag_suchname)
 	{
-
 		$this->searchRenderer = createWisyObject('WISY_SEARCH_RENDERER_CLASS', $this->framework);
 		
 		// get SQL query to read all current offers
@@ -237,7 +246,29 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 				echo $html;
 			echo '<p>';
 		}
+
+		$html = $this->getOffersOverviewPart($sql, 65536 // Zertifikate
+												, array('hidetagtypestr'=>1, 'qprefix'=>"$tag_suchname, "));
+		if( $html )
+		{
+			echo '<h1>Zertifikate - aktuelle Angebote</h1>';
+			echo '<p>';
+				echo $html;
+			echo '<p>';
+		}
 		
+		// besondere Kursarten - diese Liste enthält nur eine Auswahl von Stichworten, definiert von einer Liste von Stichwort-IDs
+		// (die zunächst in Tag-IDs konvertiert werden müssen)
+
+		$db = new DB_Admin;
+		$db->query("SELECT stichwort FROM stichwoerter WHERE id IN (16311,2827,2826,16851,3207,1,6013,7721,7720,810701,810691,810681,810671,810661,810611,810641,810651,806441,5469,1472)");
+		$temp = ''; while( $db->next_record() ) { $temp .= ($temp==''?'':', ') . $db->quote($db->f('stichwort')); }
+		$filter_tag_ids = array();
+		if( sizeof($temp) ) {
+			$db->query("SELECT tag_id FROM x_tags WHERE tag_name IN(".$temp.")");
+			while( $db->next_record() ) { $filter_tag_ids[] = $db->f('tag_id'); }
+		}
+
 		$html = $this->getOffersOverviewPart($sql, 0x0000FFFF	// alles, ausser Sachstichworten (0, implizit ausgeschlossen) und ausser
 												& ~1 			// Abschluesse
 												& ~4			// Qualitaetszertifikate (werden rechts als Bild dargestellt)
@@ -247,7 +278,8 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 												& ~128			// Thema
 												& ~256			// Anbieter (ist natuerlich immer derselbe)
 												& ~512			// Ort
-												, array('showtagtype'=>1, 'qprefix'=>"$tag_suchname, "));
+												& ~65536		// Zertifikate
+												, array('showtagtype'=>1, 'qprefix'=>"$tag_suchname, ", 'filter_tag_ids'=>$filter_tag_ids));
 		if( $html )
 		{
 			echo '<div class="wisy_besondere_kursarten">';
@@ -369,7 +401,10 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 		$vollst			= $db->f('vollstaendigkeit');
 		$anbieter_settings = explodeSettings($db->f('settings'));
 		$pruefsiegel_seit = $db->f('pruefsiegel_seit');
-		
+		$leitung_name   = $db->fs('leitung_name');
+		$gruendungsjahr = intval($db->fs('gruendungsjahr'));
+		$rechtsform     = intval($db->fs('rechtsform'));
+
 		// promoted?
 		if( intval($_GET['promoted']) > 0 )
 		{
@@ -409,6 +444,37 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 			if( $typ == 2 ) echo '<span class="wisy_icon_beratungsstelle">Beratungsstelle<span class="dp">:</span></span> ';
 			echo isohtmlentities($suchname);
 		echo '</h1>';
+
+		// leitung/rechtsform/gründung
+		$addinfo = '';
+
+		if( $rechtsform > 0 ) {
+			require_once('admin/config/codes.inc.php'); // needed for $codes_rechtsform
+			$codes_array = explode('###', $GLOBALS['codes_rechtsform']);
+			for( $c = 0; $c < sizeof($codes_array); $c += 2 ) {
+				if( $codes_array[$c] == $rechtsform ) {
+					$addinfo .= $addinfo? ', ' : '';
+					$addinfo .= 'Rechtsform: ' . isohtmlspecialchars($codes_array[$c+1]);
+					break;
+				}
+			}
+		}
+
+		if( $gruendungsjahr > 0 ) {
+			$addinfo .= $addinfo? ', ' : '';
+			$addinfo .= 'gegründet ' . intval($gruendungsjahr);
+		}
+
+		if( $leitung_name ) {
+			$addinfo .= $addinfo? ', ' : '';
+			$addinfo .= 'Leitung: ' . isohtmlspecialchars($leitung_name);
+		}
+
+		if( $addinfo ) {
+			echo '<p>' . $addinfo . '</p>';
+		}
+
+		// firmenportait
 		flush();
 
 		if( $firmenportraet != '' ) {
@@ -416,19 +482,21 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 			echo $wiki2html->run($firmenportraet);
 		}
 
-		// link "show all offers"
-		$freq = $this->tagsuggestorObj->getTagFreq(array($this->tag_suchname_id)); if( $freq <= 0 ) $freq = '';
-		echo '<h1>'.$freq.($freq==1? ' aktuelles Angebot' : ' aktuelle Angebote').'</h1>'
-		.	'<p>'
-		.		'<a href="' .$this->framework->getUrl('search', array('q'=>$tag_suchname)). '">'
-		.			"Zeige alle aktuellen Angebote des Anbieters..."
-		.		'</a>'
-		. 	'</p>';		
+		// aktuelle kurse
+		if( substr($_SERVER['HTTP_HOST'], -6)!='.local' )
+		{
+			// link "show all offers"
+			$freq = $this->tagsuggestorObj->getTagFreq(array($this->tag_suchname_id)); if( $freq <= 0 ) $freq = '';
+			echo '<h1>'.$freq.($freq==1? ' aktuelles Angebot' : ' aktuelle Angebote').'</h1>'
+			.	'<p>'
+			.		'<a href="' .$this->framework->getUrl('search', array('q'=>$tag_suchname)). '">'
+			.			"Zeige alle aktuellen Angebote des Anbieters..."
+			.		'</a>'
+			. 	'</p>';		
 
-		// current offers overview
-
-
-		$this->writeOffersOverview($anbieter_id, $tag_suchname);
+			// current offers overview
+			$this->writeOffersOverview($anbieter_id, $tag_suchname);
+		}
 
 		// keyword overview
 		/*
