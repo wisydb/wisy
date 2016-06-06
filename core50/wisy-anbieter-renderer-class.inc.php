@@ -234,9 +234,11 @@ class WISY_ANBIETER_RENDERER_CLASS
 		$db->query(str_replace('__BITS__', $tag_type_bits, $sql));
 		while( $db->next_record() )
 		{
-			$html .= $html==''? '' : '<br />';
-		
 			$tag_id = $db->f8('tag_id');
+			if( is_array($addparam['filter_tag_ids']) && !in_array($tag_id, $addparam['filter_tag_ids']) ) {
+				continue;
+			}
+			
 			$tag_name = $db->f8('tag_name');
 			$tag_type = $db->f8('tag_type');
 			$tag_descr = $db->f8('tag_descr');
@@ -244,6 +246,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 			
 			$freq = $this->tagsuggestorObj->getTagFreq(array($this->tag_suchname_id, $tag_id));
 			
+			$html .= $html==''? '' : '<br />';
 			$html .= $this->searchRenderer->formatItem($tag_name, $tag_descr, $tag_type, $tag_help, $freq, $addparam);
 
 			
@@ -280,6 +283,30 @@ class WISY_ANBIETER_RENDERER_CLASS
 			echo '<p>';
 		}
 		
+		$html = $this->getOffersOverviewPart($sql, 65536 // Zertifikate
+												, array('hidetagtypestr'=>1, 'qprefix'=>"$tag_suchname, "));
+		if( $html )
+		{
+			echo '<h1>Zertifikate - aktuelle Angebote</h1>';
+			echo '<p>';
+				echo $html;
+			echo '<p>';
+		}
+		
+		// besondere Kursarten - diese Liste enthält nur eine Auswahl von Stichworten, definiert von einer Liste von Stichwort-IDs
+		// (die zunächst in Tag-IDs konvertiert werden müssen)
+
+		$db = new DB_Admin;
+		$db->query("SELECT stichwort FROM stichwoerter WHERE id IN (16311,2827,2826,16851,3207,1,6013,7721,7720,810701,810691,810681,810671,810661,810611,810641,810651,806441,5469,1472)");
+		$temp = ''; while( $db->next_record() ) { $temp .= ($temp==''?'':', ') . $db->quote($db->f8('stichwort')); }
+		$filter_tag_ids = array();
+		if( sizeof($temp) ) {
+			$db->query("SELECT tag_id FROM x_tags WHERE tag_name IN(".$temp.")");
+			while( $db->next_record() ) { $filter_tag_ids[] = $db->f8('tag_id'); }
+		}
+
+		
+		
 		$html = $this->getOffersOverviewPart($sql, 0x0000FFFF	// alles, ausser Sachstichworten (0, implizit ausgeschlossen) und ausser
 												& ~1 			// Abschluesse
 												& ~4			// Qualitaetszertifikate (werden rechts als Bild dargestellt)
@@ -289,7 +316,9 @@ class WISY_ANBIETER_RENDERER_CLASS
 												& ~128			// Thema
 												& ~256			// Anbieter (ist natuerlich immer derselbe)
 												& ~512			// Ort
-												, array('showtagtype'=>1, 'qprefix'=>"$tag_suchname, "));
+												& 65536			// Zertifikate
+												, array('showtagtype'=>1, 'qprefix'=>"$tag_suchname, ", 'filter_tag_ids'=>$filter_tag_ids));
+
 		if( $html )
 		{
 			echo "\n" . '<div class="wisy_besondere_kursarten">';
@@ -411,6 +440,10 @@ class WISY_ANBIETER_RENDERER_CLASS
 		$vollst			= $db->f8('vollstaendigkeit');
 		$anbieter_settings = explodeSettings($db->f8('settings'));
 		$pruefsiegel_seit = $db->f8('pruefsiegel_seit');
+		$leitung_name   = $db->f8('leitung_name');
+		$gruendungsjahr = intval($db->f8('gruendungsjahr'));
+		$rechtsform     = intval($db->f8('rechtsform'));
+		
 		
 		// promoted?
 		if( intval($_GET['promoted']) > 0 )
@@ -456,10 +489,43 @@ class WISY_ANBIETER_RENDERER_CLASS
 		echo "\n" . '<article class="wisy_anbieter_inhalt">' . "\n";
 		echo '<h1>Über den Anbieter</h1>';
 
+		// firmenportraet
 		if( $firmenportraet != '' ) {
 			$wiki2html =& createWisyObject('WISY_WIKI2HTML_CLASS', $this->framework);
 			echo $wiki2html->run($firmenportraet);
 		}
+		
+		/* TODO: folgendes in steckbrief integrieren:
+		// leitung/rechtsform/gr¸ndung
+		$addinfo = '';
+
+		if( $leitung_name ) {
+			$addinfo .= $addinfo? ' - ' : '';
+			$addinfo .= 'Leitung: ' . isohtmlspecialchars($leitung_name);
+		}
+
+		if( $rechtsform > 0 ) {
+			require_once('admin/config/codes.inc.php'); // needed for $codes_rechtsform
+			$codes_array = explode('###', $GLOBALS['codes_rechtsform']);
+			for( $c = 0; $c < sizeof($codes_array); $c += 2 ) {
+				if( $codes_array[$c] == $rechtsform ) {
+					$addinfo .= $addinfo? ', ' : '';
+					$addinfo .= 'Rechtsform: ' . isohtmlspecialchars($codes_array[$c+1]);
+					break;
+				}
+			}
+		}
+
+		if( $gruendungsjahr > 0 ) {
+			$addinfo .= $addinfo? ', ' : '';
+			$addinfo .= 'gegr¸ndet ' . intval($gruendungsjahr);
+		}
+
+		if( $addinfo ) {
+			echo '<p>' . $addinfo . '</p>';
+		}
+		
+		*/
 
 		echo "\n" . '<div class="wisy_steckbrief clearfix">';
 			echo '<div class="wisy_steckbriefcontent" itemscope itemtype="http://schema.org/Organization">';
