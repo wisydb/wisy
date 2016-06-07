@@ -2,7 +2,7 @@
 
 loadWisyClass('WISY_ADVANCED_RENDERER_CLASS');
 
-class WISY_ADVANCED_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
+class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 {
 	var $framework;
 
@@ -11,8 +11,44 @@ class WISY_ADVANCED_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 		// call parent class constructor
 		parent::__construct($framework);
 		
-		unset($this->presets['q']);
+		// Aus advanced-renderer geerbte Presets anpassen
+		
+		// Hauptsuchfeld ausblenden
+		$this->presets['q']['type'] = 'hidden';
+		
+		// Kurszeitpunkt
+		$this->presets['datum']['decoration']['headline_left'] = 'Kurszeitpunkt';
+		$this->presets['datum']['descr'] = 'Beginn';
+		$this->presets['datum']['classes'] = 'wisyr_c2_3 break';
+		$this->presets['dauer']['classes'] = 'wisyr_c1_3';
+		$this->presets['tageszeit']['descr'] = 'Tageszeit';
+		$this->presets['tageszeit']['classes'] = 'wisyr_c1_3';
+		
+		// Umkreissuche
+		$this->presets['bei']['decoration']['headline_right'] = '';
+		$this->presets['bei']['descr'] = 'PLZ oder Ort';
+		$this->presets['bei']['classes'] = 'wisyr_c2_3';
+		$this->presets['km']['descr'] = 'Umkreis';
+		$this->presets['km']['classes'] = 'wisyr_c1_3';
+		
+		// Weiter Optionen
+		$this->presets['preis']['decoration']['headline_left'] = 'Weitere Optionen';
+		$this->presets['preis']['descr'] = 'Preis';
+		$this->presets['preis']['classes'] = 'wisyr_c1_3';
+		$this->presets['foerderung']['descr'] = 'Förderung';
+		$this->presets['foerderung']['classes'] = 'wisyr_c2_3';
+		
+		$this->presets['zielgruppe']['descr'] = 'Zielgruppe';
+		$this->presets['zielgruppe']['classes'] = 'wisyr_c1_3';
+		$this->presets['qualitaetszertifikat']['descr'] = 'Qualitätszertifikat';
+		$this->presets['qualitaetszertifikat']['classes'] = 'wisyr_c2_3';
+		
+		$this->presets['unterrichtsart']['descr'] = 'Unterrichtsart';
+		$this->presets['unterrichtsart']['classes'] = 'wisyr_c1_3';
+		
+		// Volltext, PLZ entfernen
 		unset($this->presets['volltext']);
+		unset($this->presets['plz']);
 	}
 	
 	/**********************************************************************
@@ -89,10 +125,9 @@ class WISY_ADVANCED_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 		//////////////////
 		
 		?>
-		<div id="filter_all">
-			<div id="filter_title">
-				Ergebnisse filtern
-			</div>
+		<div id="wisy_filter_all">
+			<h1 id="filter_title">Ergebnisse filtern</h1>
+			<h2 id="filter_description">Begrenzen Sie Ihre Suche, in dem Sie Filter- und Anzeigeeinstellungen an Ihre Wünsche anpassen.</h2>
 			<div id="filter_body">
 				<form action="filter" method="get">
 					<div id="filter_form">
@@ -115,28 +150,32 @@ class WISY_ADVANCED_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 										echo ' <span class="headline_right">'.$preset['decoration']['headline_right'].'</span></legend>';
 									}
 								}
-								
-								echo '<div class="formrow">';
-									echo '<label for="filter_' . $field_name . '">' .$preset['descr']. '</label>';
-									echo '<div class="formfield">';
-										if( $preset['type'] == 'text' )
-										{
-											$autocomplete = $preset['autocomplete']? ' class="'.$preset['autocomplete'].'" ' : '';
-											echo "<input type=\"text\" name=\"filter_$field_name\" id=\"filter_$field_name\" $autocomplete value=\"" .htmlspecialchars($presets_curr[$field_name]). "\" />";
-										}
-										else
-										{
-											echo '<select name="filter_' .$field_name. '">';
-												reset($preset['options']);
-												while( list($value, $descr) = each($preset['options']) )
-												{
-													$selected = strval($presets_curr[$field_name])==strval($value)? ' selected="selected"' : '';
-													echo "<option value=\"$value\"$selected>$descr</option>";
-												}
-											echo '</select>';
-										}
+								if( $preset['type'] == 'hidden' )
+								{
+									echo "<input type=\"hidden\" name=\"filter_$field_name\" id=\"filter_$field_name\" value=\"" .htmlspecialchars($presets_curr[$field_name]). "\" />";
+								} else {
+									echo '<div class="formrow ' . $preset['classes'] . '">';
+										echo '<label for="filter_' . $field_name . '">' .$preset['descr']. '</label>';
+										echo '<div class="formfield">';
+											if( $preset['type'] == 'text' )
+											{
+												$autocomplete = $preset['autocomplete']? ' class="'.$preset['autocomplete'].'" ' : '';
+												echo "<input type=\"text\" name=\"filter_$field_name\" id=\"filter_$field_name\" $autocomplete value=\"" .htmlspecialchars($presets_curr[$field_name]). "\" />";
+											}
+											else
+											{
+												echo '<select name="filter_' .$field_name. '">';
+													reset($preset['options']);
+													while( list($value, $descr) = each($preset['options']) )
+													{
+														$selected = strval($presets_curr[$field_name])==strval($value)? ' selected="selected"' : '';
+														echo "<option value=\"$value\"$selected>$descr</option>";
+													}
+												echo '</select>';
+											}
+										echo '</div>';
 									echo '</div>';
-								echo '</div>';
+								}
 							}
 							if($fieldsets_open > 0) {
 								echo '</fieldset>';
@@ -148,8 +187,8 @@ class WISY_ADVANCED_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 		
 					<div id="filter_buttons">
 						<input type="hidden" name="filter_subseq" value="1" />
-						<input type="submit" name="filter" id="filter" value="Filtern" />
-						<input type="submit" name="filter_close" id="filter_close" value="Schließen" />
+						<input type="submit" name="filter" id="filter" value="Suche anpassen" />
+						<input type="submit" name="filter_close" id="filter_close" value="Abbrechen" /> oder <input type="reset" name="filter_reset" id="filter_reset" value="alle Filter zurücksetzen" />
 					</div>
 				</form>
 			</div>
@@ -230,5 +269,3 @@ class WISY_ADVANCED_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 		}
 	}
 };
-
-registerWisyClass('WISY_ADVANCED_FILTER_RENDERER_CLASS');

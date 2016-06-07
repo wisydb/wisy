@@ -843,36 +843,36 @@ function describeFeedback()
 	}
 	else
 	{
-		$('#wisy_feedback_line2').html('<strong style="color: green;">Vielen Dank für Ihren Kommentar!</strong>');
+		$('#wisy_feedback_line2').html('<p class="wisy_feedback_thanksforcomment">Vielen Dank für Ihren Kommentar!</p>');
 		ajaxFeedback(0, descr); // Kommentar zur Bewertung hinzufügen; die Bewertung selbst (erster Parameter) wird an dieser Stelle ignoriert!
 	}
 }
 
 function sendFeedback(rating)
 {
-	$('#wisy_feedback_yesno').html('&nbsp; &nbsp;<strong style="color: green;">Vielen Dank für Ihr Feedback!</strong>');
+	$('#wisy_feedback_yesno').html('<strong class="wisy_feedback_thanks">Vielen Dank für Ihr Feedback!</strong>');
 	
 	if( rating == 0 )
 	{
-		$('#wisy_feedback_line1').after(
-				'<p id="wisy_feedback_line2">'
-			+		'Bitte schildern Sie uns noch kurz, warum diese Information nicht hilfreich war und was wir besser machen können:<br />'
-				+	'<textarea id="wisy_feedback_descr" name="wisy_feedback_descr" rows="2" cols="20" style="width: 400px;"></textarea><br />'
+		$('#wisy_feedback').append(
+				'<div id="wisy_feedback_line2">'
+			+		'<p>Bitte schildern Sie uns noch kurz, warum diese Information nicht hilfreich war und was wir besser machen können:</p>'
+				+	'<textarea id="wisy_feedback_descr" name="wisy_feedback_descr" rows="2" cols="20"></textarea><br />'
 				+	'Wenn Sie eine Antwort wünschen, geben Sie bitte auch Ihre E-Mail-Adresse an.<br />'
-				+	'<input type="submit" onclick="describeFeedback(); return false;" value="Kommentar senden" />'
-			+	'</p>'
+				+	'<input id="wisy_feedback_submit" type="submit" onclick="describeFeedback(); return false;" value="Kommentar senden" />'
+			+	'</div>'
 		);
 		$('#wisy_feedback_descr').focus();
 	}
 	else 
 	{
-		$('#wisy_feedback_line1').after(
-				'<p id="wisy_feedback_line2">'
-			+		'Bitte schildern Sie uns kurz, was hilfreich war, damit wir Bew&auml;hrtes bewahren und ausbauen:<br />'
-				+	'<textarea id="wisy_feedback_descr" name="wisy_feedback_descr" rows="2" cols="20" style="width: 400px;"></textarea><br />'
+		$('#wisy_feedback').append(
+				'<div id="wisy_feedback_line2">'
+			+		'<p>Bitte schildern Sie uns kurz, was hilfreich war, damit wir Bew&auml;hrtes bewahren und ausbauen:</p>'
+				+	'<textarea id="wisy_feedback_descr" name="wisy_feedback_descr" rows="2" cols="20"></textarea><br />'
 				+	'Wenn Sie eine Antwort wünschen, geben Sie bitte auch Ihre E-Mail-Adresse an.<br />'
-				+	'<input type="submit" onclick="describeFeedback(); return false;" value="Kommentar senden" />'
-			+	'</p>'
+				+	'<input id="wisy_feedback_submit" type="submit" onclick="describeFeedback(); return false;" value="Kommentar senden" />'
+			+	'</div>'
 		);
 		$('#wisy_feedback_descr').focus();
 	}
@@ -883,9 +883,10 @@ function sendFeedback(rating)
 function initFeedback()
 {
 	$('.wisy_allow_feedback').after(
-			'<p id="wisy_feedback_line1" class="noprint"><b>War diese Information hilfreich?</b> '
-		+		'<span id="wisy_feedback_yesno"><a href="javascript:sendFeedback(1)">Ja</a> - <a href="javascript:sendFeedback(0)">Nein</a></span>'
-		+	'</p>'
+			'<div id="wisy_feedback" class="noprint">'
+		+		'<span class="wisy_feedback_question">War diese Information hilfreich?</span> '
+		+		'<span id="wisy_feedback_yesno"><a href="javascript:sendFeedback(1)">Ja</a> <a href="javascript:sendFeedback(0)">Nein</a></span>'
+		+	'</div>'
 	);
 }
 

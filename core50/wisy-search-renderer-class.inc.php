@@ -16,25 +16,34 @@ class WISY_SEARCH_RENDERER_CLASS
 
 	function pageSelLink($baseUrl, $currRowsPerPage, $currPageNumber, $hilite)
 	{
-		$ret = $hilite? '<strong>' : '<a href="' . htmlentities($baseUrl) . intval($currPageNumber*$currRowsPerPage) . '">';
+		$ret = $hilite? '<strong class="wisy_paginate_pagelink">' : '<a class="wisy_paginate_pagelink" href="' . htmlentities($baseUrl) . intval($currPageNumber*$currRowsPerPage) . '">';
 			$ret .= intval($currPageNumber+1);
 		$ret .= $hilite? '</strong> ' : '</a> ';
 		return $ret;
+	}
+	
+	function pageSelCurrentpage($currOffset, $currRowsPerPage)
+	{
+		// find out the current page number (the current page number is zero-based)
+		return $currPageNumber = intval($currOffset / $currRowsPerPage);
+	}
+	
+	function pageSelMaxpages($totalRows, $currRowsPerPage)
+	{
+		// find out the max. page page number (also zero-based)
+		$maxPageNumber = intval($totalRows / $currRowsPerPage);
+		if( intval($totalRows / $currRowsPerPage) == $totalRows / $currRowsPerPage ) {
+			$maxPageNumber--;
+		}
+		return $maxPageNumber;
 	}
 	
 	
 	function pageSel($baseUrl, $currRowsPerPage, $currOffset, $totalRows)
 	{
 		$page_sel_surround = 3;
-		
-		// find out the current page number (the current page number is zero-based)
-		$currPageNumber = intval($currOffset / $currRowsPerPage);
-	
-		// find out the max. page page number (also zero-based)
-		$maxPageNumber = intval($totalRows / $currRowsPerPage);
-		if( intval($totalRows / $currRowsPerPage) == $totalRows / $currRowsPerPage ) {
-			$maxPageNumber--;
-		}
+		$currPageNumber = $this->pageSelCurrentpage($currOffset, $currRowsPerPage);
+		$maxPageNumber = $this->pageSelMaxpages($totalRows, $currRowsPerPage);
 	
 		// find out the first/last page number surrounding the current page (zero-based)
 		$firstPageNumber = $currPageNumber-$page_sel_surround;
@@ -100,19 +109,22 @@ class WISY_SEARCH_RENDERER_CLASS
 		echo '</th>' . "\n";
 	}
 	
-	function renderPagination($prevurl, $nexturl, $pagesel)
+	function renderPagination($prevurl, $nexturl, $pagesel, $currRowsPerPage, $currOffset, $totalRows, $extraclass)
 	{
-		echo ' <span class="wisy_paginate">';
-			echo 'Gehe zu Seite ';
+		$currentPage = $this->pageSelCurrentpage($currOffset, $currRowsPerPage) + 1;
+		$maxPages = $this->pageSelMaxpages($totalRows, $currRowsPerPage) + 1;
+		echo ' <span class="wisy_paginate ' . $extraclass . '">';
+			echo '<span class="wisy_paginate_seitevon">Seite ' . $currentPage . ' von ' . $maxPages . '</span>';
+			echo '<span class="wisy_paginate_text">Gehe zu Seite</span>';
 		
 			if( $prevurl ) {
-				echo "<a href=\"" . htmlspecialchars($prevurl) . "\">&laquo;</a> ";
+				echo " <a class=\"wisy_paginate_prev\" href=\"" . htmlspecialchars($prevurl) . "\">&laquo;</a> ";
 			}
 	
 			echo $pagesel;
 	
 			if( $nexturl ) {
-				echo " <a href=\"" . htmlspecialchars($nexturl) . "\">&raquo;</a>";
+				echo " <a class=\"wisy_paginate_next\" href=\"" . htmlspecialchars($nexturl) . "\">&raquo;</a>";
 			}
 		echo '</span>' . "\n";
 	}
@@ -369,9 +381,10 @@ class WISY_SEARCH_RENDERER_CLASS
 		else if( $tag_type & 512 )	{ $row_class = "ac_ort";                  $row_preposition = ' zum '; $row_postfix = 'Ort'; }
 		else if( $tag_type & 1024 )	{ $row_class = "ac_sonstigesmerkmal";     $row_preposition = ' zum '; $row_postfix = 'sonstigen Merkmal'; }
 		else if( $tag_type & 32768 ){ $row_class = "ac_unterrichtsart";       $row_preposition = ' zur '; $row_postfix = 'Unterrichtsart'; }
-		else if( $tag_type & 65536 ){ $row_class = "ac_zertifikat";       	  $row_preposition = ' zum '; $row_postfix = 'Zertifikat'; }
+		else if( $tag_type & 65536 ){ $row_class = "ac_zertifikat";           $row_preposition = ' zum '; $row_postfix = 'Zertifikat'; }
 	
 		if( $addparam['hidetagtypestr'] ) {
+			$row_preposition = '';
 			$row_postfix = '';
 		}
 
@@ -447,7 +460,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		else if( $tag_type & 512 ) { $row_class = "ac_ort";                  $row_type = 'Kursort'; $row_count_prefix = ($tag_freq == 1) ? ' Kurs am' : ' Kurse am'; }
 		else if( $tag_type & 1024) { $row_class = "ac_merkmal";			 	 $row_type = 'Kursmerkmal'; }
 		else if( $tag_type & 32768){ $row_class = "ac_unterrichtsart";		 $row_type = 'Unterrichtsart'; $row_count_prefix = ($tag_freq == 1) ? ' Kurs zur' : ' Kurse zur'; }
-		else if( $tag_type & 65536){ $row_class = "ac_zertifikat";			 $row_type = 'Zertifikat'; }
+		else if( $tag_type & 65536){ $row_class = "ac_zertifikat";           $row_type = 'Zertifikat'; }
 
 		if( $tag_descr ) $row_postfix .= ' <span class="ac_tag_type">('. $tag_descr .')</span>';
 		
@@ -601,7 +614,10 @@ class WISY_SEARCH_RENDERER_CLASS
 			}
 
 			// render head
-			echo '<p>';
+			echo '<div class="wisyr_list_header">';
+				echo '<div class="wisyr_listnav"><span class="active">Kurse</span><a href="search?q=' . $queryString . '%2C+Zeige:Anbieter">Anbieter</a></div>';
+				echo '<div class="wisyr_filternav">';
+			
 				if( $queryString == '' ) {
 					echo '<span class="wisyr_aktuelle_angebote">Aktuelle Angebote</span>';
 				}
@@ -609,15 +625,22 @@ class WISY_SEARCH_RENDERER_CLASS
 					echo '<span class="wisyr_angebote_zum_suchauftrag">';
 					echo $sqlCount==1? '<span class="wisyr_anzahl_angebote">1 Angebot</span> zum Suchauftrag ' : '<span class="wisyr_anzahl_angebote">' . $sqlCount . ' Angebote</span> zum Suchauftrag ';
 					echo '<span class="wisyr_angebote_suchauftrag">"' . htmlspecialchars(trim($queryString, ', ')) . '"</span>';
+					echo '<a class="wisyr_anbieter_switch" href="search?q=' . $queryString . '%2C+Zeige:Anbieter">Zeige Anbieter</a>';
 					echo '</span>';
 				}
+				
+				// Show filter / advanced search
+				$DEFAULT_FILTERLINK_HTML= '<a href="filter?q=__Q_URLENCODE__" id="wisy_filterlink">Suche anpassen</a>';
+				echo $this->framework->replacePlaceholders($this->framework->iniRead('searcharea.filterlink', $DEFAULT_FILTERLINK_HTML));
+				
 
 				if( $pagesel )
 				{
-					$this->renderPagination($prevurl, $nexturl, $pagesel);
+					$this->renderPagination($prevurl, $nexturl, $pagesel, $this->rows, $offset, $sqlCount, 'wisyr_paginate_top');
 				}
-			echo '</p>' . "\n";
-			
+				
+				echo '</div>';
+			echo '</div>';
 			
 			flush();
 
@@ -692,13 +715,15 @@ class WISY_SEARCH_RENDERER_CLASS
 			
 			if( $pagesel )
 			{
-				echo '<p>';
-				$this->renderPagination($prevurl, $nexturl, $pagesel);
-				echo '</p>';
+				echo '<div class="wisyr_list_footer clearfix">';
+					echo '<div class="wisyr_rss_link_wrapper">' . $this->framework->getRSSLink() . '</div>';
+					$this->renderPagination($prevurl, $nexturl, $pagesel, $this->rows, $offset, $sqlCount, 'wisyr_paginate_bottom');
+				echo '</div>';
 			}
 		}
 		else 
 		{
+			
 			if( sizeof($info['suggestions']) == 0 )
 			{
 				$temp = trim($queryString, ', ');
@@ -707,8 +732,10 @@ class WISY_SEARCH_RENDERER_CLASS
 					echo '<a href="' . $this->framework->getUrl('search', array('q'=>"$temp, Datum:Alles")) . '">Suche wiederholen und dabei <b>auch abgelaufene Kurse berücksichtigen</b> ...</a>';
 				echo "</p>\n";
 			}
-			else
-				echo '<br /><hr /><br />';
+			
+			echo '<div class="wisyr_list_footer clearfix">';
+				echo '<div class="wisyr_rss_link_wrapper">' . $this->framework->getRSSLink() . '</div>';
+			echo '</div>';
 		}
 
 		if( !$nexturl && $_SERVER['HTTPS']!='on' && !$this->framework->editSessionStarted ) {
@@ -797,16 +824,18 @@ class WISY_SEARCH_RENDERER_CLASS
 			}
 
 			// render head
-			echo '<p>';
+			echo '<div class="wisyr_list_header">';
+				echo '<div class="wisyr_listnav"><a href="search?q=' . str_replace(',,', ',', str_replace('Zeige:Anbieter', '', $queryString)) . '">Kurse</a><span class="active">Anbieter</span></div>';
 				echo '<span class="wisyr_anbieter_zum_suchauftrag">';
 				echo '<span class="wisyr_anzahl_anbieter">' . $sqlCount . ' Anbieter</span> zum Suchauftrag';
+				echo '<a class="wisyr_kurse_switch" href="search?q=' . str_replace(',,', ',', str_replace('Zeige:Anbieter', '', $queryString)) . '">Zeige Kurse</a>';
 				echo '</span>';
 
 				if( $pagesel )
 				{
-					$this->renderPagination($prevurl, $nexturl, $pagesel);
+					$this->renderPagination($prevurl, $nexturl, $pagesel, $this->rows, $offset, $sqlCount, 'wisyr_paginate_top');
 				}
-			echo '</p>' . "\n";
+			echo '</div>' . "\n";
 			flush();
 			
 			// render column titles
@@ -816,7 +845,7 @@ class WISY_SEARCH_RENDERER_CLASS
 				$this->renderColumnTitle('Straße',		's', 	$orderBy,	0);
 				$this->renderColumnTitle('PLZ',			'p',	$orderBy,	0);
 				$this->renderColumnTitle('Ort',			'o',	$orderBy,	0);
-				$this->renderColumnTitle('Homepage',	'h',	$orderBy,	0);
+				$this->renderColumnTitle('Web',			'h',	$orderBy,	0);
 				$this->renderColumnTitle('E-Mail',		'e',	$orderBy,	0);
 				$this->renderColumnTitle('Telefon',		't',	$orderBy,	0);
 			echo '  </tr></thead>' . "\n";
@@ -827,34 +856,38 @@ class WISY_SEARCH_RENDERER_CLASS
 			
 			while( list($i, $record) = each($records['records']) )
 			{
-				echo '  <tr>' . "\n";
+				
+				$rows++;
+				$class = ($rows%2)==0? ' class="wisy_even"' : '';
+			
+				echo "  <tr$class>\n";
 					$this->renderAnbieterCell2($db2, $record, array('q'=>$queryString, 'addPhone'=>false, 'clickableName'=>true, 'addIcon'=>true));
 					echo '<td class="wisyr_strasse" data-title="Straße">';
 						echo htmlspecialchars($record['strasse']);
-					echo '</td>';
+					echo ' </td>';
 					echo '<td class="wisyr_plz" data-title="PLZ">';
 						echo htmlspecialchars($record['plz']);
-					echo '</td>';
+					echo ' </td>';
 					echo '<td class="wisyr_ort" data-title="Ort">';
 						echo htmlspecialchars($record['ort']);
-					echo '</td>';
+					echo ' </td>';
 					echo '<td class="wisyr_homepage" data-title="Homepage">';
 						$link = $record['homepage'];
 						if( $link != '' )
 						{
 							if( substr($link, 0, 4) != 'http' )
 								$link = 'http:/' . '/' . $link;
-							echo '<a href="'.$link.'" target="_blank">Homepage</a>';
+							echo '<a href="'.$link.'" target="_blank">Web</a>';
 						}
-					echo '</td>';
+					echo ' </td>';
 					echo '<td class="wisyr_email" data-title="E-Mail">';
 						$link = $record['anspr_email'];
 						if( $link != '' )
 							echo '<a href="' . $anbieterRenderer->createMailtoLink($link) . '" target="_blank">E-Mail</a>';
-					echo '</td>';
+					echo ' </td>';
 					echo '<td class="wisyr_telefon" data-title="Telefon">';
-						echo htmlspecialchars($record['anspr_tel']);
-					echo '</td>';
+						echo '<a href="tel:' . htmlspecialchars($record['anspr_tel']) . '">' . htmlspecialchars($record['anspr_tel']) . '</a>';
+					echo ' </td>';
 				echo '  </tr>' . "\n";
 			}
 
@@ -865,9 +898,10 @@ class WISY_SEARCH_RENDERER_CLASS
 			// render tail
 			if( $pagesel )
 			{
-				echo '<p>';
-				$this->renderPagination($prevurl, $nexturl, $pagesel);
-				echo '</p>';
+				echo '<div class="wisyr_list_footer clearfix">';
+					echo '<div class="wisyr_rss_link_wrapper">' . $this->framework->getRSSLink() . '</div>';
+					$this->renderPagination($prevurl, $nexturl, $pagesel, $this->rows, $offset, $sqlCount, 'wisyr_paginate_bottom');
+				echo '</div>';
 			}
 		}
 		else /* if( sqlCount ) */

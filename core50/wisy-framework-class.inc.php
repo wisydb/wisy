@@ -364,6 +364,10 @@ class WISY_FRAMEWORK_CLASS
 				return '';
 			}
 		}
+		else if( $placeholder == '__MOBILNAVLINK__')
+		{
+			return '<div id="nav-link"><span>Menü öffnen</span></div>';
+		}
 		
 		return "Unbekannt: $placeholder";
 	}
@@ -556,8 +560,7 @@ class WISY_FRAMEWORK_CLASS
 				 || ($stichwoerter[$s]['eigenschaften'] & intval($codes_array[$c])) )
 				{
 					if( !$anythingOfThisCode ) {
-						$ret .= '<tr class="wisy_stichwtyp'.$stichwoerter[$s]['eigenschaften'].'"><td'.html3(' valign="top"').'><span class="text_keyword">' . $codes_array[$c+1]
-						. '<span class="dp">:</span></span>&nbsp;</td><td'.html3(' valign="top"').'>';
+						$ret .= '<dt class="wisy_stichwtyp'.$stichwoerter[$s]['eigenschaften'].'">' . $codes_array[$c+1] . '</dt><dd>';
 					}
 					else {
 						$ret .= '<br />';
@@ -632,6 +635,8 @@ class WISY_FRAMEWORK_CLASS
 		
 		if( $ret['msg'] != '' ) { $ret['msg'] = str_replace('__PERCENT__', $vollstaendigkeit, $ret['msg']); }
 		if( $ret['banner'] != '' ) { $ret['banner'] = str_replace('__PERCENT__', $vollstaendigkeit, $ret['banner']); }
+		
+		$ret['percent'] = $vollstaendigkeit;
 		
 		return $ret;
 	}
@@ -820,9 +825,17 @@ class WISY_FRAMEWORK_CLASS
 	{
 		// return all JavaScript files as an array
 		$ret = array();
-
-		$ret[] = 'jquery-1.12.3.min.js';
-		$ret[] = 'jquery-ui.1.11.4.min.js';
+		
+		if($this->iniRead('search.suggest.v2') == 1)
+		{
+			$ret[] = '/admin/lib/jquery/js/jquery-1.10.2.min.js';
+			$ret[] = '/admin/lib/jquery/js/jquery-ui-1.10.4.custom.min.js';
+		}
+		else
+		{
+			$ret[] = 'jquery-1.4.3.min.js';
+			$ret[] = 'jquery.autocomplete.min.js';
+		}
 		$ret[] = 'jquery.wisy.js' . $this->includeVersion;
 		
 		return $ret;
@@ -925,6 +938,9 @@ class WISY_FRAMEWORK_CLASS
 			$ret .= 'wisyp_homepage';
 		}
 		
+		// add nojs class
+		$ret .= ' nojs';
+		
 		// done
 		return $ret;
 	}
@@ -939,13 +955,17 @@ class WISY_FRAMEWORK_CLASS
 		{
 			// we got only an HTML-Snippet (part of the the body part), create a more complete HTML-page from this
 			$bodyStart	= '<!DOCTYPE html>' . "\n"
-						. '<html lang="de">' . "\n"
+						. '<!--[if !IE]><!--><html lang="de"><!--<![endif]-->' . "\n"
+						. '<!--[if gte IE 9]><html class="ie ie9up" lang="de"><![endif]-->' . "\n"
+						. '<!--[if IE 8]><html class="ie ie8 ie-old" lang="de"><![endif]-->' . "\n"
+						. '<!--[if lte IE 7]><html class="ie ie7down ie-old" lang="de"><![endif]-->' . "\n"							
 						. '<head>' . "\n"
 						. '<meta charset="UTF-8">' . "\n"
 						. '<meta name="viewport" content="width=device-width, initial-scale=1">' . "\n"
 						. '__HEADTAGS__' 
 						. '</head>' . "\n"
 						. '<body__BODYATTR__>' . "\n"
+						. '<script type="text/javascript">document.body.className = document.body.className.replace("nojs","");</script>' . "\n"
 						. '<div class="acclink"><a href="#wisy_contentareaAnchor">Zum Inhalt</a></div>'
 						. $bodyStart;
 			if( strpos($bodyStart, '__CONTENT__') === false )
@@ -1124,12 +1144,10 @@ class WISY_FRAMEWORK_CLASS
 		// echo the search field
 		$DEFAULT_PLACEHOLDER	= '';
 		$DEFAULT_ADVLINK_HTML	= '<a href="advanced?q=__Q_URLENCODE__" id="wisy_advlink">Erweitern</a>';
-		$DEFAULT_FILTERLINK_HTML= '<a href="filter?q=__Q_URLENCODE__" id="wisy_filterlink">Suche anpassen</a>';
 		$DEFAULT_RIGHT_HTML		= '| <a href="javascript:window.print();">Drucken</a>';
 		$DEFAULT_BOTTOM_HINT	= 'bitte <strong>Suchwörter</strong> eingeben - z.B. Englisch, VHS, Bildungsurlaub, ...';
 		
-		echo "\n";
-		echo '<div id="wisy_searcharea">' . "\n";
+		echo "\n" . '<div id="wisy_searcharea">' . "\n";
 			echo '<div class="inner">' . "\n";
 				echo '<form action="search" method="get">' . "\n";
 					echo '<div class="formrow">';
@@ -1162,8 +1180,8 @@ class WISY_FRAMEWORK_CLASS
 					echo $this->replacePlaceholders($this->iniRead('searcharea.advlink', $DEFAULT_ADVLINK_HTML)) . "\n";
 					echo $this->replacePlaceholders($this->iniRead('searcharea.html', $DEFAULT_RIGHT_HTML)) . "\n";
 				echo '</form>' . "\n";
-			echo '</div>';
-		echo '</div>' . "\n\n";
+			echo "\n</div><!-- /.inner -->";
+		echo "\n</div><!-- /#wisy_searchare -->\n\n";
 	
 		echo $this->replacePlaceholders( $this->iniRead('searcharea.below', '') ); // deprecated!
 	}
@@ -1221,7 +1239,7 @@ class WISY_FRAMEWORK_CLASS
 				return createWisyObject('WISY_ADVANCED_RENDERER_CLASS', $this);
 				
 			case 'filter':
-				return createWisyObject('WISY_ADVANCED_FILTER_RENDERER_CLASS', $this);
+				return createWisyObject('WISY_FILTER_RENDERER_CLASS', $this);
 	
 			case 'tree':
 				return createWisyObject('WISY_TREE_RENDERER_CLASS', $this);

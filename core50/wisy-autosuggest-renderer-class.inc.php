@@ -106,8 +106,8 @@ class WISY_AUTOSUGGEST_RENDERER_CLASS
 					
 				for( $i = 0; $i < sizeof($tags); $i++ )
 				{
-					echo		utf8_encode($tags[$i]['tag']) . 
-						"|"	.	utf8_encode($tags[$i]['tag_descr']) . 
+					echo		$tags[$i]['tag'] . 
+						"|"	.	$tags[$i]['tag_descr'] . 
 						"|"	.	intval($tags[$i]['tag_type']) . 
 						"|" .	intval($tags[$i]['tag_help']) . 
 						"|" .	intval($tags[$i]['tag_freq']) .
