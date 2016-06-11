@@ -120,11 +120,13 @@ class WISY_ANBIETER_RENDERER_CLASS
 		$vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_name" itemprop="name">'. htmlentities($postname? $postname : $suchname) . '</div>';
 		$vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_adresse" itemprop="address" itemscope itemtype="http://schema.org/PostalAddress">';
 
+		$map_URL = 'http://maps.google.com/?q=' . urlencode($strasse . ', ' . $plz . ' ' . $ort . ', ' . $land);
+
 		if( $strasse )
-			$vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_strasse" itemprop="streetAddress">' . htmlentities($strasse) . '</div>';
+			$vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_strasse" itemprop="streetAddress"><a href="' . $map_URL . '">' . htmlentities($strasse) . '</a></div>';
 
 		if( $plz || $ort || $stadtteil || $land )
-			$vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_ort">';
+			$vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_ort"><a href="' . $map_URL . '">';
 			
 		if( $plz )
 			$vc['Adresse'] .= '<span class="wisyr_anbieter_plz" itemprop="postalCode">' . htmlentities($plz) . '</span>';	
@@ -143,7 +145,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		}
 		
 		if( $plz || $ort || $stadtteil || $land )
-			$vc['Adresse'] .= '</div>';	
+			$vc['Adresse'] .= '</a></div>';	
 		
 		$vc['Adresse'] .= "\n</div><!-- /.adress -->";
 		
@@ -220,7 +222,6 @@ class WISY_ANBIETER_RENDERER_CLASS
 			}
 		}
 		
-		// TODO: Link zu Karte / openstreetmap / google map bei Adresse
 		// TODO: Qualitätszertifikate ausgeben
 		// TODO: Sinnvollere Reihenfolge?
 		
@@ -444,6 +445,10 @@ class WISY_ANBIETER_RENDERER_CLASS
 		$gruendungsjahr = intval($db->f8('gruendungsjahr'));
 		$rechtsform     = intval($db->f8('rechtsform'));
 		
+		$ob = new G_BLOB_CLASS($db->f8('logo'));
+		$logo_name		= $ob->name;
+		$logo_w			= $ob->w;
+		$logo_h			= $ob->h;
 		
 		// promoted?
 		if( intval($_GET['promoted']) > 0 )
@@ -476,12 +481,21 @@ class WISY_ANBIETER_RENDERER_CLASS
 		
 		echo '<p class="noprint"><a class="wisyr_zurueck" href="javascript:history.back();">&laquo; Zur&uuml;ck</a></p>';
 		
+		echo '<div class="wisyr_anbieter_kopf">';
 		echo "\n\n" . '<h1 class="wisyr_anbietertitel">';
 			if( $typ == 2 ) echo '<span class="wisy_icon_beratungsstelle">Beratungsstelle<span class="dp">:</span></span> ';
 			echo htmlentities($suchname);
 		echo '</h1>';
 		
-		// TODO: Logo hier
+		
+		if( $logo_w && $logo_h && $logo_name != '' )
+		{
+			echo "\n" . '<div class="wisyr_anbieter_logo">';
+			$this->fit_to_rect($logo_w, $logo_h, 128, 64, $logo_w, $logo_h);
+			echo "<div class=\"logo\"><img src=\"{$wisyPortal}admin/media.php/logo/anbieter/$anbieter_id/".urlencode($logo_name)."\" style=\"width: ".$logo_w."px; height: ".$logo_h."px;\" alt=\"Anbieter Logo\" title=\"\" id=\"anbieterlogo\"/></div>";
+			echo '</div>';
+		}
+		echo '</div><!-- /#wisyr_anbieter_kopf -->';
 		
 		flush();
 		
@@ -548,10 +562,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 
 		// current offers overview
 		$this->writeOffersOverview($anbieter_id, $tag_suchname);
-		
-		// map
-// TODO: wieder anschalten		$this->renderMap($anbieter_id);
-		
+				
 		echo "\n</article><!-- /.wisy_anbieter_kursangebot -->\n\n";
 		
 		// seals
