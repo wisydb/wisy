@@ -96,6 +96,9 @@ class WISY_ANBIETER_RENDERER_CLASS
 		$anspr_zeit		= $db->f8('anspr_zeit');
 		$homepage		= $db->f8('homepage');
 		$din_nr			= $db->f8('din_nr');
+		$leitung_name   = $db->f8('leitung_name');
+		$gruendungsjahr = intval($db->f8('gruendungsjahr'));
+		$rechtsform     = intval($db->f8('rechtsform'));
 		
 		$ob = new G_BLOB_CLASS($db->f8('logo'));
 		$logo_name		= $ob->name;
@@ -201,6 +204,31 @@ class WISY_ANBIETER_RENDERER_CLASS
 			$vc['Logo'] .= '</div>';
 		}
 		
+		/* Leitung */
+		if( $leitung_name )
+		{
+			$vc['Leitung'] = htmlentities($leitung_name);
+		}
+
+		/* Rechtsform */
+		if( $rechtsform > 0 )
+		{
+			require_once('admin/config/codes.inc.php'); // needed for $codes_rechtsform
+			$codes_array = explode('###', $GLOBALS['codes_rechtsform']);
+			for( $c = 0; $c < sizeof($codes_array); $c += 2 ) {
+				if( $codes_array[$c] == $rechtsform ) {
+					$vc['Rechtsform'] = htmlentities($codes_array[$c+1]);
+					break;
+				}
+			}
+		}
+
+		/* Gruendungsjahr */
+		if( $gruendungsjahr > 0 )
+		{
+			$vc['Gegründet'] = intval($gruendungsjahr);
+		}
+		
 		/* Alle Angebote */
 		$vc['Alle Angebote'] = '<a class="wisy_showalloffers" href="' .$this->framework->getUrl('search', array('q' => $suchname)). '">Zeige alle Angebote</a>';
 		
@@ -216,14 +244,17 @@ class WISY_ANBIETER_RENDERER_CLASS
 			$ret .= '</dl>';
 		} else {
 			foreach($vc as $key => $value) {
-				if(trim($value) != '' && $key != 'Anbieternummer' && $key != 'Qualitätszertifikate' && $key != 'Fax') {
+				if(trim($value) != '' && 
+							$key != 'Anbieternummer' &&
+							$key != 'Qualitätszertifikate' &&
+							$key != 'Fax' &&
+							$key != 'Leitung' &&
+							$key != 'Rechtsform' &&
+							$key != 'Gegründet') {
 					$ret .= $value;
 				}
 			}
 		}
-		
-		// TODO: Qualitätszertifikate ausgeben
-		// TODO: Sinnvollere Reihenfolge?
 		
 		return $ret;
 	}
@@ -441,9 +472,6 @@ class WISY_ANBIETER_RENDERER_CLASS
 		$vollst			= $db->f8('vollstaendigkeit');
 		$anbieter_settings = explodeSettings($db->f8('settings'));
 		$pruefsiegel_seit = $db->f8('pruefsiegel_seit');
-		$leitung_name   = $db->f8('leitung_name');
-		$gruendungsjahr = intval($db->f8('gruendungsjahr'));
-		$rechtsform     = intval($db->f8('rechtsform'));
 		
 		$ob = new G_BLOB_CLASS($db->f8('logo'));
 		$logo_name		= $ob->name;
@@ -509,38 +537,6 @@ class WISY_ANBIETER_RENDERER_CLASS
 			echo $wiki2html->run($firmenportraet);
 		}
 		
-		/* TODO: folgendes in steckbrief integrieren:
-		// leitung/rechtsform/gr¸ndung
-		$addinfo = '';
-
-		if( $leitung_name ) {
-			$addinfo .= $addinfo? ' - ' : '';
-			$addinfo .= 'Leitung: ' . isohtmlspecialchars($leitung_name);
-		}
-
-		if( $rechtsform > 0 ) {
-			require_once('admin/config/codes.inc.php'); // needed for $codes_rechtsform
-			$codes_array = explode('###', $GLOBALS['codes_rechtsform']);
-			for( $c = 0; $c < sizeof($codes_array); $c += 2 ) {
-				if( $codes_array[$c] == $rechtsform ) {
-					$addinfo .= $addinfo? ', ' : '';
-					$addinfo .= 'Rechtsform: ' . isohtmlspecialchars($codes_array[$c+1]);
-					break;
-				}
-			}
-		}
-
-		if( $gruendungsjahr > 0 ) {
-			$addinfo .= $addinfo? ', ' : '';
-			$addinfo .= 'gegr¸ndet ' . intval($gruendungsjahr);
-		}
-
-		if( $addinfo ) {
-			echo '<p>' . $addinfo . '</p>';
-		}
-		
-		*/
-
 		echo "\n" . '<div class="wisy_steckbrief clearfix">';
 			echo '<div class="wisy_steckbriefcontent" itemscope itemtype="http://schema.org/Organization">';
 				echo $this->renderCard($db, $anbieter_id, 0, array(), true);
@@ -591,32 +587,11 @@ class WISY_ANBIETER_RENDERER_CLASS
 			echo "\n" . '<div class="wisyr_anbieter_meta">';
 				echo ' Anbieterinformation erstellt am ' . $this->framework->formatDatum($date_created);
 				echo ', zuletzt ge&auml;ndert am ' . $this->framework->formatDatum($date_modified);
+				echo ', ' . $vollst . '% Vollständigkeit';
+				echo '<div class="wisyr_vollst_info"><span class="info">Hinweise zur förmlichen Vollständigkeit der Kursinfos sagen nichts aus über die Qualität der Kurse selbst. <a href="' . $this->framework->getHelpUrl(3369) . '">Mehr erfahren</a></span></div>';
+				
 				$copyrightClass =& createWisyObject('WISY_COPYRIGHT_CLASS', $this->framework);
-			// TODO: fix the output:	$copyrightClass->renderCopyright($db, 'anbieter', $anbieter_id);
-				// vollst.
-				$title = '';
-				if( $vollst >= 50 && $this->framework->iniRead('details.complseal', 1) )
-				{
-					if( $vollst >= 90 ) {
-						$img = "core50/img/compl90.png";
-						$title = 'Die Kursbeschreibungen dieses Anbieters &uuml;bertreffen die WISY-Kriterien zur Vollst&auml;ndigkeit der Kursdaten';
-					}
-					else {
-						$img = "core50/img/compl50.png";
-						$title = 'Die Kursbeschreibungen dieses Anbieters erf&uuml;llen die WISY-Kriterien zur Vollst&auml;ndigkeit der Kursdaten';
-					}
-				}
-				if( $title )
-				{
-					// TODO: das kann so nicht bleiben
-					echo '<table><tr><td>';
-						echo '<img src="'.$img.'" alt="" width="55" height="55" title="" />';
-					echo '</td><td style="word-break: normal !important;">'; // <- this is a hack, the hamburg CSS is really out of order ...
-						echo $title;
-						echo '&nbsp;<a href="' . $this->framework->getHelpUrl(3369) . '" class="wisy_help" title="Hilfe">i</a>';
-					echo '</td></tr></table>';
-				}
-				echo "\n" . '<div class="wisyr_vollstinfo"><span class="info">Hinweise zur förmlichen Vollständigkeit der Kursinfos sagen nichts aus über die Qualität der Kurse selbst. <a href="#">Mehr erfahren</a></span></div>';
+				$copyrightClass->renderCopyright($db, 'anbieter', $anbieter_id);
 			echo "\n</div><!-- /.wisyr_anbieter_meta -->\n\n";
 			
 			echo "\n" . '<div class="wisyr_anbieter_edit">';
