@@ -1,3 +1,4 @@
+
 /*****************************************************************************
  * Libs
  *****************************************************************************/
@@ -246,7 +247,6 @@ function formatItem(row)
 		else if( tag_type & 512 ) { row_class = "ac_ort";                  row_preposition = ' zum '; row_postfix = 'Ort'; }
 		else if( tag_type & 1024 ) { row_class = "ac_sonstigesmerkmal";    row_preposition = ' zum '; row_postfix = 'sonstigen Merkmal'; }
 		else if( tag_type & 32768 ) { row_class = "ac_unterrichtsart";     row_preposition = ' zur '; row_postfix = 'Unterrichtsart'; }
-		else if( tag_type & 65536) { row_class = "ac_zertifikat";          row_preposition = ' zum '; row_postfix = '<b>Zertifikat</b>'; }
 	
 		/* frequency, end base type */
 		if( tag_freq > 0 )
@@ -388,8 +388,7 @@ if (jQuery.ui)
 			else if( tag_type & 512 ) { row_class = "ac_ort";                  row_type = 'Kursort'; row_count_prefix = (tag_freq == 1) ? ' Kurs am' : ' Kurse am'; }
 			else if( tag_type & 1024) { row_class = "ac_merkmal"; 			   row_type = 'Kursmerkmal'; }
 			else if( tag_type & 32768){ row_class = "ac_unterrichtsart";	   row_type = 'Unterrichtsart'; row_count_prefix = (tag_freq == 1) ? ' Kurs zur' : ' Kurse zur'; }
-			else if( tag_type & 65536){ row_class = "ac_zertifikat";		   row_type = 'Zertifikat'; }
-				 
+	
 			/* frequency, end base type */
 			if( tag_descr != '' ) row_postfix = ' (' + tag_descr + ')';
 		
@@ -635,19 +634,34 @@ function advEmbedViaAjax()
 function filterEmbeddingViaAjaxDone()
 {
 	// show filter form
-	$("#filterEmbedded").show(500);
+	$("#filterEmbedded").removeClass('loading');
+	$("#filterEmbedded .inner").show(500);
 	
-	// remove the loading indicatiot
+	// remove the loading indicator
 	$("#wisy_searchinput").removeClass('filter_loading');
 	
 	// ajaxify the "close" button
 	$("#filter_close").click(function()
 	{
 		// hide filter form
-		$('#wisy_searchinput').removeClass('filter_open');
+		$('#wisy_contentarea').removeClass('filter_open');
+		$('#wisy_filterlink').removeClass('active');
 		$("#filterEmbedded").hide(300, function(){ $("#filterEmbedded").remove() });
 		
 		// done
+		return false;
+	});
+	
+	// ajaxify the "reset" button
+	$('#filter_reset').click(function()
+	{
+		$('#filterEmbedded form').find('input')
+			.filter(':text, :password, :file').val('').end()
+			.filter(':checkbox, :radio').removeAttr('checked').end().end()
+			.find('textarea').val('').end()
+			.find('select').prop("selectedIndex", -1)
+			.find('option:selected').removeAttr('selected');
+		
 		return false;
 	});
 }
@@ -655,14 +669,18 @@ function filterEmbeddingViaAjaxDone()
 function filterEmbedViaAjax()
 {
 	// Close Filter form if already open
-	if($("#wisy_searchinput").hasClass('filter_open')) {
-		$('#wisy_searchinput').removeClass('filter_open');
+	if($("#wisy_contentarea").hasClass('filter_open')) {
+		$('#wisy_contentarea').removeClass('filter_open');
+		$('#wisy_filterlink').removeClass('active');
 		$("#filterEmbedded").hide(300, function(){ $("#filterEmbedded").remove() });
 		return false;
 	}
 	
-	// add the loading indicator and active indicator
-	$("#wisy_searchinput").addClass('filter_open filter_loading');
+	// add the and active indicator
+	$("#wisy_contentarea").addClass('filter_open');
+	
+	// Update Filterlink Button status
+	$('#wisy_filterlink').addClass('active');
 	
 	// create query string
 	var q = $("#wisy_searchinput").val(); // for some reasons, q is UTF-8 encoded, so we use this charset as ie= below
@@ -671,11 +689,11 @@ function filterEmbedViaAjax()
 		var km  = $("#wisy_kmselect").val(); if( km  != '' ) { q += ', km:'  + km;  }
 	}
 	
-	// create and load the advanced options
+	// create and load the filter options
 	var justnow = new Date();
 	var rnd = justnow.getTime();	
-	$("#wisy_searcharea").after('<div id="filterEmbedded" style="display: none;"></div>');
-	$("#filterEmbedded").load('filter?ajax=1&ie=UTF-8&rnd='+rnd+'&q='+encodeURIComponent(q), filterEmbeddingViaAjaxDone);
+	$("#wisy_filterlink").after('<div id="filterEmbedded" class="loading"><div class="inner" style="display:none;"></div></div>');
+	$("#filterEmbedded .inner").load('filter?ajax=1&ie=UTF-8&rnd='+rnd+'&q='+encodeURIComponent(q), filterEmbeddingViaAjaxDone);
 	return false;
 }
 
@@ -963,6 +981,38 @@ function initRatgeber()
 	$("a.wisy_glskeyexp").click(wisy_glskeyexp);
 }
 
+/*****************************************************************************
+ * Responsive functions for core50
+ *****************************************************************************/
+
+function initResponsive()
+{
+	// Remove nojs class from body in case the remove function directly after the <body> tag is missing
+	$('body.nojs').removeClass('nojs');
+	
+	// Toggle mobile nav on __MOBILNAVLINK__ click
+	$('#nav-link').on('click', function() {
+		window.scrollTo(0, 0);
+		$('body').toggleClass('navshowing');
+	});
+
+	// Navigation Unterpunkte öffnen und schließen mobil
+	$('#themenmenue a').on('click', function() {
+		$firstUl = $(this).siblings('ul').first();
+		if($firstUl.length) {
+			if($firstUl.hasClass('open')) {
+				$firstUl.removeClass('open').stop(true,true).hide('fast');
+				$(this).parent().removeClass('open');
+			} else {
+				$firstUl.children('li').show();
+				$firstUl.addClass('open').stop(true,true).hide().show('slow');
+				$(this).parent().addClass('open');
+			}
+			return false;
+		}
+	});
+}
+
 
 /*****************************************************************************
  * main entry point
@@ -1016,5 +1066,9 @@ $().ready(function()
 	
 	// init ratgeber stuff
 	initRatgeber();
+	
+	// init responsive stuff
+	initResponsive();
+	
 });
 

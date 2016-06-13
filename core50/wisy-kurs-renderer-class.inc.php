@@ -246,7 +246,8 @@ class WISY_KURS_RENDERER_CLASS
 					echo 'Kursinformation erstellt am ' . $this->framework->formatDatum($date_created);
 					echo ', zuletzt ge&auml;ndert am ' . $this->framework->formatDatum($date_modified);
 					echo ', ' . $vollst['percent'] . '% Vollständigkeit';
-					echo '<div class="wisyr_vollstinfo"><span class="info">Hinweise zur förmlichen Vollständigkeit der Kursinfos sagen nichts aus über die Qualität der Kurse selbst. <a href="#">Mehr erfahren</a></span></div>';
+					echo '<div class="wisyr_vollst_info"><span class="info">Hinweise zur förmlichen Vollständigkeit der Kursinfos sagen nichts aus über die Qualität der Kurse selbst. <a href="' . $this->framework->getHelpUrl(3369) . '">Mehr erfahren</a></span></div>';
+					
 					$copyrightClass->renderCopyright($db, 'kurse', $kursId);
 				echo '</div><!-- /.wisyr_kurs_meta -->';
 								
