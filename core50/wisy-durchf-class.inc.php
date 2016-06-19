@@ -536,25 +536,25 @@ class WISY_DURCHF_CLASS
 			echo '    <td class="wisyr_ort" data-title="Ort">';
 			
 			// get ort
-			$strasse	= $record['strasse'];
+			$strasse	= htmlentities($record['strasse']);
 			$plz		= $record['plz'];
-			$ort		= $record['ort']; // hier wird noch der Stadtteil angehängt
+			$ort		= htmlentities($record['ort']); // hier wird noch der Stadtteil angehängt
 			$stadt		= $ort;
-			$stadtteil	= $record['stadtteil'];
-			$land		= $record['land'];
+			$stadtteil	= htmlentities($record['stadtteil']);
+			$land		= htmlentities($record['land']);
 			if( $ort && $stadtteil ) {
 				if( strpos($ort, $stadtteil)===false ) {
-					$ort = htmlentities($ort) . '-' . htmlentities($stadtteil);
+					$ort = $ort . '-' . $stadtteil;
 				}
 				else {
-					$ort = htmlentities($ort);
+					$ort = $ort;
 				}
 			}
 			else if( $ort ) {
-				$ort = htmlentities($ort);
+				$ort = $ort;
 			}
 			else if( $stadtteil ) {
-				$ort = htmlentities($stadtteil);
+				$ort = $stadtteil;
 				$stadt = $stadtteil;
 			}
 			else {
@@ -566,23 +566,24 @@ class WISY_DURCHF_CLASS
 				$this->framework->map->addPoint2($record, $durchfuehrungId);
 			}
 			
+			$map_URL = 'http://maps.google.com/?q=' . urlencode($strasse . ', ' . $plz . ' ' . $ort . ', ' . $land);					
 			
 			if( $details )
 			{
 				$cell = '';
 				
 				if( $strasse ) {
-					$cell = htmlentities($strasse);
+					$cell .=  '<a href="' . $map_URL . '">' . $strasse . '</a>';
 				}
 				
 				if( $ort ) {
 					$cell .= $cell? '<br />' : '';
-					$cell .= "$plz $ort";
+					$cell .= '<a href="' . $map_URL . '">' . "$plz $ort" . '</a>';
 				}
 	
 				if( $land ) {
 					$cell .= $cell? '<br />' : '';
-					$cell .= '<i>' . htmlentities($land) . '</i>';
+					$cell .= '<i>' . $land . '</i>';
 				}
 
 				if( $has_bemerkungen ) {
@@ -604,7 +605,7 @@ class WISY_DURCHF_CLASS
 			}
 			else
 			{
-				echo $ort? $ort : 'k. A.';
+				echo $ort? '<a href="' . $map_URL . '">' . $ort . '</a>' : 'k. A.';
 			}
 			
 			echo ' </td>' . "\n";

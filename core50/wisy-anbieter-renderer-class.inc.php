@@ -187,22 +187,20 @@ class WISY_ANBIETER_RENDERER_CLASS
 		/* logo */
 		if( $param['logo'] )
 		{
-			$vc['Logo'] .= "\n" . '<div class="wisyr_anbieter_logo">';
-			
-			if( $param['logoLinkToAnbieter'] )
-				$vc['Logo'] .= '<a href="'.$this->framework->getUrl('a', array('id'=>$anbieterId)).'">';
-			
 			if( $logo_w && $logo_h && $logo_name != '' )
 			{
+				$vc['Logo'] = "\n" . '<div class="wisyr_anbieter_logo">';
 				$this->fit_to_rect($logo_w, $logo_h, 128, 64, $logo_w, $logo_h);
 				$vc['Logo'] .= "<span itemprop=\"logo\"><img src=\"{$wisyPortal}admin/media.php/logo/anbieter/$anbieterId/".urlencode($logo_name)."\" style=\"width: ".$logo_w."px; height: ".$logo_h."px;\" alt=\"Anbieter Logo\" title=\"\" id=\"anbieterlogo\"/></span>";
+				$vc['Logo'] .= '</div>';
 			}
-			
-			if( $param['logoLinkToAnbieter'] )
-				$vc['Logo'] .= 'Details zum Anbieter</a>';
-			
-			$vc['Logo'] .= '</div>';
 		}
+		
+		/* Link zum Anbieter */
+		$vc['Link'] .= "\n" . '<div class="wisyr_anbieter_link">';
+		$vc['Link'] .= '<a href="/'.$this->framework->getUrl('a', array('id'=>$anbieterId)).'">';
+		$vc['Link'] .= 'Details zum Anbieter</a>';
+		$vc['Link'] .= '</div>';
 		
 		/* Leitung */
 		if( $leitung_name )
@@ -237,7 +235,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 			// Steckbrief: vCard als Definition List ausgeben
 			$ret .= '<dl>';
 			foreach($vc as $key => $value) {
-				if(trim($value) != '' && $key != 'Logo' && $key != 'Alle Angebote') {
+				if(trim($value) != '' && $key != 'Logo' && $key != 'Alle Angebote' && $key != 'Link') {
 					$ret .= '<dt>' . $key . '</dt><dd>' . $value . '</dd>';
 				}
 			}
