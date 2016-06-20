@@ -317,6 +317,14 @@ class WISY_FRAMEWORK_CLASS
 		{
 			return intval($this->cacheRead('stats.anzahl_anbieter'));
 		}
+		else if( $placeholder == '__ANZAHL_ABSCHLUESSE__' )
+		{
+			return intval($this->cacheRead('stats.anzahl_abschluesse')); // Anzahl von Kursen, die zu einem Abschluss fuehren
+		}
+		else if( $placeholder == '__ANZAHL_ZERTIFIKATE__' )
+		{
+			return intval($this->cacheRead('stats.anzahl_zertifikate')); // Anzahl verschiedener Abschluesse
+		}
 		else if( $placeholder == '__A_PRINT__' )
 		{
 			return ' href="javascript:window.print();"';

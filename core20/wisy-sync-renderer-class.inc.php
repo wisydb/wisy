@@ -1073,6 +1073,15 @@ class WISY_SYNC_RENDERER_CLASS
 			{
 				$rev_syn[ $db->fs('lemma_id') ][] = $db->fs('tag_id');
 			}
+
+			// TAG_FREQ: get all tag IDs for all abschluesse (needed to calculate the number of certificates and the number of offers with certificates)
+																				$this->statetable->updateUpdatestick();			
+			$abschluesse = array();
+			$db->query("SELECT tag_id FROM x_tags WHERE tag_type&1;");
+			while( $db->next_record() )
+			{
+				$abschluesse[ $db->f('tag_id') ] = 1;
+			}
 																				$this->statetable->updateUpdatestick();			
 			// TAG_FREQ: write the stuff
 			$db->query("DELETE FROM x_tags_freq;");
@@ -1094,6 +1103,9 @@ class WISY_SYNC_RENDERER_CLASS
 						$portalTagId = 0;
 					}
 					
+					$anz_kurse_mit_abschluss = 0;
+					$anz_zertifikate         = 0;
+
 					// write the x_tags_freq table
 					if( $portalIdFor != 0 || !$portalIdFor0Out )
 					{
@@ -1115,6 +1127,12 @@ class WISY_SYNC_RENDERER_CLASS
 										$v .= "({$rev_syn[$currTagId][$s]}, $portalIdFor, $currFreq)";	// to x_tags_freq - hiding, if needed, may happen in the viewing classes.
 									}
 								}
+
+								if( $abschluesse[ $currTagId ] )
+								{
+									$anz_zertifikate++;
+									$anz_kurse_mit_abschluss += $currFreq;
+								}
 							}
 						}
 						
@@ -1129,6 +1147,8 @@ class WISY_SYNC_RENDERER_CLASS
 					$values['einstcache']['stats.anzahl_kurse'] = $counts['anz_kurse'];
 					$values['einstcache']['stats.anzahl_anbieter'] = $counts['anz_anbieter'];
 					$values['einstcache']['stats.anzahl_durchfuehrungen'] = $counts['anz_durchf'];
+					$values['einstcache']['stats.anzahl_abschluesse'] = $anz_kurse_mit_abschluss;
+					$values['einstcache']['stats.anzahl_zertifikate'] = $anz_zertifikate;
 					//$values['einstcache']['stats.tag_filter'] = $einstcache_tagfilter;
 					$this->framework->cacheFlushInt($values['einstcache'], $portalId);
 					//$this->log("stats for portal $portalId updated to anz_kurse=".$counts['anz_kurse'].'/anz_anbieter='.$counts['anz_anbieter'].'/anz_durchf='.$counts['anz_durchf']);
