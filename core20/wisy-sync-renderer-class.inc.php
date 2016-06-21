@@ -1082,7 +1082,14 @@ class WISY_SYNC_RENDERER_CLASS
 			{
 				$abschluesse[ $db->f('tag_id') ] = 1;
 			}
-																				$this->statetable->updateUpdatestick();			
+
+			$zertifikate = array();
+			$db->query("SELECT tag_id FROM x_tags WHERE tag_type&65536;");
+			while( $db->next_record() )
+			{
+				$zertifikate[ $db->f('tag_id') ] = 1;
+			}
+																						$this->statetable->updateUpdatestick();			
 			// TAG_FREQ: write the stuff
 			$db->query("DELETE FROM x_tags_freq;");
 			$portalIdFor0Out = false;
@@ -1103,8 +1110,8 @@ class WISY_SYNC_RENDERER_CLASS
 						$portalTagId = 0;
 					}
 					
-					$anz_kurse_mit_abschluss = 0;
-					$anz_zertifikate         = 0;
+					$anz_kurse_mit_abschluss  = 0;
+					$anz_kurse_mit_zertifikat = 0;
 
 					// write the x_tags_freq table
 					if( $portalIdFor != 0 || !$portalIdFor0Out )
@@ -1130,8 +1137,12 @@ class WISY_SYNC_RENDERER_CLASS
 
 								if( $abschluesse[ $currTagId ] )
 								{
-									$anz_zertifikate++;
 									$anz_kurse_mit_abschluss += $currFreq;
+								}
+
+								if( $zertifikate[ $currTagId ] )
+								{
+									$anz_kurse_mit_zertifikat += $currFreq;
 								}
 							}
 						}
@@ -1148,7 +1159,7 @@ class WISY_SYNC_RENDERER_CLASS
 					$values['einstcache']['stats.anzahl_anbieter'] = $counts['anz_anbieter'];
 					$values['einstcache']['stats.anzahl_durchfuehrungen'] = $counts['anz_durchf'];
 					$values['einstcache']['stats.anzahl_abschluesse'] = $anz_kurse_mit_abschluss;
-					$values['einstcache']['stats.anzahl_zertifikate'] = $anz_zertifikate;
+					$values['einstcache']['stats.anzahl_zertifikate'] = $anz_kurse_mit_zertifikat;
 					//$values['einstcache']['stats.tag_filter'] = $einstcache_tagfilter;
 					$this->framework->cacheFlushInt($values['einstcache'], $portalId);
 					//$this->log("stats for portal $portalId updated to anz_kurse=".$counts['anz_kurse'].'/anz_anbieter='.$counts['anz_anbieter'].'/anz_durchf='.$counts['anz_durchf']);
