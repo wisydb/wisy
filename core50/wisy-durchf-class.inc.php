@@ -432,7 +432,7 @@ class WISY_DURCHF_CLASS
 				} else {
 					$cell .= '<span class="wisyr_termin_datum" data-title="Datum">';
 				}
-			    $cell .= ($ende && $beginn!=$ende)? "$beginn - $ende" : $beginn . '</span>';
+			    $cell .= ($ende && $beginn!=$ende)? "$beginn - $ende</span>" : $beginn . '</span>';
 			    
 				if( $beginnoptionen ) { $cell .= " <span class=\"wisyr_termin_beginn\">$beginnoptionen</span>"; }
 			}
@@ -588,7 +588,7 @@ class WISY_DURCHF_CLASS
 
 				if( $has_bemerkungen ) {
 					$wiki2html =& createWisyObject('WISY_WIKI2HTML_CLASS', $this->framework);
-					$cell .= '<div class="wisyr_ort_bemerkungen">' . $wiki2html->run($record['bemerkungen']) . '</div>';
+					$cell .= '<div class="wisyr_ort_bemerkungen">' . $wiki2html->run(utf8_encode($record['bemerkungen'])) . '</div>';
 				}
 				
 				if( strip_tags($cell) == $this->seeAboveOrt && $details ) {

@@ -248,7 +248,14 @@ class WISY_ANBIETER_RENDERER_CLASS
 			// Steckbrief: vCard als Definition List ausgeben
 			$ret .= '<dl>';
 			foreach($vc as $key => $value) {
-				if(trim($value) != '' && $key != 'Logo' && $key != 'Alle Angebote' && $key != 'Link') {
+				if(trim($value) != '' &&
+							$key != 'Logo' &&
+							$key != 'Alle Angebote' &&
+							$key != 'Link' &&
+							$key != 'Anbieternummer' &&
+							$key != 'Fax' &&
+							$key != 'Leitung' &&
+							$key != 'Rechtsform') {
 					$ret .= '<dt>' . $key . '</dt><dd>' . $value . '</dd>';
 				}
 			}
@@ -514,7 +521,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 
 		$this->tagsuggestorObj =& createWisyObject('WISY_TAGSUGGESTOR_CLASS', $this->framework); 
 		$tag_suchname = $this->tagsuggestorObj->keyword2tagName($suchname);
-		$this->tag_suchname_id = $this->tagsuggestorObj->getTagId($tag_suchname);
+		$this->tag_suchname_id = $this->tagsuggestorObj->getTagId(utf8_decode($tag_suchname));
 		
 		echo "\n\n" . '<div id="wisy_resultarea" class="'.$this->framework->getAllowFeedbackClass().'">';
 		
@@ -563,7 +570,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		echo '<h2>'.$freq.($freq==1? ' aktuelles Angebot' : ' aktuelle Angebote').'</h2>'
 		.	'<p>'
 		.		'<a href="' .$this->framework->getUrl('search', array('q'=>$tag_suchname)). '">'
-		.			"Alle Angebote des Anbieters"
+		.			"Alle $freq Kurse des Anbieters"
 		.		'</a>'
 		. 	'</p>';		
 
