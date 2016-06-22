@@ -281,7 +281,7 @@ class WISY_DURCHF_CLASS
 			{	
 				$preishinweise_out = implode(', ', $preishinweise_arr);
 				if( $html ) {
-					$ret .= '<div class="wisyr_preis_hinweise>"' . htmlentities($preishinweise_out) . '</div>';
+					$ret .= '<div class="wisyr_preis_hinweise>"' . htmlentities(utf8_encode($preishinweise_out)) . '</div>';
 				}
 				else {
 					$ret .= " ($preishinweise_out)";
@@ -536,12 +536,12 @@ class WISY_DURCHF_CLASS
 			echo '    <td class="wisyr_ort" data-title="Ort">';
 			
 			// get ort
-			$strasse	= htmlentities($record['strasse']);
+			$strasse	= htmlentities(utf8_encode($record['strasse']));
 			$plz		= $record['plz'];
-			$ort		= htmlentities($record['ort']); // hier wird noch der Stadtteil angehängt
+			$ort		= htmlentities(utf8_encode($record['ort'])); // hier wird noch der Stadtteil angehängt
 			$stadt		= $ort;
-			$stadtteil	= htmlentities($record['stadtteil']);
-			$land		= htmlentities($record['land']);
+			$stadtteil	= htmlentities(utf8_encode($record['stadtteil']));
+			$land		= htmlentities(utf8_encode($record['land']));
 			if( $ort && $stadtteil ) {
 				if( strpos($ort, $stadtteil)===false ) {
 					$ort = $ort . '-' . $stadtteil;
@@ -617,7 +617,7 @@ class WISY_DURCHF_CLASS
 			// nr
 			echo '    <td class="wisyr_nr" data-title="Nr">';
 			$nr = $record['nr'];
-			echo $nr? htmlentities($nr) : 'k. A.';
+			echo $nr? htmlentities(utf8_encode($nr)) : 'k. A.';
 			echo ' </td>' . "\n";
 		}
 	}
