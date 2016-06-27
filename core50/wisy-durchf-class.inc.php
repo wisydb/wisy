@@ -49,13 +49,13 @@ class WISY_DURCHF_CLASS
 		{
 			// init Array with defaults
 			$this->imgTagArr = array(
-				'tc1'	=>	array('<span class="wisyr_art_ganztaegig">&#9673;</span>',	 	'Ganzt&auml;gig'),
-				'tc2'	=>	array('<span class="wisyr_art_vormittags">&#9680;</span>',  	'Vormittags'),
-				'tc3'	=>	array('<span class="wisyr_art_nachmittags">&#9681;</span>', 	'Nachmittags'),
-				'tc4'	=>	array('<span class="wisyr_art_abends">&#9682;</span>',		 	'Abends'),
-				'tc5'	=>	array('<span class="wisyr_art_wochenende">WE</span>',			'Wochenende'),
-				1		=>	array('<span class="wisyr_art_bildungsurlaub">BU</span>',		'Bildungsurlaub'),
-				7721	=>	array('<span class="wisyr_art_fernunterricht">&#9993;</span>',	'Fernunterricht'),
+				'tc1'	=>	array('<span class="wisyr_art_icon wisyr_art_ganztaegig">&#9673;</span>',	 	'Ganzt&auml;gig'),
+				'tc2'	=>	array('<span class="wisyr_art_icon wisyr_art_vormittags">&#9680;</span>',  		'Vormittags'),
+				'tc3'	=>	array('<span class="wisyr_art_icon wisyr_art_nachmittags">&#9681;</span>', 		'Nachmittags'),
+				'tc4'	=>	array('<span class="wisyr_art_icon wisyr_art_abends">&#9682;</span>',		 	'Abends'),
+				'tc5'	=>	array('<span class="wisyr_art_icon wisyr_art_wochenende">WE</span>',			'Wochenende'),
+				1		=>	array('<span class="wisyr_art_icon wisyr_art_bildungsurlaub">BU</span>',		'Bildungsurlaub'),
+				7721	=>	array('<span class="wisyr_art_icon wisyr_art_fernunterricht">&#9993;</span>',	'Fernunterricht'),
 			);
 
 			// overwrite defaults with portal settings from img.tag
@@ -531,8 +531,7 @@ class WISY_DURCHF_CLASS
 		
 		if (($wisyPortalSpalten & 32) > 0)
 		{
-			// ort / bemerkungen
-			$has_bemerkungen = trim($record['bemerkungen'])? true : false;
+			// ort
 			echo '    <td class="wisyr_ort" data-title="Ort">';
 			
 			// get ort
@@ -585,11 +584,6 @@ class WISY_DURCHF_CLASS
 					$cell .= $cell? '<br />' : '';
 					$cell .= '<i>' . $land . '</i>';
 				}
-
-				if( $has_bemerkungen ) {
-					$wiki2html =& createWisyObject('WISY_WIKI2HTML_CLASS', $this->framework);
-					$cell .= '<div class="wisyr_ort_bemerkungen">' . $wiki2html->run(utf8_encode($record['bemerkungen'])) . '</div>';
-				}
 				
 				if( strip_tags($cell) == $this->seeAboveOrt && $details ) {
 					echo '<div class="noprint">'.$cell.'</div><span class="printonly">s.o.</span>';
@@ -609,6 +603,15 @@ class WISY_DURCHF_CLASS
 			}
 			
 			echo ' </td>' . "\n";
+			
+			// Bemerkungen
+			if($details)
+			{
+				echo '    <td class="wisyr_bemerkungen" data-title="Bemerkungen">';
+					$wiki2html =& createWisyObject('WISY_WIKI2HTML_CLASS', $this->framework);
+					echo $wiki2html->run(utf8_encode($record['bemerkungen']));
+				echo ' </td>' . "\n";
+			}
 		}
 		
 		if (($wisyPortalSpalten & 64) > 0)
@@ -622,4 +625,5 @@ class WISY_DURCHF_CLASS
 		}
 	}
 };
+
 

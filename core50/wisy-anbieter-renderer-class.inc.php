@@ -82,7 +82,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		}
 		
 		$kursId			= intval($kursId);
-		$suchname		= htmlentities($db->f8('suchname'));
+		$suchname		= $db->f8('suchname');
 		$postname		= htmlentities($db->f8('postname'));
 		$strasse		= htmlentities($db->f8('strasse'));
 		$plz			= htmlentities($db->f8('plz'));
@@ -109,9 +109,9 @@ class WISY_ANBIETER_RENDERER_CLASS
 		// Bestandteile der vCard initialisieren
 		$vc = array(
 			'Adresse'  				=> '',
+			'Kontakt'  				=> '',
 			'Telefon'  				=> '',
 			'Fax' 	   				=> '',
-			'Kontakt'  				=> '',
 			'Sprechzeiten'			=> '',
 			'E-Mail'				=> '',
 			'Website'				=> '',
@@ -126,16 +126,30 @@ class WISY_ANBIETER_RENDERER_CLASS
 		);		
 		
 		// Name und Adresse
-		$vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_name" itemprop="name">'. $postname? $postname : $suchname . '</div>';
+		$vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_name" itemprop="name">'. ($postname? $postname : htmlentities($suchname)) . '</div>';
 		$vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_adresse" itemprop="address" itemscope itemtype="http://schema.org/PostalAddress">';
 
 		$map_URL = 'http://maps.google.com/?q=' . urlencode($strasse . ', ' . $plz . ' ' . $ort . ', ' . $land);
 
 		if( $strasse )
-			$vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_strasse" itemprop="streetAddress"><a href="' . $map_URL . '">' . $strasse . '</a></div>';
+		{
+			if( $steckbrief )
+			{
+				$vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_strasse" itemprop="streetAddress"><a href="' . $map_URL . '">' . $strasse . '</a></div>';
+			} else {
+				$vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_strasse" itemprop="streetAddress">' . $strasse . '</div>';
+			}
+		}
 
 		if( $plz || $ort || $stadtteil || $land )
-			$vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_ort"><a href="' . $map_URL . '">';
+		{
+			if( $steckbrief )
+			{
+				$vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_ort"><a href="' . $map_URL . '">';
+			} else {
+				$vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_ort">';
+			}
+		}
 			
 		if( $plz )
 			$vc['Adresse'] .= '<span class="wisyr_anbieter_plz" itemprop="postalCode">' . $plz . '</span>';	
@@ -154,13 +168,20 @@ class WISY_ANBIETER_RENDERER_CLASS
 		}
 		
 		if( $plz || $ort || $stadtteil || $land )
-			$vc['Adresse'] .= '</a></div>';	
+		{
+			if( $steckbrief )
+			{
+				$vc['Adresse'] .= '</a></div>';	
+			} else {
+				$vc['Adresse'] .= '</div>';	
+			}
+		}
 		
 		$vc['Adresse'] .= "\n</div><!-- /.adress -->";
 		
 		// Telefonnummer
 		if( $anspr_tel )
-			$vc['Telefon'] .= "\n" . '<div class="wisyr_anbieter_telefon"><span itemprop="telephone">'. $anspr_tel . '</span></div>';
+			$vc['Telefon'] .= "\n" . '<div class="wisyr_anbieter_telefon"><a itemprop="telephone" href="tel:' . $anspr_tel . '">'. $anspr_tel . '</a></div>';
 
 		if( $anspr_fax )
 			$vc['Fax'] .= "\n" . '<div class="wisyr_anbieter_fax"><span itemprop="faxNumber">'. $anspr_fax . '</span></div>';
@@ -234,7 +255,11 @@ class WISY_ANBIETER_RENDERER_CLASS
 		}
 		
 		/* Alle Angebote */
-		$vc['Alle Angebote'] = '<a class="wisy_showalloffers" href="' .$this->framework->getUrl('search', array('q' => $suchname)). '">Zeige alle Angebote</a>';
+		$this->tagsuggestorObj =& createWisyObject('WISY_TAGSUGGESTOR_CLASS', $this->framework); 
+		$tag_suchname = $this->tagsuggestorObj->keyword2tagName($suchname);
+		$this->tag_suchname_id = $this->tagsuggestorObj->getTagId(utf8_decode($tag_suchname));
+		$freq = $this->tagsuggestorObj->getTagFreq(array($this->tag_suchname_id)); if( $freq <= 0 ) $freq = '';
+		$vc['Alle Angebote'] = '<a class="wisy_showalloffers" href="' .$this->framework->getUrl('search', array('q' => $suchname)). '">Alle ' . $freq . ' Angebote des Anbieters</a>';
 		
 		/* Qualitätszertifikate */
 		$seals = $this->renderSealsOverview($anbieterId, $pruefsiegel_seit, true);			
@@ -269,7 +294,9 @@ class WISY_ANBIETER_RENDERER_CLASS
 							$key != 'Leitung' &&
 							$key != 'Rechtsform' &&
 							$key != 'Gegründet' &&
-							$key != 'Qualitätszertifikate') {
+							$key != 'Qualitätszertifikate' &&
+							$key != 'Website' &&
+							$key != 'Logo') {
 					$ret .= $value;
 				}
 			}
@@ -546,7 +573,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		flush();
 		
 		echo "\n\n" . '<section class="wisyr_anbieterinfos clearfix">';
-		echo "\n" . '<article class="wisy_anbieter_inhalt">' . "\n";
+		echo "\n" . '<article class="wisyr_anbieter_firmenportraet wisy_anbieter_inhalt" data-tabtitle="Über">' . "\n";
 		echo '<h1>Über den Anbieter</h1>';
 
 		// firmenportraet
@@ -555,21 +582,24 @@ class WISY_ANBIETER_RENDERER_CLASS
 			echo $wiki2html->run($firmenportraet);
 		}
 		
+		echo "\n</article><!-- /.wisyr_anbieter_firmenportraet -->\n\n";
+		echo "\n" . '<article class="wisyr_anbieter_steckbrief" data-tabtitle="Kontakt">' . "\n";
+		
 		echo "\n" . '<div class="wisy_steckbrief clearfix">';
 			echo '<div class="wisy_steckbriefcontent" itemscope itemtype="http://schema.org/Organization">';
 				echo $this->renderCard($db, $anbieter_id, 0, array(), true);
 			echo '</div>';
 		echo "\n</div><!-- /.wisy_steckbrief -->\n";
 		
-		echo "\n</article><!-- /.wisy_anbieter_inhalt -->\n\n";
+		echo "\n</article><!-- /.wisyr_anbieter_steckbrief -->\n\n";
 		
-		echo "\n\n" . '<article class="wisy_anbieter_kursangebot"><h1>Kurs&shy;angebot</h1>' . "\n";
+		echo "\n\n" . '<article class="wisy_anbieter_kursangebot" data-tabtitle="Kurse"><h1>Kurs&shy;angebot</h1>' . "\n";
 		
 		// link "show all offers"
 		$freq = $this->tagsuggestorObj->getTagFreq(array($this->tag_suchname_id)); if( $freq <= 0 ) $freq = '';
 		echo '<h2>'.$freq.($freq==1? ' aktuelles Angebot' : ' aktuelle Angebote').'</h2>'
 		.	'<p>'
-		.		'<a href="' .$this->framework->getUrl('search', array('q'=>$tag_suchname)). '">'
+		.		'<a class="wisyr_anbieter_kurselink" href="' .$this->framework->getUrl('search', array('q'=>$tag_suchname)). '">'
 		.			"Alle $freq Kurse des Anbieters"
 		.		'</a>'
 		. 	'</p>';		

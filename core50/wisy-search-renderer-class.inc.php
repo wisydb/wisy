@@ -154,7 +154,7 @@ class WISY_SEARCH_RENDERER_CLASS
 						if( $record['typ'] == 2 ) echo '<span class="wisy_icon_beratungsstelle">Beratungsstelle<span class="dp">:</span></span> ';
 					}
 					
-					echo htmlspecialchars(utf8_encode($anbieterName));
+					echo htmlspecialchars($this->framework->encode_windows_chars(utf8_encode($anbieterName)));
 					
 				if( $param['clickableName'] ) echo '</a>';
 
@@ -284,8 +284,8 @@ class WISY_SEARCH_RENDERER_CLASS
 							
 							if($this->framework->iniRead('label.abschluss', 0) && count($kursAnalyzer->loadKeywordsAbschluss($db, 'kurse', $currKursId))) echo '<span class="wisy_icon_abschluss">Abschluss<span class="dp">:</span></span> ';
 							if($this->framework->iniRead('label.zertifikat', 0) && count($kursAnalyzer->loadKeywordsZertifikat($db, 'kurse', $currKursId))) echo '<span class="wisy_icon_zertifikat">Zertifikat<span class="dp">:</span></span> ';
-							
-							echo htmlspecialchars(utf8_encode($record['titel']));
+						
+							echo htmlspecialchars($this->framework->encode_windows_chars(utf8_encode($record['titel'])));
 						
 					echo '</a>';
 					if( $loggedInAnbieterId == $currAnbieterId )
@@ -428,7 +428,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		}
 		
 		return '<span class="' .$row_class. '">' .
-				$row_prefix . ' <a href="' . $this->framework->getUrl('search', array('q'=>$addparam['qprefix'].$tag_name)) . '">' . htmlspecialchars(utf8_encode($tag_name)) . '</a> ' . $row_postfix .
+				$row_prefix . ' <a href="' . $this->framework->getUrl('search', array('q'=>$addparam['qprefix'].$tag_name)) . '">' . htmlspecialchars($tag_name) . '</a> ' . $row_postfix .
 			   '</span>';
 	}
 	
@@ -477,7 +477,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		/* additional flags */
 		if( $tag_type & 0x10000000 )
 		{
-			$row_prefix = '&nbsp; &nbsp; &nbsp; &nbsp; &#8594; ';
+			$row_prefix = '<span class="wisyr_indent">&#8594;</span> ';
 			$row_class .= " ac_indent";
 		}	
 		else if( $tag_type & 0x20000000 )
@@ -501,7 +501,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		$row_class = $row_class . ' ' . $tr_class;
 		
 		// highlight search string
-		$tag_name = htmlspecialchars(utf8_encode($tag_name));
+		$tag_name = htmlspecialchars($tag_name);
 		if($queryString != '') {
 			//$tag_name_highlighted = str_ireplace($queryString, "<strong>$queryString</strong>", $tag_name);
 			$tag_name_highlighted = preg_replace("/".preg_quote($queryString, "/")."/i", "<em>$0</em>", $tag_name);
@@ -510,10 +510,10 @@ class WISY_SEARCH_RENDERER_CLASS
 		}
 	
 		return '<tr class="' .$row_class. '">' .
-					'<td class="tag_name">'. $row_prefix .'<a href="' . $this->framework->getUrl('search', array('q'=>$tag_name)) . '">' . $tag_name_highlighted . '</a>'. $row_postfix .'<span class="tag_count">'. $row_count .'</span></td>' . 
-					'<td class="tag_type">'. $row_type .'</td>' .
-					'<td class="tag_groups">'. $row_groups .'</td>' . 
-					'<td class="tag_info">'. $row_info . '</td>' .
+					'<td class="wisyr_tag_name" data-title="Rechercheziele">'. $row_prefix .'<a href="' . $this->framework->getUrl('search', array('q'=>$tag_name)) . '">' . $tag_name_highlighted . '</a>'. $row_postfix .'<span class="tag_count">'. $row_count .'</span></td>' . 
+					'<td class="wisyr_tag_type" data-title="Kategorie">'. $row_type .'</td>' .
+					'<td class="wisyr_tag_groups" data-title="Oberbegriffe">'. $row_groups .'</td>' . 
+					'<td class="wisyr_tag_info" data-title="Zusatzinfo">'. $row_info . '</td>' .
 			   '</tr>';
 	}
 	
@@ -527,13 +527,13 @@ class WISY_SEARCH_RENDERER_CLASS
 			if($this->framework->iniRead('search.suggest.v2') == 1)
 			{
 				echo 'Gefundene Rechercheziele - verfeinern Sie Ihren Suchauftrag:';
-				echo '<table class="wisy_tagtable">';
+				echo '<table class="wisy_list wisy_tagtable">';
 				echo '	<thead>';
 				echo '		<tr>'.
-								'<th class="titel">Rechercheziele <span class="tag_count">Angebote dazu</span></th>'.
-								'<th class="art">Kategorie</th>'.
-								'<th class="gruppe">Oberbegriffe</th>'.
-								'<th class="info">Zusatzinfo</th>'.
+								'<th class="wisyr_titel"><span class="title">Rechercheziele</span> <span class="tag_count">Angebote dazu</span></th>'.
+								'<th class="wisyr_art">Kategorie</th>'.
+								'<th class="wisyr_gruppe">Oberbegriffe</th>'.
+								'<th class="wisyr_info">Zusatzinfo</th>'.
 							'</tr>';
 				echo '	</thead>';
 				echo '	<tbody>';
@@ -624,7 +624,7 @@ class WISY_SEARCH_RENDERER_CLASS
 				else {
 					echo '<span class="wisyr_angebote_zum_suchauftrag">';
 					echo $sqlCount==1? '<span class="wisyr_anzahl_angebote">1 Angebot</span> zum Suchauftrag ' : '<span class="wisyr_anzahl_angebote">' . $sqlCount . ' Angebote</span> zum Suchauftrag ';
-					echo '<span class="wisyr_angebote_suchauftrag">"' . htmlspecialchars(utf8_encode(trim($queryString, ', '))) . '"</span>';
+					echo '<span class="wisyr_angebote_suchauftrag">"' . htmlspecialchars((trim($queryString, ', '))) . '"</span>';
 					echo '<a class="wisyr_anbieter_switch" href="search?q=' . $queryString . '%2C+Zeige:Anbieter">Zeige Anbieter</a>';
 					echo '</span>';
 				}
