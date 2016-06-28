@@ -76,7 +76,7 @@ function fav_list_functions()
 		}
 		
 		str = '<span class="wisyr_fav_functions">';
-		str += 'Ihre Merkliste enthält ' + cnt + (cnt==1? ' Eintrag ' : ' Einträge ');
+		str += '<span class="wisyr_fav_anzahl">Ihre Merkliste enthält ' + cnt + (cnt==1? ' Eintrag ' : ' Einträge ') + '</span>';
 		if( mailto != '' ) 
 		{
 			str += '<a class="fav_functions_mailsend" href="' + mailto + '" title="Merkliste per E-Mail versenden" class="fav_send">Merkliste per E-Mail versenden</a> ';
@@ -635,7 +635,7 @@ function filterEmbeddingViaAjaxDone()
 {
 	// show filter form
 	$("#filterEmbedded").removeClass('loading');
-	$("#filterEmbedded .inner").show(500);
+	$("#filterEmbedded .inner").slideDown(500);
 	
 	// remove the loading indicator
 	$("#wisy_searchinput").removeClass('filter_loading');
@@ -646,7 +646,7 @@ function filterEmbeddingViaAjaxDone()
 		// hide filter form
 		$('#wisy_contentarea').removeClass('filter_open');
 		$('#wisy_filterlink').removeClass('active');
-		$("#filterEmbedded").hide(300, function(){ $("#filterEmbedded").remove() });
+		$("#filterEmbedded").slideUp(300, function(){ $("#filterEmbedded").remove() });
 		
 		// done
 		return false;
@@ -672,7 +672,7 @@ function filterEmbedViaAjax()
 	if($("#wisy_contentarea").hasClass('filter_open')) {
 		$('#wisy_contentarea').removeClass('filter_open');
 		$('#wisy_filterlink').removeClass('active');
-		$("#filterEmbedded").hide(300, function(){ $("#filterEmbedded").remove() });
+		$("#filterEmbedded").slideUp(300, function(){ $("#filterEmbedded").remove() });
 		return false;
 	}
 	

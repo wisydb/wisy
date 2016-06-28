@@ -49,13 +49,13 @@ class WISY_DURCHF_CLASS
 		{
 			// init Array with defaults
 			$this->imgTagArr = array(
-				'tc1'	=>	array('<span class="wisyr_art_ganztaegig">&#9673;</span>',	 	'Ganzt&auml;gig'),
-				'tc2'	=>	array('<span class="wisyr_art_vormittags">&#9680;</span>',  	'Vormittags'),
-				'tc3'	=>	array('<span class="wisyr_art_nachmittags">&#9681;</span>', 	'Nachmittags'),
-				'tc4'	=>	array('<span class="wisyr_art_abends">&#9682;</span>',		 	'Abends'),
-				'tc5'	=>	array('<span class="wisyr_art_wochenende">WE</span>',			'Wochenende'),
-				1		=>	array('<span class="wisyr_art_bildungsurlaub">BU</span>',		'Bildungsurlaub'),
-				7721	=>	array('<span class="wisyr_art_fernunterricht">&#9993;</span>',	'Fernunterricht'),
+				'tc1'	=>	array('<span class="wisyr_art_icon wisyr_art_ganztaegig">&#9673;</span>',	 	'Ganzt&auml;gig'),
+				'tc2'	=>	array('<span class="wisyr_art_icon wisyr_art_vormittags">&#9680;</span>',  		'Vormittags'),
+				'tc3'	=>	array('<span class="wisyr_art_icon wisyr_art_nachmittags">&#9681;</span>', 		'Nachmittags'),
+				'tc4'	=>	array('<span class="wisyr_art_icon wisyr_art_abends">&#9682;</span>',		 	'Abends'),
+				'tc5'	=>	array('<span class="wisyr_art_icon wisyr_art_wochenende">WE</span>',			'Wochenende'),
+				1		=>	array('<span class="wisyr_art_icon wisyr_art_bildungsurlaub">BU</span>',		'Bildungsurlaub'),
+				7721	=>	array('<span class="wisyr_art_icon wisyr_art_fernunterricht">&#9993;</span>',	'Fernunterricht'),
 			);
 
 			// overwrite defaults with portal settings from img.tag
@@ -281,7 +281,7 @@ class WISY_DURCHF_CLASS
 			{	
 				$preishinweise_out = implode(', ', $preishinweise_arr);
 				if( $html ) {
-					$ret .= '<div class="wisyr_preis_hinweise>"' . htmlentities($preishinweise_out) . '</div>';
+					$ret .= '<div class="wisyr_preis_hinweise>"' . htmlentities(utf8_encode($preishinweise_out)) . '</div>';
 				}
 				else {
 					$ret .= " ($preishinweise_out)";
@@ -432,7 +432,7 @@ class WISY_DURCHF_CLASS
 				} else {
 					$cell .= '<span class="wisyr_termin_datum" data-title="Datum">';
 				}
-			    $cell .= ($ende && $beginn!=$ende)? "$beginn - $ende" : $beginn . '</span>';
+			    $cell .= ($ende && $beginn!=$ende)? "$beginn - $ende</span>" : $beginn . '</span>';
 			    
 				if( $beginnoptionen ) { $cell .= " <span class=\"wisyr_termin_beginn\">$beginnoptionen</span>"; }
 			}
@@ -531,30 +531,29 @@ class WISY_DURCHF_CLASS
 		
 		if (($wisyPortalSpalten & 32) > 0)
 		{
-			// ort / bemerkungen
-			$has_bemerkungen = trim($record['bemerkungen'])? true : false;
+			// ort
 			echo '    <td class="wisyr_ort" data-title="Ort">';
 			
 			// get ort
-			$strasse	= $record['strasse'];
+			$strasse	= htmlentities(utf8_encode($record['strasse']));
 			$plz		= $record['plz'];
-			$ort		= $record['ort']; // hier wird noch der Stadtteil angehängt
+			$ort		= htmlentities(utf8_encode($record['ort'])); // hier wird noch der Stadtteil angehängt
 			$stadt		= $ort;
-			$stadtteil	= $record['stadtteil'];
-			$land		= $record['land'];
+			$stadtteil	= htmlentities(utf8_encode($record['stadtteil']));
+			$land		= htmlentities(utf8_encode($record['land']));
 			if( $ort && $stadtteil ) {
 				if( strpos($ort, $stadtteil)===false ) {
-					$ort = htmlentities($ort) . '-' . htmlentities($stadtteil);
+					$ort = $ort . '-' . $stadtteil;
 				}
 				else {
-					$ort = htmlentities($ort);
+					$ort = $ort;
 				}
 			}
 			else if( $ort ) {
-				$ort = htmlentities($ort);
+				$ort = $ort;
 			}
 			else if( $stadtteil ) {
-				$ort = htmlentities($stadtteil);
+				$ort = $stadtteil;
 				$stadt = $stadtteil;
 			}
 			else {
@@ -566,28 +565,24 @@ class WISY_DURCHF_CLASS
 				$this->framework->map->addPoint2($record, $durchfuehrungId);
 			}
 			
+			$map_URL = 'http://maps.google.com/?q=' . urlencode($strasse . ', ' . $plz . ' ' . $ort . ', ' . $land);					
 			
 			if( $details )
 			{
 				$cell = '';
 				
 				if( $strasse ) {
-					$cell = htmlentities($strasse);
+					$cell .=  '<a href="' . $map_URL . '">' . $strasse . '</a>';
 				}
 				
 				if( $ort ) {
 					$cell .= $cell? '<br />' : '';
-					$cell .= "$plz $ort";
+					$cell .= '<a href="' . $map_URL . '">' . "$plz $ort" . '</a>';
 				}
 	
 				if( $land ) {
 					$cell .= $cell? '<br />' : '';
-					$cell .= '<i>' . htmlentities($land) . '</i>';
-				}
-
-				if( $has_bemerkungen ) {
-					$wiki2html =& createWisyObject('WISY_WIKI2HTML_CLASS', $this->framework);
-					$cell .= '<div class="wisyr_ort_bemerkungen">' . $wiki2html->run($record['bemerkungen']) . '</div>';
+					$cell .= '<i>' . $land . '</i>';
 				}
 				
 				if( strip_tags($cell) == $this->seeAboveOrt && $details ) {
@@ -604,10 +599,19 @@ class WISY_DURCHF_CLASS
 			}
 			else
 			{
-				echo $ort? $ort : 'k. A.';
+				echo $ort? '<a href="' . $map_URL . '">' . $ort . '</a>' : 'k. A.';
 			}
 			
 			echo ' </td>' . "\n";
+			
+			// Bemerkungen
+			if($details)
+			{
+				echo '    <td class="wisyr_bemerkungen" data-title="Bemerkungen">';
+					$wiki2html =& createWisyObject('WISY_WIKI2HTML_CLASS', $this->framework);
+					echo $wiki2html->run(utf8_encode($record['bemerkungen']));
+				echo ' </td>' . "\n";
+			}
 		}
 		
 		if (($wisyPortalSpalten & 64) > 0)
@@ -616,9 +620,10 @@ class WISY_DURCHF_CLASS
 			// nr
 			echo '    <td class="wisyr_nr" data-title="Nr">';
 			$nr = $record['nr'];
-			echo $nr? htmlentities($nr) : 'k. A.';
+			echo $nr? htmlentities(utf8_encode($nr)) : 'k. A.';
 			echo ' </td>' . "\n";
 		}
 	}
 };
+
 

@@ -83,7 +83,7 @@ class WISY_KURS_RENDERER_CLASS
 			echo '<h1 class="wisyr_kurstitel">';
 				if( $anbieter_typ == 2 ) echo '<span class="wisy_icon_beratungsstelle">Beratung<span class="dp">:</span></span> ';
 				if( $displayAbschluss && $isAbschluss ) echo '<span class="wisy_icon_abschluss">Abschluss<span class="dp">:</span></span> ';
-				echo htmlentities($title);
+				echo htmlentities($this->framework->encode_windows_chars($title));
 				if( $this->framework->iniRead('fav.use', 0) ) {
 					echo '<span class="fav_add" data-favid="'.$kursId.'"></span>';
 				}		
@@ -119,7 +119,7 @@ class WISY_KURS_RENDERER_CLASS
 			
 				if( $beschreibung != '' ) {
 					$wiki2html =& createWisyObject('WISY_WIKI2HTML_CLASS', $this->framework);
-					echo $wiki2html->run($beschreibung);
+					echo $wiki2html->run($this->framework->encode_windows_chars($beschreibung));
 				}
 			
 				// Tabellarische Infos ...
@@ -190,7 +190,7 @@ class WISY_KURS_RENDERER_CLASS
 							if (($wisyPortalSpalten & 4) > 0)	{ echo '<th>Dauer</th>';			}
 							if (($wisyPortalSpalten & 8) > 0)	{ echo '<th>Art</th>';				}
 							if (($wisyPortalSpalten & 16) > 0)	{ echo '<th>Preis</th>';			}
-							if (($wisyPortalSpalten & 32) > 0)	{ echo '<th>Ort, Bemerkungen</th>';	}
+							if (($wisyPortalSpalten & 32) > 0)	{ echo '<th>Ort</th><th>Bemerkungen</th>';	}
 							if (($wisyPortalSpalten & 64) > 0)	{ echo '<th>Ang.-Nr.</th>';			}
 						echo '</tr></thead>';
 					
