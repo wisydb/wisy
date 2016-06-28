@@ -526,7 +526,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		{
 			if($this->framework->iniRead('search.suggest.v2') == 1)
 			{
-				echo 'Gefundene Rechercheziele - verfeinern Sie Ihren Suchauftrag:';
+				echo '<div class="wisyr_list_header"><span class="wisyr_rechercheziele">Gefundene Rechercheziele - verfeinern Sie Ihren Suchauftrag:</span></div>';
 				echo '<table class="wisy_list wisy_tagtable">';
 				echo '	<thead>';
 				echo '		<tr>'.
@@ -547,7 +547,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			}
 			else
 			{
-				echo 'Gefundene Rechercheziele - verfeinern Sie Ihren Suchauftrag:';
+				echo '<span class="wisyr_rechercheziele">Gefundene Rechercheziele - verfeinern Sie Ihren Suchauftrag:</span>';
 				echo '<ul>';
 					for( $i = 0; $i < sizeof($suggestions); $i++ )
 					{
@@ -582,7 +582,7 @@ class WISY_SEARCH_RENDERER_CLASS
 				
 				if( sizeof($info['suggestions']) ) 
 				{
-					echo 'Gefundene Rechercheziele - verfeinern Sie Ihren Suchauftrag:';
+					echo '<span class="wisyr_rechercheziele">Gefundene Rechercheziele - verfeinern Sie Ihren Suchauftrag:</span>';
 					echo '<ul>';
 						for( $i = 0; $i < sizeof($info['suggestions']); $i++ )
 						{
