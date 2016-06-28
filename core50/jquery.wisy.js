@@ -1001,11 +1001,11 @@ function initResponsive()
 		$firstUl = $(this).siblings('ul').first();
 		if($firstUl.length) {
 			if($firstUl.hasClass('open')) {
-				$firstUl.removeClass('open').stop(true,true).hide('fast');
+				$firstUl.removeClass('open').stop(true,true).slideUp();
 				$(this).parent().removeClass('open');
 			} else {
 				$firstUl.children('li').show();
-				$firstUl.addClass('open').stop(true,true).hide().show('slow');
+				$firstUl.addClass('open').stop(true,true).hide().slideDown();
 				$(this).parent().addClass('open');
 			}
 			return false;

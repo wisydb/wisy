@@ -69,7 +69,7 @@ class WISY_GLOSSAR_RENDERER_CLASS
 				echo '<a class="wisyr_zurueck" href="javascript:history.back();">&laquo; Zur&uuml;ck</a>';
 				echo $this->framework->getLinkList('help.link', ' &middot; ');
 			echo '</p>';
-			echo '<h1 class="wisyr_glossartitel">' . htmlspecialchars($begriff) . '</h1>';
+			echo '<h1 class="wisyr_glossartitel">' . htmlspecialchars($this->framework->encode_windows_chars($begriff)) . '</h1>';
 			flush();
 	
 			// render entry
@@ -78,7 +78,7 @@ class WISY_GLOSSAR_RENDERER_CLASS
 				if( $erklaerung != '' )
 				{
 					$wiki2html =& createWisyObject('WISY_WIKI2HTML_CLASS', $this->framework, array('selfGlossarId'=>$glossar_id));
-					echo $wiki2html->run($erklaerung);
+					echo $wiki2html->run($this->framework->encode_windows_chars($erklaerung));
 				}
 			
 				// render wikipedia link

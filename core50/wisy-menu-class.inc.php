@@ -33,7 +33,7 @@ class WISY_MENU_ITEM
 		if( sizeof($this->children) ) $liClass = ' class="dir"';
 		$ret = "<li$liClass>";
 		
-			if( $this->url ) $ret .= '<a href="'.htmlspecialchars($this->url). /*convert "&" in URLs to "&amp;" in HTML*/
+			if( utf8_encode($this->url) ) $ret .= '<a href="'.htmlspecialchars(utf8_encode($this->url)). /*convert "&" in URLs to "&amp;" in HTML*/
 									'"'.$this->aparam.'>'; 
 			$ret .= $this->title;
 			if( $this->url ) $ret .= '</a>';
