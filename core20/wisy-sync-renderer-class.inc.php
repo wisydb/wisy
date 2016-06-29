@@ -369,7 +369,7 @@ class KURS2PORTALTAG_CLASS
 			$einstcache		= explodeSettings($db->fs('einstcache'));
 			$filter			= explodeSettings($db->fs('filter'));
 
-			if( $einstellungen['core'] == '20' && $filter['stdkursfilter'] != '' )
+			if( /*$einstellungen['core'] == '20' &&*/ $filter['stdkursfilter'] != '' ) // -- ignore core setting, this was to distinguish between WISY 1.0 and WISY 2.0; nowadays we have other core version numbers
 			{
 				$portal_tag = $tagtable->lookupOrInsert(".portal$portal_id", 0);
 				
@@ -1096,7 +1096,7 @@ class WISY_SYNC_RENDERER_CLASS
 			reset($kurs2portaltag->all_portals);
 			while( list($portalId, $values) = each($kurs2portaltag->all_portals) )
 			{
-				if( $values['einstellungen']['core'] == '20' )
+				//if( $values['einstellungen']['core'] == '20' ) -- ignore core setting, this was to distinguish between WISY 1.0 and WISY 2.0; nowadays we have other core version numbers
 				{
 					// calculate the stats for the portal
 					$portalTagId = $values['portal_tag'];
