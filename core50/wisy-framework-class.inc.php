@@ -736,7 +736,7 @@ class WISY_FRAMEWORK_CLASS
 	function getTitleTags($pageTitleNoHtml)
 	{
 		// get the <title> tag - WISY 5.0 is only added to easily check it we're using the new core, this can be removed as soon as there are other methods for easy recognize
-		return "<title>WISY 5.0 - " .htmlspecialchars($this->getTitleString($pageTitleNoHtml)). "</title>\n";
+		return "<title>" .htmlspecialchars($this->getTitleString($pageTitleNoHtml)). "</title>\n";
 	}
 	
 	function getFaviconFile()
