@@ -1178,6 +1178,20 @@ class WISY_EDIT_RENDERER_CLASS
 		//
 		// $kurs ist ein array wie unter loadKursFromPOST() beschrieben, der Aufruf dieser Funktion kann dabei das 
 		// Feld $kurs['error'] erweitern; alle anderen Felder werden nur gelesen
+		
+		// UTF8-Decoding
+		$newData['titel'] 			= utf8_decode($newData['titel']);
+		$newData['org_titel']		= utf8_decode($newData['org_titel']);
+		$newData['bu_nummer']		= utf8_decode($newData['bu_nummer']);
+		$newData['azwv_knr']		= utf8_decode($newData['azwv_knr']);
+		$newData['foerderung']		= utf8_decode($newData['foerderung']);
+		$newData['fu_knr']			= utf8_decode($newData['fu_knr']);
+		$newData['promote_mode']	= utf8_decode($newData['promote_mode']);
+		$newData['promote_param']	= utf8_decode($newData['promote_param']);
+		$newData['promote_active']	= utf8_decode($newData['promote_active']);
+		$newData['abschluss']		= utf8_decode($newData['abschluss']);
+		$newData['msgtooperator']	= utf8_decode($newData['msgtooperator']);
+		$newData['beschreibung']	= utf8_decode($newData['beschreibung']);
 
 		$db			= new DB_Admin;
 		$user		= $this->getAdminAnbieterUserId20();
@@ -1291,6 +1305,7 @@ class WISY_EDIT_RENDERER_CLASS
 			reset( $newDurchf );
 			while( list($name, $value) = each($newDurchf) )
 			{
+				$value = utf8_decode($value);
 				if( strval($value) != strval($oldDurchf[$name]) || !isset($oldDurchf[$name]) )
 				{
 					// sql
@@ -1300,7 +1315,7 @@ class WISY_EDIT_RENDERER_CLASS
 					if( !$isNew )
 					{
 						$oldVal = $oldDurchf[$name];
-						$newVal = $newDurchf[$name];
+						$newVal = utf8_decode($newDurchf[$name]);
 		
 						$protocol = true;
 					}
@@ -1479,7 +1494,7 @@ class WISY_EDIT_RENDERER_CLASS
 		{
 			$vollst = $this->framework->getVollstaendigkeitMsg($db, $id, 'quality.edit');
 			$msg .= '<b>Informationen zu Vollständigkeit:</b> ' . $vollst['msg'];
-			$msg .= $temp['vmsg'];
+			$msg .= utf8_encode($temp['vmsg']);
 		}
 		else if ( $always )
 		{
@@ -1597,6 +1612,20 @@ class WISY_EDIT_RENDERER_CLASS
 			{
 				echo '<br />';
 				echo '<table cellspacing="2" cellpadding="0" width="100%">';
+				
+				// UTF8-Encoding
+				$kurs['titel'] 			= utf8_encode($kurs['titel']);
+				$kurs['org_titel']		= utf8_encode($kurs['org_titel']);
+				$kurs['bu_nummer']		= utf8_encode($kurs['bu_nummer']);
+				$kurs['azwv_knr']		= utf8_encode($kurs['azwv_knr']);
+				$kurs['foerderung']		= utf8_encode($kurs['foerderung']);
+				$kurs['fu_knr']			= utf8_encode($kurs['fu_knr']);
+				$kurs['promote_mode']	= utf8_encode($kurs['promote_mode']);
+				$kurs['promote_param']	= utf8_encode($kurs['promote_param']);
+				$kurs['promote_active']	= utf8_encode($kurs['promote_active']);
+				$kurs['abschluss']		= utf8_encode($kurs['abschluss']);
+				$kurs['msgtooperator']	= utf8_encode($kurs['msgtooperator']);
+				$kurs['beschreibung']	= utf8_encode($kurs['beschreibung']);
 				
 					// TITEL 
 					echo '<tr>';

@@ -1066,7 +1066,7 @@ class WISY_SEARCH_RENDERER_CLASS
 						if( !$liveIds[ $currId ] )
 						{
 							echo $out? ' &ndash; ' : '';
-							echo '<a href="k'.$currId.'">' . htmlspecialchars(utf8_encode($currTitel)) . '</a>';
+							echo '<a href="k'.$currId.'">' . htmlspecialchars($currTitel) . '</a>';
 
 							$out++; 
 						}
