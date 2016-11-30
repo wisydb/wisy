@@ -871,6 +871,8 @@ CREATE TABLE IF NOT EXISTS `user` (
   `name` varchar(200) NOT NULL DEFAULT '',
   `phone` varchar(200) NOT NULL,
   `email` varchar(200) NOT NULL DEFAULT '',
+  `attr_role` int(11) NOT NULL DEFAULT '0',
+  `msg_to_user` longtext NOT NULL,
   `access` longtext NOT NULL,
   `settings` longtext NOT NULL,
   `last_login` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
@@ -954,6 +956,40 @@ CREATE TABLE IF NOT EXISTS `user_grp` (
 DROP TRIGGER IF EXISTS `user_grp_bi_v9_10_1`;
 DELIMITER //
 CREATE TRIGGER `user_grp_bi_v9_10_1` BEFORE INSERT ON `user_grp`
+ FOR EACH ROW BEGIN
+									SET auto_increment_increment = 10;
+									SET auto_increment_offset = 1;
+								  END
+//
+DELIMITER ;
+
+-- --------------------------------------------------------
+
+--
+-- Tabellenstruktur für Tabelle `user_roles`
+--
+
+CREATE TABLE IF NOT EXISTS `user_roles` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `sync_src` int(11) NOT NULL DEFAULT '1',
+  `user_created` int(11) NOT NULL DEFAULT '0',
+  `user_modified` int(11) NOT NULL DEFAULT '0',
+  `user_grp` int(11) NOT NULL DEFAULT '0',
+  `user_access` int(11) NOT NULL DEFAULT '0',
+  `date_created` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `date_modified` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `name` varchar(200) NOT NULL DEFAULT '',
+  `text_to_confirm` longtext NOT NULL,
+  `email_notify` varchar(200) NOT NULL DEFAULT '',
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=2 ;
+
+--
+-- Trigger `user_roles`
+--
+DROP TRIGGER IF EXISTS `user_roles_bi_v9_10_1`;
+DELIMITER //
+CREATE TRIGGER `user_roles_bi_v9_10_1` BEFORE INSERT ON `user_roles`
  FOR EACH ROW BEGIN
 									SET auto_increment_increment = 10;
 									SET auto_increment_offset = 1;
