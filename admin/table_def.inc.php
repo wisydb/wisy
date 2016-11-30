@@ -815,7 +815,7 @@ function Table_Def_Finish($prop=0)
 		$roles->add_row(TABLE_TEXT|TABLE_LIST|TABLE_SUMMARY|TABLE_MUST|TABLE_UNIQUE_RECOMMENTED,
 															'name',					'Name der Rolle', '', '', '', array('ctrl.size'=>'30-80', 'layout.bg.class'=>'e_bglite', 'layout.descr.class'=>'e_bolder', 'ctrl.class'=>'e_bolder'));
 		$roles->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,	'text_to_confirm',		'Zu bestätigender Text', 0, 0, 0, array('ctrl.rows'=>20));
-		$roles->add_row(TABLE_TEXT|TABLE_LIST|TABLE_URL,	'email_notify',			'E-Mail&nbsp;für&nbsp;Bestätigungen', '', '', '', array('ctrl.size'=>'40-80'));
+		$roles->add_row(TABLE_TEXT|TABLE_LIST|TABLE_URL,	'email_notify',			'E-Mail&nbsp;für&nbsp;Bestätigungen', '', '', '', array('ctrl.size'=>'40-80', 'help.tooltip'=>'Wenn ein Benutzer den angezeigten Text bestätigt hat, wird eine Nachricht an diese E-Mail-Addresse gesandt.'));
 	}
 		
 
