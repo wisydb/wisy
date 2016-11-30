@@ -271,32 +271,35 @@ function login_check()
 	//
 	// ENVIRONMENT CHECK, part 2: things that can be changed by the user
 	//
-	$missing_features = array();
-	
-	if( !isset($_REQUEST['enter_js']) || $_REQUEST['enter_js']!=1 )
+	if( !isset($_REQUEST['enter_skip_env_tests']) ) 
 	{
-		$missing_features[] = 'JavaScript';
-	}
+		$missing_features = array();
+	
+		if( !isset($_REQUEST['enter_js']) || $_REQUEST['enter_js']!=1 )
+		{
+			$missing_features[] = 'JavaScript';
+		}
 
-	if( !isset($_COOKIE[session_name()]) )
-	{
-		$missing_features[] = 'Cookies';
-	}
+		if( !isset($_COOKIE[session_name()]) )
+		{
+			$missing_features[] = 'Cookies';
+		}
 	
-	if( strval($_REQUEST['enter_displaynoneform1'])!='works1'
-	 || strval($_REQUEST['enter_displaynoneform2'])!='works2'
-	 ||  isset($_REQUEST['enter_displaynoneform3'])
-	 || strval($_REQUEST['enter_displaynoneform4'])!='works4'
-	 || strval($_REQUEST['enter_displaynoneform5'])!='works5' )
-	{
-		$missing_features[] = 'SubmitInvisibleFormElements'; //  this feature is missing in some older Opera versions, however, always check this!
-	}
+		if( strval($_REQUEST['enter_displaynoneform1'])!='works1'
+		 || strval($_REQUEST['enter_displaynoneform2'])!='works2'
+		 ||  isset($_REQUEST['enter_displaynoneform3'])
+		 || strval($_REQUEST['enter_displaynoneform4'])!='works4'
+		 || strval($_REQUEST['enter_displaynoneform5'])!='works5' )
+		{
+			$missing_features[] = 'SubmitInvisibleFormElements'; //  this feature is missing in some older Opera versions, however, always check this!
+		}
 	
-	if( sizeof($missing_features) )
-	{
-		$site->msgAdd(htmlconstant('_LOGIN_FEATUREMISSING', implode(', ', $missing_features)), 'e');
-		login_screen();
-		exit();
+		if( sizeof($missing_features) )
+		{
+			$site->msgAdd(htmlconstant('_LOGIN_FEATUREMISSING', implode(', ', $missing_features)), 'e');
+			login_screen();
+			exit();
+		}
 	}
 	
 	//
@@ -430,11 +433,34 @@ function login_check()
 		$db_num_login_errors= $db->f('num_login_errors');
 		$db_last_login		= $db->f('last_login');
 	}
+
+	$user_about_to_log_in = $db->f('id');
+	
+	//
+	// check, if the user needs to confirm a new text
+	//
+	if( defined('USE_ROLES') )
+	{
+		$db3 = new DB_Admin;
+		$db3->query("SELECT r.text_to_confirm FROM user u LEFT JOIN user_roles r ON r.id=u.attr_role WHERE u.id=".$user_about_to_log_in);
+		if( $db3->next_record() ) {
+			$text_to_confirm = $db3->fs('text_to_confirm');
+			if( $text_to_confirm )
+			{
+				$md5_to_confirm = md5($md5_to_confirm);
+				if( regGet('role.confirmed', '') != $md5_to_confirm ) {
+					require_once('roleconfirm.inc.php');
+					roleconfirm_check($user_about_to_log_in); // the function may call exit()
+					$db_num_login_errors = 0;
+				}
+			}
+		}
+	}	
 	
 	//		
 	// get common values to session
 	//
-	$_SESSION['g_session_userid'] = $db->f('id');
+	$_SESSION['g_session_userid'] = $user_about_to_log_in;
 	$_SESSION['g_session_userloginname'] = $db->fs('loginname');
 	
 	$logwriter->log('user', $_SESSION['g_session_userid'], $_SESSION['g_session_userid'], 'login');
