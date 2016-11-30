@@ -837,8 +837,8 @@ function Table_Def_Finish($prop=0)
 	if( defined('USE_ROLES') )
 	{
 		$user->add_row(TABLE_SATTR,					'attr_role',		'Rolle', 0, $roles);
-		$user->add_row(TABLE_TEXTAREA,				'msg_to_user',		'Nachricht an den Benutzer', 0, 0, '', array('ctrl.rows'=>3, 'help.tooltip'=>'die Nachricht wird dem Benutzer immer angezeigt, wenn er sich im Redaktionssystem einloggt'));
 	}
+	$user->add_row(TABLE_TEXTAREA,					'msg_to_user',		'Nachricht an den Benutzer', 0, 0, '', array('ctrl.rows'=>3, 'help.tooltip'=>'die Nachricht wird dem Benutzer immer angezeigt, wenn er sich im Redaktionssystem einloggt'));
 	$user->add_row(TABLE_DATETIME|TABLE_NEWSECTION,	'last_login',		htmlconstant('_LASTLOGIN'), 0, 0, htmlconstant('_STATE'));
 	$user->add_row(TABLE_DATETIME,					'last_login_error',	htmlconstant('_LASTLOGINERROR'), '', '', '', array('layout.join'=>1));
 	$user->add_row(TABLE_INT,						'num_login_errors',	htmlconstant('_STATE'), '', '', '', array('layout.join'=>1));

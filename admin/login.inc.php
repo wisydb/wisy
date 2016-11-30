@@ -405,7 +405,7 @@ function login_check()
 	//
 	// login as the given user
 	//
-	$db->query("SELECT id, loginname, name, last_login, last_login_error, num_login_errors FROM user WHERE loginname='" .addslashes($enter_loginnameas). "'");
+	$db->query("SELECT id, loginname, name, last_login, last_login_error, num_login_errors, msg_to_user FROM user WHERE loginname='" .addslashes($enter_loginnameas). "'");
 	if( !$db->next_record() ) {
 		$site->msgAdd(htmlconstant('_LOGIN_ERR'));
 		
@@ -446,6 +446,7 @@ function login_check()
 	if( !$username ) {
 		$username = $_SESSION['g_session_userloginname'];
 	}
+	$msg_to_user = $db->fs('msg_to_user');
 
 	//
 	// make settings non-editable if logged in as another user 
@@ -473,8 +474,12 @@ function login_check()
 		$site->msgAdd("\n\n$msg\n\n", 'i');
 	}
 
+	if( $msg_to_user ) {
+		$site->msgAdd("\n\n$msg_to_user\n\n", 'i');
+	}
+
 		// DEPRECATED
-			$site->msgAdd("\n\n" . '<b>Neuer Editor:</b> Unter &quot;Einstellungen / Ansicht&quot; steht Ihnen ab sofort ein neuer, modernerer Editor zur Verfügung. <a href="https://b2b.kursportal.info/index.php?title=Neuer_Editor" target="_blank">Weitere Informationen...</a>' . "\n\n", 'i');
+		// $site->msgAdd("\n\n" . '<b>Neuer Editor:</b> Unter &quot;Einstellungen / Ansicht&quot; steht Ihnen ab sofort ein neuer, modernerer Editor zur Verfügung. <a href="https://b2b.kursportal.info/index.php?title=Neuer_Editor" target="_blank">Weitere Informationen...</a>' . "\n\n", 'i');
 		// DEPRECATED
 
 	if( regGet('settings.editable', 1) && $db_num_login_errors ) { 
