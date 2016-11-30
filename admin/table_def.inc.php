@@ -807,22 +807,38 @@ function Table_Def_Finish($prop=0)
 	$groups->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,	'notizen',			'Journal', '', '', '', array('layout.section'=>1));
 
 	//
+	// add table "roles"...
+	//
+	if( defined('USE_ROLES') )
+	{
+		$roles = new Table_Def_Class(0, 					'user_roles',			'Benutzerrollen');
+		$roles->add_row(TABLE_TEXT|TABLE_LIST|TABLE_SUMMARY|TABLE_MUST|TABLE_UNIQUE_RECOMMENTED,
+															'name',					'Name der Rolle', '', '', '', array('ctrl.size'=>'30-80', 'layout.bg.class'=>'e_bglite', 'layout.descr.class'=>'e_bolder', 'ctrl.class'=>'e_bolder'));
+		$roles->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,	'text_to_confirm',		'Zu bestätigender Text', 0, 0, 0, array('ctrl.rows'=>20));
+		$roles->add_row(TABLE_TEXT|TABLE_LIST|TABLE_URL,	'email_notify',			'E-Mail&nbsp;für&nbsp;Bestätigungen', '', '', '', array('ctrl.size'=>'40-80'));
+	}
+		
+
+	//
 	// add table "user"...
 	//
-	
 	$user = new Table_Def_Class(0,					'user',				htmlconstant('_USER'));
 	$user->add_row(TABLE_TEXT|TABLE_LIST|TABLE_MUST|TABLE_UNIQUE|TABLE_INDEX,	
 													'loginname',		htmlconstant('_LOGINNAME'), '', '', '', array('ctrl.size'=>'10-20-80'));
 	$user->add_row(TABLE_PASSWORD,					'password',			htmlconstant('_PASSWORD'), '', '', '', array('layout.join'=>1));
 	$user->add_row(TABLE_TEXT|TABLE_LIST|TABLE_SUMMARY|TABLE_UNIQUE_RECOMMENTED,			
 													'name',				htmlconstant('_NAME'), '', '', '', array('ctrl.size'=>'20-80', 'layout.bg.class'=>'e_bglite', 'layout.descr.class'=>'e_bolder', 'ctrl.class'=>'e_bolder'));
-	$user->add_row(TABLE_TEXT|TABLE_TEL,
-													'phone',			htmlconstant('_PHONE'), '', '', '', array('ctrl.size'=>'10-20-80'));
+	$user->add_row(TABLE_TEXT|TABLE_TEL,            'phone',			htmlconstant('_PHONE'), '', '', '', array('ctrl.size'=>'10-20-80'));
 	$user->add_row(TABLE_TEXT|TABLE_UNIQUE_RECOMMENTED|TABLE_URL,
 													'email',			htmlconstant('_EMAIL'), '', '', '', array('layout.join'=>1, 'ctrl.size'=>'10-20-80'));
 	$user->add_row(TABLE_TEXTAREA|TABLE_USERDEF|TABLE_NEWSECTION,	
 													'access',			htmlconstant('_GRANTS'), 0, '', htmlconstant('_GRANTS').', '.htmlconstant('_GROUPS'), array('ctrl.phpclass'=>'CONTROL_USERACCESS_CLASS',  'deprecated_userdef'=>'deprecated_edit_access.php'));
 	$user->add_row(TABLE_MATTR|TABLE_LIST,			'attr_grp',			htmlconstant('_GROUPS'), 0, $groups);
+	if( defined('USE_ROLES') )
+	{
+		$user->add_row(TABLE_SATTR,					'attr_role',		'Rolle', 0, $roles);
+		$user->add_row(TABLE_TEXTAREA,				'msg_to_user',		'Nachricht an den Benutzer', 0, 0, '', array('ctrl.rows'=>3, 'help.tooltip'=>'die Nachricht wird dem Benutzer immer angezeigt, wenn er sich im Redaktionssystem einloggt'));
+	}
 	$user->add_row(TABLE_DATETIME|TABLE_NEWSECTION,	'last_login',		htmlconstant('_LASTLOGIN'), 0, 0, htmlconstant('_STATE'));
 	$user->add_row(TABLE_DATETIME,					'last_login_error',	htmlconstant('_LASTLOGINERROR'), '', '', '', array('layout.join'=>1));
 	$user->add_row(TABLE_INT,						'num_login_errors',	htmlconstant('_STATE'), '', '', '', array('layout.join'=>1));
@@ -833,6 +849,9 @@ function Table_Def_Finish($prop=0)
 	// ...add tables						
 	$Table_Def[] = $user;
 	$Table_Def[] = $groups;
+	if( defined('USE_ROLES') ) {
+		$Table_Def[] = $roles;	
+	}
 	
 }
 

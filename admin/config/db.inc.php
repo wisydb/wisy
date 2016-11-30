@@ -22,6 +22,9 @@ else {
 	require_once('admin/config/codes.inc.php');  
 }
 
+define('USE_ROLES', 1);
+
+
 //
 // Table Definitions - This Area must be modified for Customisation
 //
