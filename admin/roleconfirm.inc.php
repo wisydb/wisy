@@ -25,20 +25,36 @@ function roleconfirm_after_login($user_about_to_log_in)
 	}
 
 	$db = new DB_Admin;
-	$db->query("SELECT r.id, r.text_to_confirm FROM user u LEFT JOIN user_roles r ON r.id=u.attr_role WHERE u.id=".$user_about_to_log_in);
+	$db->query("SELECT r.id, r.text_to_confirm, r.email_notify, u.name FROM user u LEFT JOIN user_roles r ON r.id=u.attr_role WHERE u.id=".$user_about_to_log_in);
 	if( !$db->next_record() ) {
 		return;
 	}
-	$role_id = $db->fs('id');
+	$role_id         = $db->fs('id');
 	$text_to_confirm = $db->fs('text_to_confirm');
+	$email_notify    = strval($db->fs('email_notify'));
+	$user_name       = strval($db->fs('name'));
 	$md5_confirmed = md5($text_to_confirm);
 
 	// save state in registry
 	regSet('role.confirmed', $md5_confirmed, '');
 	regSave();
 	
-	// log
+	// send a mail, if needed
 	$logwriter = new LOG_WRITER_CLASS;
+	if( $email_notify != '' )
+	{
+		$email_subject = "Rollentext akzeptiert von ".$user_name;
+		$email_body    = "Der folgende Rollentext wurde akzeptiert von ".$user_name.":\n\n".$text_to_confirm;
+		if( @mail($email_notify, $email_subject, $email_body) ) {
+			$logwriter->addData('notify', $email_notify);
+		}
+		else {
+			$logwriter->addData('notify_error', $email_notify);
+			
+		}
+	}
+	
+	// log
 	$logwriter->log('user_roles', $role_id,              $user_about_to_log_in, 'confirmed');
 	$logwriter->log('user',       $user_about_to_log_in, $user_about_to_log_in, 'confirmed');
 }

@@ -173,7 +173,7 @@ class LOG_RENDERER_CLASS
 						
 						// details out
 						$moreAfter = -1;
-						if( $action == 'login' || $action == 'loginfailed' || $action == 'delete' || $action == 'export' || $action == 'exportfailed' || $action == 'requestpw' || $action == 'resetpw' ) { $moreAfter = 0;  }
+						if( $action == 'login' || $action == 'loginfailed' || $action == 'confirmed' || $action == 'delete' || $action == 'export' || $action == 'exportfailed' || $action == 'requestpw' || $action == 'resetpw' ) { $moreAfter = 0;  }
 						if( $action == 'import' ) $moreAfter = 1;
 						for( $i = 5, $cnt = 0; $i < sizeof($record); $i += 3 )
 						{
