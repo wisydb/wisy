@@ -25,15 +25,21 @@ function roleconfirm_after_login($user_about_to_log_in)
 	}
 
 	$db = new DB_Admin;
-	$db->query("SELECT r.text_to_confirm FROM user u LEFT JOIN user_roles r ON r.id=u.attr_role WHERE u.id=".$user_about_to_log_in);
+	$db->query("SELECT r.id, r.text_to_confirm FROM user u LEFT JOIN user_roles r ON r.id=u.attr_role WHERE u.id=".$user_about_to_log_in);
 	if( !$db->next_record() ) {
 		return;
 	}
+	$role_id = $db->fs('id');
 	$text_to_confirm = $db->fs('text_to_confirm');
 	$md5_confirmed = md5($text_to_confirm);
 
+	// save state in registry
 	regSet('role.confirmed', $md5_confirmed, '');
 	regSave();
+	
+	// log
+	$logwriter = new LOG_WRITER_CLASS;
+	$logwriter->log('user_roles', $role_id, $user_about_to_log_in, 'confirmed');
 }
 
 
