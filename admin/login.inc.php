@@ -236,8 +236,18 @@ function login_check()
 {
 	global $site;
 
+	// if a role-confirmation screen was printed, the user already entered the password successfully; read it from the session in this case
+	if( isset($_REQUEST['role_confirm_ok']) ) {
+		$_REQUEST['enter_password'] = strval($_SESSION['g_role_confirm_login_credential_pw']);
+	}
+	else if( isset($_REQUEST['role_confirm_cancel']) ) {
+		unset($_REQUEST['enter_subsequent']);
+	}
+	unset($_SESSION['g_role_confirm_login_credential_pw']);
+
+	// get loginname/password from the request
 	$enter_loginname = $_REQUEST['enter_loginname']; 
-	$enter_password = $_REQUEST['enter_password'];  
+	$enter_password = $_REQUEST['enter_password'];
 	
 	require_lang('lang/login');
 

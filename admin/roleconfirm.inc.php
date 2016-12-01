@@ -58,7 +58,7 @@ function roleconfirm_check($user_about_to_log_in)
 		form_hidden('enter_subsequent', 1);
 		form_hidden('enter_skip_env_tests', 1);
 		form_hidden('enter_loginname', $_REQUEST['enter_loginname']);
-		form_hidden('enter_password', $_REQUEST['enter_password']);
+		$_SESSION['g_role_confirm_login_credential_pw'] = $_REQUEST['enter_password']; // For security reasons, do not write the password to an HTML-file.  Instead, read it from the $_SESSION['g_role_confirm_login_credential_pw'] on submit.
 	
 		echo '<div style="padding: 1em;">';
 			echo $text_to_confirm;
@@ -66,7 +66,7 @@ function roleconfirm_check($user_about_to_log_in)
 
 		$site->skin->buttonsStart();
 			form_button('role_confirm_ok', "OK, Einverstanden");
-			form_button('cancel', htmlconstant('_CANCEL'));
+			form_button('role_confirm_cancel', htmlconstant('_CANCEL'));
 		$site->skin->buttonsEnd();
 		
 		echo '</form>';
