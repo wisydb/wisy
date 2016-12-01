@@ -15,11 +15,26 @@ author:
 parameters:
 	none
 
-usage:
-	check_roleconfirm();
-
 =============================================================================*/
 
+
+function roleconfirm_after_login($user_about_to_log_in)
+{
+	if( !isset($GLOBALS['role_just_confirmed']) ) {
+		return;
+	}
+
+	$db = new DB_Admin;
+	$db->query("SELECT r.text_to_confirm FROM user u LEFT JOIN user_roles r ON r.id=u.attr_role WHERE u.id=".$user_about_to_log_in);
+	if( !$db->next_record() ) {
+		return;
+	}
+	$text_to_confirm = $db->fs('text_to_confirm');
+	$md5_confirmed = md5($text_to_confirm);
+
+	regSet('role.confirmed', $md5_confirmed, '');
+	regSave();
+}
 
 
 function roleconfirm_check($user_about_to_log_in)
@@ -27,22 +42,19 @@ function roleconfirm_check($user_about_to_log_in)
 	global $site;
 	
 	$db = new DB_Admin;
-	$db->query("SELECT attr_role FROM user WHERE id=".$user_about_to_log_in);
+	$db->query("SELECT r.text_to_confirm FROM user u LEFT JOIN user_roles r ON r.id=u.attr_role WHERE u.id=".$user_about_to_log_in);
 	if( !$db->next_record() ) {
 		return;
 	}
-	$role_id = intval($db->f('attr_role'));
-	
-	$db->query("SELECT text_to_confirm FROM user_roles WHERE id=".$role_id);	
-	if( !$db->next_record() ) {
-		return;
-	}
-	$text_to_confirm = $db->f('text_to_confirm');
+	$text_to_confirm = $db->fs('text_to_confirm');
 	
 	//
 	// has the user already confirmed the text?
 	//
-	if( isset($_REQUEST['role_confirm_ok']) ) {
+	if( isset($_REQUEST['role_confirm_ok']) )
+	{
+		// we'll save the data and do more stuff in roleconfirm_after_login() which is called when the session is completely working
+		$GLOBALS['role_just_confirmed'] = 1;
 		return;
 	}
 	
@@ -61,7 +73,7 @@ function roleconfirm_check($user_about_to_log_in)
 		$_SESSION['g_role_confirm_login_credential_pw'] = $_REQUEST['enter_password']; // For security reasons, do not write the password to an HTML-file.  Instead, read it from the $_SESSION['g_role_confirm_login_credential_pw'] on submit.
 	
 		echo '<div style="padding: 1em;">';
-			echo $text_to_confirm;
+			echo nl2br($text_to_confirm);
 		echo '</div>';
 
 		$site->skin->buttonsStart();

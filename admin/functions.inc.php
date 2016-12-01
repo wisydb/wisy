@@ -24,7 +24,7 @@ registry functions
 
 
 
-function regLoadFromDb__($in)
+function regLoadFromDb__($in) // this function should not depend on any globals; it is also used directly before the session is really started (for the role check)
 {
 	$in = strtr($in, "\r\t", "\n ");
 	$in = explode("\n", $in);

@@ -452,13 +452,14 @@ function login_check()
 	if( defined('USE_ROLES') )
 	{
 		$db3 = new DB_Admin;
-		$db3->query("SELECT r.text_to_confirm FROM user u LEFT JOIN user_roles r ON r.id=u.attr_role WHERE u.id=".$user_about_to_log_in);
+		$db3->query("SELECT r.text_to_confirm, u.settings FROM user u LEFT JOIN user_roles r ON r.id=u.attr_role WHERE u.id=".$user_about_to_log_in);
 		if( $db3->next_record() ) {
 			$text_to_confirm = $db3->fs('text_to_confirm');
+			$temp_settings = regLoadFromDb__($db3->fs('settings'));
 			if( $text_to_confirm )
 			{
-				$md5_to_confirm = md5($md5_to_confirm);
-				if( regGet('role.confirmed', '') != $md5_to_confirm ) {
+				$md5_to_confirm = md5($text_to_confirm);
+				if( strval($temp_settings['role.confirmed']) !== strval($md5_to_confirm) ) { // regGet() does not yet work!
 					require_once('roleconfirm.inc.php');
 					roleconfirm_check($user_about_to_log_in); // the function may call exit()
 					$db_num_login_errors = 0;
@@ -536,6 +537,12 @@ function login_check()
 		$site->msgAdd($msgsync, $msgtype);
 	}
 	
+	//
+	// save some data from role confirmation (we cannot do this in roleconfirm_check() as the user is not set up there and eg. regSet() does not work)
+	//
+	if( isset($GLOBALS['role_just_confirmed']) ) {
+		roleconfirm_after_login($_SESSION['g_session_userid']);
+	}
 	
 	//
 	// goto desired page
