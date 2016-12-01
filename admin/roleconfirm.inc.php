@@ -39,7 +39,8 @@ function roleconfirm_after_login($user_about_to_log_in)
 	
 	// log
 	$logwriter = new LOG_WRITER_CLASS;
-	$logwriter->log('user_roles', $role_id, $user_about_to_log_in, 'confirmed');
+	$logwriter->log('user_roles', $role_id,              $user_about_to_log_in, 'confirmed');
+	$logwriter->log('user',       $user_about_to_log_in, $user_about_to_log_in, 'confirmed');
 }
 
 

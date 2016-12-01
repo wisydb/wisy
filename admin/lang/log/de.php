@@ -18,7 +18,7 @@ define('_LOG_ACTION_IMPORT',            "Import");
 define('_LOG_ACTION_REQUESTPW',            "Neues Passwort angefordert");
 define('_LOG_ACTION_RESETPW',            "Passwort zurückgesetzt");
 define('_LOG_ACTION_AGBACCEPTED',            "AGB akzeptiert");
-define('_LOG_ACTION_CONFIRMED',      "Text wurde bestätigt");
+define('_LOG_ACTION_CONFIRMED',      "Rollentext bestätigt");
 define('_LOG_FILTER',            "Suchkriterien");
 define('_LOG_FILTER_OFF',            "Keine");
 define('_LOG_FILTER_REMOVE_CRITERION',            "Suchkriterium entfernen");
