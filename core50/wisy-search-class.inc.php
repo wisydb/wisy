@@ -481,6 +481,7 @@ class WISY_SEARCH_CLASS
 				if( $do_recreate )
 				{
 					$sql = "SELECT COUNT(DISTINCT x_kurse.kurs_id) AS cnt FROM x_kurse " . $this->rawJoinKurse . $this->rawJoin . $this->rawWhere;
+					$this->db->query("SET SQL_BIG_SELECTS=1"); // optional
 					$this->db->query($sql);
 					if( $this->db->next_record() )
 						$ret = intval($this->db->f8('cnt'));
@@ -569,6 +570,7 @@ class WISY_SEARCH_CLASS
 					$sql .= " ORDER BY $orderBy, vollstaendigkeit DESC, x_kurse.kurs_id ";
 					$sql .= " LIMIT $offset, $rows ";
 					
+					$this->db->query("SET SQL_BIG_SELECTS=1"); // optional
 					$this->db->query($sql);
 					while( $this->db->next_record() )
 						$ret['records'][] = $this->db->Record;
