@@ -1091,7 +1091,7 @@ class WISY_EDIT_RENDERER_CLASS
 					// TODEL: Promote AGB
 			if( intval($_POST['promote_agb_read']) != 1 )
 			{
-				$kurs['error'][] = "Fehler: Um einen Kurs zu bewerben, m&uuml;ssen Sie zunächst die AGB best&auml;tigen.";
+				$kurs['error'][] = "Fehler: Um einen Kurs zu bewerben, m&uuml;ssen Sie zun&auml;chst die AGB best&auml;tigen.";
 			}
 					// /TODEL: Promote AGB
 		}
@@ -1681,7 +1681,7 @@ class WISY_EDIT_RENDERER_CLASS
 							echo "<div class=\"editFoerderungDiv\" $styleFoerderung>";
 								echo '<table cellpadding="0" cellspacing="2" border="0">';
 									echo '<tr><td>Bildungsurlaubs-Nr.:</td><td><input type="text" name="bu_nummer" value="'.htmlspecialchars($kurs['bu_nummer']).'" /> <small>(N&ouml;tig zur Anzeige als Bildungsurlaub/Freistellung)</small></td></tr>';
-									echo '<tr><td>AZAV-Nr.:</td><td><input type="text" name="azwv_knr" value="'.htmlspecialchars($kurs['azwv_knr']).'" />  <small>(N�tig zur Suche nach Bildungsgutschein)</small></td></tr>';
+									echo '<tr><td>AZAV-Nr.:</td><td><input type="text" name="azwv_knr" value="'.htmlspecialchars($kurs['azwv_knr']).'" />  <small>(N&ouml;tig zur Suche nach Bildungsgutschein)</small></td></tr>';
 									if( $foerderungsOptionen != '' )
 									{
 										echo '<tr><td>sonstige Förderung:</td><td>'; 
@@ -1735,7 +1735,7 @@ class WISY_EDIT_RENDERER_CLASS
 										$db->query("SELECT kurs_id FROM anbieter_promote WHERE anbieter_id=".$_SESSION['loggedInAnbieterId']. " AND portal_id=$wisyPortalId;");
 										if( $db->next_record() )
 										{
-											$agb_reading_required = 0; // es existiert bereits mind. ein beworbener Kurse; eine erneute best�tigung ist daher nicht erforderlich
+											$agb_reading_required = 0; // es existiert bereits mind. ein beworbener Kurse; eine erneute best�tigung ist daher nicht erforderlich
 										}
 									}
 									
@@ -1999,7 +1999,7 @@ class WISY_EDIT_RENDERER_CLASS
 				if( $kurs['rights_editTitel'] )
 				{
 					echo '<p>';
-						echo 'Achtung: Neue Kurse müssen i.d.R. zunächst <b>von der Redaktion freigeschaltet</b> werden. 
+						echo 'Achtung: Neue Kurse müssen i.d.R. zun&auml;chst <b>von der Redaktion freigeschaltet</b> werden. 
 							Bis die neuen Kurse in den Ergebnislisten auftauchen, finden Sie sie unter unter der Ergebnisliste im Bereich <b>Kurse in Vorbereitung</b>.';
 					echo '</p>';
 				}
@@ -2114,8 +2114,8 @@ class WISY_EDIT_RENDERER_CLASS
 			
 			if( $_SESSION['_login_as'] ) {
 				echo '<p style="background:red; color:white; padding:1em; "><b>Achtung:</b> Sie haben sich als Redakteur im Namen eines Anbieters, 
-					der die AGB noch nicht bestätigt hat, eingeloggt. Wenn Sie die AGB jetzt bestätigen, gilt dies nur f&uuml;r die aktuelle Sitzung; 
-					der Anbieter wird die AGB sobald er sich selbst einloggt erneut bestätigen müssen. Dieser Hinweis erscheint nur f&uuml;r Redakteure.</p>';
+					der die AGB noch nicht best&auml;tigt hat, eingeloggt. Wenn Sie die AGB jetzt best&auml;tigen, gilt dies nur f&uuml;r die aktuelle Sitzung; 
+					der Anbieter wird die AGB sobald er sich selbst einloggt erneut best&auml;tigen müssen. Dieser Hinweis erscheint nur f&uuml;r Redakteure.</p>';
 				
 			}
 			
