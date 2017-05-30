@@ -10,7 +10,7 @@ require_once('admin/classes.inc.php');
 class WISY_ANBIETER_RENDERER_CLASS
 {
 	var $framework;
-	var $unsecureOnly = true;
+	var $unsecureOnly = false;
 
 	function __construct(&$framework)
 	{

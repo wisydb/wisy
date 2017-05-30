@@ -6,7 +6,7 @@
 class WISY_SEARCH_RENDERER_CLASS
 {
 	var $framework;
-	var $unsecureOnly = true;
+	var $unsecureOnly = false;
 
 	function __construct(&$framework)
 	{

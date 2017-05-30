@@ -14,7 +14,7 @@ loadWisyClass('WISY_ANBIETER_RENDERER_CLASS');
 class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 {
 	var $framework;
-	var $unsecureOnly = true;
+	var $unsecureOnly = false;
 
 	function __construct(&$framework)
 	{
