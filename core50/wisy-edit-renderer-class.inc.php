@@ -1061,7 +1061,7 @@ class WISY_EDIT_RENDERER_CLASS
 		$kurs_urls = $this->tools->getUrls($kurs['beschreibung']);
 		if( sizeof($kurs_urls) ) {
 			if( $has_durchf_urls ) {
-				$kurs['error'][] = 'Fehler: URLs können nicht gleichzeitig im Feld <i>Kursbeschreibung</i> und im Feld <i>Bemerkungen</i> angegeben werden.';
+				$kurs['error'][] = 'Fehler: URLs k&ouml;nnen nicht gleichzeitig im Feld <i>Kursbeschreibung</i> und im Feld <i>Bemerkungen</i> angegeben werden.';
 			}
 			if( sizeof($kurs_urls) > 1 ) {
 				$kurs['error'][] = 'Fehler: Im Feld <i>Kursbeschreibung</i> ist nur eine URL erlaubt. Gefundene URLs: '.implode(', ', $kurs_urls);
@@ -1091,7 +1091,7 @@ class WISY_EDIT_RENDERER_CLASS
 					// TODEL: Promote AGB
 			if( intval($_POST['promote_agb_read']) != 1 )
 			{
-				$kurs['error'][] = "Fehler: Um einen Kurs zu bewerben, müssen Sie zunächst die AGB bestätigen.";
+				$kurs['error'][] = "Fehler: Um einen Kurs zu bewerben, m&uuml;ssen Sie zunächst die AGB best&auml;tigen.";
 			}
 					// /TODEL: Promote AGB
 		}
@@ -1680,8 +1680,8 @@ class WISY_EDIT_RENDERER_CLASS
 							// ... Foerderung
 							echo "<div class=\"editFoerderungDiv\" $styleFoerderung>";
 								echo '<table cellpadding="0" cellspacing="2" border="0">';
-									echo '<tr><td>Bildungsurlaubs-Nr.:</td><td><input type="text" name="bu_nummer" value="'.htmlspecialchars($kurs['bu_nummer']).'" /> <small>(Nötig zur Anzeige als Bildungsurlaub/Freistellung)</small></td></tr>';
-									echo '<tr><td>AZWV-Nr.:</td><td><input type="text" name="azwv_knr" value="'.htmlspecialchars($kurs['azwv_knr']).'" />  <small>(Nötig zur Suche nach Bildungsgutschein)</small></td></tr>';
+									echo '<tr><td>Bildungsurlaubs-Nr.:</td><td><input type="text" name="bu_nummer" value="'.htmlspecialchars($kurs['bu_nummer']).'" /> <small>(N&ouml;tig zur Anzeige als Bildungsurlaub/Freistellung)</small></td></tr>';
+									echo '<tr><td>AZAV-Nr.:</td><td><input type="text" name="azwv_knr" value="'.htmlspecialchars($kurs['azwv_knr']).'" />  <small>(N�tig zur Suche nach Bildungsgutschein)</small></td></tr>';
 									if( $foerderungsOptionen != '' )
 									{
 										echo '<tr><td>sonstige Förderung:</td><td>'; 
@@ -1695,7 +1695,7 @@ class WISY_EDIT_RENDERER_CLASS
 							// ... Fernunterricht
 							echo "<div class=\"editFernunterrichtDiv\" $styleFernunterricht>";
 								echo '<table cellpadding="0" cellspacing="2" border="0">';
-									echo '<tr><td>ZFU-Fernunterrichts-Nr.:</td><td><input type="text" name="fu_knr" value="'.htmlspecialchars($kurs['fu_knr']).'" /> <small>(Nötig zur Anzeige als Fernunterricht)</small></td></tr>';
+									echo '<tr><td>ZFU-Fernunterrichts-Nr.:</td><td><input type="text" name="fu_knr" value="'.htmlspecialchars($kurs['fu_knr']).'" /> <small>(N&ouml;tig zur Anzeige als Fernunterricht)</small></td></tr>';
 								echo '</table>';
 								echo '&nbsp;';
 							echo '</div>';
@@ -1735,7 +1735,7 @@ class WISY_EDIT_RENDERER_CLASS
 										$db->query("SELECT kurs_id FROM anbieter_promote WHERE anbieter_id=".$_SESSION['loggedInAnbieterId']. " AND portal_id=$wisyPortalId;");
 										if( $db->next_record() )
 										{
-											$agb_reading_required = 0; // es existiert bereits mind. ein beworbener Kurse; eine erneute bestätigung ist daher nicht erforderlich
+											$agb_reading_required = 0; // es existiert bereits mind. ein beworbener Kurse; eine erneute best�tigung ist daher nicht erforderlich
 										}
 									}
 									
@@ -2114,8 +2114,8 @@ class WISY_EDIT_RENDERER_CLASS
 			
 			if( $_SESSION['_login_as'] ) {
 				echo '<p style="background:red; color:white; padding:1em; "><b>Achtung:</b> Sie haben sich als Redakteur im Namen eines Anbieters, 
-					der die AGB noch nicht bestätigt hat, eingeloggt. Wenn Sie die AGB jetzt bestätigen, gilt dies nur für die aktuelle Sitzung; 
-					der Anbieter wird die AGB sobald er sich selbst einloggt erneut bestätigen müssen. Dieser Hinweis erscheint nur für Redakteure.</p>';
+					der die AGB noch nicht bestätigt hat, eingeloggt. Wenn Sie die AGB jetzt bestätigen, gilt dies nur f&uuml;r die aktuelle Sitzung; 
+					der Anbieter wird die AGB sobald er sich selbst einloggt erneut bestätigen müssen. Dieser Hinweis erscheint nur f&uuml;r Redakteure.</p>';
 				
 			}
 			

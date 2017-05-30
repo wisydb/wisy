@@ -1656,7 +1656,7 @@ class WISY_EDIT_RENDERER_CLASS
 							echo "<div class=\"editFoerderungDiv\" $styleFoerderung>";
 								echo '<table cellpadding="0" cellspacing="2" border="0">';
 									echo '<tr><td>Bildungsurlaubs-Nr.:</td><td><input type="text" name="bu_nummer" value="'.isohtmlspecialchars($kurs['bu_nummer']).'" /> <small>(Nötig zur Anzeige als Bildungsurlaub/Freistellung)</small></td></tr>';
-									echo '<tr><td>AZWV-Nr.:</td><td><input type="text" name="azwv_knr" value="'.isohtmlspecialchars($kurs['azwv_knr']).'" />  <small>(Nötig zur Suche nach Bildungsgutschein)</small></td></tr>';
+									echo '<tr><td>AZAV-Nr.:</td><td><input type="text" name="azwv_knr" value="'.isohtmlspecialchars($kurs['azwv_knr']).'" />  <small>(Nötig zur Suche nach Bildungsgutschein)</small></td></tr>';
 									if( $foerderungsOptionen != '' )
 									{
 										echo '<tr><td>sonstige Förderung:</td><td>'; 
