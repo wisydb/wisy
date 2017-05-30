@@ -483,6 +483,9 @@ class WISY_ANBIETER_RENDERER_CLASS
 				$unique_adr[$unique_id] = $record;
 			}
 		}
+		
+		if(!is_array($unique_adr))
+			return;
 
 		foreach( $unique_adr as $unique_id=>$record ) {
 			$map->addPoint2($record, 0);
