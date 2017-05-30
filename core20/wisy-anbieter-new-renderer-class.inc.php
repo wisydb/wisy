@@ -226,7 +226,7 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 		// get SQL query to read all current offers
 		$searcher =& createWisyObject('WISY_SEARCH_CLASS', $this->framework);		
 		$searcher->prepare($tag_suchname);
-		if( !$searcher->ok() ) { echo 'WTF';return; } // error - offerer not found
+		if( !$searcher->ok() ) { echo 'Fehler: Anbieter nicht gefunden.'; return; } // error - offerer not found
 		$sql = $searcher->getKurseRecordsSql('kurse.id');
 		
 		// create SQL query to get all unique keywords
