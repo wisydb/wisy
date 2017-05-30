@@ -151,7 +151,7 @@ $anbieter->add_row(TABLE_TEXT,								'pflege_fax',		'Pflege Fax', 0, 0, '', arr
 $anbieter->add_row(TABLE_TEXT|TABLE_URL,					'pflege_email',		'Pflege EMail', 0, 0, '', array('layout.join'=>1));
 $anbieter->add_row(TABLE_ENUM,								'pflege_weg',		'Pflegeweg ', 1,
 																				 '0######'
-																				.'1###Post###'
+																				.'1###Redaktionelle Eingabe###'
 																				.'2###EMail###'
 																				.'4###Online###'
 																				.'8###Import');

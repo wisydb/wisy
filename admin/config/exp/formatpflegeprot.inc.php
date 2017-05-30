@@ -296,7 +296,7 @@ $g_monate =   '1###Januar###'
 
 global $g_pflege_wege;
 $g_pflege_wege =  '0###alle###'
-				.'1###nur Post###'
+				.'1###nur Redaktionelle Eingabe###'
 				.'2###nur E-Mail###'
 				.'4###nur Online###'
 				.'8###nur Import###'
