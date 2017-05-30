@@ -597,7 +597,6 @@ ul.dropdown a:active  { color: #ffa500; }
 
 ul.dropdown ul *.dir {
   padding-right: 15px;
-  background-image: url('core20/img/nav-arrow-right-black.png');
   background-position: 100% 50%;
   background-repeat: no-repeat;
 }
