@@ -334,7 +334,7 @@ class WISY_EDIT_RENDERER_CLASS
 			$maxlen = 30;
 			if(strlen($name) > $maxlen ) $name = trim(substr($name, 0, $maxlen-5)) . '..';
 			$ret .= '<div style="float: right;">eingeloggt als: '
-				 .		'<a href="' .$this->framework->getUrl('a', array('id'=>$_SESSION['loggedInAnbieterId'], 'q'=>$this->framework->getParam('q'))). '">' . htmlspecialchars($name) . '</a>'
+				 .		'<a href="' .$this->framework->getUrl('a', array('id'=>$_SESSION['loggedInAnbieterId'], 'q'=>$this->framework->getParam('q'))). '?editstart='.date("Y-m-d-h-i-s").'">' . htmlspecialchars($name) . '</a>'
 				 .		' | <a href="'.$this->framework->getUrl('edit', array('action'=>'logout')) . '">Logout</a>'
 				 .	'</div>';
 		
