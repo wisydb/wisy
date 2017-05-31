@@ -10,7 +10,7 @@ require_once('admin/classes.inc.php');
 class WISY_ANBIETER_RENDERER_CLASS
 {
 	var $framework;
-	var $unsecureOnly = true;
+	var $unsecureOnly = false;
 
 	function __construct(&$framework)
 	{
@@ -340,7 +340,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		// get SQL query to read all current offers
 		$searcher =& createWisyObject('WISY_SEARCH_CLASS', $this->framework);		
 		$searcher->prepare($tag_suchname);
-		if( !$searcher->ok() ) { echo 'WTF';return; } // error - offerer not found
+		if( !$searcher->ok() ) { echo 'Fehler: Anbieter nicht gefunden.'; return; } // error - offerer not found
 		$sql = $searcher->getKurseRecordsSql('kurse.id');
 		
 		// create SQL query to get all unique keywords
@@ -483,6 +483,9 @@ class WISY_ANBIETER_RENDERER_CLASS
 				$unique_adr[$unique_id] = $record;
 			}
 		}
+		
+		if(!is_array($unique_adr))
+			return;
 
 		foreach( $unique_adr as $unique_id=>$record ) {
 			$map->addPoint2($record, 0);

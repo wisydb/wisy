@@ -443,6 +443,19 @@ function getHtmlContent(&$tableDef, $r, &$db)
 			$value = isohtmlentities($tableDef->rows[$r]->addparam->get_summary($db->f($tableDef->rows[$r]->name), '; ' /*value seperator*/));
 			return $value==''? '&nbsp;' : $value;
 
+		case TABLE_INT:
+			$value = $tableDef->formatField($tableDef->rows[$r]->name, $db->f($tableDef->rows[$r]->name));
+			if( $value ) {
+				return isohtmlspecialchars($value);
+			}
+			else {
+				if($tableDef->rows[$r]->default_value !== 0 && $value === 0) {
+					return intval($value); // "0" if price or similar where "0" is not the same as "nothing"
+				} elseif ($rowtype == TABLE_INT) {
+					return "&nbsp;"; // "&nbsp;" if no price (etc.) at all
+				}
+			}
+			
 		default:
 			$value = $tableDef->formatField($tableDef->rows[$r]->name, $db->f($tableDef->rows[$r]->name));
 			if( $value ) {

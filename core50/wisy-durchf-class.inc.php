@@ -56,6 +56,9 @@ class WISY_DURCHF_CLASS
 				'tc5'	=>	array('<span class="wisyr_art_icon wisyr_art_wochenende">WE</span>',			'Wochenende'),
 				1		=>	array('<span class="wisyr_art_icon wisyr_art_bildungsurlaub">BU</span>',		'Bildungsurlaub'),
 				7721	=>	array('<span class="wisyr_art_icon wisyr_art_fernunterricht">&#9993;</span>',	'Fernunterricht'),
+				7639	=>	array('<span class="wisyr_art_icon wisyr_art_fernunterricht">WWW</span>',		'Webinar'),
+				17261	=>	array('<span class="wisyr_art_icon wisyr_art_fernunterricht">P</span>',			'Präsenzunterricht'),
+				806441	=>	array('<span class="wisyr_art_icon wisyr_art_fernunterricht">WWW</span>',		'Webinar') // eigentl. Teleteaching = Webinar
 			);
 
 			// overwrite defaults with portal settings from img.tag
@@ -287,6 +290,10 @@ class WISY_DURCHF_CLASS
 					$ret .= " ($preishinweise_out)";
 				}
 			}
+			
+			// Auto link URLs in Preishinweis
+			$replaceURL = (strpos($ret, 'http') === FALSE) ? '<a href="http://$0" target="_blank" title="$0">$0</a>' : '<a href="$0" target="_blank" title="$0">$0</a>';
+			$ret = preg_replace('~(?:(https?)://([^\s<]+)|(www\.[^\s<]+?\.[^\s<]+))(?<![\.,:])~i', $replaceURL, $ret);
 		}
 	
 		return $ret;

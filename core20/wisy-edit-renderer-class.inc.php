@@ -338,7 +338,7 @@ class WISY_EDIT_RENDERER_CLASS
 			$maxlen = 30;
 			if(strlen($name) > $maxlen ) $name = trim(substr($name, 0, $maxlen-5)) . '..';
 			$ret .= '<div style="float: right;">eingeloggt als: '
-				 .		'<a href="' .$this->framework->getUrl('a', array('id'=>$_SESSION['loggedInAnbieterId'], 'q'=>$this->framework->getParam('q'))). '">' . isohtmlspecialchars($name) . '</a>'
+				 .		'<a href="' .$this->framework->getUrl('a', array('id'=>$_SESSION['loggedInAnbieterId'], 'q'=>$this->framework->getParam('q'))). '?editstart='.date("Y-m-d-h-i-s").'">' . isohtmlspecialchars($name) . '</a>'
 				 .		' | <a href="'.$this->framework->getUrl('edit', array('action'=>'logout')) . '">Logout</a>'
 				 .	'</div>';
 		
@@ -1656,7 +1656,7 @@ class WISY_EDIT_RENDERER_CLASS
 							echo "<div class=\"editFoerderungDiv\" $styleFoerderung>";
 								echo '<table cellpadding="0" cellspacing="2" border="0">';
 									echo '<tr><td>Bildungsurlaubs-Nr.:</td><td><input type="text" name="bu_nummer" value="'.isohtmlspecialchars($kurs['bu_nummer']).'" /> <small>(Nötig zur Anzeige als Bildungsurlaub/Freistellung)</small></td></tr>';
-									echo '<tr><td>AZWV-Nr.:</td><td><input type="text" name="azwv_knr" value="'.isohtmlspecialchars($kurs['azwv_knr']).'" />  <small>(Nötig zur Suche nach Bildungsgutschein)</small></td></tr>';
+									echo '<tr><td>AZAV-Nr.:</td><td><input type="text" name="azwv_knr" value="'.isohtmlspecialchars($kurs['azwv_knr']).'" />  <small>(Nötig zur Suche nach Bildungsgutschein)</small></td></tr>';
 									if( $foerderungsOptionen != '' )
 									{
 										echo '<tr><td>sonstige Förderung:</td><td>'; 
@@ -1969,6 +1969,7 @@ class WISY_EDIT_RENDERER_CLASS
 					echo 'Ich versichere mit dem Speichern, dass ich den Beitrag selbst verfasst habe bzw. 
 							dass er keine fremden Rechte verletzt und willige ein, ihn unter der 
 							<a href="http://creativecommons.org/licenses/by-sa/3.0/deed.de" target="_blank" title="Weitere Informationen auf creativecommons.org">Lizenz f&uuml;r freie Dokumentation</a> zu ver&ouml;ffentlichen.';
+					echo '<br><br>Hinweis: Neue Angebote, neue Durchf&uuml;hrungen und neue Stichworte stehen evtl. erst am n&auml;chsten Tag &uuml;ber die Stichwort-Suche zur Verf&uuml;gung.<br>Auf den Detailseiten sind &Auml;nderungen sofort sichtbar.';
 				echo '</p>';
 				if( $kurs['rights_editTitel'] )
 				{

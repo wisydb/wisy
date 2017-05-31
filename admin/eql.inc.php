@@ -1649,20 +1649,22 @@ class EQL_PARSER_CLASS
 		else
 		{
 			// ...we're in a different table scope, convert secondary / attribute tables to primary table...
-			/*
 			global $g_joinHash;
 			global $g_eql_prefer_joins;
 			if( $g_eql_prefer_joins
 			 && $g_joinHash[$tableDefName]  == 'self' // on root level?
 			 && $g_joinHash[$tableDefName1] != 'alias'
 			 && !isset($g_joinHash[$tableDefName1]) // EDIT BY ME in 2008: NO joins on AND conditions (this would require one additional join per table, see http://www.silverjuke.net/forum/post.php?p=8423#8423)
-			 && sizeof($joins1)==0 ) // EDIT 2015: this code does not work eg. with "not(stichwort=7 and stichwort=5480)", the select2ids-code seems to work, hopefully, there are not other disadvantages
+			 && sizeof($joins1)==0 // EDIT 2015: this code does not work eg. with "not(stichwort=7 and stichwort=5480)", the select2ids-code seems to work, hopefully, there are not other disadvantages
+			 && count($retJoins)==0 // EDIT, jm, 2017: to allow search for courses without keywords
+			 && $tableDefName1=="stichwoerter" // EDIT, jm, 2017: to allow search for courses without keywords
+			 && $row->name=="stichwort" // EDIT, jm, 2017: to allow search for courses without keywords
+			 && $tableDefName=="kurse") // EDIT, jm, 2017: to allow search for courses without keywords
 			{
 				// this variation works, but is slower
 				g_addRelation($retJoins, $tableDefName1, $row->name, $tableDefName, $rowType);
 			}
 			else
-			*/
 			{
 				$ids = $this->select2ids($tableDefName1, $joins1, $cond1);
 				$cond1 = $this->ids2primaryselect($ids, $retJoins, $tableDefName, $row->name, $rowType);

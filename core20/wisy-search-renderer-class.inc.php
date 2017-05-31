@@ -6,7 +6,7 @@
 class WISY_SEARCH_RENDERER_CLASS
 {
 	var $framework;
-	var $unsecureOnly = true;
+	var $unsecureOnly = false;
 
 	function __construct(&$framework)
 	{
@@ -156,7 +156,7 @@ class WISY_SEARCH_RENDERER_CLASS
 				{
 					// $anspr_tel = str_replace(' ', '', $anspr_tel); // macht Aerger, da in den Telefonnummern teilw. Erklaerungen/Preise mitstehen. Auskommentiert am 5.9.2008 (bp)
 					$anspr_tel = str_replace('/', ' / ', $anspr_tel);
-					echo ',<small> ' . isohtmlspecialchars($anspr_tel) . '</small>';
+					echo '<br><small> ' . isohtmlspecialchars($anspr_tel) . '</small>';
 				}
 				
 				if( !$param['clickableName'] )  echo '<small> - <a href="'.$this->framework->getUrl('a', $aparam).'">Anbieterprofil...</a></small>';

@@ -113,28 +113,37 @@ class WISY_DURCHF_CLASS
 		{
 			// init Array with defaults
 			$this->imgTagArr = array(
-				'tc1'	=>	array('&#9673;', 	'Ganzt&auml;gig'),
-				'tc2'	=>	array('&#9680;',  	'Vormittags'),
-				'tc3'	=>	array('&#9681;', 	'Nachmittags'),
-				'tc4'	=>	array('&#9682;', 	'Abends'),
-				'tc5'	=>	array('<i style="font-family: serif;">WE</i>',		'Wochenende'),
-				1		=>	array('<b>BU</b>',	'Bildungsurlaub'),
-				7721	=>	array('<big>&#9993;</big>',	'Fernunterricht'),
+					'tc1'	=>	array('&#9673;', 	'Ganzt&auml;gig'),
+					'tc2'	=>	array('&#9680;',  	'Vormittags'),
+					'tc3'	=>	array('&#9681;', 	'Nachmittags'),
+					'tc4'	=>	array('&#9682;', 	'Abends'),
+					'tc5'	=>	array('<i style="font-family: serif;">WE</i>',		'Wochenende'),
+					1		=>	array('<b>BU</b>',	'Bildungsurlaub'),
+					7721	=>	array('<big>&#9993;</big>',	'Fernunterricht'),
+					7639	=>	array('WWW', 'Webinar'),
+					17261	=>  array('<b>P</b>',	'Präsenzunterricht'),
+					806441	=>	array('WWW', 'Webinar') // eigentl. Teleteaching = Webinar
 			);
-
+			
 			// deprecated (2014-11-02 17:46)
-				// overwrite with the old setting, if any
-				$icons = $this->framework->iniRead('img.icons', 'skww');
-				if( @file_exists("{$icons}/tc1.gif") )
-				{
-					$this->imgTagArr['tc1']	= array("{$icons}/tc1.gif", 'Ganzt&auml;gig');
-					$this->imgTagArr['tc2']	= array("{$icons}/tc2.gif", 'Vormittags');
-					$this->imgTagArr['tc3']	= array("{$icons}/tc3.gif", 'Nachmittags');
-					$this->imgTagArr['tc4']	= array("{$icons}/tc4.gif", 'Abends');
-					$this->imgTagArr['tc5']	= array("{$icons}/tc5.gif", 'Wochenende');
-					$this->imgTagArr[1]		= array("{$icons}/tcbu.gif",'Bildungsurlaub');
-					$this->imgTagArr[7721]	= array("{$icons}/tc6.gif",	'Fernunterricht');
-				}
+			// overwrite with the old setting, if any
+			$icons = $this->framework->iniRead('img.icons', 'skww');
+			if( @file_exists("{$icons}/tc1.gif") )
+			{
+				$this->imgTagArr['tc1']	= array("{$icons}/tc1.gif", 'Ganzt&auml;gig');
+				$this->imgTagArr['tc2']	= array("{$icons}/tc2.gif", 'Vormittags');
+				$this->imgTagArr['tc3']	= array("{$icons}/tc3.gif", 'Nachmittags');
+				$this->imgTagArr['tc4']	= array("{$icons}/tc4.gif", 'Abends');
+				$this->imgTagArr['tc5']	= array("{$icons}/tc5.gif", 'Wochenende');
+				$this->imgTagArr[1]		= array("{$icons}/tcbu.gif",'Bildungsurlaub');
+				$this->imgTagArr[7721]	= array("{$icons}/tc6.gif",	'Fernunterricht');
+				$this->imgTagArr[7720]	= array("{$icons}/tc7.gif",	'Fernstudium');
+				$this->imgTagArr[7430]	= array("{$icons}/tc8.gif",	'Blended Learning');
+				$this->imgTagArr[7639]	= array("{$icons}/www.gif",	'Webinar');
+				$this->imgTagArr[17261]	= array("{$icons}/P.gif",	'Präsenzunterricht');
+				$this->imgTagArr[806311]	= array("{$icons}/tc9.gif",	'E-Learning');
+				$this->imgTagArr[806441]	= array("{$icons}/www.gif",	'Webinar');
+			}
 			// /deprecated (2014-11-02 17:46)
 
 			// overwrite defaults with portal settings from img.tag
@@ -370,6 +379,10 @@ class WISY_DURCHF_CLASS
 					$ret .= " ($preishinweise_out)";
 				}
 			}
+			
+			// Auto link URLs in Preishinweis
+			$replaceURL = (strpos($ret, 'http') === FALSE) ? '<a href="http://$0" target="_blank" title="$0">$0</a>' : '<a href="$0" target="_blank" title="$0">$0</a>';
+			$ret = preg_replace('~(?:(https?)://([^\s<]+)|(www\.[^\s<]+?\.[^\s<]+))(?<![\.,:])~i', $replaceURL, $ret);
 		}
 	
 		return $ret;

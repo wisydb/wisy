@@ -44,7 +44,7 @@ $codes_rechtsform =
 	.'3###Verein###'
 	.'4###Verein gemeinnützig###'
 	.'5###Einzelunternehmen###'
-	.'6###GBR###'
+	.'6###GbR###'
 	.'7###Stiftung###'
 	.'8###Anstalt öff. Rechts###'
 	.'9###Körperschaft öff. Rechts###'
