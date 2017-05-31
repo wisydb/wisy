@@ -75,7 +75,7 @@ $codes_stichwort_eigenschaften =
 											// ACHTUNG: Werte ab 0x10000 werden in tag_type anders verwendet!
 										
 global $hidden_stichwort_eigenschaften;
-$hidden_stichwort_eigenschaften = 32 + 128 + 256 + 512 + 2048 + 4096 + 8192;
+$hidden_stichwort_eigenschaften = 32 + 128 + 256 + 512 + 2048 + 8192; // EDIT 5/2017: Stichworttyp "Thema" (4096) wird nicht mehr gefiltern (warum war dies in der Vergangenheit so?) (bp)
 
 
 global $codes_dauer;
