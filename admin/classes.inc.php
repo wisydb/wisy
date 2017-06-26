@@ -18,12 +18,14 @@ Author:
 define('CMS_VERSION', '5.89');
 
 
-
 // PHP 5.0.0 is needed for: __construct(), public, private, protected, microtime($get_as_float), Exceptions, object-copying by reference by default
 // PHP 5.1.2 is needed for: spl_autoload_register()
 // not (yet) needed: 5.3.0 for str_getcsv() and for anonymous functions
 if( version_compare(PHP_VERSION, '5.1.2', '<') ) die('PHP version too old.'); 
-   
+
+
+// PHP 7 changes the default characters set to UTF-8; we still prefer ISO-8859-1
+ini_set('default_charset', 'ISO-8859-1');
 
 
 // set an absolute path that should be prefixed to all includes.

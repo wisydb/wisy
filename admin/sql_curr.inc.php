@@ -30,6 +30,7 @@ verschiedenen globalen Datenbankparametern und Handles unterscheiden
 
 
 
+// wrapper for Mysqli
 if( !@function_exists('mysql_connect') )
 {
 	function mysql_connect($host, $user, $pw, $new_link)
@@ -82,6 +83,10 @@ if( !@function_exists('mysql_connect') )
 		return $link_obj? mysqli_errno($link_obj) : mysqli_connect_errno();
 	}
 }
+
+
+// PHP 7 changes the default characters set to UTF-8; we still prefer ISO-8859-1
+@ini_set('default_charset', 'ISO-8859-1');
 
 
 class DB_Sql
