@@ -30,6 +30,60 @@ verschiedenen globalen Datenbankparametern und Handles unterscheiden
 
 
 
+if( !@function_exists('mysql_connect') )
+{
+	function mysql_connect($host, $user, $pw, $new_link)
+	{
+		return mysqli_connect($host, $user, $pw);
+	}
+
+	function mysql_select_db($database, $link_obj)
+	{
+		return mysqli_select_db($link_obj, $database);
+	}
+
+	function mysql_query($query, $link_obj)
+	{
+		return mysqli_query($link_obj, $query); // returns result_obj of class mysqli_result
+	}
+
+	function mysql_affected_rows($link_obj)
+	{
+		return mysqli_affected_rows($link_obj);
+	}
+
+	function mysql_insert_id($link_obj)
+	{
+		return mysqli_insert_id($link_obj);
+	}
+
+	function mysql_num_rows($result_obj)
+	{
+		return mysqli_num_rows($result_obj);
+	}
+
+	function mysql_fetch_assoc($result_obj)
+	{
+		return mysqli_fetch_assoc($result_obj);
+	}
+
+	function mysql_free_result($result_obj)
+	{
+		mysqli_free_result($result_obj);
+	}
+
+	function mysql_error($link_obj=null)
+	{
+		return $link_obj? mysqli_error($link_obj) : mysqli_connect_error();
+	}
+
+	function mysql_errno($link_obj=null)
+	{
+		return $link_obj? mysqli_errno($link_obj) : mysqli_connect_errno();
+	}
+}
+
+
 class DB_Sql
 {
 	// settings, changeable by the user
