@@ -40,7 +40,9 @@ if( !@function_exists('mysql_connect') )
 
 	function mysql_select_db($database, $link_obj)
 	{
-		return mysqli_select_db($link_obj, $database);
+		$success = mysqli_select_db($link_obj, $database);
+		mysqli_query($link_obj, "SET SESSION sql_mode='';"); /* otherwise, MySQL complains about many things as missing default values and so on. sql_mode was introduced in MySQL 5.1.8 */
+		return $success;
 	}
 
 	function mysql_query($query, $link_obj)
