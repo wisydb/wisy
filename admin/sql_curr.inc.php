@@ -113,7 +113,7 @@ class DB_Sql
 	private $phys_query_id		= 0;
 	
 	// the constructor
-	function DB_Sql($flags='')
+	function __construct($flags='')
 	{
 		$this->use_phys_connection = $flags=='use_phys_connection'? true : false;
 	}
