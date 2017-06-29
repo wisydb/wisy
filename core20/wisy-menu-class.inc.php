@@ -18,7 +18,7 @@ class WISY_MENU_ITEM
 	var $level;
 	var $children;
 	
-	function WISY_MENU_ITEM($title, $url, $aparam, $level)
+	function __construct($title, $url, $aparam, $level)
 	{
 		$this->title 	= $title;
 		$this->url   	= $url;
