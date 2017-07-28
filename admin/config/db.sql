@@ -309,6 +309,20 @@ CREATE TRIGGER `apikeys_bi_v9_10_1` BEFORE INSERT ON `apikeys`
 //
 DELIMITER ;
 
+--
+-- Tabellenstruktur für Tabelle `apikeys_usergrp`
+--
+
+CREATE TABLE `apikeys_usergrp` (
+  `primary_id` int(11) NOT NULL DEFAULT '0',
+  `attr_id` int(11) NOT NULL DEFAULT '0',
+  `structure_pos` int(11) NOT NULL DEFAULT '0'
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+ALTER TABLE `apikeys_usergrp`
+  ADD KEY `anbieter_stichwort_i0` (`primary_id`),
+  ADD KEY `anbieter_stichwort_i1` (`attr_id`);
+
 -- --------------------------------------------------------
 
 --

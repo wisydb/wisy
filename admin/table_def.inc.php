@@ -853,6 +853,20 @@ function Table_Def_Finish($prop=0)
 		$Table_Def[] = $roles;	
 	}
 	
+	// convert linked table names to objects
+	for( $t = 0; $t < sizeof($Table_Def); $t++ )
+	{
+		for( $r = 0; $r < sizeof($Table_Def[$t]->rows); $r++ )
+		{
+			$row_type = $Table_Def[$t]->rows[$r]->flags & TABLE_ROW;
+			
+			if( ($row_type == TABLE_MATTR || $row_type == TABLE_SATTR || $row_type == TABLE_SECONDARY)
+			 &&  !is_object($Table_Def[$t]->rows[$r]->addparam) )
+			{
+				$Table_Def[$t]->rows[$r]->addparam = Table_Find_Def($Table_Def[$t]->rows[$r]->addparam, 0/*no access check*/);
+			}
+		}
+	}	
 }
 
 // needed for the including of 'db.inc.php'
