@@ -161,8 +161,20 @@ $().ready(function()
 	// init data table
 	init_tb_table();
 	ac_init();
+	edit_modify_interfacedetails();
 });
 
+function edit_modify_interfacedetails() {
+	if(window.location.href.match(/edit/i)) {
+
+		// make some input fields adapt to longer text dynamically as per editors request
+		jQuery("input[name='f_postname'], input[name='f_pflege_email'], input[name='f_anspr_email']").each(function(){
+		 if(jQuery(this).val().length > 3)
+			jQuery(this).css("width", ((jQuery(this).val().length+1)*7)+"px");
+		});
+		
+	}
+}
 
 
 /******************************************************************************
