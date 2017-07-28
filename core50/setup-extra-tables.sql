@@ -36,6 +36,7 @@ CREATE TABLE `x_cache_search` (
 CREATE TABLE `x_kurse` (
   `kurs_id` int(11) NOT NULL,
   `beginn` date NOT NULL default '0000-00-00',
+  `beginn_last` date NOT NULL default '0000-00-00',
   `dauer` int(11) NOT NULL default '0',
   `preis` int(11) NOT NULL default '-1',
   `anbieter_sortonly` varchar(255) collate latin1_general_ci NOT NULL,
