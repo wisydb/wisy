@@ -58,7 +58,7 @@ class DBSEARCH_FORM_CLASS
 	// DBSEARCH_FORM_CLASS constructor
 	// -------------------------------
 	//
-	function DBSEARCH_FORM_CLASS(	$tableDefName		= 'main',
+	function __construct(			$tableDefName		= 'main',
 									$settings			= ''
 								)
 	{

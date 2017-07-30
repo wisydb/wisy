@@ -292,7 +292,7 @@ class TXTREPLACER_CLASS
 	var $mark2		= '\\';	// should be non-space characters that is valid without isohtmlentities() and is not used for markup
 	var $mark2repl	= '(/)';// replacement that should be used if $mark2 is in the input string
 
-	function TXTREPLACER_CLASS()
+	function __construct()
 	{
 		$this->rules = array();
 		$this->restRule = new TXTREPLACERRULE_CLASS;
@@ -384,7 +384,7 @@ class TXTREPLACER_CLASS
 
 class TRANSL_NOWIKI_CLASS extends TXTREPLACERRULE_CLASS
 {
-	function TRANSL_NOWIKI_CLASS()
+	function __construct()
 	{
 		$this->pattern = '/<nowiki>(.*?)<\/nowiki>/i';
 	}
@@ -399,7 +399,7 @@ class TRANSL_NOWIKI_CLASS extends TXTREPLACERRULE_CLASS
 
 class TRANSL_HTMLREMARK_CLASS extends TXTREPLACERRULE_CLASS
 {
-	function TRANSL_HTMLREMARK_CLASS()
+	function __construct()
 	{
 		$this->pattern = '/<!--.*?-->/';
 	}
@@ -414,7 +414,7 @@ class TRANSL_HTMLREMARK_CLASS extends TXTREPLACERRULE_CLASS
 
 class TRANSL_HTML_CLASS extends TXTREPLACERRULE_CLASS
 {
-	function TRANSL_HTML_CLASS()
+	function __construct()
 	{
 		$this->pattern =
 			'/<\/?('
@@ -456,7 +456,7 @@ class TRANSL_HTML_CLASS extends TXTREPLACERRULE_CLASS
 
 class TRANSL_EMPH_CLASS extends TXTREPLACERRULE_CLASS
 {
-	function TRANSL_EMPH_CLASS()
+	function __construct()
 	{
 		$this->pattern = "/('{2,7})/";
 	}
@@ -505,7 +505,7 @@ class TRANSL_EMPH_CLASS extends TXTREPLACERRULE_CLASS
 
 class TRANSL_EXTLINK_CLASS extends TXTREPLACERRULE_CLASS
 {
-	function TRANSL_EXTLINK_CLASS()
+	function __construct()
 	{
 		$url_exclude		= ' \s<>[\]\'\"\177-\277'; // EDIT 20.01.2011: () are no longer excluded from URLs, see http://www.w3.org/Addressing/rfc1738.txt , 2.2
 		$url_end_exclude	= '.,;:!?';
@@ -535,7 +535,7 @@ class TRANSL_EXTLINK_CLASS extends TXTREPLACERRULE_CLASS
 
 class TRANSL_EMAILLINK_CLASS extends TXTREPLACERRULE_CLASS
 {
-	function TRANSL_EMAILLINK_CLASS()
+	function __construct()
 	{
 		$this->pattern		= '/([-\w._+]+\@[\w.-]+\.[\w.-]+)/';
 		$this->matchPattern	= '/^([-\w._+]+\@[\w.-]+\.[\w.-]+)$/';
@@ -556,7 +556,7 @@ class TRANSL_EMAILLINK_CLASS extends TXTREPLACERRULE_CLASS
 
 class TRANSL_SQUAREBRACKET_CLASS extends TXTREPLACERRULE_CLASS
 {
-	function TRANSL_SQUAREBRACKET_CLASS()
+	function __construct()
 	{
 		$this->pattern = "/\[\[(.*?)\]\](\w*)/";
 	}
@@ -738,7 +738,7 @@ class TRANSL_SQUAREBRACKET_CLASS extends TXTREPLACERRULE_CLASS
 
 class TRANSL_FOOTNOTEPASS1_CLASS extends TXTREPLACERRULE_CLASS
 {
-	function TRANSL_FOOTNOTEPASS1_CLASS()
+	function __construct()
 	{
 		$this->pattern = '/(\s)\[(\d{1,3})\]/';
 	}
@@ -761,7 +761,7 @@ class TRANSL_FOOTNOTEPASS1_CLASS extends TXTREPLACERRULE_CLASS
 
 class TRANSL_FOOTNOTEPASS2_CLASS extends TXTREPLACERRULE_CLASS
 {
-	function TRANSL_FOOTNOTEPASS2_CLASS()
+	function __construct()
 	{
 		$this->pattern = '/(\A)\[(\d{1,3})\]/';
 	}
@@ -785,7 +785,7 @@ class TRANSL_FOOTNOTEPASS2_CLASS extends TXTREPLACERRULE_CLASS
 
 class TRANSL_INDENT_CLASS extends TXTREPLACERRULE_CLASS
 {
-	function TRANSL_INDENT_CLASS()
+	function __construct()
 	{
 		$this->pattern = '/^([:\-=\s\|\*#]+)\s*(.*)$/';
 	}
@@ -956,7 +956,7 @@ class TRANSL_INDENT_CLASS extends TXTREPLACERRULE_CLASS
 
 class TRANSL_PARARIGHTALIGN_CLASS extends TXTREPLACERRULE_CLASS
 {
-	function TRANSL_PARARIGHTALIGN_CLASS()
+	function __construct()
 	{
 		$this->pattern = '/^(.*)::\s*$/';
 	}
@@ -973,7 +973,7 @@ class TRANSL_PARARIGHTALIGN_CLASS extends TXTREPLACERRULE_CLASS
 
 class TRANSL_ENTITIES_CLASS extends TXTREPLACERRULE_CLASS
 {
-	function TRANSL_ENTITIES_CLASS()
+	function __construct()
 	{
 	}
 
@@ -985,7 +985,7 @@ class TRANSL_ENTITIES_CLASS extends TXTREPLACERRULE_CLASS
 
 class ADDRESS_PATTERN_CLASS extends TXTREPLACERRULE_CLASS
 {
-	function ADDRESS_PATTERN_CLASS()
+	function __construct()
 	{
 		$this->pattern = '/\{(.*\|.*)\}/U'; // {Anbieterfeld|id} - wird durchaus noch verwendet, s. http://goo.gl/Zi4L0
 	}
@@ -1048,7 +1048,7 @@ class WIKI2HTML_CLASS
 	//
 	// public: constructor
 	//
-	function WIKI2HTML_CLASS()
+	function __construct()
 	{
 		// create and init line replacer class.
 		// the order of the following rules can be important, since they

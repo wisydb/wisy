@@ -416,7 +416,7 @@ class EQL_PARSER_CLASS
 	//	op		 = "and" | "or"
 	//	ident	 = ...
 	//
-	function EQL_PARSER_CLASS(&$symbols, &$s, $consumeOp = 1, $lastFunc = '')
+	function __construct(&$symbols, &$s, $consumeOp = 1, $lastFunc = '')
 	{
 		// get function...
 		if( $symbols[$s]{0} == '"' /* " indicates a function */ )
@@ -1762,7 +1762,7 @@ class EQL2SQL_CLASS
 	// EQL2SQL_CLASS Constructor
 	// -------------------------
 	//
-	function EQL2SQL_CLASS($tableDefName, $usePlusMinusWordQualifiers = 0)
+	function __construct($tableDefName, $usePlusMinusWordQualifiers = 0)
 	{
 		$this->tableDefName					= $tableDefName;
 		$this->lastError					= '';

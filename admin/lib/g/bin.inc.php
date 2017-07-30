@@ -8,7 +8,7 @@ class G_BIN_CLASS
 	var $access;	// access[bin] = [n|r|e] (for nothing, read, edit)
 	var $db;
 	
-	function G_BIN_CLASS()
+	function __construct()
 	{
 		$this->init_();
 	}
