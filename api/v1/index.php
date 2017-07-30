@@ -266,6 +266,41 @@ class REST_API_CLASS
 		$json .= '} }';
 		die($json);
 	}
+
+	function haltOnBadGrp($wanted_grp_id)
+	{
+		if( sizeof($this->apikeygrps)==0 ) {
+			return; // no group restrictions specified -> access always granted -> continue
+		}
+		else if( $this->apikeygrps[ intval($wanted_grp_id) ] ) {
+			return; // explicit access granted to the specific group -> continue
+		}
+
+		// no access -> halt
+		if( intval($wanted_grp_id)==0 ) {
+			$this->halt(403, 'no group specified');
+		}
+		$this->halt(403, 'no access to group '.intval($wanted_grp_id));
+	}
+
+	function haltOnBadRecord($table, $id, $check_grp_id)
+	{
+		// validate input
+		if( !isset($this->fields[$table]) ) return false;
+		$id = intval($id);
+
+		// check for existance
+		$db = new DB_Admin;
+		$db->query("SELECT user_grp FROM $table WHERE id=$id;");
+		if( !$db->next_record() ) {
+			$this->halt(400, "cannot find $table.$id");
+		}
+
+		if( $check_grp_id ) {
+			$record_grp_id = $db->f('user_grp');
+			$this->haltOnBadGrp($record_grp_id);
+		}
+	}
 	
 	function utf82Json($in_str)
 	{
@@ -322,14 +357,22 @@ class REST_API_CLASS
 		if( strlen($apikey) < 8 ) $this->halt(403, 'apikey too short'); // as we allow manual apikeys, force a minimal length here
 		
 		$db = new DB_Admin;
-		$db->query("SELECT flags FROM apikeys WHERE apikey='".addslashes($apikey)."'");
+		$db->query("SELECT id, flags FROM apikeys WHERE apikey='".addslashes($apikey)."'");
 		if( !$db->next_record() ) $this->halt(403, 'bad apikey');
 		
+		$apikeyid = intval($db->f('id'));
 		$this->apikeyflags = intval($db->f('flags'));
 		if( !($this->apikeyflags&APIKEY_ACTIVE) ) $this->halt(403, 'apikey is inactive');
 		
 		if( ($this->apikeyflags&APIKEY_SECUREONLY) && $_SERVER['HTTPS']!='on' ) $this->halt(403, 'apikey requires a secure connection');
 	
+		// loads groups the apikey is restricted to
+		$this->apikeygrps = array();
+		$db->query("SELECT attr_id FROM apikeys_usergrp WHERE primary_id=".intval($apikeyid));
+		while( $db->next_record() ) {
+			$this->apikeygrps[ intval($db->f('attr_id')) ] = 1;
+		}
+
 		// get client - needed for debugging and statistics, the client is in the GET url; this should be just fine
 		$client = $_GET['client'];
 		if( $client == '' ) $this->halt(403, 'client missing - please specify the client program name and the clients version number.');
@@ -359,7 +402,7 @@ class REST_API_CLASS
 			}
 			else if( $scope[0] == 'kurse' && sizeof($scope)==3 )	
 			{														// GET kurse.<kursid>.<durchfId>
-				if( !$this->recordExists('kurse', $scope[1]) ) $this->halt(400, 'kurse: bad id');
+				$this->haltOnBadRecord('kurse', $scope[1], false);
 				echo $this->get('durchfuehrung', $scope[2]);
 			}
 			else			
@@ -370,8 +413,8 @@ class REST_API_CLASS
 		else if( $method == 'POST' )
 		{
 			if( $scope[0] == 'kurse' && sizeof($scope)==2 )
-			{														// POST kurse.<kursId> -- durchf. hinzufuegen
-				if( !$this->recordExists('kurse', $scope[1]) ) $this->halt(400, 'POST kurse/durchfuehrung: bad kurs id');
+			{														// POST kurse.<kursId> -- durchf. hinzufuegen -- die durchf darf einen beliebige gruppe haben, entscheidend ist nur die kursgruppe
+				$this->haltOnBadRecord('kurse', $scope[1], true);
 				echo $this->post('durchfuehrung', $insert_id);		
 				$db = new DB_Admin;
 				$db->Halt_On_Error = 'no';
@@ -381,6 +424,7 @@ class REST_API_CLASS
 			}
 			else if( $scope[0] == 'kurse' )
 			{														// POST kurse
+				$this->haltOnBadGrp($_REQUEST['user_grp']);
 				echo $this->post('kurse', $insert_id /*ret*/);		
 			}
 			else
@@ -392,11 +436,12 @@ class REST_API_CLASS
 		{
 			if( $scope[0] == 'kurse' && sizeof($scope)==3 )
 			{														// UPDATE kurse.<kursId>.<durchfId> -- durchf aktualisieren
-				if( !$this->recordExists('kurse', $scope[1]) ) $this->halt(400, 'UPDATE kurse/durchfuehrung: bad kurs id');
+				$this->haltOnBadRecord('kurse', $scope[1], true);
 				echo $this->update('durchfuehrung', $scope[2]);		
 			}
 			else if( $scope[0] == 'kurse' && sizeof($scope)==2 )
 			{
+				$this->haltOnBadRecord('kurse', $scope[1], true);
 				echo $this->update('kurse', $scope[1]);				// UPDATE kurse.<kursId>
 			}
 			else
@@ -407,8 +452,8 @@ class REST_API_CLASS
 		else if( $method == 'DELETE' )
 		{
 			if( $scope[0] == 'kurse' && sizeof($scope)==3 )
-			{														// DELETE kurse.<kursId>.<durchfId> -- durchf loeschen
-				if( !$this->recordExists('kurse', $scope[1]) ) $this->halt(400, 'DELETE kurse/durchfuehrung: bad kurs id');
+			{														// DELETE kurse.<kursId>.<durchfId> -- durchf loeschen -- entscheiden für die Berechtigung ist die Kursgruppe, nicht die Durchfuehrungsgruppe
+				$this->haltOnBadRecord('kurse', $scope[1], true);
 				echo $this->deleteRecord('durchfuehrung', $scope[2]);
 				$db = new DB_Admin;
 				$db->Halt_On_Error = 'no';
@@ -417,6 +462,7 @@ class REST_API_CLASS
 			}
 			else if( $scope[0] == 'kurse' && sizeof($scope)==2 )
 			{
+				$this->haltOnBadRecord('kurse', $scope[1], true);
 				echo $this->deleteRecord('kurse', $scope[1]);				// DELETE kurse.<kursId>
 			}
 			else
@@ -437,18 +483,6 @@ class REST_API_CLASS
 	GET a record as JSON
 	======================================================================== */
 
-	function recordExists($table, $id)
-	{
-		// validate input
-		if( !isset($this->fields[$table]) ) return false;
-		$id = intval($id);
-		
-		// check for existance
-		$db = new DB_Admin;
-		$db->query("SELECT id FROM $table WHERE id=$id;");
-		return $db->next_record();
-	}
-	
 	function getSpecial($table, $id, $field, &$dbResult)
 	{
 		if( $table == 'portale' ) // (***)
