@@ -615,7 +615,7 @@ class WISY_SEARCH_RENDERER_CLASS
 
 			// render head
 			echo '<div class="wisyr_list_header">';
-				echo '<div class="wisyr_listnav"><span class="active">Kurse</span><a href="search?q=' . $queryString . '%2C+Zeige:Anbieter">Anbieter</a></div>';
+			echo '<div class="wisyr_listnav"><span class="active">Kurse</span><a href="search?q=' . urlencode($queryString) . '%2C+Zeige:Anbieter">Anbieter</a></div>';
 				echo '<div class="wisyr_filternav">';
 			
 				if( $queryString == '' ) {
