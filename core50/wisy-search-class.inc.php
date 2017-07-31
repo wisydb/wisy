@@ -329,7 +329,7 @@ class WISY_SEARCH_CLASS
 						$todayMidnight = strtotime(strftime("%Y-%m-%d"));
 						$wantedday = strftime("%Y-%m-%d", $todayMidnight + $offset*24*60*60);
 						$this->rawWhere .= $this->rawWhere? ' AND ' : ' WHERE ';
-						$this->rawWhere .= "(x_kurse.beginn>='$wantedday')"; // 13:58 30.01.2013: war: x_kurse.beginn='0000-00-00' OR ...
+						$this->rawWhere .= "(x_kurse.beginn_last>='$wantedday')"; // 13:58 30.01.2013: war: x_kurse.beginn='0000-00-00' OR ...
 					}
 					else if( preg_match('/^([0-9]{1,2})\.([0-9]{1,2})\.([0-9]{2,4})$/', $value, $matches) )
 					{
@@ -346,7 +346,7 @@ class WISY_SEARCH_CLASS
 							$abgelaufeneKurseAnzeigen = 'void';
 							$wantedday = strftime("%Y-%m-%d", $timestamp);
 							$this->rawWhere .= $this->rawWhere? ' AND ' : ' WHERE ';
-							$this->rawWhere .= "(x_kurse.beginn>='$wantedday')"; // 13:59 30.01.2013: war: x_kurse.beginn='0000-00-00' OR ...
+							$this->rawWhere .= "(x_kurse.beginn_last>='$wantedday')"; // 13:59 30.01.2013: war: x_kurse.beginn='0000-00-00' OR ...
 						}
 					}
 					else

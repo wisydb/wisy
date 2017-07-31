@@ -708,6 +708,7 @@ class WISY_SYNC_RENDERER_CLASS
 			$d_plz				= array(); $d_has_unset_plz = false;
 			$d_latlng			= array();
 			$k_beginn			= '0000-00-00';
+			$k_beginn_last		= '0000-00-00';
 			$k_preis			= -1;
 			$k_dauer			= 0;
 			$k_kurstage			= 0;
@@ -869,6 +870,13 @@ class WISY_SYNC_RENDERER_CLASS
 					if( $k_beginn >= $this->today_datenotime )
 						break;
 				}
+				
+				// spaetestmoegliches beginndatum setzen
+				for( $i = 0; $i < sizeof($d_beginn); $i++ )
+				{
+					if( $d_beginn[$i] >= $this->today_datenotime && $d_beginn[$i] >= $k_beginn_last)
+						$k_beginn_last = $d_beginn[$i];
+				}
 			}
 			
 			if( $freigeschaltet == 1 /*freigegeben*/ || $freigeschaltet == 4 /*dauerhaft*/ )
@@ -881,6 +889,9 @@ class WISY_SYNC_RENDERER_CLASS
 			{
 				if( $k_beginn >= $this->today_datenotime )
 					$k_beginn = '0000-00-00'; // Any date in the past -- this should normally not happen, only if the kurs is valid normally but set to abgelaufen manually
+				
+				if( $k_beginn_last >= $this->today_datenotime )
+					$k_beginn_last = '0000-00-00'; // Any date in the past -- this should normally not happen, only if the kurs is valid normally but set to abgelaufen manually
 			}
 
 			// fruehestmoeglichstes beginndatum korrigieren, falls dieses in der Vergangenheit liegt UND kurse die Eigentschaften "Beginn erfragen" etc. zugewiesen wurde
@@ -920,6 +931,7 @@ class WISY_SYNC_RENDERER_CLASS
 			// UPDATE main search entry for this record
 			$sql = "UPDATE	x_kurse 
 					SET 	beginn='$k_beginn'
+					,		beginn_last='$k_beginn_last'
 					,		dauer=$k_dauer
 					,		preis=$k_preis
 					,		anbieter_sortonly='".$this->anbieter2tag->lookupSorted($anbieter_id)."'
