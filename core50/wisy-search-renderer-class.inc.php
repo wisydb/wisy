@@ -625,7 +625,7 @@ class WISY_SEARCH_RENDERER_CLASS
 					echo '<span class="wisyr_angebote_zum_suchauftrag">';
 					echo $sqlCount==1? '<span class="wisyr_anzahl_angebote">1 Angebot</span> zum Suchauftrag ' : '<span class="wisyr_anzahl_angebote">' . $sqlCount . ' Angebote</span> zum Suchauftrag ';
 					echo '<span class="wisyr_angebote_suchauftrag">"' . htmlspecialchars((trim($queryString, ', '))) . '"</span>';
-					echo '<a class="wisyr_anbieter_switch" href="search?q=' . $queryString . '%2C+Zeige:Anbieter">Zeige Anbieter</a>';
+					echo '<a class="wisyr_anbieter_switch" href="search?q=' . urlencode($queryString) . '%2C+Zeige:Anbieter">Zeige Anbieter</a>';
 					echo '</span>';
 				}
 				
@@ -825,10 +825,10 @@ class WISY_SEARCH_RENDERER_CLASS
 
 			// render head
 			echo '<div class="wisyr_list_header">';
-				echo '<div class="wisyr_listnav"><a href="search?q=' . str_replace(',,', ',', str_replace('Zeige:Anbieter', '', $queryString)) . '">Kurse</a><span class="active">Anbieter</span></div>';
+			echo '<div class="wisyr_listnav"><a href="search?q=' . urlencode(str_replace(array(',,', ', ,'), array(',', ','), str_replace('Zeige:Anbieter', '', $queryString))). '">Kurse</a><span class="active">Anbieter</span></div>';
 				echo '<span class="wisyr_anbieter_zum_suchauftrag">';
 				echo '<span class="wisyr_anzahl_anbieter">' . $sqlCount . ' Anbieter</span> zum Suchauftrag';
-				echo '<a class="wisyr_kurse_switch" href="search?q=' . str_replace(',,', ',', str_replace('Zeige:Anbieter', '', $queryString)) . '">Zeige Kurse</a>';
+				echo '<a class="wisyr_kurse_switch" href="search?q=' . urlencode(str_replace(array(',,', ', ,'), array(',', ','), str_replace('Zeige:Anbieter', '', $queryString))). '">Zeige Kurse</a>';
 				echo '</span>';
 
 				if( $pagesel )
