@@ -57,7 +57,7 @@ class WISY_DURCHF_CLASS
 				1		=>	array('<span class="wisyr_art_icon wisyr_art_bildungsurlaub">BU</span>',		'Bildungsurlaub'),
 				7721	=>	array('<span class="wisyr_art_icon wisyr_art_fernunterricht">&#9993;</span>',	'Fernunterricht'),
 				7639	=>	array('<span class="wisyr_art_icon wisyr_art_fernunterricht">WWW</span>',		'Webinar'),
-				17261	=>	array('<span class="wisyr_art_icon wisyr_art_fernunterricht">P</span>',			'Präsenzunterricht'),
+				17261	=>	array('<span class="wisyr_art_icon wisyr_art_fernunterricht">P</span>',			'Prï¿½senzunterricht'),
 				806441	=>	array('<span class="wisyr_art_icon wisyr_art_fernunterricht">WWW</span>',		'Webinar') // eigentl. Teleteaching = Webinar
 			);
 
@@ -296,6 +296,7 @@ class WISY_DURCHF_CLASS
 			$ret = preg_replace('~(?:(https?)://([^\s<]+)|(www\.[^\s<]+?\.[^\s<]+))(?<![\.,:])~i', $replaceURL, $ret);
 		}
 	
+		$ret = str_replace(chr(0xE2).chr(0x82).chr(0xAC), "&euro;", str_replace(chr(128), "&euro;", html_entity_decode($ret)));
 		return $ret;
 	}
 	
@@ -616,7 +617,9 @@ class WISY_DURCHF_CLASS
 			{
 				echo '    <td class="wisyr_bemerkungen" data-title="Bemerkungen">';
 					$wiki2html =& createWisyObject('WISY_WIKI2HTML_CLASS', $this->framework);
-					echo $wiki2html->run(utf8_encode($record['bemerkungen']));
+					$bemerkungen = $record['bemerkungen'];
+					$bemerkungen = str_replace(chr(0xE2).chr(0x82).chr(0xAC), "&euro;", str_replace(chr(128), "&euro;", $bemerkungen));
+					echo $wiki2html->run(utf8_encode($bemerkungen));
 				echo ' </td>' . "\n";
 			}
 		}
