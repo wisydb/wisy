@@ -778,9 +778,18 @@ class WISY_FRAMEWORK_CLASS
 		$ret[] = 'core.css' . $this->includeVersion;
 		
 		// the portal may overwrite everything ...
-		if( $wisyPortalCSS )								
+		if( $wisyPortalCSS )
 		{
 			$ret[] = 'portal.css'. $this->includeVersion;
+		}
+		
+		if( ($tempCSS=$this->iniRead('head.css', '')) != '')
+		{
+			$addCss = explode(",", $tempCSS);
+			
+			foreach($addCss AS $cssFile) {
+				$ret[] = trim($cssFile);
+			}
 		}
 		
 		return $ret;
@@ -816,6 +825,15 @@ class WISY_FRAMEWORK_CLASS
 			$ret[] = 'jquery.autocomplete.min.js';
 		}
 		$ret[] = 'jquery.wisy.js' . $this->includeVersion;
+		
+		if( ($tempJS=$this->iniRead('head.js', '')) != '')
+		{
+			$addJs = explode(",", $tempJS);
+			
+			foreach($addJs AS $jsFile) {
+				$ret[] = trim($jsFile);
+			}
+		}
 		
 		return $ret;
 	}
@@ -869,6 +887,11 @@ class WISY_FRAMEWORK_CLASS
 			$ret .= '<link rel="alternate" media="only screen and (max-width: '.$mobile_maxresolution.'px)" href="'.$mobile_url.'/'.$requestedPage.'" >' . "\n"; // $requestedPage may be empty for homepage
 			
 		return $ret;
+	}
+	
+	function getAdditionalHeadTags()
+	{
+		return $this->iniRead('head.additionalTags', '');
 	}
 	
 	function getBodyClasses($bodyClass)
@@ -952,7 +975,7 @@ class WISY_FRAMEWORK_CLASS
 		}
 		
 		// replace ALL placeholders
-		$bodyStart = str_replace('__HEADTAGS__', $this->getTitleTags($param['title']) . $this->getFaviconTags() . $this->getOpensearchTags() . $this->getRSSTags() . $this->getCSSTags() . $this->getCanonicalTag($param['canonical']) . $this->getMobileAlternateTag($param['canonical']) . $this->getJSHeadTags(), $bodyStart);
+		$bodyStart = str_replace('__HEADTAGS__', $this->getTitleTags($param['title']) . $this->getFaviconTags() . $this->getOpensearchTags() . $this->getRSSTags() . $this->getCSSTags() . $this->getCanonicalTag($param['canonical']) . $this->getMobileAlternateTag($param['canonical']) . $this->getJSHeadTags(). $this->getAdditionalHeadTags(), $bodyStart);
 		$bodyStart = str_replace('__BODYATTR__', ' ' . $this->getJSOnload(). ' class="' . $this->getBodyClasses($param['bodyClass']) . '"', $bodyStart);
 		$bodyStart = $this->replacePlaceholders($bodyStart);
 		$i1 = strpos($bodyStart, "<!-- include ");
