@@ -144,13 +144,20 @@ class WISY_ROBOTS_RENDERER_CLASS
 		$searcher->prepare('');
 		if( $searcher->ok() )
 		{
-			$sql = $searcher->getKurseRecordsSql('kurse.id, kurse.date_modified');
+			$sql = $searcher->getKurseRecordsSql('kurse.id, kurse.date_modified, kurse.freigeschaltet');
 			$sql.= ' ORDER BY kurse.date_modified DESC ';
 			$sql.= " LIMIT 0, $maxUrls ";
+			
+			$freigeschaltet404 = array_map("trim", explode(",", $this->framework->iniRead('seo.set404_kurs_freigeschaltet', "")));
+			
 			$searcher->db->query($sql);
 			while( $searcher->db->next_record() )
 			{
-				$sitemap .= $this->addUrl('k'.$searcher->db->f('id'), strtotime($searcher->db->f('date_modified')), 'monthly');
+				$freigeschaltet = intval($searcher->db->f('freigeschaltet'));
+				
+				if(!in_array($freigeschaltet, $freigeschaltet404))
+					$sitemap .= $this->addUrl('k'.$searcher->db->f('id'), strtotime($searcher->db->f('date_modified')), 'monthly');
+				
 				if( $this->urlsAdded >= $maxUrls )
 				{
 					$sitemap .= "<!-- stop adding URLs, max of $maxUrls reached -->\n";

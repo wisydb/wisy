@@ -17,8 +17,11 @@ class WISY_KURS_RENDERER_CLASS
 	function render()
 	{
 		global $wisyPortalSpalten;
+		global $wisyPortalId;
 
 		$kursId = intval($_GET['id']);
+		
+		$this->checkKursFilter($wisyPortalId, $kursId);
 
 		// query DB
 		$db = new DB_Admin();
@@ -47,6 +50,12 @@ class WISY_KURS_RENDERER_CLASS
 			$promoter->logPromotedRecordClick($kursId, $anbieterId);
 		}
 
+		// #404gesperrteseiten
+		$freigeschaltet404 = array_map("trim", explode(",", $this->framework->iniRead('seo.set404_kurs_freigeschaltet', "")));
+		
+		if(in_array($freigeschaltet, $freigeschaltet404))
+			$this->framework->error404();
+		
 		// page start
 		headerDoCache();
 		
@@ -331,5 +340,29 @@ class WISY_KURS_RENDERER_CLASS
 		$copyrightClass->renderCopyright($db, 'kurse', $kursId);
 		
 		echo $this->framework->getEpilogue();
+	}
+	
+	function checkKursFilter($wisyPortalId, $kursId) {
+		$portaltag = ".portal".$wisyPortalId;
+		
+		$db = new DB_Admin();
+		$tagsql = 'SELECT tag_id FROM x_tags WHERE tag_name="'.$portaltag.'"';
+		$db->query($tagsql);
+		
+		if( !$db->next_record() )
+			$this->framework->error404();
+			
+		$tagId_portal = $db->f8('tag_id');
+			
+		if( !$tagId_portal )
+			$this->framework->error404();
+				
+		$kurssql = "SELECT DISTINCT kurse.id FROM kurse LEFT JOIN x_kurse ON x_kurse.kurs_id=kurse.id LEFT JOIN x_kurse_tags j0 ON x_kurse.kurs_id=j0.kurs_id "
+				  ."LEFT JOIN x_kurse_tags j1 ON x_kurse.kurs_id=j1.kurs_id  WHERE kurse.id = $kursId AND j1.tag_id=$tagId_portal";
+						
+		$db->query($kurssql);
+						
+		if( trim($this->framework->iniRead('seo.set404_fremdkurse', "")) == 1 && (!$db->next_record() || !$db->f8('id'))) // && ini.read(fremdekurseausschliessen)
+			$this->framework->error404();
 	}
 };
