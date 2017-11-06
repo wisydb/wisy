@@ -1423,6 +1423,10 @@ class WISY_EDIT_RENDERER_CLASS
 									 bu_nummer='".addslashes($newData['bu_nummer'])."',
 									 fu_knr='".addslashes($newData['fu_knr'])."',
 									 azwv_knr='".addslashes($newData['azwv_knr'])."', ";
+			
+			if($this->framework->iniRead('onlinepflege.invorbereitung', "") == 1)
+				$sql .= "freigeschaltet=0, ";
+			
 			if( $protocol != '' )
 			{
 			 	$sql .=			   " user_modified={$user}, ";	// der Benutzer, wird nur geaendert, wenn etwas im Protokoll steht; dies ist notwendig, da durch die Suche nach dem Benutzer (20) die Redaktion die Aenderungen im Protokoll ueberprueft
