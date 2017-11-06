@@ -30,7 +30,7 @@ class WISY_ROBOTS_RENDERER_CLASS
 				break;
 			
 			case 'sitemap.xml':
-				$this->renderSitemapXmlGz(); // der name ist eh nicht wichtig ...
+				$this->renderSitemapXmlGz(); // der name ist eh nicht wichtig ... renderSitemapXmlGz
 				break;
 
 			case 'sitemap.xml.gz':
