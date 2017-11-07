@@ -385,7 +385,7 @@ class WISY_DURCHF_CLASS
 			$ret = preg_replace('~(?:(https?)://([^\s<]+)|(www\.[^\s<]+?\.[^\s<]+))(?<![\.,:])~i', $replaceURL, $ret);
 		}
 	
-		return html_entity_decode($ret);
+		return $ret;
 	}
 	
 	function getDurchfuehrungIds(&$db, $kursId, $sabg = 0 /*1=abgel. Df immer anzeigen, 0=abgel. Df nur anzeigen  wenn keine aktuellen vorhanden*/)
