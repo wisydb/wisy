@@ -343,6 +343,11 @@ class WISY_KURS_RENDERER_CLASS
 	}
 	
 	function checkKursFilter($wisyPortalId, $kursId) {
+		
+		// If no filter, display course
+		if(!$GLOBALS['wisyPortalFilter']['stdkursfilter'] || trim($GLOBALS['wisyPortalFilter']['stdkursfilter']) == '')
+			return true;
+		
 		$portaltag = ".portal".$wisyPortalId;
 		
 		$db = new DB_Admin();
