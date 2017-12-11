@@ -736,7 +736,9 @@ class REST_API_CLASS
 					for( $i = 0; $i < sizeof($ids); $i++ ) {
 						$temp = intval($ids[$i]); 
 						if( $temp <= 0 ) { $this->halt(400, "bad id for $name in scope $table"); } 
-						$sql2 .= ($i?', ' : '') . "($id, $temp, $i)"; 
+						if( $referenceable_ids[ $temp ] ) {
+							$sql2 .= ($sql2!=''? ', ' : '') . "($id, $temp, $i)"; 
+						}
 					}
 					
 					if( $sql2 != '' )
