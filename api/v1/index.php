@@ -60,6 +60,7 @@ define('REST_READONLY', 			0x1000);
 define('REST_PREPENDONLY', 			0x2000);
 define('REST_SORTED', 				0x4000);
 define('REST_SILENT', 				0x8000); /* do not issue a warning for readonly fields */
+define('REST_REFONLY',             0x10000);
 
 define('REST_INT', 					0x0001);
 define('REST_INT_READONLY',			0x1001); /* REST_INT|REST_READONLY */
@@ -68,6 +69,7 @@ define('REST_STRING', 				0x0002);
 define('REST_STRING_PREPENDONLY',	0x2002); /* REST_STRING|REST_PREPENDONLY */
 define('REST_STRING_SORTED',		0x4002); /* REST_STRING|REST_SORTED */
 define('REST_MATTR',				0x0004);
+define('REST_MATTR_REFONLY',	   0x10004);
 define('REST_SECONDARY', 			0x0008);
 define('REST_SPECIAL', 				0x0010);
 
@@ -98,7 +100,7 @@ class REST_API_CLASS
 			'anbieter'			=>	array('flags'=>REST_INT,				),
 			'beschreibung'		=>	array('flags'=>REST_STRING,				),
 			'thema'				=>	array('flags'=>REST_INT,				),
-			'stichwoerter'		=>	array('flags'=>REST_MATTR,				'attr_table'=>'kurse_stichwort', 'attr_field'=>'attr_id'	),
+			'stichwoerter'		=>	array('flags'=>REST_MATTR_REFONLY,		'attr_table'=>'kurse_stichwort', 'attr_field'=>'attr_id'	),
 			'verweis'			=>	array('flags'=>REST_MATTR,				'attr_table'=>'kurse_verweis', 'attr_field'=>'attr_id'	),
 			'durchfuehrung'		=>	array('flags'=>REST_SECONDARY,			'attr_table'=>'kurse_durchfuehrung', 'attr_field'=>'secondary_id'	),
 			'bu_nummer'			=>	array('flags'=>REST_STRING,				),
@@ -719,7 +721,11 @@ class REST_API_CLASS
 					
 					$sql2 = ''; 
 					$ids = explode(',', $_REQUEST[$name]);
-					for( $i = 0; $i < sizeof($ids); $i++ ) { $temp = intval($ids[$i]); if( $temp <= 0 ) { $this->halt(400, "bad id for $name in scope $table"); } $sql2 .= ($i?', ' : '') . "($id, $temp, $i)"; }
+					for( $i = 0; $i < sizeof($ids); $i++ ) { 
+						$temp = intval($ids[$i]); 
+						if( $temp <= 0 ) { $this->halt(400, "bad id for $name in scope $table"); } 
+						$sql2 .= ($i?', ' : '') . "($id, $temp, $i)"; 
+					}
 					
 					if( $sql2 != '' )
 					{
