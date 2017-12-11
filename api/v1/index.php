@@ -100,7 +100,7 @@ class REST_API_CLASS
 			'anbieter'			=>	array('flags'=>REST_INT,				),
 			'beschreibung'		=>	array('flags'=>REST_STRING,				),
 			'thema'				=>	array('flags'=>REST_INT,				),
-			'stichwoerter'		=>	array('flags'=>REST_MATTR_REFONLY,		'attr_table'=>'kurse_stichwort', 'attr_field'=>'attr_id'	),
+			'stichwoerter'		=>	array('flags'=>REST_MATTR_REFONLY,		'attr_table'=>'kurse_stichwort', 'attr_field'=>'attr_id', 'primary_table'=>'stichwoerter'	),
 			'verweis'			=>	array('flags'=>REST_MATTR,				'attr_table'=>'kurse_verweis', 'attr_field'=>'attr_id'	),
 			'durchfuehrung'		=>	array('flags'=>REST_SECONDARY,			'attr_table'=>'kurse_durchfuehrung', 'attr_field'=>'secondary_id'	),
 			'bu_nummer'			=>	array('flags'=>REST_STRING,				),
@@ -719,9 +719,17 @@ class REST_API_CLASS
 					$db->query($sql2);
 					if( $db->Errno ) $this->halt(400, "post: bad condition, mysql says: ".$db->Error . " -- full sql: " . $sql2);
 					
-					$sql2 = ''; 
 					$ids = explode(',', $_REQUEST[$name]);
-					for( $i = 0; $i < sizeof($ids); $i++ ) { 
+					if( $prop['flags']&REST_MATTR_REFONLY )
+					{
+						// check if all given IDs exist and can be references
+						$temp = '';
+						for( $i = 0; $i < sizeof($ids); $i++ ) { $temp .= ($i?', ' : '') . intval($ids[$i]); }
+						if( !isset($prop['primary_table']) ) $this->halt(400, "{$prop['attr_table']}: when using REST_MATTR_REFONLY, please also specify primary_table.");
+					}
+
+					$sql2 = '';
+					for( $i = 0; $i < sizeof($ids); $i++ ) {
 						$temp = intval($ids[$i]); 
 						if( $temp <= 0 ) { $this->halt(400, "bad id for $name in scope $table"); } 
 						$sql2 .= ($i?', ' : '') . "($id, $temp, $i)"; 
