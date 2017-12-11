@@ -726,6 +726,10 @@ class REST_API_CLASS
 						$temp = '';
 						for( $i = 0; $i < sizeof($ids); $i++ ) { $temp .= ($i?', ' : '') . intval($ids[$i]); }
 						if( !isset($prop['primary_table']) ) $this->halt(400, "{$prop['attr_table']}: when using REST_MATTR_REFONLY, please also specify primary_table.");
+						$sql2 = "SELECT id FROM {$prop['primary_table']} WHERE id IN($temp) and user_access&73"; // 73 = 0111 = %001001001 => all bits indicating referanceble records
+						
+						$referenceable_ids = array();
+						$db->query($sql2); while( $db->next_record() ) { $referenceable_ids[ $db->f('id') ] = 1; }
 					}
 
 					$sql2 = '';
