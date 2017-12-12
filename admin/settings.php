@@ -38,16 +38,18 @@ settings are (for values, the first value is the default in most cases):
 	date.global					<dateSetting>
 								"dateSetting" is a comma-separated list with:
 								relative, weekdays, century, time, seconds
-	edit.textarea.<table>.css	{|monospc|prop}
-	edit.textarea.<table>.editor{1|0}
-	edit.textarea.<table>.html	{|pcwebedit|ewebeditpro}
+	edit.field.<table>.<field>.addvalues
+								{0|1}							old editor only
 	edit.field.<table>.<field>.size
 								{40 x 1|<width> x 1}
 									or
-								{40 x 5|<width> x <height>}
-	edit.field.<table>.<field>.addvalues
-								{0|1}
-	edit.seperator.<table>		{;|<other seperator>}
+								{40 x 5|<width> x <height>}		new editor: height only, old editor: both
+	edit.oldeditor              {0|1}
+								s.a. cookie "oldeditor"
+	edit.seperator.<table>		{;|<other seperator>}			old editor only
+	edit.textarea.<table>.css	{|monospc|prop}					old editor only
+	edit.textarea.<table>.editor{1|0}							old editor only
+	edit.textarea.<table>.html	{|pcwebedit|ewebeditpro}		old editor only
 	filter.grp					{|<grpID>[, <grpID> [, ...]]}
 								"grpID" specify the group IDs that shoud _not_
 								be shown, special group ids are
