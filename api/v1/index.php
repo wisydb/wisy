@@ -230,6 +230,8 @@ class REST_API_CLASS
 	Common
 	======================================================================== */
 
+	var $last_warning = '';
+
 	function __construct()
 	{
 		if (!extension_loaded('mbstring')) {
@@ -739,6 +741,9 @@ class REST_API_CLASS
 						if( $referenceable_ids[ $temp ] ) {
 							$sql2 .= ($sql2!=''? ', ' : '') . "($id, $temp, $i)"; 
 						}
+						else {
+							$this->last_warning = "{$name}={$temp} is not executed as the given ID is not referenceable.";
+						}
 					}
 					
 					if( $sql2 != '' )
@@ -758,7 +763,12 @@ class REST_API_CLASS
 			if( $db->Errno ) $this->halt(400, "post: bad condition, mysql says: ".$db->Error . " -- full sql: " . $sql);
 		}
 		
-		return '{"id": ' . $id . '}';
+		if( $this->last_warning != '' ) {
+			return '{"id": ' . $id . ', "warning": "'.$this->utf82Json($this->last_warning).'"}';
+		}
+		else {
+			return '{"id": ' . $id . '}';
+		}
 	}
 	
 	/* ========================================================================
