@@ -1243,6 +1243,39 @@ class WISY_FRAMEWORK_CLASS
 	
 		echo $this->replacePlaceholders( $this->iniRead('searcharea.below', '') ); // deprecated!
 	}
+	
+	function getPageType() {
+		
+		// Der Konstruktor ist jeweils sehr leichtgewichtig,
+		// darum können ruhig neue Objekte erzeugt werden.
+		// Andernfalls müsste man hier den getRenderercode mehr oder weniger duplizieren...
+		$result = $this->getRenderer();
+		
+		if(!is_object($result))
+			return false;
+
+		if($_SERVER['REQUEST_URI'] == "/") {
+			return 'startseite';
+		}
+		
+		// Dieser sollte beim Überschreiben von Kernfunktionen immer gleich sein:
+		$module_klassenprefix = "CUSTOM_";						
+
+		switch(str_replace($module_klassenprefix, "", get_class($result))) {
+			case 'WISY_SEARCH_RENDERER_CLASS':
+				return "suche";
+			case 'WISY_ADVANCED_RENDERER_CLASS':
+				return "advanced";
+			case 'WISY_KURS_RENDERER_CLASS':
+				return "kurs";
+			case 'WISY_ANBIETER_RENDERER_CLASS':
+				return "anbieter";
+			case 'WISY_GLOSSAR_RENDERER_CLASS':
+				return "glossar";
+			default:
+				return false;
+		}
+	}
 
 	/******************************************************************************
 	 main()
