@@ -959,6 +959,9 @@ class WISY_SEARCH_RENDERER_CLASS
 		// result out
 		// --------------------------------------------------------------------
 		
+		// Suche und Ergebnisliste auf Startseite optional abschalten        
+		if(!(intval(trim($this->framework->iniRead('search.startseite.disable'))) && $this->framework->getPageType() == "startseite")) {
+
 		$searcher =& createWisyObject('WISY_INTELLISEARCH_CLASS', $this->framework);
 		$searcher->prepare($queryString);
 		
@@ -1077,6 +1080,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			}
 		
 		echo '</div>';
+		}
 		
 		echo $this->framework->replacePlaceholders( $this->framework->iniRead('spalten.below', '') );
 		
