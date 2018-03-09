@@ -69,7 +69,7 @@ class G_GEOCODE
 	    $this->nominatim_url = 'http://nominatim.openstreetmap.org/search';
 	    $this->nominatim_params = '?format=xml&limit=3&accept-language=de';
 	    
-	    $alternate_geocoder = $this->framework->iniRead('alternate.geocoder', '');
+	    $alternate_geocoder = $this->framework->iniRead('nominatim.alternate.geocoder', '');
 	    $nominatim_key = $this->framework->iniRead('nominatim.key', '');
 	    $nominatim_url = $this->framework->iniRead('nominatim.url', '');
 	    $this->nominatim_explicit_city = $this->framework->iniRead('nominatim.explicit.city', '');
