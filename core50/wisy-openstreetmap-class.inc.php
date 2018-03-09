@@ -27,7 +27,13 @@ for geocoding, the following will work:
 // instead use WISY_OPENSTREETMAP_CLASS as described in the header.
 class G_GEOCODE
 {
-	private $nominatim_url = 'http://nominatim.openstreetmap.org/search';
+    private $nominatim_url;
+    private $nominatim_params;
+    private $framework;
+    
+    function __construct(&$framework) {
+        $this->framework = $framework;
+    }
 	
 	function xml_elem_start($parser, $name, $attribs)
 	{
@@ -60,6 +66,19 @@ class G_GEOCODE
 	//		... array('error'=>'short error message') on failure
 	function geocode($q_arr)
 	{
+	    $this->nominatim_url = 'http://nominatim.openstreetmap.org/search';
+	    $this->nominatim_params = '?format=xml&limit=3&accept-language=de';
+	    
+	    $alternate_geocoder = $this->framework->iniRead('alternate.geocoder', '');
+	    $nominatim_key = $this->framework->iniRead('nominatim.key', '');
+	    $nominatim_url = $this->framework->iniRead('nominatim.url', '');
+	    $this->nominatim_explicit_city = $this->framework->iniRead('nominatim.explicit.city', '');
+	    
+	    if($alternate_geocoder && $nominatim_url) {
+	        $this->nominatim_url = $nominatim_url;
+	        $this->nominatim_params .= '&key='.$nominatim_key;
+	    }
+	    
 		if( $GLOBALS['geocode_called'] >= 2 ) { return array('error'=>'err_geocode_toomanycalls'); }
 		$GLOBALS['geocode_called']++;
 		
@@ -72,7 +91,11 @@ class G_GEOCODE
 			if( $q_arr['country']   !='' ) { $param .= '&country='    . urlencode(utf8_encode($q_arr['country']   )); }
 		}
 		else if( $q_arr['free']!='' ) {
-			$param .= '&q=' . urlencode(utf8_encode($q_arr['free']));
+		    $place_search = urlencode(utf8_encode($q_arr['free']));
+		    if($this->nominatim_explicit_city && stripos($place_search, $this->nominatim_explicit_city) === FALSE && stripos($place_search, ",") === FALSE)
+		        $place_search = $place_search.",+".$this->nominatim_explicit_city;
+		        
+		    $param .= '&q=' . $place_search;
 		}
 		else {
 			return array('error'=>'err_geocode_param');
@@ -82,9 +105,14 @@ class G_GEOCODE
 		//	"Usage triggered by searches of the users are okay, 
 		//	Howver, no Heavy usage: max. 1 Request/s (for all users together)"
 		// to determinate the standard zoom, we could use the bounding box or sth. as the type (the XML-result gives much more information than just the lat/lng)
-        $url = $this->nominatim_url . '?format=xml&accept-language=de&q='.$param;
+		if($this->nominatim_explicit_city && stripos($param, $this->nominatim_explicit_city) === FALSE && stripos($param, ",") === FALSE)
+		  $param = $param.",+".$this->nominatim_explicit_city;
+		    
+		$url = $this->nominatim_url . $this->nominatim_params.'&q='.$param;
+		$url = str_replace('&q=&q=', '&q=', $url);
+		    
 		if (!($fp = @fopen($url, "r"))) {
-			return array('error'=>'err_geocode_fopen');
+		  return array('error'=>'err_geocode_fopen ('.$url.')');
 		}
       
 		$data = '';
@@ -389,7 +417,7 @@ class WISY_OPENSTREETMAP_CLASS
 		}
 	
 		// call geocoder
-		$obj = new G_GEOCODE();
+		$obj = new G_GEOCODE($this->framework);
 		if( $addto == 'temp' ) {
 			//$obj->set_nominatim_url('http://open.mapquestapi.com/nominatim/v1/search'); -- 2015-09-28 15:48 this server has problems, stay on default
 		}
