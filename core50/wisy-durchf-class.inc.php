@@ -284,10 +284,10 @@ class WISY_DURCHF_CLASS
 			{	
 				$preishinweise_out = implode(', ', $preishinweise_arr);
 				if( $html ) {
-					$ret .= '<div class="wisyr_preis_hinweise">' . htmlentities(utf8_encode($preishinweise_out)) . '</div>';
+					$ret .= '<div class="wisyr_preis_hinweise">' . htmlentities(utf8_encode(str_replace(chr(0xE2).chr(0x82).chr(0xAC), "&euro;", str_replace(chr(128), "&euro;", html_entity_decode($preishinweise_out))))) . '</div>';
 				}
 				else {
-					$ret .= " ($preishinweise_out)";
+				    $ret .= " (".str_replace(chr(0xE2).chr(0x82).chr(0xAC), "&euro;", str_replace(chr(128), "&euro;", html_entity_decode($preishinweise_out))).")";
 				}
 			}
 			
@@ -296,7 +296,6 @@ class WISY_DURCHF_CLASS
 			$ret = preg_replace('~(?:(https?)://([^\s<]+)|(www\.[^\s<]+?\.[^\s<]+))(?<![\.,:])~i', $replaceURL, $ret);
 		}
 	
-		$ret = str_replace(chr(0xE2).chr(0x82).chr(0xAC), "&euro;", str_replace(chr(128), "&euro;", html_entity_decode($ret)));
 		return $ret;
 	}
 	
