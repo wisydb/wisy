@@ -283,9 +283,8 @@ class WISY_DURCHF_CLASS
 			if( sizeof($preishinweise_arr) )
 			{
 			    $preishinweise_out = implode(', ', $preishinweise_arr);
-			    $preishinweise_out = utf8_encode(str_replace(chr(0xE2).chr(0x82).chr(0xAC), "&euro;", str_replace(chr(128), "&euro;", html_entity_decode($preishinweise_out))));
 			    if( $html ) {
-			        $ret .= '<div class="wisyr_preis_hinweise">' .$preishinweise_out. '</div>';
+			        $ret .= '<div class="wisyr_preis_hinweise">' .utf8_encode(str_replace(chr(0xE2).chr(0x82).chr(0xAC), "&euro;", str_replace(chr(128), "&euro;", html_entity_decode($preishinweise_out)))). '</div>';
 			    }
 			    else {
 			        $ret .= " (".$preishinweise_out.")";
