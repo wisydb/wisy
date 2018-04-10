@@ -75,7 +75,7 @@ class WISY_EDIT_FORGOTPW_CLASS
 
 Sie, oder jemand der sich als Kursanbieter auf __HTTP_HOST__ bzw. __NAME__ ausgegeben hat, haben unter http://__HTTP_HOST__/edit ein neues Passwort für Ihren Account beantragt.
 
-Wenn Sie KEIN neus Passwort beantragt haben, oder wenn Ihnen Ihr altes Passwort zwischenzeitlich wieder eingefallen ist, ignorieren und loeschen Sie bitte diese E-Mail.
+Wenn Sie KEIN neues Passwort beantragt haben, oder wenn Ihnen Ihr altes Passwort zwischenzeitlich wieder eingefallen ist, ignorieren und loeschen Sie bitte diese E-Mail.
 
 Nur WENN Sie ein neues Passwort beantragt haben, klicken Sie bitte auf den folgenden Verweis, um ein neues Passwort zu erhalten und sich damit wieder in Ihrem Account einloggen zu können: $f_link 
 
