@@ -133,13 +133,15 @@ function error404()
 {
 	global $wisyCore;
 	header("HTTP/1.1 404 Not Found");
+	header('Content-Type: text/html; charset=ISO8859-15');
+	
 	echo '<html>
 			<head>
 				<title>Fehler 404 - Seite nicht gefunden</title>
 			</head>
 			<body>
 				<h1>Fehler 404 - Seite nicht gefunden</h1>
-				<p>Entschuldigung, aber die von Ihnen gewünschte Seite (<i>'.isohtmlspecialchars($_SERVER['REQUEST_URI']).'</i> in <i>/'.isohtmlspecialchars($wisyCore).'</i> auf <i>' .$_SERVER['HTTP_HOST']. '</i>) konnte leider nicht gefunden werden. Sie können jedoch ...
+				<p>Entschuldigung, aber die von Ihnen gew&uuml;nschte Seite (<i>'.isohtmlspecialchars($_SERVER['REQUEST_URI']).'</i> in <i>/'.isohtmlspecialchars($wisyCore).'</i> auf <i>' .$_SERVER['HTTP_HOST']. '</i>) konnte leider nicht gefunden werden. Sie k&ouml;nnen jedoch ...
 				<ul>
 					<li><a href="http://'.$_SERVER['HTTP_HOST'].'">Die Startseite von '.$_SERVER['HTTP_HOST'].' aufrufen ...</a></li>
 					<li><a href="javascript:history.back();">Zur&uuml;ck zur zuletzt besuchten Seite wechseln ...</a></li>
