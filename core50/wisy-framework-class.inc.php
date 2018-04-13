@@ -165,6 +165,7 @@ class WISY_FRAMEWORK_CLASS
 		{
 			global $wisyCore;
 			header("HTTP/1.1 404 Not Found");
+			header('Content-Type: text/html; charset=utf-8');
 
 			$title = 'Fehler 404 - Seite nicht gefunden';
 
