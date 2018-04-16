@@ -64,7 +64,7 @@ define('_SETTINGS_GRANTSOTHER',             "Andere");
 define('_SETTINGS_HTMLEDITOR',              "HTML Editor");
 define('_SETTINGS_HTMLEDITORNONE',          "Keiner");
 define('_SETTINGS_INPUTFIELDS',             "Eingabefelder");
-define('_SETTINGS_INPUTFIELDSSIZEHINT',     "Gr&ouml;&szlig;e in Zeichen (Breite x H&ouml;he)");
+define('_SETTINGS_INPUTFIELDSSIZEHINT',     "Gr&ouml;&szlig;e der Eingabefelder");
 define('_SETTINGS_MONOSPACED',              "Nicht Proportional");
 define('_SETTINGS_MULTIPLELINEINPUT',       "Mehrzeilige Eingabefelder");
 define('_SETTINGS_ONNOACCESS',              "Bei fehlenden Rechten");

@@ -159,7 +159,7 @@ function regGetSize($regKey, &$retWidth, &$retHeight)
 	list($regWidth, $regHeight) = explode('x', $regValue);
 
 	$regWidth  = intval($regWidth);
-	if( $regWidth < 3 ) $regWidth = 40;
+	if( $regWidth < 2 ) $regWidth = 2;
 	if( $regWidth > 200 ) $regWidth = 200;
 
 	if( $retHeight == 1 ) {
@@ -167,8 +167,8 @@ function regGetSize($regKey, &$retWidth, &$retHeight)
 	}
 	else {
 		$regHeight = intval($regHeight);
-		if( $regHeight < 3 ) $regHeight = 5;
-		if( $regHeight > 99 ) $regHeight = 99;
+		if( $regHeight < 2 ) $regHeight = 2;
+		if( $regHeight > 200) $regHeight = 200;
 	}
 	
 	$retWidth	= $regWidth;
@@ -207,9 +207,11 @@ function edit_fields_in($currTable)
 			case TABLE_TEXT:
 				if( $currTableDef->rows[$r]->acl&ACL_EDIT )
 				{
-					$valueName = "text$numText";
-					regSetSize("edit.field.{$currTableDef->name}.{$currTableDef->rows[$r]->name}.size",
-						$_REQUEST[$valueName], "40 x 1");
+					if( $_COOKIE['oldeditor'] ) {
+						$valueName = "text$numText";
+						regSetSize("edit.field.{$currTableDef->name}.{$currTableDef->rows[$r]->name}.size",
+							$_REQUEST[$valueName], "40 x 1");
+					}
 					
 					$numText++;
 				}
@@ -278,6 +280,11 @@ function edit_fields_out($currTable)
 							break; // the first field contains the mask, a trailing space indicates no max. length
 						}
 					}
+
+					if( !$_COOKIE['oldeditor'] ) {
+						$numText++;
+						break; // for the new editor, single-line text fields are always of 100% width, no need to edit sth.
+					}
 				}
 				// fall through
 				
@@ -287,7 +294,7 @@ function edit_fields_out($currTable)
 					if( !$ob ) 
 					{
 						$site->skin->submenuStart();
-							echo htmlconstant('_SETTINGS_INPUTFIELDSSIZEHINT') . ' (nur alter Editor)';
+							echo htmlconstant('_SETTINGS_INPUTFIELDSSIZEHINT');
 						$site->skin->submenuBreak();
 							$site->menuHelpEntry('isettingsinput');
 						$site->skin->submenuEnd();
