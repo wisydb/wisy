@@ -205,7 +205,6 @@ function edit_fields_in($currTable)
 		switch( $rowtype ) 
 		{
 			case TABLE_TEXT:
-				if( $currTableDef->rows[$r]->acl&ACL_EDIT )
 				{
 					if( $_COOKIE['oldeditor'] ) {
 						$valueName = "text$numText";
@@ -218,7 +217,6 @@ function edit_fields_in($currTable)
 				break;
 
 			case TABLE_TEXTAREA:
-				if( $currTableDef->rows[$r]->acl&ACL_EDIT )
 				{
 					$valueName = "text$numText";
 					regSetSize("edit.field.{$currTableDef->name}.{$currTableDef->rows[$r]->name}.size", 
@@ -271,7 +269,6 @@ function edit_fields_out($currTable)
 		switch( $rowtype )
 		{
 			case TABLE_TEXT:
-				if( $currTableDef->rows[$r]->acl&ACL_EDIT )
 				{
 					if( $currTableDef->rows[$r]->addparam ) {
 						$rules = explode('###', $currTableDef->rows[$r]->addparam);
@@ -289,7 +286,6 @@ function edit_fields_out($currTable)
 				// fall through
 				
 			case TABLE_TEXTAREA:
-				if( $currTableDef->rows[$r]->acl&ACL_EDIT )
 				{
 					if( !$ob ) 
 					{
