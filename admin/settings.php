@@ -177,19 +177,31 @@ function regGetSize($regKey, &$retWidth, &$retHeight)
 
 function regSetSize($regKey, $newValue, $def = '40 x 5')
 {
-	if( ($def == '40 x 5' && preg_match('/[^\d]*(\d{1,3})[^\d]+(\d{1,3}).*/', $newValue, $matches))
-	 ||	preg_match('/[^\d]*(\d{1,3}).*/', $newValue, $matches) )
-	{
+	if( preg_match('/[^\d]*(\d{1,3})[^\d]+(\d{1,3}).*/', $newValue, $matches) ) {
+		// width and height given
 		$regWidth = intval($matches[1]);
-		if( $regWidth < 3 ) 	$regWidth = 3;
-		if( $regWidth > 200 ) 	$regWidth = 200;
-		
 		$regHeight = intval($matches[2]);
-		if( $regHeight < 1 ) 	$regHeight = 1;
-		if( $regHeight > 99 )	$regHeight = 99;
-		
-		regSet($regKey, "$regWidth x $regHeight", $def);
 	}
+	else if( preg_match('/[^\d]*(\d{1,3}).*/', $newValue, $matches) ) {
+		if( strpos($def, 'x 1')!==false ) {
+			// width given
+			$regWidth  = intval($matches[1]);
+			$regHeight = 1;
+		}
+		else {
+			// height given
+			$regWidth   = intval($def);
+			$regHeight  = intval($matches[1]);
+		}
+	}
+
+	if( $regWidth < 3 ) 	$regWidth = 3;
+	if( $regWidth > 200 ) 	$regWidth = 200;
+
+	if( $regHeight < 1 ) 	$regHeight = 1;
+	if( $regHeight > 99 )	$regHeight = 99;
+
+	regSet($regKey, "$regWidth x $regHeight", $def);
 }
 
 function edit_fields_in($currTable)
@@ -332,7 +344,12 @@ function edit_fields_out($currTable)
 
 					regGetSize("edit.field.{$currTableDef->name}.{$currTableDef->rows[$r]->name}.size", $width, $height);
 					
-					form_control_text("text$numText", "$width x $height", 8 /*width*/, 8 /*maxlen*/);
+					if( $_COOKIE['oldeditor'] ) {
+						form_control_text("text$numText", "$width x $height", 8 /*width*/, 8 /*maxlen*/);
+					} else {
+						form_control_text("text$numText", "$height", 3 /*width*/, 3 /*maxlen*/);
+						echo " Zeilen&nbsp;&nbsp;";
+					}
 
 					$numText++;
 				}
