@@ -204,6 +204,16 @@ function regSetSize($regKey, $newValue, $def = '40 x 5')
 	regSet($regKey, "$regWidth x $regHeight", $def);
 }
 
+function get_default_rows($currTableRow)
+{
+	$rows = 5;
+	if( !$_COOKIE['oldeditor'] && $currTableRow->prop['ctrl.rows'] ) {
+		$rows = intval($currTableRow->prop['ctrl.rows']); 
+		if( $rows < 1 ) $rows = 1;
+		if( $rows > 99 ) $rows = 99;
+	}
+}
+
 function edit_fields_in($currTable)
 {
 	global $numAddValues;
@@ -230,9 +240,11 @@ function edit_fields_in($currTable)
 
 			case TABLE_TEXTAREA:
 				{
+					$height = get_default_rows($currTableDef->rows[$r]);
+
 					$valueName = "text$numText";
 					regSetSize("edit.field.{$currTableDef->name}.{$currTableDef->rows[$r]->name}.size", 
-						$_REQUEST[$valueName], "40 x 5");
+						$_REQUEST[$valueName], "40 x $height");
 					
 					if( $rowflags & TABLE_HTML ) {
 						global $hasHtmlEditor;
@@ -330,7 +342,7 @@ function edit_fields_out($currTable)
 					}
 					else {
 						$width = 40;
-						$height = 5;
+						$height = get_default_rows($currTableDef->rows[$r]);
 
 						if( $rowflags&TABLE_HTML ) {
 							global $hasHtmlEditor;

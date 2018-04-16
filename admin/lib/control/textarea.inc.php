@@ -15,7 +15,7 @@ class CONTROL_TEXTAREA_CLASS extends CONTROL_TEXT_CLASS // not: CONTROL_BASE_CLA
 		list($dummy, $rows) = explode('x', $temp);
 		$rows = intval($rows);
 		if( $rows < 2 ) $rows = 2;
-		if( $rows > 32 ) $rows = 32;
+		if( $rows > 99 ) $rows = 99;
 								
 		return	"<textarea name=\"{$this->name}\" style=\"width: 90%; max-width:2000px;\" rows=\"$rows\"".$this->tooltip_attr().$this->readonly_attr().">"
 			.		isohtmlspecialchars($this->dbval)
