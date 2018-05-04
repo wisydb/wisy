@@ -1656,8 +1656,8 @@ class WISY_EDIT_RENDERER_CLASS
 							$styleFernunterricht = '';
 							if( $kurs['fu_knr']=='' )
 							{
-								echo "<span class=\"editFernunterrichtLink\"> <a href=\"#\" onclick=\"editShowHide($(this), '.editFernunterrichtDiv', '.editFernunterrichtLink'); return false;\" title=\"Kursnummer für Fernunterricht hinzuf&uuml;gen\"><small>+Fernunterricht</small></a></span>";
-								$styleFernunterricht = ' style="display: none;" ';
+							    $styleFernunterricht = ' style="display: none;" ';
+							    echo "<span class=\"editFernunterrichtLink\" ".$styleFernunterricht."> <a href=\"#\" onclick=\"editShowHide($(this), '.editFernunterrichtDiv', '.editFernunterrichtLink'); return false;\" title=\"Kursnummer für Fernunterricht hinzuf&uuml;gen\"><small>+Fernunterricht</small></a></span>";
 							}
 
 							$styleBewerben = '';
