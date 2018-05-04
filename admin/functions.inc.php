@@ -813,7 +813,16 @@ header("Pragma: no-cache");							// HTTP/1.0
 if( !defined('G_SKIP_LOGIN') )	// do NOT start sessions on "skip login" as this would result in non-cookie sessions with URL rewriting.
 {								// beside the security problem, this will also make problems with functions as readfile() with binary data.
 	define('SESSION_LIFETIME_SECONDS', 2*60*60); 
-	ini_set('session.gc_maxlifetime', 36000); 
+	ini_set('session.gc_maxlifetime', 36000);
+	
+	session_set_cookie_params(
+	    $currentCookieParams["lifetime"],
+	    $currentCookieParams["path"],
+	    $currentCookieParams["domain"],
+	    $currentCookieParams["secure"],
+	    true								// cookies: httponly against xss
+	);
+	
 	session_name('sj');
 	session_start();
 	if(time()-intval($_SESSION['gc_self'])>SESSION_LIFETIME_SECONDS){$_SESSION=array();}$_SESSION['gc_self']=time(); // why we use our own timout: http://goo.gl/FZhF8
