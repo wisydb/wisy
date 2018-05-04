@@ -108,7 +108,7 @@ class WISY_WIKI2HTML_CLASS extends WIKI2HTML_CLASS
 			return	"<a href=\"$href\"$blank>$text</a>";
 		}
 		else if( $type == 'http' || $type == 'https' ) {
-			return	"<a href=\"$href\" target=\"_blank\"><i>$text</i></a>";
+			return	"<a href=\"$href\" target=\"_blank\"><i>".str_replace("/)", "/", $text)."</i></a>";
 		}
 		else if( $type == 'mailto' ) {
 			return	"<a href=\"$href\"$blank><i>$text</i></a>";
