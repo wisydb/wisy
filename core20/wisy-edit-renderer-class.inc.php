@@ -2219,7 +2219,18 @@ class WISY_EDIT_RENDERER_CLASS
 			echo "<p class=\"wisy_topnote\">" .implode('<br />', $topnotes). "</p>";
 		}
 
-		echo '<form action="edit" method="post" name="anbieter">' . "\n";
+		$secureaction = "";
+		
+		if( $this->framework->iniRead('useredit.secure', 1)==1
+		    && substr($_SERVER['HTTP_HOST'], -6)!='.local'
+		    && $_SERVER['HTTPS'] == "on")
+		{
+		    $secureaction = 'https://' . $_SERVER['HTTP_HOST'] . '/edit';
+		}
+		
+		$editurl = ($secureaction != "") ? $secureaction : "edit";
+		
+		echo '<form action="'.$editurl.'" method="post" name="anbieter">' . "\n";
 			echo '<input type="hidden" name="action" value="ea" /> ' . "\n";
 			echo '<input type="hidden" name="subseq" value="1" /> ' . "\n";
 			echo '<input type="hidden" name="bwd" value="'.isohtmlspecialchars($this->bwd).'" /> ' . "\n";		
