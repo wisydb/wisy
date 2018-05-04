@@ -80,6 +80,7 @@ class WISY_ROBOTS_RENDERER_CLASS
 		{
 			echo "User-agent: *\n";
 			echo "Disallow: /\n";
+			echo "Crawl-delay: 30\n";
 		}
 		else
 		{
@@ -98,6 +99,7 @@ class WISY_ROBOTS_RENDERER_CLASS
 			echo "Disallow: /edit\n";
 			echo "Disallow: /rss\n";
 			echo "Disallow: /terrapin\n";
+			echo "Crawl-delay: 30\n";
 		}
 	}
 
