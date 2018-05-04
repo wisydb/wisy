@@ -14,7 +14,7 @@ class WISY_WIKI2HTML_CLASS extends WIKI2HTML_CLASS
 		$this->framework =& $framework;
 		if( !is_array($addparam) ) { $addparam = array(); }
 		$this->selfGlossarId = intval($addparam['selfGlossarId']); // may be 0 if the page is not a glossar entry
-		parent::WIKI2HTML_CLASS();
+		parent::__construct();
 	}
 
 	function pageExists($title)
