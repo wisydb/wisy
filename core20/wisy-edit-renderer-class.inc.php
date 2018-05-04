@@ -1666,7 +1666,7 @@ class WISY_EDIT_RENDERER_CLASS
 								if( $kurs['promote_mode'] == '' )
 								{
 									echo "<span class=\"editBewerbenLink\"> <a href=\"#\" onclick=\"editShowHide($(this), '.editBewerbenDiv', '.editBewerbenLink'); return false;\" title=\"Diesen Kurs bewerben\"><small>+Kurs bewerben</small></a></span>";
-									$styleBewerben = ' style="display: none;" ';
+									$styleBewerben = ' style="opacity: 0; height: 1px;" ';
 								}
 							}
 
