@@ -222,7 +222,7 @@ function g_eql_normalize_natsort($str)
 	$str = preg_replace_callback('/[0-9]+/', 'g_eql_normalize_natsort_callback', $str);
 
 	// strip special characters
-	$str = strtr($str,	'\'\\!"§$%&/(){}[]=?+*~#,;.:-_<>|@€©®£¥  ',
+	$str = strtr($str,	'\'\\!°"§$%&/(){}[]=?+*~#,;.:-_<>|@€©®£¥  ',
 						'                                        ');
 
 	// remove spaces
