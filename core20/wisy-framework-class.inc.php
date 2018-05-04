@@ -952,6 +952,9 @@ class WISY_FRAMEWORK_CLASS
 		$bodyStart = $GLOBALS['wisyPortalBodyStart'];
 		if( strpos($bodyStart, '<html') === false )
 		{
+		    if($this->iniRead('portal.inframe', '') != 1)
+		        header('X-Frame-Options: SAMEORIGIN');
+		    
 			// we got only an HTML-Snippet (part of the the body part), create a more complete HTML-page from this
 			$bodyStart	= '<!DOCTYPE html>' . "\n"
 						. '<html lang="de">' . "\n"
