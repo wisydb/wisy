@@ -606,7 +606,18 @@ class WISY_EDIT_RENDERER_CLASS
 	
 			if( $showLoginForm )
 			{
-				echo '<form action="edit" method="post">';
+			    $secureaction = "";
+			    
+			    if( $this->framework->iniRead('useredit.secure', 1)==1
+			        && substr($_SERVER['HTTP_HOST'], -6)!='.local'
+			        && $_SERVER['HTTPS'] == "on")
+			    {
+			        $secureaction = 'https://' . $_SERVER['HTTP_HOST'] . '/edit';
+			    }
+			    
+			    $editurl = ($secureaction != "") ? $secureaction : "edit";
+			    
+			    echo '<form action="'.$editurl.'" method="post">';
 					echo '<table>';
 						echo "<input type=\"hidden\" name=\"action\" value=\"loginSubseq\" />";
 						echo "<script type=\"text/javascript\"><!--\ndocument.write('<input type=\"hidden\" name=\"javascript\" value=\"enabled\" />');\n/"."/--></script>";
@@ -1591,7 +1602,18 @@ class WISY_EDIT_RENDERER_CLASS
 			echo $temp? "<p>$temp</p>" : '';
 		}
 		
-		echo '<form action="edit" method="post" name="kurs">' . "\n";
+		$secureaction = "";
+		
+		if( $this->framework->iniRead('useredit.secure', 1)==1
+		    && substr($_SERVER['HTTP_HOST'], -6)!='.local'
+		    && $_SERVER['HTTPS'] == "on")
+		{
+		    $secureaction = 'https://' . $_SERVER['HTTP_HOST'] . '/edit';
+		}
+		
+		$editurl = ($secureaction != "") ? $secureaction : "edit";
+		
+		echo '<form action="'.$editurl.'" method="post" name="anbieter">' . "\n";
 			echo '<input type="hidden" name="action" value="ek" /> ' . "\n";
 			echo '<input type="hidden" name="subseq" value="1" /> ' . "\n";
 			echo '<input type="hidden" name="id" value="'.$kurs['id'].'" /> ' . "\n";
