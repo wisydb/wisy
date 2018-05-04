@@ -815,6 +815,7 @@ if( !defined('G_SKIP_LOGIN') )	// do NOT start sessions on "skip login" as this 
 	define('SESSION_LIFETIME_SECONDS', 2*60*60); 
 	ini_set('session.gc_maxlifetime', 36000);
 	
+	$currentCookieParams = session_get_cookie_params();
 	session_set_cookie_params(
 	    $currentCookieParams["lifetime"],
 	    $currentCookieParams["path"],
