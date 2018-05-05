@@ -162,7 +162,7 @@ class WISY_SEARCH_RENDERER_CLASS
 				{
 					// $anspr_tel = str_replace(' ', '', $anspr_tel); // macht Aerger, da in den Telefonnummern teilw. Erklaerungen/Preise mitstehen. Auskommentiert am 5.9.2008 (bp)
 					$anspr_tel = str_replace('/', ' / ', $anspr_tel);
-					echo ',<span class="wisyr_anbieter_telefon"> ' . htmlspecialchars(utf8_encode($anspr_tel)) . '</span>';
+					echo '<br><span class="wisyr_anbieter_telefon"> ' . htmlspecialchars(utf8_encode($anspr_tel)) . '</span>';
 				}
 				
 				if( !$param['clickableName'] )  echo '<span class="wisyr_anbieter_profil"> - <a href="'.$this->framework->getUrl('a', $aparam).'">Anbieterprofil...</a></span>';
