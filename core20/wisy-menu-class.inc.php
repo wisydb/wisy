@@ -33,6 +33,7 @@ class WISY_MENU_ITEM
 		if( sizeof($this->children) ) $liClass = ' class="dir '.($this->title == "OhneName" ? "ohneName" : "").'"';
 		elseif($this->title == "OhneName") $liClass = ' class="ohneName"';
 		
+		$ret = "<li$liClass>";
 			if( $this->url ) $ret .= '<a href="'.isohtmlspecialchars($this->url). /*convert "&" in URLs to "&amp;" in HTML*/
 									'"'.$this->aparam.'>'; 
 			$ret .= $this->title;
