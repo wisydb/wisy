@@ -25,7 +25,7 @@ if( version_compare(PHP_VERSION, '5.1.2', '<') ) die('PHP version too old.');
 
 
 // PHP 7 changes the default characters set to UTF-8; we still prefer ISO-8859-1
-ini_set('default_charset', 'ISO-8859-1');
+// ini_set('default_charset', 'ISO-8859-1');
 
 
 // set an absolute path that should be prefixed to all includes.
