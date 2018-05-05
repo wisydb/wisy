@@ -68,7 +68,8 @@ function osm_initialize()
 	osm_map.addControl(new L.Control.Zoom({position:'topright'}));
 	
 	// create map layer
-	L.tileLayer('http://otile3.mqcdn.com/tiles/1.0.0/map/{z}/{x}/{y}.png', {
+	// http://otile3.mqcdn.com/tiles/1.0.0/map/{z}/{x}/{y}.png?key=...
+	L.tileLayer('//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 		attribution: '&copy; <a href="g7091">OpenStreetMap-Mitwirkende</a>'
 	}).addTo(osm_map);	
 	
