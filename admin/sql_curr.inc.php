@@ -88,7 +88,7 @@ if( !@function_exists('mysql_connect') )
 
 
 // PHP 7 changes the default characters set to UTF-8; we still prefer ISO-8859-1
-@ini_set('default_charset', 'ISO-8859-1');
+// @ini_set('default_charset', 'ISO-8859-1');
 
 
 class DB_Sql
