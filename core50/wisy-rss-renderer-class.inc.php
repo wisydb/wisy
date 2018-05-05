@@ -5,7 +5,7 @@
  ******************************************************************************
  * Verwendetes Format:
  *
- *	<?xml version="1.0"?>
+ *	<?xml version="1.0" encoding="UTF-8"?>
  *	<rss version="2.0">
  *		<channel>
  *			<title>".html_entity_decode($wisyPortalKurzname)."</title>
@@ -150,7 +150,7 @@ class WISY_RSS_RENDERER_CLASS
 		$db2 = new DB_Admin;
 
 		$searcher =& createWisyObject('WISY_SEARCH_CLASS', $this->framework);
-		$searcher->prepare($this->queryString);
+		$searcher->prepare(mysql_real_escape_string($this->queryString));
 
 		$queryHtml = htmlspecialchars($this->queryString);
 		$queryHtmlLong  = $queryHtml==''? ''                  : " - Anfrage: $queryHtml";
