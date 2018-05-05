@@ -52,7 +52,7 @@ class WISY_KURS_RENDERER_CLASS
 		// #404gesperrteseiten
 		$freigeschaltet404 = array_map("trim", explode(",", $this->framework->iniRead('seo.set404_kurs_freigeschaltet', "")));
 		
-		if(in_array($freigeschaltet, $freigeschaltet404))
+		if(in_array($freigeschaltet, $freigeschaltet404) && !$_SESSION['loggedInAnbieterId'])
 			$this->framework->error404();
 		
 		// page start
