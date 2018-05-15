@@ -160,7 +160,7 @@ class WISY_KURS_RENDERER_CLASS
 				$anbieterRenderer =& createWisyObject('WISY_ANBIETER_RENDERER_CLASS', $this->framework);
 				echo '<div class="wisy_vcard">';
 					echo '<div class="wisy_vcardtitle">Anbieteradresse</div>';
-					echo '<div class="wisy_vcardcontent" itemscope itemtype="http://schema.org/Organization">';
+					echo '<div class="wisy_vcardcontent" itemscope itemtype="https://schema.org/Organization">';
 						echo $anbieterRenderer->renderCard($db, $anbieterId, $kursId, array('logo'=>true, 'logoLinkToAnbieter'=>true));
 					echo '</div>';
 				echo '</div>';

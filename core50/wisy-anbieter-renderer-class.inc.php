@@ -22,6 +22,9 @@ class WISY_ANBIETER_RENDERER_CLASS
 	{
 		if( substr($str, 0, 7)=='http://' )
 			$str = substr($str, 7);
+		elseif( substr($str, 0, 8)=='https://' )
+			$str = substr($str, 8);
+		
 		return shortenurl($str, $max_length);
 	}
 
@@ -127,9 +130,9 @@ class WISY_ANBIETER_RENDERER_CLASS
 		
 		// Name und Adresse
 		$vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_name" itemprop="name">'. ($postname? $postname : htmlentities($suchname)) . '</div>';
-		$vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_adresse" itemprop="address" itemscope itemtype="http://schema.org/PostalAddress">';
+		$vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_adresse" itemprop="address" itemscope itemtype="https://schema.org/PostalAddress">';
 
-		$map_URL = 'http://maps.google.com/?q=' . urlencode($strasse . ', ' . $plz . ' ' . $ort . ', ' . $land);
+		$map_URL = 'https://maps.google.com/?q=' . urlencode($strasse . ', ' . $plz . ' ' . $ort . ', ' . $land);
 
 		if( $strasse )
 		{
@@ -187,7 +190,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 			$vc['Fax'] .= "\n" . '<div class="wisyr_anbieter_fax"><span itemprop="faxNumber">'. $anspr_fax . '</span></div>';
 
 		if( $anspr_name )
-			$vc['Kontakt'] .= "\n" . '<div class="wisyr_anbieter_ansprechpartner" itemprop="contactPoint" itemscope itemtype="http://schema.org/ContactPoint">' . $anspr_name . '</div>';
+			$vc['Kontakt'] .= "\n" . '<div class="wisyr_anbieter_ansprechpartner" itemprop="contactPoint" itemscope itemtype="https://schema.org/ContactPoint">' . $anspr_name . '</div>';
 		
 		if( $anspr_zeit )
 			$vc['Sprechzeiten'] .= "\n" . '<div class="wisyr_anbieter_sprechzeiten" itemprop="hoursAvailable">' . $anspr_zeit . '</div>';
@@ -589,7 +592,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		echo "\n" . '<article class="wisyr_anbieter_steckbrief" data-tabtitle="Kontakt">' . "\n";
 		
 		echo "\n" . '<div class="wisy_steckbrief clearfix">';
-			echo '<div class="wisy_steckbriefcontent" itemscope itemtype="http://schema.org/Organization">';
+			echo '<div class="wisy_steckbriefcontent" itemscope itemtype="https://schema.org/Organization">';
 				echo $this->renderCard($db, $anbieter_id, 0, array(), true);
 			echo '</div>';
 		echo "\n</div><!-- /.wisy_steckbrief -->\n";

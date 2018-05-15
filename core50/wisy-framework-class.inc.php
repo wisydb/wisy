@@ -177,7 +177,7 @@ class WISY_FRAMEWORK_CLASS
 							<p><b>Fehler 404 - Seite nicht gefunden</b></p>
 							<p>Entschuldigung, aber die von Ihnen gewünschte Seite konnte leider nicht gefunden werden. Sie können jedoch ...
 							<ul>
-								<li><a href="http://'.$_SERVER['HTTP_HOST'].'">Die Startseite von '.$_SERVER['HTTP_HOST'].' aufrufen ...</a></li>
+								<li><a href="//'.$_SERVER['HTTP_HOST'].'">Die Startseite von '.$_SERVER['HTTP_HOST'].' aufrufen ...</a></li>
 								<li><a href="javascript:history.back();">Zur&uuml;ck zur zuletzt besuchten Seite wechseln ...</a></li>
 							</ul>
 						</div>
@@ -386,7 +386,8 @@ class WISY_FRAMEWORK_CLASS
 				if( $this->iniRead('fav.mail', '1') ) {
 					$mailsubject = $this->iniRead('fav.mail.subject', 'Kursliste von __HOST__');
 					$mailsubject = str_replace('__HOST__', $_SERVER['HTTP_HOST'], $mailsubject);
-					$mailbody = $this->iniRead('fav.mail.body', "Das ist meine Kursliste zum Ausdrucken von __HOST__:\n\nhttp://__HOST__/");
+					$protocol = $this->iniRead('portal.https', '') ? "https" : "http";
+					$mailbody = $this->iniRead('fav.mail.body', "Das ist meine Kursliste zum Ausdrucken von __HOST__:\n\n".$protocol."://__HOST__/");
 					$mailbody = str_replace('__HOST__', $_SERVER['HTTP_HOST'], $mailbody);
 					$mailfav = 'mailto:?subject='.rawurlencode($mailsubject).'&body='.rawurlencode($mailbody);
 				}
@@ -940,7 +941,7 @@ class WISY_FRAMEWORK_CLASS
 		$mobile_maxresolution = (intval($mobile_url[1]) > 0) ? $mobile_url[1] : 640;
 		$mobile_url = $mobile_url[0];
 	
-		if(str_replace("http://", "", $mobile_url) != "")
+		if(str_replace("http://", "", $mobile_url) != "" && str_replace("https://", "", $mobile_url) != "")
 			$ret .= '<link rel="alternate" media="only screen and (max-width: '.$mobile_maxresolution.'px)" href="'.$mobile_url.'/'.$requestedPage.'" >' . "\n"; // $requestedPage may be empty for homepage
 			
 		return $ret;
@@ -1142,7 +1143,7 @@ class WISY_FRAMEWORK_CLASS
 		}
 		
 		// iwwb specials
-		if( $this->iniRead('iwwbumfrage', 'unset')!='unset' && $_SERVER['HTTPS']!='on' )
+		if( $this->iniRead('iwwbumfrage', 'unset')!='unset' && $_SERVER['HTTPS']!='on')
 		{
 			require_once('files/iwwbumfrage.php');
 		}
@@ -1435,7 +1436,7 @@ class WISY_FRAMEWORK_CLASS
 			}
 			
 			// for "normal pages" as kurse, anbieter, search etc. switch back to non-secure
-			if( $renderer->unsecureOnly && $_SERVER['HTTPS']=='on' )
+			if( $renderer->unsecureOnly && $_SERVER['HTTPS']=='on' && !$this->iniRead('portal.https', '') )
 			{
 				$redirect = "http://" . $_SERVER['HTTP_HOST'] . $_SERVER["REQUEST_URI"];
 				fwd301($redirect);

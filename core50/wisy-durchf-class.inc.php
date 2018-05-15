@@ -572,7 +572,7 @@ class WISY_DURCHF_CLASS
 				$this->framework->map->addPoint2($record, $durchfuehrungId);
 			}
 			
-			$map_URL = 'http://maps.google.com/?q=' . urlencode($strasse . ', ' . $plz . ' ' . $ort . ', ' . $land);					
+			$map_URL = 'https://maps.google.com/?q=' . urlencode($strasse . ', ' . $plz . ' ' . $ort . ', ' . $land);					
 			
 			if( $details )
 			{

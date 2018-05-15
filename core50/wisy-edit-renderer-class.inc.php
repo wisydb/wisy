@@ -535,7 +535,10 @@ class WISY_EDIT_RENDERER_CLASS
 				$redirect = $fwd . (strpos($fwd, '?')===false? '?' : '&') . ('bwd='.urlencode($this->bwd));
 				if( $_SERVER['HTTPS']=='on' )
 					$redirect = 'http://' . $_SERVER['HTTP_HOST'] . '/' . $redirect; // back to a normal connection
-				header("Location: $redirect");
+				
+				if(!$this->framework->iniRead('portal.https', '')) 
+				    header("Location: $redirect");
+				
 				exit(); // success - login done!
 			}
 		}
@@ -1997,7 +2000,7 @@ class WISY_EDIT_RENDERER_CLASS
 				echo '<p>';
 					echo 'Ich versichere mit dem Speichern, dass ich den Beitrag selbst verfasst habe bzw. 
 							dass er keine fremden Rechte verletzt und willige ein, ihn unter der 
-							<a href="http://creativecommons.org/licenses/by-sa/3.0/deed.de" target="_blank" title="Weitere Informationen auf creativecommons.org">Lizenz f&uuml;r freie Dokumentation</a> zu ver&ouml;ffentlichen.';
+							<a href="https://creativecommons.org/licenses/by-sa/3.0/deed.de" target="_blank" title="Weitere Informationen auf creativecommons.org">Lizenz f&uuml;r freie Dokumentation</a> zu ver&ouml;ffentlichen.';
 					echo '<br><br>Hinweis: Neue Angebote, neue Durchf&uuml;hrungen und neue Stichworte stehen evtl. erst am n&auml;chsten Tag &uuml;ber die Stichwort-Suche zur Verf&uuml;gung.<br>Auf den Detailseiten sind &Auml;nderungen sofort sichtbar.';
 				echo '</p>';
 				if( $kurs['rights_editTitel'] )

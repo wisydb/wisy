@@ -767,7 +767,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			        }
 			</script>
 
-			<form method="post" action="http://www.iwwb.de/suchergebnis.php" target="IWWB">
+			<form method="post" action="https://www.iwwb.de/suchergebnis.php" target="IWWB">
 			<input type="hidden" name="external" value="true">
   <input type="hidden" name="method" value="iso">
   <input type="hidden" name="feldname1" id="feldname1" value="Freitext" />
@@ -786,7 +786,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			 #A5AAC6;font-weight: bold;color: #FFFFFF;margin: 0px;border: 1px solid #FFFFFF;padding: 0px;" value="Suche starten" onClick=
 			"IWWBsearch(this)"></td>
 			<td align="right" style="font-family: Verdana, Arial, Helvetica, sans-serif;font-size: 11px;color: #5F6796;font-weight: bold;
-			"><a href="http://www.iwwb.de" target="_blank"><img src="http://www.iwwb.de/web/images/iwwb.gif" border="0"></a>&nbsp;</td>
+			"><a href="https://www.iwwb.de" target="_blank"><img src="https://www.iwwb.de/web/images/iwwb.gif" border="0"></a>&nbsp;</td>
 			</tr>
 			</form>
 			</table>

@@ -64,7 +64,8 @@ class WISY_EDIT_FORGOTPW_CLASS
 
 						$protocol = 'http';
 						if( $this->framework->iniRead('useredit.secure', 1)==1 
-						 && substr($_SERVER['HTTP_HOST'], -6)!='.local' )
+						 && substr($_SERVER['HTTP_HOST'], -6)!='.local' 
+						 || $this->framework->iniRead('portal.https', ''))
 							$protocol = 'https';
 						
 						$f_link = "{$protocol}://__HTTP_HOST__/edit?action=forgotpw&c={$f_confirm}";
@@ -73,7 +74,7 @@ class WISY_EDIT_FORGOTPW_CLASS
 						$f_mailbody = 
 "Hallo $f_email -
 
-Sie, oder jemand der sich als Kursanbieter auf __HTTP_HOST__ bzw. __NAME__ ausgegeben hat, haben unter http://__HTTP_HOST__/edit ein neues Passwort für Ihren Account beantragt.
+Sie, oder jemand der sich als Kursanbieter auf __HTTP_HOST__ bzw. __NAME__ ausgegeben hat, haben unter https://__HTTP_HOST__/edit ein neues Passwort für Ihren Account beantragt.
 
 Wenn Sie KEIN neues Passwort beantragt haben, oder wenn Ihnen Ihr altes Passwort zwischenzeitlich wieder eingefallen ist, ignorieren und loeschen Sie bitte diese E-Mail.
 

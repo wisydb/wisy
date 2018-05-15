@@ -18,11 +18,11 @@ class WISY_GLOSSAR_RENDERER_CLASS
 		if( substr($artikel, 0, 4) == 'b2b:' )
 		{
 			$artikel = substr($artikel, 4);
-			return 'http:/'.'/b2b.wisy.info/index.php?title='.urlencode($artikel).'';
+			return 'https:/'.'/b2b.wisy.info/index.php?title='.urlencode($artikel).'';
 		}
 		else
 		{
-			return 'http:/'.'/de.m.wikipedia.org/w/index.php?title='.urlencode($artikel).''; // 28.10.2013 weiterleitung auf die Mobilversion - auch auf dem Desktop, s. Mail von Jürgen vom 26.10.2013
+			return 'https:/'.'/de.m.wikipedia.org/w/index.php?title='.urlencode($artikel).''; // 28.10.2013 weiterleitung auf die Mobilversion - auch auf dem Desktop, s. Mail von Jürgen vom 26.10.2013
 		}
 	}
 	
