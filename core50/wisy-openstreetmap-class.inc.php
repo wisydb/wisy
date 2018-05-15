@@ -66,7 +66,7 @@ class G_GEOCODE
 	//		... array('error'=>'short error message') on failure
 	function geocode($q_arr)
 	{
-	    $this->nominatim_url = 'http://nominatim.openstreetmap.org/search';
+	    $this->nominatim_url = 'https://nominatim.openstreetmap.org/search';
 	    $this->nominatim_params = '?format=xml&limit=3&accept-language=de';
 	    
 	    $alternate_geocoder = $this->framework->iniRead('nominatim.alternate.geocoder', '');
@@ -101,7 +101,7 @@ class G_GEOCODE
 			return array('error'=>'err_geocode_param');
 		}
 	
-		// read data - Usage Policy: http://wiki.openstreetmap.org/wiki/Nominatim_usage_policy
+		// read data - Usage Policy: https://wiki.openstreetmap.org/wiki/Nominatim_usage_policy
 		//	"Usage triggered by searches of the users are okay, 
 		//	Howver, no Heavy usage: max. 1 Request/s (for all users together)"
 		// to determinate the standard zoom, we could use the bounding box or sth. as the type (the XML-result gives much more information than just the lat/lng)
@@ -419,7 +419,7 @@ class WISY_OPENSTREETMAP_CLASS
 		// call geocoder
 		$obj = new G_GEOCODE($this->framework);
 		if( $addto == 'temp' ) {
-			//$obj->set_nominatim_url('http://open.mapquestapi.com/nominatim/v1/search'); -- 2015-09-28 15:48 this server has problems, stay on default
+			//$obj->set_nominatim_url('https://open.mapquestapi.com/nominatim/v1/search'); -- 2015-09-28 15:48 this server has problems, stay on default
 		}
 		$coord = $obj->geocode($q_arr);
 		//$coord['dbg_geocoder'] = $obj->get_nominatim_url();

@@ -18,7 +18,7 @@ class WISY_GLOSSAR_RENDERER_CLASS
 		if( substr($artikel, 0, 4) == 'b2b:' )
 		{
 			$artikel = substr($artikel, 4);
-			return 'https:/'.'/b2b.wisy.info/index.php?title='.urlencode($artikel).'';
+			return 'https:/'.'/b2b.kursportal.info/index.php?title='.urlencode($artikel).'';
 		}
 		else
 		{

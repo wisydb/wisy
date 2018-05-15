@@ -738,7 +738,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			echo '</div>';
 		}
 
-		if( !$nexturl && $_SERVER['HTTPS']!='on' && !$this->framework->editSessionStarted ) {
+		if( !$nexturl && !$this->framework->editSessionStarted ) {
 
 			echo '	<div id="iwwb"><!-- BANNER IWWB START -->
 				<script type="text/javascript">

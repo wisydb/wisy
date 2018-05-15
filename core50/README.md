@@ -18,7 +18,7 @@ erzeichnisse `/files` & Co. verwenden.
 Ohne Rücksprache dürfen in diesem Verzeichnis auch _keine_ Codeänderungen
 vorgenommen werden - hierfür bietet WISY 5.0 ein Modulsystem, das es erlaubt
 Klassen von WISY 5.0 portalbezogen zu ändern, s. 
-http://b2b.wisy.info/index.php?title=Portalmodule
+https://b2b.kursportal.info/index.php?title=Portalmodule
 
 Bei Fragen wenden Sie sich bitte an Jürgen Voss oder an Björn Petersen:
 voss at weiterbildung-hamburg dotde

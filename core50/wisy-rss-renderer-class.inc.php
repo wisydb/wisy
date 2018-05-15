@@ -37,7 +37,8 @@ class WISY_RSS_RENDERER_CLASS
 		$this->framework 	=& $framework;
 		$this->queryString	= rtrim($param['q'], ', '); // remove trailing commas and spaces
 		$this->domain       = $_SERVER['HTTP_HOST'];
-		$this->absPath 		= 'http:/' . '/' . $this->domain . '/';
+		$protocol = $this->framework->iniRead('portal.https', '') ? "https" : "http";
+		$this->absPath 		= $protocol.':/' . '/' . $this->domain . '/';
 		
 		$this->dbCache		=& createWisyObject('WISY_CACHE_CLASS', $this->framework, array('table'=>'x_cache_rss', 'itemLifetimeSeconds'=>60*60));
 	}

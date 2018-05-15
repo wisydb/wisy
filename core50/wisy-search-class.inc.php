@@ -293,7 +293,7 @@ class WISY_SEARCH_CLASS
 
 						$this->rawJoin  .= " LEFT JOIN x_kurse_latlng j$i ON x_kurse.kurs_id=j$i.kurs_id";
 						$this->rawWhere .= $this->rawWhere? ' AND ' : ' WHERE ';
-						$this->rawWhere .= "((j$i.lat BETWEEN $min_lat AND $max_lat) AND (j$i.lng BETWEEN $min_lng AND $max_lng))"; // lt. http://dev.mysql.com/doc/refman/4.1/en/mysql-indexes.html wird der B-Tree auch fuer groesser/kleiner oder BETWEEN abfragen verwendet.
+						$this->rawWhere .= "((j$i.lat BETWEEN $min_lat AND $max_lat) AND (j$i.lng BETWEEN $min_lng AND $max_lng))"; // lt. https://dev.mysql.com/doc/refman/4.1/en/mysql-indexes.html wird der B-Tree auch fuer groesser/kleiner oder BETWEEN abfragen verwendet.
 						
 						if( isset($_COOKIE['debug']) )
 						{

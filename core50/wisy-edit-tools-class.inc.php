@@ -14,7 +14,7 @@ class WISY_EDIT_TOOLS_CLASS
 	// function extracts all URLs from text text
 	public function getUrls($text)
 	{
-		$url_exclude		= ' \s<>[\]\'\"\177-\277'; // EDIT 20.01.2011: () are no longer excluded from URLs, see http://www.w3.org/Addressing/rfc1738.txt , 2.2
+		$url_exclude		= ' \s<>[\]\'\"\177-\277'; // EDIT 20.01.2011: () are no longer excluded from URLs, see https://www.w3.org/Addressing/rfc1738.txt , 2.2
 		$url_end_exclude	= '.,;:!?';
 		$pattern			= "#(https?|ftp|nntp|news|mailto):[^$url_exclude]*[^$url_exclude$url_end_exclude]#i";
 		preg_match_all($pattern, $text, $matches);
@@ -45,6 +45,7 @@ class WISY_EDIT_TOOLS_CLASS
 	private function normalizeUrl($url)
 	{
 		$url = str_replace('http://', '', $url);
+		$url = str_replace('https://', '', $url);
 		$url = preg_replace('#/$#', '', $url); // remove trailing slash
 		$url = strtolower($url);
 		return $url;

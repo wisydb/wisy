@@ -363,7 +363,7 @@ class WISY_GOOGLEMAPS_CLASS
 		}
 
 		$ret .= "
-				<script src=\"http://maps.google.com/maps?file=api&amp;v=2&amp;key={$this->apiKey}\" type=\"text/javascript\"></script>
+				<script src=\"https://maps.google.com/maps?file=api&amp;v=2&amp;key={$this->apiKey}\" type=\"text/javascript\"></script>
 				<script src=\"wisy-googlemaps.js\" type=\"text/javascript\"></script>
 				<script type=\"text/javascript\"><!--
 					var gm_allAdr=new Array;var gm_allDescr=new Array;$allInfo
@@ -414,7 +414,7 @@ class WISY_GOOGLEMAPS_CLASS
 		xml_set_element_handler($this->xml_obj, 'geocode_startHandler', 'geocode_endHandler');
 		
 		//$q = "scheplerstr. 4, hamburg";
-        $url = 'http://maps.google.com/maps/geo?q='.urlencode(utf8_encode($q)).'&output=xml&key=' . $this->apiKey;
+        $url = 'https://maps.google.com/maps/geo?q='.urlencode(utf8_encode($q)).'&output=xml&key=' . $this->apiKey;
 		if (!($fp = @fopen($url, "r"))) {
 			return false;
 		}

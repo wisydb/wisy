@@ -14,7 +14,8 @@ class WISY_ROBOTS_RENDERER_CLASS
 		$this->param = $param;
 
 		$this->domain       = $_SERVER['HTTP_HOST'];
-		$this->absPath 		= 'http:/' . '/' . $this->domain . '/';
+		$protocol = $this->framework->iniRead('portal.https', '') ? "https" : "http";
+		$this->absPath 		= $protocol.':/' . '/' . $this->domain . '/';
 
 		$this->sitemapCache		=& createWisyObject('WISY_CACHE_CLASS', $this->framework, array('table'=>'x_cache_sitemap', 'storeBlobs'=>true, 'itemLifetimeSeconds'=>24*60*60));
 	}
@@ -75,8 +76,7 @@ class WISY_ROBOTS_RENDERER_CLASS
 		header("Content-type: text/plain");
 		headerDoCache();
 		
-		if( $_SERVER['HTTPS']=='on' 
-		 || strpos($_SERVER['HTTP_HOST'], 'sandbox')!==false || strpos($_SERVER['HTTP_HOST'], 'backup')!==false )
+		if( strpos($_SERVER['HTTP_HOST'], 'sandbox')!==false || strpos($_SERVER['HTTP_HOST'], 'backup')!==false )
 		{
 			echo "User-agent: *\n";
 			echo "Disallow: /\n";
@@ -85,7 +85,7 @@ class WISY_ROBOTS_RENDERER_CLASS
 		{
 			// set the sitemap, 
 			// dies steht in keinem zusammenhang mit User-agent, 
-			// siehe http://www.sitemaps.org/protocol.php#submit_robots 
+			// siehe https://www.sitemaps.org/protocol.php#submit_robots 
 			echo "Sitemap: {$this->absPath}sitemap.xml.gz\n";
 			
 			// allow the adsense spider to crawl everything
@@ -117,7 +117,7 @@ class WISY_ROBOTS_RENDERER_CLASS
 	{
 		// sitemap start
 		$sitemap =  "<" . "?xml version=\"1.0\" encoding=\"UTF-8\" ?" . ">\n";
-		$sitemap .= "<urlset xmlns=\"http:/" . "/www.sitemaps.org/schemas/sitemap/0.9\">\n";
+		$sitemap .= "<urlset xmlns=\"https:/" . "/www.sitemaps.org/schemas/sitemap/0.9\">\n";
 		$this->urlsAdded = 0;
 		
 		// grenzen fuer sitemaps:

@@ -978,7 +978,7 @@ class WISY_SYNC_RENDERER_CLASS
 
 			// UPDATE latlng table for this record
 			// die Abfrage in x_kurse_latlng sollte ausreihend schnell sein; 
-			// lt. http://dev.mysql.com/doc/refman/4.1/en/mysql-indexes.html wird der B-Tree auch fuer groesser/kleiner oder BETWEEN abfragen verwendet.
+			// lt. https://dev.mysql.com/doc/refman/4.1/en/mysql-indexes.html wird der B-Tree auch fuer groesser/kleiner oder BETWEEN abfragen verwendet.
 			if( $updateLatlng )
 			{
 				$sql = '';
