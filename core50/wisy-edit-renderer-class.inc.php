@@ -533,12 +533,9 @@ class WISY_EDIT_RENDERER_CLASS
 				}
 				
 				$redirect = $fwd . (strpos($fwd, '?')===false? '?' : '&') . ('bwd='.urlencode($this->bwd));
-				if( $_SERVER['HTTPS']=='on' )
-					$redirect = 'http://' . $_SERVER['HTTP_HOST'] . '/' . $redirect; // back to a normal connection
-				
-				if(!$this->framework->iniRead('portal.https', '')) 
-				    header("Location: $redirect");
-				
+				$protocol = $this->framework->iniRead('portal.https', '') ? "https" : "http";
+				$redirect = $protocol.'://' . $_SERVER['HTTP_HOST'] . '/' . $redirect; // back to a normal connection
+				header("Location: $redirect");
 				exit(); // success - login done!
 			}
 		}
