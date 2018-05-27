@@ -192,18 +192,18 @@ class WISY_ROBOTS_RENDERER_CLASS
 		headerDoCache();
 
 		$cacheKey = "sitemap.xml.gz." . $this->absPath;
-		/* if( ($temp=$this->sitemapCache->lookup($cacheKey))!='' )
+		if( ($temp=$this->sitemapCache->lookup($cacheKey))!='' )
 		{
 			$sitemap_gz = $temp;
 		}
 		else
-		{ */
+		{
 			$this->createSitemapXml($temp);
 			$sitemap_gz = gzencode($temp, 9);
 			$temp = ''; // free *lots* of data
 			
 			$this->sitemapCache->insert($cacheKey, $sitemap_gz);
-		/* } */
+		}
 
 		echo $sitemap_gz;
 	}
