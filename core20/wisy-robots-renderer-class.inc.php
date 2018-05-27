@@ -14,7 +14,8 @@ class WISY_ROBOTS_RENDERER_CLASS
 		$this->param = $param;
 
 		$this->domain       = $_SERVER['HTTP_HOST'];
-		$this->absPath 		= 'http:/' . '/' . $this->domain . '/';
+		$protocol = $this->framework->iniRead('portal.https', '') ? "https" : "http";
+		$this->absPath 		= $protocol.':/' . '/' . $this->domain . '/';
 
 		$this->sitemapCache		=& createWisyObject('WISY_CACHE_CLASS', $this->framework, array('table'=>'x_cache_sitemap', 'storeBlobs'=>true, 'itemLifetimeSeconds'=>24*60*60));
 	}

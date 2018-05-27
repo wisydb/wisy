@@ -1150,7 +1150,8 @@ class WISY_FRAMEWORK_CLASS
 		if( $this->iniRead('fav.mail', '1') ) {
 			$mailsubject = $this->iniRead('fav.mail.subject', 'Kursliste von __HOST__');
 			$mailsubject = str_replace('__HOST__', $_SERVER['HTTP_HOST'], $mailsubject);
-			$mailbody = $this->iniRead('fav.mail.body', "Das ist meine Kursliste zum Ausdrucken von __HOST__:\n\nhttp://__HOST__/");
+			$protocol = $this->iniRead('portal.https', '') ? "https" : "http";
+			$mailbody = $this->iniRead('fav.mail.body', "Das ist meine Kursliste zum Ausdrucken von __HOST__:\n\n".$protocol."://__HOST__/");
 			$mailbody = str_replace('__HOST__', $_SERVER['HTTP_HOST'], $mailbody);
 			$mailfav = 'mailto:?subject='.rawurlencode($mailsubject).'&body='.rawurlencode($mailbody);
 		}
@@ -1341,10 +1342,10 @@ class WISY_FRAMEWORK_CLASS
 			}
 			
 			// for "normal pages" as kurse, anbieter, search etc. switch back to non-secure
-			if( $renderer->unsecureOnly && $_SERVER['HTTPS']=='on' )
+			if( $renderer->unsecureOnly && $_SERVER['HTTPS']=='on' && !$this->iniRead('portal.https', '') )
 			{
-				$redirect = "http://" . $_SERVER['HTTP_HOST'] . $_SERVER["REQUEST_URI"];
-				fwd301($redirect);
+			    $redirect = "http://" . $_SERVER['HTTP_HOST'] . $_SERVER["REQUEST_URI"];
+			    fwd301($redirect);
 			}
 			
 			// render

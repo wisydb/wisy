@@ -141,7 +141,8 @@ class WISY_COPYRIGHT_CLASS
 			return '';
 		}
 		else {
-			return 'http://' . $editurl . '/'; // the edit pages will forward to https, if appropriate
+		    $protocol = $this->framework->iniRead('portal.https', '') ? "https" : "http";
+		    return $protocol.'://' . $editurl . '/'; // the edit pages will forward to https, if appropriate if portal.https = off otherwise https anyway
 		}
 		
 		

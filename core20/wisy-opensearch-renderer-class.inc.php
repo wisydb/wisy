@@ -25,7 +25,8 @@ class WISY_OPENSEARCH_RENDERER_CLASS
 		global $wisyPortalName;
 		global $wisyPortalKurzname;
 	
-		$absPath = 'http:/' . '/' . $_SERVER['HTTP_HOST'] . '/';
+		$protocol = $this->framework->iniRead('portal.https', '') ? "https" : "http";
+		$absPath = $protocol.':/' . '/' . $_SERVER['HTTP_HOST'] . '/';
 
 		header('Content-type: application/opensearchdescription+xml');
 		echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";

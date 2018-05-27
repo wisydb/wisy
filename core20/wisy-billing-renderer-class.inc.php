@@ -65,7 +65,8 @@ class WISY_BILLING_RENDERER_CLASS
 	{
 		// button vorbereiten
 		$amount = str_replace(',', '.', $amount);
-		$return = 'http:/' . '/' . $_SERVER['HTTP_HOST'] . '/';
+		$protocol = $this->framework->iniRead('portal.https', '') ? "https" : "http";
+		$return = $protocol.':/' . '/' . $_SERVER['HTTP_HOST'] . '/';
 		$credits = $this->allPrices[0][0];
 		$price   = $this->allPrices[0][1];
 
