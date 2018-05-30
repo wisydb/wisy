@@ -150,7 +150,86 @@ class WISY_FRAMEWORK_CLASS
 		$db->free();
 	}
 	
-
+	/******************************************************************************
+	 SEO
+	 ******************************************************************************/
+	
+	/**
+	 * #metadescription
+	 *
+	 * Gibt je Portal-Seitentyp aus übergebenem $description-String formatierten Metadescription-String zurück
+	 * Sonst: den Default-Portalbeschreibungstext aus den Portaleinstellungen.
+	 * Max. 160 Zeichen
+	 **/
+	function getMetaDescription($title = "", $description = "") {
+	    $ret = '';
+	    
+	    if(intval(trim($this->iniRead('meta.description'))) != 1)
+	        return $ret;
+	        
+	        $description_parsed = "";
+	        $skip_contentdescription = false;
+	        
+	        switch($this->getPageType()) {
+	            case 'kurs':
+	                $description_parsed = $this->generate_page_description($description, 160);
+	                break;
+	            case 'anbieter':
+	                $description_parsed = $this->generate_page_description($description, 160);
+	                break;
+	            case 'suche':
+	                // getTitleStrings Ort, Anbietername kann leer bleiben, weil Suche die params nicht braucht aber force muss sein, um enrichtitles_Einstellung zu ignorieren
+	                // $this->getTitleString($title, null, null, true);
+	                // Google-Linkbeschreibung als Tabellen-Überschrift misbrauchen = optisch sinnvoll:
+	                // $description_parsed = "Ergebnis: Termin | Titel | Anbieter"; // wird nicht übernommen, sollte unterschiedlich sein pro Seite
+	                $skip_contentdescription = true;
+	                break;
+	            case 'glossar':
+	                $description_parsed = $this->generate_page_description($description, 160);
+	                break;
+	            case 'startseite':
+	                $description_parsed = utf8_encode(trim($this->iniRead('meta.description_default', "")));
+	                break;
+	            default:
+	                $description_parsed = utf8_encode(trim($this->iniRead('meta.description_default', "")));
+	        } // Ende: switch pageTypes
+	        
+	        if($skip_contentdescription) {
+	            ;
+	        } else {
+	            $ret .= ($description_parsed == "") ? "\n".'<meta name="description" content="'.utf8_encode(trim($this->iniRead('meta.description_default', ""))).'">'."\n" : "\n".'<meta name="description" content="'.$description_parsed.'">'."\n";
+	        }
+	        
+	        return $ret;
+	}
+	
+	/**
+	 * #metasocialmedia
+	 * #metadescription
+	 *
+	 * Gibt aus $description generierten, metadescription-konformen Text von $charlength Zeichen zurück.
+	 * -> landet in Linkbeschreibung (=unter Links auf SERP) sowie Beschreibung bei geteilten Links in Social-Media-Portalen
+	 **/
+	function generate_page_description($description, $charlength) {
+	    
+	    // Wenn Wikitext in Seitentext auftaucht (Glossarseiten): erst mal parsen
+	    // dann -> HTML + echte ISO8859-Umlaute (keine Entities), und Umbrüche durch Punkt ersetzen (ist ja Linkbeschreibung) -> später strip_tags
+	    $wiki2html =& createWisyObject('WISY_WIKI2HTML_CLASS', $this);
+	    $description = html_entity_decode(preg_replace("/<br.{0,5}>/i", ". ", $wiki2html->run($description)));
+	    
+	    // Line breaks in Leerzeichen umwandeln -> Beschreibung einzeilig machen.
+	    $description = preg_replace("/[\n\r]/", " ", strip_tags(html_entity_decode($description)));
+	    
+	    // Nur erlaubte Zeichen behalten:
+	    // alphanumerische + Umlaute + wenige Sonderzeichen + Satzendzeichen. Hex-Nummern -> nach ISO8859
+	    $description = preg_replace("/[^a-z\xA4\xBD\xC4\xC5\xC6\xC7\xC8\xC9\xCA\xCB\xCC\xCD\xCE\xD6\xD8\xDC\xDF\xE0\xE1\xE4\xE5\xE6\xE7\xE8\xE9\xEA\xEB\xF1\xF6\xF8\xFC0-9.:,\- ]+/i", "", $description);
+	    
+	    // Max 1 Leerzeichen hintereinander
+	    $description = preg_replace('/\s+/', ' ', $description);
+	    
+	    return mb_substr(trim($description), 0, $charlength);
+	}
+	
 	/******************************************************************************
 	 Various Tools
 	 ******************************************************************************/
@@ -1052,7 +1131,7 @@ class WISY_FRAMEWORK_CLASS
 		}
 		
 		// replace ALL placeholders
-		$bodyStart = str_replace('__HEADTAGS__', $this->getTitleTags($param['title']) . $this->getFaviconTags() . $this->getOpensearchTags() . $this->getRSSTags() . $this->getCSSTags() . $this->getCanonicalTag($param['canonical']) . $this->getMobileAlternateTag($param['canonical']) . $this->getJSHeadTags() . $this->getAdditionalHeadTags(), $bodyStart);
+		$bodyStart = str_replace('__HEADTAGS__', $this->getTitleTags($param['title']) . $this->getFaviconTags() . $this->getOpensearchTags() . $this->getRSSTags() . $this->getCSSTags() . $this->getCanonicalTag($param['canonical']) . $this->getMobileAlternateTag($param['canonical']) . $this->getJSHeadTags() . $this->getAdditionalHeadTags() . $this->getMetaDescription($param['title'], $param['beschreibung']), $bodyStart);
 		$bodyStart = str_replace('__BODYATTR__', ' ' . $this->getJSOnload(). ' class="' . $this->getBodyClasses($param['bodyClass']) . '" x-ms-format-detection="none"', $bodyStart);
 		$bodyStart = $this->replacePlaceholders($bodyStart);
 		$i1 = strpos($bodyStart, "<!-- include ");
