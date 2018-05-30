@@ -884,6 +884,10 @@ class WISY_FRAMEWORK_CLASS
 		}
 		$ret[] = 'jquery.wisy.js' . $this->includeVersion;
 		
+		if($this->iniRead('cookiebanner', '') == 1) {
+		    $ret[] = 'cookiebanner.js';
+		}
+		
 		if( ($tempJS=$this->iniRead('head.js', '')) != '')
 		{
 			$addJs = explode(",", $tempJS);
@@ -905,6 +909,10 @@ class WISY_FRAMEWORK_CLASS
 		for( $i = 0; $i < sizeof($js); $i++ )
 		{	
 			$ret .= '<script type="text/javascript" src="'.$js[$i].'" charset="utf-8"></script>' . "\n";
+		}
+		
+		if($this->iniRead('cookiebanner', '') == 1) {
+		    $ret .= '<script type="text/javascript">window.cookiebanner_html = \''.$this->iniRead('cookiebanner.html', '').'\'; window.cookiebanner_gueltig = '.$this->iniRead('cookiebanner.gueltig', '').';</script>' . "\n";
 		}
 		
 		return $ret;

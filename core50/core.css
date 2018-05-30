@@ -695,7 +695,16 @@ th .fav_hint_in_th {
   white-space: normal; /* nowrap would bring the icon block to the next line*/
 }
 
-
+/*******************************************************************************
+Datenschutz
+*******************************************************************************/
+#cookie-banner {
+ padding: 10px;
+ background-color: white;
+ opacity: 1;
+ position: absolute;
+ z-index: 99999;
+}
 
 /*******************************************************************************
 print 
@@ -752,4 +761,3 @@ print
 	}
  
 }
-
