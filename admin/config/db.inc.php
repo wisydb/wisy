@@ -318,6 +318,8 @@ $feedback->add_row(TABLE_TEXT|TABLE_SUMMARY|TABLE_LIST|TABLE_MUST|TABLE_READONLY
 																			'url',				'Bewertete URL', '', '', '', array('ctrl.size'=>'10-80'));
 $feedback->add_row(TABLE_ENUM|TABLE_LIST|TABLE_READONLY,					'rating',			'Wertung', 0, '0###nicht hilfreich###1###hilfreich');
 $feedback->add_row(TABLE_TEXTAREA|TABLE_LIST|TABLE_READONLY,				'descr',			'Kommentar');
+$feedback->add_row(TABLE_TEXT|TABLE_LIST|TABLE_READONLY,					'name',			'Name');
+$feedback->add_row(TABLE_TEXT|TABLE_LIST|TABLE_READONLY,					'Email',			'Email');
 $feedback->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION, 						'notizen', 			'Journal', '', '', '', array('layout.section'=>1));
 
 
