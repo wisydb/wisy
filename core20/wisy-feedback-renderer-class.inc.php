@@ -33,6 +33,8 @@ class WISY_FEEDBACK_RENDERER_CLASS
 		$ip		= $this->anonymize_ip1($_SERVER['REMOTE_ADDR']);
 		$rating = intval($_GET['rating']); if( $rating != 0 && $rating != 1 ) { echo 'BAD RATING'; return; }
 		$descr  = trim(utf8_decode($_GET['descr']));
+		$name  = trim(utf8_decode($_GET['name']));
+		$email  = trim(utf8_decode($_GET['email']));
 		
 		// connect to db
 		$today = strftime("%Y-%m-%d %H:%M:%S");
@@ -46,7 +48,7 @@ class WISY_FEEDBACK_RENDERER_CLASS
 			$id = intval($db->f('id'));
 			if( $descr != '' )
 			{
-				$db->query("UPDATE feedback SET descr='".addslashes($descr)."' WHERE id=$id;");
+			    $db->query("UPDATE feedback SET descr='".addslashes($descr)."', name='".addslashes($name)."', email='".addslashes($email)."' WHERE id=$id;");
 				echo 'DESCR ADDED';
 				return;
 			}

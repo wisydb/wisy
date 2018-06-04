@@ -772,30 +772,36 @@ function editWeekdays(jqObj)
  * feedback stuff
  *****************************************************************************/
 
-function ajaxFeedback(rating, descr)
+function ajaxFeedback(rating, descr, name, email)
 {
-	var url = 'feedback?url=' + encodeURIComponent(window.location) + '&rating=' + rating + '&descr=' + encodeURIComponent(descr);
+	var url = 'feedback?url=' + encodeURIComponent(window.location) + '&rating=' + rating + '&descr=' + encodeURIComponent(descr) + '&name=' + encodeURIComponent(name) + '&email=' + encodeURIComponent(email);
 	$.get(url);
 }
 
 function describeFeedback()
 {
 	var descr = $('#wisy_feedback_descr').val();
+	var name = $('#wisy_feedback_name').val();
+	var email = $('#wisy_feedback_email').val();
+	
 	descr = $.trim(descr);
+	name = $.trim(name);
+	email = $.trim(email);
+	
 	if( descr == '' )
 	{
 		alert('Bitte geben Sie zuerst Ihren Kommentar ein.');
 	}
 	else
 	{
-		$('#wisy_feedback_line2').html('<strong style="color: green;">Vielen Dank für Ihren Kommentar!</strong>');
-		ajaxFeedback(0, descr); // Kommentar zur Bewertung hinzufügen; die Bewertung selbst (erster Parameter) wird an dieser Stelle ignoriert!
+		$('#wisy_feedback_line2').html('<strong style="color: green;">Vielen Dank f&uuml;r Ihren Kommentar!</strong>');
+		ajaxFeedback(0, descr, name, email); // Kommentar zur Bewertung hinzufuegen; die Bewertung selbst (erster Parameter) wird an dieser Stelle ignoriert!
 	}
 }
 
 function sendFeedback(rating)
 {
-	$('#wisy_feedback_yesno').html('&nbsp; &nbsp;<strong style="color: green;">Vielen Dank für Ihr Feedback!</strong>');
+	$('#wisy_feedback_yesno').html('&nbsp; &nbsp;<strong style="color: green;">Vielen Dank f&uuml;r Ihr Feedback!</strong>');
 	
 	if( rating == 0 )
 	{
@@ -803,8 +809,9 @@ function sendFeedback(rating)
 				'<p id="wisy_feedback_line2">'
 			+		'Bitte schildern Sie uns noch kurz, warum diese Information nicht hilfreich war und was wir besser machen können:<br />'
 				+	'<textarea id="wisy_feedback_descr" name="wisy_feedback_descr" rows="2" cols="20" style="width: 400px;"></textarea><br />'
-				+	'Wenn Sie eine Antwort wünschen, geben Sie bitte auch Ihre E-Mail-Adresse an.<br />'
-				+	'<input type="submit" onclick="describeFeedback(); return false;" value="Kommentar senden" />'
+				+	'<br><b>Wenn Sie eine Antwort w&uuml;nschen</b>, geben Sie bitte auch Ihre E-Mail-Adresse an (optional).<br />Wir verwenden Ihre E-Mailadresse und ggf. Name nur, um Ihr Anliegen zu bearbeiten und l&ouml;schen diese personenbezogenen Daten alle 12 Monate.<br>Falls sich das Feedback eigentlich an den Anbieter richtet, geben wir die Daten evtl. an diesen weiter.<br><br>'
+				+	'<label for="fname">Name (optional): </label><input type="text" id="wisy_feedback_name" name="wisy_feedback_name">&nbsp; <label for="femail">E-Mailadresse (optional): </label><input type="text" id="wisy_feedback_email" name="wisy_feedback_email"><br><br>'
+				+	'<input type="submit" onclick="describeFeedback(); return false;" value="Feedback senden" />'
 			+	'</p>'
 		);
 		$('#wisy_feedback_descr').focus();
@@ -815,8 +822,9 @@ function sendFeedback(rating)
 				'<p id="wisy_feedback_line2">'
 			+		'Bitte schildern Sie uns kurz, was hilfreich war, damit wir Bew&auml;hrtes bewahren und ausbauen:<br />'
 				+	'<textarea id="wisy_feedback_descr" name="wisy_feedback_descr" rows="2" cols="20" style="width: 400px;"></textarea><br />'
-				+	'Wenn Sie eine Antwort wünschen, geben Sie bitte auch Ihre E-Mail-Adresse an.<br />'
-				+	'<input type="submit" onclick="describeFeedback(); return false;" value="Kommentar senden" />'
+				+	'<br><b>Wenn Sie eine Antwort w&uuml;nschen</b>, geben Sie bitte auch Ihre E-Mail-Adresse an (optional).<br />Wir verwenden Ihre E-Mailadresse und ggf. Name nur, um Ihr Anliegen zu bearbeiten und l&ouml;schen diese personenbezogenen Daten alle 12 Monate.<br>Falls sich das Feedback eigentlich an den Anbieter richtet, geben wir die Daten evtl. an diesen weiter.<br><br>'
+				+	'<label for="fname">Name (optional): </label><input type="text" id="wisy_feedback_name" name="wisy_feedback_name">&nbsp; <label for="femail">E-Mailadresse (optional): </label><input type="text" id="wisy_feedback_email" name="wisy_feedback_email"><br><br>'
+				+	'<input type="submit" onclick="describeFeedback(); return false;" value="Feedback senden" />'
 			+	'</p>'
 		);
 		$('#wisy_feedback_descr').focus();
