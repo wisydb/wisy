@@ -201,6 +201,23 @@ class WISY_FRAMEWORK_CLASS
 	    return mb_substr(trim($description), 0, $charlength);
 	}
 	
+	// #languagedefintion
+	function getHreflangTags() {
+	    $ret = '';
+	    
+	    if(intval(trim($this->iniRead('seo.enablelanguagedefinition'))) != 1)
+	        return $ret;
+	        
+	        $defaultlang = trim($this->iniRead('seo.defaultlanguage', "de"));
+	        
+	        if(!$defaultlang)
+	            return $ret;
+	            
+	            $ret .= '<link rel="alternate" hreflang="'.$defaultlang.'" href="//'.$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI'].'">';
+	            
+	            return $ret;
+	}
+	
 	// #metasocialmedia
 	// #metadescription
 	// #enrichtitles
@@ -1103,7 +1120,7 @@ class WISY_FRAMEWORK_CLASS
 		}
 		
 		// replace ALL placeholders
-		$bodyStart = str_replace('__HEADTAGS__', $this->getTitleTags($param['title']) . $this->getFaviconTags() . $this->getOpensearchTags() . $this->getRSSTags() . $this->getCSSTags() . $this->getCanonicalTag($param['canonical']) . $this->getMobileAlternateTag($param['canonical']) . $this->getJSHeadTags(). $this->getAdditionalHeadTags() . $this->getMetaDescription($param['title'], $param['beschreibung']), $bodyStart);
+		$bodyStart = str_replace('__HEADTAGS__', $this->getTitleTags($param['title']) . $this->getFaviconTags() . $this->getOpensearchTags() . $this->getRSSTags() . $this->getCSSTags() . $this->getCanonicalTag($param['canonical']) . $this->getMobileAlternateTag($param['canonical']) . $this->getJSHeadTags(). $this->getAdditionalHeadTags() . $this->getMetaDescription($param['title'], $param['beschreibung']) . $this->getHreflangTags(), $bodyStart);
 		$bodyStart = str_replace('__BODYATTR__', ' ' . $this->getJSOnload(). ' class="' . $this->getBodyClasses($param['bodyClass']) . '" x-ms-format-detection="none"', $bodyStart);
 		$bodyStart = $this->replacePlaceholders($bodyStart);
 		$i1 = strpos($bodyStart, "<!-- include ");
