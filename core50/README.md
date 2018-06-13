@@ -20,8 +20,8 @@ vorgenommen werden - hierfür bietet WISY 5.0 ein Modulsystem, das es erlaubt
 Klassen von WISY 5.0 portalbezogen zu ändern, s. 
 https://b2b.kursportal.info/index.php?title=Portalmodule
 
-Bei Fragen wenden Sie sich bitte an Jürgen Voss oder an Björn Petersen:
-voss at weiterbildung-hamburg dotde
+Bei Fragen wenden Sie sich bitte an Jörg Meyer oder an Björn Petersen:
+meyer at weiterbildung-hamburg dotde
 bpetersen at b44t dotcom
 
 Björn Petersen
