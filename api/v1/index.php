@@ -357,6 +357,7 @@ class REST_API_CLASS
 		
 		// check apikey
 		$apikey = trim($_GET['apikey']);
+		if($apikey == '' && strlen($_SERVER['HTTP_APIKEY']) > 3) $apikey =  $_SERVER['HTTP_APIKEY']; // altern. via request headers
 		if( $apikey == '' ) $this->halt(403, 'apikey missing');
 		if( strlen($apikey) < 8 ) $this->halt(403, 'apikey too short'); // as we allow manual apikeys, force a minimal length here
 		
@@ -379,6 +380,7 @@ class REST_API_CLASS
 
 		// get client - needed for debugging and statistics, the client is in the GET url; this should be just fine
 		$client = $_GET['client'];
+		if($client == '' && strlen($_SERVER['HTTP_CLIENT']) > 3) $client =  $_SERVER['HTTP_CLIENT']; // altern. via request headers
 		if( $client == '' ) $this->halt(403, 'client missing - please specify the client program name and the clients version number.');
 	
 		// get method
@@ -388,7 +390,8 @@ class REST_API_CLASS
 		if( !($this->apikeyflags&APIKEY_WRITE) && $method!='GET' ) $this->halt(403, 'apikey has no write access');
 		
 		// get scope
-		$scope = explode('.', $_GET['scope'], 3);
+		$scope = explode('.', $_REQUEST['scope'], 3);
+		if($_GET['scope'] == '' && strlen($_SERVER['HTTP_SCOPE']) > 2) $scope = explode('.', $_SERVER['HTTP_SCOPE'], 3); // altern. via request headers
 
 		// see what to do
 		if( $method == 'GET' )
