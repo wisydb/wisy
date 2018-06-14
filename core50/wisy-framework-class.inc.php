@@ -1469,6 +1469,16 @@ class WISY_FRAMEWORK_CLASS
 					echo str_replace('<br />', '\n', $content);
 					exit();
 				}
+				// #vanityurl
+				else if( ($gid=$this->iniRead('glossaralias.'.$wisyRequestedFile, '0'))!='0' )
+				{
+				    // Wenn sinnvolle Glossar-ID: Ist max. 20-stellige Zahl, die nicht mit 0 anfängt
+				    if(preg_match("/^[1-9][0-9]{1,20}$/", $gid))
+				    {
+				        $_GET['id'] = trim($gid);	// unschön, aber hier nicht sinnvoll anders möglich?.
+				        return createWisyObject('WISY_GLOSSAR_RENDERER_CLASS', $this);
+				    }
+				}
 				break;
 
 			// misc
