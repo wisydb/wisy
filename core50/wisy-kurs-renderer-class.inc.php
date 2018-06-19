@@ -24,24 +24,65 @@ class WISY_KURS_RENDERER_CLASS
 
 		// query DB
 		$db = new DB_Admin();
-		$db->query("SELECT	k.freigeschaltet, k.titel, k.org_titel, k.beschreibung, k.anbieter, k.date_created, k.date_modified, k.bu_nummer, k.fu_knr, k.azwv_knr, a.pflege_pweinst, a.typ
-						FROM kurse k
-						LEFT JOIN anbieter a ON a.id=k.anbieter
-						WHERE k.id=$kursId"); // "a.suchname" etc. kann mit "LEFT JOIN anbieter a ON a.id=k.anbieter" zus. abgefragt werden
+		$db->query("SELECT k.freigeschaltet, k.titel, k.org_titel, k.beschreibung, k.anbieter, k.date_created, k.date_modified, k.bu_nummer, k.fu_knr, k.azwv_knr,
+                           a.pflege_pweinst, a.suchname, a.strasse, a.plz, a.ort, a.stadtteil, a.land, a.anspr_name, a.postname, a.anspr_zeit, a.anspr_tel, a.anspr_fax, a.anspr_email
+						  FROM kurse k
+						  LEFT JOIN anbieter a ON a.id=k.anbieter
+						  WHERE k.id=$kursId"); // "a.suchname" etc. kann mit "LEFT JOIN anbieter a ON a.id=k.anbieter" zus. abgefragt werden
 		if( !$db->next_record() )
-			$this->framework->error404();
+		   $this->framework->error404();
+		
 		$title 				= $db->f8('titel');
 		$originaltitel		= $db->f8('org_titel');
-		$freigeschaltet 	= intval($db->f8('freigeschaltet'));
+		$freigeschaltet 	= intval($db->f('freigeschaltet'));
 		$beschreibung		= $db->f8('beschreibung');
-		$anbieterId			= intval($db->f8('anbieter'));
-		$date_created		= $db->f8('date_created');
-		$date_modified		= $db->f8('date_modified');
+		$anbieterId			= intval($db->f('anbieter'));
+		$date_created		= $db->f('date_created');
+		$date_modified		= $db->f('date_modified');
 		$bu_nummer 			= $db->f8('bu_nummer');
 		$pflege_pweinst		= intval($db->f8('pflege_pweinst'));
-		$anbieter_typ		= intval($db->f8('typ'));
+		$anbieter_name = $db->f8('suchname');
+		$anbieterdetails['suchname'] = $anbieter_name;
+		$anbieterdetails['postname'] = $db->f8('postname');
+		$anbieterdetails['strasse'] = $db->f8('strasse');
+		$anbieterdetails['plz'] = $db->f8('plz');
+		$anbieterdetails['ort'] = $db->f8('ort');
+		$anbieterdetails['stadtteil'] = $db->f8('stadtteil');
+		$anbieterdetails['land'] = $db->f8('land');
+		$anbieterdetails['anspr_name'] = $db->f8('anspr_name');
+		$anbieterdetails['anspr_zeit'] = $db->f8('anspr_zeit');
+		$anbieterdetails['anspr_tel'] = $db->f8('anspr_tel');
+		$anbieterdetails['anspr_fax'] = $db->f8('anspr_fax');
+		$anbieterdetails['anspr_email'] = $db->f8('anspr_email');
+		    
 		$record				= $db->Record;
 		
+		// #enrichtitles
+		$ort = "";
+		
+		// #enrichtitles
+		// #richtext
+		// #socialmedia
+		$showAllDurchf = intval($_GET['showalldurchf'])==1? 1 : 0;
+		$durchfClass =& createWisyObject('WISY_DURCHF_CLASS', $this->framework);
+		$durchfuehrungenIds = $durchfClass->getDurchfuehrungIds($db, $kursId, $showAllDurchf);	// bereits PLZ-überprüft
+		
+		if(sizeof($durchfuehrungenIds) == 0)
+		    $richtext = false;	// In dem fall kann der Richtext (EducationEvent) nicht vollständig sein und kann/sollte so nicht beworben werden.
+		    
+		if(intval(trim($this->framework->iniRead('seo.enrich_titles'))) == 1) {
+		  // Nur EIN Ort EINER Durchführung wird verwendet - ähnlich Suchergebnisse -> "x weitere..."
+		  if(is_array($durchfuehrungenIds) && count($durchfuehrungenIds) > 0) {
+		  $db->query("SELECT ort FROM durchfuehrung WHERE id={$durchfuehrungenIds[0]} LIMIT 1"); // id, plz, strasse, land, stadtteil, beginn,
+    		      if( $db->next_record() ) {
+    		          $df = $db->Record;
+    		          if(trim($df['ort']) != "") {
+        		          $ort = $df['ort'];	// $df['plz'], $df['strasse'], $df['land'], $df['stadtteil'], $df['beginn'],
+        		      }
+    		      }
+		  }
+		}
+		    
 		// promoted?
 		if( intval($_GET['promoted']) == $kursId )
 		{
@@ -72,7 +113,7 @@ class WISY_KURS_RENDERER_CLASS
 			$bodyClass .= ' wisyp_kurs_abschluss';	
 		}	
 		
-		echo $this->framework->getPrologue(array('title'=>$title, 'canonical' => $this->framework->getUrl('k', array('id'=>$kursId)), 'bodyClass'=>$bodyClass));
+		echo $this->framework->getPrologue(array('title'=>$title, 'ort' => $ort, 'anbieter_name'=>$anbieter_name, 'anbieter_id'=>$anbieterId, 'beschreibung'=>$beschreibung, 'canonical'=>$this->framework->getUrl('k', array('id'=>$kursId)), 'bodyClass'=>'wisyp_kurs'));
 		echo $this->framework->getSearchField();
 		
 		// start the result area

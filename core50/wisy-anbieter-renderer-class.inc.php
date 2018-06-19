@@ -529,6 +529,18 @@ class WISY_ANBIETER_RENDERER_CLASS
 		$logo_w			= $ob->w;
 		$logo_h			= $ob->h;
 		
+		// #404gesperrteseiten
+		$freigeschaltet404 = array_map("trim", explode(",", $this->framework->iniRead('seo.set404_anbieter_freigeschaltet', "")));
+		
+		// check for existance, get title, #socialmedia
+		$db->query("SELECT suchname, ort, firmenportraet, freigeschaltet FROM anbieter WHERE id=$anbieter_id");
+		if( !$db->next_record() || in_array($db->f('freigeschaltet'), $freigeschaltet404) ) {
+		    $this->framework->error404(); // record does not exist, reporta normal 404 error, not a "Soft 404", see  http://goo.gl/IKMnm -- für nicht-freigeschaltete Datensätze, s. [here]
+		}
+		$anbieter_suchname = $db->f8('suchname');
+		$anbieter_ort = $db->f8('ort');
+		$anbieter_portraet = $db->f8('firmenportraet');
+		
 		// promoted?
 		if( intval($_GET['promoted']) > 0 )
 		{
@@ -545,11 +557,16 @@ class WISY_ANBIETER_RENDERER_CLASS
 			$bodyClass .= ' wisyp_anbieter_beratungsstelle';
 		}
 		
-		echo $this->framework->getPrologue(array(	
-													'title'		=>	$suchname,  
-													'canonical'	=>	$this->framework->getUrl('a', array('id'=>$anbieter_id)),
-													'bodyClass'	=>	$bodyClass,
-											));
+		// #socialmedia
+		echo $this->framework->getPrologue(array(
+		    'title'		=>	$anbieter_suchname,
+		    'ort'		=>	$anbieter_ort,
+		    'beschreibung' => $anbieter_portraet,
+		    'anbieter_id' => $anbieter_id,
+		    'canonical'	=>	$this->framework->getUrl('a', array('id'=>$anbieter_id)),
+		    'bodyClass'	=>	'wisyp_anbieter',
+		));
+		
 		echo $this->framework->getSearchField();
 
 		$this->tagsuggestorObj =& createWisyObject('WISY_TAGSUGGESTOR_CLASS', $this->framework); 

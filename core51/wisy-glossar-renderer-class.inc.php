@@ -51,11 +51,12 @@ class WISY_GLOSSAR_RENDERER_CLASS
 
 		// prologue
 		headerDoCache();
-		echo $this->framework->getPrologue(array(	
-													'title'		=>	$begriff, 
-													'canonical'	=>	$this->framework->getUrl('g', array('id'=>$glossar_id)),
-													'bodyClass'	=>	'wisyp_glossar',
-										   ));
+		echo $this->framework->getPrologue(array(
+		    'title'		=>	$begriff,
+		    'beschreibung' => $erklaerung,	// #socialmedia, #richtext
+		    'canonical'	=>	$this->framework->getUrl('g', array('id'=>$glossar_id)),
+		    'bodyClass'	=>	'wisyp_glossar',
+		));
 
 		echo $this->framework->getSearchField();
 

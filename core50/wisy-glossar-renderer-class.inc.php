@@ -37,7 +37,7 @@ class WISY_GLOSSAR_RENDERER_CLASS
 			$this->framework->error404();
 
 		$begriff 		= $db->f8('begriff');
-		$erklaerung 	= $db->f8('erklaerung');
+		$erklaerung     	= $db->f8('erklaerung');
 		$wikipedia 		= $db->f8('wikipedia');
 		$date_created	= $db->f8('date_created');
 		$date_modified	= $db->f8('date_modified');
@@ -51,12 +51,13 @@ class WISY_GLOSSAR_RENDERER_CLASS
 
 		// prologue
 		headerDoCache();
-		echo $this->framework->getPrologue(array(	
-													'title'		=>	$begriff, 
-													'canonical'	=>	$this->framework->getUrl('g', array('id'=>$glossar_id)),
-													'bodyClass'	=>	'wisyp_glossar',
-										   ));
-
+		echo $this->framework->getPrologue(array(
+		    'title'		=>	$begriff,
+		    'beschreibung' => $erklaerung,	// #socialmedia, #richtext
+		    'canonical'	=>	$this->framework->getUrl('g', array('id'=>$glossar_id)),
+		    'bodyClass'	=>	'wisyp_glossar',
+		));
+		
 		echo $this->framework->getSearchField();
 
 		$classes  = $this->framework->getAllowFeedbackClass();
