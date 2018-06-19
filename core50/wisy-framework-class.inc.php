@@ -280,7 +280,8 @@ class WISY_FRAMEWORK_CLASS
 		
 		if(!is_array($this->anbieterlogos)) { $this->anbieterlogos = array(); }
 		
-		$this->anbieterlogos[$anbieterId] = new G_BLOB_CLASS($logo);
+		if(class_exists("G_BLOB_CLASS"))
+		  $this->anbieterlogos[$anbieterId] = new G_BLOB_CLASS($logo);
 		
 		// Seiten-Cache um mehrfache frische Abfrage innerhalb einer Seite zu verhindern
 		if(!is_array($this->getAnbieterLogoCache))
