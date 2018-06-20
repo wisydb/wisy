@@ -6,6 +6,8 @@
  Globale Seite, hiervon existiert genau 1 Objekt
  ******************************************************************************/
 
+// necessary for G_BLOB_CLASS / logo output
+require_once('admin/classes.inc.php'); 
 
 // Funktionen, die ohne irgendwelche instanzen laufen sollten
 function g_sync_removeSpecialChars($str)
