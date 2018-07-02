@@ -618,7 +618,7 @@ class WISY_DURCHF_CLASS
 					$wiki2html =& createWisyObject('WISY_WIKI2HTML_CLASS', $this->framework);
 					$bemerkungen = $record['bemerkungen'];
 					$bemerkungen = str_replace(chr(0xE2).chr(0x82).chr(0xAC), "&euro;", str_replace(chr(128), "&euro;", $bemerkungen));
-					echo $wiki2html->run(utf8_encode($bemerkungen));
+					echo utf8_encode($wiki2html->run($bemerkungen));
 				echo ' </td>' . "\n";
 			}
 		}
