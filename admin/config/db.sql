@@ -515,6 +515,7 @@ CREATE TABLE IF NOT EXISTS `glossar` (
   `notizen` longtext NOT NULL,
   `wikipedia` varchar(200) NOT NULL DEFAULT '',
   `freigeschaltet` int(11) NOT NULL DEFAULT '2',
+  `status` int(11) NOT NULL DEFAULT '1',
   `rssfeed` varchar(200) DEFAULT NULL,
   `von` date NOT NULL DEFAULT '1900-01-01',
   `bis` date NOT NULL DEFAULT '2100-12-31',

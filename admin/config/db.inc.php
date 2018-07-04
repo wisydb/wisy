@@ -35,6 +35,7 @@ define('USE_ROLES', 1);
 
 /*** RATGEBER ***/
 $ratgeber = new Table_Def_Class(TABLE_PRIMARY,				'glossar',			'Ratgeber');
+$ratgeber->add_row(TABLE_ENUM,								'status',	        'Status ', 1, '0###In Vorbereitung###1###Freigegeben###3###Archiv', '', array('layout.join'=>1, 'layout.descr.hide'=>1));
 if( $use_neweditor ) {
 	$ratgeber->add_row(TABLE_ENUM,								'freigeschaltet',	'ABC-Index', 2, '2###Nein###1###Ja', '', array('layout.join'=>1));
 }
