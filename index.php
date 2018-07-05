@@ -185,7 +185,7 @@ function selectPortalOrFwd301()
 	}
 	
 	// find all matching domains
-	$sql = "SELECT * FROM portale WHERE domains LIKE '%" . addslashes(str_replace('www.', '', $ist_domain)) . "%';";
+	$sql = "SELECT * FROM portale WHERE status=1 AND domains LIKE '%" . addslashes(str_replace('www.', '', $ist_domain)) . "%';";
 	$db->query($sql);
 	while( $db->next_record() )
 	{
@@ -219,7 +219,7 @@ function selectPortalOrFwd301()
 	}
 	
 	// nothing found at all - go to fallback (domain containing an "*") or show an error
-	$sql = "SELECT * FROM portale WHERE domains LIKE '%*%';";
+	$sql = "SELECT * FROM portale WHERE status=1 AND domains LIKE '%*%';";
 	$db->query($sql);
 	if( $db->next_record() )
 	{
