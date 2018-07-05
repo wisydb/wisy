@@ -257,6 +257,7 @@ if( !$use_neweditor )
 /*** PORTALE ***/
 /*** HINWEIS: Einstellungen gehören als INI-Wert in das Feld portale.einstellungen - sonst haben wir hier ganz schnell Chaos! (bp) ***/
 $portale = new Table_Def_Class(TABLE_PRIMARY,						'portale',			'Portale');
+$portale->add_row(TABLE_ENUM,								        'status',	        'Status', 1, '0###In Vorbereitung###1###Freigegeben###3###Archiv', '', array('layout.join'=>1, 'layout.descr.hide'=>1));
 $portale->add_row(TABLE_TEXT|TABLE_SUMMARY|TABLE_LIST|TABLE_MUST,	'name',				'Name', 0, 0, '', array('ctrl.size'=>'10-20-80', 'layout.bg.class'=>'e_bglite', 'layout.descr.class'=>'e_bolder', 'ctrl.class'=>'e_bolder'));
 $portale->add_row(TABLE_TEXT|TABLE_MUST,							'kurzname',			'Kurzname', 0, 0, '', array('layout.join'=>1, 'ctrl.size'=>'7-15-40'));
 $portale->add_row(TABLE_TEXT|TABLE_LIST|TABLE_MUST,					'domains',			'Domains', 0, 0, '', array('ctrl.size'=>'10-20-100'));

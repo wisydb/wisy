@@ -700,6 +700,7 @@ CREATE TABLE IF NOT EXISTS `portale` (
   `date_modified` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `name` varchar(200) NOT NULL DEFAULT '',
   `kurzname` varchar(200) NOT NULL DEFAULT '',
+  `status` int(11) NOT NULL DEFAULT '1',
   `domains` varchar(200) NOT NULL DEFAULT '',
   `filter` longtext NOT NULL,
   `skindir` varchar(200) NOT NULL DEFAULT '',
