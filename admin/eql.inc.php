@@ -1654,12 +1654,12 @@ class EQL_PARSER_CLASS
 			if( $g_eql_prefer_joins
 			 && $g_joinHash[$tableDefName]  == 'self' // on root level?
 			 && $g_joinHash[$tableDefName1] != 'alias'
-			 && !isset($g_joinHash[$tableDefName1]) // EDIT BY ME in 2008: NO joins on AND conditions (this would require one additional join per table, see http://www.silverjuke.net/forum/post.php?p=8423#8423)
+			 && !isset($g_joinHash[$tableDefName1]) // EDIT BY ME in 2008: NO joins on AND conditions (this would require one additional join per table)
 			 && sizeof($joins1)==0 // EDIT 2015: this code does not work eg. with "not(stichwort=7 and stichwort=5480)", the select2ids-code seems to work, hopefully, there are not other disadvantages
 			 && count($retJoins)==0 // EDIT, jm, 2017: to allow search for courses without keywords
 			 && $tableDefName1=="stichwoerter" // EDIT, jm, 2017: to allow search for courses without keywords
 			 && $row->name=="stichwort" // EDIT, jm, 2017: to allow search for courses without keywords
-			 && $tableDefName=="kurse") // EDIT, jm, 2017: to allow search for courses without keywords
+			 && ($tableDefName=="kurse" || $tableDefName=="anbieter")) // EDIT, jm, 2017 and bp 2018: to allow search for courses without keywords
 			{
 				// this variation works, but is slower
 				g_addRelation($retJoins, $tableDefName1, $row->name, $tableDefName, $rowType);
