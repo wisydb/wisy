@@ -17,66 +17,69 @@ class WISY_AUTOSUGGESTPLZORT_RENDERER_CLASS
 		));
 	}
 
-	private function combinePlz($plz1, $plz2)
-	{
-		// function takes a PLZ-Range and combines it to a readable string
-		if( substr($plz1,0,4) == substr($plz2,0,4) ) {
-			return substr($plz1,0,4) . '?';
-		}
-		else if( substr($plz1,0,3) == substr($plz2,0,3) ) {
-			return substr($plz1,0,3) . '??';
-		}
-		else {
-			return $plz1.'-'.$plz2;
-		}
-	}
-
 	function render()
 	{
 		$querystring = utf8_decode($_GET["q"]);
 		$db = new DB_Admin;
 		
 		// collect all PLZ/Ort into an array as ort=>array(plz1, plz2, ...)
+		$plzorte = array();
 		$orte = array();
+		$startsWithNumber = $this->startsWithNumber(trim($querystring));
 		$db->query("SELECT plz, ort FROM plztool2 WHERE plz LIKE ".$db->quote($querystring.'%')." OR ort LIKE ".$db->quote($querystring.'%'));
 		while( $db->next_record() ) {
 			$plz = $db->f8('plz');
 			$ort = $db->f8('ort');
-			if( $this->plzfilterObj->is_valid_plz($plz) ) {
-				if( isset($orte[$ort]) ) {
-					$orte[$ort][] = $plz;
-				}
-				else {
-					$orte[$ort] = array($plz);
-				}
-			}
-		}
-
-		// convert to array as plz=>ort
-		$make_unique = 1;
-		$tags = array();
-		foreach( $orte as $ort=>$plzArr )
-		{
-			$plzStr = $plzArr[0];
-			if( sizeof($plzArr) > 1 ) {
-				sort($plzArr);
-				$plzStr = $this->combinePlz($plzArr[0], $plzArr[sizeof($plzArr)-1]);
-			}
 			
-			$tags[$plzStr.'/'.$make_unique] = utf8_encode($plzStr) . '|' . utf8_encode($ort); // add a unique string to the plz to allow multiple ORTs with the same PLZs
-			$make_unique++;
+            // Filtern nach PLZ die in diesem Portal erlaubt sind
+			if( $this->plzfilterObj->is_valid_plz($plz) ) {
+                
+    			// Nur Ort
+    			if(!$startsWithNumber)
+    			{
+    				if( !isset($orte[urlencode($ort)]) ) {
+    					$orte[urlencode($ort)] = $ort;
+    				}
+    			}
+                
+                // PLZ und Ort
+				if( !isset($plzorte[urlencode($plz . $ort)]) ) {
+					$plzorte[urlencode($plz . $ort)] = $plz . ' ' . $ort;
+				}
+			}
 		}
-
-		ksort($tags);
+		ksort($orte);
+		ksort($plzorte);
 
 		// render as simple text, one tag per line, used by the site's AutoSuggest
 		if( SEARCH_CACHE_ITEM_LIFETIME_SECONDS > 0 )
 			headerDoCache(SEARCH_CACHE_ITEM_LIFETIME_SECONDS);
-					
-		foreach( $tags as $key=>$value )
+			
+		if(count($plzorte) == 0 && count($orte) == 0)
 		{
-			echo $value . "\n";
+			echo 'Keine Ortsvorschläge möglich| ' . "\n";
 		}
+		else
+		{
+
+			foreach( $orte as $key=>$value )
+			{
+				echo $value . "|" . $value . "\n";
+			}
+			if(count($orte) && count($plzorte))
+			{
+				echo "headline|PLZ\n";
+			}
+			
+			foreach( $plzorte as $key=>$value )
+			{
+				echo $value . "|" . $value . "\n";
+			}
+		}
+	}
+	
+	function startsWithNumber($string) {
+		return strlen($string) > 0 && ctype_digit(substr($string, 0, 1));
 	}
 }
 

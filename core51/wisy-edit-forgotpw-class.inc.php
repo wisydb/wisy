@@ -22,6 +22,7 @@ class WISY_EDIT_FORGOTPW_CLASS
 	function renderForgotPwScreen()
 	{
 		$anbieterSuchname	= trim($_REQUEST['as']);
+		$anbieterSuchname_utf8dec = utf8_decode($anbieterSuchname);
 		$msg = '';
 		$showForm = true;
 		
@@ -44,7 +45,7 @@ class WISY_EDIT_FORGOTPW_CLASS
 			// ================================================================
 			
 			$db	= new DB_Admin;
-			$sql = "SELECT id, pflege_email FROM anbieter WHERE pflege_pweinst&1 AND (id=".intval($anbieterSuchname)." OR pflege_email=".$db->quote($anbieterSuchname)." OR suchname=".$db->quote($anbieterSuchname)." OR postname=".$db->quote($anbieterSuchname).");";
+			$sql = "SELECT id, pflege_email FROM anbieter WHERE pflege_pweinst&1 AND (id=".intval($anbieterSuchname)." OR pflege_email=".$db->quote($anbieterSuchname_utf8dec)." OR suchname=".$db->quote($anbieterSuchname_utf8dec)." OR postname=".$db->quote($anbieterSuchname_utf8dec).");";
 			$db->query($sql);
 			if( $db->next_record() )
 			{
@@ -64,8 +65,8 @@ class WISY_EDIT_FORGOTPW_CLASS
 
 						$protocol = 'http';
 						if( $this->framework->iniRead('useredit.secure', 1)==1 
-						 && substr($_SERVER['HTTP_HOST'], -6)!='.local' 
-						 || $this->framework->iniRead('portal.https', ''))
+						 && substr($_SERVER['HTTP_HOST'], -6)!='.local'
+							|| $this->framework->iniRead('portal.https', '') )
 							$protocol = 'https';
 						
 						$f_link = "{$protocol}://__HTTP_HOST__/edit?action=forgotpw&c={$f_confirm}";
@@ -76,7 +77,7 @@ class WISY_EDIT_FORGOTPW_CLASS
 
 Sie, oder jemand der sich als Kursanbieter auf __HTTP_HOST__ bzw. __NAME__ ausgegeben hat, haben unter https://__HTTP_HOST__/edit ein neues Passwort für Ihren Account beantragt.
 
-Wenn Sie KEIN neues Passwort beantragt haben, oder wenn Ihnen Ihr altes Passwort zwischenzeitlich wieder eingefallen ist, ignorieren und loeschen Sie bitte diese E-Mail.
+Wenn Sie KEIN neus Passwort beantragt haben, oder wenn Ihnen Ihr altes Passwort zwischenzeitlich wieder eingefallen ist, ignorieren und loeschen Sie bitte diese E-Mail.
 
 Nur WENN Sie ein neues Passwort beantragt haben, klicken Sie bitte auf den folgenden Verweis, um ein neues Passwort zu erhalten und sich damit wieder in Ihrem Account einloggen zu können: $f_link 
 

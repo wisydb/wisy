@@ -73,44 +73,61 @@ class WISY_AUTOSUGGEST_RENDERER_CLASS
 			
 			default:
 				// return as simple text, one tag per line, used by the site's AutoSuggest
-				$tags = $tagsuggestor->suggestTags($querystring, array('max'=>10));
-				
-				if($this->framework->iniRead('search.suggest.v2') == 1)
+				if(isset($_GET['type']) &&  $_GET['type'] == 'ort')
 				{
-				
-					// add Headline and MoreLink at the beginning
-					array_unshift($tags, array(
-						'tag' => $querystring,
-						'tag_descr' => 'Suchvorschl&auml;ge:',
-						'tag_type'	=> 0,
-						'tag_help'	=> -1 // indicates "headline"
-					),
-					array(
-						'tag'	=>	$querystring,
-						'tag_descr' => sizeof($tags)? 'Alle Vorschl&auml;ge im Hauptfenster anzeigen ...' : 'Keine Treffer',
-						'tag_type'	=> 0,
-						'tag_help'	=> 1 // indicates "more"
-					));	
+					$tags = $tagsuggestor->suggestTags($querystring, array('max'=>10, 'q_tag_type'=>array(512)));
+				} 
+				else if(isset($_GET['type']) &&  $_GET['type'] == 'anbieter')
+				{
+					$tags = $tagsuggestor->suggestTags($querystring, array('max'=>10, 'q_tag_type'=>array(64,256)));
 				}
+				else
+				{
+					$tags = $tagsuggestor->suggestTags($querystring, array('max'=>10, 'q_tag_type_not'=>array(64,256,512)));
+				}
+                
+                // Filter out suggestions with tag_freq == 0
+                $filtered_tags = array();
+				for( $i = 0; $i < sizeof($tags); $i++ )
+				{
+					if(intval($tags[$i]['tag_help']) == 0 && intval($tags[$i]['tag_freq']) == 0) continue;
+                    $filtered_tags[] = $tags[$i];
+				}
+                
 
-				// addMoreLink at the end
-				$tags[] = array(
-					'tag'	=>	$querystring,
-					'tag_descr' => sizeof($tags)? 'Alle Vorschl&auml;ge im Hauptfenster anzeigen ...' : 'Keine Treffer',
-					'tag_type'	=> 0,
-					'tag_help'	=> 1 // indicates "more"
-				);			
+				// No results
+				if(!isset($_GET['type']) ||  $_GET['type'] != 'ort')
+				{
+					if(count($filtered_tags) == 0) {
+						$filtered_tags[] = array(
+							'tag'	=>	$querystring,
+							'tag_descr' => 'Keine Suchvorschläge möglich',
+							'tag_type'	=> 0,
+							'tag_help'	=> -2 // indicates "no results"
+						);
+                        // addMoreLink at the end when more than 10 entries have been found
+					} else if(count($filtered_tags) > 9) {
+                            
+						$filtered_tags[] = array(
+							'tag'	=>	$querystring,
+							'tag_descr' => 'Alle Suchvorschläge anzeigen',
+							'tag_type'	=> 0,
+							'tag_help'	=> 1 // indicates "more"
+						);
+					}
+				}	
 				
 				if( SEARCH_CACHE_ITEM_LIFETIME_SECONDS > 0 )
 					headerDoCache(SEARCH_CACHE_ITEM_LIFETIME_SECONDS);
 					
-				for( $i = 0; $i < sizeof($tags); $i++ )
+				for( $i = 0; $i < sizeof($filtered_tags); $i++ )
 				{
-					echo		$tags[$i]['tag'] . 
-						"|"	.	$tags[$i]['tag_descr'] . 
-						"|"	.	intval($tags[$i]['tag_type']) . 
-						"|" .	intval($tags[$i]['tag_help']) . 
-						"|" .	intval($tags[$i]['tag_freq']) .
+					
+					echo		$filtered_tags[$i]['tag'] . 
+						"|"	.	$filtered_tags[$i]['tag_descr'] . 
+						"|"	.	intval($filtered_tags[$i]['tag_type']) . 
+						"|" .	intval($filtered_tags[$i]['tag_help']) . 
+						"|" .	intval($filtered_tags[$i]['tag_freq']) .
 						"\n";
 				}
 				break;

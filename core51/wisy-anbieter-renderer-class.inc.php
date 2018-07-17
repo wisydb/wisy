@@ -24,7 +24,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 			$str = substr($str, 7);
 		elseif( substr($str, 0, 8)=='https://' )
 			$str = substr($str, 8);
-		
+			
 		return shortenurl($str, $max_length);
 	}
 
@@ -138,7 +138,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		{
 			if( $steckbrief )
 			{
-				$vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_strasse" itemprop="streetAddress"><a href="' . $map_URL . '">' . $strasse . '</a></div>';
+				$vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_strasse" itemprop="streetAddress"><a title="Adresse in Google Maps ansehen" href="' . $map_URL . '">' . $strasse . '</a></div>';
 			} else {
 				$vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_strasse" itemprop="streetAddress">' . $strasse . '</div>';
 			}
@@ -148,7 +148,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		{
 			if( $steckbrief )
 			{
-				$vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_ort"><a href="' . $map_URL . '">';
+				$vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_ort"><a title="Adresse in Google Maps ansehen" href="' . $map_URL . '">';
 			} else {
 				$vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_ort">';
 			}
@@ -262,7 +262,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		$tag_suchname = $this->tagsuggestorObj->keyword2tagName($suchname);
 		$this->tag_suchname_id = $this->tagsuggestorObj->getTagId(utf8_decode($tag_suchname));
 		$freq = $this->tagsuggestorObj->getTagFreq(array($this->tag_suchname_id)); if( $freq <= 0 ) $freq = '';
-		$vc['Alle Angebote'] = '<a class="wisy_showalloffers" href="' .$this->framework->getUrl('search', array('q' => $suchname)). '">Alle ' . $freq . ' Angebote des Anbieters</a>';
+        $vc['Alle Angebote'] = '<a class="wisy_showalloffers" href="' . $this->framework->getUrl('search'). '?filter_anbieter=' . urlencode(htmlspecialchars(str_replace(',', ' ', $suchname))) . '">Alle ' . $freq . ' Angebote des Anbieters</a>';
 		
 		/* Qualitätszertifikate */
 		$seals = $this->renderSealsOverview($anbieterId, $pruefsiegel_seit, true);			
@@ -486,7 +486,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 				$unique_adr[$unique_id] = $record;
 			}
 		}
-		
+
 		if(!is_array($unique_adr))
 			return;
 
@@ -537,7 +537,6 @@ class WISY_ANBIETER_RENDERER_CLASS
 		if( !$db->next_record() || in_array($db->f('freigeschaltet'), $freigeschaltet404) ) {
 		    $this->framework->error404(); // record does not exist, reporta normal 404 error, not a "Soft 404", see  http://goo.gl/IKMnm -- für nicht-freigeschaltete Datensätze, s. [here]
 		}
-		$anbieter_suchname = $db->f8('suchname');
 		$anbieter_ort = $db->f8('ort');
 		$anbieter_portraet = $db->f8('firmenportraet');
 		
@@ -559,12 +558,12 @@ class WISY_ANBIETER_RENDERER_CLASS
 		
 		// #socialmedia
 		echo $this->framework->getPrologue(array(
-		    'title'		=>	$anbieter_suchname,
-		    'ort'		=>	$anbieter_ort,
-		    'beschreibung' => $anbieter_portraet,
-		    'anbieter_id' => $anbieter_id,
-		    'canonical'	=>	$this->framework->getUrl('a', array('id'=>$anbieter_id)),
-		    'bodyClass'	=>	'wisyp_anbieter',
+			'title'		=>	$suchname,
+			'ort'		=>	$anbieter_ort,
+			'beschreibung' => $anbieter_portraet,
+			'anbieter_id' => $anbieter_id,
+			'canonical'	=>	$this->framework->getUrl('a', array('id'=>$anbieter_id)),
+			'bodyClass'	=>	$bodyClass,
 		));
 		
 		echo $this->framework->getSearchField();
@@ -622,13 +621,16 @@ class WISY_ANBIETER_RENDERER_CLASS
 		$freq = $this->tagsuggestorObj->getTagFreq(array($this->tag_suchname_id)); if( $freq <= 0 ) $freq = '';
 		echo '<h2>'.$freq.($freq==1? ' aktuelles Angebot' : ' aktuelle Angebote').'</h2>'
 		.	'<p>'
-		.		'<a class="wisyr_anbieter_kurselink" href="' .$this->framework->getUrl('search', array('q'=>$tag_suchname)). '">'
+		 .		'<a class="wisyr_anbieter_kurselink" href="' . $this->framework->getUrl('search'). '?filter_anbieter=' . urlencode(htmlspecialchars(str_replace(',', ' ', $tag_suchname))) . '">'
 		.			"Alle $freq Kurse des Anbieters"
 		.		'</a>'
 		. 	'</p>';		
 
 		// current offers overview
-		$this->writeOffersOverview($anbieter_id, $tag_suchname);
+		if( $this->framework->iniRead('anbieter.angebotsuebersicht', 1) )
+		{
+			$this->writeOffersOverview($anbieter_id, $tag_suchname);
+		}
 				
 		echo "\n</article><!-- /.wisy_anbieter_kursangebot -->\n\n";
 		

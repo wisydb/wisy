@@ -435,6 +435,7 @@ class WISY_EDIT_RENDERER_CLASS
 			// "OK" wurde angeklickt - loginversuch starten
 			$fwd 				= $_REQUEST['fwd'];
 			$anbieterSuchname	= $_REQUEST['as'];
+			$anbieterSuchname_utf8dec = utf8_decode($anbieterSuchname);
 
 			$logwriter = new LOG_WRITER_CLASS;
 			$logwriter->addData('ip', $_SERVER['REMOTE_ADDR']);
@@ -445,9 +446,10 @@ class WISY_EDIT_RENDERER_CLASS
 			$loggedInAnbieterSuchname = 0;
 
 			// Anbieter ID in name konvertieren (neuer Auftrag vom 13.09.2012)
-			$db->query("SELECT suchname FROM anbieter WHERE id=".intval($anbieterSuchname));
+			$db->query("SELECT suchname FROM anbieter WHERE id=".intval($anbieterSuchname_utf8dec));
 			if( $db->next_record() ) {
 				$anbieterSuchname = $db->f8('suchname');
+				$anbieterSuchname_utf8dec = utf8_decode($anbieterSuchname);
 			}
 			
 			$login_as = false;
@@ -468,7 +470,7 @@ class WISY_EDIT_RENDERER_CLASS
 						require_once('admin/acl.inc.php');
 						if( acl_check_access('kurse.COMMON', -1, ACL_EDIT, $db->f8('id')) )
 						{
-							$db->query("SELECT id FROM anbieter WHERE suchname='".addslashes($anbieterSuchname)."'");
+							$db->query("SELECT id FROM anbieter WHERE suchname='".addslashes($anbieterSuchname_utf8dec)."'");
 							if( $db->next_record() )
 							{
 								$logwriter->addData('loginname', $temp[0] . ' as ' . $anbieterSuchname);
@@ -484,7 +486,7 @@ class WISY_EDIT_RENDERER_CLASS
 			{
 				// ...Login als normaler Anbieter in der Form "<passwort>"
 				$logwriter->addData('loginname', $anbieterSuchname);
-				$db->query("SELECT pflege_passwort, pflege_pweinst, id FROM anbieter WHERE suchname='".addslashes($anbieterSuchname)."'");
+				$db->query("SELECT pflege_passwort, pflege_pweinst, id FROM anbieter WHERE suchname='".addslashes($anbieterSuchname_utf8dec)."'");
 				if( $db->next_record() )
 				{
 					$dbPw = $db->f8('pflege_passwort');
@@ -507,7 +509,7 @@ class WISY_EDIT_RENDERER_CLASS
 
 			if( $loggedInAnbieterId == 0 )
 			{
-				$db->query("SELECT id FROM anbieter WHERE suchname='".addslashes($anbieterSuchname)."'");
+				$db->query("SELECT id FROM anbieter WHERE suchname='".addslashes($anbieterSuchname_utf8dec)."'");
 				$db->next_record();
 				
 				$logwriter->log('anbieter', intval($db->f8('id')), $this->getAdminAnbieterUserId20(), 'loginfailed');
@@ -549,6 +551,7 @@ class WISY_EDIT_RENDERER_CLASS
 				if( $db->next_record() )
 				{
 					$anbieterSuchname = $db->f8('suchname');
+					$anbieterSuchname_utf8dec = utf8_decode($anbieterSuchname);
 				}
 				$fwd = "edit?action=ek&id=".intval($_REQUEST['id']);
 				$secureLogin = $fwd;
@@ -559,6 +562,7 @@ class WISY_EDIT_RENDERER_CLASS
 					$fwd 				= $_REQUEST['fwd'];
 				}
 				$anbieterSuchname	= $_REQUEST['as'];
+				$anbieterSuchname_utf8dec = utf8_decode($anbieterSuchname);
 				$secureLogin = "edit?action=login&as=".urlencode($anbieterSuchname);
 			}
 			
@@ -631,10 +635,10 @@ class WISY_EDIT_RENDERER_CLASS
 				echo '</form>';
 		
 				// additional login message
-				$temp = $this->framework->iniRead('useredit.loginmsg', '');
+				$temp = utf8_encode($this->framework->iniRead('useredit.loginmsg', ''));
 				if( $temp != '' )
 				{
-					echo '<p>' . $temp . '</p>';
+					echo '<p class="loginmsg">' . $temp . '</p>';
 				}
 			}
 			
@@ -1567,6 +1571,30 @@ class WISY_EDIT_RENDERER_CLASS
 		{
 			// the first call
 			$kurs = $this->loadKursFromDb($kursId__);
+			
+			// UTF8-Encoding after loading from DB
+			$kurs['titel'] 			= utf8_encode($kurs['titel']);
+			$kurs['org_titel']		= utf8_encode($kurs['org_titel']);
+			$kurs['bu_nummer']		= utf8_encode($kurs['bu_nummer']);
+			$kurs['azwv_knr']		= utf8_encode($kurs['azwv_knr']);
+			$kurs['foerderung']		= utf8_encode($kurs['foerderung']);
+			$kurs['fu_knr']			= utf8_encode($kurs['fu_knr']);
+			$kurs['promote_mode']	= utf8_encode($kurs['promote_mode']);
+			$kurs['promote_param']	= utf8_encode($kurs['promote_param']);
+			$kurs['promote_active']	= utf8_encode($kurs['promote_active']);
+			$kurs['abschluss']		= utf8_encode($kurs['abschluss']);
+			$kurs['msgtooperator']	= utf8_encode($kurs['msgtooperator']);
+			$kurs['beschreibung']	= utf8_encode($kurs['beschreibung']);
+			for( $d = 0; $d < sizeof($kurs['durchf']); $d++ )
+			{
+				$kurs['durchf'][$d]['nr'] 				= utf8_encode($kurs['durchf'][$d]['nr']);
+				$kurs['durchf'][$d]['ort'] 				= utf8_encode($kurs['durchf'][$d]['ort']);
+				$kurs['durchf'][$d]['stadtteil'] 		= utf8_encode($kurs['durchf'][$d]['stadtteil']);
+				$kurs['durchf'][$d]['strasse'] 			= utf8_encode($kurs['durchf'][$d]['strasse']);
+				$kurs['durchf'][$d]['preishinweise'] 	= utf8_encode($kurs['durchf'][$d]['preishinweise']);
+				$kurs['durchf'][$d]['bemerkungen'] 		= utf8_encode($kurs['durchf'][$d]['bemerkungen']);
+			}
+			
 			if( sizeof($kurs['error']) )
 			{
 				$topnotes = $kurs['error'];
@@ -1617,20 +1645,6 @@ class WISY_EDIT_RENDERER_CLASS
 				echo '<br />';
 				echo '<table cellspacing="2" cellpadding="0" width="100%">';
 				
-				// UTF8-Encoding
-				$kurs['titel'] 			= utf8_encode($kurs['titel']);
-				$kurs['org_titel']		= utf8_encode($kurs['org_titel']);
-				$kurs['bu_nummer']		= utf8_encode($kurs['bu_nummer']);
-				$kurs['azwv_knr']		= utf8_encode($kurs['azwv_knr']);
-				$kurs['foerderung']		= utf8_encode($kurs['foerderung']);
-				$kurs['fu_knr']			= utf8_encode($kurs['fu_knr']);
-				$kurs['promote_mode']	= utf8_encode($kurs['promote_mode']);
-				$kurs['promote_param']	= utf8_encode($kurs['promote_param']);
-				$kurs['promote_active']	= utf8_encode($kurs['promote_active']);
-				$kurs['abschluss']		= utf8_encode($kurs['abschluss']);
-				$kurs['msgtooperator']	= utf8_encode($kurs['msgtooperator']);
-				$kurs['beschreibung']	= utf8_encode($kurs['beschreibung']);
-				
 					// TITEL 
 					echo '<tr>';
 						echo '<td width="10%" valign="top"><strong>Kurstitel:</strong></td>';
@@ -1659,8 +1673,8 @@ class WISY_EDIT_RENDERER_CLASS
 							$styleFernunterricht = '';
 							if( $kurs['fu_knr']=='' )
 							{
-							    $styleFernunterricht = ' style="opacity: 0; height: 1px;" ';
-							    echo "<span class=\"editFernunterrichtLink\" ".$styleFernunterricht."> <a href=\"#\" onclick=\"editShowHide($(this), '.editFernunterrichtDiv', '.editFernunterrichtLink'); return false;\" title=\"Kursnummer für Fernunterricht hinzuf&uuml;gen\"><small>+Fernunterricht</small></a></span>";
+								echo "<span class=\"editFernunterrichtLink\"> <a href=\"#\" onclick=\"editShowHide($(this), '.editFernunterrichtDiv', '.editFernunterrichtLink'); return false;\" title=\"Kursnummer für Fernunterricht hinzuf&uuml;gen\"><small>+Fernunterricht</small></a></span>";
+								$styleFernunterricht = ' style="display: none;" ';
 							}
 
 							$styleBewerben = '';
@@ -1739,7 +1753,7 @@ class WISY_EDIT_RENDERER_CLASS
 										$db->query("SELECT kurs_id FROM anbieter_promote WHERE anbieter_id=".$_SESSION['loggedInAnbieterId']. " AND portal_id=$wisyPortalId;");
 										if( $db->next_record() )
 										{
-											$agb_reading_required = 0; // es existiert bereits mind. ein beworbener Kurse; eine erneute best�tigung ist daher nicht erforderlich
+											$agb_reading_required = 0; // es existiert bereits mind. ein beworbener Kurse; eine erneute bestätigung ist daher nicht erforderlich
 										}
 									}
 									
@@ -1872,14 +1886,14 @@ class WISY_EDIT_RENDERER_CLASS
 												echo "<div class=\"editBeginnoptionenDiv\" $styleBeginnoptionen>";
 													echo '<label title="'.$titleBeginnoptionen.'">';
 														echo "Terminoptionen: ";
-														$this->controlSelect('beginnoptionen[]', $durchf['beginnoptionen'], $GLOBALS['codes_beginnoptionen']);
+														$this->controlSelect('beginnoptionen[]', $durchf['beginnoptionen'], utf8_encode($GLOBALS['codes_beginnoptionen']));
 														
 														echo "<br />Dauer: ";
-														$this->controlSelect('dauer[]', $durchf['dauer'], $GLOBALS['codes_dauer']);			
+														$this->controlSelect('dauer[]', $durchf['dauer'], utf8_encode($GLOBALS['codes_dauer']));			
 														echo '<small> (wird, wenn möglich, aus Beginn-/Endedatum automatisch berechnet)</small>';
 														
 														echo "<br />Tagescode: ";
-														$this->controlSelect('tagescode[]', $durchf['tagescode'], $GLOBALS['codes_tagescode']);		
+														$this->controlSelect('tagescode[]', $durchf['tagescode'], utf8_encode($GLOBALS['codes_tagescode']));		
 														echo '<small>  (wird, wenn möglich, aus Wochentag/Uhrzeit automatisch berechnet)</small>';
 													echo '</label>';
 											echo '</div>';
@@ -2010,7 +2024,7 @@ class WISY_EDIT_RENDERER_CLASS
 				echo '<p>';
 					echo 'Weitere Optionen: ';
 					echo '<a href="edit?action=ek&amp;id='.$kurs['id'].'&amp;deletekurs=1&amp;bwd='.urlencode($this->bwd).'" onclick="return editKursLoeschen($(this));">Diesen Kurs löschen</a>';
-					//echo ' | <a href="http://kursportal.info/cgi-bin/export/export_start.pl?id=' . $_SESSION['loggedInAnbieterId'] . '" target="_blank">Alle Kursdaten als CSV oder XML herunterladen</a>';
+					//echo ' | <a href="https://kursportal.info/cgi-bin/export/export_start.pl?id=' . $_SESSION['loggedInAnbieterId'] . '" target="_blank">Alle Kursdaten als CSV oder XML herunterladen</a>';
 				echo '</p>';
 			}
 		
