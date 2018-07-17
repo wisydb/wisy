@@ -614,11 +614,11 @@ class WISY_DURCHF_CLASS
 			// Bemerkungen
 			if($details)
 			{
-				echo '    <td class="wisyr_bemerkungen" data-title="Bemerkungen">';
+				echo ' <td class="wisyr_bemerkungen" data-title="Bemerkungen">';
 					$wiki2html =& createWisyObject('WISY_WIKI2HTML_CLASS', $this->framework);
 					$bemerkungen = $record['bemerkungen'];
 					$bemerkungen = str_replace(chr(0xE2).chr(0x82).chr(0xAC), "&euro;", str_replace(chr(128), "&euro;", $bemerkungen));
-					echo $wiki2html->run(utf8_encode($bemerkungen));
+					echo utf8_encode($wiki2html->run($bemerkungen));
 				echo ' </td>' . "\n";
 			}
 		}
