@@ -97,7 +97,7 @@ class WISY_SEARCH_CLASS
 		$this->last_lng = 0;
 		$has_bei = false;
 		$max_km = 500;
-		$default_km = $this->framework->iniRead('radiussearch.defaultkm', 2);
+		$default_km = $this->framework->iniRead('radiussearch.defaultkm', 2);		
 		$km = floatval($default_km);
 		for( $i = 0; $i < sizeof($this->tokens['cond']); $i++ )
 		{
@@ -477,7 +477,7 @@ class WISY_SEARCH_CLASS
 						}
 					}
 				}
-				
+							
 				if( $do_recreate )
 				{
 					$sql = "SELECT COUNT(DISTINCT x_kurse.kurs_id) AS cnt FROM x_kurse " . $this->rawJoinKurse . $this->rawJoin . $this->rawWhere;
@@ -506,7 +506,7 @@ class WISY_SEARCH_CLASS
 	}
 	
 	function getKurseRecordsSql($fields)
-	{
+	{	
 		// create complete SQL query
 		$sql =  "SELECT DISTINCT $fields
 				   FROM kurse LEFT JOIN x_kurse ON x_kurse.kurs_id=kurse.id " . $this->rawJoin . $this->rawWhere;
@@ -543,7 +543,7 @@ class WISY_SEARCH_CLASS
 						}
 					}
 				}
-				
+
 				if( $do_recreate )
 				{
 					switch( $orderBy )
@@ -566,9 +566,9 @@ class WISY_SEARCH_CLASS
 						default:		$orderBy = 'kurse.id';										die('invalid order!');
 					}
 					
-					$sql = $this->getKurseRecordsSql("kurse.id, kurse.anbieter, kurse.freigeschaltet, kurse.titel, kurse.vollstaendigkeit, kurse.date_modified, kurse.bu_nummer, kurse.fu_knr, kurse.azwv_knr, x_kurse.begmod_date");
+					$sql = $this->getKurseRecordsSql("kurse.id, kurse.anbieter, kurse.thema, kurse.freigeschaltet, kurse.titel, kurse.vollstaendigkeit, kurse.date_modified, kurse.bu_nummer, kurse.fu_knr, kurse.azwv_knr, x_kurse.begmod_date");
 					$sql .= " ORDER BY $orderBy, vollstaendigkeit DESC, x_kurse.kurs_id ";
-					$sql .= " LIMIT $offset, $rows ";
+					if($rows != 0) $sql .= " LIMIT $offset, $rows ";
 					
 					$this->db->query("SET SQL_BIG_SELECTS=1"); // optional
 					$this->db->query($sql);
@@ -660,8 +660,8 @@ class WISY_SEARCH_CLASS
 			// create complete SQL query
 			$sql =  "SELECT id, date_created, date_modified, suchname, strasse, plz, ort, homepage, anspr_email, anspr_tel, typ FROM anbieter WHERE anbieter.id IN($this->anbieterIds)";
 			$sql .= " ORDER BY $orderBy, anbieter.id ";
-			$sql .= " LIMIT $offset, $rows ";
-			
+			if($rows != 0) $sql .= " LIMIT $offset, $rows ";
+
 			if( isset($_COOKIE['debug']) )
 			{
 				echo '<p style="background-color: yellow;">' .htmlspecialchars($sql). '</p>';
@@ -739,7 +739,7 @@ class WISY_SEARCH_CLASS
 	}
 	
 	function lookupTag($tag_name)
-	{
+	{		
 		// search a single tag
 		$tag_id = 0;
 		if( $tag_name != '' )

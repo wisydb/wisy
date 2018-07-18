@@ -16,6 +16,7 @@ class WISY_KURS_RENDERER_CLASS
 	function render()
 	{
 		global $wisyPortalSpalten;
+        global $wisyPortalSpaltenDurchf;
 		global $wisyPortalId;
 
 		$kursId = intval($_GET['id']);
@@ -28,9 +29,10 @@ class WISY_KURS_RENDERER_CLASS
                            a.pflege_pweinst, a.suchname, a.strasse, a.plz, a.ort, a.stadtteil, a.land, a.anspr_name, a.postname, a.anspr_zeit, a.anspr_tel, a.anspr_fax, a.anspr_email
 						  FROM kurse k
 						  LEFT JOIN anbieter a ON a.id=k.anbieter
-						  WHERE k.id=$kursId"); // "a.suchname" etc. kann mit "LEFT JOIN anbieter a ON a.id=k.anbieter" zus. abgefragt werden
+						  WHERE k.id=$kursId"); // "a.suchname" etc. kann mit "LEFT JOIN anbieter a ON a.id=k.anbieter" zus. abgefragt werden						
+
 		if( !$db->next_record() )
-		   $this->framework->error404();
+			$this->framework->error404();
 		
 		$title 				= $db->f8('titel');
 		$originaltitel		= $db->f8('org_titel');
@@ -41,6 +43,7 @@ class WISY_KURS_RENDERER_CLASS
 		$date_modified		= $db->f('date_modified');
 		$bu_nummer 			= $db->f8('bu_nummer');
 		$pflege_pweinst		= intval($db->f8('pflege_pweinst'));
+		
 		$anbieter_name = $db->f8('suchname');
 		$anbieterdetails['suchname'] = $anbieter_name;
 		$anbieterdetails['postname'] = $db->f8('postname');
@@ -82,7 +85,7 @@ class WISY_KURS_RENDERER_CLASS
     		      }
 		  }
 		}
-		    
+		
 		// promoted?
 		if( intval($_GET['promoted']) == $kursId )
 		{
@@ -113,7 +116,7 @@ class WISY_KURS_RENDERER_CLASS
 			$bodyClass .= ' wisyp_kurs_abschluss';	
 		}	
 		
-		echo $this->framework->getPrologue(array('title'=>$title, 'ort' => $ort, 'anbieter_name'=>$anbieter_name, 'anbieter_id'=>$anbieterId, 'beschreibung'=>$beschreibung, 'canonical'=>$this->framework->getUrl('k', array('id'=>$kursId)), 'bodyClass'=>'wisyp_kurs'));
+		echo $this->framework->getPrologue(array('title'=>$title, 'ort'=>$ort, 'anbieter_name'=>$anbieter_name, 'anbieter_id'=>$anbieterId, 'beschreibung'=>$beschreibung, 'canonical'=>$this->framework->getUrl('k', array('id'=>$kursId)), 'bodyClass'=>$bodyClass));
 		echo $this->framework->getSearchField();
 		
 		// start the result area
@@ -209,6 +212,9 @@ class WISY_KURS_RENDERER_CLASS
 
 				// Durchfuehrungen vorbereiten
 				echo '<article class="wisy_kurs_durchf"><h1 class="wisy_df_headline">Termine</h1>';
+                
+                $spalten = $wisyPortalSpalten;
+                if($wisyPortalSpaltenDurchf != '') $spalten = $wisyPortalSpaltenDurchf;
 			
 				$showAllDurchf = intval($_GET['showalldurchf'])==1? 1 : 0;
 				if( $showAllDurchf )
@@ -234,14 +240,15 @@ class WISY_KURS_RENDERER_CLASS
 				// Durchfuehrungen ausgeben
 				if( sizeof($durchfuehrungenIds) )
 				{
+                    
 					echo '<table class="wisy_list wisyr_durchfuehrungen"><thead>';
 						echo '<tr>';
-							if (($wisyPortalSpalten & 2) > 0)	{ echo '<th>Zeiten</th>';			}
-							if (($wisyPortalSpalten & 4) > 0)	{ echo '<th>Dauer</th>';			}
-							if (($wisyPortalSpalten & 8) > 0)	{ echo '<th>Art</th>';				}
-							if (($wisyPortalSpalten & 16) > 0)	{ echo '<th>Preis</th>';			}
-							if (($wisyPortalSpalten & 32) > 0)	{ echo '<th>Ort</th><th>Bemerkungen</th>';	}
-							if (($wisyPortalSpalten & 64) > 0)	{ echo '<th>Ang.-Nr.</th>';			}
+							if (($spalten & 2) > 0)	{ echo '<th>Zeiten</th>';			}
+							if (($spalten & 4) > 0)	{ echo '<th>Dauer</th>';			}
+							if (($spalten & 8) > 0)	{ echo '<th>Art</th>';				}
+							if (($spalten & 16) > 0)	{ echo '<th>Preis</th>';			}
+							if (($spalten & 32) > 0)	{ echo '<th>Ort</th><th>Bemerkungen</th>';	}
+							if (($spalten & 64) > 0)	{ echo '<th>Ang.-Nr.</th>';			}
 						echo '</tr></thead>';
 					
 						/*
@@ -281,7 +288,7 @@ class WISY_KURS_RENDERER_CLASS
 					{
 						$missinglDurchfCnt = $allAvailDurchfCnt-$renderedDurchf;
 						$linkText = $missinglDurchfCnt==1? "1 abgelaufene Durchf&uuml;hrung einblenden" : "$missinglDurchfCnt abgelaufene Durchf&uuml;hrungen einblenden"; // 'einblenden' ist besser als 'anzeigen', da dies impliziert, dass die aktuellen Kurse auch in der Liste bleiben
-						echo "<p class=\"noprint\"><a href=\"".$this->framework->getUrl('k', array('id'=>$kursId, 'showalldurchf'=>1))."#showalldurchf\">$linkText...</a></p>";
+						echo "<p class=\"wisyr_showalldurchf_link noprint\"><a href=\"".$this->framework->getUrl('k', array('id'=>$kursId, 'showalldurchf'=>1))."#showalldurchf\">$linkText...</a></p>";
 					}
 				}
 				echo '</article><!-- /.wisy_kurs_durchf -->';
@@ -325,12 +332,12 @@ class WISY_KURS_RENDERER_CLASS
 								$tooltip = 'Login f&uuml;r Anbieter';
 								$editurl = $copyrightClass->getEditUrl($db, 'kurse', $kursId);
 							}
-							echo '<span class="noprint"> - ';
+							echo '<span class="noprint">';
 								$target = $editurl==''? '' : 'target="_blank"';
 								echo $class? "<span class=\"$class\">" : '';
-									echo "<a href=\"" . 
+									echo "<a class=\"wisyr_angebot_editlink\" href=\"" . 
 										$editurl
-									 .	$this->framework->getUrl('edit', array('action'=>'ek', 'id'=>$kursId))."\" $target title=\"$tooltip\">Bearbeiten</a>";
+									 .	$this->framework->getUrl('edit', array('action'=>'ek', 'id'=>$kursId))."\" $target title=\"$tooltip\">Angebot bearbeiten (für Anbieter)</a>";
 								echo $class? "</span>" : '';
 							echo '</span>';
 						}

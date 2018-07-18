@@ -135,8 +135,8 @@ class WISY_INTELLISEARCH_CLASS
 				}
 				
 				$tagsuggestor =& createWisyObject('WISY_TAGSUGGESTOR_CLASS', $this->framework);
-				
-				$qsuggestions = $tagsuggestor->suggestTags($this->searcher->tokens['cond'][ $this->searcher->error['first_bad_tag'] ]['value']);
+                
+				$qsuggestions = $tagsuggestor->suggestTags($this->searcher->tokens['cond'][ $this->searcher->error['first_bad_tag'] ]['value'],array('max'=>10, 'q_tag_type_not'=>array(256,512)));
 				for( $i = 0; $i < sizeof($qsuggestions); $i++ )
 				{
 					//if( ($qsuggestions[$i]['tag_type']&64) == 0 )

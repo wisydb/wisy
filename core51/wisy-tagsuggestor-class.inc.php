@@ -122,11 +122,13 @@ class WISY_TAGSUGGESTOR_CLASS
 		// check some parameters
 		if( $param == 0 )
 			$param = array();
-			
+	
 		$max = isset($param['max'])? $param['max'] : 512; // plus the synonyms
 		
 		$min = intval($max / 2);
 		if( $min > 6 ) $min = 6;
+		
+		$max_suggestions = 5;
 			
 		$use_soundex      = $this->framework->iniRead('search.suggest.fuzzy',    1)!=0;
 		$suggest_fulltext = $this->framework->iniRead('search.suggest.fulltext', 1)!=0;
@@ -139,6 +141,39 @@ class WISY_TAGSUGGESTOR_CLASS
 			$LEN				= strlen($q_tag_name);
 			$WILDCARDATSTART	= $LEN>1? '%' : '';
 			$COND				= "tag_name LIKE '$WILDCARDATSTART$QUERY%'";
+			$COND_TAGTYPE		= "";
+			
+			// Allow filtering by tag_type
+			if(isset($param['q_tag_type']) && is_array($param['q_tag_type'])) {
+				if(count($param['q_tag_type']) == 1)
+				{
+					$COND_TAGTYPE .= " AND tag_type & " . intval($param['q_tag_type'][0]);
+				} 
+				else if(count($param['q_tag_type']) > 1)
+				{
+					$COND_TAGTYPE .= " AND (";
+					for($i=0;$i<count($param['q_tag_type']);$i++)
+					{
+						$COND_TAGTYPE .= "tag_type & " . intval($param['q_tag_type'][$i]);
+						if($i < count($param['q_tag_type']) - 1) $COND_TAGTYPE .= " OR ";
+					}
+					$COND_TAGTYPE .= ")";
+				}
+				
+				if(in_array(512, $param['q_tag_type']))
+				{
+					// No fulltext or soundex for "ort" -> TODO db: besser konfigurierbar machen
+					$use_soundex = 0;
+					$suggest_fulltext = 0;
+				}
+			}
+
+			if(isset($param['q_tag_type_not']) && is_array($param['q_tag_type_not'])) {          
+				foreach($param['q_tag_type_not'] as $qttn)
+				{
+					$COND_TAGTYPE .= " AND NOT(tag_type & " . intval($qttn) . ")";
+				}
+			}
 			
 			$portalIdCond = '';
 			if( $GLOBALS['wisyPortalFilter']['stdkursfilter']!='' ) {
@@ -153,13 +188,14 @@ class WISY_TAGSUGGESTOR_CLASS
 			$links_done = array();
 			for( $tries = 0; $tries <= 1; $tries ++ )
 			{
+				$COND .= $COND_TAGTYPE;
 				$sql = "SELECT t.tag_id, tag_name, tag_descr, tag_type, tag_help, tag_freq 
 							FROM x_tags t 
 							LEFT JOIN x_tags_freq f ON f.tag_id=t.tag_id $portalIdCond
 							WHERE ( $COND )
 							$portalIdCond
 							ORDER BY LEFT(tag_name,$LEN)<>'$QUERY', tag_name LIMIT 0, $max"; // sortierung alphabetisch, richtiger Wortanfang aber immer zuerst!
-
+                            
 				$this->db->query($sql); 
 				while( $this->db->next_record() )
 				{
@@ -187,7 +223,7 @@ class WISY_TAGSUGGESTOR_CLASS
 													FROM x_tags t 
 													LEFT JOIN x_tags_syn s ON s.lemma_id=t.tag_id 
 													LEFT JOIN x_tags_freq f ON f.tag_id=t.tag_id $portalIdCond
-													WHERE s.tag_id=$tag_id $portalIdCond");
+													WHERE s.tag_id=$tag_id $COND_TAGTYPE $portalIdCond");
 							while( $this->db2->next_record() )
 							{
 								$names[] = array(	'tag_name'=>$this->db2->f8('tag_name'), 
@@ -264,12 +300,18 @@ class WISY_TAGSUGGESTOR_CLASS
 								$tag_array['tag_anbieter_id'] = $tag_anbieter_id;
 								$tag_array['tag_groups'] = $tag_groups;
 							}
-							$ret[] = $tag_array;
+							if($fuzzy == 0 || $max_suggestions-- > 0)
+							{
+								$ret[] = $tag_array;
+							}
 						}
 						else if( sizeof($names) >= 1 ) 
 						{
 							// ... more than one destinations
-							$ret[] = array(	'tag' => $tag_name, 'tag_type' => 64 | $fuzzy, 'tag_help' => intval($tag_help) );
+							if($fuzzy == 0 || $max_suggestions-- > 0)
+							{
+								$ret[] = array(	'tag' => $tag_name, 'tag_type' => 64 | $fuzzy, 'tag_help' => intval($tag_help) );
+							}
 							for( $n = 0; $n < sizeof($names); $n++ )
 							{
 								$dest = $names[$n]['tag_name'];
@@ -303,7 +345,10 @@ class WISY_TAGSUGGESTOR_CLASS
 								$tag_array['tag_anbieter_id'] = $tag_anbieter_id;
 								$tag_array['tag_groups'] = $tag_groups;
 							}
-							$ret[] = $tag_array;
+							if($fuzzy == 0 || $max_suggestions-- > 0)
+							{
+								$ret[] = $tag_array;
+							}
 						}
 					}
 				}
@@ -325,7 +370,7 @@ class WISY_TAGSUGGESTOR_CLASS
 					'tag'	=>	'volltext:' . $q_tag_name,
 					'tag_descr' => '',
 					'tag_type'	=> 0,
-					'tag_help'	=> 0
+					'tag_help'	=> -3 // to signify "volltext"
 				);
 				// /13.02.2010: 
 			}
