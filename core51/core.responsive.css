@@ -1,0 +1,326 @@
+/* Basis-CSS zur responsiven Darstellung eines WISY-Portals */
+
+/* Clearfix und Basics */
+.clearfix:after{clear:both;content:' ';display:block;font-size:0;line-height:0;visibility:hidden;width:0;height:0;}.clearfix{display:inline-block;}* html .clearfix{height: 1%;}.clearfix{display: block;}
+
+body { padding: 0; margin: 0; }
+.acclink { display: none; }
+
+#page { max-width: 1024px; margin: 0 auto; padding: 10px; }
+
+/* Themenmenue */
+#themenmenue { background-color: #eee; }
+#nav-link {
+	display: none;
+	position: absolute;
+	top: 0;
+	right: 0;
+	width: 50px;
+	height: 50px;
+	cursor: pointer;
+}
+#nav-link span, #nav-link span:before, #nav-link span:after {
+	display: block;
+	position: absolute;
+	width: 20px;
+	height: 2px;
+	background-color: #000;
+}
+#nav-link span { 
+	top: 30px;
+	left: 15px;
+	font-size: 0;
+	line-height: 0;
+	text-indent: -100%;
+}
+#nav-link span:before { content: ''; margin-top: -5px; }
+#nav-link span:after { content: ''; margin-top: 5px; }
+
+#nav-link span, #nav-link span:before, #nav-link span:after {
+	-webkit-transition: all 0.5s ease;
+	transition: all 0.5s ease;
+}
+.navshowing #nav-link span {
+	-webkit-transform: rotateZ(-45deg);
+	transform: rotateZ(-45deg);
+}
+.navshowing #nav-link span:before {
+	margin-top: 0;
+	-webkit-transform: rotateZ(90deg);
+	transform: rotateZ(90deg);		
+}
+.navshowing #nav-link span:after { display: none; }
+
+#favlistlink { display: inline-block; padding: 2px; }
+
+/* Contentarea */
+#wisy_contentarea { padding: 0; }
+.wisyr_indent { margin-left: 1em; vertical-align: top; }
+
+.wisy_tagtable .title { float: left; }
+.wisy_tagtable .tag_count { float: right; }
+.wisy_tagtable .wisyr_tag_name a { display: inline-block; max-width: 70%; }
+
+/* ART Icons */
+.wisyr_art_icon,
+.wisyr_art .bu,
+.wisyr_art_wochenende,
+.wisyr_art_details {
+	font-size: 12px;
+	font-weight: bold;
+	margin-right: 4px;
+}
+
+/* Suche: Formular */
+#wisy_searcharea { padding: 15px 0 45px 0; }
+#wisy_searcharea .formrow { display: inline; position: relative; }
+#wisy_searcharea label { display: none; }
+#wisy_searchinput { width: 100%; max-width: 500px; }
+#wisy_searchbtn { margin-top: 15px; }
+.wisy_searchhints {
+	position: absolute;
+	bottom: -30px;
+	left: 0;
+}
+
+/* Suche: Autovervollständigung */
+.ac_results { border: 1px solid #ccc; }
+.ac_results_v2 { z-index: 2222; }
+.ac_results_v2 li { padding: 5px 15px; }
+.ac_even { background-color: #eee; }
+.ac_odd { background-color: #fff; }
+
+/* Erweiterte Suche: Formular */
+
+#adv_all {
+	width: 100%;
+	max-width: 600px;
+	margin: 0 auto;
+}
+#adv_all fieldset { margin-top: 1em; border: 1px solid #666; }
+
+@media screen and (min-width: 640px) {
+	#adv_all fieldset { margin-top: 1.5em; }
+	#adv_all .formrow { position: relative; margin-bottom: 0.5em; }
+	#adv_all label { position: absolute; width: 30%; }
+	#adv_all .formfield { margin-left: 33%; }
+}
+
+/* Tabellen */
+
+/* --- Kursliste / Anbieterliste --- */
+
+.wisyr_anbieter_switch,
+.wisyr_kurse_switch { margin-left: 20px; }
+
+.wisy_paginate.wisyr_paginate_top { display: none; }
+.wisy_paginate .wisy_paginate_seitevon,
+.wisyr_listnav { display: none; }
+
+/* Filter */
+.wisyr_filternav { margin: 10px 0; }
+#wisy_filterlink { margin-left: 20px; }
+.wisyq_fav #wisy_filterlink { display: none; }
+#filterEmbedded {
+	width: 100%;
+	min-height: 64px;
+	background-color: #eee;
+	padding: 0 10px 30px 10px;
+}
+#wisy_filter_all h2 { font-size: 14px; }
+
+.wisyr_list_footer { margin: 10px 0; }
+.wisyr_rss_link_wrapper { float: left; }
+
+/* --- Anbieterdetailseite: Kontaktdaten */
+.wisyr_anbieteradresse dt {
+    float: left;
+    clear: left;
+	width: 25%;
+	font-weight: bold;
+}
+.wisyr_anbieteradresse dt:after { content: ":"; }
+.wisyr_anbieteradresse dd {
+	margin: 0 0 1em 25%;
+}
+
+@media screen and (max-width: 760px), print {
+	
+	#page { padding-top: 50px; }
+	
+	/* Themenmenue */
+	#themenmenue { display: none; }
+	#nav-link { display: block; }
+	
+	.navshowing #themenmenue {
+		display: block;
+		position: absolute;
+		top: 60px;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		z-index: 330;
+	}
+	#themenmenue ul, #themenmenue li { position: relative; float: none; visibility: visible!important; }
+	#themenmenue li { padding: 0; border: none; background-color: #eee;}
+	#themenmenue a { display: block; padding: 10px; border-bottom: 1px solid #fff; }
+	#themenmenue li.dir { background-color: #ddd; }
+	#themenmenue ul ul { display: none; }
+	#themenmenue ul.dropdown ul { width: 100%; }
+	#themenmenue ul.dropdown ul ul { left: 0; }
+	
+	#favlistlink { width: 100%; }
+	
+	.wisy_searchhints { display: none; }
+	
+	/* Tabellenkopf zugänglich ausblenden */
+	table.wisy_list thead tr { position: absolute; top: -9999px; left: -9999px; }
+	
+	/* Filter */
+	#filterEmbedded { box-sizing: border-box; }
+	#wisy_filter_all .formrow { width: 100%!important; padding: 0; }
+	#wisy_filter_all select { width: 100%; box-sizing: border-box; }
+	#wisy_filter_all #filter { display: block; width: 100%; margin-bottom: 15px; }
+	#wisy_filter_all #filter_buttons { text-align: center; }
+
+	/* --- Kursliste / Anbieterliste auf schmalen Bildschirmen linearisieren a la Mobilmodul ---------------- */
+	
+	.wisyr_anbieter_switch,
+	.wisyr_kurse_switch { display: none; }
+	.wisyr_listnav { display: block; }
+	.wisyq_fav .wisyr_listnav { display: none; }
+	.wisyr_listnav a, .wisyr_listnav span {
+		display: inline-block;
+		width: 33%;
+		max-width: 100%;
+		text-align: center;
+		border: none;
+		padding: 15px 0 10px 0;
+		cursor: pointer;
+	}
+	.wisyr_listnav .active { border-bottom: 2px solid #000; }
+		
+	/* Tabellenelemente umwandeln in Blockelemente */
+	table.wisyr_kursliste, table.wisyr_kursliste thead, table.wisyr_kursliste tbody, table.wisyr_kursliste tr,
+	table.wisyr_anbieterliste, table.wisyr_anbieterliste thead, table.wisyr_anbieterliste tbody, table.wisyr_anbieterliste tr,
+	table.wisy_tagtable, table.wisy_tagtable thead, table.wisy_tagtable tbody, table.wisy_tagtable tr {
+		display: block;
+	}
+	
+	/* Tabellenelemente umwandeln in Inlineelemente */
+	table.wisyr_kursliste th, table.wisyr_kursliste td,
+	table.wisyr_anbieterliste th, table.wisyr_anbieterliste td,
+	table.wisy_tagtable th, table.wisy_tagtable td {
+		display: inline;
+		padding: 0;
+		margin: 0;
+		border: none;
+	}
+	
+	/* Umgeformte Tabelle gestalten */
+	table.wisyr_kursliste tr,
+	table.wisyr_anbieterliste tr,
+	table.wisy_tagtable tr {
+		padding: 0.5em;
+		border-bottom: 1px solid #eee;
+	}
+	
+	table.wisyr_kursliste .wisyr_angebot, table.wisyr_kursliste .wisyr_anbieter,
+	table.wisyr_anbieterliste .wisyr_angebot, table.wisyr_anbieterliste .wisyr_anbieter {
+		display: block; width: 100%;
+	}
+	
+	table.wisy_tagtable .wisyr_indent { margin: 0; }
+	table.wisy_tagtable .ac_indent { padding-left: 2em; }
+	table.wisy_tagtable .wisyr_tag_name a { display: inline; }
+	table.wisy_tagtable .wisyr_tag_name a:after,
+	table.wisy_tagtable .wisyr_tag_type:after { content:"\A"; white-space: pre; }
+	table.wisy_tagtable .tag_count { float: none; }
+	table.wisy_tagtable .wisyr_tag_type, table.wisy_tagtable .wisyr_tag_groups, table.wisy_tagtable .wisyr_tag_info {
+		margin-left: 0.3em;
+	}
+	
+	table.wisyr_kursliste .wisyr_art,
+	table.wisyr_kursliste .wisyr_anbieter_telefon,
+	table.wisyr_kursliste .wisyr_anbieter_profil,
+	table.wisyr_kursliste .wisyr_termin_weitere span,
+	table.wisyr_anbieterliste .wisyr_homepage,
+	table.wisyr_anbieterliste .wisyr_telefon,
+	table.wisyr_anbieterliste .wisyr_email { 
+		display: none;
+	}
+	
+	table.wisyr_kursliste .wisyr_termin_weitere a:before {
+		content: '+';
+	}
+	
+	/* Paginierung */
+	.wisyr_rss_link_wrapper { display: none; }
+	.wisyr_angebote_suchauftrag { display: none; }
+	.wisy_paginate.wisyr_paginate_top { display: none; }
+	.wisy_paginate.wisyr_paginate_bottom {
+		display: block;
+		float: none;
+		position: relative;
+		text-align: center;
+		padding: 15px;
+		background-color: #eee;
+	}
+	.wisy_paginate .wisy_paginate_seitevon { display: inline; }
+	.wisy_paginate_text, .wisy_paginate_pagelink { display: none; }
+	.wisy_paginate_next, .wisy_paginate_prev { position: absolute; top: 10px; right: 5px; }
+	.wisy_paginate_prev { right: auto; left: 5px; }
+	
+	.wisy_paginate a { padding: 5px; }
+	.wisy_paginate .wisy_paginate_next, .wisy_paginate .wisy_paginate_prev { display: inline-block; }
+
+	/* --- Kleinere Tabellen auf schmalen Bildschirmen umformen a la http://elvery.net/demo/responsive-tables/#no-more-tables -------- */
+	
+	/* Tabellenelemente umwandeln in Blockelemente */
+	table.wisyr_durchfuehrungen,
+	table.wisyr_durchfuehrungen thead,
+	table.wisyr_durchfuehrungen tbody,
+	table.wisyr_durchfuehrungen th,
+	table.wisyr_durchfuehrungen td,
+	table.wisyr_durchfuehrungen tr {
+		display: block;
+		border: none;
+	}
+
+	/* Umgeformte Tabelle gestalten */
+	table.wisyr_durchfuehrungen tr {
+		background-color: #eee;
+		margin-bottom: 1em;
+	}
+
+	table.wisyr_durchfuehrungen td {
+		position: relative;
+		width: auto;
+		min-height: 1.5em;
+		padding: 0.5em 0.5em 0.5em 48%;
+		border-bottom: 1px solid #fff;
+	}
+
+	table.wisyr_durchfuehrungen td:before {
+		position: absolute;
+		left: 0.5em;
+		width: 45%;
+		font-weight: bold;
+		white-space: nowrap;
+		padding-right: 1em;
+	}
+
+	/* Tabellenbeschriftung aus data-title Attribut */
+	table.wisyr_durchfuehrungen td:before { content: attr(data-title); }
+	
+	/* Suche: Autovervollständigung */
+	.ac_results_v2 {
+		max-height: none;
+		width: 100%!important;		
+		left: 0!important;
+		padding: 0 10px;
+		box-sizing: border-box;
+		border: none;
+		background-color: transparent;
+	}
+}

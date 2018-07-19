@@ -1286,6 +1286,10 @@ class WISY_FRAMEWORK_CLASS
 		// core 2.0 styles
 		$ret[] = 'core.css' . $this->includeVersion;
 		
+		// core responsive styles
+		$ret[] = 'core.responsive.css' . $this->includeVersion;
+		$ret[] = 'jquery-ui-1.12.1.custom.min.css' . $this->includeVersion;
+		
 		// the portal may overwrite everything ...
 		if( $wisyPortalCSS )								
 		{
@@ -1323,8 +1327,8 @@ class WISY_FRAMEWORK_CLASS
 		// return all JavaScript files as an array
 		$ret = array();
 		
-		$ret[] = '/admin/lib/jquery/js/jquery-1.12.4.min.js';
-		$ret[] = '/admin/lib/jquery/js/jquery-ui-1.12.1.custom.min.js';
+		$ret[] = 'jquery-1.12.4.min.js';
+		$ret[] = 'jquery-ui-1.12.1.custom.min.js';
 		
 		if($this->simplified)
 		{
@@ -1336,7 +1340,7 @@ class WISY_FRAMEWORK_CLASS
 		}
 		
 		if($this->iniRead('cookiebanner', '') == 1) {
-			$ret[] = 'cookiebanner.js';
+			$ret[] = 'jquery.cookiebanner.js';
 		}
 		
 		if( ($tempJS=$this->iniRead('head.js', '')) != '')
@@ -1692,16 +1696,16 @@ class WISY_FRAMEWORK_CLASS
 							if( isset($tokens['show']) && $tokens['show'] == 'anbieter' ) {
 								echo '<input type="hidden" name="filter_zeige" value="Anbieter" />';
 							}
+	                        $active_filters = $this->filterer->getActiveFilters();
+                        
+	                        if($active_filters == '') {
+	                            echo '<div class="wisy_searchhints">' .  $this->replacePlaceholders($this->iniRead('searcharea.hint', $DEFAULT_BOTTOM_HINT)) . '</div>' . "\n";
+	                        }
 						}
 						else
 						{
 							echo '<input type="text" id="wisy_searchinput" class="' . $autocomplete_class . '" name="q" value="' .$q. '" placeholder="' . $searchinput_placeholder . '" />' . "\n";
 						}
-                        $active_filters = $this->filterer->getActiveFilters();
-                        
-                        if($active_filters == '') {
-                            echo '<div class="wisy_searchhints">' .  $this->replacePlaceholders($this->iniRead('searcharea.hint', $DEFAULT_BOTTOM_HINT)) . '</div>' . "\n";
-                        }
 					echo '</div>';
 					
                     if($active_filters != '') {
