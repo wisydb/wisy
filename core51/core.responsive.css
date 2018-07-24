@@ -9,7 +9,10 @@ body { padding: 0; margin: 0; }
 #page { max-width: 1024px; margin: 0 auto; padding: 10px; }
 
 /* Themenmenue */
-#themenmenue { background-color: #eee; }
+#themenmenue { 
+	background-color: #eee;
+	clear: both;
+}
 #nav-link {
 	display: none;
 	position: absolute;
@@ -72,15 +75,31 @@ body { padding: 0; margin: 0; }
 }
 
 /* Suche: Formular */
-#wisy_searcharea { padding: 15px 0 45px 0; }
+#wisy_searcharea { position: relative; padding: 15px 0 45px 0; }
 #wisy_searcharea .formrow { display: inline; position: relative; }
 #wisy_searcharea label { display: none; }
-#wisy_searchinput { width: 100%; max-width: 500px; }
+#wisy_searchinput {
+	width: 100%;
+	max-width: 500px;
+	font-size: 15px;
+	padding: 5px 15px;
+}
 #wisy_searchbtn { margin-top: 15px; }
 .wisy_searchhints {
 	position: absolute;
 	bottom: -30px;
 	left: 0;
+}
+
+.wisyr_searchinput { position: relative; }
+.wisyr_searchinput .clear_btn {
+	position: absolute;
+	top: 0;
+	right: 1.5em;
+	width: 1em;
+	height: 1em;
+	background: #fff url(core51/img/close-red.png) no-repeat center center/1em;
+	cursor: pointer;
 }
 
 /* Suche: Autovervollständigung */
@@ -117,10 +136,7 @@ body { padding: 0; margin: 0; }
 .wisy_paginate .wisy_paginate_seitevon,
 .wisyr_listnav { display: none; }
 
-/* Filter */
 .wisyr_filternav { margin: 10px 0; }
-#wisy_filterlink { margin-left: 20px; }
-.wisyq_fav #wisy_filterlink { display: none; }
 #filterEmbedded {
 	width: 100%;
 	min-height: 64px;
@@ -322,5 +338,630 @@ body { padding: 0; margin: 0; }
 		box-sizing: border-box;
 		border: none;
 		background-color: transparent;
+	}
+}
+
+/* ---Filter Neue Suche --- */
+#wisy_filterlink {
+	display: none;
+}
+.wisyr_filterform {
+	margin-top: 30px;
+}
+.wisyr_filterform h3,
+.wisyr_filterform h4 {
+	display: inline-block;
+	margin: 0;
+}
+.wisyr_filterform h3,
+.wisy_suggestions h3 { color: #798D94; margin-right: 1em; }
+.wisyr_filterform h4 { font-weight: 300; }
+#wisyr_filterform_close { display: none; }
+
+.wisyr_filterform form {
+	margin-top: 0.5em;
+}
+
+.wisyr_filterform input[type="text"] {
+	width: 75%;
+	padding: 7px 5px;
+	border: 0;
+	border-radius: 2px;
+}
+
+.wisyr_filterform_reset { display: none; }
+
+/* Legend und Fieldset Reset */
+.wisyr_filterform legend { padding: 0; display: table; }
+.wisyr_filterform fieldset { border: 0; padding: 0.01em 0 0 0; margin: 0; min-width: 0; }
+body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell;}
+
+.wisyr_filterform form > fieldset {
+	position: relative;
+	display: inline-block;
+	width: 110px;
+	height: 28px;
+	border: 0;
+	border-radius: 2px;
+	background: #EEE;
+	margin-right: 0.3em;
+	cursor: pointer;
+}
+.wisyr_filterform form > fieldset > legend {
+	position: absolute;
+	left: 0.5em;
+	top: 0.3em;
+}
+.wisyr_filterform form > fieldset:hover > legend,
+.wisyr_filterform form > fieldset.active > legend {
+	color: #333;
+}
+.wisyr_filterform form > fieldset:after {
+	content: 'v';
+	position: absolute;
+	right: 0.5em;
+	top: 0.3em;
+}
+
+.wisyr_filterform form > fieldset.filter_weiterekriterien { width: 140px; }
+.wisyr_filterform form > fieldset.filter_weiterekriterien:after { content: '+'; font-family: 'Roboto', sans-serif; }
+
+.wisyr_filterform form > fieldset.filter_weiterekriterien .filter_inner {
+	padding-right: 10px;
+}
+.wisyr_filterform form > fieldset.filter_weiterekriterien fieldset {
+	margin-bottom: 1em;
+}
+.wisyr_filterform form > fieldset.filter_weiterekriterien legend {
+	margin-bottom: 0.5em;
+}
+.wisyr_filterform form > fieldset.filter_weiterekriterien .ui-selectmenu-button {
+	width: 100%;
+	background: #fff;
+}
+.wisyr_filterform form > fieldset.filter_weiterekriterien .filter_filtersection_submit { display: none; }
+
+.wisyr_filterform form > fieldset.filter_sortierung { 
+	float: right;
+	width: 170px;
+	text-align: right;
+	margin-right: 0;
+	padding: 0;
+	background: transparent;
+}
+.wisyr_filterform form > fieldset.filter_sortierung legend { display: none; }
+.wisyr_filterform .ui-selectmenu-button {
+	width: 170px;
+	box-sizing: border-box;
+	border: 0;
+	border-radius: 2px;
+	background: #EEE;
+	padding-left: 7px;
+	outline: 0;
+}
+.wisyr_filterform .ui-selectmenu-button .ui-icon {
+	display: none;
+	background-image: none;
+}
+.wisyr_filterform .ui-selectmenu-button .ui-selectmenu-text { color: #606060; margin-right: 0; }
+.wisyr_filterform .ui-selectmenu-button .ui-selectmenu-text:hover { color: #333; }
+.wisyr_filterform .ui-selectmenu-button:after {
+	content: 'v';
+	position: absolute;
+	right: 0.5em;
+	top: 0.5em;
+}
+.wisyr_filterform .ui-selectmenu-menu { text-align: left; }
+.wisyr_filterform .ui-selectmenu-menu .ui-menu-item { background-color: #eee; border: 0; }
+.wisyr_filterform .ui-selectmenu-menu .ui-menu-item-wrapper { padding: 7px; }
+.wisyr_filterform .ui-selectmenu-menu .ui-state-active { border: 0; }
+
+.wisyr_filterform .ui-selectmenu-menu .ui-widget.ui-widget-content {
+	margin-top: 4px;
+	border: 0;
+	border-radius: 2px;
+	box-shadow: -1px 1px 4px rgba(0, 0, 0, 0.4);
+}
+
+.Zebra_DatePicker { margin-left: -70px; }
+
+.wisyr_filterform form > fieldset.filter_sortierung:after {
+	display: none;
+	content: '';
+}
+
+.wisyr_filterform .filter_inner {
+	display: none;
+	position: absolute;
+	top: 32px;
+	left: 0;
+	border-radius: 2px;
+	background: #EEE;
+	box-shadow: -1px 1px 4px rgba(0, 0, 0, 0.4);
+	padding: 10px 20px 20px 10px;
+	z-index: 11;
+}
+.wisyr_filterform fieldset.active .filter_inner { display: block; cursor: default; }
+.wisyr_filterform .filter_inner legend {
+	color: #798D94;
+	font-weight: 700;
+	margin-bottom: 1em;
+}
+
+.wisyr_radiowrapper { display: block; }
+
+.wisyr_filterform form > fieldset select {
+	line-height: 1.5;
+	background-color: #fff;
+	outline: 0;
+}
+.wisyr_filterform form > fieldset select option:hover {
+	background-color: #798D94;
+}
+
+.wisyr_filterform form input:disabled + label { color: #999; }
+.wisyr_filterform form input:disabled + label:hover { text-decoration: none; cursor: default; }
+
+.wisyr_filterform .filter_submit {
+	height: 40px;
+	color: #fff;
+	font-size: 14px;
+	text-transform: uppercase;
+	border: none;
+	border-radius: 2px;
+	padding: 7px 15px;
+	margin: 20px 0 10px 0;
+	box-shadow: 0 2px 2px rgba(0, 0, 0, 0.4);
+	-webkit-appearance: none;
+	background-color: #3E7AB8;
+	cursor: pointer;
+}
+
+.wisyr_filterform .filter_zweispaltig .filter_inner,
+.wisyr_filterform .filter_breit .filter_inner { width: 337px; }
+.filter_spalte1,
+.filter_spalte2 { float: left; width: 50%; }
+
+
+.wisyr_filterform form > fieldset.filter_weiterekriterien .filter_schmal .ui-selectmenu-button {
+	float: right;
+	width: 49%;
+}
+.wisyr_filterform form > fieldset.filter_weiterekriterien .filter_schmal .ui-selectmenu-button:first-of-type {
+	float: left;
+}
+.wisyr_filterform form > fieldset.filter_weiterekriterien .ui-selectmenu-menu .ui-state-disabled { display: none; }
+
+
+/* Kursthemen und andere Linklisten */
+.wisyr_filterlinklist .filter_inner {
+	padding: 0;
+}
+.wisyr_filterlinklist ul {
+	width: 310px;
+	max-height: 50vh;
+	overflow-y: scroll;
+	list-style-type: none;
+	margin: 0;
+	padding: 1em;
+}
+.wisyr_filterlinklist li {
+	margin-bottom: 0.5em;
+}
+.wisyr_filterlinklist input { display: none; }
+
+.wisyr_filterlinklist .wisyr_filter_selected { color: #606060; }
+
+.wisyr_filtergroup.filter_sortierung .filter_inner {
+	width: 180px;
+	left: auto;
+	right: 0;
+}
+
+.wisyr_filtergroup .wisyr_datepicker {
+	padding-right: 20px;
+	background: #fff url(core51/img/calendar.png) no-repeat 95% center/auto 60%;
+}
+
+/* Clear button */
+.wisyr_filtergroup .filter_clearbutton_wrapper { position: relative; }
+.wisyr_filtergroup .filter_clearbutton_wrapper input[type="text"] { width: 100%;}
+.wisyr_filtergroup .filter_clearbutton_wrapper .clear_btn {
+	position: absolute;
+	top: 3px;
+	right: -6px;
+	width: 25px;
+	height: 21px;
+	background: #fff url(core51/img/close-red.png) no-repeat 45% center/10px;
+	cursor: pointer;
+}
+
+/* Preis und andere Radiolisten */
+.wisyr_filterradiolist input {
+}
+.wisyr_filterradiolist label {
+	display: inline-block;
+	color: #3E7AB8;
+	margin-bottom: 0.3em;
+}
+.wisyr_filterradiolist label:hover {
+	text-decoration: underline;
+	cursor: pointer;
+}
+
+/* Anbieter und andere Radiolinklisten */
+
+.wisyr_filterradiolinklist .filter_inner {
+	width: 420px;
+	max-height: 50vh;
+	overflow-y: scroll;
+	list-style-type: none;
+	margin: 0;
+	padding: 1em;
+}
+.wisyr_filterradiolinklist .wisyr_radiowrapper {
+	margin-bottom: 0.5em;
+}
+.wisyr_filterradiolinklist .wisyr_radiowrapper input {
+	display: none;
+}
+.wisyr_filterradiolinklist label {
+	display: inline;
+	color: #3E7AB8;
+}
+.wisyr_filterradiolinklist label:hover {
+	text-decoration: underline;
+	cursor: pointer;
+}
+
+/* Aktive Filter */
+.wisyr_activefilters {
+	position: absolute;
+	top: 65px;
+	left: 0;
+	list-style-type: none;
+	padding: 0;
+	margin: 0 0 0.3em 0;
+}
+.wisyr_activefilters .wisyr_filter {
+	position: relative;
+	float: left;
+	margin-right: 0.5em;
+	margin-bottom: 0.3em;
+}
+.wisyr_activefilters .wisyr_filter a {
+	color: #fff;
+	font-size: 14px;
+	line-height: 14px;
+	font-weight: 300;
+	background-color: #3E7AB8;
+	border-radius: 2px;
+	padding: 0.5em 1.5em 0.5em 0.5em;
+	
+	display: block;
+	max-width: 140px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.wisyr_activefilters .wisyr_filter a:hover {
+	text-decoration: none;
+}
+.wisyr_activefilters .wisyr_filter a:after {
+	content: 'x';
+	display: block;
+	position: absolute;
+	line-height: 14px;
+	right: 0.2em;
+	top: 0.5em;
+}
+
+/* Nichts gefunden / leergefiltert Seite */
+.wisy_suggestions .wisyr_filterform_header { display: none; }
+
+@media screen and (min-width: 761px) {
+	.wisyr_filterform .ui-selectmenu-menu .ui-widget.ui-widget-content {
+		max-width: 337px;
+	}
+}
+@media screen and (max-width: 840px) {
+	.wisyr_filterform form > fieldset.filter_sortierung {
+		display: block;
+		float: none;
+	}
+}
+@media screen and (max-width: 760px), print {
+	#wisy_filterlink {
+		display: block;
+		width: 20px;
+		height: 20px;
+		font-size: 0;
+		text-indent: -200%;
+		padding: 15px;
+		margin: 0;
+		background-color: transparent;
+		overflow: hidden;
+		background: url(core51/img/filter_grau.png) no-repeat center center/24px;
+	}
+	.wisyr_filternav.wisyr_filters_active #wisy_filterlink {
+		background: url(core51/img/filter_grau_filtered.png) no-repeat center center/24px;
+	}
+	.wisyr_activefilters {
+		display: none;
+	}
+	#wisyr_filterform {
+		display: none;
+	}
+	body.wisyr_filterform_active { padding-top: 0; overflow: hidden; }
+	body.wisyr_filterform_active #mainheader,
+	body.wisyr_filterform_active #wisy_searcharea { display: none; }
+	
+	body.wisyr_filterform_active #wisyr_filterform {
+		display: block;
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		margin: 0;
+		padding: 0;
+		background: #eee;
+		z-index: 1;
+		overflow-y: auto;
+		-webkit-overflow-scrolling: touch;
+	}
+	body.wisyr_filterform_active #wisyr_filterform.subActive { overflow: hidden; }
+	.wisyr_filterform_header {
+		display: block;
+		position: fixed;
+		width: 100%;
+		height: 48px;
+		line-height: 48px;
+		background-color: #3E7AB8;
+		padding: 0 15px;
+		margin: 0;
+		z-index: 11;
+		box-sizing: border-box;
+	}
+	.wisyr_filterform_header:after {
+		display: block;
+		content: 'x';
+		position: absolute;
+		right: 0.7em;
+		top: 0;
+		color: #fff;
+		font-size: 24px;
+		padding: 0 0.5em;
+		cursor: pointer;
+	}
+	.wisyr_filterform_header h3 {
+		color: #fff;
+		font-size: 14px;
+		font-weight: 500;
+		text-transform: uppercase;
+	}
+	.wisyr_filterform_header h4 { display: none; }
+	
+	.wisyr_filterform form { height: auto; margin-top: 98px; }
+	
+	.wisyr_filterform form .ui-front { z-index: 1; }
+	
+	.wisyr_filterform form .filter_submit { width: 100%; }
+	
+	.wisyr_filterform input[type="text"] {
+		height: 40px;
+		font-size: 14px;
+		padding: 5px 15px;
+		margin-right: 5px;
+		box-sizing: border-box;
+	}
+	
+	.wisyr_filterform form > fieldset {
+		display: block;
+		width: 100%;
+		height: 38px;
+		padding: 5px 0;
+		border-radius: 0;
+		border-bottom: 1px solid #ddd;
+	}
+	.wisyr_filterform form fieldset legend,
+	.wisyr_filterform form fieldset .filter_inner legend {
+		left: 15px;
+		font-size: 16px;
+		font-weight: 500;
+		line-height: 42px;
+		color: #3E7AB8;
+	}
+	.wisyr_filterform form fieldset:not(.active) legend:not([data-filtervalue='']) {
+		line-height: 24px;
+	}
+	.wisyr_filterform form fieldset legend:after,
+	.wisyr_filterform form fieldset .filter_inner legend:after,
+	.wisyr_filterform form > fieldset.filter_sortierung > legend:after {
+		content: attr(data-filtervalue);
+		display: block;
+		font-size: 14px;
+		line-height: 12px;
+		color: #606060;
+	}
+	
+	.wisyr_filterform form > fieldset.filter_sortierung {
+		position: absolute;
+		top:48px;
+		width: 100%;
+		height: 38px;
+		text-align: left; 
+		padding: 5px 0;
+	}
+	.wisyr_filterform form > fieldset.filter_sortierung > * { display: none; }
+	.wisyr_filterform form > fieldset.filter_sortierung.active > .ui-selectmenu-menu { display: block; }
+	.wisyr_filterform form > fieldset.filter_sortierung > legend { display: block; }
+	
+	.wisyr_filterform .ui-selectmenu-button { width: 100%; }
+	
+	.wisyr_filterform form > fieldset.filter_weiterekriterien { width: 100%; }
+	.wisyr_filterform form > fieldset.filter_weiterekriterien:after { display: none; }
+	.wisyr_filterform form > fieldset.filter_weiterekriterien fieldset { 
+		position: relative;
+		height: 38px;
+		margin: 0;
+		padding: 5px 0;
+	    border-bottom: 1px solid #ddd;
+	}
+	.wisyr_filterform form > fieldset:after,
+	.wisyr_filterform form > fieldset.filter_sortierung:after,
+	.wisyr_filterform form > fieldset.filter_weiterekriterien fieldset:after {
+		content: '>';
+		display: block;
+		position: absolute;
+		color: #3E7AB8;
+		font-size: 24px;
+		line-height: 48px;
+		right: 0.5em;
+		top: 0;
+	}
+	.wisyr_filterform form > fieldset.filter_weiterekriterien > legend { display: none; }
+	.wisyr_filterform form > fieldset.filter_weiterekriterien > .filter_inner { 
+		display: block; 
+		top: 0;
+		width: 100%;
+		padding: 0;
+		box-shadow: none;
+	}
+	.wisyr_filterform form > fieldset.filter_weiterekriterien > .filter_inner > .filter_submit { display: none; }
+	.wisyr_filterform form > fieldset.filter_weiterekriterien > .filter_inner > .no_autosubmit_mobile.active + .filter_filtersection_submit { 
+		display: block;
+		position: absolute;
+		z-index: 111;
+	    margin: 0 15px;
+	    width: calc(100% - 30px);
+	}
+	
+	.wisyr_filterform form > fieldset.filter_weiterekriterien > .filter_inner > fieldset > * { display: none; }
+	.wisyr_filterform form > fieldset.filter_weiterekriterien > .filter_inner > fieldset > legend {
+		display: block;
+		position: absolute;
+		top: 0.3em;
+		font-weight: 500;
+		line-height: 42px;
+	}
+	.wisyr_filterform form > fieldset.filter_weiterekriterien > .filter_inner > fieldset:not(.active) > legend:not([data-filtervalue='']) {
+		line-height: 24px;
+	}
+	.wisyr_filterform form > fieldset.filter_weiterekriterien > .filter_inner > fieldset.active > legend {
+		height: 48px;
+		line-height: 48px;
+	}
+	
+	.wisyr_filterform fieldset.active {
+		position: fixed!important;
+		width: 100%;
+		height: auto!important;
+		top: 0!important;
+		bottom: 0;
+		box-shadow: none;
+		padding: 0;
+		margin: 0!important;
+		z-index: 111;
+		background: #eee!important;
+	}
+	.wisyr_filterform fieldset.active:after { display: none!important; }
+	.wisyr_filterform fieldset.active > legend:after {
+		display: block;
+		content: 'x'!important;
+		position: absolute;
+		right: 0;
+		top: 0;
+		color: #fff!important;
+		font-size: 24px!important;
+		line-height: 48px!important;
+		padding: 0 0.5em;
+		cursor: pointer;
+	}
+	.wisyr_filterform fieldset.active > legend {
+		left: 0!important;
+		top: 0!important;
+		width: 100%;
+		height: 48px;
+		line-height: 48px;
+		color: #fff!important;
+		font-size: 14px!important;
+		font-weight: 500;
+		line-height: 48px;
+		text-transform: uppercase;
+		background: #3E7AB8;
+	    padding: 0 15px;
+	    box-sizing: border-box;
+		z-index: 1111;
+	}
+	
+	.wisyr_filterform fieldset.active > .filter_inner {
+		top: 50px;
+		bottom: 0;
+		width: 100%;
+		box-shadow: none;
+		box-sizing: border-box;
+		overflow-y: auto;
+		padding: 15px;
+		-webkit-overflow-scrolling: touch;
+	}
+	.wisyr_filterform fieldset.active > .filter_inner > .filter_spalte1, 
+	.wisyr_filterform fieldset.active > .filter_inner > .filter_spalte2 {
+		float: none;
+		width: 100%;
+		margin-bottom: 15px;
+	}
+	
+	.wisyr_filterform form > fieldset.filter_weiterekriterien > .filter_inner > fieldset.active { padding-top: 50px; }
+	.wisyr_filterform form > fieldset.filter_weiterekriterien > .filter_inner > fieldset.active > * { display: block;  }
+	
+	.wisyr_filterform form > fieldset.filter_sortierung .ui-selectmenu-button,
+	.wisyr_filterform form > fieldset.filter_weiterekriterien .ui-selectmenu-button {
+		display: block;
+		opacity: 0;
+		height: 50px;
+		margin-top: -50px;
+		z-index: -1;
+	}
+	.wisyr_filterform form > fieldset.filter_sortierung .ui-selectmenu-button { margin-top: 0; }
+	.wisyr_filterform form > fieldset.filter_weiterekriterien .ui-selectmenu-button { margin-top: -50px; }
+	.wisyr_filterform form .ui-selectmenu-menu .ui-widget.ui-widget-content { box-shadow: none; padding: 0; margin: 0; }
+	.wisyr_filterform form .ui-selectmenu-menu .ui-menu-item-wrapper { color: #3E7AB8; }
+	.wisyr_filterform form .ui-selectmenu-menu .ui-menu-item-wrapper.ui-state-active,
+	.wisyr_filterform form .ui-selectmenu-menu .ui-menu-item.wisyr_selectedmobile .ui-menu-item-wrapper {
+		background: none;
+		text-decoration: underline;
+		background-color: #D2DFEE;
+	}
+	.wisyr_filterform form fieldset.active .ui-selectmenu-menu {
+		bottom: 0;
+		overflow-y: auto;
+		-webkit-overflow-scrolling: touch;
+	}
+	.wisyr_filterform form fieldset.active .ui-selectmenu-menu li { padding: 0 8px; }
+	
+	.wisyr_filterlinklist ul {
+		width: auto;
+		max-height: none;
+		padding-left: 0;
+		overflow-y: auto;
+	}
+	.wisyr_filterlinklist li {
+		margin-bottom: 1em;
+	}
+	
+	.wisyr_filterradiolinklist .filter_inner {
+		max-height: none;
+	}
+	
+	.wisyr_filterform_reset { 
+		display: block;
+		line-height: 48px;
+		padding: 5px 15px;
+	}
+	
+	.filter_ortundumkreis_ort .clear_btn {
+		right: 6px;
+		height: 34px;
 	}
 }

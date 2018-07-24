@@ -1283,12 +1283,13 @@ class WISY_FRAMEWORK_CLASS
 		
 		$ret = array();
 
-		// core 2.0 styles
+		// core styles
 		$ret[] = 'core.css' . $this->includeVersion;
 		
 		// core responsive styles
 		$ret[] = 'core.responsive.css' . $this->includeVersion;
-		$ret[] = 'jquery-ui-1.12.1.custom.min.css' . $this->includeVersion;
+		$ret[] = 'core51/lib/jquery/jquery-ui-1.12.1.custom.min.css' . $this->includeVersion;
+		$ret[] = 'core51/lib/zebra-datepicker/zebra_datepicker.min.css' . $this->includeVersion;
 		
 		// the portal may overwrite everything ...
 		if( $wisyPortalCSS )								
@@ -1327,8 +1328,9 @@ class WISY_FRAMEWORK_CLASS
 		// return all JavaScript files as an array
 		$ret = array();
 		
-		$ret[] = 'jquery-1.12.4.min.js';
-		$ret[] = 'jquery-ui-1.12.1.custom.min.js';
+		$ret[] = 'core51/lib/jquery/jquery-1.12.4.min.js';
+		$ret[] = 'core51/lib/jquery/jquery-ui-1.12.1.custom.min.js';
+		$ret[] = 'core51/lib/zebra-datepicker/zebra_datepicker.min.js';
 		
 		if($this->simplified)
 		{
