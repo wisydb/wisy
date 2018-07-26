@@ -543,6 +543,16 @@ class WISY_DURCHF_CLASS
 				$cell .= "{$small}dauerhaftes Angebot{$smallend}"; 
 			}
 			
+			if( $details && $this->framework->iniRead('details.kurstage', 1)==1 ) {
+			    $temp = $this->formatKurstage(intval($record['kurstage']));
+			    if( $temp ) {
+			        echo '<span class="wotage">'.$temp.'</span>';
+			        
+			        if($zeit_von || $zeit_bis)
+			            echo ':&nbsp;';
+			    }
+			}
+			
 			if( $zeit_von && $zeit_bis ) {
 				$small = ''; $smallend = '';
 				if( $cell != '' ) { $cell .= '<br />'; $small = '<small>'; $smallend = '</small>'; }
@@ -591,13 +601,6 @@ class WISY_DURCHF_CLASS
 				$dfStichw[] = array('id'=>'tc'.$record['tagescode']);
 				
 				$cell .= $this->formatArtSpalte($dfStichw, $details);
-
-				if( $details && $this->framework->iniRead('details.kurstage', 1)==1 ) {			
-					$temp = $this->formatKurstage(intval($record['kurstage']));
-					if( $temp ) {
-						$cell .= ($cell? '<br />' : '') . "<small>$temp</small>";
-					}
-				}
 								
 				if( $details ) {
 					if( $record['teilnehmer'] ) {
