@@ -129,7 +129,7 @@ function fwd301($fwdTo)
 	exit();
 }
 
-function error404()
+function error404($msg = "")
 {
 	global $wisyCore;
 	header("HTTP/1.1 404 Not Found");
@@ -220,6 +220,12 @@ function selectPortalOrFwd301()
 		}
 	}
 	
+	// find all matching domains with other status than "1" - in this case 404 on purpose (mainly for SEO)
+	$sql = "SELECT * FROM portale WHERE status<>1 AND domains LIKE '%" . addslashes(str_replace('www.', '', $ist_domain)) . "%';";
+	$db->query($sql);
+	if( $db->next_record() )
+	    error404();
+	    
 	// nothing found at all - go to fallback (domain containing an "*") or show an error
 	$sql = "SELECT * FROM portale WHERE status=1 AND domains LIKE '%*%';";
 	$db->query($sql);
