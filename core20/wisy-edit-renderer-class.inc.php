@@ -504,7 +504,7 @@ class WISY_EDIT_RENDERER_CLASS
 			{
 				// ...Login als normaler Anbieter in der Form "<passwort>"
 				$logwriter->addData('loginname', $anbieterSuchname);
-				$db->query("SELECT pflege_passwort, pflege_pweinst, id FROM anbieter WHERE suchname='".addslashes($anbieterSuchname)."'");
+				$db->query("SELECT pflege_email, pflege_passwort, pflege_pweinst, id FROM anbieter WHERE suchname='".addslashes($anbieterSuchname)."'");
 				if( $db->next_record() )
 				{
 					$dbPw = $db->f('pflege_passwort');
