@@ -168,8 +168,10 @@ function selectPortalOrFwd301()
 	// some special domain handling
 	if( substr($ist_domain, 0, 7)=='sandbox' ) // remove sandbox prefix
 	{
-		if( substr($ist_domain, 0, 8)=='sandbox1' || substr($ist_domain, 0, 8)=='sandbox2' || substr($ist_domain, 0, 8)=='sandbox3' )
-			$ist_domain = substr($ist_domain, 8 + 1 /*dot or minus*/ );
+	    if(preg_match("/sandbox[0-9]/i", substr($ist_domain, 0, 8)) && !preg_match("/sandbox[10-13]/i", substr($ist_domain, 0, 9)))
+	        $ist_domain = substr($ist_domain, 8 + 1 /*dot or minus*/ );
+	    elseif(preg_match("/sandbox[10-13]/i", substr($ist_domain, 0, 9)))
+	        $ist_domain = substr($ist_domain, 9 + 1 /*dot or minus*/ );
 		else
 			$ist_domain = substr($ist_domain, 7 + 1 /*dot or minus*/ );
 		$do_fwd = false;
