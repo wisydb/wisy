@@ -138,9 +138,15 @@ function error404($msg = "")
 	echo '<html>
 			<head>
 				<title>Fehler 404 - Seite nicht gefunden</title>
+                <style type="text/css">
+                    #custom_errormsg {
+                        color: darkgreen;
+                    }
+                </style>
 			</head>
 			<body>
 				<h1>Fehler 404 - Seite nicht gefunden</h1>
+                <h2 id="custom_errormsg">'.$msg.'</h2>
 				<p>Entschuldigung, aber die von Ihnen gew&uuml;nschte Seite (<i>'.isohtmlspecialchars($_SERVER['REQUEST_URI']).'</i> in <i>/'.isohtmlspecialchars($wisyCore).'</i> auf <i>' .$_SERVER['HTTP_HOST']. '</i>) konnte leider nicht gefunden werden. Sie k&ouml;nnen jedoch ...
 				<ul>
 					<li><a href="http://'.$_SERVER['HTTP_HOST'].'">Die Startseite von '.$_SERVER['HTTP_HOST'].' aufrufen ...</a></li>
@@ -223,8 +229,10 @@ function selectPortalOrFwd301()
 	// find all matching domains with other status than "1" - in this case 404 on purpose (mainly for SEO)
 	$sql = "SELECT * FROM portale WHERE status<>1 AND domains LIKE '%" . addslashes(str_replace('www.', '', $ist_domain)) . "%';";
 	$db->query($sql);
-	if( $db->next_record() )
-	    error404();
+	if( $db->next_record() ) {
+	    $wisyPortalEinstellungen = explodeSettings($db->fs('einstellungen'));
+	    error404($wisyPortalEinstellungen['error404.msg']);
+	}
 	    
 	// nothing found at all - go to fallback (domain containing an "*") or show an error
 	$sql = "SELECT * FROM portale WHERE status=1 AND domains LIKE '%*%';";
