@@ -463,7 +463,14 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 	box-shadow: -1px 1px 4px rgba(0, 0, 0, 0.4);
 }
 
-.Zebra_DatePicker { margin-left: -70px; }
+.Zebra_DatePicker { margin-left: -100px; }
+.Zebra_DatePicker .dp_daypicker.dp_body th {
+	color: #fff;
+	background: #3E7AB8;
+}
+.Zebra_DatePicker .dp_daypicker.dp_body .dp_current {
+	color: #3E7AB8;
+}
 
 .wisyr_filterform form > fieldset.filter_sortierung:after {
 	display: none;
