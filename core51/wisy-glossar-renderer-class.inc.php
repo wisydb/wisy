@@ -32,7 +32,7 @@ class WISY_GLOSSAR_RENDERER_CLASS
 	
 		$db = new DB_Admin;
 	
-		$db->query("SELECT begriff, erklaerung, wikipedia, date_created, date_modified FROM glossar WHERE id=$glossar_id");
+		$db->query("SELECT begriff, erklaerung, wikipedia, date_created, date_modified FROM glossar WHERE status=1 AND id=$glossar_id");
 		if( !$db->next_record() )
 			$this->framework->error404();
 
