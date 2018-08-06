@@ -83,6 +83,7 @@ body { padding: 0; margin: 0; }
 	max-width: 500px;
 	font-size: 15px;
 	padding: 5px 15px;
+	box-sizing: border-box;
 }
 #wisy_searchbtn { margin-top: 15px; }
 .wisy_searchhints {
