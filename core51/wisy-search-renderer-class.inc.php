@@ -608,7 +608,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			echo '<div class="wisyr_list_header">';
 				echo '<div class="wisyr_listnav"><span class="active">Kurse</span><a href="search?q=' . urlencode($queryString) . '%2C+Zeige:Anbieter">Anbieter</a></div>';
 				echo '<div class="wisyr_filternav';
-				if($this->framework->filterer->getActiveFiltersCount() > 0) echo ' wisyr_filters_active';
+				if($this->framework->simplified && $this->framework->filterer->getActiveFiltersCount() > 0) echo ' wisyr_filters_active';
 				echo '">';
 			
 				if( $queryString == '' ) {
@@ -972,7 +972,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			// Auch bei leerem Suchergebnis Filternavigation ausgeben
 			echo '<div class="wisyr_list_header">';
 				echo '<div class="wisyr_filternav';
-				if($this->framework->filterer->getActiveFiltersCount() > 0) echo ' wisyr_filters_active';
+				if($this->framework->simplified && $this->framework->filterer->getActiveFiltersCount() > 0) echo ' wisyr_filters_active';
 				echo '">';
 			
 					// Show filter / advanced search
