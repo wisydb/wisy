@@ -19,6 +19,77 @@ a.expires?"; expires="+a.expires.toUTCString():"",a.path?"; path="+a.path:"",a.d
 {var v=h[p].split("=");if(c(v.shift())===r){var m=c(v.join("="));return o.json?JSON.parse(m):m}}return null};o.defaults={};e.removeCookie=function(t,n){if(e.cookie(t)!==null){e.cookie(t,null,n);return true}return false}})(jQuery,document)
 
 
+/*****************************************************************************
+ * DSGVO stuff
+ *****************************************************************************/
+
+/* Cookie optout wrapper for $.cookie function
+ *
+ * Passes cookies through to $.cookie function, but only if user has not opted out 
+ * or if cookie is not blacklisted via cookiebanner.cookies.optout
+ *
+ */
+function setCookieSafely(title, value, options) {
+	if (window.cookiebanner && window.cookiebanner.optedOut && window.cookiebanner.optoutCookies && window.cookiebanner.optoutCookies.length) {
+		var blacklist = window.cookiebanner.optoutCookies.split(',');
+		for (var i = 0; i < blacklist.length; i++) {
+			if (title === $.trim(blacklist[i])) {
+				return false;
+			}
+		}
+	}
+	$.cookie(title, value, options);
+}
+
+/* Update Cookie Settings
+ *
+ * Remove all cookies that are set as optout cookies in portal settings
+ * via cookiebanner.cookies.optout when user opts out of cookies
+ * Dis- / enable Google Analytics and PIWIK
+ */
+function updateCookieSettings() {
+	if (window.cookiebanner) {
+		if (window.cookiebanner.optedOut) {
+			
+			// Disable Google Analytics
+			// Tut das überhaupt irgendwas? -- https://developers.google.com/analytics/devguides/collection/analyticsjs/user-opt-out
+			if(window.cookiebanner.uacct) window['ga-disable-' + window.cookiebanner.uacct] = true;
+			
+			// Remove unwanted cookies
+			if (window.cookiebanner.optoutCookies && window.cookiebanner.optoutCookies.length) {
+				
+				// Portal blacklist
+				var blacklist = window.cookiebanner.optoutCookies.split(',');
+				for (var i = 0; i < blacklist.length; i++) {
+					var cookieName = $.trim(blacklist[i]);
+					if (cookieName !== '') $.removeCookie(cookieName, { path: '/' });
+				}
+				
+				// FAV
+				$.removeCookie('fav', { path: '/' });
+				$.removeCookie('fav_init_hint', { path: '/' });
+				
+				// Piwik
+				if(window.cookiebanner.piwik) {
+					var piwikCookies = document.cookie.match(/\_pk(\_id|\_ses)\.6\..*?=/g);
+					if (piwikCookies !== null) {
+						for(var i=0; i < piwikCookies.length; i++) {
+							$.removeCookie(piwikCookies[i].replace('=', ''), { path: '/' });
+						}
+					}
+				}
+				
+				// Google Analytics
+				if (window.cookiebanner.uacct) {
+					$.removeCookie('_ga', { path: '/' }); 
+					$.removeCookie('_gat', { path: '/' });
+					$.removeCookie('_gid', { path: '/' });
+				}
+			}
+		}
+	}
+}
+
 
 /*****************************************************************************
  * fav stuff
@@ -54,7 +125,7 @@ function fav_save_cookie()
 			str += key;
 		}
 	}
-	$.cookie('fav', str, { expires: 30 }); // expires in 30 days
+	setCookieSafely('fav', str, { expires: 30 }); // expires in 30 days
 }
 
 
@@ -112,6 +183,10 @@ function fav_update_bar()
 
 function fav_click(jsObj, id)
 {
+	if (window.cookiebanner && window.cookiebanner.optedOut) {
+		alert(window.cookiebanner.favOptoutMessage);
+		return false;
+	}
 	jqObj = $(jsObj);
 	if( jqObj.hasClass('fav_selected') ) {
 		jqObj.removeClass('fav_selected');
@@ -125,7 +200,7 @@ function fav_click(jsObj, id)
 		
 		if( $.cookie('fav_init_hint') != 1 ) {
 			alert('Ihr Favorit wurde auf diesem Computer gespeichert. Um ihre Merkliste anzuzeigen, klicken Sie auf "Merkliste" oben rechts.');
-			$.cookie('fav_init_hint', 1, { expires: 30 }); 
+			setCookieSafely('fav_init_hint', 1, { expires: 30 }); 
 		}
 	}
 }
