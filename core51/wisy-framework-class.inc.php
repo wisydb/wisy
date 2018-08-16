@@ -144,7 +144,7 @@ class WISY_FRAMEWORK_CLASS
 		$value = $default;
 		if( isset( $wisyPortalEinstellungen[ $key ] ) )
 		{
-			$value = $wisyPortalEinstellungen[ $key ];
+			$value = utf8_encode($wisyPortalEinstellungen[ $key ]);
 		}
 		return $value;
 	}
