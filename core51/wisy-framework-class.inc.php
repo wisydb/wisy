@@ -1397,7 +1397,8 @@ class WISY_FRAMEWORK_CLASS
 			$cookieOptions['cookie']['expiryDays'] = $this->iniRead('cookiebanner.cookiegueltigkeit', 7);
 			
 			$cookieOptions['content'] = array();
-			$cookieOptions['content']['message'] = $this->iniRead('cookiebanner.hinweis.text', 'Wir verwenden Cookies, um Ihnen eine Merkliste sowie eine Seitenübersetzung anzubieten und um Kursanbietern die Pflege ihrer Kurse zu ermöglichen. Indem Sie unsere Webseite nutzen, erklären Sie sich mit der Verwendung der Cookies einverstanden. Weitere Details finden Sie in unserer Datenschutzerklärung.');			$cookieOptions['content']['allow'] = $this->iniRead('cookiebanner.erlauben.text', 'Akzeptieren');
+			$cookieOptions['content']['message'] = $this->iniRead('cookiebanner.hinweis.text', 'Wir verwenden Cookies, um Ihnen eine Merkliste sowie eine Seitenübersetzung anzubieten und um Kursanbietern die Pflege ihrer Kurse zu ermöglichen. Indem Sie unsere Webseite nutzen, erklären Sie sich mit der Verwendung der Cookies einverstanden. Weitere Details finden Sie in unserer Datenschutzerklärung.');
+			$cookieOptions['content']['allow'] = $this->iniRead('cookiebanner.erlauben.text', 'Akzeptieren');
 			$cookieOptions['content']['deny'] = $this->iniRead('cookiebanner.ablehnen.text', 'Ablehnen');
 			$cookieOptions['content']['link'] = $this->iniRead('cookiebanner.datenschutz.text', 'Mehr erfahren');
 			$cookieOptions['content']['href'] = $this->iniRead('cookiebanner.datenschutz.link', '');
