@@ -84,7 +84,7 @@ if(!is_array($data))
     ?>	
     <tr>
     	<td><?php echo '<a href="/admin/edit.php?table=kurse&id='.$adresse['kurs_id'].'">'.$ort.'</a>';  ?></td>
-    	<td><?php echo '<a href="https://www.google.de/search?q='.urlencode(str_replace("<br>", " ", utf8_encode($ort))).'">&rarr;</a>'; // https://www.google.de/maps/place/ ?></td> 
+    	<td><?php echo '<a href="https://www.google.de/search?q='.urlencode(str_replace("<br>", " ", utf8_encode($ort))).'" target="_blank">&rarr;</a>'; // https://www.google.de/maps/place/ ?></td> 
     	<td><?php $x = strpos($error, "--"); if($x !== FALSE) { $error = substr($error, 0, $x); } echo $error; ?></td>
     	<td><?php echo $adresse['user_grp_shortname']; ?></td>
     	<td><?php echo $adresse['date_modified']; ?></td>
