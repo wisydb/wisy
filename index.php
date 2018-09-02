@@ -138,15 +138,10 @@ function error404($msg = "")
 	echo '<html>
 			<head>
 				<title>Fehler 404 - Seite nicht gefunden</title>
-                <style type="text/css">
-                    #custom_errormsg {
-                        color: darkgreen;
-                    }
-                </style>
 			</head>
 			<body>
 				<h1>Fehler 404 - Seite nicht gefunden</h1>
-                <h2 id="custom_errormsg">'.$msg.'</h2>
+                <h2 style="color: darkgreen;">'.$msg.'</h2>
 				<p>Entschuldigung, aber die von Ihnen gew&uuml;nschte Seite (<i>'.isohtmlspecialchars($_SERVER['REQUEST_URI']).'</i> in <i>/'.isohtmlspecialchars($wisyCore).'</i> auf <i>' .$_SERVER['HTTP_HOST']. '</i>) konnte leider nicht gefunden werden. Sie k&ouml;nnen jedoch ...
 				<ul>
 					<li><a href="http://'.$_SERVER['HTTP_HOST'].'">Die Startseite von '.$_SERVER['HTTP_HOST'].' aufrufen ...</a></li>
