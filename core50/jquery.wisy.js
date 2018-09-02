@@ -841,6 +841,15 @@ function editWeekdays(jqObj)
 	}
 }
 
+function resetPassword(aID, pflegeEmail) {
+	$.ajax({
+	type: "POST",
+	url: "/edit",
+	data: { action: "forgotpw", pwsubseq: "1", as: aID },
+	success: function(data) { alert( "Wir haben Ihnen eine E-Mail mit einem Link zur Passwortgenerierung an "+pflegeEmail+" gesandt!\n\nSollte in wenigen Minuten keine E-Mail eintreffen, pruefen Sie bitte die E-Mailadresse bzw. wenden Sie sich bitte an den Portal-Betreiber."); }
+  });
+}
+
 /*****************************************************************************
  * feedback stuff
  *****************************************************************************/
