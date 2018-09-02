@@ -238,16 +238,21 @@ class WISY_FRAMEWORK_CLASS
 	        // Dieser sollte beim Überschreiben von Kernfunktionen immer gleich sein:
 	        $module_klassenprefix = "CUSTOM_";
 	        
-	        switch(str_replace($module_klassenprefix, "", get_class($result))) {
+	        switch(str_replace(array("CUSTOM_", "DEV_", "ALPHA_", "BETA_"), "", get_class($result))) {
 	            case 'WISY_SEARCH_RENDERER_CLASS':
+	            case 'SEARCH_RENDERER_CLASS':
 	                return "suche";
 	            case 'WISY_ADVANCED_RENDERER_CLASS':
+	            case 'ADVANCED_RENDERER_CLASS':
 	                return "advanced";
 	            case 'WISY_KURS_RENDERER_CLASS':
+	            case 'KURS_RENDERER_CLASS':
 	                return "kurs";
 	            case 'WISY_ANBIETER_RENDERER_CLASS':
+	            case 'ANBIETER_RENDERER_CLASS':
 	                return "anbieter";
 	            case 'WISY_GLOSSAR_RENDERER_CLASS':
+	            case 'GLOSSAR_RENDERER_CLASS':
 	                return "glossar";
 	            default:
 	                return false;
