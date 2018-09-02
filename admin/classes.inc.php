@@ -15,7 +15,7 @@ Author:
 
 
 // changing the CMS version will force reloading of .js and .css files  
-define('CMS_VERSION', '5.9');
+define('CMS_VERSION', '6.0');
 
 
 // PHP 5.0.0 is needed for: __construct(), public, private, protected, microtime($get_as_float), Exceptions, object-copying by reference by default
@@ -59,5 +59,3 @@ function cms_autoload($classname)
 if( function_exists('get_magic_quotes_gpc') && get_magic_quotes_gpc() ) { 
 	G_STRIPSLASHES_CLASS::stripAll(); 
 }
-
-
