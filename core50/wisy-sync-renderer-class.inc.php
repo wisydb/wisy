@@ -620,9 +620,17 @@ class WISY_SYNC_RENDERER_CLASS
 		
 		$updateLatlng = $deepupdate;
 		if( $updateLatlng ) {
-			$geocoding_total_s = 0.0;
-			$geocoded_addresses = 0;
-			$geocoder =& createWisyObject('WISY_OPENSTREETMAP_CLASS', $this->framework);
+		    $geo_protocol_file = "files/logs/non_geocoded_adresses.dat";
+		    $live_geocode_max = 5500; // mapquest: free account = 15.000 / month
+		    $is_geocode_day = (intval(date('d')) === 2 || intval(date('d')) === 12 || intval(date('d')) === 25); // update on 2nd, 12th and 25th day of the month
+		    $GLOBALS['geocode_called'] = 0;
+		    $geocoding_total_s = 0.0;
+		    $geocoded_addresses = 0;
+		    $geocoded_addresses_ext = 0;
+		    $non_geocoded_addresses_limit = 0;
+		    $geocoded_addresses_live = array();
+		    $nongeocoded_addresses = array();
+		    $geocoder =& createWisyObject('WISY_OPENSTREETMAP_CLASS', $this->framework);
 		}
 
 		// find out the date to start with syncing
@@ -715,20 +723,24 @@ class WISY_SYNC_RENDERER_CLASS
 			$k_kurstage			= 0;
 			$k_tagescodes		= array();
 			$ort_sortonly		= '';
-			$db2->query("SELECT durchfuehrung.id AS did, strasse, plz, ort, stadtteil, land, beginn, ende, beginnoptionen, dauer, preis, kurstage, tagescode, zeit_von, zeit_bis FROM durchfuehrung LEFT JOIN kurse_durchfuehrung ON secondary_id=id WHERE primary_id=$kurs_id");
+			$db2->query("SELECT durchfuehrung.id AS did, durchfuehrung.user_grp, durchfuehrung.date_modified, strasse, plz, ort, stadtteil, land, beginn, ende, beginnoptionen, dauer, preis, kurstage, tagescode, zeit_von, zeit_bis, user_grp.shortname FROM durchfuehrung LEFT JOIN user_grp ON user_grp.id=durchfuehrung.user_grp LEFT JOIN kurse_durchfuehrung ON secondary_id=durchfuehrung.id WHERE primary_id=$kurs_id");
 			$anz_durchf = 0;
 			//$at_least_one_durchf = false;
 			while( $db2->next_record() )
 			{
 				// ... stadtteil / ort als Tag anlegen
-				$strasse   		= $db2->f8('strasse');
-				$plz 			= $db2->f8('plz'); if( $plz == '00000' ) $plz = '';
-				$ort       		= $db2->f8('ort');
-				$stadtteil 		= $db2->f8('stadtteil');
-				$land 			= $db2->f8('land');
-				$beginn			= $db2->f8('beginn');
-				$ende			= $db2->f8('ende');
-				$d_kurstage  	= intval($db2->f8('kurstage'));
+				$strasse   		     = $db2->f8('strasse');
+				$plz 			     = $db2->f8('plz'); if( $plz == '00000' ) $plz = '';
+				$ort       		     = $db2->f8('ort');
+				$stadtteil 		     = $db2->f8('stadtteil');
+				$land 			     = $db2->f8('land');
+				$beginn			     = $db2->f8('beginn');
+				$ende			     = $db2->f8('ende');
+				$df_id			     = $db2->f8('did');
+				$user_grp			 = $db2->f8('user_grp');
+				$user_grp_shortname  = $db2->f8('shortname');
+				$date_modified		 = $db2->f8('date_modified');
+				$d_kurstage  	     = intval($db2->f8('kurstage'));
 				if( strpos($stadtteil, ',')===false && strpos($ort, ',')===false
 				 && strpos($stadtteil, ':')===false && strpos($ort, ':')===false  // do not add suspicious fields -- there is no reason for a comma in stadtteil/ort
 				) 
@@ -760,18 +772,54 @@ class WISY_SYNC_RENDERER_CLASS
 					$d_has_unset_plz = true;
 				}
 				
-				// latlng sammeln
+				// get lat, lng from external source
 				if( $updateLatlng )
 				{
-					$geocoding_start_s = microtime(true);
-						$temp = $geocoder->geocode2($db2->Record, false);
-						//$temp = $geocoder->geocode2perm($db2->Record, true);
-						if( !$temp['error'] ) {
-							$d_latlng[ intval($temp['lat']*1000000).','.intval($temp['lng']*1000000) ] = 1;
-							$geocoded_addresses++;
-						}
-					$geocoding_total_s += microtime(true)-$geocoding_start_s;
-				}
+				    $geocoding_start_s = microtime(true);
+				    $temp = $geocoder->geocode2($db2->Record, false);
+				    
+				    if( !$temp['error'] ) {
+				        $d_latlng[ intval($temp['lat']*1000000).','.intval($temp['lng']*1000000) ] = 1;
+				        $geocoded_addresses++;
+				    } else { // not in cache yet
+				        
+				        $done_key = md5(trim($db2->Record['strasse']).trim($db2->Record['ort'])); // remember all adresses already transmitted for geocoding
+				        
+				        // try to live geocode
+				        if(!isset($geocoded_addresses_live[$done_key]) // only once per address
+				            && ($this->framework->iniRead('nominatim.alternate.geocoder', '') == 1 && strlen($this->framework->iniRead('nominatim.url', '')) > 3) // and other than openstreetmap.org
+				            ) {
+				                if($geocoded_addresses_ext < $live_geocode_max && $is_geocode_day) { // Not too many and only on specified days
+				                    if(stripos($db2->Record['ort'], "Fernunterricht") === FALSE
+				                        && stripos($db2->Record['ort'], ".") === FALSE
+				                        && stripos($db2->Record['ort'], ",") === FALSE
+				                        && strlen($db2->Record['ort']) > 1) {
+				                            $this->log("geocode from LIVE: ".$db2->Record['strasse'].", ".$db2->Record['ort']."\n");
+				                            usleep(100000); // 0,1s delay between ext. calls
+				                            $temp = $geocoder->geocode2($db2->Record, true);
+				                            $geocoded_addresses_ext++;
+				                            
+				                            if( !$temp['error'] ) {
+				                                $d_latlng[ intval($temp['lat']*1000000).','.intval($temp['lng']*1000000) ] = 1;
+				                                $this->log("OK: ".$db2->Record['strasse'].", ".$db2->Record['ort'].", lat: ".$temp['lat'].", lng: ".$temp['lng']."\n");
+				                                $geocoded_addresses_live[$done_key] = true;
+				                                $geocoded_addresses++;
+				                            } else {
+				                                $this->log("** Geocoding-Fehler: ".$temp['error'].", URL:".$temp['url']."\n");
+				                                array_push($nongeocoded_addresses, array("error"=>$temp['error'], "url"=>$temp['url'], "adresse"=>$db2->Record, "df_id"=>$df_id, "kurs_id"=>$kurs_id, "user_grp"=>$user_grp, "user_grp_shortname"=>$user_grp_shortname, "date_modified"=>$date_modified));
+				                                $geocoded_addresses_live[$done_key] = true;
+				                            }
+				                        }
+				                } else {
+				                    $geocoded_addresses_live[$done_key] = true;
+				                    
+				                    if($is_geocode_day)
+				                        $non_geocoded_addresses_limit++;
+				                }
+				            } // End: no geocode attempt until now & alternative geocoder
+				    } // End: not yet in cache
+				    $geocoding_total_s += microtime(true)-$geocoding_start_s;
+				} // End: get lat, lng from external source
 				
 				// alle beginndaten sammeln
 				$temp = substr($beginn, 0, 10); // yyyy-mm-dd
@@ -1002,7 +1050,12 @@ class WISY_SYNC_RENDERER_CLASS
 		}
 		
 		$this->log(sprintf("%d addressed geocoded in %1.3f seconds.", $geocoded_addresses, $geocoding_total_s));
+		$this->log(sprintf("%d of which were geocoded through external service (only 1st and 15th day of the week)!", $geocoded_addresses_ext));
+		$this->log(sprintf("%d addresses were *not* geocoded through external service because of daily limit!", $non_geocoded_addresses_limit));
 		$this->log(sprintf("%d records updated.", $kurs_cnt));
+		
+		if($is_geocode_day && is_array($nongeocoded_addresses) && count($nongeocoded_addresses) > 1)
+		    file_put_contents($geo_protocol_file, serialize($nongeocoded_addresses));
 		
 		// some specials for deepupdates
 		if( $lastsync == '0000-00-00 00:00:00' )
