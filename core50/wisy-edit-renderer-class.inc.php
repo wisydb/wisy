@@ -334,9 +334,22 @@ class WISY_EDIT_RENDERER_CLASS
 			$maxlen = 30;
 			if(strlen($name) > $maxlen ) $name = trim(substr($name, 0, $maxlen-5)) . '..';
 			$ret .= '<div style="float: right;">eingeloggt als: '
-				 .		'<a href="' .$this->framework->getUrl('a', array('id'=>$_SESSION['loggedInAnbieterId'], 'q'=>$this->framework->getParam('q'))). '?editstart='.date("Y-m-d-h-i-s").'">' . htmlspecialchars($name) . '</a>'
-				 .		' | <a href="'.$this->framework->getUrl('edit', array('action'=>'logout')) . '">Logout</a>'
-				 .	'</div>';
+			     .   '<a href="' .$this->framework->getUrl('a', array('id'=>$_SESSION['loggedInAnbieterId'], 'q'=>$this->framework->getParam('q'))). '?editstart='.date("Y-m-d-h-i-s").'">' . isohtmlspecialchars($name) . '</a>';
+			            
+			     if(strlen($_SESSION['loggedInAnbieterPflegemail']) > 3) {
+			         $ret .= ' | <a href="#" onclick=\'resetPassword('.$_SESSION['loggedInAnbieterId'].', "'.substr($_SESSION['loggedInAnbieterPflegemail'], 0, 3).'...'
+			              .substr($_SESSION['loggedInAnbieterPflegemail'], strlen($_SESSION['loggedInAnbieterPflegemail'])-6).'"); return false;\'>Neues Passwort anfordern!</a>';
+			     }
+			     else {
+			         if($_SESSION['_login_as'])
+			             $ret .= ' <span class="pw_resetinfo">(Redaktionslogin)</span>';
+			         else
+			             $ret .= ' | <span class="pw_resetinfo">(F&uuml;r Passwort&auml;nderungen: Pflege-Email hinterlegen oder Portal-Betreiber schreiben.)</span>';
+			     }
+			            
+			     $ret .= ' | <a href="'.$this->framework->getUrl('edit', array('action'=>'logout')) . '">Logout</a>'
+			          .	'</div>';
+			                
 		
 			$ret .= 'für Anbieter: ';
 
@@ -443,6 +456,7 @@ class WISY_EDIT_RENDERER_CLASS
 			
 			$loggedInAnbieterId = 0;
 			$loggedInAnbieterSuchname = 0;
+			$loggedInAnbieterPflegemail = "";
 
 			// Anbieter ID in name konvertieren (neuer Auftrag vom 13.09.2012)
 			$db->query("SELECT suchname FROM anbieter WHERE id=".intval($anbieterSuchname));
@@ -492,7 +506,8 @@ class WISY_EDIT_RENDERER_CLASS
 					if( crypt($_REQUEST['wepw'], $dbPw) == $dbPw 
 					 && $dbPwEinst&1 /*freigeschaltet?*/ )
 					{
-						$loggedInAnbieterId = intval($db->f8('id'));;
+						$loggedInAnbieterId = intval($db->f8('id'));
+						$loggedInAnbieterPflegemail = $db->f8('pflege_email');
 					}
 					else
 					{
@@ -522,6 +537,7 @@ class WISY_EDIT_RENDERER_CLASS
 			{
 				$this->framework->startEditSession();
 				$_SESSION['loggedInAnbieterId'] = $loggedInAnbieterId;
+				$_SESSION['loggedInAnbieterPflegemail'] = $loggedInAnbieterPflegemail;
 				$_SESSION['loggedInAnbieterSuchname'] = $anbieterSuchname;
 				$_SESSION['loggedInAnbieterTag'] = g_sync_removeSpecialChars($anbieterSuchname);
 				$_SESSION['_login_as'] = $login_as;
