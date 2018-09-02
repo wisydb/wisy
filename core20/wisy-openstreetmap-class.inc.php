@@ -74,13 +74,14 @@ class G_GEOCODE
 	    $nominatim_url = $this->framework->iniRead('nominatim.url', '');
 	    $this->nominatim_explicit_city = $this->framework->iniRead('nominatim.explicit.city', '');
 	    
-	    if($alternate_geocoder && $nominatim_url) {
-	        $this->nominatim_url = $nominatim_url;
-	        $this->nominatim_params .= '&key='.$nominatim_key;
-	    }
-	    
-		if( $GLOBALS['geocode_called'] >= 2 ) { return array('error'=>'err_geocode_toomanycalls'); }
-		$GLOBALS['geocode_called']++;
+	    if(!$alternate_geocoder || !$nominatim_url)
+	        return array('error'=>'err_geocode_missing_good_geocoder', 'url'=>'not called');
+	        
+	    $this->nominatim_url = $nominatim_url;
+	    $this->nominatim_params .= '&key='.$nominatim_key;
+	        
+	    if( $GLOBALS['geocode_called'] >= 5500 ) { return array('error'=>'err_geocode_toomanycalls ('.$GLOBALS['geocode_called'].')', 'url'=>'not called'); }
+	    $GLOBALS['geocode_called']++;
 		
 		// build query parameters string
 		$param = '';
@@ -98,7 +99,7 @@ class G_GEOCODE
 		    $param .= '&q=' . $place_search;
 		}
 		else {
-			return array('error'=>'err_geocode_param');
+		    return array('error'=>'err_geocode_param', 'url'=>'none');
 		}
 	
 		// read data - Usage Policy: http://wiki.openstreetmap.org/wiki/Nominatim_usage_policy
@@ -112,7 +113,7 @@ class G_GEOCODE
 		 $url = str_replace('&q=&q=', '&q=', $url);
 		    
 		 if (!($fp = @fopen($url, "r"))) {
-		  return array('error'=>'err_geocode_fopen ('.$url.')');
+		    return array('error'=>'err_geocode_fopen ('.$url.')', 'url'=>$url);
 		 }
       
 		$data = '';
@@ -120,7 +121,7 @@ class G_GEOCODE
 		while( $chunk=@fread($fp, 4096) ) {
 			$data .= $chunk;
 			$loopprotect ++;
-			if( $loopprotect > 1000 ) { return array('error'=>'err_geocode_fread'); } 
+			if( $loopprotect > 1000 ) { return array('error'=>'err_geocode_fread', 'url'=>$url); }
 		}
 
 		// parse XML result
@@ -130,14 +131,12 @@ class G_GEOCODE
 		xml_set_element_handler($parser, 'xml_elem_start', 'xml_elem_end');
 		if( !@xml_parse($parser, $data, true) ) {
 			xml_parser_free($parser);
-			return array('error'=>'err_geocode_xmlparse');
+			return array('error'=>'err_geocode_xmlparse', 'url'=>$url);
 		}
 		xml_parser_free($parser);
 		
 		if( !is_array($this->geocode_ret) ) {
-		
-			// echo isohtmlspecialchars(print_r($data,true));
-			return array('error'=>'err_geocode_badxml');
+		    return array('error'=>'err_geocode_badxml', 'url'=>$url);
 		}
 		
 		// succes - example returns:
@@ -349,13 +348,17 @@ class WISY_OPENSTREETMAP_CLASS
 			$land		= $adr['land'];
 			if( $strasse=='' && $ort=='' ) { return array('error'=>'err_nostreetnocity'); }
 
-			// zusätze bei der straße weglassen (etwa "Ecke Mateos Gag")
-			$p = strpos($strasse, '('); if( $p ) { $strasse = trim(substr($strasse, 0, $p)); }			
+			// Remove venue descriptions (i.e. "Ecke ...strasse")
+			$p = strpos($strasse, '('); if( $p ) { $strasse = trim(substr($strasse, 0, $p)); }	
+			
+			// or additions like "Weser" from "Nienburg/Weser"
+			$p = strpos($ort, '/'); if( $p ) { $ort = trim(substr($ort, 0, $p)); }
 
-			// ... manchmal wird die PLZ als 00000 angegeben
+			// ... remove zip codes like 00000
 			if( intval($plz) == 0 ) { $plz = ''; }
 
-			// Quito/Ecuador o.ä. als Ort ...
+			// Addition not always country, i.e. Quito/Ecuador 
+			/*
 			if( substr_count($ort, '/')==1 ) {
 				$temp = explode('/', $ort);
 				if( $land == '' ) {
@@ -366,9 +369,9 @@ class WISY_OPENSTREETMAP_CLASS
 					$ort = $temp[0];
 					$land = $this->normaliseCountry($temp[1]);
 				}
-			}
+			} */
 			
-			// ort/land korrigieren, ggf. tauschen
+			// correct ort, land, exchange if necessary
 			if( $this->normaliseCountry($ort) ) { $land  = $this->normaliseCountry($ort); $ort = ''; }
 			if( $this->normaliseCountry($land) ) { $land = $this->normaliseCountry($land); }
 			if( $land == '' ) { $land = 'Deutschland'; }	
