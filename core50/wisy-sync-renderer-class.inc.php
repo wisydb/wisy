@@ -361,6 +361,7 @@ class KURS2PORTALTAG_CLASS
 		$this->portaltags = array();
 		$this->plzfilter = array();
 		$eql2sql = new EQL2SQL_CLASS('kurse');
+		
 		$db->query("SELECT id, einstellungen, einstcache, filter FROM portale WHERE status=1;");
 		while( $db->next_record() )
 		{
