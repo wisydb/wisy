@@ -81,7 +81,7 @@ class WISY_FRAMEWORK_CLASS
 	function __construct($baseObject, $addParam)
 	{
 		// constructor
-		$this->includeVersion = '?iv=200'; // change the number on larger changes in included CSS and/or JS files.  May be empty.
+		$this->includeVersion = '?iv=201'; // change the number on larger changes in included CSS and/or JS files.  May be empty.
 		
 		// init edit stuff
 		$this->editCookieName		= 'wisyEdit20';
@@ -144,7 +144,7 @@ class WISY_FRAMEWORK_CLASS
 		$value = $default;
 		if( isset( $wisyPortalEinstellungen[ $key ] ) )
 		{
-			$value = $wisyPortalEinstellungen[ $key ];
+			$value = utf8_encode($wisyPortalEinstellungen[ $key ]);
 		}
 		return $value;
 	}
@@ -1291,6 +1291,10 @@ class WISY_FRAMEWORK_CLASS
 		$ret[] = 'core51/lib/jquery/jquery-ui-1.12.1.custom.min.css' . $this->includeVersion;
 		$ret[] = 'core51/lib/zebra-datepicker/zebra_datepicker.min.css' . $this->includeVersion;
 		
+		if($this->iniRead('cookiebanner', '') == 1) {
+			$ret[] = 'core51/lib/cookieconsent/cookieconsent.min.css';
+		}
+		
 		// the portal may overwrite everything ...
 		if( $wisyPortalCSS )								
 		{
@@ -1342,7 +1346,7 @@ class WISY_FRAMEWORK_CLASS
 		}
 		
 		if($this->iniRead('cookiebanner', '') == 1) {
-			$ret[] = 'jquery.cookiebanner.js';
+			$ret[] = 'core51/lib/cookieconsent/cookieconsent.min.js';
 		}
 		
 		if( ($tempJS=$this->iniRead('head.js', '')) != '')
@@ -1368,8 +1372,82 @@ class WISY_FRAMEWORK_CLASS
 			$ret .= '<script type="text/javascript" src="'.$js[$i].'" charset="utf-8"></script>' . "\n";
 		}
 		
+		// Cookie Banner settings
 		if($this->iniRead('cookiebanner', '') == 1) {
-			$ret .= '<script type="text/javascript">window.cookiebanner_html = \''.$this->iniRead('cookiebanner.html', '').'\'; window.cookiebanner_gueltig = '.$this->iniRead('cookiebanner.gueltig', '').';</script>' . "\n";
+			
+			$ret .= "<script type=\"text/javascript\">\n";
+			$ret .= "window.cookiebanner = {};\n";
+			$ret .= "window.cookiebanner.optoutCookies = \"{$this->iniRead('cookiebanner.cookies.optout', '')},fav,fav_init_hint\";\n";
+			$ret .= "window.cookiebanner.optedOut = false;\n";
+			$ret .= "window.cookiebanner.favOptoutMessage = \"{$this->iniRead('cookiebanner.fav.optouthinweis', 'Ihr Favorit konnte auf diesem Computer nicht gespeichert gewerden da Sie die Speicherung von Cookies abgelehnt haben. Sie können Ihre Cookie-Einstellungen in den Datenschutzhinweisen anpassen.')}\";\n";
+			$ret .= "window.cookiebanner.piwik = \"{$this->iniRead('analytics.piwik', '')}\";\n";
+			$ret .= "window.cookiebanner.uacct = \"{$this->iniRead('analytics.uacct', '')}\";\n";
+
+			$ret .= 'window.addEventListener("load",function(){window.cookieconsent.initialise({';
+
+			$cookieOptions = array();
+			$cookieOptions['type'] = 'opt-out';
+			$cookieOptions['revokeBtn'] = '<div style="display:none;"></div>'; // Workaround for cookieconsent bug. Revoke cannot be disabled correctly at the moment
+			$cookieOptions['position'] = $this->iniRead('cookiebanner.position', 'bottom-left');
+			
+			$cookieOptions['law'] = array();
+			$cookieOptions['law']['countryCode'] = 'DE';
+			
+			$cookieOptions['cookie'] = array();
+			$cookieOptions['cookie']['expiryDays'] = intval($this->iniRead('cookiebanner.cookiegueltigkeit', 7));
+			
+			$cookieOptions['content'] = array();
+			$cookieOptions['content']['message'] = $this->iniRead('cookiebanner.hinweis.text', 'Wir verwenden Cookies, um Ihnen eine Merkliste sowie eine Seitenübersetzung anzubieten und um Kursanbietern die Pflege ihrer Kurse zu ermöglichen. Indem Sie unsere Webseite nutzen, erklären Sie sich mit der Verwendung der Cookies einverstanden. Weitere Details finden Sie in unserer Datenschutzerklärung.');
+			$cookieOptions['content']['allow'] = $this->iniRead('cookiebanner.erlauben.text', 'Akzeptieren');
+			$cookieOptions['content']['deny'] = $this->iniRead('cookiebanner.ablehnen.text', 'Ablehnen');
+			$cookieOptions['content']['link'] = $this->iniRead('cookiebanner.datenschutz.text', 'Mehr erfahren');
+			$cookieOptions['content']['href'] = $this->iniRead('cookiebanner.datenschutz.link', '');
+			
+			$cookieOptions['palette'] = array();
+			$cookieOptions['palette']['popup'] = array();
+			$cookieOptions['palette']['popup']['background'] = $this->iniRead('cookiebanner.hinweis.hintergrundfarbe', '#EEE');
+			$cookieOptions['palette']['popup']['text'] = $this->iniRead('cookiebanner.hinweis.textfarbe', '#000');
+			$cookieOptions['palette']['popup']['link'] = $this->iniRead('cookiebanner.hinweis.linkfarbe', '#3E7AB8');
+			
+			$cookieOptions['palette']['button']['background'] = $this->iniRead('cookiebanner.erlauben.buttonfarbe', '#3E7AB8');
+			$cookieOptions['palette']['button']['text'] = $this->iniRead('cookiebanner.erlauben.buttontextfarbe', '#FFF');
+			
+			$cookieOptions['palette']['highlight']['background'] = $this->iniRead('cookiebanner.ablehnen.buttonfarbe', '#FFF');
+			$cookieOptions['palette']['highlight']['text'] = $this->iniRead('cookiebanner.ablehnen.buttontextfarbe', '#000');
+			
+			$ret .= trim(json_encode($cookieOptions, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES), '{}') . ',';
+			
+			// Callbacks for enabling / disabling Cookies
+			$ret .= 'onInitialise: function(status) {
+						var didConsent = this.hasConsented();
+						if(!didConsent) {
+							window.cookiebanner.optedOut = true;
+							updateCookieSettings();
+						}
+					},
+					onStatusChange: function(status) {
+						var didConsent = this.hasConsented();
+						if(!didConsent) {
+							window.cookiebanner.optedOut = true;
+							updateCookieSettings();
+						}
+					}';
+					
+			// Hide Revoke Button and enable custom revoke function in e.g. "Datenschutzhinweise"
+			// Add an <a> tag with ID #wisy_cookieconsent_settings anywhere on your site. It will re-open the cookieconsent popup when clicked
+			$ret .= '},
+					function(popup){
+						popup.toggleRevokeButton(false);
+						window.cookieconsent.popup = popup;
+						$("#wisy_cookieconsent_settings").on("click", function() {
+							window.cookieconsent.popup.open();
+							window.cookiebanner.optedOut = false;
+							updateCookieSettings();
+							return false;
+						});
+					}';
+			
+			$ret .= ')});</script>'."\n";
 		}
 		
 		return $ret;
@@ -1556,23 +1634,41 @@ class WISY_FRAMEWORK_CLASS
 		$ret .= $this->bodyEnd? ($this->bodyEnd . "\n") : '';
 		$ret .= "<!-- /after content -->\n\n";
 
-		// analytics stuff abottom to avoid analytics slow down
+		// analytics stuff at bottom to avoid analytics slowing down
 		// the whole site ...
+		$ret .= $this->getAnalytics();
+		
+		// iwwb specials
+		if( $this->iniRead('iwwbumfrage', 'unset')!='unset' && $_SERVER['HTTPS']!='on' )
+		{
+			require_once('files/iwwbumfrage.php');
+		}
+		
+		$ret .= '</body>' . "\n";
+		$ret .= '</html>' . "\n";
+		
+		return $ret;
+	}
+	
+	function getAnalytics() {
+		$ret = "\n";
+		
 		$uacct = $this->iniRead('analytics.uacct', '');
 		if( $uacct != '' )
 		{
 			$ret .= '
 				<script type="text/javascript">
-				var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
-				document.write(unescape("%3Cscript src=\'" + gaJsHost + "google-analytics.com/ga.js\' type=\'text/javascript\'%3E%3C/script%3E"));
-				</script>
-				<script type="text/javascript">
-				var pageTracker = _gat._getTracker("' .$uacct. '");
-				_gat._anonymizeIp();
-				pageTracker._initData();
-				pageTracker._trackPageview();
-				</script>
-			';
+				var optedOut = document.cookie.indexOf("cookieconsent_status=deny") > -1;
+				if (!optedOut) {					
+					(function(i,s,o,g,r,a,m){i["GoogleAnalyticsObject"]=r;i[r]=i[r]||function(){ 
+						(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o), 
+						m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m) 
+					})(window,document,"script","https://www.google-analytics.com/analytics.js","ga"); 
+					ga("create", "' . $uacct . '", "none"); 
+					ga("set", "anonymizeIp", true); 
+					ga("send", "pageview"); 
+				}
+				</script>';
 		}
 		
 		$piwik = $this->iniRead('analytics.piwik', '');
@@ -1587,33 +1683,24 @@ class WISY_FRAMEWORK_CLASS
 			}
 			
 			$ret .= "
-<!-- analytics.piwik -->
-<script type=\"text/javascript\">
-  var _paq = _paq || [];
-  _paq.push(['trackPageView']);
-  _paq.push(['enableLinkTracking']);
-  (function() {
-    var u=\"//".$piwik_site."/\";
-    _paq.push(['setTrackerUrl', u+'piwik.php']);
-    _paq.push(['setSiteId', ".$piwik_id."]);
-    var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
-    g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'piwik.js'; s.parentNode.insertBefore(g,s);
-  })();
-</script>
-<noscript><p><img src=\"//".$piwik_site."/piwik.php?idsite=".$piwik_id."\" style=\"border:0;\" alt=\"\" /></p></noscript>
-<!-- /analytics.piwik -->
-";
+				<!-- analytics.piwik -->
+				<script type=\"text/javascript\">
+				if (!optedOut) {
+					var _paq = _paq || [];
+					_paq.push(['trackPageView']);
+					_paq.push(['enableLinkTracking']);
+					(function() {
+						var u=\"//".$piwik_site."/\";
+						_paq.push(['setTrackerUrl', u+'piwik.php']);
+						_paq.push(['setSiteId', ".$piwik_id."]);
+						var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+						g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'piwik.js'; s.parentNode.insertBefore(g,s);
+					})();
+				}
+				</script>
+				<noscript><p><img src=\"//".$piwik_site."/piwik.php?idsite=".$piwik_id."\" style=\"border:0;\" alt=\"\" /></p></noscript>
+				<!-- /analytics.piwik -->";
 		}
-		
-		// iwwb specials
-		if( $this->iniRead('iwwbumfrage', 'unset')!='unset' && $_SERVER['HTTPS']!='on' )
-		{
-			require_once('files/iwwbumfrage.php');
-		}
-		
-		$ret .= '</body>' . "\n";
-		$ret .= '</html>' . "\n";
-		
 		return $ret;
 	}
 	
