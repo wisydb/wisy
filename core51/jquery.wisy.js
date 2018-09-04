@@ -51,8 +51,7 @@ function updateCookieSettings() {
 	if (window.cookiebanner) {
 		if (window.cookiebanner.optedOut) {
 			
-			// Disable Google Analytics
-			// Tut das überhaupt irgendwas? -- https://developers.google.com/analytics/devguides/collection/analyticsjs/user-opt-out
+			// Disable Google Analytics -- https://developers.google.com/analytics/devguides/collection/analyticsjs/user-opt-out
 			if(window.cookiebanner.uacct) window['ga-disable-' + window.cookiebanner.uacct] = true;
 			
 			// Remove unwanted cookies
