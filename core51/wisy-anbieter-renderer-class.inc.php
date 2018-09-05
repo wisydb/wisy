@@ -24,7 +24,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 			$str = substr($str, 7);
 		elseif( substr($str, 0, 8)=='https://' )
 			$str = substr($str, 8);
-			
+		
 		return shortenurl($str, $max_length);
 	}
 
@@ -486,7 +486,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 				$unique_adr[$unique_id] = $record;
 			}
 		}
-
+		
 		if(!is_array($unique_adr))
 			return;
 
@@ -537,6 +537,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		if( !$db->next_record() || in_array($db->f('freigeschaltet'), $freigeschaltet404) ) {
 		    $this->framework->error404(); // record does not exist, reporta normal 404 error, not a "Soft 404", see  http://goo.gl/IKMnm -- für nicht-freigeschaltete Datensätze, s. [here]
 		}
+		$anbieter_suchname = $db->f8('suchname');
 		$anbieter_ort = $db->f8('ort');
 		$anbieter_portraet = $db->f8('firmenportraet');
 		
@@ -558,12 +559,12 @@ class WISY_ANBIETER_RENDERER_CLASS
 		
 		// #socialmedia
 		echo $this->framework->getPrologue(array(
-			'title'		=>	$suchname,
-			'ort'		=>	$anbieter_ort,
-			'beschreibung' => $anbieter_portraet,
-			'anbieter_id' => $anbieter_id,
-			'canonical'	=>	$this->framework->getUrl('a', array('id'=>$anbieter_id)),
-			'bodyClass'	=>	$bodyClass,
+		    'title'		=>	$anbieter_suchname,
+		    'ort'		=>	$anbieter_ort,
+		    'beschreibung' => $anbieter_portraet,
+		    'anbieter_id' => $anbieter_id,
+		    'canonical'	=>	$this->framework->getUrl('a', array('id'=>$anbieter_id)),
+		    'bodyClass'	=>	$bodyClass,
 		));
 		
 		echo $this->framework->getSearchField();
@@ -629,7 +630,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		// current offers overview
 		if( $this->framework->iniRead('anbieter.angebotsuebersicht', 1) )
 		{
-			$this->writeOffersOverview($anbieter_id, $tag_suchname);
+		$this->writeOffersOverview($anbieter_id, $tag_suchname);
 		}
 				
 		echo "\n</article><!-- /.wisy_anbieter_kursangebot -->\n\n";

@@ -1,7 +1,8 @@
 
 
+/* ************************************************************************** */
 /* Generic stuff
- *****************************************************************************/
+/* ************************************************************************** */
 
 // global object containing the map object, valid after osm_initialize finishes
 var osm_map = false;
@@ -49,9 +50,9 @@ function osm_map_here()
 }
 
 
-
+/* ************************************************************************** */
 /* Implementation using leaflet.js
- *****************************************************************************/
+/* ************************************************************************** */
  
 
 function osm_initialize()
@@ -68,7 +69,7 @@ function osm_initialize()
 	osm_map.addControl(new L.Control.Zoom({position:'topright'}));
 	
 	// create map layer
-	L.tileLayer('http://otile3.mqcdn.com/tiles/1.0.0/map/{z}/{x}/{y}.png', {
+	L.tileLayer('https://otile3.mqcdn.com/tiles/1.0.0/map/{z}/{x}/{y}.png', {
 		attribution: '&copy; <a href="g7091">OpenStreetMap-Mitwirkende</a>'
 	}).addTo(osm_map);	
 	

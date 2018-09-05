@@ -58,7 +58,7 @@ class WISY_FRAMEWORK_CLASS
 	    "\xc2\x9e" => "\xc5\xbe",     /* LATIN SMALL LETTER Z WITH CARON */
 	    "\xc2\x9f" => "\xc5\xb8"      /* LATIN CAPITAL LETTER Y WITH DIAERESIS*/
 	);
-			
+
 	var $filterer;
 	var $Q;
 	var $QS;
@@ -133,7 +133,7 @@ class WISY_FRAMEWORK_CLASS
 			$this->tokens = $searcher->tokenize($this->getParam('q', ''));
 		}
 	}
-	
+
 	/******************************************************************************
 	 Read/Write Settings, Cache & Co.
 	 ******************************************************************************/
@@ -209,18 +209,18 @@ class WISY_FRAMEWORK_CLASS
 	 ******************************************************************************/
 	
 	/**
-	 * #metadescription
+	* #metadescription
 	* #socialmedia
 	* Outputs and enriches description as useful per page type
 	* otherwise default portal description
-		**/
- function getMetaDescription($title = "", $description = "") {
+	**/
+    function getMetaDescription($title = "", $description = "") {
 		$ret = '';
 		
 		if(intval(trim($this->iniRead('meta.description'))) != 1)
 				return $ret;
 		
-  $description_parsed = "";
+        $description_parsed = "";
 		$skip_contentdescription = false;
 
 		switch($this->getPageType()) {
@@ -239,8 +239,8 @@ class WISY_FRAMEWORK_CLASS
 				case 'startseite':
 					$description_parsed = utf8_encode(trim($this->iniRead('meta.description_default', "")));
 					break;
-    default:
-      $description_parsed = utf8_encode(trim($this->iniRead('meta.description_default', "")));
+                default:
+                    $description_parsed = utf8_encode(trim($this->iniRead('meta.description_default', "")));
         }
 		
 		if($skip_contentdescription) {
@@ -260,17 +260,17 @@ class WISY_FRAMEWORK_CLASS
 		$wiki2html =& createWisyObject('WISY_WIKI2HTML_CLASS', $this);
         return html_entity_decode(preg_replace("/<br.{0,5}>/i", ". ", $wiki2html->run($description)));
 	}
-		
+	
 	function neutralizeWikiText($description) {
 		// If wiki text (Glossar): parse first -> HTML
 		// Convert html line feeds to "."; then: strip tags
 		$description = $this->wiki2HTML($description);
 		return html_entity_decode(preg_replace("/<br.{0,5}>/i", ". ", $description));
 	}
-		
+	
 	function shorten_description($description, $charlength) {
 		$description = $this->neutralizeWikiText($description);
-		
+	
 		// Convert line feeds into simple white spaces
 		$description = trim(preg_replace("/[\n\r]/", " ", strip_tags(html_entity_decode($description))));
 		
@@ -281,7 +281,7 @@ class WISY_FRAMEWORK_CLASS
 	}
 	
     function generate_page_description($description, $charlength) {
-				
+		
 		$description = $this->neutralizeWikiText($description);
 		
 		// Convert line feeds into simple white spaces
@@ -335,7 +335,7 @@ class WISY_FRAMEWORK_CLASS
 		if(!is_array($this->anbieterlogos)) { $this->anbieterlogos = array(); }
 		
 		if(class_exists("G_BLOB_CLASS"))
-		$this->anbieterlogos[$anbieterId] = new G_BLOB_CLASS($logo);
+		  $this->anbieterlogos[$anbieterId] = new G_BLOB_CLASS($logo);
 		
 		// Seiten-Cache um mehrfache frische Abfrage innerhalb einer Seite zu verhindern
 		if(!is_array($this->getAnbieterLogoCache))
@@ -345,7 +345,7 @@ class WISY_FRAMEWORK_CLASS
 					
 		return $this->getAnbieterLogoCache[$cacheKey];
 	
- }
+    }
 	
 	function pUrl($url) {
 		$protocol = $this->iniRead('portal.https', '') ? "https" : "http";
@@ -354,37 +354,37 @@ class WISY_FRAMEWORK_CLASS
 	
 	// #socialmedia
 	function getSocialMediaTags($pageTitleNoHtml, $ort = "", $anbieter_name = "", $anbieter_ID = -1, $beschreibung = "", $canonicalurl = "") {
-  $ret = '';
+        $ret = '';
 		
 		if(intval(trim($this->iniRead('meta.socialmedia'))) != 1)
 				return $ret;
-								
-  // Facebook
+		
+        // Facebook
 		$ret .= "\n".'<meta property="og:title" content="'.$this->getTitleString($pageTitleNoHtml, $ort, $anbieter_name).'">'."\n";
 		
 		switch($this->getPageType()) {
 				case 'kurs':
-						$ret .= '<meta property="og:type" content="product">'."\n";
-						break;
+					$ret .= '<meta property="og:type" content="product">'."\n";
+					break;
 				case 'anbieter':
 				    $ret .= '<!-- Anbieter -->';
-      $ret .= '<meta property="og:type" content="profile">'."\n";
-						break;
+                    $ret .= '<meta property="og:type" content="profile">'."\n";
+					break;
 				case 'glossar':
-      $ret .= '<meta property="og:type" content="article">'."\n";
-						break;
+                    $ret .= '<meta property="og:type" content="article">'."\n";
+					break;
 				case 'suche':
-      $ret .= '<meta property="og:type" content="product.group">'."\n";
-						$canonicalurl = "search?".$_SERVER['QUERY_STRING']; // explizit angeben, hat aber keine canonical URL
-						break;
+                    $ret .= '<meta property="og:type" content="product.group">'."\n";
+					$canonicalurl = "search?".$_SERVER['QUERY_STRING']; // explizit angeben, hat aber keine canonical URL
+					break;
 				case 'startseite':
 					$beschreibung = utf8_encode(trim($this->iniRead('meta.description_default', "")));
 					$ret .= '<meta property="og:type" content="article">'."\n";
 					$canonicalurl = ""; // no canonical URL in > 5.0
 					break;
-    default:
+                default:
 					$beschreibung = utf8_encode(trim($this->iniRead('meta.description_default', "")));
-     $ret .= '<meta property="og:type" content="article">'."\n";
+                    $ret .= '<meta property="og:type" content="article">'."\n";
                     $canonicalurl = ""; // no canonical URL in > 5.0
         }
 		
@@ -395,87 +395,87 @@ class WISY_FRAMEWORK_CLASS
 		
 		 $logo = ""; $logo_src = ""; 
 		 $logo = $this->getAnbieterLogo($anbieter_ID, true, false);	// quadrat = true, 4:3 = false
-   if($logo != "") {
-								if(!is_object($logo)) {
-																$logo_src = $logo;
+         if($logo != "") {
+		      if(!is_object($logo)) {
+		          $logo_src = $logo;
 				    $ret .= '<meta property="og:image" content="'.$this->pUrl($logo_src).'">'."\n";
 				    $ret .= '<meta property="og:image:secure_url" content="'.$this->pUrl($logo_src).'">'."\n";
-																$ret .= '<meta property="og:image:width" content="200">'."\n";
-																$ret .= '<meta property="og:image:height" content="200">'."\n";
-								} else {
+				    $ret .= '<meta property="og:image:width" content="200">'."\n";
+			        $ret .= '<meta property="og:image:height" content="200">'."\n";
+				} else {
 				    $logo_src = $protocol."://".$_SERVER['SERVER_NAME']."/admin/media.php/logo/anbieter/".$anbieter_ID."/".$logo->name;
 				    $ret .= '<meta property="og:image" content="'.$this->pUrl($logo_src).'">'."\n";
 			        $ret .= '<meta property="og:image:secure_url" content="'.$this->pUrl($logo_src).'">'."\n";
-																$ret .= '<meta property="og:image:type" content="'.$logo->mime.'">'."\n";
-																$ret .= '<meta property="og:image:width" content="'.$logo->w.'">'."\n";
-																$ret .= '<meta property="og:image:height" content="'.$logo->h.'">'."\n";
-								}
-			}
+				    $ret .= '<meta property="og:image:type" content="'.$logo->mime.'">'."\n";
+					$ret .= '<meta property="og:image:width" content="'.$logo->w.'">'."\n";
+					$ret .= '<meta property="og:image:height" content="'.$logo->h.'">'."\n";
+				}
+		}
 			
-			// GGf. in Bitly änder, weil Query String ignoriert wird
+		// GGf. in Bitly änder, weil Query String ignoriert wird
 		$url = $protocol."://".$_SERVER['SERVER_NAME'].'/'.$canonicalurl;
-			$url_fb = $url; // sonst muss canonical url übereinstimmen, um nicht ignoriert zu werden!
-			// $url_fb .= (strpos($url, '?') === FALSE) ? $url.'?pk_campaign=Facebook' : $url.'&pk_campaign=Facebook';
-			$ret .= '<meta property="og:url" content="'.$url_fb.'">'."\n";
+		$url_fb = $url; // sonst muss canonical url übereinstimmen, um nicht ignoriert zu werden!
+		// $url_fb .= (strpos($url, '?') === FALSE) ? $url.'?pk_campaign=Facebook' : $url.'&pk_campaign=Facebook';
+		$ret .= '<meta property="og:url" content="'.$url_fb.'">'."\n";
 								
-			if($beschreibung != "") {
+		if($beschreibung != "") {
 		  $beschreibung = $this->shorten_description($beschreibung, 300);
-								$beschreibung = (strlen($beschreibung) > 297) ? $beschreibung."..." : $beschreibung;
-								$ret .= '<meta property="og:description" content="'.$beschreibung.'">'."\n";
+		  $beschreibung = (strlen($beschreibung) > 297) ? $beschreibung."..." : $beschreibung;
+		  $ret .= '<meta property="og:description" content="'.$beschreibung.'">'."\n";
 		} else {
 		  $ret .= '<meta property="og:description" content="...">'."\n";
-			}
-								
+		}
+			
         $ret .= '<meta property="og:locale" content="de_DE">'."\n";
-			$ret .= '<meta property="fb:app_id" content="100940970255996">'."\n";
+		$ret .= '<meta property="fb:app_id" content="100940970255996">'."\n";
+				
+		// Twitter
+		$ret .= '<meta name="twitter:card" content="summary">'."\n";
+		$ret .= '<meta name="twitter:site" content="@weiterbrlp">'."\n"; // $ret .= '<meta name="twitter:creator" content="weiterbrlp">'."\n";
 			
-			// Twitter
-			$ret .= '<meta name="twitter:card" content="summary">'."\n";
-			$ret .= '<meta name="twitter:site" content="@weiterbrlp">'."\n"; // $ret .= '<meta name="twitter:creator" content="weiterbrlp">'."\n";
-			
-			// GGf. in Bitly änder, weil Query String ignoriert wird
-			$url_twitter = $url; // sonst muss canonical url übereinstimmen, um nicht ignoriert zu werden!
-			// $url_twitter .= (strpos($url, '?') === FALSE) ? $url.'?pk_campaign=Twitter' : $url.'&pk_campaign=Twitter';
-			$ret .= '<meta name="twitter:url" content="'.$url_twitter.'">'."\n";
+		// GGf. in Bitly änder, weil Query String ignoriert wird
+		$url_twitter = $url; // sonst muss canonical url übereinstimmen, um nicht ignoriert zu werden!
+		// $url_twitter .= (strpos($url, '?') === FALSE) ? $url.'?pk_campaign=Twitter' : $url.'&pk_campaign=Twitter';
+		$ret .= '<meta name="twitter:url" content="'.$url_twitter.'">'."\n";
 			
 		$ret .= '<meta name="twitter:title" content="'.$this->getTitleString($pageTitleNoHtml, $ort, $anbieter_name).'">'."\n";
 			
-			if($beschreibung != "") {
+		if($beschreibung != "") {
 		  $beschreibung = $this->shorten_description($beschreibung, 200);
-								$beschreibung = (strlen($beschreibung) > 197) ? $beschreibung."..." : $beschreibung;
-			}
+		  $beschreibung = (strlen($beschreibung) > 197) ? $beschreibung."..." : $beschreibung;
+		}
 			
-			$ret .= '<meta name="twitter:description" content="'.$beschreibung.'">'."\n";
+		$ret .= '<meta name="twitter:description" content="'.$beschreibung.'">'."\n";
 			
-			$logo = ""; $logo_src = ""; 
-		 $logo = $this->getAnbieterLogo($anbieter_ID, false, true);	// quadrat = false, 4:3 = true
+		$logo = ""; $logo_src = ""; 
+		$logo = $this->getAnbieterLogo($anbieter_ID, false, true);	// quadrat = false, 4:3 = true
    
-   if($logo != "") {
-				if(!is_object($logo)) {
-									$logo_src = $logo;
-									// Default Logo Symbol
+        if($logo != "") {
+		  if(!is_object($logo)) {
+		      $logo_src = $logo;
+		      // Default Logo Symbol
 			     $ret .= '<meta name="twitter:image" content="'.utf8_encode($this->pUrl($logo_src)).'">'."\n";
-									$ret .= '<meta name="twitter:image:width" content="120">'."\n";
-									$ret .= '<meta name="twitter:image:height" content="90">'."\n";
-								} else {
+			     $ret .= '<meta name="twitter:image:width" content="120">'."\n";
+			     $ret .= '<meta name="twitter:image:height" content="90">'."\n";
+		  } else {
 			     $logo_src = $this->purl("https://".$_SERVER['SERVER_NAME']."/admin/media.php/logo/anbieter/".$anbieter_ID."/".$logo->name);
 				 $ret .= '<meta name="twitter:image" content="'.utf8_encode($this->pUrl($logo_src)).'">'."\n";
-									$ret .= '<meta name="twitter:image:width" content="'.$logo->w.'">'."\n";
-									$ret .= '<meta name="twitter:image:height" content="'.$logo->h.'">'."\n";
-								}
-			}
+				 $ret .= '<meta name="twitter:image:width" content="'.$logo->w.'">'."\n";
+				 $ret .= '<meta name="twitter:image:height" content="'.$logo->h.'">'."\n";
+		  }
+	    }
 			
 		
 		return $ret;
 	}
-
+	
 	// #languagedefintion
     function getHreflangTags() {
 		$ret = '';
-	
+				
 		if(intval(trim($this->iniRead('seo.enablelanguagedefinition'))) != 1)
 				return $ret;
-	
+		
 		$defaultlang = trim($this->iniRead('seo.defaultlanguage', "de"));
 		
 		if(!$defaultlang)
@@ -485,7 +485,7 @@ class WISY_FRAMEWORK_CLASS
 		
 		return $ret;
 	}
-
+	
 	/******************************************************************************
 	 Various Tools
 	 ******************************************************************************/
@@ -1152,15 +1152,15 @@ class WISY_FRAMEWORK_CLASS
 	    
 	    if(!$enrichtitles && !$force) { $title_pre = ""; $title_post = ""; }
 	    
-		// get the title as a no-html-string
-		global $wisyPortalKurzname;
+	    // get the title as a no-html-string
+	    global $wisyPortalKurzname;
 	    $fullTitleNoHtml  = $title_pre;
 	    $fullTitleNoHtml .= $pageTitleNoHtml;
 	    $fullTitleNoHtml .= $title_post;
-		$fullTitleNoHtml .= $fullTitleNoHtml? ' - ' : '';
-		$fullTitleNoHtml .= $wisyPortalKurzname;
+	    $fullTitleNoHtml .= $fullTitleNoHtml? ' - ' : '';
+	    $fullTitleNoHtml .= $wisyPortalKurzname;
 	    
-		return $fullTitleNoHtml;
+	    return $fullTitleNoHtml;
 	}
 	
 	// #enrichtitles
@@ -1296,7 +1296,7 @@ class WISY_FRAMEWORK_CLASS
 		}
 		
 		// the portal may overwrite everything ...
-		if( $wisyPortalCSS )								
+		if( $wisyPortalCSS )
 		{
 			$ret[] = 'portal.css'. $this->includeVersion;
 		}
@@ -1554,9 +1554,9 @@ class WISY_FRAMEWORK_CLASS
 		$bodyStart = utf8_encode($GLOBALS['wisyPortalBodyStart']);
 		if( strpos($bodyStart, '<html') === false )
 		{
-			if($this->iniRead('portal.inframe', '') != 1)
-				header('X-Frame-Options: SAMEORIGIN');
-			
+		    if($this->iniRead('portal.inframe', '') != 1)
+		        header('X-Frame-Options: SAMEORIGIN');
+		    
 			// we got only an HTML-Snippet (part of the the body part), create a more complete HTML-page from this
 			$bodyStart	= '<!DOCTYPE html>' . "\n"
 						. '<!--[if !IE]><!--><html lang="de"><!--<![endif]-->' . "\n"
@@ -1639,7 +1639,7 @@ class WISY_FRAMEWORK_CLASS
 		$ret .= $this->getAnalytics();
 		
 		// iwwb specials
-		if( $this->iniRead('iwwbumfrage', 'unset')!='unset' && $_SERVER['HTTPS']!='on' )
+		if( $this->iniRead('iwwbumfrage', 'unset')!='unset' && $_SERVER['HTTPS']!='on')
 		{
 			require_once('files/iwwbumfrage.php');
 		}
@@ -1740,10 +1740,10 @@ class WISY_FRAMEWORK_CLASS
 				}
 			}
 		}
-		if( isset($tokens['show']) && $tokens['show'] == 'anbieter' ) {
-			$q .= $q ? ', ' : '';
-			$q .= 'Zeige:Anbieter';
-		}
+			if( isset($tokens['show']) && $tokens['show'] == 'anbieter' ) {
+				$q .= $q ? ', ' : '';
+				$q .= 'Zeige:Anbieter';
+			}
 
 		// if the query is not empty, add a comma and a space		
 		$q = trim($q);
@@ -1788,7 +1788,7 @@ class WISY_FRAMEWORK_CLASS
 	                        $active_filters = $this->filterer->getActiveFilters();
                         
 	                        if($active_filters == '') {
-	                            echo '<div class="wisy_searchhints">' .  $this->replacePlaceholders($this->iniRead('searcharea.hint', $DEFAULT_BOTTOM_HINT)) . '</div>' . "\n";
+						echo '<div class="wisy_searchhints">' .  $this->replacePlaceholders($this->iniRead('searcharea.hint', $DEFAULT_BOTTOM_HINT)) . '</div>' . "\n";
 	                        }
 						}
 						else
@@ -1848,18 +1848,21 @@ class WISY_FRAMEWORK_CLASS
 		}
 		
 		// Dieser sollte beim Überschreiben von Kernfunktionen immer gleich sein:
-		$module_klassenprefix = "CUSTOM_";						
-
-		switch(str_replace($module_klassenprefix, "", get_class($result))) {
+		switch(str_replace(array("CUSTOM_", "DEV_", "ALPHA_", "BETA_"), "", get_class($result))) {
 			case 'WISY_SEARCH_RENDERER_CLASS':
+			case 'SEARCH_RENDERER_CLASS':
 				return "suche";
 			case 'WISY_ADVANCED_RENDERER_CLASS':
+			case 'ADVANCED_RENDERER_CLASS':
 				return "advanced";
 			case 'WISY_KURS_RENDERER_CLASS':
+			case 'KURS_RENDERER_CLASS':
 				return "kurs";
 			case 'WISY_ANBIETER_RENDERER_CLASS':
+			case 'ANBIETER_RENDERER_CLASS':
 				return "anbieter";
 			case 'WISY_GLOSSAR_RENDERER_CLASS':
+			case 'GLOSSAR_RENDERER_CLASS':
 				return "glossar";
 			default:
 				return false;
@@ -1950,14 +1953,14 @@ class WISY_FRAMEWORK_CLASS
 					exit();
 				}
 				// #vanityurl
-				else if( ($gid=$this->iniRead('glossaralias.'.$wisyRequestedFile, '0'))!='0' ) 
+				else if( ($gid=$this->iniRead('glossaralias.'.$wisyRequestedFile, '0'))!='0' )
 				{
-					// Wenn sinnvolle Glossar-ID: Ist max. 20-stellige Zahl, die nicht mit 0 anfängt
-					if(preg_match("/^[1-9][0-9]{1,20}$/", $gid))
-					{	
-						$_GET['id'] = trim($gid);	// unschön, aber hier nicht sinnvoll anders möglich?.
-						return createWisyObject('WISY_GLOSSAR_RENDERER_CLASS', $this);
-					}
+				    // Wenn sinnvolle Glossar-ID: Ist max. 20-stellige Zahl, die nicht mit 0 anfängt
+				    if(preg_match("/^[1-9][0-9]{1,20}$/", $gid))
+				    {
+				        $_GET['id'] = trim($gid);	// unschön, aber hier nicht sinnvoll anders möglich?.
+				        return createWisyObject('WISY_GLOSSAR_RENDERER_CLASS', $this);
+				    }
 				}
 				break;
 
@@ -2030,7 +2033,7 @@ class WISY_FRAMEWORK_CLASS
 			}
 			
 			// for "normal pages" as kurse, anbieter, search etc. switch back to non-secure
-			if( $renderer->unsecureOnly && $_SERVER['HTTPS']=='on' && !$this->iniRead('portal.https', ''))
+			if( $renderer->unsecureOnly && $_SERVER['HTTPS']=='on' && !$this->iniRead('portal.https', '') )
 			{
 				$redirect = "http://" . $_SERVER['HTTP_HOST'] . $_SERVER["REQUEST_URI"];
 				fwd301($redirect);
