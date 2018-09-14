@@ -70,21 +70,21 @@ class WISY_EDIT_FORGOTPW_CLASS
 						
 						$f_link = "{$protocol}://__HTTP_HOST__/edit?action=forgotpw&c={$f_confirm}";
 						
-						$f_subject  = 'Ihr neues Passwort fuer __HTTP_HOST__ (__NAME__)';
-						$f_mailbody = 
-"Hallo $f_email -
+						$f_subject  = 'Ihr neues Passwort für __HTTP_HOST__ (__NAME__)';
+						$f_mailbody =
+						"Hallo $f_email -
+						
+Sie (oder jemand der sich als Kursanbieter auf __HTTP_HOST__ bzw. \"__NAME__ \"ausgegeben hat) haben unter https://__HTTP_HOST__/edit ein neues Passwort für Ihren Account beantragt.
 
-Sie, oder jemand der sich als Kursanbieter auf __HTTP_HOST__ bzw. __NAME__ ausgegeben hat, haben unter https://__HTTP_HOST__/edit ein neues Passwort für Ihren Account beantragt.
+Wenn Sie KEIN neues Passwort beantragt haben oder wenn Ihnen Ihr altes Passwort zwischenzeitlich wieder eingefallen ist, so ignorieren und löschen Sie bitte diese E-Mail.
 
-Wenn Sie KEIN neues Passwort beantragt haben, oder wenn Ihnen Ihr altes Passwort zwischenzeitlich wieder eingefallen ist, ignorieren und loeschen Sie bitte diese E-Mail.
+Nur WENN Sie ein neues Passwort beantragt haben, klicken Sie bitte auf den folgenden Link, um ein neues Passwort zu erhalten und sich damit wieder in Ihrem Account einloggen zu können: $f_link
 
-Nur WENN Sie ein neues Passwort beantragt haben, klicken Sie bitte auf den folgenden Verweis, um ein neues Passwort zu erhalten und sich damit wieder in Ihrem Account einloggen zu können: $f_link 
-
-Mit freundlichen Gruessen,
+Mit freundlichen Grüßen,
 __NAME__";
 						
-						$f_subject  = $this->replaceForgotPwPlaceholders($f_subject);
-						$f_mailbody = $this->replaceForgotPwPlaceholders($f_mailbody);
+						$f_subject  = utf8_decode($this->replaceForgotPwPlaceholders($f_subject));
+						$f_mailbody = utf8_decode($this->replaceForgotPwPlaceholders($f_mailbody));
 						
 						$logwriter->addData('email', $f_email);
 						if( $this->sendMail($f_email, $f_subject, $f_mailbody) )
