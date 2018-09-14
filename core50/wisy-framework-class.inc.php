@@ -613,11 +613,11 @@ class WISY_FRAMEWORK_CLASS
 		$placeholder = $matches[0];
 		if( $placeholder == '__NAME__' )
 		{
-			return $wisyPortalName;
+		    return utf8_encode($wisyPortalName);
 		}
 		else if( $placeholder == '__KURZNAME__' )
 		{
-			return $wisyPortalKurzname;
+		    return utf8_encode($wisyPortalKurzname);
 		}
 		else if( $placeholder == '__ANZAHL_KURSE__' || $placeholder == '__ANZAHL_KURSE_G__' )
 		{
