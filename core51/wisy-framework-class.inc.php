@@ -1158,7 +1158,7 @@ class WISY_FRAMEWORK_CLASS
 	    $fullTitleNoHtml .= $pageTitleNoHtml;
 	    $fullTitleNoHtml .= $title_post;
 	    $fullTitleNoHtml .= $fullTitleNoHtml? ' - ' : '';
-	    $fullTitleNoHtml .= $wisyPortalKurzname;
+	    $fullTitleNoHtml .= utf8_encode($wisyPortalKurzname); // = default for home page
 	    
 	    return $fullTitleNoHtml;
 	}
@@ -1166,7 +1166,7 @@ class WISY_FRAMEWORK_CLASS
 	// #enrichtitles
 	function getTitleTags($pageTitleNoHtml, $ort = "", $anbieter_name = "")
 	{
-	    return "<title>" .isohtmlspecialchars(utf8_encode($this->getTitleString($pageTitleNoHtml, $ort, $anbieter_name))). "</title>"."\n";
+	    return "<title>" .isohtmlspecialchars($this->getTitleString($pageTitleNoHtml, $ort, $anbieter_name)). "</title>"."\n";
 	}
 	
 	function getSqlCount() {
