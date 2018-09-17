@@ -1114,7 +1114,7 @@ class WISY_FRAMEWORK_CLASS
 	// #enrichtitles
 	function getTitleTags($pageTitleNoHtml, $ort = "", $anbieter_name = "")
 	{
-	    return "<title>" .isohtmlspecialchars($this->getTitleString($pageTitleNoHtml, $ort, $anbieter_name)). "</title>"."\n";
+	    return "<title>" .isohtmlspecialchars(utf8_encode($this->getTitleString($pageTitleNoHtml, $ort, $anbieter_name))). "</title>"."\n";
 	}
 	
 	function getSqlCount() {
