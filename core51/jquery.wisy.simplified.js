@@ -517,7 +517,7 @@ if (jQuery.ui)
 	{
 		// calculate the new source url
 		var request_term = extractLast(request.term);
-		var url = "autosuggest?q=" + encodeURIComponent(request_term) + "&type=anbieter&limit=512&timestamp=" + new Date().getTime();
+		var url = "/autosuggest?q=" + encodeURIComponent(request_term) + "&type=anbieter&limit=512&timestamp=" + new Date().getTime();
 		
 		ac_sourcecallback_execute(request_term, url, response_callback);
 	}
@@ -526,7 +526,7 @@ if (jQuery.ui)
 	{
 		// calculate the new source url
 		var request_term = extractLast(request.term);
-		var url = "autosuggestplzort?q=" + encodeURIComponent(request_term) + "&type=ort&limit=512&timestamp=" + new Date().getTime();
+		var url = "/autosuggestplzort?q=" + encodeURIComponent(request_term) + "&type=ort&limit=512&timestamp=" + new Date().getTime();
 		
 		ac_sourcecallback_execute(request_term, url, response_callback, 'plzOrt');
 	}
@@ -535,7 +535,7 @@ if (jQuery.ui)
 	{	
 		// calculate the new source url
 		var request_term = extractLast(request.term);
-		var url = "autosuggest?q=" + encodeURIComponent(request_term) + "&limit=512&timestamp=" + new Date().getTime();
+		var url = "/autosuggest?q=" + encodeURIComponent(request_term) + "&limit=512&timestamp=" + new Date().getTime();
 		
 		ac_sourcecallback_execute(request_term, url, response_callback);
 	
