@@ -1685,6 +1685,7 @@ class WISY_FRAMEWORK_CLASS
 			$ret .= "
 				<!-- analytics.piwik -->
 				<script type=\"text/javascript\">
+                var optedOut = document.cookie.indexOf(\"cookieconsent_status=deny\") > -1;
 				if (!optedOut) {
 					var _paq = _paq || [];
 					_paq.push(['trackPageView']);
