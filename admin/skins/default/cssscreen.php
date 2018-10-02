@@ -487,7 +487,7 @@ div.e_toolbar, div.e_section {
 .e_attractype1 { /*Abschluss: Gruen*/
 	background-color: #C0FFC0;
 }
-.e_attractype2, .e_attractype4 { /*Förderungsart, Qualitaetszertifikat: Dunkleres Grau*/
+.e_attractype2, .e_attractype4 { /*Fï¿½rderungsart, Qualitaetszertifikat: Dunkleres Grau*/
 	/*background-color: #E0E0E0;*/
 }
 .e_attractype2048 { /*Verwaltungsstichwort: Gelb*/
@@ -538,4 +538,10 @@ a.e_defhide_more:hover {
 #e_rights table td.e_cll {
 	white-space:nowrap;
 	text-align: right; 
+}
+
+code {
+ background-color: beige;
+ padding: 2px;
+ line-height: 20px;
 }
