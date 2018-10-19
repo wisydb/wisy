@@ -33,14 +33,16 @@ class WISY_LANDINGPAGE_RENDERER_CLASS
 		echo $this->framework->getSearchField();
 		flush();
 		
-		echo '<h1>Landingpage ' . $ortsname . '</h1>';
+		echo '<h1>Landingpage für Ort ' . htmlspecialchars($ortsname) . '</h1>';
 		
-		$queryString = $queryString = $this->framework->Q;
+		$queryString = 'bei:' . $ortsname;
 		$offset = htmlspecialchars(intval($_GET['offset'])); if( $offset < 0 ) $offset = 0;
+		
 		$searcher =& createWisyObject('WISY_SEARCH_CLASS', $this->framework);
+		$searcher->prepare(mysql_real_escape_string($queryString));
+		
 		$searchRenderer = createWisyObject('WISY_SEARCH_RENDERER_CLASS', $this->framework);
-		// TODO
-		//$searchRenderer->renderKursliste($searcher, $queryString, $offset);
+		$searchRenderer->renderKursliste($searcher, $queryString, $offset);
 
 		
 		echo $this->framework->replacePlaceholders( $this->framework->iniRead('spalten.below', '') );
