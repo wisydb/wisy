@@ -156,7 +156,7 @@ class MULTIEDIT_PLUGIN_CLASS
 						$options .= "del_old_durchf###Abgelaufene Durchführungen LÖSCHEN###";
 					}
 					
-					$options .= "field__user_grp__settext###Benutzergruppe: setze auf 'Parameter2'###";
+					$options .= "field__user_grp__settext###Benutzergruppe: setze auf 'Parameter2' (nur ID)###";
 					$options .= "field__user_access__settext###Rechte: setze auf 'Parameter2'###";
 					
 					$options .= "nop2######";

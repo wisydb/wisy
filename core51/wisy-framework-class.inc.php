@@ -1686,7 +1686,7 @@ class WISY_FRAMEWORK_CLASS
 			$ret .= "
 				<!-- analytics.piwik -->
 				<script type=\"text/javascript\">
-				var optedOut = document.cookie.indexOf('cookieconsent_status=deny') > -1;
+                var optedOut = document.cookie.indexOf(\"cookieconsent_status=deny\") > -1;
 				if (!optedOut) {
 					var _paq = _paq || [];
 					_paq.push(['trackPageView']);
@@ -1787,11 +1787,12 @@ class WISY_FRAMEWORK_CLASS
 							if( isset($tokens['show']) && $tokens['show'] == 'anbieter' ) {
 								echo '<input type="hidden" name="filter_zeige" value="Anbieter" />';
 							}
-	                        $active_filters = $this->filterer->getActiveFilters();
-                        
-	                        if($active_filters == '') {
-						echo '<div class="wisy_searchhints">' .  $this->replacePlaceholders($this->iniRead('searcharea.hint', $DEFAULT_BOTTOM_HINT)) . '</div>' . "\n";
-	                        }
+							$active_filters = $this->filterer->getActiveFilters();
+							$hintwithfilters = $this->iniRead('searcharea.hintwithfilters', 0);
+							if($active_filters == '' || $hintwithfilters) {
+							    $hint = ($hintwithfilters && $active_filters) ? $hintwithfilters : $this->replacePlaceholders($this->iniRead('searcharea.hint', $DEFAULT_BOTTOM_HINT));
+							    echo '<div class="wisy_searchhints">' .  $hint . '</div>' . "\n";
+							}
 						}
 						else
 						{
