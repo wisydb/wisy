@@ -843,7 +843,8 @@ class WISY_FRAMEWORK_CLASS
 		return $ret;
 	}
 
-	function writeStichwoerter($db, $table, $stichwoerter)
+	#richtext
+	function writeStichwoerter($db, $table, $stichwoerter, $richtext = false)
 	{
 		// Stichwoerter ausgeben
 		// load codes
