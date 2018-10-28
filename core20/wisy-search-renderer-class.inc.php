@@ -67,13 +67,17 @@ class WISY_SEARCH_RENDERER_CLASS
 	
 	function renderColumnTitle($title, $sollOrder, $istOrder, $info=0)
 	{
+	    // #richtext
+	    $richtext = (intval(trim($this->framework->iniRead('meta.richtext'))) === 1);
+	    $headattribs = ($richtext) ? ' content="'.$title.'"' : '';
+	    
 		$th_class = '';
 		if( $sollOrder == 't' ) {
 			$th_class = 'wisy_anbieter'; // needed to add "white-space: normal" to the parent of the fav icon; see core.css
 		}
 		$th_class = $th_class? " class=\"$th_class\"" : '';
 	
-		echo "    <th$th_class>";
+		echo "    <th$th_class ".$headattribs.">"; // #richtext
 			
 			if( $sollOrder )
 			{
@@ -166,6 +170,8 @@ class WISY_SEARCH_RENDERER_CLASS
 				echo 'k. A.';
 			}
 		echo '</td>' . "\n";
+		
+		return $anbieterName; // #richtext
 	}
 	
 	function renderKursRecords(&$db, &$records, &$recordsToSkip, $param)
@@ -295,8 +301,8 @@ class WISY_SEARCH_RENDERER_CLASS
 				if (($wisyPortalSpalten & 1) > 0)
 				{
 					// SPALTE: anbieter
-
-					$this->renderAnbieterCell2($db, $anbieter_record, array('q'=>$param['q'], 'addPhone'=>true, 'promoted'=>$param['promoted'], 'kurs_id'=>$currKursId));
+					// #richtext
+				    $anbieterName = $this->renderAnbieterCell2($db, $anbieter_record, array('q'=>$param['q'], 'addPhone'=>true, 'promoted'=>$param['promoted'], 'kurs_id'=>$currKursId));
 				}
 				
 				// SPALTEN: durchfuehrung
@@ -559,6 +565,8 @@ class WISY_SEARCH_RENDERER_CLASS
 	function renderKursliste(&$searcher, $queryString, $offset)
 	{
 		global $wisyPortalSpalten;
+		
+		$richtext = (intval(trim($this->framework->iniRead('meta.richtext'))) === 1); // #richtext
 	
 		$validOrders = array('a', 'ad', 't', 'td', 'b', 'bd', 'd', 'dd', 'p', 'pd', 'o', 'od', 'creat', 'creatd', 'rand');
 		$orderBy = $_GET['order']; if( !in_array($orderBy, $validOrders) ) $orderBy = 'b';
@@ -569,7 +577,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			echo '<div class="wisy_suggestions">';
 				if( $info['changed_query'] )
 				{
-					echo '<b>Hinweis:</b> Der Suchauftrag wurde abgeändert in <i><a href="'.$this->framework->getUrl('search', array('q'=>$info['changed_query'])).'">'.isohtmlspecialchars($info['changed_query']).'</a></i>';
+					echo '<b>Hinweis:</b> Der Suchauftrag wurde abgeï¿½ndert in <i><a href="'.$this->framework->getUrl('search', array('q'=>$info['changed_query'])).'">'.isohtmlspecialchars($info['changed_query']).'</a></i>';
 					if( sizeof($info['suggestions']) ) 
 						echo ' &ndash; ';
 				}
@@ -613,6 +621,10 @@ class WISY_SEARCH_RENDERER_CLASS
 					echo '<b>Aktuelle Angebote:</b>';
 				}
 				else {
+				    /* ! actually makes sense: but how? Because of richtext additional output above?
+				     if($richtext)
+				     echo "&nbsp;"; // notwendig
+				     else */
 					echo $sqlCount==1? "<b>1 Angebot</b> zum Suchauftrag:" : "<b>$sqlCount Angebote</b> zum Suchauftrag <i>".isohtmlspecialchars(trim($queryString, ', '))."</i>:";
 				}
 
@@ -625,6 +637,9 @@ class WISY_SEARCH_RENDERER_CLASS
 			
 			flush();
 
+			/* $aggregateOffer = ($richtext) ? 'itemprop="offers" itemscope itemtype="http://schema.org/AggregateOffer"': '';
+			 echo '<div '.$aggregateOffer.'>'; */
+			
 			// render table start
 			echo "\n".'<table class="wisy_list"' . html3(' cellpadding="0" cellspacing="0" border="0" width="100%"') . '>' . "\n";
 			
@@ -692,6 +707,23 @@ class WISY_SEARCH_RENDERER_CLASS
 		
 			// main table end
 			echo '</table>' . "\n\n";
+			
+			/* // #richtext
+			 if($richtext) {
+			 // sort($durchfClass->preise);
+			 // echo '<meta itemprop="lowprice" content="'.$this->framework->preisUS($durchfClass->preise[0]).'">';
+			 // 	echo '<meta itemprop="highprice" content="'.$this->framework->preisUS($durchfClass->preise[sizeof($durchfClass->preise)-1]).'">';
+			 
+			 echo '<meta itemprop="priceCurrency" content="EUR">';
+			 // 	echo '<meta itemprop="offerCount" content="'.sizeof($durchfClass->preise).'">';
+			 echo '<meta itemprop="url" content="http://'.$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI'].'">';
+			 echo '<meta itemprop="eligibleRegion" content="DE-RP">';
+			 echo '<span itemprop="eligibleCustomerType" itemscope itemtype="https://schema.org/BusinessEntityType">';
+			 echo '<meta itemprop="additionalType" content="http://purl.org/goodrelations/v1#Enduser">';
+			 echo '</span>';
+			 echo '</div>'; // Ende AggregateOffer
+			 } */
+			
 			flush();
 
 			echo '<p>';
@@ -699,7 +731,7 @@ class WISY_SEARCH_RENDERER_CLASS
 
 				if( $queryString ) echo ' <i class="printonly">' . isohtmlspecialchars(trim($queryString, ', ')) . '</i>';
 
-				if( !$this->framework->editSessionStarted ) // nur für eine bessere Übersicht wird das folgende im Edit-Modus unterdrückt
+				if( !$this->framework->editSessionStarted ) // nur fï¿½r eine bessere ï¿½bersicht wird das folgende im Edit-Modus unterdrï¿½ckt
 				{
 					$addTimeInfo = '';
 					if( is_object($promoter) )
@@ -733,8 +765,8 @@ class WISY_SEARCH_RENDERER_CLASS
 			{
 				$temp = trim($queryString, ', ');
 				echo '<p class="wisy_topnote">';
-					echo 'Keine aktuellen Datensätze für <em>&quot;'  . isohtmlspecialchars($temp) . '&quot;</em> gefunden.<br /><br />';
-					echo '<a href="' . $this->framework->getUrl('search', array('q'=>"$temp, Datum:Alles")) . '">Suche wiederholen und dabei <b>auch abgelaufene Kurse berücksichtigen</b> ...</a>';
+					echo 'Keine aktuellen Datensï¿½tze fï¿½r <em>&quot;'  . isohtmlspecialchars($temp) . '&quot;</em> gefunden.<br /><br />';
+					echo '<a href="' . $this->framework->getUrl('search', array('q'=>"$temp, Datum:Alles")) . '">Suche wiederholen und dabei <b>auch abgelaufene Kurse berï¿½cksichtigen</b> ...</a>';
 				echo "</p>\n";
 			}
 			else
@@ -747,7 +779,7 @@ class WISY_SEARCH_RENDERER_CLASS
 				<script type="text/javascript">
 			        var defaultZIP="PLZ";
 			        var defaultCity="Ort";
-			        var defaultKeywords = "Suchwörter eingeben";
+			        var defaultKeywords = "Suchwï¿½rter eingeben";
 
 			        function IWWBonFocusTextField(field,defaultValue){
 			                if (field.value==defaultValue) field.value="";
@@ -914,7 +946,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		}
 		else /* if( sqlCount ) */
 		{
-			echo '<p class="wisy_topnote">Keine Datensätze für <em>&quot;'.isohtmlspecialchars(trim($queryString, ', ')).'&quot;</em> gefunden.</p>' . "\n";
+			echo '<p class="wisy_topnote">Keine Datensï¿½tze fï¿½r <em>&quot;'.isohtmlspecialchars(trim($queryString, ', ')).'&quot;</em> gefunden.</p>' . "\n";
 		}
 	}
 	
@@ -1005,7 +1037,7 @@ class WISY_SEARCH_RENDERER_CLASS
 						break;
 				
 					case 'missing_fulltext':
-						echo '<p class="wisy_topnote">Bitte geben Sie die zu suchenden Volltextwörter hinter <em>Volltext:</em> an.</p>' . "\n";
+						echo '<p class="wisy_topnote">Bitte geben Sie die zu suchenden Volltextwï¿½rter hinter <em>Volltext:</em> an.</p>' . "\n";
 						break;
 				
 					case 'bad_location':
@@ -1016,7 +1048,7 @@ class WISY_SEARCH_RENDERER_CLASS
 						
 					case 'inaccurate_location':
 						// see http://code.google.com/intl/de/apis/maps/documentation/reference.html#GGeoAddressAccuracy
-						$accuracies = array('Unbekannt', 'Land', 'Region', 'Kreis', 'Ortschaft', 'PLZ', 'Strasse', 'Kreuzung', 'Adresse', 'Grundstück');
+						$accuracies = array('Unbekannt', 'Land', 'Region', 'Kreis', 'Ortschaft', 'PLZ', 'Strasse', 'Kreuzung', 'Adresse', 'Grundstï¿½ck');
 						$ist_accuracy = intval($error['ist_accuracy']);
 						$soll_accuracy = intval($error['soll_accuracy']);
 						echo 	'<p class="wisy_topnote">'
@@ -1031,7 +1063,7 @@ class WISY_SEARCH_RENDERER_CLASS
 						break;
 
 					case 'km_without_bei':
-						echo '<p class="wisy_topnote">Die Angabe von <em>km:</em> ist nur in Kombination mit <em>bei:</em> gültig. Für eine einfache Eingabe der richtigen Werte, verwenden Sie bitte die <em>Erweiterte Suche</em>.</p>' . "\n";
+						echo '<p class="wisy_topnote">Die Angabe von <em>km:</em> ist nur in Kombination mit <em>bei:</em> gï¿½ltig. Fï¿½r eine einfache Eingabe der richtigen Werte, verwenden Sie bitte die <em>Erweiterte Suche</em>.</p>' . "\n";
 						break;
 				
 					default:
@@ -1066,7 +1098,7 @@ class WISY_SEARCH_RENDERER_CLASS
 				}
 				
 				// show 'offers that are not "gesperrt"' which are _not_ in the search index (eg. just created offers) below the normal search result
-				echo '<p><span class="wisy_edittoolbar" title="Um einen neuen Kurs hinzuzufügen, klicken Sie oben auf &quot;Neuer Kurs&quot;">Kurse in Vorbereitung:</span>&nbsp; ';
+				echo '<p><span class="wisy_edittoolbar" title="Um einen neuen Kurs hinzuzufï¿½gen, klicken Sie oben auf &quot;Neuer Kurs&quot;">Kurse in Vorbereitung:</span>&nbsp; ';
 					$out = 0;
 					reset( $titles );
 					while( list($currId, $currTitel) = each($titles) )
@@ -1079,7 +1111,7 @@ class WISY_SEARCH_RENDERER_CLASS
 							$out++; 
 						}
 					}
-					if( $out == 0 ) echo '<i title="Um einen neuen Kurs hinzuzufügen, klicken Sie oben auf &quot;Neuer Kurs&quot;">keine</i>';
+					if( $out == 0 ) echo '<i title="Um einen neuen Kurs hinzuzufï¿½gen, klicken Sie oben auf &quot;Neuer Kurs&quot;">keine</i>';
 					//echo ' &ndash; <a href="edit?action=ek&amp;id=0">Neuer Kurs...</a>';
 				echo '</p>';
 			}
