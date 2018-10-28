@@ -75,8 +75,12 @@ class WISY_SEARCH_RENDERER_CLASS
 	
 	function renderColumnTitle($title, $sollOrder, $istOrder, $info=0)
 	{
+	    // #richtext
+	    $richtext = (intval(trim($this->framework->iniRead('meta.richtext'))) === 1);
+	    $headattribs = ($richtext) ? ' content="'.$title.'"' : '';
+	    
 		// Add column title class for use in responsive CSS
-		echo '    <th class="wisyr_'. $this->framework->cleanClassname($title) .'">';
+		echo '    <th class="wisyr_'. $this->framework->cleanClassname($title) .'" '.$headattribs.'>'; // #richtext
 			
 			if( $sollOrder )
 			{
@@ -172,6 +176,8 @@ class WISY_SEARCH_RENDERER_CLASS
 				echo 'k. A.';
 			}
 		echo '</td>' . "\n";
+		
+		return $anbieterName; // #richtext
 	}
 	
 	function renderKursRecords(&$db, &$records, &$recordsToSkip, $param)
@@ -301,8 +307,8 @@ class WISY_SEARCH_RENDERER_CLASS
 				if (($wisyPortalSpalten & 1) > 0)
 				{
 					// SPALTE: anbieter
-
-					$this->renderAnbieterCell2($db, $anbieter_record, array('q'=>$param['q'], 'addPhone'=>true, 'promoted'=>$param['promoted'], 'kurs_id'=>$currKursId));
+					// #richtext
+				    $anbieterName = $this->renderAnbieterCell2($db, $anbieter_record, array('q'=>$param['q'], 'addPhone'=>true, 'promoted'=>$param['promoted'], 'kurs_id'=>$currKursId));
 				}
 				
 				// SPALTEN: durchfuehrung
@@ -565,6 +571,8 @@ class WISY_SEARCH_RENDERER_CLASS
 	function renderKursliste(&$searcher, $queryString, $offset)
 	{
 		global $wisyPortalSpalten;
+		
+		$richtext = (intval(trim($this->framework->iniRead('meta.richtext'))) === 1); // #richtext
 	
 		$validOrders = array('a', 'ad', 't', 'td', 'b', 'bd', 'd', 'dd', 'p', 'pd', 'o', 'od', 'creat', 'creatd', 'rand');
 		$orderBy = $_GET['order']; if( !in_array($orderBy, $validOrders) ) $orderBy = 'b';
@@ -623,6 +631,11 @@ class WISY_SEARCH_RENDERER_CLASS
 				}
 				else {
 					echo '<span class="wisyr_angebote_zum_suchauftrag">';
+					
+					/* ! actually makes sense: but how? Because of richtext additional output above?
+					 if($richtext)
+					 echo "&nbsp;"; // notwendig
+					 else */
 					echo $sqlCount==1? '<span class="wisyr_anzahl_angebote">1 Angebot</span> zum Suchauftrag ' : '<span class="wisyr_anzahl_angebote">' . $sqlCount . ' Angebote</span> zum Suchauftrag ';
 					echo '<span class="wisyr_angebote_suchauftrag">"' . htmlspecialchars((trim($queryString, ', '))) . '"</span>';
 					echo '<a class="wisyr_anbieter_switch" href="search?q=' . urlencode($queryString) . '%2C+Zeige:Anbieter">Zeige Anbieter</a>';
@@ -643,6 +656,9 @@ class WISY_SEARCH_RENDERER_CLASS
 			echo '</div>';
 			
 			flush();
+			
+			/* $aggregateOffer = ($richtext) ? 'itemprop="offers" itemscope itemtype="http://schema.org/AggregateOffer"': '';
+			 echo '<div '.$aggregateOffer.'>'; */
 
 			// render table start
 			echo "\n".'<table class="wisy_list wisyr_kursliste">' . "\n";
@@ -711,6 +727,23 @@ class WISY_SEARCH_RENDERER_CLASS
 		
 			// main table end
 			echo '</table>' . "\n\n";
+			
+			/* // #richtext
+			 if($richtext) {
+			 // sort($durchfClass->preise);
+			 // echo '<meta itemprop="lowprice" content="'.$this->framework->preisUS($durchfClass->preise[0]).'">';
+			 // 	echo '<meta itemprop="highprice" content="'.$this->framework->preisUS($durchfClass->preise[sizeof($durchfClass->preise)-1]).'">';
+			 
+			 echo '<meta itemprop="priceCurrency" content="EUR">';
+			 // 	echo '<meta itemprop="offerCount" content="'.sizeof($durchfClass->preise).'">';
+			 echo '<meta itemprop="url" content="http://'.$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI'].'">';
+			 echo '<meta itemprop="eligibleRegion" content="DE-RP">';
+			 echo '<span itemprop="eligibleCustomerType" itemscope itemtype="https://schema.org/BusinessEntityType">';
+			 echo '<meta itemprop="additionalType" content="http://purl.org/goodrelations/v1#Enduser">';
+			 echo '</span>';
+			 echo '</div>'; // Ende AggregateOffer
+			 } */
+			
 			flush();
 			
 			if( $pagesel )
