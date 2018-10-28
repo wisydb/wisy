@@ -875,6 +875,13 @@ class WISY_FRAMEWORK_CLASS
 				if( ($stichwoerter[$s]['eigenschaften']==0 && intval($codes_array[$c])==0 && $glossarLink)
 				 || ($stichwoerter[$s]['eigenschaften'] & intval($codes_array[$c])) )
 				{
+				    // #richtext
+				    if(stripos($codes_array[$c+1], "Qualit") !== FALSE) {
+				        $award_sw = ($richtext) ? preg_replace("/.Anbietermerkmal./i", "", $stichwoerter[$s]['stichwort']) : $stichwoerter[$s]['stichwort'];
+				        $award1 = ($richtext) ? '<span itemprop="award" content="'.$award_sw.'">' : '';
+				        $award2 = ($richtext) ? '</span>' : '';
+				    }
+				    
 					if( !$anythingOfThisCode ) {
 						$ret .= '<dt class="wisy_stichwtyp'.$stichwoerter[$s]['eigenschaften'].'">' . $codes_array[$c+1] . '</dt><dd>';
 					}
@@ -889,6 +896,9 @@ class WISY_FRAMEWORK_CLASS
 					$ret .= '<a title="alle Kurse mit diesem Stichwort anzeigen" href="' .wisy_param('index.php', array('sst'=>"\"{$stichwoerter[$s]['stichwort']}\"", 'skipdefaults'=>1, 'snew'=>2)). '">';
 					$writeAend = true;
 					*/
+					
+					// #richtext
+					$ret .= $award1.$stichwoerter[$s]['stichwort'].$award2;
 					
 					$ret .= $stichwoerter[$s]['stichwort'];
 					
@@ -1703,9 +1713,52 @@ class WISY_FRAMEWORK_CLASS
 		$DEFAULT_RIGHT_HTML		= '| <a href="javascript:window.print();">Drucken</a>';
 		$DEFAULT_BOTTOM_HINT	= 'bitte <strong>Suchwörter</strong> eingeben - z.B. Englisch, VHS, Bildungsurlaub, ...';
 		
+		echo "\n";
+		
+		// #richtext
+		$richtext = (intval(trim($this->iniRead('meta.richtext'))) === 1);
+		$aboutpage = intval(trim($this->iniRead('meta.aboutpage')));
+		$contactpage = intval(trim($this->iniRead('meta.contactpage')));
+		
+		global $wisyRequestedFile;
+		
+		$schema = "https://schema.org/WebSite";
+		$pagetype = $this->getPageType();
+		$schema = ($pagetype == "suche") ? "https://schema.org/SearchResultsPage" : $schema;
+		$schema = ($pagetype == "glossar" || $pagetype == "anbieter" || $pagetype == "kurs") ? "https://schema.org/ItemPage" : $schema;
+		$schema = ($wisyRequestedFile == "g".$aboutpage) ? "https://schema.org/AboutPage" : $schema;
+		$schema = ($wisyRequestedFile == "g".$contactpage) ? "https://schema.org/ContactPage" : $schema;
+		
+		if($richtext) {
+		    echo '<div itemscope itemtype="'.$schema.'">';
+		    
+		    $websiteurl .= trim($this->iniRead('meta.portalurl', ""));
+		    
+		    if($websiteurl)
+		        $metatags .= '<meta itemprop="url" content="'.$websiteurl.'">'."\n";
+		        
+		}
+		
+		if($pagetype != "suche") {
+		    $searchAction = ($richtext) ? 'itemprop="potentialAction" itemscope itemtype="https://schema.org/SearchAction"' : '';
+		    $target = ($richtext) ? '<meta itemprop="target" content="https://'.$_SERVER['SERVER_NAME'].'/search?q={q}"/>' : '';
+		    if($pagetype == "startseite") { $q = $this->iniRead('searcharea.placeholder', $DEFAULT_PLACEHOLDER); }
+		    $queryinput = ($richtext) ? 'itemprop="query-input" placeholder="'.$q.'"': '';
+		    $q = ""; // sonst ändert sich mit jedr Seite der DefaultValue
+		} else {
+		    $searchAction = ($richtext) ? 'itemscope itemtype="https://schema.org/FindAction"' : '';
+		    $target = ($richtext) ? '
+				<meta itemprop="target" content="https://'.$_SERVER['SERVER_NAME'].'/search?q={q}"/>
+				<link itemprop="actionStatus" href="https://schema.org/CompletedActionStatus">' : '';
+		    $queryinput = '';
+		}
+		
+		echo $this->getSchemaWebsite();
+		// end: #richtext
+		
 		echo "\n" . '<div id="wisy_searcharea">' . "\n";
 			echo '<div class="inner">' . "\n";
-				echo '<form action="search" method="get">' . "\n";
+				echo '<form action="search" method="get" '.$searchAction.'>' . "\n" . $target; // #richtext
 					echo '<div class="formrow">';
 						echo '<label for="q">' . $this->iniRead('searcharea.placeholder', $DEFAULT_PLACEHOLDER) . '</label>';
 						echo '<input type="text" id="wisy_searchinput" class="ac_keyword" name="q" value="' .$q. '" placeholder="' . $this->iniRead('searcharea.placeholder', $DEFAULT_PLACEHOLDER) . '" />' . "\n";
@@ -1740,6 +1793,28 @@ class WISY_FRAMEWORK_CLASS
 		echo "\n</div><!-- /#wisy_searchare -->\n\n";
 	
 		echo $this->replacePlaceholders( $this->iniRead('searcharea.below', '') ); // deprecated!
+	}
+	
+	// #richtext
+	function getSchemaWebsite() {
+	    $websitename = ''; $websiteurl = ""; $metatags = "";
+	    
+	    if(intval(trim($this->iniRead('meta.richtext'))) === 1) {
+	        $websitename .= trim($this->iniRead('meta.portalname', ""));
+	        $websiteurl .= trim($this->iniRead('meta.portalurl', ""));
+	    }
+	    
+	    if($websitename)
+	        $metatags .= '<meta itemprop="name" content="'.strtoupper($websitename).'">'."\n";
+	        
+	        if($websiteurl)
+	            $metatags .= '<meta itemprop="url" content="'.$websiteurl.'">'."\n";
+	            
+	            // DF1 start date, to harmonize SERP entry date with DF
+	            // if($websiteurl)
+	            // $metatags .= "<meta name='datePublished' itemprop='datePublished' content='".$YDP."-".$mDP."-".dDP."."'>"."\n";
+	            
+	            return $metatags;
 	}
 	
 	function getPageType() {
