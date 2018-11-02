@@ -703,8 +703,6 @@ class WISY_FRAMEWORK_CLASS
 					// #richtext
 					$ret .= $award1.$stichwoerter[$s]['stichwort'].$award2;
 					
-					$ret .= $stichwoerter[$s]['stichwort'];
-					
 					if( $writeAend ) {
 						$ret .= '</a>';
 					}
