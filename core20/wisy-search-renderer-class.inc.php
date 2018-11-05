@@ -237,6 +237,9 @@ class WISY_SEARCH_RENDERER_CLASS
 		$fav_use = $this->framework->iniRead('fav.use', 0);
 		
 		$rows = 0;
+		
+		$tag_cloud = array();
+		
 		reset($records['records']);
 		while( list($i, $record) = each($records['records']) )
 		{	
@@ -315,8 +318,9 @@ class WISY_SEARCH_RENDERER_CLASS
 					$addText .= '</a></small>';
 				}
 				
-				$stichwoerter = $this->framework->loadStichwoerter($db, 'kurse', $currKursId);
-				$durchfClass->formatDurchfuehrung($db, $currKursId, intval($durchfuehrungenIds[0]), 0, 0, 1, $addText, array('record'=>$record, 'stichwoerter'=>$stichwoerter));
+				$tags = $this->framework->loadStichwoerter($db, 'kurse', $currKursId);
+				array_push($tag_cloud, $tags);
+				$durchfClass->formatDurchfuehrung($db, $currKursId, intval($durchfuehrungenIds[0]), 0, 0, 1, $addText, array('record'=>$record, 'stichwoerter'=>$tags));
 				
 				// SPALTE: Entfernung
 				if( $this->hasDistanceColumn )
@@ -353,6 +357,8 @@ class WISY_SEARCH_RENDERER_CLASS
 				
 			echo '  </tr>' . "\n";
 		}
+		
+		return $tag_cloud;
 	}
 	
 	function formatItem($tag_name, $tag_descr, $tag_type, $tag_help, $tag_freq, $addparam=0)
@@ -703,7 +709,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			
 			// render other records
 			$records = $searcher->getKurseRecords($offset, $this->rows, $orderBy);
-			$this->renderKursRecords($db, $records, $records2 /*recordsToSkip*/, array('q'=>$queryString));
+			$tags_heap = $this->renderKursRecords($db, $records, $records2 /*recordsToSkip*/, array('q'=>$queryString));
 		
 			// main table end
 			echo '</table>' . "\n\n";
@@ -758,6 +764,50 @@ class WISY_SEARCH_RENDERER_CLASS
 				}
 				
 			echo '</p>' . "\n";
+			
+			if($this->framework->iniRead('sw_cloud.suche_anzeige', 0)) {
+			    $filtersw = array_map("trim", explode(",", $this->framework->iniRead('sw_cloud.filtertyp', "32, 2048, 8192")));
+			    
+			    $tag_cloud = '<div id="sw_cloud">Suchbegriffe: ';
+			    $tag_cloud .= '<h4>Suchbegriffe</h4>';
+			    $tag_done = array();
+			    
+			    foreach($tags_heap AS $tags) {
+			        for($i = 0; $i < count($tags); $i++)
+			        {
+			            $tag = $tags[$i];
+			            
+			            if(in_array($tag['id'], $tag_done))
+			                continue;
+			                
+			                if($this->framework->iniRead('sw_cloud.suche_gewichten', 1)) {
+			                    $tag_freq = $this->framework->getTagFreq($db, $tag['stichwort']);
+			                    $weight = (floor($tag_freq/50) > 15) ? 15 : floor($tag_freq/50);
+			                }
+			                
+			                if($tag['eigenschaften'] != $filtersw && $tag_freq > 0); {
+			                    if($this->framework->iniRead('sw_cloud.suche_stichwoerter', 1))
+			                        $tag_cloud .= '<span class="sw_raw typ_'.$tag['eigenschaften'].'" data-weight="'.$weight.'"><a href="/?q='.$tag['stichwort'].'">'.$tag['stichwort'].'</a></span>, ';
+			                        
+			                    if($this->framework->iniRead('sw_cloud.suche_synonyme', 0))
+			                        $tag_cloud .= $this->framework->writeDerivedStichwoerter($this->framework->loadSynonyme($db, $tag['id']), $filtersw, "Synonym", $tag['stichwort']);
+			                            
+			                    if($this->framework->iniRead('sw_cloud.suche_oberbegriffe', 0))
+			                        $tag_cloud .= $this->framework->writeDerivedStichwoerter($this->framework->loadAncestors($db, $tag['id']), $filtersw, "Oberbegriff", $tag['stichwort']);
+			                                
+			                    if($this->framework->iniRead('sw_cloud.suche_unterbegriffe', 0))
+			                        $tag_cloud .= $this->framework->writeDerivedStichwoerter($this->framework->loadDescendants($db, $tag['id']), $filtersw, "Unterbegriff", $tag['stichwort']);
+			                }
+			                
+			                array_push($tag_done, $tag['id']);
+			                
+			        } // end: for
+			    }
+			    
+			    $tag_cloud = trim($tag_cloud, ", ");
+			    $tag_cloud .= '</div>';
+			    echo $tag_cloud;
+			}
 		}
 		else 
 		{

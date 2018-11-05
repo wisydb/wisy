@@ -1102,6 +1102,18 @@ function initResponsive()
 	});
 }
 
+/*****************************************************************************
+ * SEO, alternative means for search
+ *****************************************************************************/
+
+// calculate weighted size (by tag usage within portal)
+$(document).ready(function() {
+ $("#sw_cloud span").each( function(){ 
+  weight = $(this).attr("data-weight"); 
+  fontsize = Math.floor($(this).find("a").css("font-size").replace('px', ''));
+  $(this).find("a").css("font-size", parseInt(fontsize)+parseInt(weight)+'px');
+ });
+});
 
 /*****************************************************************************
  * main entry point

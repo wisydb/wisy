@@ -149,10 +149,10 @@ class WISY_KURS_RENDERER_CLASS
 			$rows = '';
 			
 			// ... Stichwoerter
-			$stichwoerter = $this->framework->loadStichwoerter($db, 'kurse', $kursId);
-			if( sizeof($stichwoerter) )
+			$tags = $this->framework->loadStichwoerter($db, 'kurse', $kursId);
+			if( sizeof($tags) )
 			{
-				$rows .= $this->framework->writeStichwoerter($db, 'kurse', $stichwoerter);
+				$rows .= $this->framework->writeStichwoerter($db, 'kurse', $tags);
 			}
 						
 			// ... Bildungsurlaubsnummer 
@@ -224,7 +224,7 @@ class WISY_KURS_RENDERER_CLASS
 														'', /*addText*/
 														array(
 															'record'=>$record,
-															'stichwoerter'=>$stichwoerter
+															'stichwoerter'=>$tags
 														)
 													);
 							$renderedDurchf++;
@@ -249,10 +249,47 @@ class WISY_KURS_RENDERER_CLASS
 	
 			// vollständigkeit feedback, editieren etc.
 			echo '<p class="wisy_kurse_footer ' .$this->framework->getAllowFeedbackClass(). '">';
+			
+			if($this->framework->iniRead('sw_cloud.kurs_anzeige', 0)) {
+			    $filtersw = array_map("trim", explode(",", $this->framework->iniRead('sw_cloud.filtertyp', "32, 2048, 8192")));
+			    
+			    $tags = $this->framework->loadStichwoerter($db, 'kurse', $kursId);
+			    $tag_cloud = '<div id="sw_cloud">Suchbegriffe: ';
+			    $tag_cloud .= '<h4>Suchbegriffe</h4>';
+			    
+			    for($i = 0; $i < count($tags); $i++)
+			    {
+			        $tag = $tags[$i];
+			        
+			        if($this->framework->iniRead('sw_cloud.kurs_gewichten', 0)) {
+			            $tag_freq = $this->framework->getTagFreq($db, $tag['stichwort']);
+			            $weight = (floor($tag_freq/50) > 15) ? 15 : floor($tag_freq/50);
+			        }
+			        
+			        if($tag['eigenschaften'] != $filtersw && $tag_freq > 0); {
+			            if($this->framework->iniRead('sw_cloud.kurs_stichwoerter', 1))
+			                $tag_cloud .= '<span class="sw_raw typ_'.$tag['eigenschaften'].'" data-weight="'.$weight.'"><a href="/?q='.$tag['stichwort'].'">'.$tag['stichwort'].'</a></span>, ';
+			                
+			            if($this->framework->iniRead('sw_cloud.kurs_synonyme', 0))
+			                $tag_cloud .= $this->framework->writeDerivedStichwoerter($this->framework->loadSynonyme($db, $tag['id']), $filtersw, "Synonym", $tag['stichwort']);
+			                    
+			            if($this->framework->iniRead('sw_cloud.kurs_oberbegriffe', 1))
+			                $tag_cloud .= $this->framework->writeDerivedStichwoerter($this->framework->loadAncestors($db, $tag['id']), $filtersw, "Oberbegriff", $tag['stichwort']);
+			                        
+			            if($this->framework->iniRead('sw_cloud.kurs_unterbegriffe', 0))
+			                $tag_cloud .= $this->framework->writeDerivedStichwoerter($this->framework->loadDescendants($db, $tag['id']), $filtersw, "Unterbegriff", $tag['stichwort']);
+			        }
+			        
+			    } // end: for
+			    
+			    $tag_cloud = trim($tag_cloud, ", ");
+			    $tag_cloud .= '</div>';
+			    echo $tag_cloud;
+			}
 				
 				if( $vollst['msg'] != '' )
 				{
-					echo $vollst['msg'] . ' -  ';
+					// echo $vollst['msg'] . ' -  ';
 				}
 
 				/*

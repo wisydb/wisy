@@ -894,9 +894,66 @@ class WISY_FRAMEWORK_CLASS
 		
 		return $ret;
 	}
+	
+	function loadSynonyme(&$db, $tag_id)
+	{
+	    $ret = array();
+	    $sql = "SELECT DISTINCT id, stichwort, eigenschaften, zusatzinfo FROM stichwoerter, stichwoerter_verweis WHERE stichwoerter_verweis.primary_id = stichwoerter.id and stichwoerter_verweis.attr_id = ".$tag_id;
+	    $db->query($sql);
+	    while( $db->next_record() )
+	    {
+	        $ret[] = $db->Record;
+	    }
+	    
+	    return $ret;
+	}
+	
+	function loadDescendants(&$db, $tag_id)
+	{
+	    $ret = array();
+	    $sql = "SELECT DISTINCT id, stichwort, eigenschaften, zusatzinfo FROM stichwoerter, stichwoerter_verweis2 WHERE stichwoerter_verweis2.attr_id = stichwoerter.id and stichwoerter_verweis2.primary_id = ".$tag_id;
+	    $db->query($sql);
+	    while( $db->next_record() )
+	    {
+	        $ret[] = $db->Record;
+	    }
+	    
+	    return $ret;
+	}
+	
+	function loadAncestors(&$db, $tag_id)
+	{
+	    $ret = array();
+	    $sql = "SELECT DISTINCT id, stichwort, eigenschaften, zusatzinfo FROM stichwoerter, stichwoerter_verweis2 WHERE stichwoerter_verweis2.primary_id = stichwoerter.id and stichwoerter_verweis2.attr_id = ".$tag_id;
+	    $db->query($sql);
+	    while( $db->next_record() )
+	    {
+	        $ret[] = $db->Record;
+	    }
+	    
+	    return $ret;
+	}
+	
+	function writeDerivedStichwoerter($derivedStichwoerter, $filtersw, $typ_name, $originalsw) {
+	    $ret = '';
+	    for($i = 0; $i < count($derivedStichwoerter); $i++)
+	    {
+	        
+	        $derivedStichwort = $derivedStichwoerter[$i];
+	        if(!in_array($derivedStichwort['eigenschaften'], $filtersw))
+	            $ret .= '<span class="typ_'.$derivedStichwort['eigenschaften'].'  orginal_'.$originalsw.' '.strtolower($typ_name).'_raw"><a href="/?q='.utf8_encode($derivedStichwort['stichwort']).'">'.utf8_encode($derivedStichwort['stichwort']).'</a></span>, ';
+	    }
+	    return $ret;
+	}
+	
+	function getTagFreq(&$db, $tag) {
+	    $db->query("SELECT tag_freq FROM x_tags, x_tags_freq WHERE x_tags.tag_name = \"".$tag."\" AND x_tags.tag_id = x_tags_freq.tag_id");
+	    if( $db->next_record() )
+	        return $db->f8('tag_freq');
+	}
 
 	#richtext
-	function writeStichwoerter($db, $table, $stichwoerter, $richtext = false)
+	function writeStichwoerter($db, $table, $tags, $richtext = false)
 	{
 		// Stichwoerter ausgeben
 		// load codes
@@ -917,26 +974,26 @@ class WISY_FRAMEWORK_CLASS
 				
 			$anythingOfThisCode = 0;
 			
-			for( $s = 0; $s < sizeof($stichwoerter); $s++ )
+			for( $s = 0; $s < sizeof($tags); $s++ )
 			{
 				$glossarLink = '';
-				$glossarId = $this->glossarDb($db, 'stichwoerter', $stichwoerter[$s]['id']);
+				$glossarId = $this->glossarDb($db, 'stichwoerter', $tags[$s]['id']);
 				if( $glossarId ) {
 					$glossarLink = ' <a href="' . $this->getHelpUrl($glossarId) . '" class="wisy_help" title="Ratgeber">i</a>';
 				}
 				
-				if( ($stichwoerter[$s]['eigenschaften']==0 && intval($codes_array[$c])==0 && $glossarLink)
-				 || ($stichwoerter[$s]['eigenschaften'] & intval($codes_array[$c])) )
+				if( ($tags[$s]['eigenschaften']==0 && intval($codes_array[$c])==0 && $glossarLink)
+				 || ($tags[$s]['eigenschaften'] & intval($codes_array[$c])) )
 				{
 				    // #richtext
 				    if(stripos($codes_array[$c+1], "Qualit") !== FALSE) {
-				        $award_sw = ($richtext) ? preg_replace("/.Anbietermerkmal./i", "", $stichwoerter[$s]['stichwort']) : $stichwoerter[$s]['stichwort'];
+				        $award_sw = ($richtext) ? preg_replace("/.Anbietermerkmal./i", "", $tags[$s]['stichwort']) : $tags[$s]['stichwort'];
 				        $award1 = ($richtext) ? '<span itemprop="award" content="'.$award_sw.'">' : '';
 				        $award2 = ($richtext) ? '</span>' : '';
 				    }
 				    
 					if( !$anythingOfThisCode ) {
-						$ret .= '<dt class="wisy_stichwtyp'.$stichwoerter[$s]['eigenschaften'].'">' . $codes_array[$c+1] . '</dt><dd>';
+						$ret .= '<dt class="wisy_stichwtyp'.$tags[$s]['eigenschaften'].'">' . $codes_array[$c+1] . '</dt><dd>';
 					}
 					else {
 						$ret .= '<br />';
@@ -946,19 +1003,19 @@ class WISY_FRAMEWORK_CLASS
 					/* 
 					// lt. Liste "WISY-Baustellen" vom 5.9.2007, Punkt 8. in "Kursdetails", sollen hier kein Link angezeigt werden.
 					// Zitat: "Anzeige der Stichworte ohne Link einblenden" (bp)
-					$ret .= '<a title="alle Kurse mit diesem Stichwort anzeigen" href="' .wisy_param('index.php', array('sst'=>"\"{$stichwoerter[$s]['stichwort']}\"", 'skipdefaults'=>1, 'snew'=>2)). '">';
+					$ret .= '<a title="alle Kurse mit diesem Stichwort anzeigen" href="' .wisy_param('index.php', array('sst'=>"\"{$tags[$s]['stichwort']}\"", 'skipdefaults'=>1, 'snew'=>2)). '">';
 					$writeAend = true;
 					*/
 					
 					// #richtext
-					$ret .= $award1.$stichwoerter[$s]['stichwort'].$award2;
+					$ret .= $award1.$tags[$s]['stichwort'].$award2;
 					
 					if( $writeAend ) {
 						$ret .= '</a>';
 					}
 					
-					if( $stichwoerter[$s]['zusatzinfo'] != '' ) {
-						$ret .= ' <span class="ac_tag_type">(' . htmlspecialchars($stichwoerter[$s]['zusatzinfo']) . ')</span>';
+					if( $tags[$s]['zusatzinfo'] != '' ) {
+						$ret .= ' <span class="ac_tag_type">(' . htmlspecialchars($tags[$s]['zusatzinfo']) . ')</span>';
 					}
 
 					$ret .= $glossarLink;

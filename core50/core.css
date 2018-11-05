@@ -707,6 +707,30 @@ Datenschutz
 }
 
 /*******************************************************************************
+SEO
+*******************************************************************************/
+
+#sw_cloud {
+	margin-top: 35px;
+	padding: 5px;
+	background-color: #ddd;
+	border: 1px solid #eee;
+}
+
+#sw_cloud h4 {
+    width: 7.4em;
+    padding: 0.3em;
+    padding-left: 0.3em;
+    margin-top: -1.5em;
+    margin-left: 5px;
+    background-color: #ddd;
+    border-top: 1px solid #eee;
+    padding-left: 0.6em;
+    color: #888;
+    display: none;
+}
+
+/*******************************************************************************
 print 
 *******************************************************************************/
 
