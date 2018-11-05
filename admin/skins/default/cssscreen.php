@@ -545,3 +545,11 @@ code {
  padding: 2px;
  line-height: 20px;
 }
+
+textarea[name=f_beschreibung], textarea[name=f_firmenportraet] {
+	height: 400px;
+}
+
+input[name=f_titel], input[name=f_suchname] {
+	width: 900px;
+}
