@@ -551,5 +551,5 @@ textarea[name=f_beschreibung], textarea[name=f_firmenportraet] {
 }
 
 input[name=f_titel], input[name=f_suchname] {
-	width: 900px;
+	width: 90%;
 }
