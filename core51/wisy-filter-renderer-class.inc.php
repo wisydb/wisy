@@ -136,6 +136,8 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 		$renderformData['fv_foerderung'] = '';
 		$renderformData['fv_zielgruppe'] = '';
 		$renderformData['fv_qualitaetszertifikat'] = '';
+		$renderformData['fv_abschluss'] = '';
+		$renderformData['fv_abschlussart'] = '';
 		$renderformData['fv_unterrichtsart'] = '';
 		$renderformData['fv_tageszeit'] = '';
 		
@@ -202,6 +204,14 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 				case 'qualitaetszertifikat':
 					$renderformData['fv_qualitaetszertifikat'] = $token['value'];
 					break;
+					
+				case 'abschluss':
+				    $renderformData['fv_abschluss'] = $token['value'];
+				    break;
+				    
+				case 'abschlussart':
+				    $renderformData['fv_abschlussart'] = $token['value'];
+				    break;
 					
 				case 'unterrichtsart':
 					$renderformData['fv_unterrichtsart'] = $token['value'];
@@ -475,6 +485,14 @@ class WISY_FILTERMENU_ITEM
             case 'qualitaetszertifikate':
                 return $this->getSpezielleStichw(4, $data['datawhitelist']);
             break;
+            
+            case 'abschluesse':
+                return $this->getSpezielleStichw(1, $data['datawhitelist']);
+                break;
+                
+            case 'abschlussarten':
+                return $this->getSpezielleStichw(16, $data['datawhitelist']);
+                break;
             
             case 'unterrichtsarten':
                 return $this->getSpezielleStichw(32768, $data['datawhitelist']);

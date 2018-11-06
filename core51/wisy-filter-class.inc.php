@@ -202,6 +202,30 @@ class WISY_FILTER_CLASS
 					'options'	=>	$qualitaetszertifikate
 				);
 		}
+		
+		$abschluesse = $this->getSpezielleStichw(1);
+		if( sizeof($abschluesse) > 1 )
+		{
+		    $this->presets['abschluesse'] = array
+		    (
+		        'type'		=> 'taglist',
+		        'descr'		=> 'Abschluss:',
+		        'function'	=> 'abschluesse:',
+		        'options'	=>	$abschluesse
+		    );
+		}
+		
+		$abschlussarten = $this->getSpezielleStichw(16);
+		if( sizeof($abschlussarten) > 1 )
+		{
+		    $this->presets['abschlussarten'] = array
+		    (
+		        'type'		=> 'taglist',
+		        'descr'		=> 'Abschlussart:',
+		        'function'	=> 'abschlussarten:',
+		        'options'	=>	$abschlussarten
+		    );
+		}
 
 		$unterrichtsarten = $this->getSpezielleStichw(32768);
 		if( sizeof($unterrichtsarten) > 1 )
@@ -251,7 +275,7 @@ class WISY_FILTER_CLASS
 		$this->presets['km']['descr'] = 'Umkreis';
 		$this->presets['km']['classes'] = 'wisyr_c1_3';
 		
-		// Weiter Optionen
+		// Weitere Optionen
 		$this->presets['preis']['decoration']['headline_left'] = 'Weitere Optionen';
 		$this->presets['preis']['descr'] = 'Preis';
 		$this->presets['preis']['classes'] = 'wisyr_c1_3';
@@ -262,6 +286,12 @@ class WISY_FILTER_CLASS
 		$this->presets['zielgruppe']['classes'] = 'wisyr_c1_3';
 		$this->presets['qualitaetszertifikat']['descr'] = 'Qualitätszertifikat';
 		$this->presets['qualitaetszertifikat']['classes'] = 'wisyr_c2_3';
+		
+		$this->presets['abschluesse']['descr'] = 'Abschluss';
+		$this->presets['abschluesse']['classes'] = 'wisyr_c3_3';
+		
+		$this->presets['abschlussarten']['descr'] = 'Abschlussart';
+		$this->presets['abschlussarten']['classes'] = 'wisyr_c4_3';
 		
 		$this->presets['unterrichtsart']['descr'] = 'Unterrichtsart';
 		$this->presets['unterrichtsart']['classes'] = 'wisyr_c1_3';
