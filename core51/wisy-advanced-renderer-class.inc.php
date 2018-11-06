@@ -190,6 +190,28 @@ class WISY_ADVANCED_RENDERER_CLASS
 					'options'	=>	$unterrichtsarten
 				);
 		}
+		
+		$abschluesse = $this->getSpezielleStichw(1);
+		if( sizeof($abschluesse) > 1 )
+		{
+		    $this->presets['abschluesse'] = array
+		    (
+		        'type'		=> 'taglist',
+		        'descr'		=> 'Abschlüsse:',
+		        'options'	=>	$abschluesse
+		    );
+		}
+		
+		$abschlussarten = $this->getSpezielleStichw(1);
+		if( sizeof($abschlussarten) > 1 )
+		{
+		    $this->presets['abschlussarten'] = array
+		    (
+		        'type'		=> 'taglist',
+		        'descr'		=> 'Abschlussarten:',
+		        'options'	=>	$abschlussarten
+		    );
+		}
 				
 		if( $this->framework->iniRead('search.adv.fulltext', 1)!=0 )
 		{
