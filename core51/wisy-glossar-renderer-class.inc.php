@@ -97,10 +97,18 @@ class WISY_GLOSSAR_RENDERER_CLASS
 				
 			echo '</section><!-- /.wisyr_glossar_infos -->';
 
+			$gerst = $this->framework->iniRead('glossarinfo.erstellt', 1);
+			$gaend = $this->framework->iniRead('glossarinfo.geaendert', 1);
+			
 			echo '<footer class="wisy_glossar_footer">';
-				echo '<div class="wisyr_glossar_meta">';
-					echo 'Information erstellt am ' . $this->framework->formatDatum($date_created);
-					echo ', zuletzt ge&auml;ndert am ' . $this->framework->formatDatum($date_modified);
+			echo '<div class="wisyr_glossar_meta">';
+        			if($gerst || $gaend) {
+        			    echo 'Information: ';
+        			    if($gerst)
+        			        echo 'erstellt am ' . $this->framework->formatDatum($date_created).', ';
+        			        if($gaend)
+        			            echo 'zuletzt ge&auml;ndert am ' . $this->framework->formatDatum($date_modified);
+        			}
 					$copyrightClass =& createWisyObject('WISY_COPYRIGHT_CLASS', $this->framework);
 					$copyrightClass->renderCopyright($db, 'glossar', $glossar_id);
 				echo '</div><!-- /.wisyr_glossar_meta -->';
