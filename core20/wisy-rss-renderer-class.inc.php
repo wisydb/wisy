@@ -56,10 +56,11 @@ class WISY_RSS_RENDERER_CLASS
 		$all_beginnoptionen = array();
 		$dauer = '';
 		$preis = '';
+		$bemerkungen = '';
 		for( $d = 0; $d < sizeof($durchfuehrungenIds); $d++ )
 		{	
 			$durchfuehrungId = $durchfuehrungenIds[$d];
-			$db->query("SELECT beginn, beginnoptionen, dauer, stunden, preis, sonderpreis, sonderpreistage, ort, stadtteil FROM durchfuehrung WHERE id=$durchfuehrungId");
+			$db->query("SELECT beginn, beginnoptionen, bemerkungen, dauer, stunden, preis, sonderpreis, sonderpreistage, ort, stadtteil FROM durchfuehrung WHERE id=$durchfuehrungId");
 			if( $db->next_record() )
 			{
 				// beginn				
@@ -75,6 +76,10 @@ class WISY_RSS_RENDERER_CLASS
 				if( $dauer == '' )
 					$dauer = $durchfClass->formatDauer($db->f('dauer'), $db->f('stunden'));
 				
+			    // bemerkungen
+				if( $bemerkungen == '' )
+					$bemerkungen = $db->f('bemerkungen');
+					
 				// preis
 				if( $preis == '' )
 					$preis = $durchfClass->formatPreis($db->f('preis'), $db->f('sonderpreis'), $db->f('sonderpreistage'), $db->f('beginn'), '', 0);
@@ -136,6 +141,12 @@ class WISY_RSS_RENDERER_CLASS
 		{
 			$ret .= $ret==''? '' : ' - ';
 			$ret .= "Ort: " . ($ort? $ort : 'k. A.');
+		}
+		
+		if (($wisyPortalSpalten & 128) > 0)
+		{
+		    $ret .= $ret==''? '' : ' - ';
+		    $ret .= "Bemerkungen: " . ($bemerkungen? $bemerkungen : '--');
 		}
 						
 		// done

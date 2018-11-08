@@ -249,6 +249,7 @@ class WISY_KURS_RENDERER_CLASS
 							if (($spalten & 16) > 0)	{ echo '<th>Preis</th>';			}
 							if (($spalten & 32) > 0)	{ echo '<th>Ort</th><th>Bemerkungen</th>';	}
 							if (($spalten & 64) > 0)	{ echo '<th>Ang.-Nr.</th>';			}
+							if (($spalten & 128) > 0)	{ echo '<th>Bemerkungen</th>';			}
 						echo '</tr></thead>';
 					
 						/*

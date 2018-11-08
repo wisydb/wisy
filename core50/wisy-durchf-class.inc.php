@@ -448,9 +448,11 @@ class WISY_DURCHF_CLASS
 				$cell .= '<span class="wisyr_termin_optionen">' . $beginnoptionen . '</span>';
 			}
 			
-			if( $addParam['record']['freigeschaltet'] == 4 )
-			{				
-				$cell .= ' <span class="wisyr_termin_dauerhaft">dauerhaftes Angebot</span>'; 
+			if( $details && $this->framework->iniRead('details.kurstage', 1)==1 ) {
+			    $temp = $this->formatKurstage(intval($record['kurstage']));
+			    if( $temp ) {
+			        $cell .= "<div class=\"wisyr_art_kurstage\">$temp</div>";
+			    }
 			}
 			
 			if( $zeit_von && $zeit_bis ) {				
@@ -470,6 +472,11 @@ class WISY_DURCHF_CLASS
 				$cell .= '<span class="wisyr_termin_ka">k. A.</span>'; 
 			}
 			
+			if( $addParam['record']['freigeschaltet'] == 4 )
+			{
+			    $cell .= ' <span class="wisyr_termin_dauerhaft">dauerhaftes Angebot</span>';
+			}
+			
 			echo $cell . ' </td>' . "\n";
 		}
 		
@@ -483,7 +490,7 @@ class WISY_DURCHF_CLASS
 		
 		if (($wisyPortalSpalten & 8) > 0)
 		{
-			// tagescode / bildungsurlaub / teilnehmende
+			// tagescode / bildungsurlaub
 			echo '    <td class="wisyr_art" data-title="Art">';
 	
 				$cell = '';
@@ -493,19 +500,6 @@ class WISY_DURCHF_CLASS
 				$dfStichw[] = array('id'=>'tc'.$record['tagescode']);
 				
 				$cell .= $this->formatArtSpalte($dfStichw, $details);
-
-				if( $details && $this->framework->iniRead('details.kurstage', 1)==1 ) {			
-					$temp = $this->formatKurstage(intval($record['kurstage']));
-					if( $temp ) {
-						$cell .= "<div class=\"wisyr_art_kurstage\">$temp</div>";
-					}
-				}
-								
-				if( $details ) {
-					if( $record['teilnehmer'] ) {
-						$cell .= '<div class="wisyr_art_teilnehmer">max. ' . intval($record['teilnehmer']) . ' Teiln.</div>'; // "Teilnehmende" ist etwas zu lang für die schmale Spalte (zuvor waren die Teilnehmer unter den Bemerkungen, wo die Breite egal war)
-					}
-				}
 				
 				if( $cell == $this->seeAboveArt && $details ) {
 					echo '<span class="noprint">'.$cell.'</span><span class="printonly">s.o.</span>';
@@ -610,27 +604,30 @@ class WISY_DURCHF_CLASS
 			}
 			
 			echo ' </td>' . "\n";
-			
-			// Bemerkungen
-			if($details)
-			{
-				echo ' <td class="wisyr_bemerkungen" data-title="Bemerkungen">';
-					$wiki2html =& createWisyObject('WISY_WIKI2HTML_CLASS', $this->framework);
-					$bemerkungen = $record['bemerkungen'];
-					$bemerkungen = str_replace(chr(0xE2).chr(0x82).chr(0xAC), "&euro;", str_replace(chr(128), "&euro;", $bemerkungen));
-					echo utf8_encode($wiki2html->run($bemerkungen));
-				echo ' </td>' . "\n";
-			}
 		}
 		
 		if (($wisyPortalSpalten & 64) > 0)
 		{
-	
 			// nr
 			echo '    <td class="wisyr_nr" data-title="Nr">';
 			$nr = $record['nr'];
 			echo $nr? htmlentities(utf8_encode($nr)) : 'k. A.';
 			echo ' </td>' . "\n";
+		}
+		
+		if (($wisyPortalSpalten & 128) > 0)
+		{
+		    // maxTN, Bemerkungen
+		    if($details)
+		    {
+		        echo ' <td class="wisyr_bemerkungen" data-title="Bemerkungen">';
+		        if( $record['teilnehmer'] ) echo '<p class="wisyr_art_teilnehmer">max. ' . intval($record['teilnehmer']) . ' Teilnehmer</p>';
+		        $wiki2html =& createWisyObject('WISY_WIKI2HTML_CLASS', $this->framework);
+		        $bemerkungen = $record['bemerkungen'];
+		        $bemerkungen = str_replace(chr(0xE2).chr(0x82).chr(0xAC), "&euro;", str_replace(chr(128), "&euro;", $bemerkungen));
+		        echo utf8_encode($wiki2html->run($bemerkungen));
+		        echo ' </td>' . "\n";
+		    }
 		}
 	}
 };

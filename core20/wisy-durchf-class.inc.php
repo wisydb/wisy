@@ -590,7 +590,7 @@ class WISY_DURCHF_CLASS
 		
 		if (($wisyPortalSpalten & 8) > 0)
 		{
-			// tagescode / bildungsurlaub / teilnehmende
+			// tagescode / bildungsurlaub
 			$tagescodeAttr = $details? '' : ' '.html3('align="center"').' class="type"';
 			echo "    <td$tagescodeAttr>";
 	
@@ -601,13 +601,6 @@ class WISY_DURCHF_CLASS
 				$dfStichw[] = array('id'=>'tc'.$record['tagescode']);
 				
 				$cell .= $this->formatArtSpalte($dfStichw, $details);
-								
-				if( $details ) {
-					if( $record['teilnehmer'] ) {
-						$cell .= $cell? '<br />' : '';
-						$cell .= '<small>max. ' . intval($record['teilnehmer']) . ' Teiln.</small>'; // "Teilnehmende" ist etwas zu lang für die schmale Spalte (zuvor waren die Teilnehmer unter den Bemerkungen, wo die Breite egal war)
-					}
-				}
 				
 				if( $cell == $this->seeAboveArt && $details ) {
 					echo '<span class="noprint">'.$cell.'</span><small class="printonly">s.o.</small>';
@@ -641,8 +634,7 @@ class WISY_DURCHF_CLASS
 		
 		if (($wisyPortalSpalten & 32) > 0)
 		{
-			// ort / bemerkungen
-			$has_bemerkungen = trim($record['bemerkungen'])? true : false;
+			// ort 
 			echo "    <td>";
 			
 			// get ort
@@ -694,11 +686,6 @@ class WISY_DURCHF_CLASS
 					$cell .= $cell? '<br />' : '';
 					$cell .= '<i>' . isohtmlentities($land) . '</i>';
 				}
-
-				if( $has_bemerkungen ) {
-					$wiki2html =& createWisyObject('WISY_WIKI2HTML_CLASS', $this->framework);
-					$cell .= '<div style="font-size: 11px;">' . $wiki2html->run($record['bemerkungen']) . '</div>';
-				}
 				
 				if( strip_tags($cell) == $this->seeAboveOrt && $details ) {
 					echo '<div class="noprint">'.$cell.'</div><small class="printonly">s.o.</small>';
@@ -728,6 +715,28 @@ class WISY_DURCHF_CLASS
 			$nr = $record['nr'];
 			echo $nr? isohtmlentities($nr) : 'k. A.';
 			echo '</td>' . "\n";
+		}
+		
+		if (($wisyPortalSpalten & 128) > 0)
+		{
+		    
+		    // maxTN, bemerkungen
+		    echo " <td>";
+		    
+		    if( $details ) {
+		        if( $record['teilnehmer'] ) {
+		            echo '<small>max. ' . intval($record['teilnehmer']) . ' Teiln.</small>'; // "Teilnehmende" ist etwas zu lang für die schmale Spalte (zuvor waren die Teilnehmer unter den Bemerkungen, wo die Breite egal war)
+		        }
+		    }
+		    
+		    $has_bemerkungen = trim($record['bemerkungen'])? true : false;
+		    
+		    if( $has_bemerkungen ) {
+		        $wiki2html =& createWisyObject('WISY_WIKI2HTML_CLASS', $this->framework);
+		        echo '<div style="font-size: 11px;">' . $wiki2html->run($record['bemerkungen']) . '</div>';
+		    }
+		    
+		    echo '</td>' . "\n";
 		}
 	}
 };
