@@ -75,8 +75,8 @@ class WISY_FRAMEWORK_CLASS
 		'thema',
 		'foerderung',
 		'qualitaetszertifikat',
-	    'abschluss',
-	    'abschlussart',
+	    'abschluesse',
+	    'abschlussarten',
 		'unterrichtsart',
 		'tageszeit');
 
