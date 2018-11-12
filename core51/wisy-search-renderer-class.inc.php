@@ -570,7 +570,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		}
 	}
 	
-	function renderKursliste(&$searcher, $queryString, $offset)
+	function renderKursliste(&$searcher, $queryString, $offset, $urlbase='/search/')
 	{
 		global $wisyPortalSpalten;
 	
@@ -590,14 +590,14 @@ class WISY_SEARCH_RENDERER_CLASS
 			$db = new DB_Admin();
 			
 			// create get prev / next URLs
-			$prevurl = $offset==0? '' : $this->framework->getUrl('search', array('q'=>$queryString, 'offset'=>$offset-$this->rows));
-			$nexturl = ($offset+$this->rows<$sqlCount)? $this->framework->getUrl('search', array('q'=>$queryString, 'offset'=>$offset+$this->rows)) : '';
+			$prevurl = $offset==0? '' : $this->framework->getUrl($urlbase, array('q'=>$queryString, 'offset'=>$offset-$this->rows));
+			$nexturl = ($offset+$this->rows<$sqlCount)? $this->framework->getUrl($urlbase, array('q'=>$queryString, 'offset'=>$offset+$this->rows)) : '';
 			if( $prevurl || $nexturl )
 			{	
 				$param = array('q'=>$queryString);
 				if( $orderBy != 'b' ) $param['order'] = $orderBy;
 				$param['offset'] = '';
-				$pagesel = $this->pageSel($this->framework->getUrl('search', $param), $this->rows, $offset, $sqlCount);
+				$pagesel = $this->pageSel($this->framework->getUrl($urlbase, $param), $this->rows, $offset, $sqlCount);
 			}
 			else
 			{
@@ -606,7 +606,7 @@ class WISY_SEARCH_RENDERER_CLASS
 
 			// render head
 			echo '<div class="wisyr_list_header">';
-				echo '<div class="wisyr_listnav"><span class="active">Kurse</span><a href="search?q=' . urlencode($queryString) . '%2C+Zeige:Anbieter">Anbieter</a></div>';
+				echo '<div class="wisyr_listnav"><span class="active">Kurse</span><a href="' . $urlbase . '?q=' . urlencode($queryString) . '%2C+Zeige:Anbieter">Anbieter</a></div>';
 				echo '<div class="wisyr_filternav';
 				if($this->framework->simplified && $this->framework->filterer->getActiveFiltersCount() > 0) echo ' wisyr_filters_active';
 				echo '">';
@@ -632,7 +632,7 @@ class WISY_SEARCH_RENDERER_CLASS
 				}
 				
 				// Show filter / advanced search
-                $DEFAULT_FILTERLINK_HTML= '<a href="filter?q=__Q_URLENCODE__" id="wisy_filterlink">Suche anpassen</a>';
+                $DEFAULT_FILTERLINK_HTML= '<a href="/filter?q=__Q_URLENCODE__" id="wisy_filterlink">Suche anpassen</a>';
                 echo $this->framework->replacePlaceholders($this->framework->iniRead('searcharea.filterlink', $DEFAULT_FILTERLINK_HTML));
 				
 				$filterRenderer =& createWisyObject('WISY_FILTER_RENDERER_CLASS', $this->framework);
