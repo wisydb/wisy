@@ -612,7 +612,7 @@ class WISY_FRAMEWORK_CLASS
 	function getUrl($page, $param = 0)
 	{
 		// create any url; addparam is an array of additional parameters 
-		// parameters are encoded using urlencode, however, the whole URL is _not_ HTML-save, you need to call htmlentities() to convert & to &amp;
+		// parameters are encoded using urlencode, however, the whole URL is _not_ HTML-safe, you need to call htmlentities() to convert & to &amp;
 		
 		// if $param is no array, create an empty one
 		if( !is_array($param) )
@@ -644,7 +644,7 @@ class WISY_FRAMEWORK_CLASS
 			$i++;
 		}
 		
-		return $ret;
+		return '/' . $ret;
 	}
 
 	function getHelpUrl($id)
@@ -2006,7 +2006,9 @@ class WISY_FRAMEWORK_CLASS
 				return createWisyObject('WISY_BILLING_RENDERER_CLASS', $this);
 				
 			case 'orte':
-				return createWisyObject('WISY_LANDINGPAGE_RENDERER_CLASS', $this);
+			case 'themen':
+			case 'abschluesse':
+				return createWisyObject('WISY_LANDINGPAGE_RENDERER_CLASS', $this, array('type'=>$wisyRequestedFile));
 			
 			// deprecated URLs
 			case 'kurse.php':
@@ -2060,7 +2062,6 @@ class WISY_FRAMEWORK_CLASS
 	}
 	
 };
-
 
 
 
