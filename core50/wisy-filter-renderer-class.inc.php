@@ -64,6 +64,7 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 		$presets_curr = array();
 
 		$q = $this->framework->getParam('q');
+		$q = utf8_encode($q);
 		$searcher =& createWisyObject('WISY_SEARCH_CLASS', $this->framework);
 		$tokens = $searcher->tokenize($q);
 		for( $i = 0; $i < sizeof($tokens['cond']); $i++ )
