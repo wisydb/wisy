@@ -20,7 +20,7 @@ Read Records:
 		{ "field1": "value1", "field2": "value2", ... }
 
 Modify Records:
-	POST|UPDATE|DELETE /api/v1/?scope=<table>[.<id>[.<secondaryId]]
+	POST|PUT|DELETE /api/v1/?scope=<table>[.<id>[.<secondaryId]]
 	JSON return on success:
 		{ "id": 123 }
 
@@ -36,7 +36,7 @@ Errors:
 Additional Parameters:
 	&apikey=<apikey>
 	&client=<clientname and -version>
-	&method=GET|POST|DELETE|UPDATE (alternatively, you can set the HTTP request method directly)
+	&method=GET|POST|PUT|DELETE (alternatively, you can set the HTTP request method directly)
 ===============================================================================
 Mit (***) markierte Felder sind an das Portal gebunden!
 D.h. wenn sich die Implementation von core20 aendert, muss auch hier Hand angelegt werden!
@@ -391,7 +391,13 @@ class REST_API_CLASS
 		
 		// get scope
 		$scope = explode('.', $_REQUEST['scope'], 3);
-		if($_GET['scope'] == '' && strlen($_SERVER['HTTP_SCOPE']) > 2) $scope = explode('.', $_SERVER['HTTP_SCOPE'], 3); // altern. via request headers
+		
+		if($_GET['scope'] == '' && $method == 'PUT') {
+		    parse_str(file_get_contents("php://input"), $put_vars); // für PUT-Variablen, die nicht als URL-Parameter übergeben werden
+		    $scope = explode('.', $put_vars['scope'], 3); 
+		} elseif($_GET['scope'] == '' && strlen($_SERVER['HTTP_SCOPE']) > 2) {
+		    $scope = explode('.', $_SERVER['HTTP_SCOPE'], 3); // altern. via request headers
+		}
 
 		// see what to do
 		if( $method == 'GET' )
@@ -439,17 +445,17 @@ class REST_API_CLASS
 				$this->halt(400, "bad scope for $method");
 			}
 		}
-		else if( $method == 'UPDATE' )
+		else if( $method == 'PUT' || $method == 'UPDATE' ) // UPDATE eigentl. ungueltig, nur f. legacy support
 		{
 			if( $scope[0] == 'kurse' && sizeof($scope)==3 )
-			{														// UPDATE kurse.<kursId>.<durchfId> -- durchf aktualisieren
+			{	// PUT kurse.<kursId>.<durchfId> -- durchf aktualisieren
 				$this->haltOnBadRecord('kurse', $scope[1], true);
 				echo $this->update('durchfuehrung', $scope[2]);		
 			}
 			else if( $scope[0] == 'kurse' && sizeof($scope)==2 )
 			{
 				$this->haltOnBadRecord('kurse', $scope[1], true);
-				echo $this->update('kurse', $scope[1]);				// UPDATE kurse.<kursId>
+				echo $this->update('kurse', $scope[1]);				// PUT kurse.<kursId>
 			}
 			else
 			{
@@ -651,7 +657,7 @@ class REST_API_CLASS
 	}
 
 	/* ========================================================================
-	POST/UPDATE records
+	POST/PUT (Update) records
 	======================================================================== */
 	
 	function post($table, &$insert_id)
