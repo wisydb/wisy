@@ -1086,6 +1086,18 @@ CREATE TABLE IF NOT EXISTS `x_cache_rss` (
 -- --------------------------------------------------------
 
 --
+-- Tabellenstruktur für Tabelle `x_cache_tagcloud`
+--
+
+CREATE TABLE `x_cache_tagcloud` (
+  `ckey` varchar(255) CHARACTER SET latin1 COLLATE latin1_general_ci NOT NULL,
+  `cvalue` longtext CHARACTER SET latin1 COLLATE latin1_general_ci NOT NULL,
+  `cdateinserted` datetime NOT NULL
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
 -- Tabellenstruktur für Tabelle `x_cache_search`
 --
 

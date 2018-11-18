@@ -883,26 +883,13 @@ class WISY_FRAMEWORK_CLASS
 
 	function loadStichwoerter(&$db, $table, $id)
 	{
-		// Stichwoerter laden
-		$ret = array();
-
-		require_once('admin/config/codes.inc.php'); // fuer hidden_stichwort_eigenschaften
-		global $hidden_stichwort_eigenschaften;
-		
-		$sql = "SELECT id, stichwort, eigenschaften, zusatzinfo FROM stichwoerter LEFT JOIN {$table}_stichwort ON id=attr_id WHERE primary_id=$id AND (eigenschaften & $hidden_stichwort_eigenschaften)=0 ORDER BY structure_pos;";
-		$db->query($sql);
-		while( $db->next_record() )
-		{
-			$ret[] = $db->Record;
-		}
-		
-		return $ret;
-	}
-	
-	function loadSynonyme(&$db, $tag_id)
-	{
+	    // Stichwoerter laden
 	    $ret = array();
-	    $sql = "SELECT DISTINCT id, stichwort, eigenschaften, zusatzinfo FROM stichwoerter, stichwoerter_verweis WHERE stichwoerter_verweis.primary_id = stichwoerter.id and stichwoerter_verweis.attr_id = ".$tag_id;
+	    
+	    require_once('admin/config/codes.inc.php'); // fuer hidden_stichwort_eigenschaften
+	    global $hidden_stichwort_eigenschaften;
+	    
+	    $sql = "SELECT id, stichwort, eigenschaften, zusatzinfo FROM stichwoerter LEFT JOIN {$table}_stichwort ON id=attr_id WHERE primary_id=$id AND (eigenschaften & $hidden_stichwort_eigenschaften)=0 ORDER BY structure_pos;";
 	    $db->query($sql);
 	    while( $db->next_record() )
 	    {
@@ -912,33 +899,32 @@ class WISY_FRAMEWORK_CLASS
 	    return $ret;
 	}
 	
-	function loadDescendants(&$db, $tag_id)
+	function loadDerivedTags(&$db, $tags_id, &$distinct_tags, $type)
 	{
 	    $ret = array();
-	    $sql = "SELECT DISTINCT id, stichwort, eigenschaften, zusatzinfo FROM stichwoerter, stichwoerter_verweis2 WHERE stichwoerter_verweis2.attr_id = stichwoerter.id and stichwoerter_verweis2.primary_id = ".$tag_id;
+	    
+	    if(strtolower($type) == "synonyme")
+	       $sql = "SELECT DISTINCT id, stichwort, eigenschaften, zusatzinfo FROM stichwoerter, stichwoerter_verweis WHERE stichwoerter_verweis.primary_id = stichwoerter.id and stichwoerter_verweis.attr_id = ".$tags_id;
+	    elseif(strtolower($type) == "unterbegriffe")
+	       $sql = "SELECT DISTINCT id, stichwort, eigenschaften, zusatzinfo FROM stichwoerter, stichwoerter_verweis2 WHERE stichwoerter_verweis2.attr_id = stichwoerter.id and stichwoerter_verweis2.primary_id = ".$tags_id;
+	    elseif(strtolower($type) == "oberbegriffe")
+	       $sql = "SELECT DISTINCT id, stichwort, eigenschaften, zusatzinfo FROM stichwoerter, stichwoerter_verweis2 WHERE stichwoerter_verweis2.primary_id = stichwoerter.id and stichwoerter_verweis2.attr_id = ".$tags_id;
+	    else
+	       return false;
+	            
 	    $db->query($sql);
 	    while( $db->next_record() )
 	    {
-	        $ret[] = $db->Record;
+	       if(!in_array($db->Record['stichwort'], $distinct_tags)) {
+	           $ret[] = $db->Record;
+	           array_push($distinct_tags,$db->Record['stichwort']);
+            }
 	    }
-	    
+	            
 	    return $ret;
 	}
 	
-	function loadAncestors(&$db, $tag_id)
-	{
-	    $ret = array();
-	    $sql = "SELECT DISTINCT id, stichwort, eigenschaften, zusatzinfo FROM stichwoerter, stichwoerter_verweis2 WHERE stichwoerter_verweis2.primary_id = stichwoerter.id and stichwoerter_verweis2.attr_id = ".$tag_id;
-	    $db->query($sql);
-	    while( $db->next_record() )
-	    {
-	        $ret[] = $db->Record;
-	    }
-	    
-	    return $ret;
-	}
-	
-	function writeDerivedStichwoerter($derivedStichwoerter, $filtersw, $typ_name, $originalsw) {
+	function writeDerivedTags($derivedStichwoerter, $filtersw, $typ_name, $originalsw) {
 	    $ret = '';
 	    for($i = 0; $i < count($derivedStichwoerter); $i++)
 	    {

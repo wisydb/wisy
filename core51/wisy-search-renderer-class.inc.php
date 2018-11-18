@@ -741,20 +741,20 @@ class WISY_SEARCH_RENDERER_CLASS
 			echo '</table>' . "\n\n";
 			
 			/* // #richtext
-			 if($richtext) {
-			 // sort($durchfClass->preise);
-			 // echo '<meta itemprop="lowprice" content="'.$this->framework->preisUS($durchfClass->preise[0]).'">';
-			 // 	echo '<meta itemprop="highprice" content="'.$this->framework->preisUS($durchfClass->preise[sizeof($durchfClass->preise)-1]).'">';
-			 
-			 echo '<meta itemprop="priceCurrency" content="EUR">';
-			 // 	echo '<meta itemprop="offerCount" content="'.sizeof($durchfClass->preise).'">';
-			 echo '<meta itemprop="url" content="http://'.$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI'].'">';
-			 echo '<meta itemprop="eligibleRegion" content="DE-RP">';
-			 echo '<span itemprop="eligibleCustomerType" itemscope itemtype="https://schema.org/BusinessEntityType">';
-			 echo '<meta itemprop="additionalType" content="http://purl.org/goodrelations/v1#Enduser">';
-			 echo '</span>';
-			 echo '</div>'; // Ende AggregateOffer
-			 } */
+				if($richtext) {
+					// sort($durchfClass->preise);
+					// echo '<meta itemprop="lowprice" content="'.$this->framework->preisUS($durchfClass->preise[0]).'">';
+				// 	echo '<meta itemprop="highprice" content="'.$this->framework->preisUS($durchfClass->preise[sizeof($durchfClass->preise)-1]).'">';
+					
+					echo '<meta itemprop="priceCurrency" content="EUR">';
+				// 	echo '<meta itemprop="offerCount" content="'.sizeof($durchfClass->preise).'">';
+					echo '<meta itemprop="url" content="http://'.$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI'].'">';
+					echo '<meta itemprop="eligibleRegion" content="DE-RP">';
+					echo '<span itemprop="eligibleCustomerType" itemscope itemtype="https://schema.org/BusinessEntityType">';
+					echo '<meta itemprop="additionalType" content="http://purl.org/goodrelations/v1#Enduser">';
+					echo '</span>';
+					echo '</div>'; // Ende AggregateOffer
+				} */
 			
 			flush();
 			
@@ -764,50 +764,6 @@ class WISY_SEARCH_RENDERER_CLASS
 					echo '<div class="wisyr_rss_link_wrapper">' . $this->framework->getRSSLink() . '</div>';
 					$this->renderPagination($prevurl, $nexturl, $pagesel, $this->rows, $offset, $sqlCount, 'wisyr_paginate_bottom');
 				echo '</div>';
-			}
-			
-			if($this->framework->iniRead('sw_cloud.suche_anzeige', 0)) {
-			    $filtersw = array_map("trim", explode(",", $this->framework->iniRead('sw_cloud.filtertyp', "32, 2048, 8192")));
-			    
-			    $tag_cloud = '<div id="sw_cloud">Suchbegriffe: ';
-			    $tag_cloud .= '<h4>Suchbegriffe</h4>';
-			    $tag_done = array();
-			    
-			    foreach($tags_heap AS $tags) {
-			        for($i = 0; $i < count($tags); $i++)
-			        {
-			            $tag = $tags[$i];
-			            
-			            if(in_array($tag['id'], $tag_done))
-			                continue;
-			                
-			                if($this->framework->iniRead('sw_cloud.suche_gewichten', 1)) {
-			                    $tag_freq = $this->framework->getTagFreq($db, $tag['stichwort']);
-			                    $weight = (floor($tag_freq/50) > 15) ? 15 : floor($tag_freq/50);
-			                }
-			                
-			                if($tag['eigenschaften'] != $filtersw && $tag_freq > 0); {
-			                    if($this->framework->iniRead('sw_cloud.suche_stichwoerter', 1))
-			                        $tag_cloud .= '<span class="sw_raw typ_'.$tag['eigenschaften'].'" data-weight="'.$weight.'"><a href="/?q='.utf8_encode($tag['stichwort']).'">'.utf8_encode($tag['stichwort']).'</a></span>, ';
-			                        
-			                    if($this->framework->iniRead('sw_cloud.suche_synonyme', 0))
-			                        $tag_cloud .= $this->framework->writeDerivedStichwoerter($this->framework->loadSynonyme($db, $tag['id']), $filtersw, "Synonym", $tag['stichwort']);
-			                            
-			                    if($this->framework->iniRead('sw_cloud.suche_oberbegriffe', 0))
-			                        $tag_cloud .= $this->framework->writeDerivedStichwoerter($this->framework->loadAncestors($db, $tag['id']), $filtersw, "Oberbegriff", $tag['stichwort']);
-			                                
-			                    if($this->framework->iniRead('sw_cloud.suche_unterbegriffe', 0))
-			                        $tag_cloud .= $this->framework->writeDerivedStichwoerter($this->framework->loadDescendants($db, $tag['id']), $filtersw, "Unterbegriff", $tag['stichwort']);
-			                }
-			                
-			                array_push($tag_done, $tag['id']);
-			                
-			        } // end: for
-			    }
-			    
-			    $tag_cloud = trim($tag_cloud, ", ");
-			    $tag_cloud .= '</div>';
-			    echo $tag_cloud;
 			}
 		}
 		else 
@@ -822,7 +778,68 @@ class WISY_SEARCH_RENDERER_CLASS
 				echo '<div class="wisyr_rss_link_wrapper">' . $this->framework->getRSSLink() . '</div>';
 			echo '</div>';
 		}
-
+			
+		if($this->framework->iniRead('sw_cloud.suche_anzeige', 0)) {
+				global $wisyPortalId;
+				
+				$cacheKey = "sw_cloud_p".$wisyPortalId."_s".$queryString;
+				$this->dbCache		=& createWisyObject('WISY_CACHE_CLASS', $this->framework, array('table'=>'x_cache_tagcloud', 'itemLifetimeSeconds'=>60*60*24));
+				
+				
+					if( ($temp=$this->dbCache->lookup($cacheKey))!='' )
+					{
+							$tag_cloud = $temp." <!-- tag cloud from cache -->";
+					}
+					else
+					{
+							$filtersw = array_map("trim", explode(",", $this->framework->iniRead('sw_cloud.filtertyp', "32, 2048, 8192")));
+							$distinct_tags = array();
+							$tag_cloud = '<div id="sw_cloud">Suchbegriffe: ';
+							$tag_cloud .= '<h4>Suchbegriffe</h4>';
+							$tag_done = array();
+							
+							foreach($tags_heap AS $tags) {
+								for($i = 0; $i < count($tags); $i++)
+								{
+									$tag = $tags[$i];
+									
+									if(in_array($tag['id'], $tag_done))
+										continue;
+									
+									$weight = 0;
+									
+									if($this->framework->iniRead('sw_cloud.suche_gewichten', 1)) {
+										$tag_freq = $this->framework->getTagFreq($db, $tag['stichwort']);
+										$weight = (floor($tag_freq/50) > 15) ? 15 : floor($tag_freq/50);
+									}
+									
+									if($tag['eigenschaften'] != $filtersw && $tag_freq > 0); {
+										if($this->framework->iniRead('sw_cloud.suche_stichwoerter', 1))
+											$tag_cloud .= '<span class="sw_raw typ_'.$tag['eigenschaften'].'" data-weight="'.$weight.'"><a href="/?q='.utf8_encode($tag['stichwort']).'">'.utf8_encode($tag['stichwort']).'</a></span>, ';
+										
+										if($this->framework->iniRead('sw_cloud.suche_synonyme', 0))	
+											$tag_cloud .= $this->framework->writeDerivedTags($this->framework->loadDerivedTags($db, $tag['id'], $distinct_tags, "Synonyme"), $filtersw, "Synonym", $tag['stichwort']);
+										
+										if($this->framework->iniRead('sw_cloud.suche_oberbegriffe', 0))
+											$tag_cloud .= $this->framework->writeDerivedTags($this->framework->loadDerivedTags($db, $tag['id'], $distinct_tags, "Oberbegriffe"), $filtersw, "Oberbegriff", $tag['stichwort']);
+										
+										if($this->framework->iniRead('sw_cloud.suche_unterbegriffe', 0))	
+											$tag_cloud .= $this->framework->writeDerivedTags($this->framework->loadDerivedTags($db, $tag['id'], $distinct_tags, "Unterbegriffe"), $filtersw, "Unterbegriff", $tag['stichwort']);
+									}
+										
+										array_push($tag_done, $tag['id']);
+									
+									} // end: for
+							}
+									
+								$tag_cloud = trim($tag_cloud, ", ");
+								$tag_cloud .= '</div>';
+								
+								$this->dbCache->insert($cacheKey, utf8_decode($tag_cloud));
+					}
+					echo $tag_cloud;
+	    } // end: tag cloud
+			
 		if( !$nexturl && $_SERVER['HTTPS']!='on' && !$this->framework->editSessionStarted ) {
 
 			echo '	<div id="iwwb"><!-- BANNER IWWB START -->
