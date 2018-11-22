@@ -76,7 +76,7 @@ class WISY_ROBOTS_RENDERER_CLASS
 		header("Content-type: text/plain");
 		headerDoCache();
 		
-		if( strpos($_SERVER['HTTP_HOST'], 'sandbox')!==false || strpos($_SERVER['HTTP_HOST'], 'backup')!==false )
+		if( strpos($_SERVER['HTTP_HOST'], 'sandbox')!==false || strpos($_SERVER['HTTP_HOST'], 'backup')!==false || $this->framework->iniRead('seo.portal_blockieren', false) )
 		{
 			echo "User-agent: *\n";
 			echo "Disallow: /\n";
@@ -118,6 +118,12 @@ class WISY_ROBOTS_RENDERER_CLASS
 		// sitemap start
 		$sitemap =  "<" . "?xml version=\"1.0\" encoding=\"UTF-8\" ?" . ">\n";
 		$sitemap .= "<urlset xmlns=\"https:/" . "/www.sitemaps.org/schemas/sitemap/0.9\">\n";
+		
+		if( $this->framework->iniRead('seo.portal_blockieren', false) ) {
+		    $sitemap .= "</urlset>\n";
+		    return;
+		}
+		
 		$this->urlsAdded = 0;
 		
 		// grenzen fuer sitemaps:

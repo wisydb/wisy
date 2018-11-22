@@ -55,7 +55,7 @@ class WISY_ROBOTS_RENDERER_CLASS
 
 	function renderHoneypot()
 	{
-		// "/terrapin" ist unser "Honeypot" für Bots, die sich nicht an die Regeln halten; 
+		// "/terrapin" ist unser "Honeypot" fuer Bots, die sich nicht an die Regeln halten; 
 		// derzeit nehmen wir keine Sanktionen vor, einfach nur mal beobachten ...
 		// (log wurde schon in render() geschrieben)
 
@@ -77,7 +77,7 @@ class WISY_ROBOTS_RENDERER_CLASS
 		headerDoCache();
 		
 		if( $_SERVER['HTTPS']=='on' 
-		 || strpos($_SERVER['HTTP_HOST'], 'sandbox')!==false || strpos($_SERVER['HTTP_HOST'], 'backup')!==false )
+		    || strpos($_SERVER['HTTP_HOST'], 'sandbox')!==false || strpos($_SERVER['HTTP_HOST'], 'backup')!==false || $this->framework->iniRead('seo.portal_blockieren', false) )
 		{
 			echo "User-agent: *\n";
 			echo "Disallow: /\n";
@@ -120,12 +120,18 @@ class WISY_ROBOTS_RENDERER_CLASS
 		// sitemap start
 		$sitemap =  "<" . "?xml version=\"1.0\" encoding=\"UTF-8\" ?" . ">\n";
 		$sitemap .= "<urlset xmlns=\"http:/" . "/www.sitemaps.org/schemas/sitemap/0.9\">\n";
+		
+		if( $this->framework->iniRead('seo.portal_blockieren', false) ) {
+		    $sitemap .= "</urlset>\n";
+		    return;
+		}
+		
 		$this->urlsAdded = 0;
 		
 		// grenzen fuer sitemaps:
-		// - max. 10 MB für die unkomprimierte Sitemap
+		// - max. 10 MB fuer die unkomprimierte Sitemap
 		// - max. 50000 URLs pro Sitemap		
-		// wir setzen unsere grenzen etwas weiter unten an, damit der Server nicht zu arg belastet wird, für die meisten portale sollten 20000 _aktuelle_ Urls aber absolut ausreichen
+		// wir setzen unsere grenzen etwas weiter unten an, damit der Server nicht zu arg belastet wird, fuer die meisten portale sollten 20000 _aktuelle_ Urls aber absolut ausreichen
 		$maxUrls = 25000;
 
 		// dump homepage
