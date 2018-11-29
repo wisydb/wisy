@@ -2008,6 +2008,8 @@ class WISY_FRAMEWORK_CLASS
 			case 'orte':
 			case 'themen':
 			case 'abschluesse':
+			case 'sitemap-landingpages.xml':
+			case 'sitemap-landingpages.xml.gz':
 				return createWisyObject('WISY_LANDINGPAGE_RENDERER_CLASS', $this, array('type'=>$wisyRequestedFile));
 			
 			// deprecated URLs
