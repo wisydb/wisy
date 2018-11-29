@@ -1,6 +1,6 @@
 <?php if( !defined('IN_WISY') ) die('!IN_WISY');
 
-class WISY_LANDINGPAGE_RENDERER_CLASS 
+class WISY_LANDINGPAGE_RENDERER_CLASS
 {
 	var $framework;
 	var $type;
@@ -12,6 +12,10 @@ class WISY_LANDINGPAGE_RENDERER_CLASS
 		$this->framework =& $framework;
 		$this->type = $param['type'];
 		$this->db = new DB_Admin;
+		
+		$this->domain = $_SERVER['HTTP_HOST'];
+		$protocol = $this->framework->iniRead('portal.https', '') ? "https" : "http";
+		$this->absPath = $protocol.':/' . '/' . $this->domain . '/';
 	}
 	
 	/*
@@ -29,9 +33,14 @@ class WISY_LANDINGPAGE_RENDERER_CLASS
 			case 'abschluesse':
 				$this->renderLandingpageAbschluesse();
 				break;
+			case 'sitemap-landingpages.xml':
+				$this->renderLandingpageSitemap();
+				break;
+			case 'sitemap-landingpages.xml.gz':
+				$this->renderLandingpageSitemapGz();
+				break;
 		}
-		echo $this->framework->replacePlaceholders( $this->framework->iniRead('spalten.below', '') );
-		echo $this->framework->getEpilogue();
+		
 	}
 	
 	/* Orte ---------------------------- */
@@ -90,6 +99,8 @@ class WISY_LANDINGPAGE_RENDERER_CLASS
 			$this->renderOrtsliste($sql);
 			echo '</div><!-- /#wisy_resultarea -->';
 		}
+		echo $this->framework->replacePlaceholders( $this->framework->iniRead('spalten.below', '') );
+		echo $this->framework->getEpilogue();
 	}
 	
 	/*
@@ -224,7 +235,7 @@ class WISY_LANDINGPAGE_RENDERER_CLASS
 		if($urlparts) {
 			$thema_und_ortsname = trim(utf8_decode(urldecode($urlparts[1])));
 			$stadtteilname = trim(urldecode($urlparts[2]));
-			
+
 			$thema = '';
 			$ortsname = '';
 			if($thema_und_ortsname != '') {
@@ -236,7 +247,7 @@ class WISY_LANDINGPAGE_RENDERER_CLASS
 			}
 			
 			if($thema != '') {
-				$this->db->query("SELECT stichwort FROM stichwoerter WHERE stichwort LIKE ".$this->db->quote($thema). " LIMIT 1");
+				$this->db->query("SELECT stichwort FROM stichwoerter WHERE stichwort_sorted LIKE ".$this->db->quote($thema). " LIMIT 1");
 				
 				$thema = '';
 				while( $this->db->next_record() ) {
@@ -288,6 +299,8 @@ class WISY_LANDINGPAGE_RENDERER_CLASS
 			
 			echo '</div><!-- /#wisy_resultarea -->';
 		}
+		echo $this->framework->replacePlaceholders( $this->framework->iniRead('spalten.below', '') );
+		echo $this->framework->getEpilogue();
 	}
 	
 	/*
@@ -303,9 +316,11 @@ class WISY_LANDINGPAGE_RENDERER_CLASS
 		$themaort = '';
 		while( $this->db->next_record() ) {
 			// Für Orte mit Stadtteil zusätzlich einen Eintrag ohne Stadtteil ausgeben
-			if(trim($this->db->f8('stadtteil')) != '' && $this->db->f8('stichwort_sorted') . $this->db->f8('ort') != $themaort) {
+			if($this->db->f8('stichwort_sorted') . $this->db->f8('ort') != $themaort) {
 				$themaort = $this->db->f8('stichwort_sorted') . $this->db->f8('ort');
-				$this->renderThema($this->db->f8('stichwort'), $this->db->f8('stichwort_sorted'), $this->db->f8('ort'));
+				if(trim($this->db->f8('stadtteil')) != '') {
+					$this->renderThema($this->db->f8('stichwort'), $this->db->f8('stichwort_sorted'), $this->db->f8('ort'));
+				}
 			}
 			$this->renderThema($this->db->f8('stichwort'), $this->db->f8('stichwort_sorted'), $this->db->f8('ort'), $this->db->f8('stadtteil'));
 		}
@@ -410,6 +425,8 @@ class WISY_LANDINGPAGE_RENDERER_CLASS
 			$this->renderAbschlussliste($sql);
 			echo '</div><!-- /#wisy_resultarea -->';
 		}
+		echo $this->framework->replacePlaceholders( $this->framework->iniRead('spalten.below', '') );
+		echo $this->framework->getEpilogue();
 	}
 	
 	/*
@@ -488,6 +505,119 @@ class WISY_LANDINGPAGE_RENDERER_CLASS
 		$select .= " GROUP BY stichwort";
 		
 		return $select;
+	}
+	
+	/* Sitemap ---------------------- */
+	
+	function addUrl($url, $lastmod, $changefreq)
+	{
+		$this->urlsAdded ++;
+		return "<url><loc>{$this->absPath}$url</loc><lastmod>" .strftime("%Y-%m-%d", $lastmod). "</lastmod><changefreq>$changefreq</changefreq></url>\n";
+	}
+
+	function createSitemapXml(&$sitemap /*by reference to save some MB*/)
+	{
+		// sitemap start
+		$sitemap =  "<" . "?xml version=\"1.0\" encoding=\"UTF-8\" ?" . ">\n";
+		$sitemap .= "<urlset xmlns=\"https:/" . "/www.sitemaps.org/schemas/sitemap/0.9\">\n";
+		$this->urlsAdded = 0;
+		$maxUrls = 25000;
+		
+		// Orte
+		$sitemap .= '<!-- Orte -->';
+		$sitemap .= $this->addUrl('orte/', time(), 'daily');
+		$this->db->query($this->getOrtslisteSql());
+		while( $this->db->next_record() ) {
+			if($this->urlsAdded >= $maxUrls) {
+				$sitemap .= "<!-- stop adding URLs, max of $maxUrls reached -->\n";
+				break;
+			}
+			
+			$url = 'orte/' . urlencode($this->db->f8('ort')) . '/';
+			$stadtteil = $this->db->f8('stadtteil');
+			if(trim($stadtteil) != '') $url .= urlencode($stadtteil) . '/';
+			
+			$sitemap .= $this->addUrl($url, time(), 'weekly');
+		}
+		$this->db->free();
+		
+		// Abschluesse
+		$sitemap .= '<!-- Abschluesse -->';
+		$sitemap .= $this->addUrl('abschluesse/', time(), 'daily');
+		$this->db->query($this->getAbschlusslisteSql());
+		while( $this->db->next_record() ) {
+			if($this->urlsAdded >= $maxUrls) {
+				$sitemap .= "<!-- stop adding URLs, max of $maxUrls reached -->\n";
+				break;
+			}
+			
+			$url = 'abschluesse/' . urlencode($this->db->f8('stichwort_sorted')) . '/';
+			$sitemap .= $this->addUrl($url, time(), 'weekly');
+		}
+		$this->db->free();
+		
+		// Themen
+		if(trim($this->framework->iniRead('seo.themen.stichworte')) != '')
+		{
+			$stichworte = $this->quotedArrayFromList(trim($this->framework->iniRead('seo.themen.stichworte')));
+			if(count($stichworte)) {
+			
+				$sitemap .= '<!-- Themen -->';
+				$sitemap .= $this->addUrl('themen/', time(), 'daily');
+				$this->db->query($this->getOrtslisteSql($stichworte));
+				$themaort = '';
+				while( $this->db->next_record() ) {
+					if($this->urlsAdded >= $maxUrls) {
+						$sitemap .= "<!-- stop adding URLs, max of $maxUrls reached -->\n";
+						break;
+					}
+					$stichwort_sorted = $this->db->f8('stichwort_sorted');
+					$ort = $this->db->f8('ort');
+					$stadtteil = $this->db->f8('stadtteil');
+					// Für Orte mit Stadtteil zusätzlich einen Eintrag ohne Stadtteil ausgeben
+					if($stichwort_sorted . $ort != $themaort) {
+						$themaort = $stichwort_sorted . $ort;
+						if(trim($stadtteil) != '') {
+							$url = 'themen/' . urlencode($stichwort_sorted) . '-in-' . urlencode($ort) . '/';
+							$sitemap .= $this->addUrl($url, time(), 'weekly');
+						}
+					}
+					$url = 'themen/' . urlencode($stichwort_sorted) . '-in-' . urlencode($ort) . '/';
+					if(trim($stadtteil) != '') $url .= urlencode($stadtteil) . '/';
+					$sitemap .= $this->addUrl($url, time(), 'weekly');
+				}
+				$this->db->free();
+			}
+		}
+
+		// sitemap end
+		$sitemap .= "<!-- $this->urlsAdded URLs added -->\n";
+		$sitemap .= "<!-- timestamp: ".strftime("%Y-%m-%d %H:%M:%S")." -->\n";
+		$sitemap .= "</urlset>\n";
+	}
+	
+	function renderLandingpageSitemap()
+	{
+		header('Content-Type: text/xml');
+		headerDoCache();
+
+		$sitemap = '';
+		$this->createSitemapXml($sitemap);
+
+		echo $sitemap;
+	}
+	
+	function renderLandingpageSitemapGz()
+	{
+	    header('content-type: application/x-gzip');
+	    header('Content-disposition: attachment; filename="sitemap-landingpage.xml.gz"');
+		headerDoCache();
+		
+		$this->createSitemapXml($temp);
+		$sitemap_gz = gzencode($temp, 9);
+		$temp = ''; // free *lots* of data
+
+		echo $sitemap_gz;
 	}
 	
 	/* Hilfsfunktionen ---------------------- */
