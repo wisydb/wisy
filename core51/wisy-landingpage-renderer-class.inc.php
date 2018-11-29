@@ -524,7 +524,7 @@ class WISY_LANDINGPAGE_RENDERER_CLASS
 		$maxUrls = 25000;
 		
 		// Orte
-		$sitemap .= '<!-- Orte -->';
+		$sitemap .= "<!-- Orte -->\n";
 		$sitemap .= $this->addUrl('orte/', time(), 'daily');
 		$this->db->query($this->getOrtslisteSql());
 		while( $this->db->next_record() ) {
@@ -542,7 +542,7 @@ class WISY_LANDINGPAGE_RENDERER_CLASS
 		$this->db->free();
 		
 		// Abschluesse
-		$sitemap .= '<!-- Abschluesse -->';
+		$sitemap .= "<!-- Abschluesse -->\n";
 		$sitemap .= $this->addUrl('abschluesse/', time(), 'daily');
 		$this->db->query($this->getAbschlusslisteSql());
 		while( $this->db->next_record() ) {
@@ -562,7 +562,7 @@ class WISY_LANDINGPAGE_RENDERER_CLASS
 			$stichworte = $this->quotedArrayFromList(trim($this->framework->iniRead('seo.themen.stichworte')));
 			if(count($stichworte)) {
 			
-				$sitemap .= '<!-- Themen -->';
+				$sitemap .= "<!-- Themen -->\n";
 				$sitemap .= $this->addUrl('themen/', time(), 'daily');
 				$this->db->query($this->getOrtslisteSql($stichworte));
 				$themaort = '';
