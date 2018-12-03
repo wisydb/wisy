@@ -184,7 +184,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		
 		// Telefonnummer
 		if( $anspr_tel )
-			$vc['Telefon'] .= "\n" . '<div class="wisyr_anbieter_telefon"><a itemprop="telephone" href="tel:' . $anspr_tel . '">'. $anspr_tel . '</a></div>';
+			$vc['Telefon'] .= "\n" . '<div class="wisyr_anbieter_telefon"><a itemprop="telephone" href="tel:' . urlencode($anspr_tel) . '">'. $anspr_tel . '</a></div>';
 
 		if( $anspr_fax )
 			$vc['Fax'] .= "\n" . '<div class="wisyr_anbieter_fax"><span itemprop="faxNumber">'. $anspr_fax . '</span></div>';
