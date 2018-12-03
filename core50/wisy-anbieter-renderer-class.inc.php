@@ -358,7 +358,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 												, array('hidetagtypestr'=>1, 'qprefix'=>"$tag_suchname, "));
 		if( $html )
 		{
-			echo '<h3>Abschl&uuml;sse - aktuelle Angebote</h2>';
+			echo '<h3>Abschl&uuml;sse - aktuelle Angebote</h3>';
 			echo '<p>';
 				echo $html;
 			echo '<p>';
