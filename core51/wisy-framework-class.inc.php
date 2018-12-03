@@ -931,7 +931,7 @@ class WISY_FRAMEWORK_CLASS
 	        
 	        $derivedStichwort = $derivedStichwoerter[$i];
 	        if(!in_array($derivedStichwort['eigenschaften'], $filtersw))
-	            $ret .= '<span class="typ_'.$derivedStichwort['eigenschaften'].'  orginal_'.$originalsw.' '.strtolower($typ_name).'_raw"><a href="/?q='.utf8_encode($derivedStichwort['stichwort']).'">'.utf8_encode($derivedStichwort['stichwort']).'</a></span>, ';
+	            $ret .= '<span class="typ_'.$derivedStichwort['eigenschaften'].'  orginal_'.$originalsw.' '.strtolower($typ_name).'_raw"><a href="/?q='.urlencode(utf8_encode($derivedStichwort['stichwort'])).'">'.utf8_encode($derivedStichwort['stichwort']).'</a></span>, ';
 	    }
 	    return $ret;
 	}

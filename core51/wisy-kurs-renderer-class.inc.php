@@ -329,7 +329,7 @@ class WISY_KURS_RENDERER_CLASS
 			            
 			            if($tag['eigenschaften'] != $filtersw && $tag_freq > 0); {
 			                if($this->framework->iniRead('sw_cloud.kurs_stichwoerter', 1))
-			                    $tag_cloud .= '<span class="sw_raw typ_'.$tag['eigenschaften'].'" data-weight="'.$weight.'"><a href="/?q='.$tag['stichwort'].'">'.$tag['stichwort'].'</a></span>, ';
+			                    $tag_cloud .= '<span class="sw_raw typ_'.$tag['eigenschaften'].'" data-weight="'.$weight.'"><a href="/?q='.urlencode($tag['stichwort']).'">'.$tag['stichwort'].'</a></span>, ';
 			                    
 			                if($this->framework->iniRead('sw_cloud.kurs_synonyme', 0))
 			                    $tag_cloud .= $this->framework->writeDerivedTags($this->framework->loadDerivedTags($db, $tag['id'], $distinct_tags, "Synonyme"), $filtersw, "Synonym", $tag['stichwort']);
