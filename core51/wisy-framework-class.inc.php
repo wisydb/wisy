@@ -1876,7 +1876,7 @@ class WISY_FRAMEWORK_CLASS
 			echo '<div class="inner">' . "\n";
 				echo '<form action="search" method="get" '.$searchAction.'>' . "\n" . $target; // #richtext
 					echo '<div class="formrow wisyr_searchinput">';
-						echo '<label for="q">' . $this->iniRead('searcharea.placeholder', $DEFAULT_PLACEHOLDER) . '</label>';
+						echo '<label for="wisy_searchinput">' . $this->iniRead('searcharea.placeholder', $DEFAULT_PLACEHOLDER) . '</label>';
 						if($this->simplified)
 						{
 							echo '<input type="text" id="wisy_searchinput" class="' . $autocomplete_class . '" name="qs" value="' .$this->QS. '" placeholder="' . $searchinput_placeholder . '" />' . "\n";
