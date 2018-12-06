@@ -116,6 +116,12 @@ class WISY_ROBOTS_RENDERER_CLASS
 
 	function addUrl($url, $lastmod, $changefreq)
 	{
+	    $block_specificlink = array_map("trim", explode(",", $this->framework->iniRead('seo.links_blockieren', "")));
+	    foreach($block_specificlink AS $link) { // $link may be link fragment
+	        if(strlen($link) > 1 && strpos($this->absPath.$url, $link) !== false)
+	            return "";
+	    }
+	    
 		$this->urlsAdded ++;
 		return "<url><loc>{$this->absPath}$url</loc><lastmod>" .strftime("%Y-%m-%d", $lastmod). "</lastmod><changefreq>$changefreq</changefreq></url>\n";
 	}
