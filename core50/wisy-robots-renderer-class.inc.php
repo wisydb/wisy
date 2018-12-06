@@ -83,6 +83,8 @@ class WISY_ROBOTS_RENDERER_CLASS
 		}
 		else
 		{
+		    $block_specificlink = array_map("trim", explode(",", $this->framework->iniRead('seo.links_blockieren', "")));
+		    
 			// set the sitemap, 
 			// dies steht in keinem zusammenhang mit User-agent, 
 			// siehe https://www.sitemaps.org/protocol.php#submit_robots 
@@ -99,6 +101,11 @@ class WISY_ROBOTS_RENDERER_CLASS
 			echo "Disallow: /edit\n";
 			echo "Disallow: /rss\n";
 			echo "Disallow: /terrapin\n";
+			echo "Disallow: /g151\n";
+			foreach($block_specificlink AS $link) {
+			    if(strlen($link) >= 1)
+			        echo "Disallow: ".$link."\n";
+			}
 		}
 	}
 
