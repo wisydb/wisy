@@ -1005,7 +1005,7 @@ class WISY_FRAMEWORK_CLASS
 					}
 					
 					if( $tags[$s]['zusatzinfo'] != '' ) {
-						$ret .= ' <span class="ac_tag_type">(' . htmlspecialchars($tags[$s]['zusatzinfo']) . ')</span>';
+						$ret .= ' <span class="ac_tag_type">(' . $tags[$s]['zusatzinfo'] . ')</span>';
 					}
 
 					$ret .= $glossarLink;
