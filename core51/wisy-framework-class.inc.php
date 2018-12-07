@@ -1930,6 +1930,10 @@ class WISY_FRAMEWORK_CLASS
 				echo '</form>' . "\n";
 			echo "\n</div><!-- /.inner -->";
 		echo "\n</div><!-- /#wisy_searcharea -->\n\n";
+		
+		if($richtext) {
+		    echo "</div> <!-- / itemscope itemtype Website -->\n\n";
+		}
 	
 		echo $this->replacePlaceholders( $this->iniRead('searcharea.below', '') ); // deprecated!
 	}
