@@ -646,6 +646,21 @@ div.wisy_glskeytime { /*this class is temporary; when removing it, add the borde
 	color: #e4e4e4;
 }
 
+table.wisy_glskey .heading_tagtree,
+table.wisy_glskey .tag_cell {
+ width: 90%;
+}
+
+table.wisy_glskey .heading_infos,
+table.wisy_glskey .info_cell {
+ width: 10%;
+}
+
+table.wisy_glskey .info_cell {
+  white-space: nowrap;
+  text-align: center;
+}
+
 /*******************************************************************************
  accessibility
  ******************************************************************************/
