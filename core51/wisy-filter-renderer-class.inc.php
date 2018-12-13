@@ -48,10 +48,15 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 		echo '<input type="hidden" name="qf" value="' . $this->framework->QF . '" />';
         
         // Workaround for "Volltext", TODO: optimize
+		// Workaround for "Zeige", TODO: optimize
         if(is_array($this->framework->tokensQF)) {
             foreach($this->framework->tokensQF as $t) {
                 if($t['field'] == 'volltext') {
                     echo '<input type="hidden" name="filter_volltext" value="' . $t['value'] . '" />';
+                    break;
+                }
+                if($t['field'] == 'zeige') {
+                    echo '<input type="hidden" name="filter_zeige" value="' . $t['value'] . '" />';
                     break;
                 }
             }
