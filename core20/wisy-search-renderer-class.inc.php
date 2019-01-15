@@ -218,7 +218,7 @@ class WISY_SEARCH_RENDERER_CLASS
 					// d = sqrt( (x1-x2)^2 + (y1-y2)^2 )
 					$dx = $x1 - $x2; if( $dx < 0 ) $dx *= -1;
 					$dy = $y1 - $y2; if( $dy < 0 ) $dy *= -1;
-					$d = sqrt( $dx*$dx + $dy*dy ); // $d ist nun die Entfernung in Metern ;-)
+					$d = sqrt( $dx*$dx + $dy*$dy ); // $d ist nun die Entfernung in Metern ;-)
 					
 					// remember the smallest distance
 					if( !isset($distances[ $kurs_id ]) || $distances[ $kurs_id ] > $d )
