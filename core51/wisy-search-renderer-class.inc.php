@@ -170,7 +170,7 @@ class WISY_SEARCH_RENDERER_CLASS
 				{
 					// $anspr_tel = str_replace(' ', '', $anspr_tel); // macht Aerger, da in den Telefonnummern teilw. Erklaerungen/Preise mitstehen. Auskommentiert am 5.9.2008 (bp)
 					$anspr_tel = str_replace('/', ' / ', $anspr_tel);
-					echo ',<span class="wisyr_anbieter_telefon"> ' . htmlspecialchars(utf8_encode($anspr_tel)) . '</span>';
+					echo '<span class="wisyr_comma">,</span><span class="wisyr_anbieter_telefon"> ' . htmlspecialchars(utf8_encode($anspr_tel)) . '</span>';
 				}
 				
 				if( !$param['clickableName'] )  echo '<span class="wisyr_anbieter_profil"> - <a href="'.$this->framework->getUrl('a', $aparam).'">Anbieterprofil...</a></span>';
@@ -570,7 +570,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		}
 	}
 	
-	function renderKursliste(&$searcher, $queryString, $offset)
+	function renderKursliste(&$searcher, $queryString, $offset, $showFilters=true, $baseurl='/search/')
 	{
 		global $wisyPortalSpalten;
 	
@@ -590,14 +590,14 @@ class WISY_SEARCH_RENDERER_CLASS
 			$db = new DB_Admin();
 			
 			// create get prev / next URLs
-			$prevurl = $offset==0? '' : $this->framework->getUrl('search', array('q'=>$queryString, 'offset'=>$offset-$this->rows));
-			$nexturl = ($offset+$this->rows<$sqlCount)? $this->framework->getUrl('search', array('q'=>$queryString, 'offset'=>$offset+$this->rows)) : '';
+			$prevurl = $offset==0? '' : $this->framework->getUrl($baseurl, array('q'=>$queryString, 'offset'=>$offset-$this->rows));
+			$nexturl = ($offset+$this->rows<$sqlCount)? $this->framework->getUrl($baseurl, array('q'=>$queryString, 'offset'=>$offset+$this->rows)) : '';
 			if( $prevurl || $nexturl )
 			{	
 				$param = array('q'=>$queryString);
 				if( $orderBy != 'b' ) $param['order'] = $orderBy;
 				$param['offset'] = '';
-				$pagesel = $this->pageSel($this->framework->getUrl('search', $param), $this->rows, $offset, $sqlCount);
+				$pagesel = $this->pageSel($this->framework->getUrl($baseurl, $param), $this->rows, $offset, $sqlCount);
 			}
 			else
 			{
@@ -606,7 +606,7 @@ class WISY_SEARCH_RENDERER_CLASS
 
 			// render head
 			echo '<div class="wisyr_list_header">';
-				echo '<div class="wisyr_listnav"><span class="active">Kurse</span><a href="search?q=' . urlencode($queryString) . '%2C+Zeige:Anbieter">Anbieter</a></div>';
+				echo '<div class="wisyr_listnav"><span class="active">Kurse</span><a href="' . $baseurl . '?q=' . urlencode($queryString) . '%2C+Zeige:Anbieter">Anbieter</a></div>';
 				echo '<div class="wisyr_filternav';
 				if($this->framework->simplified && $this->framework->filterer->getActiveFiltersCount() > 0) echo ' wisyr_filters_active';
 				echo '">';
@@ -632,12 +632,14 @@ class WISY_SEARCH_RENDERER_CLASS
 				}
 				
 				// Show filter / advanced search
-                $DEFAULT_FILTERLINK_HTML= '<a href="filter?q=__Q_URLENCODE__" id="wisy_filterlink">Suche anpassen</a>';
-                echo $this->framework->replacePlaceholders($this->framework->iniRead('searcharea.filterlink', $DEFAULT_FILTERLINK_HTML));
+				if( $showFilters )
+				{
+					$DEFAULT_FILTERLINK_HTML= '<a href="/filter?q=__Q_URLENCODE__" id="wisy_filterlink">Suche anpassen</a>';
+					echo $this->framework->replacePlaceholders($this->framework->iniRead('searcharea.filterlink', $DEFAULT_FILTERLINK_HTML));
 				
-				$filterRenderer =& createWisyObject('WISY_FILTER_RENDERER_CLASS', $this->framework);
-                $filterRenderer->renderForm($queryString, $searcher->getKurseRecords(0, 0, $orderBy));
-                
+					$filterRenderer =& createWisyObject('WISY_FILTER_RENDERER_CLASS', $this->framework);
+					$filterRenderer->renderForm($queryString, $searcher->getKurseRecords(0, 0, $orderBy));
+				}
 
 				if( $pagesel )
 				{

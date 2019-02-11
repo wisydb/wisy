@@ -6,11 +6,13 @@ class WISY_GLOSSAR_RENDERER_CLASS
 {
 	var $framework;
 	var $unsecureOnly = false;
+	var $db;
 
 	function __construct(&$framework)
 	{
 		// constructor
 		$this->framework =& $framework;
+		$this->db = new DB_Admin;
 	}
 
 	function getWikipediaUrl($artikel)
@@ -30,36 +32,48 @@ class WISY_GLOSSAR_RENDERER_CLASS
 	{
 		$glossar_id = intval($_GET['id']);
 	
-		$db = new DB_Admin;
-
-		$db->query("SELECT begriff, erklaerung, wikipedia, date_created, date_modified FROM glossar WHERE status=1 AND id=".$glossar_id);
-		if( !$db->next_record() )
-			$this->framework->error404();
-
-		$begriff 		= $db->f8('begriff');
-		$erklaerung     	= $db->f8('erklaerung');
-		$wikipedia 		= $db->f8('wikipedia');
-		$date_created	= $db->f8('date_created');
-		$date_modified	= $db->f8('date_modified');
+		$glossar = $this->getGlossareintrag($glossar_id);
 
 		// Wenn es keine Erklärung, aber eine Wikipedia-Seite gibt -> Weiterleitung auf die entspr. Wikipedia-Seite
-		if( $erklaerung == '' && $wikipedia != '' )
+		if( $glossar['erklaerung'] == '' && $glossar['wikipedia'] != '' )
 		{
-			header('Location: ' . $this->getWikipediaUrl($wikipedia));
+			header('Location: ' . $this->getWikipediaUrl($glossar['wikipedia']));
 			exit();
 		}
 
 		// prologue
 		headerDoCache();
 		echo $this->framework->getPrologue(array(
-		    'title'		=>	$begriff,
-		    'beschreibung' => $erklaerung,	// #socialmedia, #richtext
+		    'title'		=>	$glossar['begriff'],
+		    'beschreibung' => $glossar['erklaerung'],	// #socialmedia, #richtext
 		    'canonical'	=>	$this->framework->getUrl('g', array('id'=>$glossar_id)),
 		    'bodyClass'	=>	'wisyp_glossar',
 		));
 		
 		echo $this->framework->getSearchField();
+		
+		$this->renderGlossareintrag($glossar_id, $glossar);
+		
+		echo $this->framework->getEpilogue();
+	}
+	
+	function getGlossareintrag($glossar_id) {
+		$this->db->query("SELECT begriff, erklaerung, wikipedia, date_created, date_modified FROM glossar WHERE status=1 AND id=".$glossar_id);
+		if( !$this->db->next_record() )
+			$this->framework->error404();
 
+		$glossareintrag = array('begriff' => $this->db->f8('begriff'),
+					 'erklaerung' => $this->db->f8('erklaerung'),
+				 	 'wikipedia' => $this->db->f8('wikipedia'),
+				 	 'date_created' => $this->db->f8('date_created'),
+				 	 'date_modified' => $this->db->f8('date_modified'));
+					 
+		$this->db->free();
+		return $glossareintrag;
+	}
+	
+	function renderGlossareintrag($glossar_id, $glossar)
+	{
 		$classes  = $this->framework->getAllowFeedbackClass();
 		$classes .= ($classes? ' ' : '') . 'wisy_glossar';
 		echo '<div id="wisy_resultarea" class="' .$classes. '">';
@@ -70,26 +84,26 @@ class WISY_GLOSSAR_RENDERER_CLASS
 				echo '<a class="wisyr_zurueck" href="javascript:history.back();">&laquo; Zur&uuml;ck</a>';
 				echo $this->framework->getLinkList('help.link', ' &middot; ');
 			echo '</p>';
-			echo '<h1 class="wisyr_glossartitel">' . htmlspecialchars($this->framework->encode_windows_chars($begriff)) . '</h1>';
+			echo '<h1 class="wisyr_glossartitel">' . htmlspecialchars($this->framework->encode_windows_chars($glossar['begriff'])) . '</h1>';
 			flush();
 	
 			// render entry
 			echo '<section class="wisyr_glossar_infos clearfix">';
 			
-				if( $erklaerung != '' )
+				if( $glossar['erklaerung'] != '' )
 				{
 					$wiki2html =& createWisyObject('WISY_WIKI2HTML_CLASS', $this->framework, array('selfGlossarId'=>$glossar_id));
-					echo $wiki2html->run($this->framework->encode_windows_chars($erklaerung));
+					echo $wiki2html->run($this->framework->encode_windows_chars($glossar['erklaerung']));
 				}
 			
 				// render wikipedia link
 	
-				if( $wikipedia != '' )
+				if( $glossar['wikipedia'] != '' )
 				{
-					$isB2b = (substr($wikipedia, 0, 4) == 'b2b:')? true : false;
+					$isB2b = (substr($glossar['wikipedia'], 0, 4) == 'b2b:')? true : false;
 				
 					echo '<p>';
-						echo 'Weitere Informationen zu diesem Thema finden Sie <a href="'.htmlspecialchars($this->getWikipediaUrl($wikipedia)).'" target="_blank">';
+						echo 'Weitere Informationen zu diesem Thema finden Sie <a href="'.htmlspecialchars($this->getWikipediaUrl($glossar['wikipedia'])).'" target="_blank">';
 							echo ' ' . ($isB2b? 'im Weiterbildungs-WIKI' : 'in der Wikipedia');
 						echo '</a>';
 					echo '</p>';
@@ -99,16 +113,14 @@ class WISY_GLOSSAR_RENDERER_CLASS
 
 			echo '<footer class="wisy_glossar_footer">';
 				echo '<div class="wisyr_glossar_meta">';
-					echo 'Information erstellt am ' . $this->framework->formatDatum($date_created);
-					echo ', zuletzt ge&auml;ndert am ' . $this->framework->formatDatum($date_modified);
+					echo 'Information erstellt am ' . $this->framework->formatDatum($glossar['date_created']);
+					echo ', zuletzt ge&auml;ndert am ' . $this->framework->formatDatum($glossar['date_modified']);
 					$copyrightClass =& createWisyObject('WISY_COPYRIGHT_CLASS', $this->framework);
-					$copyrightClass->renderCopyright($db, 'glossar', $glossar_id);
+					$copyrightClass->renderCopyright($this->db, 'glossar', $glossar_id);
 				echo '</div><!-- /.wisyr_glossar_meta -->';
 			echo '</footer><!-- /.wisy_glossar_footer -->';
 
 
 		echo "\n</div><!-- /#wisy_resultarea -->";
-		
-		echo $this->framework->getEpilogue();
 	}
 };

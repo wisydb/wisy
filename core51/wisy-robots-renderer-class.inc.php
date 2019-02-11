@@ -88,11 +88,16 @@ class WISY_ROBOTS_RENDERER_CLASS
 			// siehe https://www.sitemaps.org/protocol.php#submit_robots 
 			echo "Sitemap: {$this->absPath}sitemap.xml.gz\n";
 			
+			// set landingpages sitemap
+			echo "Sitemap: {$this->absPath}sitemap-landingpages.xml.gz\n";
+			
 			// allow the adsense spider to crawl everything
+			echo "\n";
 			echo "User-agent: Mediapartners-Google*\n";
 			echo "Disallow: /terrapin\n";
 			
 			// for all other spiders
+			echo "\n";
 			echo "User-agent: *\n";
 			echo "Disallow: /advanced\n";
 			echo "Disallow: /filter\n";

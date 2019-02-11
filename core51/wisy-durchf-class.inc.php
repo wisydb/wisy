@@ -215,15 +215,16 @@ class WISY_DURCHF_CLASS
 		if( $dauer != '' && $stunden != '' ) {
 			$ret = str_replace('%1', $dauer, $mask2);
 			$ret = str_replace('%2', $stunden, $ret);
+			$ret = '<span class="wisyr_comma">, </span>' . $ret;
 		}
 		else if( $dauer != '' ) {
-			$ret = $dauer;
+			$ret ='<span class="wisyr_comma">, </span>' .  $dauer;
 		}
 		else if( $stunden != '' ) {
-			$ret = $stunden;
+			$ret = '<span class="wisyr_comma">, </span>' . $stunden;
 		}
 		else {
-			$ret = 'k. A.';
+			$ret = '';
 		}
 		return utf8_encode($ret); // UTF-8 encode because the source file (admin/config/codes.inc.php) is still ISO-encoded
 	}

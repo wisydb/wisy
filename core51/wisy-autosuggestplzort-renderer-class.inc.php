@@ -26,7 +26,7 @@ class WISY_AUTOSUGGESTPLZORT_RENDERER_CLASS
 		$plzorte = array();
 		$orte = array();
 		$startsWithNumber = $this->startsWithNumber(trim($querystring));
-		$db->query("SELECT plz, ort FROM plztool2 WHERE plz LIKE ".$db->quote($querystring.'%')." OR ort LIKE ".$db->quote($querystring.'%'));
+		$db->query("SELECT plz, ort FROM plz_ortscron WHERE plz LIKE ".$db->quote($querystring.'%')." OR ort LIKE ".$db->quote($querystring.'%'));
 		while( $db->next_record() ) {
 			$plz = $db->f8('plz');
 			$ort = $db->f8('ort');

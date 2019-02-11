@@ -24,6 +24,7 @@ function g_sync_removeSpecialChars($str)
 class WISY_FRAMEWORK_CLASS
 {
 	var $includeVersion;
+	var $coreRelPath = '/core51_dev';
 	
 	var $editCookieName;
 	var $editSessionStarted;
@@ -611,7 +612,7 @@ class WISY_FRAMEWORK_CLASS
 	function getUrl($page, $param = 0)
 	{
 		// create any url; addparam is an array of additional parameters 
-		// parameters are encoded using urlencode, however, the whole URL is _not_ HTML-save, you need to call htmlentities() to convert & to &amp;
+		// parameters are encoded using urlencode, however, the whole URL is _not_ HTML-safe, you need to call htmlentities() to convert & to &amp;
 		
 		// if $param is no array, create an empty one
 		if( !is_array($param) )
@@ -643,7 +644,7 @@ class WISY_FRAMEWORK_CLASS
 			$i++;
 		}
 		
-		return $ret;
+		return '/' . $ret;
 	}
 
 	function getHelpUrl($id)
@@ -1284,21 +1285,21 @@ class WISY_FRAMEWORK_CLASS
 		$ret = array();
 
 		// core styles
-		$ret[] = 'core.css' . $this->includeVersion;
+		$ret[] = '/core.css' . $this->includeVersion;
 		
 		// core responsive styles
-		$ret[] = 'core.responsive.css' . $this->includeVersion;
-		$ret[] = 'core51/lib/jquery/jquery-ui-1.12.1.custom.min.css' . $this->includeVersion;
-		$ret[] = 'core51/lib/zebra-datepicker/zebra_datepicker.min.css' . $this->includeVersion;
+		$ret[] = '/core.responsive.css' . $this->includeVersion;
+		$ret[] = $this->coreRelPath . '/lib/jquery/jquery-ui-1.12.1.custom.min.css' . $this->includeVersion;
+		$ret[] = $this->coreRelPath . '/lib/zebra-datepicker/zebra_datepicker.min.css' . $this->includeVersion;
 		
 		if($this->iniRead('cookiebanner', '') == 1) {
-			$ret[] = 'core51/lib/cookieconsent/cookieconsent.min.css';
+			$ret[] = $this->coreRelPath . '/lib/cookieconsent/cookieconsent.min.css';
 		}
 		
 		// the portal may overwrite everything ...
 		if( $wisyPortalCSS )
 		{
-			$ret[] = 'portal.css'. $this->includeVersion;
+			$ret[] = '/portal.css'. $this->includeVersion;
 		}
 		
 		if( ($tempCSS=$this->iniRead('head.css', '')) != '')
@@ -1332,21 +1333,21 @@ class WISY_FRAMEWORK_CLASS
 		// return all JavaScript files as an array
 		$ret = array();
 		
-		$ret[] = 'core51/lib/jquery/jquery-1.12.4.min.js';
-		$ret[] = 'core51/lib/jquery/jquery-ui-1.12.1.custom.min.js';
-		$ret[] = 'core51/lib/zebra-datepicker/zebra_datepicker.min.js';
+		$ret[] = $this->coreRelPath . '/lib/jquery/jquery-1.12.4.min.js';
+		$ret[] = $this->coreRelPath . '/lib/jquery/jquery-ui-1.12.1.custom.min.js';
+		$ret[] = $this->coreRelPath . '/lib/zebra-datepicker/zebra_datepicker.min.js';
 		
 		if($this->simplified)
 		{
-			$ret[] = 'jquery.wisy.simplified.js' . $this->includeVersion;
+			$ret[] = '/jquery.wisy.simplified.js' . $this->includeVersion;
 		}
 		else
 		{
-			$ret[] = 'jquery.wisy.js' . $this->includeVersion;
+			$ret[] = '/jquery.wisy.js' . $this->includeVersion;
 		}
 		
 		if($this->iniRead('cookiebanner', '') == 1) {
-			$ret[] = 'core51/lib/cookieconsent/cookieconsent.min.js';
+			$ret[] = $this->coreRelPath . '/lib/cookieconsent/cookieconsent.min.js';
 		}
 		
 		if( ($tempJS=$this->iniRead('head.js', '')) != '')
@@ -1775,7 +1776,7 @@ class WISY_FRAMEWORK_CLASS
 		
 		echo "\n" . '<div id="wisy_searcharea">' . "\n";
 			echo '<div class="inner">' . "\n";
-				echo '<form action="search" method="get">' . "\n";
+				echo '<form action="\search" method="get">' . "\n";
 					echo '<div class="formrow wisyr_searchinput">';
 						echo '<label for="q">' . $this->iniRead('searcharea.placeholder', $DEFAULT_PLACEHOLDER) . '</label>';
 						if($this->simplified)
@@ -2003,6 +2004,13 @@ class WISY_FRAMEWORK_CLASS
 
 			case 'paypalipn':
 				return createWisyObject('WISY_BILLING_RENDERER_CLASS', $this);
+				
+			case 'orte':
+			case 'themen':
+			case 'abschluesse':
+			case 'sitemap-landingpages.xml':
+			case 'sitemap-landingpages.xml.gz':
+				return createWisyObject('WISY_LANDINGPAGE_RENDERER_CLASS', $this, array('type'=>$wisyRequestedFile));
 			
 			// deprecated URLs
 			case 'kurse.php':
@@ -2056,7 +2064,6 @@ class WISY_FRAMEWORK_CLASS
 	}
 	
 };
-
 
 
 
