@@ -383,7 +383,7 @@ function preview_field(&$table_def, $r, &$db, $renderLinks)
 // nothing will be written to STDOUT
 //
 function preview_do($table, $id, $renderLinks, $view = 'details' /*or 'list'*/,
-					$level = 0, $fieldStart = '', $fieldStart = '')
+					$level = 0, $fieldStart = '')
 {
 	$table_def = Table_Find_Def($table);
 	if( !$table_def ) {
