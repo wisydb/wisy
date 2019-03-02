@@ -653,6 +653,33 @@ if (jQuery.ui)
  * advanced search stuff
  *****************************************************************************/
 
+//Prevent empty search (<2 chars): on hompage: output message, on other page: search for all courses
+function preventEmptySearch(homepage) {
+  // only if no other submit event is attached to search submit button:
+  if($._data( $("#wisy_searcharea form[action=search]")[0], "events" )['submit'].length < 2) {
+   
+   $('#wisy_searcharea form[action=search]').on('submit', function(e) {
+    e.preventDefault();
+    var len = $('#wisy_searchinput').val().length;
+    
+       if ($(location).attr('pathname') == homepage) {
+            if (len > 1) {
+                   this.submit(); // default: normal search
+               } else {
+                alert('Bitte geben Sie einen Suchbegriff an (mindesten 2 Buchstaben)');
+            }
+       } else {
+           if(len < 2)
+            $('#wisy_searchinput').val("zeige:kurse");
+           
+           // default: normal search on other than homepage
+           this.submit();
+       }
+   });
+   
+  }
+}
+
 function advEmbeddingViaAjaxDone()
 {
 	// Init autocomplete function

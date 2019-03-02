@@ -1506,6 +1506,14 @@ class WISY_FRAMEWORK_CLASS
 			$ret .= ')});</script>'."\n";
 		}
 		
+		// Don't allow for empty searches
+		$homepage = trim($this->iniRead('homepage', ''), '/');
+		$homepage = ($homepage == "") ? '/' : '/'.$homepage;
+		
+		$ret .= "<script>\n";
+		$ret .= "window.onload = function(){ preventEmptySearch('".$homepage."'); }\n";
+		$ret .= "</script>";
+		
 		return $ret;
 	}
 	
