@@ -656,7 +656,7 @@ if (jQuery.ui)
 //Prevent empty search (<2 chars): on hompage: output message, on other page: search for all courses
 function preventEmptySearch(homepage) {
   // only if no other submit event is attached to search submit button:
-  if($._data( $("#wisy_searcharea form[action=search]")[0], "events" )['submit'].length < 2) {
+	if( typeof $._data( $("#wisy_searcharea form[action=search]")[0], "events" ) == 'undefined' ) {
    
    $('#wisy_searcharea form[action=search]').on('submit', function(e) {
     e.preventDefault();
