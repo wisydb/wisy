@@ -99,7 +99,7 @@ body { padding: 0; margin: 0; }
 	right: 1.5em;
 	width: 1em;
 	height: 1em;
-	background: #fff url(img/close-red.png) no-repeat center center/1em;
+	background: #fff url(close-red.png) no-repeat center center/1em;
 	cursor: pointer;
 }
 
@@ -568,7 +568,7 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 
 .wisyr_filtergroup .wisyr_datepicker {
 	padding-right: 20px;
-	background: #fff url(img/calendar.png) no-repeat 95% center/auto 60%;
+	background: #fff url(calendar.png) no-repeat 95% center/auto 60%;
 }
 
 /* Clear button */
@@ -580,7 +580,7 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 	right: -6px;
 	width: 25px;
 	height: 21px;
-	background: #fff url(img/close-red.png) no-repeat 45% center/10px;
+	background: #fff url(close-red.png) no-repeat 45% center/10px;
 	cursor: pointer;
 }
 
@@ -689,10 +689,10 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 		margin: 0;
 		background-color: transparent;
 		overflow: hidden;
-		background: url(img/filter_grau.png) no-repeat center center/24px;
+		background: url(filter_grau.png) no-repeat center center/24px;
 	}
 	.wisyr_filternav.wisyr_filters_active #wisy_filterlink {
-		background: url(img/filter_grau_filtered.png) no-repeat center center/24px;
+		background: url(filter_grau_filtered.png) no-repeat center center/24px;
 	}
 	.wisyr_activefilters {
 		display: none;
