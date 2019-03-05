@@ -1776,7 +1776,7 @@ class WISY_FRAMEWORK_CLASS
 		
 		echo "\n" . '<div id="wisy_searcharea">' . "\n";
 			echo '<div class="inner">' . "\n";
-				echo '<form action="\search" method="get">' . "\n";
+				echo '<form action="/search" method="get">' . "\n";
 					echo '<div class="formrow wisyr_searchinput">';
 						echo '<label for="q">' . $this->iniRead('searcharea.placeholder', $DEFAULT_PLACEHOLDER) . '</label>';
 						if($this->simplified)
