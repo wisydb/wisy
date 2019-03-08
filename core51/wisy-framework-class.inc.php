@@ -24,7 +24,7 @@ function g_sync_removeSpecialChars($str)
 class WISY_FRAMEWORK_CLASS
 {
 	var $includeVersion;
-	var $coreRelPath = '/core51_dev';
+	var $coreRelPath;
 	
 	var $editCookieName;
 	var $editSessionStarted;
@@ -81,8 +81,11 @@ class WISY_FRAMEWORK_CLASS
 
 	function __construct($baseObject, $addParam)
 	{
+		global $wisyCore;
+		$this->coreRelPath = '/' . $wisyCore;
+		
 		// constructor
-		$this->includeVersion = '?iv=201'; // change the number on larger changes in included CSS and/or JS files.  May be empty.
+		$this->includeVersion = '?iv=511'; // change the number on larger changes in included CSS and/or JS files.  May be empty.
 		
 		// init edit stuff
 		$this->editCookieName		= 'wisyEdit20';
@@ -1776,7 +1779,7 @@ class WISY_FRAMEWORK_CLASS
 		
 		echo "\n" . '<div id="wisy_searcharea">' . "\n";
 			echo '<div class="inner">' . "\n";
-				echo '<form action="\search" method="get">' . "\n";
+				echo '<form action="/search" method="get">' . "\n";
 					echo '<div class="formrow wisyr_searchinput">';
 						echo '<label for="q">' . $this->iniRead('searcharea.placeholder', $DEFAULT_PLACEHOLDER) . '</label>';
 						if($this->simplified)

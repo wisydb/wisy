@@ -267,8 +267,7 @@ class WISY_LANDINGPAGE_RENDERER_CLASS
 				$this->db->free();
 			}
 		}
-		if($thema != '' && $ortsname != '')
-		{
+		if($thema != '' && $ortsname != '') {
 			// Details eines einzelnen Themas in Ort
 			$title = $thema . ' in ' . $ortsname;
 			if($stadtteilname != '') $title .= '-' . $stadtteilname;
@@ -282,25 +281,27 @@ class WISY_LANDINGPAGE_RENDERER_CLASS
 			
 		} else {
 			// Liste aller Themen in Orten
-			echo $this->framework->getPrologue(array(
-				'title'		=>	'Alle Themen & Orte',
-				'bodyClass'	=>	'wisyp_search wisyp_landingpage_' . $this->type,
-			));
-			echo '<div id="wisy_resultarea" class="wisy_landingpage">';
+			if(trim($this->framework->iniRead('seo.themen.stichworte')) == '') {
+				$this->framework->error404();
+			} else {
 			
-			if(trim($this->framework->iniRead('seo.themen.stichworte')) != '')
-			{
+				echo $this->framework->getPrologue(array(
+					'title'		=>	'Alle Themen & Orte',
+					'bodyClass'	=>	'wisyp_search wisyp_landingpage_' . $this->type,
+				));
+				echo '<div id="wisy_resultarea" class="wisy_landingpage">';
+			
 				$stichworte = $this->quotedArrayFromList(trim($this->framework->iniRead('seo.themen.stichworte')));
 				if(count($stichworte)) {
 					$sql = $this->getOrtslisteSql($stichworte);
 					$this->renderThemenliste($sql);
 				}
-			}
 			
-			echo '</div><!-- /#wisy_resultarea -->';
+				echo '</div><!-- /#wisy_resultarea -->';
+				echo $this->framework->replacePlaceholders( $this->framework->iniRead('spalten.below', '') );
+				echo $this->framework->getEpilogue();
+			}
 		}
-		echo $this->framework->replacePlaceholders( $this->framework->iniRead('spalten.below', '') );
-		echo $this->framework->getEpilogue();
 	}
 	
 	/*
@@ -316,13 +317,15 @@ class WISY_LANDINGPAGE_RENDERER_CLASS
 		$themaort = '';
 		while( $this->db->next_record() ) {
 			// Für Orte mit Stadtteil zusätzlich einen Eintrag ohne Stadtteil ausgeben
-			if($this->db->f8('stichwort_sorted') . $this->db->f8('ort') != $themaort) {
-				$themaort = $this->db->f8('stichwort_sorted') . $this->db->f8('ort');
-				if(trim($this->db->f8('stadtteil')) != '') {
-					$this->renderThema($this->db->f8('stichwort'), $this->db->f8('stichwort_sorted'), $this->db->f8('ort'));
+			if($this->db->f8('stichwort_sorted') != NULL && $this->db->f8('stichwort') != NULL) {
+				if($this->db->f8('stichwort_sorted') . $this->db->f8('ort') != $themaort) {
+					$themaort = $this->db->f8('stichwort_sorted') . $this->db->f8('ort');
+					if(trim($this->db->f8('stadtteil')) != '') {
+						$this->renderThema($this->db->f8('stichwort'), $this->db->f8('stichwort_sorted'), $this->db->f8('ort'));
+					}
 				}
+				$this->renderThema($this->db->f8('stichwort'), $this->db->f8('stichwort_sorted'), $this->db->f8('ort'), $this->db->f8('stadtteil'));
 			}
-			$this->renderThema($this->db->f8('stichwort'), $this->db->f8('stichwort_sorted'), $this->db->f8('ort'), $this->db->f8('stadtteil'));
 		}
 		echo '</ul>';
 		echo '</section>';

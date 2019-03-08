@@ -323,7 +323,17 @@ $wisyMiniMime = array(
 	'txt'	=>	'text/plain',
 );
 
-if( @file_exists("$wisyCore/$wisyRequestedFile") )
+// Make files in current core /img folder available from CSS files
+$temp = $wisyMiniMime[$wisyRequestedExt];
+if( $temp != '' && $temp != 'require_once' && @file_exists("$wisyCore/img/$wisyRequestedFile"))
+{
+	header("Content-type: $temp");
+	header("Content-length: " . @filesize("$wisyCore/img/$wisyRequestedFile"));
+	headerDoCache();
+	readfile("$wisyCore/img/$wisyRequestedFile");
+	exit();
+}
+else if( @file_exists("$wisyCore/$wisyRequestedFile") )
 {
 	$temp = $wisyMiniMime[$wisyRequestedExt];
 	if( $temp == 'require_once' )

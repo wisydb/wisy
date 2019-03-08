@@ -215,13 +215,12 @@ class WISY_DURCHF_CLASS
 		if( $dauer != '' && $stunden != '' ) {
 			$ret = str_replace('%1', $dauer, $mask2);
 			$ret = str_replace('%2', $stunden, $ret);
-			$ret = '<span class="wisyr_comma">, </span>' . $ret;
 		}
 		else if( $dauer != '' ) {
-			$ret ='<span class="wisyr_comma">, </span>' .  $dauer;
+			$ret = $dauer;
 		}
 		else if( $stunden != '' ) {
-			$ret = '<span class="wisyr_comma">, </span>' . $stunden;
+			$ret = $stunden;
 		}
 		else {
 			$ret = '';
