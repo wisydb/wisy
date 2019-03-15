@@ -505,10 +505,10 @@ if (jQuery.ui)
 		
 		// highlight search string
 		var regex = new RegExp("(?![^&;]+;)(?!<[^<>]*)(" + request_term.replace(/([\^\$\(\)\[\]\{\}\*\.\+\?\|\\])/gi, "\\$1") + ")(?![^<>]*>)(?![^&;]+;)", "gi");
-		tag_name = tag_name.replace(regex, "<em>$1</em>");
+		tag_name_highlighted = tag_name.replace(regex, "<em>$1</em>");
 
-		return '<span class="row '+row_class+'">' + 
-					'<span class="tag_name">' + row_prefix + tag_name + '</span>' + 
+		return '<span class="row ' + row_class + '" data-value="' + tag_name + '">' + 
+					'<span class="tag_name">' + row_prefix + tag_name_highlighted + '</span>' + 
 					'<span class="tag_count">' + row_count + '</span>' +
 				'</span>';
 	}
@@ -645,43 +645,49 @@ if (jQuery.ui)
 	}
 
 	function initAutocomplete_v2() {
+		var activeItemId = 'selectedOption';
+		var ac_defaults = {
+					html:		true
+				,	focus:		ac_focuscallback
+				,	appendTo: "#wisy_autocomplete_wrapper"
+				, open: function(event, ui) { $(event.target).attr('aria-expanded', 'true').attr('aria-activedescendant', activeItemId); }
+				,	close: function(event, ui) { $(event.target).attr('aria-expanded', 'false').attr('aria-activedescendant', ''); }
+				, focus: function(event, ui) {
+						$('#wisy_autocomplete_wrapper .ui-menu-item[aria-selected="true"]').attr('aria-selected', 'false').attr('id', '');
+						$('#wisy_autocomplete_wrapper .ui-menu-item [data-value="' + ui.item.value + '"]').parents('.ui-menu-item').attr('aria-selected', 'true').attr('id', activeItemId);
+				}
+		}
 		$(".ac_keyword").each(function()
 		{
 				var jqObj = $(this);
-				jqObj.autocomplete(
-				{
-						source:		ac_sourcecallback
-					,	theinput:	jqObj
-					,	html:		true
+				var ac_options = {
+						theinput:	jqObj
+					, source:		ac_sourcecallback
 					,	select:		ac_selectcallback_autosubmit
-					,	focus:		ac_focuscallback 
-				});
+				};
+				jqObj.autocomplete($.extend({}, ac_defaults, ac_options));
 			}
 		);
 		$(".ac_keyword_ort").each(function()
 		{
 				var jqObj = $(this);
-				jqObj.autocomplete(
-				{
-						source:		ac_sourcecallback_ort
-					,	theinput:	jqObj
-					,	html:		true
+				var ac_options = {
+						theinput:	jqObj
+					, source:		ac_sourcecallback_ort
 					,	select:		ac_selectcallback_ort
-					,	focus:		ac_focuscallback 
-				});
+				};
+				jqObj.autocomplete($.extend({}, ac_defaults, ac_options));
 			}
 		);
 		$(".ac_keyword_anbieter").each(function()
 		{
 				var jqObj = $(this);
-				jqObj.autocomplete(
-				{
-						source:		ac_sourcecallback_anbieter
-					,	theinput:	jqObj
-					,	html:		true
+				var ac_options = {
+						theinput:	jqObj
+					, source:		ac_sourcecallback_anbieter
 					,	select:		ac_selectcallback_autosubmit
-					,	focus:		ac_focuscallback 
-				});
+				};
+				jqObj.autocomplete($.extend({}, ac_defaults, ac_options));
 			}
 		);
 	}
@@ -693,9 +699,13 @@ if (jQuery.ui)
 			{
 				that._renderItemData( ul, item );
 			});
+			
 			// Streifen
 			$( ul ).addClass('ac_results ac_results_v2').find( "li:odd" ).addClass( "ac_odd" );
 			$( ul ).find( "li:even" ).addClass( "ac_even" );
+			
+      // WAI ARIA
+      $( ul ).find( "li" ).attr('role', 'option').attr('aria-selected', 'false');
 		},
 		_resizeMenu: function()
 		{
@@ -1297,7 +1307,7 @@ function initFilters() {
 		if($el) {
 			if($el.val() && $el.val().length) {
 				if($wrapper.children('.clear_btn').length == 0) {
-					$wrapper.append('<div class="clear_btn"></div>');
+					$wrapper.append('<div class="clear_btn" aria-label="Eingabe löschen"></div>');
 					$wrapper.children('.clear_btn').one('click', function() {
 						$el.val('');
 						$wrapper.children('.clear_btn').remove();

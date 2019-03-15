@@ -1784,7 +1784,7 @@ class WISY_FRAMEWORK_CLASS
 						echo '<label for="q">' . $this->iniRead('searcharea.placeholder', $DEFAULT_PLACEHOLDER) . '</label>';
 						if($this->simplified)
 						{
-							echo '<input type="text" id="wisy_searchinput" class="' . $autocomplete_class . '" name="qs" value="' .$this->QS. '" placeholder="' . $searchinput_placeholder . '" />' . "\n";
+							echo '<input type="text" id="wisy_searchinput" class="' . $autocomplete_class . '" name="qs" value="' .$this->QS. '" placeholder="' . $searchinput_placeholder . '" role="combobox" aria-controls="wisy_autocomplete" aria-owns="wisy_autocomplete" aria-expanded="false" aria-autocomplete="list" autocomplete="off" />' . "\n";
 							echo '<input type="hidden" id="wisy_searchinput_q" name="q" value="' . $this->Q . '" />' . "\n";
 							echo '<input type="hidden" id="wisy_searchinput_qf" name="qf" value="' . $this->QF . '" />' . "\n";
 							if( isset($tokens['show']) && $tokens['show'] == 'anbieter' ) {
@@ -1799,7 +1799,7 @@ class WISY_FRAMEWORK_CLASS
 						}
 						else
 						{
-							echo '<input type="text" id="wisy_searchinput" class="' . $autocomplete_class . '" name="q" value="' .$q. '" placeholder="' . $searchinput_placeholder . '" />' . "\n";
+							echo '<input type="text" id="wisy_searchinput" class="' . $autocomplete_class . '" name="q" value="' .$q. '" placeholder="' . $searchinput_placeholder . '" role="combobox" aria-controls="wisy_autocomplete" aria-owns="wisy_autocomplete" aria-expanded="false" aria-autocomplete="list" autocomplete="off" />' . "\n";
 						}
 					echo '</div>';
 					
@@ -1832,6 +1832,9 @@ class WISY_FRAMEWORK_CLASS
 				
 					echo $this->replacePlaceholders($this->iniRead('searcharea.advlink', $DEFAULT_ADVLINK_HTML)) . "\n";
 					echo $this->replacePlaceholders($this->iniRead('searcharea.html', $DEFAULT_RIGHT_HTML)) . "\n";
+					
+					echo '<div id="wisy_autocomplete_wrapper"></div>';
+					
 				echo '</form>' . "\n";
 			echo "\n</div><!-- /.inner -->";
 		echo "\n</div><!-- /#wisy_searcharea -->\n\n";
