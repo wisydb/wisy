@@ -704,8 +704,8 @@ if (jQuery.ui)
 			$( ul ).addClass('ac_results ac_results_v2').find( "li:odd" ).addClass( "ac_odd" );
 			$( ul ).find( "li:even" ).addClass( "ac_even" );
 			
-      // WAI ARIA
-      $( ul ).find( "li" ).attr('role', 'option').attr('aria-selected', 'false');
+			// WAI ARIA
+			$( ul ).find( "li" ).attr('role', 'option').attr('aria-selected', 'false');
 		},
 		_resizeMenu: function()
 		{

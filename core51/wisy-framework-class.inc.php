@@ -1833,7 +1833,7 @@ class WISY_FRAMEWORK_CLASS
 					echo $this->replacePlaceholders($this->iniRead('searcharea.advlink', $DEFAULT_ADVLINK_HTML)) . "\n";
 					echo $this->replacePlaceholders($this->iniRead('searcharea.html', $DEFAULT_RIGHT_HTML)) . "\n";
 					
-					echo '<div id="wisy_autocomplete_wrapper"></div>';
+					echo '<div id="wisy_autocomplete_wrapper" aria-live="polite"></div>';
 					
 				echo '</form>' . "\n";
 			echo "\n</div><!-- /.inner -->";
