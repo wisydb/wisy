@@ -126,13 +126,13 @@ class WISY_SEARCH_RENDERER_CLASS
 			echo '<span class="wisy_paginate_text">Gehe zu Seite</span>';
 		
 			if( $prevurl ) {
-				echo " <a class=\"wisy_paginate_prev\" aria-label=\"Erste Seite\" href=\"" . htmlspecialchars($prevurl) . "\">&laquo;</a> ";
+				echo " <a class=\"wisy_paginate_prev\" aria-label=\"Vorherige Seite\" href=\"" . htmlspecialchars($prevurl) . "\">&laquo;</a> ";
 			}
 	
 			echo $pagesel;
 	
 			if( $nexturl ) {
-				echo " <a class=\"wisy_paginate_next\" aria-label=\"Letzte Seite\" href=\"" . htmlspecialchars($nexturl) . "\">&raquo;</a>";
+				echo " <a class=\"wisy_paginate_next\" aria-label=\"Nächste Seite\" href=\"" . htmlspecialchars($nexturl) . "\">&raquo;</a>";
 			}
 		echo '</span>' . "\n";
 	}
