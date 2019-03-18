@@ -259,13 +259,15 @@ class WISY_FILTERMENU_ITEM
 	var $data;
     var $renderformData;
 	var $children;
+	var $zindex;
 	
-	function __construct($framework, $data, $renderformData)
+	function __construct($framework, $data, $renderformData, $zindex)
 	{
         $this->framework = $framework;
 		$this->data = $data;
         $this->renderformData = $renderformData;
 		$this->children = array();
+		$this->zindex = $zindex;
 	}
 	
 	function getHtml()
@@ -274,7 +276,7 @@ class WISY_FILTERMENU_ITEM
 		$legendvalue = $this->getLegendvalue($this->data['legendkey']);
         $title = $this->data['title'];
         
-		$ret = '<fieldset class="' . $filterclasses . '">';
+		$ret = '<fieldset class="' . $filterclasses . '" style="z-index:' . $this->zindex . '">';
         
 		    $ret .= '<legend data-filtervalue="' . $legendvalue . '">' . $title . '</legend>';
             $ret .= '<div class="filter_inner clearfix">';
@@ -748,8 +750,9 @@ class WISY_FILTERMENU_CLASS
         
         $filterStructure = $this->parseStructure();        
         
+		$zindex = 1111;
         foreach($filterStructure as $key => $filterItem) {
-            $item = new WISY_FILTERMENU_ITEM($this->framework, $filterItem, $this->renderformData);
+            $item = new WISY_FILTERMENU_ITEM($this->framework, $filterItem, $this->renderformData, $zindex--);
             echo $item->getHtml();
         }
         
