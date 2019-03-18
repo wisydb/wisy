@@ -647,7 +647,13 @@ class WISY_FRAMEWORK_CLASS
 			$i++;
 		}
 		
-		return '/' . $ret;
+		// prepend "/" if not already there
+		if(substr($ret, 0, 1) !== '/')
+		{
+			$ret = '/' . $ret;
+		}
+		
+		return $ret;
 	}
 
 	function getHelpUrl($id)
