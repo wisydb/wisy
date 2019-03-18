@@ -354,7 +354,7 @@ function formatItem(row)
 		{
 			/* note: a single semicolon disturbs the highlighter as well as a single quote! */
 			row_postfix +=
-			 ' <a class="wisy_help" href="" onclick="return clickAutocompleteHelp(' + tag_help + ', &#39;' + encodeURIComponent(tag_name) + '&#39;)">&nbsp;i&nbsp;</a>';
+			 ' <a class="wisy_help" href="" onclick="return clickAutocompleteHelp(' + tag_help + ', &#39;' + encodeURIComponent(tag_name) + '&#39;)" aria-label="Ratgeber zu ' + tag_name + '">&nbsp;i&nbsp;</a>';
 		}
 		
 		tag_name = htmlspecialchars(tag_name);
@@ -497,7 +497,7 @@ if (jQuery.ui)
 			if( tag_help != 0 )
 			{
 				/* note: a single semicolon disturbs the highlighter as well as a single quote! */
-				row_info = ' <a class="wisy_help" href="" onclick="return clickAutocompleteHelp(' + tag_help + ', &#39;' + encodeURIComponent(tag_name) + '&#39;)">&nbsp;i&nbsp;</a>';
+				row_info = ' <a class="wisy_help" href="" onclick="return clickAutocompleteHelp(' + tag_help + ', &#39;' + encodeURIComponent(tag_name) + '&#39;)" aria-label="Ratgeber zu ' + tag_name + '">&nbsp;i&nbsp;</a>';
 			}
 			
 			tag_name = htmlspecialchars(tag_name);

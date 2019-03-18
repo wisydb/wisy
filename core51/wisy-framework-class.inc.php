@@ -925,7 +925,7 @@ class WISY_FRAMEWORK_CLASS
 				$glossarLink = '';
 				$glossarId = $this->glossarDb($db, 'stichwoerter', $stichwoerter[$s]['id']);
 				if( $glossarId ) {
-					$glossarLink = ' <a href="' . $this->getHelpUrl($glossarId) . '" class="wisy_help" title="Ratgeber">i</a>';
+					$glossarLink = ' <a href="' . $this->getHelpUrl($glossarId) . '" class="wisy_help" title="Ratgeber" aria-label="Ratgeber zum Stichwort">i</a>';
 				}
 				
 				if( ($stichwoerter[$s]['eigenschaften']==0 && intval($codes_array[$c])==0 && $glossarLink)
@@ -1271,7 +1271,7 @@ class WISY_FRAMEWORK_CLASS
 			$glossarId = intval($this->iniRead('rsslink.help', 2953));
 			if( $glossarId )
 			{
-				$ret .= ' <a href="' .$this->getHelpUrl($glossarId). '" class="wisy_help" title="Hilfe">i</a>';
+				$ret .= ' <a href="' .$this->getHelpUrl($glossarId). '" class="wisy_help" title="Hilfe" aria-label="Ratgeber zu RSS-Feeds">i</a>';
 			}
 		}
 		

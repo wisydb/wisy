@@ -111,7 +111,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			
 				if( $info > 0 )
 				{
-					echo ' <a href="' . htmlspecialchars($this->framework->getHelpUrl($info)) . '" title="Hilfe" class="wisy_help">i</a>';
+					echo ' <a href="' . htmlspecialchars($this->framework->getHelpUrl($info)) . '" title="Hilfe" aria-label="Ratgeber zum Thema" class="wisy_help">i</a>';
 				}
 			}
 		echo '</th>' . "\n";
@@ -126,13 +126,13 @@ class WISY_SEARCH_RENDERER_CLASS
 			echo '<span class="wisy_paginate_text">Gehe zu Seite</span>';
 		
 			if( $prevurl ) {
-				echo " <a class=\"wisy_paginate_prev\" href=\"" . htmlspecialchars($prevurl) . "\">&laquo;</a> ";
+				echo " <a class=\"wisy_paginate_prev\" aria-label=\"Erste Seite\" href=\"" . htmlspecialchars($prevurl) . "\">&laquo;</a> ";
 			}
 	
 			echo $pagesel;
 	
 			if( $nexturl ) {
-				echo " <a class=\"wisy_paginate_next\" href=\"" . htmlspecialchars($nexturl) . "\">&raquo;</a>";
+				echo " <a class=\"wisy_paginate_next\" aria-label=\"Letzte Seite\" href=\"" . htmlspecialchars($nexturl) . "\">&raquo;</a>";
 			}
 		echo '</span>' . "\n";
 	}
@@ -432,7 +432,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		if( $tag_help != 0 )
 		{
 			$row_postfix .=
-			 " <a class=\"wisy_help\" href=\"" . $this->framework->getUrl('g', array('id'=>$tag_help, 'q'=>$tag_name)) . "\" title=\"Ratgeber\">&nbsp;i&nbsp;</a>";
+			 " <a class=\"wisy_help\" href=\"" . $this->framework->getUrl('g', array('id'=>$tag_help, 'q'=>$tag_name)) . "\" title=\"Ratgeber\" aria-label=\"Ratgeber zu " . $tag_name . "\">&nbsp;i&nbsp;</a>";
 		}
 		
 		return '<span class="' .$row_class. '">' .
@@ -696,7 +696,7 @@ class WISY_SEARCH_RENDERER_CLASS
 						// render promoted head
 						echo '<tr class="wisy_promoted_head"><td colspan="'.$colspan.'">';
 							echo 'Schaufenster Weiterbildung ';
-							echo '<a href="' .$this->framework->getHelpUrl(3368). '" class="wisy_help" title="Hilfe">i</a>';
+							echo '<a href="' .$this->framework->getHelpUrl(3368). '" class="wisy_help" title="Hilfe" aria-label="Ratgeber zu Schaufenster Weiterbildung">i</a>';
 						echo '</td></tr>';
 						
 						// render promoted records

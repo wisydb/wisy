@@ -49,16 +49,16 @@ class WISY_DURCHF_CLASS
 		{
 			// init Array with defaults
 			$this->imgTagArr = array(
-				'tc1'	=>	array('<span class="wisyr_art_icon wisyr_art_ganztaegig">&#9673;</span>',	 	'Ganzt&auml;gig'),
-				'tc2'	=>	array('<span class="wisyr_art_icon wisyr_art_vormittags">&#9680;</span>',  		'Vormittags'),
-				'tc3'	=>	array('<span class="wisyr_art_icon wisyr_art_nachmittags">&#9681;</span>', 		'Nachmittags'),
-				'tc4'	=>	array('<span class="wisyr_art_icon wisyr_art_abends">&#9682;</span>',		 	'Abends'),
-				'tc5'	=>	array('<span class="wisyr_art_icon wisyr_art_wochenende">WE</span>',			'Wochenende'),
-				1		=>	array('<span class="wisyr_art_icon wisyr_art_bildungsurlaub">BU</span>',		'Bildungsurlaub'),
-				7721	=>	array('<span class="wisyr_art_icon wisyr_art_fernunterricht">&#9993;</span>',	'Fernunterricht'),
-				7639	=>	array('<span class="wisyr_art_icon wisyr_art_fernunterricht">WWW</span>',		'Webinar'),
-				17261	=>	array('<span class="wisyr_art_icon wisyr_art_fernunterricht">P</span>',			'Pr&auml;senzunterricht'),
-				806441	=>	array('<span class="wisyr_art_icon wisyr_art_fernunterricht">WWW</span>',		'Webinar') // eigentl. Teleteaching = Webinar
+				'tc1'	=>	array('<span class="wisyr_art_icon wisyr_art_ganztaegig" aria-hidden="true">&#9673;</span>',	 	'Ganzt&auml;gig'),
+				'tc2'	=>	array('<span class="wisyr_art_icon wisyr_art_vormittags" aria-hidden="true">&#9680;</span>',  		'Vormittags'),
+				'tc3'	=>	array('<span class="wisyr_art_icon wisyr_art_nachmittags" aria-hidden="true">&#9681;</span>', 		'Nachmittags'),
+				'tc4'	=>	array('<span class="wisyr_art_icon wisyr_art_abends" aria-hidden="true">&#9682;</span>',		 	'Abends'),
+				'tc5'	=>	array('<span class="wisyr_art_icon wisyr_art_wochenende" aria-hidden="true">WE</span>',			'Wochenende'),
+				1		=>	array('<span class="wisyr_art_icon wisyr_art_bildungsurlaub" aria-hidden="true">BU</span>',		'Bildungsurlaub'),
+				7721	=>	array('<span class="wisyr_art_icon wisyr_art_fernunterricht" aria-hidden="true">&#9993;</span>',	'Fernunterricht'),
+				7639	=>	array('<span class="wisyr_art_icon wisyr_art_fernunterricht" aria-hidden="true">WWW</span>',		'Webinar'),
+				17261	=>	array('<span class="wisyr_art_icon wisyr_art_fernunterricht" aria-hidden="true">P</span>',			'Pr&auml;senzunterricht'),
+				806441	=>	array('<span class="wisyr_art_icon wisyr_art_fernunterricht" aria-hidden="true">WWW</span>',		'Webinar') // eigentl. Teleteaching = Webinar
 			);
 
 			// overwrite defaults with portal settings from img.tag
@@ -93,14 +93,15 @@ class WISY_DURCHF_CLASS
 			{	
 				$img_icon = $img_arr[0];
 				$img_text = $img_arr[1];
+				$aria_label = $details? '' : 'aria-label="' . $img_text . '"';
 				
 				$ext = substr($img_icon, -4);
 				if( $ext == '.gif' || $ext == '.png' || $ext == '.jpg' || $ext == '.svg' ) {
 					$alt = $details? '' : $img_text;
-					$html .= '<img src="'.$img_icon.'" alt="'.$alt.'" title="'.$img_text.'" />';
+					$html .= '<img src="'.$img_icon.'" alt="'.$alt.'" title="'.$img_text.'" ' . $aria_label . ' />';
 				}
 				else {
-					$html .= '<span title="'.$img_text.'">'.$img_icon.'</span>';
+					$html .= '<span title="'.$img_text.'" ' . $aria_label . '>'.$img_icon.'</span>';
 				}
 				
 				if( $details ) {

@@ -101,7 +101,7 @@ class WISY_KEYWORDTABLE_CLASS
 		if( $tag_help != 0 )
 		{
 			$ret .=
-			 "<a class=\"wisy_help\" href=\"" . $this->framework->getUrl('g', array('id'=>$tag_help, 'q'=>$tag_name)) . "\" title=\"Ratgeber\">&nbsp;i&nbsp;</a>";
+			 "<a class=\"wisy_help\" href=\"" . $this->framework->getUrl('g', array('id'=>$tag_help, 'q'=>$tag_name)) . "\" title=\"Ratgeber\" aria-label=\"Ratgeber zum Stichwort\">&nbsp;i&nbsp;</a>";
 		}		
 		
 		return $ret;

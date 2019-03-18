@@ -340,7 +340,7 @@ class WISY_ADVANCED_RENDERER_CLASS
 		<div id="adv_all">
 			<div id="adv_title">
 				Erweiterte Suche
-				<a href="<?php echo $this->framework->getHelpUrl($glossarId); ?>" class="wisy_help">i</a>
+				<a href="<?php echo $this->framework->getHelpUrl($glossarId); ?>" class="wisy_help" aria-label="Ratgeber zur erweiterten Suche">i</a>
 			</div>
 			<div id="adv_body">
 				<form action="advanced" method="get">

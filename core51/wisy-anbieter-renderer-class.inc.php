@@ -221,7 +221,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 			{
 				$vc['Logo'] = "\n" . '<div class="wisyr_anbieter_logo">';
 				$this->fit_to_rect($logo_w, $logo_h, 128, 64, $logo_w, $logo_h);
-				$vc['Logo'] .= "<span itemprop=\"logo\"><img src=\"{$wisyPortal}admin/media.php/logo/anbieter/$anbieterId/".urlencode($logo_name)."\" style=\"width: ".$logo_w."px; height: ".$logo_h."px;\" alt=\"Anbieter Logo\" title=\"\" id=\"anbieterlogo\"/></span>";
+				$vc['Logo'] .= "<span itemprop=\"logo\" aria-hidden=\"true\"><img src=\"{$wisyPortal}admin/media.php/logo/anbieter/$anbieterId/".urlencode($logo_name)."\" style=\"width: ".$logo_w."px; height: ".$logo_h."px;\" alt=\"Anbieter Logo\" title=\"\" id=\"anbieterlogo\"/></span>";
 				$vc['Logo'] .= '</div>';
 			}
 		}
@@ -265,7 +265,7 @@ class WISY_ANBIETER_RENDERER_CLASS
         $vc['Alle Angebote'] = '<a class="wisy_showalloffers" href="' . $this->framework->getUrl('search'). '?filter_anbieter=' . urlencode(htmlspecialchars(str_replace(',', ' ', $suchname))) . '">Alle ' . $freq . ' Angebote des Anbieters</a>';
 		
 		/* Qualitätszertifikate */
-		$seals = $this->renderSealsOverview($anbieterId, $pruefsiegel_seit, true);			
+		$seals = $this->renderSealsOverview($anbieterId, $pruefsiegel_seit, true);	
 		if( $seals )
 		{
 			$vc['Qualitätszertifikate'] .= $seals;
@@ -436,18 +436,18 @@ class WISY_ANBIETER_RENDERER_CLASS
 		{
 			$sealId = $db->f8('sealId');
 			$glossarId = $db->f8('glossarId');
-			$glossarLink = $glossarId>0? (' <a href="' . $this->framework->getHelpUrl($glossarId) . '" class="wisy_help" title="Hilfe">i</a>') : '';
 			$title = $db->f8('title');
+			$glossarLink = $glossarId>0? (' <a href="' . $this->framework->getHelpUrl($glossarId) . '" class="wisy_help" title="Hilfe" aria-label="Ratgeber zu ' . $title . '">i</a>') : '';
 
 			$img = "files/seals/$sealId-large.gif";
 			if( @file_exists($img) )
 			{
 				$img_seals .= $img_seals==''? '' : '<br /><br />';
-				$img_seals .= "<img src=\"$img\" border=\"0\" alt=\"Pr&uuml;siegel\" title=\"$title\" /><br />";
+				$img_seals .= "<img src=\"$img\" border=\"0\" alt=\"Pr&uuml;siegel\" title=\"$title\" aria-hidden=\"true\" /><br />";
 				$img_seals .= $title . $glossarLink;
 				if( $seit ) { $img_seals .= '<br />'  . $seit; $seit = ''; }
 				
-				$seals_steckbrief .= "<img src=\"$img\" border=\"0\" alt=\"Pr&uuml;siegel\" title=\"$title\" />";
+				$seals_steckbrief .= "<img src=\"$img\" border=\"0\" alt=\"Pr&uuml;siegel\" title=\"$title\" aria-hidden=\"true\" />";
 			}
 			else
 			{
@@ -588,7 +588,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		{
 			echo "\n" . '<div class="wisyr_anbieter_logo">';
 			$this->fit_to_rect($logo_w, $logo_h, 128, 64, $logo_w, $logo_h);
-			echo "<div class=\"logo\"><img src=\"{$wisyPortal}admin/media.php/logo/anbieter/$anbieter_id/".urlencode($logo_name)."\" style=\"width: ".$logo_w."px; height: ".$logo_h."px;\" alt=\"Anbieter Logo\" title=\"\" id=\"anbieterlogo\"/></div>";
+			echo "<div class=\"logo\" aria-hidden=\"true\"><img src=\"{$wisyPortal}admin/media.php/logo/anbieter/$anbieter_id/".urlencode($logo_name)."\" style=\"width: ".$logo_w."px; height: ".$logo_h."px;\" alt=\"Anbieter Logo\" title=\"\" id=\"anbieterlogo\"/></div>";
 			echo '</div>';
 		}
 		echo '</div><!-- /#wisyr_anbieter_kopf -->';

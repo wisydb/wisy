@@ -1743,7 +1743,7 @@ class WISY_EDIT_RENDERER_CLASS
 									$radio = $kurs['promote_mode']=='times'? ' checked="checked" ' : '';
 									$param = $kurs['promote_mode']=='times'? $kurs['promote_param'] : '1000';
 									echo '<input type="radio" name="promote_mode" id="pl1" value="times" '.$radio.' /> <label for="pl1">Kurs kostenpflichtig bewerben mit max.</label> <input type="text" size="6" name="promote_param_times" value="'.$param.'" /> Einblendungen (Bruttopreis '.str_replace('.', ',', $this->billingRenderer->allPrices[0][1]).' &euro; für '.$this->billingRenderer->allPrices[0][0].' Einblendungen) ';
-									echo '<a href="' .$this->framework->getHelpUrl(3367). '" class="wisy_help" target="_blank" title="Hilfe">i</a>';
+									echo '<a href="' .$this->framework->getHelpUrl(3367). '" class="wisy_help" target="_blank" title="Hilfe" aria-label="Ratgeber zur kostenpflichtigen Bewerbung von Kursen">i</a>';
 									echo '<br />';
 									
 									$radio = $kurs['promote_mode']=='date'? ' checked="checked" ' : '';
@@ -1811,7 +1811,7 @@ class WISY_EDIT_RENDERER_CLASS
 									echo '<label title="Stichwort- oder Abschlussvorschläge">';
 								}
 								$this->controlText('msgtooperator', $kurs['msgtooperator'], 40, 200, '', '');
-								echo '</label> &nbsp; <a href="' .$this->framework->getHelpUrl(4100). '" class="wisy_help" target="_blank" title="Hilfe">i</a> <br />&nbsp;';
+								echo '</label> &nbsp; <a href="' .$this->framework->getHelpUrl(4100). '" class="wisy_help" target="_blank" title="Hilfe" aria-label="Ratgeber zu Kursen mit Abschlüssen">i</a> <br />&nbsp;';
 							echo '</td>';
 						echo '</tr>';
 					}
