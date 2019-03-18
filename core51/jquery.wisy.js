@@ -1020,6 +1020,7 @@ function wisy_glskeyexp()
 	{
 		jqAClick.html('&nbsp;&#9654;');
 		jqAClick.attr('data-glskeyaction', 'expand');
+		jqAClick.attr('aria-label', 'Unterthemen zuklappen');	
 		show = false;
 
 	}
@@ -1051,6 +1052,7 @@ function wisy_glskeyexp()
 		jqACurr = jqTrCurr.find('a.wisy_glskeyexp');
 		jqACurr.html('&nbsp;&#9654;');
 		jqACurr.attr('data-glskeyaction', 'expand');		
+		jqAClick.attr('aria-label', 'Unterthemen aufklappen');	
 		
 		jqTrCurr = jqTrCurr.next();
 	}

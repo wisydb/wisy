@@ -143,7 +143,7 @@ class WISY_KEYWORDTABLE_CLASS
 			$ret .= '<td style="padding-left:'.intval($level*2).'em" width="90%">';
 			
 				if( $hasChildren ) {
-					$ret .= "<a href=\"#\" class=\"wisy_glskeyexp\" data-glskeyaction=\"".($expanded? "shrink":"expand")."\">";
+					$ret .= "<a href=\"#\" class=\"wisy_glskeyexp\" data-glskeyaction=\"".($expanded? "shrink":"expand")."\" aria-label=\"Unterthemen ".($expanded? "zuklappen" : "aufklappen")."\">";
 						$ret .= $expanded? $icon_arr_down : $icon_arr_right;
 					$ret .= "</a>";
 				}

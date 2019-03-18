@@ -1131,6 +1131,7 @@ function wisy_glskeyexp()
 	{
 		jqAClick.html('&#9660;');
 		jqAClick.attr('data-glskeyaction', 'shrink');
+		jqAClick.attr('aria-label', 'Unterthemen zuklappen');
 		show = true;
 	}
 	
@@ -1154,7 +1155,8 @@ function wisy_glskeyexp()
 		
 		jqACurr = jqTrCurr.find('a.wisy_glskeyexp');
 		jqACurr.html('&nbsp;&#9654;');
-		jqACurr.attr('data-glskeyaction', 'expand');		
+		jqACurr.attr('data-glskeyaction', 'expand');
+		jqAClick.attr('aria-label', 'Unterthemen aufklappen');	
 		
 		jqTrCurr = jqTrCurr.next();
 	}
