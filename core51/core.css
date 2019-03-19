@@ -107,6 +107,10 @@ h1.wisy_df_headline {
   max-height: 70px;
 }
 
+.pruefsiegel {
+  border: none;
+}
+
 /*******************************************************************************
 wisy_searcharea
 *******************************************************************************/
@@ -177,7 +181,7 @@ wisy_paginate etc.
 
 a.wisy_rss_link {
 	padding-left: 17px;
-	background: white url('core20/img/feed-icon-12x12.png') 3px center no-repeat !important;
+	background: white url('feed-icon-12x12.png') 3px center no-repeat !important;
 }
 
 
@@ -399,7 +403,7 @@ autocomplete styles v1
 }
 
 .ac_loading {
-  background: white url('core20/img/ajax-indicator-2-16x16.gif') right center no-repeat !important;
+  background: white url('ajax-indicator-2-16x16.gif') right center no-repeat !important;
 }
 
 .ac_odd {
