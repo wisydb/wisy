@@ -79,7 +79,9 @@ class WISY_AUTOSUGGEST_RENDERER_CLASS
 				} 
 				else if(isset($_GET['type']) &&  $_GET['type'] == 'anbieter')
 				{
-					$tags = $tagsuggestor->suggestTags($querystring, array('max'=>10, 'q_tag_type'=>array(64,256)));
+				    $tag_type_anbieter = $this->framework->iniRead('autosuggest_sw_typ_anbieter', array(64,256));
+				    $tag_type_anbieter = (is_array($tag_type_anbieter)) ? $tag_type_anbieter : array_map("trim", explode(",", $tag_type_anbieter));
+				    $tags = $tagsuggestor->suggestTags($querystring, array('max'=>10, 'q_tag_type'=>$tag_type_anbieter));
 				}
 				else
 				{
