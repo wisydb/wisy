@@ -107,6 +107,10 @@ h1.wisy_df_headline {
   max-height: 70px;
 }
 
+.pruefsiegel {
+  border: none;
+}
+
 /*******************************************************************************
 wisy_searcharea
 *******************************************************************************/
@@ -644,6 +648,21 @@ div.wisy_glskeytime { /*this class is temporary; when removing it, add the borde
 	margin-bottom: 1em;
 	font-size: 11px;
 	color: #e4e4e4;
+}
+
+table.wisy_glskey .heading_tagtree,
+table.wisy_glskey .tag_cell {
+ width: 90%;
+}
+
+table.wisy_glskey .heading_infos,
+table.wisy_glskey .info_cell {
+ width: 10%;
+}
+
+table.wisy_glskey .info_cell {
+  white-space: nowrap;
+  text-align: center;
 }
 
 /*******************************************************************************
