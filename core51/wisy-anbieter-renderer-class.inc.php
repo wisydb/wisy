@@ -184,7 +184,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		
 		// Telefonnummer
 		if( $anspr_tel )
-			$vc['Telefon'] .= "\n" . '<div class="wisyr_anbieter_telefon"><a itemprop="telephone" href="tel:' . $anspr_tel . '">'. $anspr_tel . '</a></div>';
+			$vc['Telefon'] .= "\n" . '<div class="wisyr_anbieter_telefon"><a itemprop="telephone" href="tel:' . urlencode($anspr_tel) . '">'. $anspr_tel . '</a></div>';
 
 		if( $anspr_fax )
 			$vc['Fax'] .= "\n" . '<div class="wisyr_anbieter_fax"><span itemprop="faxNumber">'. $anspr_fax . '</span></div>';
@@ -228,7 +228,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		
 		/* Link zum Anbieter */
 		$vc['Link'] .= "\n" . '<div class="wisyr_anbieter_link">';
-		$vc['Link'] .= '<a href="'.$this->framework->getUrl('a', array('id'=>$anbieterId)).'">';
+		$vc['Link'] .= '<a href="/'.$this->framework->getUrl('a', array('id'=>$anbieterId)).'">';
 		$vc['Link'] .= 'Details zum Anbieter</a>';
 		$vc['Link'] .= '</div>';
 		
@@ -358,7 +358,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 												, array('hidetagtypestr'=>1, 'qprefix'=>"$tag_suchname, "));
 		if( $html )
 		{
-			echo '<h3>Abschl&uuml;sse - aktuelle Angebote</h2>';
+			echo '<h3>Abschl&uuml;sse - aktuelle Angebote</h3>';
 			echo '<p>';
 				echo $html;
 			echo '<p>';
@@ -443,11 +443,11 @@ class WISY_ANBIETER_RENDERER_CLASS
 			if( @file_exists($img) )
 			{
 				$img_seals .= $img_seals==''? '' : '<br /><br />';
-				$img_seals .= "<img src=\"$img\" border=\"0\" alt=\"Pr&uuml;siegel\" title=\"$title\" /><br />";
+				$img_seals .= "<img src=\"$img\" class='pruefsiegel' alt=\"Pr&uuml;fsiegel\" title=\"$title\" /><br />";
 				$img_seals .= $title . $glossarLink;
 				if( $seit ) { $img_seals .= '<br />'  . $seit; $seit = ''; }
 				
-				$seals_steckbrief .= "<img src=\"$img\" border=\"0\" alt=\"Pr&uuml;siegel\" title=\"$title\" />";
+				$seals_steckbrief .= "<img src=\"$img\" class='pruefsiegel' alt=\"Pr&uuml;fsiegel\" title=\"$title\" />";
 			}
 			else
 			{
@@ -639,12 +639,22 @@ class WISY_ANBIETER_RENDERER_CLASS
 		
 
 		echo "\n" . '<footer class="wisy_anbieter_footer">';
-			echo "\n" . '<div class="wisyr_anbieter_meta">';
-				echo ' Anbieterinformation erstellt am ' . $this->framework->formatDatum($date_created);
-				echo ', zuletzt ge&auml;ndert am ' . $this->framework->formatDatum($date_modified);
-				echo ', ' . $vollst . '% Vollständigkeit';
-				echo '<div class="wisyr_vollst_info"><span class="info">Hinweise zur förmlichen Vollständigkeit der Kursinfos sagen nichts aus über die Qualität der Kurse selbst. <a href="' . $this->framework->getHelpUrl(3369) . '">Mehr erfahren</a></span></div>';
-				
+		
+		$aerst = $this->framework->iniRead('anbieterinfo.erstellt', 1);
+		$aaend = $this->framework->iniRead('anbieterinfo.geaendert', 1);
+		$avollst = $this->framework->iniRead('anbieterinfo.vollstaendigkeit', 1);
+		echo "\n" . '<div class="wisyr_anbieter_meta">';
+		if($aerst || $aaend || $avollst) {
+		    echo ' Anbieterinformation: ';
+		    if($aerst)
+		        echo 'erstellt am ' . $this->framework->formatDatum($date_created).', ';
+		    if($aaend)
+		        echo 'zuletzt ge&auml;ndert am ' . $this->framework->formatDatum($date_modified).', ';
+		    if($avollst) {
+		        echo $vollst . '% Vollst&auml;ndigkeit';
+		        echo '<div class="wisyr_vollst_info"><span class="info">Hinweise zur f&ouml;rmlichen Vollst&auml;ndigkeit der Kursinfos sagen nichts aus&uuml;ber die Qualit&auml;t der Kurse selbst. <a href="' . $this->framework->getHelpUrl(3369) . '">Mehr erfahren</a></span></div>';
+		    }
+		}
 				$copyrightClass =& createWisyObject('WISY_COPYRIGHT_CLASS', $this->framework);
 				$copyrightClass->renderCopyright($db, 'anbieter', $anbieter_id);
 			echo "\n</div><!-- /.wisyr_anbieter_meta -->\n\n";
