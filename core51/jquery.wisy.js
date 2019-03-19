@@ -653,6 +653,33 @@ if (jQuery.ui)
  * advanced search stuff
  *****************************************************************************/
 
+//Prevent empty search (<2 chars): on hompage: output message, on other page: search for all courses
+function preventEmptySearch(homepage) {
+  // only if no other submit event is attached to search submit button:
+  if($._data( $("#wisy_searcharea form[action=search]")[0], "events" )['submit'].length < 2) {
+   
+   $('#wisy_searcharea form[action=search]').on('submit', function(e) {
+    e.preventDefault();
+    var len = $('#wisy_searchinput').val().length;
+    
+       if ($(location).attr('pathname') == homepage) {
+            if (len > 1) {
+                   this.submit(); // default: normal search
+               } else {
+                alert('Bitte geben Sie einen Suchbegriff an (mindesten 2 Buchstaben)');
+            }
+       } else {
+           if(len < 2)
+            $('#wisy_searchinput').val("zeige:kurse");
+           
+           // default: normal search on other than homepage
+           this.submit();
+       }
+   });
+   
+  }
+}
+
 function advEmbeddingViaAjaxDone()
 {
 	// Init autocomplete function
@@ -915,6 +942,15 @@ function editWeekdays(jqObj)
 	}
 }
 
+function resetPassword(aID, pflegeEmail) {
+	$.ajax({
+	type: "POST",
+	url: "/edit",
+	data: { action: "forgotpw", pwsubseq: "1", as: aID },
+	success: function(data) { alert( "Wir haben Ihnen eine E-Mail mit einem Link zur Passwortgenerierung an "+pflegeEmail+" gesandt!\n\nSollte in wenigen Minuten keine E-Mail eintreffen, pruefen Sie bitte die E-Mailadresse bzw. wenden Sie sich bitte an den Portal-Betreiber."); }
+  });
+}
+
 /*****************************************************************************
  * feedback stuff
  *****************************************************************************/
@@ -1095,6 +1131,18 @@ function initResponsive()
 	});
 }
 
+/*****************************************************************************
+ * SEO, alternative means for search
+ *****************************************************************************/
+
+// calculate weighted size (by tag usage within portal)
+$(document).ready(function() {
+ $("#sw_cloud span").each( function(){ 
+  weight = $(this).attr("data-weight"); 
+  fontsize = Math.floor($(this).find("a").css("font-size").replace('px', ''));
+  $(this).find("a").css("font-size", parseInt(fontsize)+parseInt(weight)+'px');
+ });
+});
 
 /*****************************************************************************
  * main entry point
