@@ -443,11 +443,11 @@ class WISY_ANBIETER_RENDERER_CLASS
 			if( @file_exists($img) )
 			{
 				$img_seals .= $img_seals==''? '' : '<br /><br />';
-				$img_seals .= "<img src=\"$img\" border=\"0\" alt=\"Pr&uuml;siegel\" title=\"$title\" /><br />";
+				$img_seals .= "<img src=\"$img\" class='pruefsiegel' alt=\"Pr&uuml;fsiegel\" title=\"$title\" /><br />";
 				$img_seals .= $title . $glossarLink;
 				if( $seit ) { $img_seals .= '<br />'  . $seit; $seit = ''; }
 				
-				$seals_steckbrief .= "<img src=\"$img\" border=\"0\" alt=\"Pr&uuml;siegel\" title=\"$title\" />";
+				$seals_steckbrief .= "<img src=\"$img\" class='pruefsiegel' alt=\"Pr&uuml;fsiegel\" title=\"$title\" />";
 			}
 			else
 			{
@@ -650,8 +650,8 @@ class WISY_ANBIETER_RENDERER_CLASS
         		    if($aaend)
         		        echo 'zuletzt ge&auml;ndert am ' . $this->framework->formatDatum($date_modified).', ';
         		    if($avollst) {
-        		        echo $vollst . '% Vollständigkeit';
-        		        echo '<div class="wisyr_vollst_info"><span class="info">Hinweise zur förmlichen Vollständigkeit der Kursinfos sagen nichts aus über die Qualität der Kurse selbst. <a href="' . $this->framework->getHelpUrl(3369) . '">Mehr erfahren</a></span></div>';
+        		        echo $vollst . '% Vollst&auml;ndigkeit';
+        		        echo '<div class="wisyr_vollst_info"><span class="info">Hinweise zur f&ouml;rmlichen Vollst&auml;ndigkeit der Kursinfos sagen nichts aus &uuml;ber die Qualit&auml;t der Kurse selbst. <a href="' . $this->framework->getHelpUrl(3369) . '">Mehr erfahren</a></span></div>';
         		    }
 		          }
 				$copyrightClass =& createWisyObject('WISY_COPYRIGHT_CLASS', $this->framework);
