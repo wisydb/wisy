@@ -514,7 +514,7 @@ if (jQuery.ui)
 	{	
 		// calculate the new source url
 		var request_term = extractLast(request.term);
-		var url = "autosuggest?q=" + encodeURIComponent(request_term) + "&limit=512&timestamp=" + new Date().getTime();
+		var url = "/autosuggest?q=" + encodeURIComponent(request_term) + "&limit=512&timestamp=" + new Date().getTime();
 	
 		// ask the server for suggestions
 		$.get(url, function(data)
