@@ -5,7 +5,7 @@
  ******************************************************************************
  Kodierungung dieses Quelltextes ist ISO 8859-1, _nicht_ UTF-8!
  
- Alle Anfragen laufen über /core20/main.inc.php in der folgenden Form:
+ Alle Anfragen laufen ï¿½ber /core20/main.inc.php in der folgenden Form:
  
  search?q=<query>				Suche Starten und erste Ergebnisseite anzeigen
  search?q=<query>&offset=<o>	Ergebnisses ab Offset anzeigen, <o>=0, 20 ...
@@ -42,14 +42,14 @@ define('SEARCH_CACHE_ITEM_LIFETIME_SECONDS', 29*60 /*29 minutes*/);
 /******************************************************************************
  Class factory / Modulsystem
  ******************************************************************************
- Alle Objekte aller Klassen müssen mit folgendem Aufruf erzeugt werden:
+ Alle Objekte aller Klassen mï¿½ssen mit folgendem Aufruf erzeugt werden:
  
  $object =& createWisyObject('CLASS_NAME', $framework, array('param1'=>'value1', ...);
   
  Man beachte das =& bei der Zuweisung; PHP erfordert diese Schreibweise bei
- der By-Reference-Rückgabe zwingend (bei By-Reference-Parametern ist das "&"
+ der By-Reference-Rï¿½ckgabe zwingend (bei By-Reference-Parametern ist das "&"
  nicht notwendig).  Wie auch immer, diese Vorgehensweise erlaubt Modulen
- Funktionen und Klassen beliebig zu überschreiben, indem die abgeleitete Klasse 
+ Funktionen und Klassen beliebig zu ï¿½berschreiben, indem die abgeleitete Klasse 
  in der Moduldatei einfach wie folgt deklariert wird:
  
  registerWisyClass('CLASS_NAME');
@@ -114,7 +114,7 @@ function &createWisyObject($className, &$anyobject, $anyparam = 0)
 					if( !file_exists($file) )
 					{
 						// no error at the moment ... we're just moving and paths will change ...
-						die("Fehler in createWisyObject(): Kann Modul &quot;$file&quot; nicht Ã¶ffnen. Bitte ueberpruefen Sie Ihre Portaleinstellungen oder kontaktieren Sie den zustaendigen Administrator.");
+						die("Fehler in createWisyObject(): Kann Modul &quot;$file&quot; nicht &ouml;ffnen. Bitte ueberpruefen Sie Ihre Portaleinstellungen oder kontaktieren Sie den zustaendigen Administrator.");
 					}
 					else
 					{
