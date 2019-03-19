@@ -755,6 +755,33 @@ if (jQuery.ui)
  * advanced search stuff
  *****************************************************************************/
 
+//Prevent empty search (<2 chars): on hompage: output message, on other page: search for all courses
+function preventEmptySearch(homepage) {
+  // only if no other submit event is attached to search submit button:
+  if( typeof $._data( $("#wisy_searcharea form[action=search]")[0], "events" ) == 'undefined' ) {
+    
+   $('#wisy_searcharea form[action=search]').on('submit', function(e) {
+    e.preventDefault();
+    var len = $('#wisy_searchinput').val().length;
+    
+       if ($(location).attr('pathname') == homepage) {
+            if (len > 1) {
+                   this.submit(); // default: normal search
+               } else {
+                alert('Bitte geben Sie einen Suchbegriff an (mindesten 2 Buchstaben)');
+            }
+       } else {
+           if(len < 2)
+            $('#wisy_searchinput').val("zeige:kurse");
+           
+           // default: normal search on other than homepage
+           this.submit();
+       }
+   });
+   
+  }
+}
+
 function advEmbeddingViaAjaxDone()
 {
 	// Init autocomplete function
@@ -1017,6 +1044,15 @@ function editWeekdays(jqObj)
 	}
 }
 
+function resetPassword(aID, pflegeEmail) {
+	$.ajax({
+	type: "POST",
+	url: "/edit",
+	data: { action: "forgotpw", pwsubseq: "1", as: aID },
+	success: function(data) { alert( "Wir haben Ihnen eine E-Mail mit einem Link zur Passwortgenerierung an "+pflegeEmail+" gesandt!\n\nSollte in wenigen Minuten keine E-Mail eintreffen, pruefen Sie bitte die E-Mailadresse bzw. wenden Sie sich bitte an den Portal-Betreiber."); }
+  });
+}
+
 /*****************************************************************************
  * feedback stuff
  *****************************************************************************/
@@ -1030,29 +1066,36 @@ function ajaxFeedback(rating, descr)
 function describeFeedback()
 {
 	var descr = $('#wisy_feedback_descr').val();
+	var name = $('#wisy_feedback_name').val();
+	var email = $('#wisy_feedback_email').val();
+	
 	descr = $.trim(descr);
+	name = $.trim(name);
+	email = $.trim(email);
+	
 	if( descr == '' )
 	{
 		alert('Bitte geben Sie zuerst Ihren Kommentar ein.');
 	}
 	else
 	{
-		$('#wisy_feedback_line2').html('<p class="wisy_feedback_thanksforcomment">Vielen Dank für Ihren Kommentar!</p>');
-		ajaxFeedback(0, descr); // Kommentar zur Bewertung hinzufügen; die Bewertung selbst (erster Parameter) wird an dieser Stelle ignoriert!
+		$('#wisy_feedback_line2').html('<strong style="color: green;">Vielen Dank f√ºr Ihren Kommentar!</strong>');
+		ajaxFeedback(0, descr, name, email); // Kommentar zur Bewertung hinzuf√ºgen; die Bewertung selbst (erster Parameter) wird an dieser Stelle ignoriert!
 	}
 }
 
 function sendFeedback(rating)
 {
-	$('#wisy_feedback_yesno').html('<strong class="wisy_feedback_thanks">Vielen Dank für Ihr Feedback!</strong>');
+	$('#wisy_feedback_yesno').html('<strong class="wisy_feedback_thanks">Vielen Dank f√ºr Ihr Feedback!</strong>');
 	
 	if( rating == 0 )
 	{
 		$('#wisy_feedback').append(
 				'<div id="wisy_feedback_line2">'
-			+		'<p>Bitte schildern Sie uns noch kurz, warum diese Information nicht hilfreich war und was wir besser machen können:</p>'
+			+		'<p>Bitte schildern Sie uns noch kurz, warum diese Information nicht hilfreich war und was wir besser machen k√∂nnen:</p>'
 				+	'<textarea id="wisy_feedback_descr" name="wisy_feedback_descr" rows="2" cols="20"></textarea><br />'
-				+	'Wenn Sie eine Antwort wünschen, geben Sie bitte auch Ihre E-Mail-Adresse an.<br />'
+				+	'<br><b>Wenn Sie eine Antwort w&uuml;nschen</b>, geben Sie bitte auch Ihre E-Mail-Adresse an (optional).<br />Wir verwenden Ihre E-Mailadresse und ggf. Name nur, um Ihr Anliegen zu bearbeiten und l&ouml;schen diese personenbezogenen Daten alle 12 Monate.<br><br>'
+				+	'<label for="wisy_feedback_name">Name (optional): </label><input type="text" id="wisy_feedback_name" name="wisy_feedback_name">&nbsp; <label for="wisy_feedback_email">E-Mailadresse (optional): </label><input type="text" id="wisy_feedback_email" name="wisy_feedback_email"><br><br>'
 				+	'<input id="wisy_feedback_submit" type="submit" onclick="describeFeedback(); return false;" value="Kommentar senden" />'
 			+	'</div>'
 		);
@@ -1064,7 +1107,8 @@ function sendFeedback(rating)
 				'<div id="wisy_feedback_line2">'
 			+		'<p>Bitte schildern Sie uns kurz, was hilfreich war, damit wir Bew&auml;hrtes bewahren und ausbauen:</p>'
 				+	'<textarea id="wisy_feedback_descr" name="wisy_feedback_descr" rows="2" cols="20"></textarea><br />'
-				+	'Wenn Sie eine Antwort wünschen, geben Sie bitte auch Ihre E-Mail-Adresse an.<br />'
+				+	'<br><b>Wenn Sie eine Antwort w&uuml;nschen</b>, geben Sie bitte auch Ihre E-Mail-Adresse an (optional).<br />Wir verwenden Ihre E-Mailadresse und ggf. Name nur, um Ihr Anliegen zu bearbeiten und l&ouml;schen diese personenbezogenen Daten alle 12 Monate.<br><br>'
+				+	'<label for="wisy_feedback_name">Name (optional): </label><input type="text" id="wisy_feedback_name" name="wisy_feedback_name">&nbsp; <label for="wisy_feedback_email">E-Mailadresse (optional): </label><input type="text" id="wisy_feedback_email" name="wisy_feedback_email"><br><br>'
 				+	'<input id="wisy_feedback_submit" type="submit" onclick="describeFeedback(); return false;" value="Kommentar senden" />'
 			+	'</div>'
 		);
