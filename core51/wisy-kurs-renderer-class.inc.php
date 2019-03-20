@@ -132,21 +132,6 @@ class WISY_KURS_RENDERER_CLASS
 			echo '<p class="noprint">' 
 			.	 	'<a class="wisyr_zurueck" href="javascript:history.back();">&laquo; Zur&uuml;ck</a>'
 			.	 '</p>';
-			
-			echo '<h1 class="wisyr_kurstitel">';
-				if( $anbieter_typ == 2 ) echo '<span class="wisy_icon_beratungsstelle">Beratung<span class="dp">:</span></span> ';
-				if( $displayAbschluss && $isAbschluss ) echo '<span class="wisy_icon_abschluss">Abschluss<span class="dp">:</span></span> ';
-				echo htmlentities($this->framework->encode_windows_chars($title));
-				if( $this->framework->iniRead('fav.use', 0) ) {
-					echo '<span class="fav_add" data-favid="'.$kursId.'"></span>';
-				}		
-			echo '</h1>';
-			
-			if( $originaltitel != '' && $originaltitel != $title )
-			{
-				echo '<h2 class="wisy_originaltitel">' . /*'Originaltitel: ' .*/ htmlspecialchars($originaltitel) . '</h2>';
-			}
-		
 
 			flush();
 			
@@ -168,6 +153,19 @@ class WISY_KURS_RENDERER_CLASS
 			}
 			
 			echo '<section class="wisyr_kursinfos clearfix">';
+			echo '<h1 class="wisyr_kurstitel">';
+			if( $anbieter_typ == 2 ) echo '<span class="wisy_icon_beratungsstelle">Beratung<span class="dp">:</span></span> ';
+			if( $displayAbschluss && $isAbschluss ) echo '<span class="wisy_icon_abschluss">Abschluss<span class="dp">:</span></span> ';
+			echo htmlentities($this->framework->encode_windows_chars($title));
+			if( $this->framework->iniRead('fav.use', 0) ) {
+			    echo '<span class="fav_add" data-favid="'.$kursId.'"></span>';
+			}
+			echo '</h1>';
+			
+			if( $originaltitel != '' && $originaltitel != $title )
+			{
+			    echo '<h2 class="wisy_originaltitel">' . /*'Originaltitel: ' .*/ htmlspecialchars($originaltitel) . '</h2>';
+			}
 				echo '<article class="wisy_kurs_inhalt"><h1>Inhalt</h1>';
 			
 				if( $beschreibung != '' ) {
@@ -247,8 +245,9 @@ class WISY_KURS_RENDERER_CLASS
 							if (($spalten & 4) > 0)	{ echo '<th>Dauer</th>';			}
 							if (($spalten & 8) > 0)	{ echo '<th>Art</th>';				}
 							if (($spalten & 16) > 0)	{ echo '<th>Preis</th>';			}
-							if (($spalten & 32) > 0)	{ echo '<th>Ort</th><th>Bemerkungen</th>';	}
+							if (($spalten & 32) > 0)	{ echo '<th>Ort</th>';	}
 							if (($spalten & 64) > 0)	{ echo '<th>Ang.-Nr.</th>';			}
+							if (($spalten & 128) > 0)	{ echo '<th>Bemerkungen</th>';
 						echo '</tr></thead>';
 					
 						/*
@@ -299,12 +298,73 @@ class WISY_KURS_RENDERER_CLASS
 			// vollständigkeit feedback, editieren etc.
 			echo '<footer class="wisy_kurs_footer">';
 				
-				echo '<div class="wisyr_kurs_meta">';
-					echo 'Kursinformation erstellt am ' . $this->framework->formatDatum($date_created);
-					echo ', zuletzt ge&auml;ndert am ' . $this->framework->formatDatum($date_modified);
-					echo ', ' . $vollst['percent'] . '% Vollständigkeit';
-					echo '<div class="wisyr_vollst_info"><span class="info">Hinweise zur förmlichen Vollständigkeit der Kursinfos sagen nichts aus über die Qualität der Kurse selbst. <a href="' . $this->framework->getHelpUrl(3369) . '">Mehr erfahren</a></span></div>';
-					
+			if($this->framework->iniRead('sw_cloud.kurs_anzeige', 0)) {
+			    
+			    global $wisyPortalId;
+			    $cacheKey = "sw_cloud_p".$wisyPortalId."_k".$kursId;
+			    $this->dbCache		=& createWisyObject('WISY_CACHE_CLASS', $this->framework, array('table'=>'x_cache_tagcloud', 'itemLifetimeSeconds'=>60*60*24));
+			    
+			    if( ($temp=$this->dbCache->lookup($cacheKey))!='' )
+			    {
+			        $tag_cloud = $temp." <!-- tag cloud from cache -->";
+			    }
+			    else
+			    {
+			        $filtersw = array_map("trim", explode(",", $this->framework->iniRead('sw_cloud.filtertyp', "32, 2048, 8192")));
+			        $distinct_tags = array();
+			        $tags = $this->framework->loadStichwoerter($db, 'kurse', $kursId);
+			        $tag_cloud = '<div id="sw_cloud"><h3>'.$this->framework->iniRead('sw_cloud.bezeichnung_kurs', 'Suchbegriffe').'</h3> ';
+			        //$tag_cloud .= '<h4>Suchbegriffe</h4>';
+			        
+			        for($i = 0; $i < count($tags); $i++)
+			        {
+			            $tag = array_map("utf8_encode", $tags[$i]);
+			            
+			            if($this->framework->iniRead('sw_cloud.kurs_gewichten', 0)) {
+			                $tag_freq = $this->framework->getTagFreq($db, $tag['stichwort']);
+			                $weight = (floor($tag_freq/50) > 15) ? 15 : floor($tag_freq/50);
+			            }
+			            
+			            if($tag['eigenschaften'] != $filtersw && $tag_freq > 0); {
+			                if($this->framework->iniRead('sw_cloud.kurs_stichwoerter', 1))
+			                    $tag_cloud .= '<span class="sw_raw typ_'.$tag['eigenschaften'].'" data-weight="'.$weight.'"><a href="/?q='.urlencode($tag['stichwort']).'">'.$tag['stichwort'].'</a></span>, ';
+			                    
+			                if($this->framework->iniRead('sw_cloud.kurs_synonyme', 0))
+			                    $tag_cloud .= $this->framework->writeDerivedTags($this->framework->loadDerivedTags($db, $tag['id'], $distinct_tags, "Synonyme"), $filtersw, "Synonym", $tag['stichwort']);
+			                        
+			                if($this->framework->iniRead('sw_cloud.kurs_oberbegriffe', 1))
+			                    $tag_cloud .= $this->framework->writeDerivedTags($this->framework->loadDerivedTags($db, $tag['id'], $distinct_tags, "Oberbegriffe"), $filtersw, "Oberbegriff", $tag['stichwort']);
+			                            
+			                if($this->framework->iniRead('sw_cloud.kurs_unterbegriffe', 0))
+			                    $tag_cloud .= $this->framework->writeDerivedTags($this->framework->loadDerivedTags($db, $tag['id'], $distinct_tags, "Unterbegriffe"), $filtersw, "Unterbegriff", $tag['stichwort']);
+			            }
+			            
+			        } // end: for
+			        
+			        $tag_cloud = trim($tag_cloud, ", ");
+			        $tag_cloud .= '</div>';
+			        
+			        $this->dbCache->insert($cacheKey, utf8_decode($tag_cloud));
+			    }
+			    
+			    echo $tag_cloud;
+			} // end: tag cloud
+			
+			$kerst = $this->framework->iniRead('kursinfo.erstellt', 1);
+			$kaend = $this->framework->iniRead('kursinfo.geaendert', 1);
+			$kvollst = $this->framework->iniRead('kursinfo.vollstaendigkeit', 1);
+			echo '<div class="wisyr_kurs_meta">';
+			if($kerst || $kaend || $kvollst) {
+			    echo 'Kursinformation: ';
+			    if($kerst)
+			        echo 'erstellt am ' . $this->framework->formatDatum($date_created).', ';
+			    if($kaend)
+			        echo 'zuletzt ge&auml;ndert am ' . $this->framework->formatDatum($date_modified).', ';
+			    if($kvollst) {
+			        echo $vollst['percent'] . '% Vollst&auml;ndigkeit';
+			        echo '<div class="wisyr_vollst_info"><span class="info">Hinweise zur f&ouml;rmlichen Vollst&auml;ndigkeit der Kursinfos sagen nichts aus &uuml;ber die Qualit&auml;t der Kurse selbst. <a href="' . $this->framework->getHelpUrl(3369) . '">Mehr erfahren</a></span></div>';
+			    }
+			}
 					$copyrightClass->renderCopyright($db, 'kurse', $kursId);
 				echo '</div><!-- /.wisyr_kurs_meta -->';
 								
