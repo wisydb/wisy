@@ -202,6 +202,54 @@ class WISY_FILTER_CLASS
 					'options'	=>	$qualitaetszertifikate
 				);
 		}
+		
+		$zertifikate = $this->getSpezielleStichw(65536);
+		if( sizeof($zertifikate) > 1 )
+		{
+		    $this->presets['zertifikat'] = array
+		    (
+		        'type'		=> 'taglist',
+		        'descr'		=> 'Zertifikat:',
+		        'function'	=> 'zertifikat:',
+		        'options'	=>	$zertifikate
+		    );
+		}
+		
+		$sonstigemerkmale = $this->getSpezielleStichw(1024);
+		if( sizeof($sonstigemerkmale) > 1 )
+		{
+		    $this->presets['sonstigesmerkmal'] = array
+		    (
+		        'type'		=> 'taglist',
+		        'descr'		=> 'Sonstiges Merkmal:',
+		        'function'	=> 'sonstigesmerkmal:',
+		        'options'	=>	$sonstigemerkmale
+		    );
+		}
+		
+		$abschluesse = $this->getSpezielleStichw(1);
+		if( sizeof($abschluesse) > 1 )
+		{
+		    $this->presets['abschluesse'] = array
+		    (
+		        'type'		=> 'taglist',
+		        'descr'		=> 'Abschluss:',
+		        'function'	=> 'abschluesse:',
+		        'options'	=>	$abschluesse
+		    );
+		}
+		
+		$abschlussarten = $this->getSpezielleStichw(16);
+		if( sizeof($abschlussarten) > 1 )
+		{
+		    $this->presets['abschlussarten'] = array
+		    (
+		        'type'		=> 'taglist',
+		        'descr'		=> 'Abschlussart:',
+		        'function'	=> 'abschlussarten:',
+		        'options'	=>	$abschlussarten
+		    );
+		}
 
 		$unterrichtsarten = $this->getSpezielleStichw(32768);
 		if( sizeof($unterrichtsarten) > 1 )
@@ -262,6 +310,18 @@ class WISY_FILTER_CLASS
 		$this->presets['zielgruppe']['classes'] = 'wisyr_c1_3';
 		$this->presets['qualitaetszertifikat']['descr'] = 'Qualitätszertifikat';
 		$this->presets['qualitaetszertifikat']['classes'] = 'wisyr_c2_3';
+		
+		$this->presets['zertifikat']['descr'] = 'Zertifikat';
+		$this->presets['zertifikat']['classes'] = 'wisyr_c2_3';
+		
+		$this->presets['sonstigesmerkmal']['descr'] = 'Sonstiges Merkmal';
+		$this->presets['sonstigesmerkmal']['classes'] = 'wisyr_c2_3';
+		
+		$this->presets['abschluesse']['descr'] = 'Abschluss';
+		$this->presets['abschluesse']['classes'] = 'wisyr_c3_3';
+		
+		$this->presets['abschlussarten']['descr'] = 'Abschlussart';
+		$this->presets['abschlussarten']['classes'] = 'wisyr_c4_3';
 		
 		$this->presets['unterrichtsart']['descr'] = 'Unterrichtsart';
 		$this->presets['unterrichtsart']['classes'] = 'wisyr_c1_3';
