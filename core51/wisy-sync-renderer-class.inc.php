@@ -371,7 +371,7 @@ class KURS2PORTALTAG_CLASS
 			$einstcache		= explodeSettings($db->f8('einstcache'));
 			$filter			= explodeSettings($db->f8('filter'));
 
-			if( $einstellungen['core'] == '20' && $filter['stdkursfilter'] != '' )
+			if( $filter['stdkursfilter'] != '' )
 			{
 				$portal_tag = $tagtable->lookupOrInsert(".portal$portal_id", 0);
 				
