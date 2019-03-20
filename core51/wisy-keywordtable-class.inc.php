@@ -87,7 +87,7 @@ class WISY_KEYWORDTABLE_CLASS
 
 		if( $row_postfix != '' )
 		{
-			$row_postfix = ' <span class="ac_tag_type">(' . $row_postfix . ')</span> ';
+		    $row_postfix = ' <span class="ac_tag_type">(' . htmlentities($row_postfix) . ')</span> ';
 		}
 
 		/*col1*/
