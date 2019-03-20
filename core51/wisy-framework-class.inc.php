@@ -24,6 +24,7 @@ function g_sync_removeSpecialChars($str)
 class WISY_FRAMEWORK_CLASS
 {
 	var $includeVersion;
+	var $coreRelPath;
 	
 	var $editCookieName;
 	var $editSessionStarted;
@@ -74,16 +75,21 @@ class WISY_FRAMEWORK_CLASS
 		'zielgruppe',
 		'thema',
 		'foerderung',
-		'qualitaetszertifikat',
+	    'qualitaetszertifikat',
+	    'zertifikat',
+	    'sonstigesmerkmal',
 	    'abschluesse',
-	    'abschlussarten',
-		'unterrichtsart',
+	    'abschlussart',
+	    'unterrichtsart',
 		'tageszeit');
 
 	function __construct($baseObject, $addParam)
 	{
+	    global $wisyCore;
+	    $this->coreRelPath = '/' . $wisyCore;
+	    
 		// constructor
-		$this->includeVersion = '?iv=201'; // change the number on larger changes in included CSS and/or JS files.  May be empty.
+		$this->includeVersion = '?iv=511'; // change the number on larger changes in included CSS and/or JS files.  May be empty.
 		
 		// init edit stuff
 		$this->editCookieName		= 'wisyEdit20';
@@ -647,7 +653,7 @@ class WISY_FRAMEWORK_CLASS
 			$i++;
 		}
 		
-		return $ret;
+		return '/' . $ret;
 	}
 
 	function getHelpUrl($id)
@@ -1336,25 +1342,39 @@ class WISY_FRAMEWORK_CLASS
 		// return all CSS as an array
 		global $wisyPortalCSS;
 		global $wisyPortalId;
+		global $wisyCore; // > 51!
+		$coreAbsPath = $_SERVER['DOCUMENT_ROOT'].'/'.$wisyCore.'/';
 		
 		$ret = array();
 
 		// core styles
-		$ret[] = 'core.css' . $this->includeVersion;
+		$date_modified = filectime($coreAbsPath.'core.css');
+		$ret[] = 'core.css' . '?ver='.date("Y-m-d_h-i-s", $date_modified);
 		
 		// core responsive styles
-		$ret[] = 'core.responsive.css' . $this->includeVersion;
-		$ret[] = 'core51/lib/jquery/jquery-ui-1.12.1.custom.min.css' . $this->includeVersion;
-		$ret[] = 'core51/lib/zebra-datepicker/zebra_datepicker.min.css' . $this->includeVersion;
+		$date_modified = filectime($coreAbsPath.'core.responsive.css');
+		$ret[] = 'core.responsive.css' . '?ver='.date("Y-m-d_h-i-s", $date_modified);
+		
+		$date_modified = filectime($coreAbsPath.'/lib/jquery/jquery-ui-1.12.1.custom.min.css');
+		$ret[] = $wisyCore.'/lib/jquery/jquery-ui-1.12.1.custom.min.css' . '?ver='.date("Y-m-d_h-i-s", $date_modified);
+		
+		$date_modified = filectime($coreAbsPath.'/lib/zebra-datepicker/zebra_datepicker.min.css');
+		$ret[] = $wisyCore.'/lib/zebra-datepicker/zebra_datepicker.min.css' . '?ver='.date("Y-m-d_h-i-s", $date_modified);
 		
 		if($this->iniRead('cookiebanner', '') == 1) {
-			$ret[] = 'core51/lib/cookieconsent/cookieconsent.min.css';
+		    $date_modified = filectime($coreAbsPath.'/lib/cookieconsent/cookieconsent.min.css');
+		    $ret[] = $wisyCore.'/lib/cookieconsent/cookieconsent.min.css' . '?ver='.date("Y-m-d_h-i-s", $date_modified);
 		}
 		
 		// the portal may overwrite everything ...
 		if( $wisyPortalCSS )
 		{
-			$ret[] = 'portal.css'. $this->includeVersion;
+		    $db = new DB_Admin;
+		    $db->query("SELECT date_modified FROM portale WHERE id=$wisyPortalId;");
+		    if($db->next_record())
+		        $date_modified = $db->f8('date_modified');
+		        $db->free();
+		        $ret[] = 'portal.css'. '?ver='.date("Y-m-d_h-i-s", strtotime($date_modified));
 		}
 		
 		if( ($tempCSS=$this->iniRead('head.css', '')) != '')
@@ -1385,50 +1405,85 @@ class WISY_FRAMEWORK_CLASS
 	
 	function getJSFiles()
 	{
-		// return all JavaScript files as an array
-		$ret = array();
-		
-		$ret[] = 'core51/lib/jquery/jquery-1.12.4.min.js';
-		$ret[] = 'core51/lib/jquery/jquery-ui-1.12.1.custom.min.js';
-		$ret[] = 'core51/lib/zebra-datepicker/zebra_datepicker.min.js';
-		
-		if($this->simplified)
-		{
-			$ret[] = 'jquery.wisy.simplified.js' . $this->includeVersion;
-		}
-		else
-		{
-			$ret[] = 'jquery.wisy.js' . $this->includeVersion;
-		}
-		
-		if($this->iniRead('cookiebanner', '') == 1) {
-			$ret[] = 'core51/lib/cookieconsent/cookieconsent.min.js';
-		}
-		
-		if( ($tempJS=$this->iniRead('head.js', '')) != '')
-		{
-			$addJs = explode(",", $tempJS);
-			
-			foreach($addJs AS $jsFile) {
-				$ret[] = trim($jsFile);
-			}
-		}
-		
-		return $ret;
+	    // return all JavaScript files as an array
+	    $ret = array();
+	    global $wisyCore; // > 51!
+	    $coreAbsPath = $_SERVER['DOCUMENT_ROOT'].'/'.$wisyCore.'/';
+	    
+	    $date_modified = filectime($coreAbsPath.'lib/jquery/jquery-1.12.4.min.js');
+	    $ret[] = $wisyCore.'/lib/jquery/jquery-1.12.4.min.js' . '?ver='.date("Y-m-d_h-i-s", $date_modified);
+	    
+	    $date_modified = filectime($coreAbsPath.'lib/jquery/jquery-ui-1.12.1.custom.min.js');
+	    $ret[] = $wisyCore.'/lib/jquery/jquery-ui-1.12.1.custom.min.js' . '?ver='.date("Y-m-d_h-i-s", $date_modified);
+	    
+	    if($this->simplified)
+	    {
+	        $date_modified = filectime($coreAbsPath.'jquery.wisy.simplified.js');
+	        $ret[] = 'jquery.wisy.simplified.js' . '?ver='.date("Y-m-d_h-i-s", $date_modified);
+	    }
+	    else
+	    {
+	        $date_modified = filectime($coreAbsPath.'jquery.wisy.js');
+	        $ret[] = 'jquery.wisy.js' . '?ver='.date("Y-m-d_h-i-s", $date_modified);
+	    }
+	    
+	    if( ($tempJS=$this->iniRead('head.js', '')) != '')
+	    {
+	        $addJs = explode(",", $tempJS);
+	        
+	        foreach($addJs AS $jsFile) {
+	            $ret[] = trim($jsFile);
+	        }
+	    }
+	    
+	    return $ret;
+	}
+	
+	function getDeferedJSFiles()
+	{
+	    // return defered JavaScript files as an array
+	    $ret = array();
+	    global $wisyCore; // > 51!
+	    $coreAbsPath = $_SERVER['DOCUMENT_ROOT'].'/'.$wisyCore.'/';
+	    
+	    $date_modified = filectime($coreAbsPath.'lib/zebra-datepicker/zebra_datepicker.min.js');
+	    $ret[] = $wisyCore.'/lib/zebra-datepicker/zebra_datepicker.min.js' . '?ver='.date("Y-m-d_h-i-s", $date_modified);
+	    
+	    if($this->iniRead('cookiebanner', '') == 1) {
+	        $date_modified = filectime($coreAbsPath.'lib/cookieconsent/cookieconsent.min.js');
+	        $ret[] = $wisyCore.'/lib/cookieconsent/cookieconsent.min.js' . '?ver='.date("Y-m-d_h-i-s", $date_modified);
+	    }
+	    
+	    if( ($tempJS=$this->iniRead('head.defered.js', '')) != '')
+	    {
+	        $addJs = explode(",", $tempJS);
+	        
+	        foreach($addJs AS $jsFile) {
+	            $ret[] = trim($jsFile);
+	        }
+	    }
+	    
+	    return $ret;
 	}
 	
 	function getJSHeadTags()
 	{
-		// JavaScript tags to include to the header (if any)
-		$ret = '';
-		
-		$js = $this->getJSFiles();
-		for( $i = 0; $i < sizeof($js); $i++ )
-		{	
-			$ret .= '<script type="text/javascript" src="'.$js[$i].'" charset="utf-8"></script>' . "\n";
-		}
-		
-		// Cookie Banner settings
+	    // JavaScript tags to include to the header (if any)
+	    $ret = '';
+	    
+	    $js = $this->getJSFiles();
+	    for( $i = 0; $i < sizeof($js); $i++ )
+	    {
+	        $ret .= '<script src="'.$js[$i].'"></script>' . "\n";
+	    }
+	    
+	    $js_defered = $this->getDeferedJSFiles();
+	    for( $i = 0; $i < sizeof($js_defered); $i++ )
+	    {
+	        $ret .= '<script src="'.$js_defered[$i].'" defer></script>' . "\n";
+	    }
+	    
+	    // Cookie Banner settings
 		if($this->iniRead('cookiebanner', '') == 1) {
 			
 			$ret .= "<script type=\"text/javascript\">\n";
@@ -1633,7 +1688,7 @@ class WISY_FRAMEWORK_CLASS
 						. '__HEADTAGS__' 
 						. '</head>' . "\n"
 						. '<body__BODYATTR__>' . "\n"
-						. '<script type="text/javascript">document.body.className = document.body.className.replace("nojs","yesjs");</script>' . "\n"
+						. '<script>document.body.className = document.body.className.replace("nojs","yesjs");</script>' . "\n"
 						. '<div class="acclink"><a href="#wisy_contentareaAnchor">Zum Inhalt</a></div>'
 						. $bodyStart;
 			if( strpos($bodyStart, '__CONTENT__') === false )
@@ -1721,7 +1776,7 @@ class WISY_FRAMEWORK_CLASS
 		if( $uacct != '' )
 		{
 			$ret .= '
-				<script type="text/javascript">
+				<script>
 				var optedOut = document.cookie.indexOf("cookieconsent_status=deny") > -1;
 				if (!optedOut) {					
 					(function(i,s,o,g,r,a,m){i["GoogleAnalyticsObject"]=r;i[r]=i[r]||function(){ 
@@ -1748,7 +1803,7 @@ class WISY_FRAMEWORK_CLASS
 			
 			$ret .= "
 				<!-- analytics.piwik -->
-				<script type=\"text/javascript\">
+				<script>
                 var optedOut = document.cookie.indexOf(\"cookieconsent_status=deny\") > -1;
 				if (!optedOut) {
 					var _paq = _paq || [];
@@ -1875,40 +1930,42 @@ class WISY_FRAMEWORK_CLASS
 		$autocomplete_class = 'ac_keyword';
 		
 		if( isset($tokens['show']) && $tokens['show'] == 'anbieter' ) {
-			$searchinput_placeholder = $this->iniRead('searcharea.anbieter.placeholder', $searchinput_placeholder);
-			$searchbutton_value = $this->iniRead('searcharea.anbieter.searchlabel', $searchbutton_value);
-			$autocomplete_class = 'ac_keyword_anbieter';
+		    $searchinput_placeholder = $this->iniRead('searcharea.anbieter.placeholder', $searchinput_placeholder);
+		    $searchbutton_value = $this->iniRead('searcharea.anbieter.searchlabel', $searchbutton_value);
+		    $autocomplete_class = 'ac_keyword_anbieter';
+		    $hint = $this->iniRead('searcharea.anbieter.hint', $searchinput_placeholder);
 		}
 		
 		echo "\n" . '<div id="wisy_searcharea">' . "\n";
-			echo '<div class="inner">' . "\n";
-				echo '<form action="search" method="get" '.$searchAction.'>' . "\n" . $target; // #richtext
-					echo '<div class="formrow wisyr_searchinput">';
-						echo '<label for="wisy_searchinput">' . $this->iniRead('searcharea.placeholder', $DEFAULT_PLACEHOLDER) . '</label>';
-						if($this->simplified)
-						{
-							echo '<input type="text" id="wisy_searchinput" class="' . $autocomplete_class . '" name="qs" value="' .$this->QS. '" placeholder="' . $searchinput_placeholder . '" />' . "\n";
-							echo '<input type="hidden" id="wisy_searchinput_q" name="q" value="' . $this->Q . '" />' . "\n";
-							echo '<input type="hidden" id="wisy_searchinput_qf" name="qf" value="' . $this->QF . '" />' . "\n";
-							if( isset($tokens['show']) && $tokens['show'] == 'anbieter' ) {
-								echo '<input type="hidden" name="filter_zeige" value="Anbieter" />';
-							}
-							$active_filters = $this->filterer->getActiveFilters();
-							$hintwithfilters = $this->iniRead('searcharea.hintwithfilters', 0);
-							if($active_filters == '' || $hintwithfilters) {
-							    $hint = ($hintwithfilters && $active_filters) ? $hintwithfilters : $this->replacePlaceholders($this->iniRead('searcharea.hint', $DEFAULT_BOTTOM_HINT));
-							    echo '<div class="wisy_searchhints">' .  $hint . '</div>' . "\n";
-							}
-						}
-						else
-						{
-							echo '<input type="text" id="wisy_searchinput" class="' . $autocomplete_class . '" name="q" value="' .$q. '" placeholder="' . $searchinput_placeholder . '" />' . "\n";
-						}
-					echo '</div>';
-					
-                    if($active_filters != '') {
-                        echo '<ul class="wisyr_activefilters">' . $active_filters . '</ul>'; 
-                    }
+		echo '<div class="inner">' . "\n";
+		echo '<form action="search" method="get" '.$searchAction.'>' . "\n" . $target; // #richtext
+		echo '<div class="formrow wisyr_searchinput">';
+		echo '<label for="wisy_searchinput">' . $this->iniRead('searcharea.placeholder', $DEFAULT_PLACEHOLDER) . '</label>';
+		if($this->simplified)
+		{
+		    // #richtext
+		    echo '<input '.$queryinput.' type="text" id="wisy_searchinput" class="' . $autocomplete_class . '" name="qs" value="' .$this->QS. '" placeholder="' . $searchinput_placeholder . '" />' . "\n";
+		    echo '<input type="hidden" id="wisy_searchinput_q" name="q" value="' . $this->Q . '" />' . "\n";
+		    echo '<input type="hidden" id="wisy_searchinput_qf" name="qf" value="' . $this->QF . '" />' . "\n";
+		    if( isset($tokens['show']) && $tokens['show'] == 'anbieter' ) {
+		        echo '<input type="hidden" name="filter_zeige" value="Anbieter" />';
+		    }
+		    $active_filters = $this->filterer->getActiveFilters();
+		    $hintwithfilters = $this->iniRead('searcharea.hintwithfilters', 0);
+		    if($active_filters == '' || $hintwithfilters) {
+		        $hint = ($hintwithfilters && $active_filters) ? $hintwithfilters : ($hint =="") ? $this->replacePlaceholders($this->iniRead('searcharea.hint', $DEFAULT_BOTTOM_HINT)) : $hint;
+		        echo '<div class="wisy_searchhints">' .  $hint . '</div>' . "\n";
+		    }
+		}
+		else
+		{
+		    echo '<input type="text" id="wisy_searchinput" class="' . $autocomplete_class . '" name="q" value="' .$q. '" placeholder="' . $searchinput_placeholder . '" />' . "\n";
+		}
+		echo '</div>';
+		
+		if($active_filters != '') {
+		    echo '<ul class="wisyr_activefilters">' . $active_filters . '</ul>';
+		}
 					
 					if( !$this->simplified && $this->iniRead('searcharea.radiussearch', 0) )
 					{
@@ -1961,7 +2018,7 @@ class WISY_FRAMEWORK_CLASS
 	        if($websiteurl)
 	            $metatags .= '<meta itemprop="url" content="'.$websiteurl.'">'."\n";
 	            
-	            // DF1 start date, to harmonize SERP entry date with DF
+	            // Datum des DF1-Startdatums, um SERP-Eintrag-Datum in Eingklang zu bekommen
 	            // if($websiteurl)
 	            // $metatags .= "<meta name='datePublished' itemprop='datePublished' content='".$YDP."-".$mDP."-".dDP."."'>"."\n";
 	            
@@ -2136,6 +2193,13 @@ class WISY_FRAMEWORK_CLASS
 
 			case 'paypalipn':
 				return createWisyObject('WISY_BILLING_RENDERER_CLASS', $this);
+			
+			case 'orte':
+			case 'themen':
+			case 'abschluesse':
+			case 'sitemap-landingpages.xml':
+			case 'sitemap-landingpages.xml.gz':
+			    return createWisyObject('WISY_LANDINGPAGE_RENDERER_CLASS', $this, array('type'=>$wisyRequestedFile));
 			
 			// deprecated URLs
 			case 'kurse.php':
