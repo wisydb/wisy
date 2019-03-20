@@ -101,11 +101,17 @@ class WISY_ROBOTS_RENDERER_CLASS
 			echo "Disallow: /edit\n";
 			echo "Disallow: /rss\n";
 			echo "Disallow: /terrapin\n";
-			echo "Disallow: /g151\n";
+			
+			echo "Disallow: /g151\n"; // for historic legal reasons, better: use portal setting below.
+			
 			foreach($block_specificlink AS $link) {
 			    if(strlen($link) >= 1)
 			        echo "Disallow: ".$link."\n";
 			}
+			
+			echo "\n\n";
+			echo "User-agent: ia_archiver\n";
+			echo "Disallow: /\n";
 		}
 	}
 
