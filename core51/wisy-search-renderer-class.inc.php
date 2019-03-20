@@ -611,7 +611,7 @@ class WISY_SEARCH_RENDERER_CLASS
 				$param = array('q'=>$queryString);
 				if( $orderBy != 'b' ) $param['order'] = $orderBy;
 				$param['offset'] = '';
-				$pagesel = $this->pageSel($this->framework->getUrl('search', $param), $this->rows, $offset, $sqlCount);
+				$pagesel = $this->pageSel($this->framework->getUrl('search', $param, true), $this->rows, $offset, $sqlCount);
 			}
 			else
 			{
@@ -918,7 +918,7 @@ class WISY_SEARCH_RENDERER_CLASS
 				$param = array('q'=>$queryString);
 				if( $orderBy != 'b' ) $param['order'] = $orderBy;
 				$param['offset'] = '';
-				$pagesel = $this->pageSel($this->framework->getUrl('search', $param), $this->rows, $offset, $sqlCount);
+				$pagesel = $this->pageSel($this->framework->getUrl('search', $param, true), $this->rows, $offset, $sqlCount);
 			}
 			else
 			{

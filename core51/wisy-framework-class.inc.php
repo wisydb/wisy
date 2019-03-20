@@ -618,7 +618,7 @@ class WISY_FRAMEWORK_CLASS
 		return $default;
 	}
 
-	function getUrl($page, $param = 0)
+	function getUrl($page, $param = 0, $rel = false)
 	{
 		// create any url; addparam is an array of additional parameters 
 		// parameters are encoded using urlencode, however, the whole URL is _not_ HTML-save, you need to call htmlentities() to convert & to &amp;
@@ -653,7 +653,10 @@ class WISY_FRAMEWORK_CLASS
 			$i++;
 		}
 		
-		return '/' . $ret;
+		if($rel)
+		  return $ret;
+		else
+		  return "/".$ret; // #landing
 	}
 
 	function getHelpUrl($id)
