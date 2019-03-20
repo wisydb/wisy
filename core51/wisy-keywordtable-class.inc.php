@@ -87,17 +87,17 @@ class WISY_KEYWORDTABLE_CLASS
 
 		if( $row_postfix != '' )
 		{
-			$row_postfix = ' <span class="ac_tag_type">(' . $row_postfix . ')</span> ';
+		    $row_postfix = ' <span class="ac_tag_type">(' . htmlentities($row_postfix) . ')</span> ';
 		}
 
 		/*col1*/
 		$ret .= '<span class="' .$row_class. '">';
-			$ret .= ' <a href="' . $this->framework->getUrl('search', array('q'=>$tag_name)) . '">' . htmlspecialchars($tag_name) . '</a> ';
+		$ret .= ' <a href="' . $this->framework->getUrl('search', array('q'=>$tag_name)) . '">' . utf8_decode($tag_name) . '</a> ';
 			$ret .= $row_postfix;
 		$ret .= '</span>';
 		
 		/*col2*/
-		$ret .= '</td><td width="10%" nowrap="nowrap" align="center">';
+		$ret .= '</td><td class="info_cell">';
 		if( $tag_help != 0 )
 		{
 			$ret .=
@@ -140,7 +140,7 @@ class WISY_KEYWORDTABLE_CLASS
 		}
 		
 		$ret = "<tr data-indent=\"$level\" $trstyle>";
-			$ret .= '<td style="padding-left:'.intval($level*2).'em" width="90%">';
+			$ret .= '<td style="padding-left:'.intval($level*2).'em" class="tag_cell">';
 			
 				if( $hasChildren ) {
 					$ret .= "<a href=\"#\" class=\"wisy_glskeyexp\" data-glskeyaction=\"".($expanded? "shrink":"expand")."\">";
@@ -249,8 +249,8 @@ class WISY_KEYWORDTABLE_CLASS
 		$ret = '<table class="wisy_glskey">'
 			.		'<thead>'
 			.			'<tr>'
-			.				'<td width="90%">Rechercheziele</td>'
-			.				'<td width="10%">Ratgeber</td>'	
+			    .		   '<td class="heading_tagtree">Rechercheziele</td>'
+			        .	   '<td class="heading_infos">Ratgeber</td>'
 			.			'</tr>'
 			.		'</thead>'
 			.		'<tbody>'
