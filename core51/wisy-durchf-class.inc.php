@@ -58,7 +58,8 @@ class WISY_DURCHF_CLASS
 				7721	=>	array('<span class="wisyr_art_icon wisyr_art_fernunterricht">&#9993;</span>',	'Fernunterricht'),
 				7639	=>	array('<span class="wisyr_art_icon wisyr_art_fernunterricht">WWW</span>',		'Webinar'),
 				17261	=>	array('<span class="wisyr_art_icon wisyr_art_fernunterricht">P</span>',			'Pr&auml;senzunterricht'),
-				806441	=>	array('<span class="wisyr_art_icon wisyr_art_fernunterricht">WWW</span>',		'Webinar') // eigentl. Teleteaching = Webinar
+				806441	=>	array('<span class="wisyr_art_icon wisyr_art_fernunterricht">WWW</span>',		'Webinar'), // eigentl. Teleteaching = Webinar
+			    832301	=>	array('<span class="wisyr_art_icon wisyr_art_bildungszeit">BZ</span>',		'Bildungszeit')
 			);
 
 			// overwrite defaults with portal settings from img.tag
@@ -455,11 +456,16 @@ class WISY_DURCHF_CLASS
 			    }
 			}
 			
-			if( $zeit_von && $zeit_bis ) {				
-				$cell .= " <span class=\"wisyr_termin_zeit\" data-title=\"Zeit\">$zeit_von - $zeit_bis Uhr</span>"; 
+			if( $zeit_von && $zeit_bis ) {
+			    $cell .= " <span class=\"wisyr_termin_zeit\" data-title=\"Zeit\">$zeit_von - $zeit_bis Uhr</span>";
 			}
 			else if( $zeit_von ) {
-				$cell .= " <span class=\"wisyr_termin_zeit\">$zeit_von Uhr</span>"; 
+			    $cell .= " <span class=\"wisyr_termin_zeit\">$zeit_von Uhr</span>";
+			}
+			
+			if( $addParam['record']['freigeschaltet'] == 4 )
+			{
+			    $cell .= ' <span class="wisyr_termin_dauerhaft">dauerhaftes Angebot</span>';
 			}
 			
 			if( $addText ) // z.B. für "2 weitere Durchführungen ..."
@@ -502,7 +508,7 @@ class WISY_DURCHF_CLASS
 				$cell .= $this->formatArtSpalte($dfStichw, $details);
 				
 				if( $cell == $this->seeAboveArt && $details ) {
-					echo '<span class="noprint">'.$cell.'</span><span class="printonly">s.o.</span>';
+				    echo '<div class="noprint">'.$cell.'</div><span class="printonly">s.o.</span>';
 				}
 				else {
 					echo $cell;
