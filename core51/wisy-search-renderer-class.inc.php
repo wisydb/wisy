@@ -76,8 +76,12 @@ class WISY_SEARCH_RENDERER_CLASS
 	
 	function renderColumnTitle($title, $sollOrder, $istOrder, $info=0)
 	{
+	    // #richtext
+	    $richtext = (intval(trim($this->framework->iniRead('meta.richtext'))) === 1);
+	    $headattribs = ($richtext) ? ' content="'.$title.'"' : '';
+	    
 		// Add column title class for use in responsive CSS
-		echo '    <th class="wisyr_'. $this->framework->cleanClassname($title) .'">';
+	    echo '    <th class="wisyr_'. $this->framework->cleanClassname($title) .'" '.$headattribs.'>'; // #richtext
 			
 			if($this->framework->simplified)
 			{
@@ -180,6 +184,8 @@ class WISY_SEARCH_RENDERER_CLASS
 				echo 'k. A.';
 			}
 		echo '</td>' . "\n";
+		
+		return $anbieterName; // #richtext
 	}
 	
 	function renderKursRecords(&$db, &$records, &$recordsToSkip, $param)
@@ -226,7 +232,7 @@ class WISY_SEARCH_RENDERER_CLASS
 					// d = sqrt( (x1-x2)^2 + (y1-y2)^2 )
 					$dx = $x1 - $x2; if( $dx < 0 ) $dx *= -1;
 					$dy = $y1 - $y2; if( $dy < 0 ) $dy *= -1;
-					$d = sqrt( $dx*$dx + $dy*dy ); // $d ist nun die Entfernung in Metern ;-)
+					$d = sqrt( $dx*$dx + $dy*$dy ); // $d ist nun die Entfernung in Metern ;-)
 					
 					// remember the smallest distance
 					if( !isset($distances[ $kurs_id ]) || $distances[ $kurs_id ] > $d )
@@ -245,6 +251,9 @@ class WISY_SEARCH_RENDERER_CLASS
 		$fav_use = $this->framework->iniRead('fav.use', 0);
 		
 		$rows = 0;
+		
+		$tag_cloud = array();
+		
 		reset($records['records']);
 		while( list($i, $record) = each($records['records']) )
 		{	
@@ -309,8 +318,8 @@ class WISY_SEARCH_RENDERER_CLASS
 				if (($wisyPortalSpalten & 1) > 0)
 				{
 					// SPALTE: anbieter
-
-					$this->renderAnbieterCell2($db, $anbieter_record, array('q'=>$param['q'], 'addPhone'=>true, 'promoted'=>$param['promoted'], 'kurs_id'=>$currKursId));
+					// #richtext
+				    $anbieterName = $this->renderAnbieterCell2($db, $anbieter_record, array('q'=>$param['q'], 'addPhone'=>true, 'promoted'=>$param['promoted'], 'kurs_id'=>$currKursId));
 				}
 				
 				// SPALTEN: durchfuehrung
@@ -323,8 +332,9 @@ class WISY_SEARCH_RENDERER_CLASS
 					$addText .= '</a></span>';
 				}
 				
-				$stichwoerter = $this->framework->loadStichwoerter($db, 'kurse', $currKursId);
-				$durchfClass->formatDurchfuehrung($db, $currKursId, intval($durchfuehrungenIds[0]), 0, 0, 1, $addText, array('record'=>$record, 'stichwoerter'=>$stichwoerter));
+				$tags = $this->framework->loadStichwoerter($db, 'kurse', $currKursId);
+				array_push($tag_cloud, $tags);
+				$durchfClass->formatDurchfuehrung($db, $currKursId, intval($durchfuehrungenIds[0]), 0, 0, 1, $addText, array('record'=>$record, 'stichwoerter'=>$tags));
 				
 				// SPALTE: Entfernung
 				if( $this->hasDistanceColumn )
@@ -361,6 +371,7 @@ class WISY_SEARCH_RENDERER_CLASS
 				
 			echo '  </tr>' . "\n";
 		}
+		return $tag_cloud;
 	}
 	
 	function formatItem($tag_name, $tag_descr, $tag_type, $tag_help, $tag_freq, $addparam=0)
@@ -409,7 +420,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		
 		if( $row_postfix != '' )
 		{
-			$row_postfix = ' <span class="ac_tag_type">(' . $row_postfix . ')</span> ';
+		    $row_postfix = ' <span class="ac_tag_type">(' . utf8_encode($row_postfix) . ')</span> ';
 		}
 	
 		/* additional flags */
@@ -470,7 +481,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		else if( $tag_type & 32768){ $row_class = "ac_unterrichtsart";		 $row_type = 'Unterrichtsart'; $row_count_prefix = ($tag_freq == 1) ? ' Kurs zur' : ' Kurse zur'; }
 		else if( $tag_type & 65536){ $row_class = "ac_zertifikat";           $row_type = 'Zertifikat'; }
 
-		if( $tag_descr ) $row_postfix .= ' <span class="ac_tag_type">('. $tag_descr .')</span>';
+		if( $tag_descr ) $row_postfix .= ' <span class="ac_tag_type">('. utf8_encode($tag_descr) .')</span>';
 		
 	
 		if( $tag_freq > 0 ) {
@@ -573,6 +584,8 @@ class WISY_SEARCH_RENDERER_CLASS
 	function renderKursliste(&$searcher, $queryString, $offset, $showFilters=true, $baseurl='/search/')
 	{
 		global $wisyPortalSpalten;
+		
+		$richtext = (intval(trim($this->framework->iniRead('meta.richtext'))) === 1); // #richtext
 	
 		$validOrders = array('a', 'ad', 't', 'td', 'b', 'bd', 'd', 'dd', 'p', 'pd', 'o', 'od', 'creat', 'creatd', 'rand');
 		$orderBy = $this->framework->order; if( !in_array($orderBy, $validOrders) ) $orderBy = 'b';
@@ -616,6 +629,10 @@ class WISY_SEARCH_RENDERER_CLASS
 				}
 				else {
 					echo '<span class="wisyr_angebote_zum_suchauftrag">';
+					/* ! actually makes sense: but how? Because of richtext additional output above?
+					 if($richtext)
+					 echo "&nbsp;"; // notwendig
+					 else */
 					echo $sqlCount==1? '<span class="wisyr_anzahl_angebote">1 Angebot</span> zum Suchauftrag ' : '<span class="wisyr_anzahl_angebote">' . $sqlCount . ' Angebote</span> zum Suchauftrag ';
 					if($this->framework->simplified)
 					{
@@ -650,6 +667,9 @@ class WISY_SEARCH_RENDERER_CLASS
 			echo '</div>';
 			
 			flush();
+			
+			/* $aggregateOffer = ($richtext) ? 'itemprop="offers" itemscope itemtype="http://schema.org/AggregateOffer"': '';
+			 echo '<div '.$aggregateOffer.'>'; */
 
 			// render table start
 			echo "\n".'<table class="wisy_list wisyr_kursliste">' . "\n";
@@ -666,10 +686,11 @@ class WISY_SEARCH_RENDERER_CLASS
 				if (($wisyPortalSpalten & 16) > 0) {	$this->renderColumnTitle('Preis',			'p',	$orderBy,	309);			$colspan++; }
 				if (($wisyPortalSpalten & 32) > 0) {	$this->renderColumnTitle('Ort',				'o', 	$orderBy,	1936);			$colspan++; }
 				if (($wisyPortalSpalten & 64) > 0) {	$this->renderColumnTitle('Ang.-Nr.',		'', 	$orderBy,	0);				$colspan++; }
-				if (($wisyPortalSpalten & 128)> 0) { 	$this->renderColumnTitle('BU',				'', 	$orderBy,	0);				$colspan++; }
-				if (($wisyPortalSpalten & 256)> 0 
-					&& $info['lat'] && $info['lng']) {  $this->renderColumnTitle('Entfernung',		'', 	$orderBy,	0);				$colspan++; $this->hasDistanceColumn = true; $this->baseLat = $info['lat']; $this->baseLng = $info['lng'];  }
-			echo '  </tr></thead>' . "\n";
+				/* if (($wisyPortalSpalten & 128)> 0) { 	$this->renderColumnTitle('Bemerkungen',				'', 	$orderBy,	0);				$colspan++; } */ /* ohne $details=true sinnlos */
+				/* if (($wisyPortalSpalten & 256)> 0) { 	$this->renderColumnTitle('BU',				'', 	$orderBy,	0);				$colspan++; } */
+				if (($wisyPortalSpalten & 512)> 0
+				    && $info['lat'] && $info['lng']) {  $this->renderColumnTitle('Entfernung',		'', 	$orderBy,	0);				$colspan++; $this->hasDistanceColumn = true; $this->baseLat = $info['lat']; $this->baseLng = $info['lng'];  }
+				echo '  </tr></thead>' . "\n";
 			
 			// render promoted records
 			$records2 = array();
@@ -715,10 +736,27 @@ class WISY_SEARCH_RENDERER_CLASS
 			
 			// render other records
 			$records = $searcher->getKurseRecords($offset, $this->rows, $orderBy);
-			$this->renderKursRecords($db, $records, $records2 /*recordsToSkip*/, array('q'=>$queryString));
+			$tags_heap = $this->renderKursRecords($db, $records, $records2 /*recordsToSkip*/, array('q'=>$queryString));
 		
 			// main table end
 			echo '</table>' . "\n\n";
+			
+			/* // #richtext
+			 if($richtext) {
+			 // sort($durchfClass->preise);
+			 // echo '<meta itemprop="lowprice" content="'.$this->framework->preisUS($durchfClass->preise[0]).'">';
+			 // 	echo '<meta itemprop="highprice" content="'.$this->framework->preisUS($durchfClass->preise[sizeof($durchfClass->preise)-1]).'">';
+			 
+			 echo '<meta itemprop="priceCurrency" content="EUR">';
+			 // 	echo '<meta itemprop="offerCount" content="'.sizeof($durchfClass->preise).'">';
+			 echo '<meta itemprop="url" content="http://'.$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI'].'">';
+			 echo '<meta itemprop="eligibleRegion" content="DE-RP">';
+			 echo '<span itemprop="eligibleCustomerType" itemscope itemtype="https://schema.org/BusinessEntityType">';
+			 echo '<meta itemprop="additionalType" content="http://purl.org/goodrelations/v1#Enduser">';
+			 echo '</span>';
+			 echo '</div>'; // Ende AggregateOffer
+			 } */
+			
 			flush();
 			
 			if( $pagesel )
@@ -741,11 +779,72 @@ class WISY_SEARCH_RENDERER_CLASS
 				echo '<div class="wisyr_rss_link_wrapper">' . $this->framework->getRSSLink() . '</div>';
 			echo '</div>';
 		}
+		
+		if($this->framework->iniRead('sw_cloud.suche_anzeige', 0)) {
+		    global $wisyPortalId;
+		    
+		    $cacheKey = "sw_cloud_p".$wisyPortalId."_s".$queryString;
+		    $this->dbCache		=& createWisyObject('WISY_CACHE_CLASS', $this->framework, array('table'=>'x_cache_tagcloud', 'itemLifetimeSeconds'=>60*60*24));
+		    
+		    
+		    if( ($temp=$this->dbCache->lookup($cacheKey))!='' )
+		    {
+		        $tag_cloud = $temp." <!-- tag cloud from cache -->";
+		    }
+		    else
+		    {
+		        $filtersw = array_map("trim", explode(",", $this->framework->iniRead('sw_cloud.filtertyp', "32, 2048, 8192")));
+		        $distinct_tags = array();
+		        $tag_cloud = '<div id="sw_cloud"><h3>'.$this->framework->iniRead('sw_cloud.bezeichnung_suche', 'Suchbegriffe').'</h3> ';
+		        //$tag_cloud .= '<h4>Suchbegriffe</h4>';
+		        $tag_done = array();
+		        
+		        foreach($tags_heap AS $tags) {
+		            for($i = 0; $i < count($tags); $i++)
+		            {
+		                $tag = $tags[$i];
+		                
+		                if(in_array($tag['id'], $tag_done))
+		                    continue;
+		                    
+		                    $weight = 0;
+		                    
+		                    if($this->framework->iniRead('sw_cloud.suche_gewichten', 1)) {
+		                        $tag_freq = $this->framework->getTagFreq($db, $tag['stichwort']);
+		                        $weight = (floor($tag_freq/50) > 15) ? 15 : floor($tag_freq/50);
+		                    }
+		                    
+		                    if($tag['eigenschaften'] != $filtersw && $tag_freq > 0); {
+		                        if($this->framework->iniRead('sw_cloud.suche_stichwoerter', 1))
+		                            $tag_cloud .= '<span class="sw_raw typ_'.$tag['eigenschaften'].'" data-weight="'.$weight.'"><a href="/?q='.urlencode(utf8_encode($tag['stichwort'])).'">'.utf8_encode($tag['stichwort']).'</a></span>, ';
+		                            
+		                        if($this->framework->iniRead('sw_cloud.suche_synonyme', 0))
+		                            $tag_cloud .= $this->framework->writeDerivedTags($this->framework->loadDerivedTags($db, $tag['id'], $distinct_tags, "Synonyme"), $filtersw, "Synonym", $tag['stichwort']);
+		                                
+		                        if($this->framework->iniRead('sw_cloud.suche_oberbegriffe', 0))
+		                            $tag_cloud .= $this->framework->writeDerivedTags($this->framework->loadDerivedTags($db, $tag['id'], $distinct_tags, "Oberbegriffe"), $filtersw, "Oberbegriff", $tag['stichwort']);
+		                                    
+		                        if($this->framework->iniRead('sw_cloud.suche_unterbegriffe', 0))
+		                            $tag_cloud .= $this->framework->writeDerivedTags($this->framework->loadDerivedTags($db, $tag['id'], $distinct_tags, "Unterbegriffe"), $filtersw, "Unterbegriff", $tag['stichwort']);
+		                    }
+		                    
+		                    array_push($tag_done, $tag['id']);
+		                    
+		            } // end: for
+		        }
+		        
+		        $tag_cloud = trim($tag_cloud, ", ");
+		        $tag_cloud .= '</div>';
+		        
+		        $this->dbCache->insert($cacheKey, utf8_decode($tag_cloud));
+		    }
+		    echo $tag_cloud;
+		} // end: tag cloud
 
 		if( !$nexturl && $_SERVER['HTTPS']!='on' && !$this->framework->editSessionStarted ) {
 
 			echo '	<div id="iwwb"><!-- BANNER IWWB START -->
-				<script type="text/javascript">
+				<script>
 			        var defaultZIP="PLZ";
 			        var defaultCity="Ort";
 			        var defaultKeywords = "Suchwörter eingeben";
@@ -760,8 +859,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			            if (button.form.feldinhalt1.value == defaultKeywords) {
 			                        alert("Bitte geben Sie Ihre Suchw366rter ein!");
 			                } else {
-			                        if ((typeof button.form.feldinhalt2=="object") && button.form.feldinhalt2.value == defaultZIP) button
-			.form.feldinhalt2.value="";
+			                        if ((typeof button.form.feldinhalt2=="object") && button.form.feldinhalt2.value == defaultZIP) button.form.feldinhalt2.value="";
 			                        if ((typeof button.form.feldinhalt3=="object") && button.form.feldinhalt3.value == defaultCity) button.form.feldinhalt3.value="";
 
 			                        button.form.submit();
@@ -772,28 +870,29 @@ class WISY_SEARCH_RENDERER_CLASS
 			</script>
 
 			<form method="post" action="https://www.iwwb.de/suchergebnis.php" target="IWWB">
-			<input type="hidden" name="external" value="true">
-  <input type="hidden" name="method" value="iso">
-  <input type="hidden" name="feldname1" id="feldname1" value="Freitext" />
-  <input type="hidden" name="feldname2" id="feldname2" value="PLZOrt" />
-  <input type="hidden" name="feldname3" id="feldname3" value="PLZOrt" />
-  <input type="hidden" name="feldname7" id="feldname7" value="datum1" />
-  <input type="hidden" name="feldinhalt7" id="feldinhalt7" value="morgen" />
+				<input type="hidden" name="external" value="true">
+				<input type="hidden" name="method" value="iso">
+				<input type="hidden" name="feldname1" id="feldname1" value="Freitext" />
+				<input type="hidden" name="feldname2" id="feldname2" value="PLZOrt" />
+				<input type="hidden" name="feldname3" id="feldname3" value="PLZOrt" />
+				<input type="hidden" name="feldname7" id="feldname7" value="datum1" />
+				<input type="hidden" name="feldinhalt7" id="feldinhalt7" value="morgen" />
 
-			<table width="100%" border="0" cellpadding="4" cellspacing="0" style="border: 1px solid #777EA7;background-color: #EFEFF7;">
-			<tr>
-			<td style="font-family: Verdana, Arial, Helvetica, sans-serif;font-size: 11px;color: #5F6796;font-weight: bold;">Bundesweite
-			Suche im InfoWeb Weiterbildung</td>
-			<td><input name="feldinhalt1" type="text" style="height: 22px;width: 150px;font-family: Verdana, Arial, Helvetica, sans-serif
-			;font-size: 11px;color: #000000;" value="' .  $queryString . '" onfocus="IWWBonFocusTextField(this,defaultKeywords)" onblur="IWWBonBlurTextField(this,defaultKeywords)"><input name="search" type
-			="button" style="font-family: Verdana, Arial, Helvetica, sans-serif;font-size: 9px;height: 22px;width: 90px;background-color:
-			 #A5AAC6;font-weight: bold;color: #FFFFFF;margin: 0px;border: 1px solid #FFFFFF;padding: 0px;" value="Suche starten" onClick=
-			"IWWBsearch(this)"></td>
-			<td align="right" style="font-family: Verdana, Arial, Helvetica, sans-serif;font-size: 11px;color: #5F6796;font-weight: bold;
-			"><a href="https://www.iwwb.de" target="_blank"><img src="https://www.iwwb.de/web/images/iwwb.gif" border="0"></a>&nbsp;</td>
-			</tr>
+				<table id="iwwb_table">
+				<tr>
+				<td><label for="iwwb_suchfeld">Bundesweite Suche im InfoWeb Weiterbildung</label></td>
+				<td>
+					<input name="feldinhalt1" class="feldinhalt1" id="iwwb_suchfeld" type="text" value="' .  $queryString . '" onfocus="IWWBonFocusTextField(this,defaultKeywords)" onblur="IWWBonBlurTextField(this,defaultKeywords)">
+					<input name="search" type="button"  value="Suche starten" onClick="IWWBsearch(this)">
+				</td>
+				<td>
+					<a href="https://www.iwwb.de" target="_blank">
+						<img src="https://www.iwwb.de/web/images/iwwb.gif" alt="Logo des InfoWeb Weiterbildung">
+					</a>&nbsp;
+				</td>
+				</tr>
+				</table>
 			</form>
-			</table>
 			</div>
 			';
 		
@@ -857,6 +956,8 @@ class WISY_SEARCH_RENDERER_CLASS
 			$records = $searcher->getAnbieterRecords($offset, $this->rows, $orderBy);
 			$rows = 0;
 			
+			$tag_cloud = array();
+			
 			while( list($i, $record) = each($records['records']) )
 			{
 				
@@ -889,7 +990,7 @@ class WISY_SEARCH_RENDERER_CLASS
 							echo '<a href="' . $anbieterRenderer->createMailtoLink($link) . '" target="_blank">E-Mail</a>';
 					echo ' </td>';
 					echo '<td class="wisyr_telefon" data-title="Telefon">';
-						echo '<a href="tel:' . htmlspecialchars(utf8_encode($record['anspr_tel'])) . '">' . htmlspecialchars(utf8_encode($record['anspr_tel'])) . '</a>';
+					echo '<a href="tel:' . urlencode(utf8_encode($record['anspr_tel'])) . '">' . urlencode(utf8_encode($record['anspr_tel'])) . '</a>';
 					echo ' </td>';
 				echo '  </tr>' . "\n";
 			}
