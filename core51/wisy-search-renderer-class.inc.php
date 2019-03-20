@@ -421,7 +421,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		
 		if( $row_postfix != '' )
 		{
-			$row_postfix = ' <span class="ac_tag_type">(' . $row_postfix . ')</span> ';
+		    $row_postfix = ' <span class="ac_tag_type">(' . utf8_encode($row_postfix) . ')</span> ';
 		}
 	
 		/* additional flags */
@@ -482,7 +482,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		else if( $tag_type & 32768){ $row_class = "ac_unterrichtsart";		 $row_type = 'Unterrichtsart'; $row_count_prefix = ($tag_freq == 1) ? ' Kurs zur' : ' Kurse zur'; }
 		else if( $tag_type & 65536){ $row_class = "ac_zertifikat";           $row_type = 'Zertifikat'; }
 
-		if( $tag_descr ) $row_postfix .= ' <span class="ac_tag_type">('. $tag_descr .')</span>';
+		if( $tag_descr ) $row_postfix .= ' <span class="ac_tag_type">('. utf8_encode($tag_descr) .')</span>';
 		
 	
 		if( $tag_freq > 0 ) {
@@ -582,7 +582,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		}
 	}
 	
-	function renderKursliste(&$searcher, $queryString, $offset)
+	function renderKursliste(&$searcher, $queryString, $offset, $showFilters=true, $baseurl='/search/')
 	{
 		global $wisyPortalSpalten;
 		
@@ -604,14 +604,14 @@ class WISY_SEARCH_RENDERER_CLASS
 			$db = new DB_Admin();
 			
 			// create get prev / next URLs
-			$prevurl = $offset==0? '' : $this->framework->getUrl('search', array('q'=>$queryString, 'offset'=>$offset-$this->rows));
-			$nexturl = ($offset+$this->rows<$sqlCount)? $this->framework->getUrl('search', array('q'=>$queryString, 'offset'=>$offset+$this->rows)) : '';
+			$prevurl = $offset==0? '' : $this->framework->getUrl($baseurl, array('q'=>$queryString, 'offset'=>$offset-$this->rows));
+			$nexturl = ($offset+$this->rows<$sqlCount)? $this->framework->getUrl($baseurl, array('q'=>$queryString, 'offset'=>$offset+$this->rows)) : '';
 			if( $prevurl || $nexturl )
 			{	
 				$param = array('q'=>$queryString);
 				if( $orderBy != 'b' ) $param['order'] = $orderBy;
 				$param['offset'] = '';
-				$pagesel = $this->pageSel($this->framework->getUrl('search', $param, true), $this->rows, $offset, $sqlCount);
+				$pagesel = $this->pageSel($this->framework->getUrl($baseurl, $param), $this->rows, $offset, $sqlCount);
 			}
 			else
 			{
@@ -620,7 +620,7 @@ class WISY_SEARCH_RENDERER_CLASS
 
 			// render head
 			echo '<div class="wisyr_list_header">';
-				echo '<div class="wisyr_listnav"><span class="active">Kurse</span><a href="search?q=' . urlencode($queryString) . '%2C+Zeige:Anbieter">Anbieter</a></div>';
+			    echo '<div class="wisyr_listnav"><span class="active">Kurse</span><a href="' . $baseurl . '?q=' . urlencode($queryString) . '%2C+Zeige:Anbieter">Anbieter</a></div>';
 				echo '<div class="wisyr_filternav';
 				if($this->framework->simplified && $this->framework->filterer->getActiveFiltersCount() > 0) echo ' wisyr_filters_active';
 				echo '">';
@@ -630,10 +630,6 @@ class WISY_SEARCH_RENDERER_CLASS
 				}
 				else {
 					echo '<span class="wisyr_angebote_zum_suchauftrag">';
-					/* ! actually makes sense: but how? Because of richtext additional output above?
-					 if($richtext)
-					 echo "&nbsp;"; // notwendig
-					 else */
 					echo $sqlCount==1? '<span class="wisyr_anzahl_angebote">1 Angebot</span> zum Suchauftrag ' : '<span class="wisyr_anzahl_angebote">' . $sqlCount . ' Angebote</span> zum Suchauftrag ';
 					if($this->framework->simplified)
 					{
@@ -650,12 +646,14 @@ class WISY_SEARCH_RENDERER_CLASS
 				}
 				
 				// Show filter / advanced search
-                $DEFAULT_FILTERLINK_HTML= '<a href="filter?q=__Q_URLENCODE__" id="wisy_filterlink">Suche anpassen</a>';
-                echo $this->framework->replacePlaceholders($this->framework->iniRead('searcharea.filterlink', $DEFAULT_FILTERLINK_HTML));
-				
-				$filterRenderer =& createWisyObject('WISY_FILTER_RENDERER_CLASS', $this->framework);
-                $filterRenderer->renderForm($queryString, $searcher->getKurseRecords(0, 0, $orderBy));
-                
+				if( $showFilters )
+				{
+				    $DEFAULT_FILTERLINK_HTML= '<a href="/filter?q=__Q_URLENCODE__" id="wisy_filterlink">Suche anpassen</a>';
+				    echo $this->framework->replacePlaceholders($this->framework->iniRead('searcharea.filterlink', $DEFAULT_FILTERLINK_HTML));
+				    
+				    $filterRenderer =& createWisyObject('WISY_FILTER_RENDERER_CLASS', $this->framework);
+				    $filterRenderer->renderForm($queryString, $searcher->getKurseRecords(0, 0, $orderBy));
+				}
 
 				if( $pagesel )
 				{
@@ -735,7 +733,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			
 			// render other records
 			$records = $searcher->getKurseRecords($offset, $this->rows, $orderBy);
-			$this->renderKursRecords($db, $records, $records2 /*recordsToSkip*/, array('q'=>$queryString));
+			$tags_heap = $this->renderKursRecords($db, $records, $records2 /*recordsToSkip*/, array('q'=>$queryString));
 		
 			// main table end
 			echo '</table>' . "\n\n";
@@ -780,70 +778,70 @@ class WISY_SEARCH_RENDERER_CLASS
 		}
 			
 		if($this->framework->iniRead('sw_cloud.suche_anzeige', 0)) {
-				global $wisyPortalId;
-				
-				$cacheKey = "sw_cloud_p".$wisyPortalId."_s".$queryString;
-				$this->dbCache		=& createWisyObject('WISY_CACHE_CLASS', $this->framework, array('table'=>'x_cache_tagcloud', 'itemLifetimeSeconds'=>60*60*24));
-				
-				
-					if( ($temp=$this->dbCache->lookup($cacheKey))!='' )
-					{
-							$tag_cloud = $temp." <!-- tag cloud from cache -->";
-					}
-					else
-					{
-							$filtersw = array_map("trim", explode(",", $this->framework->iniRead('sw_cloud.filtertyp', "32, 2048, 8192")));
-							$distinct_tags = array();
-							$tag_cloud = '<div id="sw_cloud">Suchbegriffe: ';
-							$tag_cloud .= '<h4>Suchbegriffe</h4>';
-							$tag_done = array();
-							
-							foreach($tags_heap AS $tags) {
-								for($i = 0; $i < count($tags); $i++)
-								{
-									$tag = $tags[$i];
-									
-									if(in_array($tag['id'], $tag_done))
-										continue;
-									
-									$weight = 0;
-									
-									if($this->framework->iniRead('sw_cloud.suche_gewichten', 1)) {
-										$tag_freq = $this->framework->getTagFreq($db, $tag['stichwort']);
-										$weight = (floor($tag_freq/50) > 15) ? 15 : floor($tag_freq/50);
-									}
-									
-									if($tag['eigenschaften'] != $filtersw && $tag_freq > 0); {
-										if($this->framework->iniRead('sw_cloud.suche_stichwoerter', 1))
-											$tag_cloud .= '<span class="sw_raw typ_'.$tag['eigenschaften'].'" data-weight="'.$weight.'"><a href="/?q='.utf8_encode($tag['stichwort']).'">'.utf8_encode($tag['stichwort']).'</a></span>, ';
-										
-										if($this->framework->iniRead('sw_cloud.suche_synonyme', 0))	
-											$tag_cloud .= $this->framework->writeDerivedTags($this->framework->loadDerivedTags($db, $tag['id'], $distinct_tags, "Synonyme"), $filtersw, "Synonym", $tag['stichwort']);
-										
-										if($this->framework->iniRead('sw_cloud.suche_oberbegriffe', 0))
-											$tag_cloud .= $this->framework->writeDerivedTags($this->framework->loadDerivedTags($db, $tag['id'], $distinct_tags, "Oberbegriffe"), $filtersw, "Oberbegriff", $tag['stichwort']);
-										
-										if($this->framework->iniRead('sw_cloud.suche_unterbegriffe', 0))	
-											$tag_cloud .= $this->framework->writeDerivedTags($this->framework->loadDerivedTags($db, $tag['id'], $distinct_tags, "Unterbegriffe"), $filtersw, "Unterbegriff", $tag['stichwort']);
-									}
-										
-										array_push($tag_done, $tag['id']);
-									
-									} // end: for
-							}
-									
-								$tag_cloud = trim($tag_cloud, ", ");
-								$tag_cloud .= '</div>';
-								
-								$this->dbCache->insert($cacheKey, utf8_decode($tag_cloud));
-					}
-					echo $tag_cloud;
-	    } // end: tag cloud
+		    global $wisyPortalId;
+		    
+		    $cacheKey = "sw_cloud_p".$wisyPortalId."_s".$queryString;
+		    $this->dbCache		=& createWisyObject('WISY_CACHE_CLASS', $this->framework, array('table'=>'x_cache_tagcloud', 'itemLifetimeSeconds'=>60*60*24));
+		    
+		    
+		    if( ($temp=$this->dbCache->lookup($cacheKey))!='' )
+		    {
+		        $tag_cloud = $temp." <!-- tag cloud from cache -->";
+		    }
+		    else
+		    {
+		        $filtersw = array_map("trim", explode(",", $this->framework->iniRead('sw_cloud.filtertyp', "32, 2048, 8192")));
+		        $distinct_tags = array();
+		        $tag_cloud = '<div id="sw_cloud"><h3>'.$this->framework->iniRead('sw_cloud.bezeichnung_suche', 'Suchbegriffe').'</h3> ';
+		        //$tag_cloud .= '<h4>Suchbegriffe</h4>';
+		        $tag_done = array();
+		        
+		        foreach($tags_heap AS $tags) {
+		            for($i = 0; $i < count($tags); $i++)
+		            {
+		                $tag = $tags[$i];
+		                
+		                if(in_array($tag['id'], $tag_done))
+		                    continue;
+		                    
+		                    $weight = 0;
+		                    
+		                    if($this->framework->iniRead('sw_cloud.suche_gewichten', 1)) {
+		                        $tag_freq = $this->framework->getTagFreq($db, $tag['stichwort']);
+		                        $weight = (floor($tag_freq/50) > 15) ? 15 : floor($tag_freq/50);
+		                    }
+		                    
+		                    if($tag['eigenschaften'] != $filtersw && $tag_freq > 0); {
+		                        if($this->framework->iniRead('sw_cloud.suche_stichwoerter', 1))
+		                            $tag_cloud .= '<span class="sw_raw typ_'.$tag['eigenschaften'].'" data-weight="'.$weight.'"><a href="/?q='.urlencode(utf8_encode($tag['stichwort'])).'">'.utf8_encode($tag['stichwort']).'</a></span>, ';
+		                            
+		                            if($this->framework->iniRead('sw_cloud.suche_synonyme', 0))
+		                                $tag_cloud .= $this->framework->writeDerivedTags($this->framework->loadDerivedTags($db, $tag['id'], $distinct_tags, "Synonyme"), $filtersw, "Synonym", $tag['stichwort']);
+		                                
+		                            if($this->framework->iniRead('sw_cloud.suche_oberbegriffe', 0))
+		                                $tag_cloud .= $this->framework->writeDerivedTags($this->framework->loadDerivedTags($db, $tag['id'], $distinct_tags, "Oberbegriffe"), $filtersw, "Oberbegriff", $tag['stichwort']);
+		                                    
+		                            if($this->framework->iniRead('sw_cloud.suche_unterbegriffe', 0))
+		                                $tag_cloud .= $this->framework->writeDerivedTags($this->framework->loadDerivedTags($db, $tag['id'], $distinct_tags, "Unterbegriffe"), $filtersw, "Unterbegriff", $tag['stichwort']);
+		                    }
+		                    
+		                    array_push($tag_done, $tag['id']);
+		                    
+		            } // end: for
+		        }
+		        
+		        $tag_cloud = trim($tag_cloud, ", ");
+		        $tag_cloud .= '</div>';
+		        
+		        $this->dbCache->insert($cacheKey, utf8_decode($tag_cloud));
+		    }
+		    echo $tag_cloud;
+		} // end: tag cloud
 			
 		if( !$nexturl && $_SERVER['HTTPS']!='on' && !$this->framework->editSessionStarted ) {
 
 			echo '	<div id="iwwb"><!-- BANNER IWWB START -->
-				<script type="text/javascript">
+				<script>
 			        var defaultZIP="PLZ";
 			        var defaultCity="Ort";
 			        var defaultKeywords = "Suchwörter eingeben";
@@ -858,8 +856,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			            if (button.form.feldinhalt1.value == defaultKeywords) {
 			                        alert("Bitte geben Sie Ihre Suchw366rter ein!");
 			                } else {
-			                        if ((typeof button.form.feldinhalt2=="object") && button.form.feldinhalt2.value == defaultZIP) button
-			.form.feldinhalt2.value="";
+			                        if ((typeof button.form.feldinhalt2=="object") && button.form.feldinhalt2.value == defaultZIP) button.form.feldinhalt2.value="";
 			                        if ((typeof button.form.feldinhalt3=="object") && button.form.feldinhalt3.value == defaultCity) button.form.feldinhalt3.value="";
 
 			                        button.form.submit();
@@ -878,20 +875,21 @@ class WISY_SEARCH_RENDERER_CLASS
   <input type="hidden" name="feldname7" id="feldname7" value="datum1" />
   <input type="hidden" name="feldinhalt7" id="feldinhalt7" value="morgen" />
 
-			<table width="100%" border="0" cellpadding="4" cellspacing="0" style="border: 1px solid #777EA7;background-color: #EFEFF7;">
-			<tr>
-			<td style="font-family: Verdana, Arial, Helvetica, sans-serif;font-size: 11px;color: #5F6796;font-weight: bold;">Bundesweite
-			Suche im InfoWeb Weiterbildung</td>
-			<td><input name="feldinhalt1" type="text" style="height: 22px;width: 150px;font-family: Verdana, Arial, Helvetica, sans-serif
-			;font-size: 11px;color: #000000;" value="' .  $queryString . '" onfocus="IWWBonFocusTextField(this,defaultKeywords)" onblur="IWWBonBlurTextField(this,defaultKeywords)"><input name="search" type
-			="button" style="font-family: Verdana, Arial, Helvetica, sans-serif;font-size: 9px;height: 22px;width: 90px;background-color:
-			 #A5AAC6;font-weight: bold;color: #FFFFFF;margin: 0px;border: 1px solid #FFFFFF;padding: 0px;" value="Suche starten" onClick=
-			"IWWBsearch(this)"></td>
-			<td align="right" style="font-family: Verdana, Arial, Helvetica, sans-serif;font-size: 11px;color: #5F6796;font-weight: bold;
-			"><a href="https://www.iwwb.de" target="_blank"><img src="https://www.iwwb.de/web/images/iwwb.gif" border="0"></a>&nbsp;</td>
-			</tr>
+			<table id="iwwb_table">
+				<tr>
+				<td><label for="iwwb_suchfeld">Bundesweite Suche im InfoWeb Weiterbildung</label></td>
+				<td>
+					<input name="feldinhalt1" class="feldinhalt1" id="iwwb_suchfeld" type="text" value="' .  $queryString . '" onfocus="IWWBonFocusTextField(this,defaultKeywords)" onblur="IWWBonBlurTextField(this,defaultKeywords)">
+					<input name="search" type="button"  value="Suche starten" onClick="IWWBsearch(this)">
+				</td>
+				<td>
+					<a href="https://www.iwwb.de" target="_blank">
+						<img src="https://www.iwwb.de/web/images/iwwb.gif" alt="Logo des InfoWeb Weiterbildung">
+					</a>&nbsp;
+				</td>
+				</tr>
+				</table>
 			</form>
-			</table>
 			</div>
 			';
 		
@@ -954,6 +952,8 @@ class WISY_SEARCH_RENDERER_CLASS
 			// render records
 			$records = $searcher->getAnbieterRecords($offset, $this->rows, $orderBy);
 			$rows = 0;
+			
+			$tag_cloud = array();
 			
 			while( list($i, $record) = each($records['records']) )
 			{
