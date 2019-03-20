@@ -651,7 +651,7 @@ class WISY_EDIT_RENDERER_CLASS
 				echo '</form>';
 		
 				// additional login message
-				$temp = utf8_encode($this->framework->iniRead('useredit.loginmsg', ''));
+				$temp = $this->framework->iniRead('useredit.loginmsg', '');
 				if( $temp != '' )
 				{
 					echo '<p class="loginmsg">' . $temp . '</p>';
