@@ -76,13 +76,15 @@ class WISY_ROBOTS_RENDERER_CLASS
 		header("Content-type: text/plain");
 		headerDoCache();
 		
-		if( strpos($_SERVER['HTTP_HOST'], 'sandbox')!==false || strpos($_SERVER['HTTP_HOST'], 'backup')!==false )
+		if( strpos($_SERVER['HTTP_HOST'], 'sandbox')!==false || strpos($_SERVER['HTTP_HOST'], 'backup')!==false || $this->framework->iniRead('seo.portal_blockieren', false) )
 		{
 			echo "User-agent: *\n";
 			echo "Disallow: /\n";
 		}
 		else
 		{
+		    $block_specificlink = array_map("trim", explode(",", $this->framework->iniRead('seo.links_blockieren', "")));
+		    
 			// set the sitemap, 
 			// dies steht in keinem zusammenhang mit User-agent, 
 			// siehe https://www.sitemaps.org/protocol.php#submit_robots 
@@ -104,9 +106,19 @@ class WISY_ROBOTS_RENDERER_CLASS
 			echo "Disallow: /edit\n";
 			echo "Disallow: /rss\n";
 			echo "Disallow: /terrapin\n";
+			
+			echo "Disallow: /g151\n"; // maintain for historic legal reasons, better: use portal settings below 
+			
+			foreach($block_specificlink AS $link) {
+			    if(strlen($link) >= 1)
+			        echo "Disallow: ".$link."\n";
+			}
 		}
+		
+		echo "\n\n";
+		echo "User-agent: ia_archiver\n";
+		echo "Disallow: /\n";
 	}
-
 
 
 	/* handle sitemap.xml
@@ -114,6 +126,12 @@ class WISY_ROBOTS_RENDERER_CLASS
 
 	function addUrl($url, $lastmod, $changefreq)
 	{
+	    $block_specificlink = array_map("trim", explode(",", $this->framework->iniRead('seo.links_blockieren', "")));
+	    foreach($block_specificlink AS $link) { // $link may be link fragment
+	        if(strlen($link) > 1 && strpos($this->absPath.$url, $link) !== false)
+	            return "";
+	    }
+	    
 		$this->urlsAdded ++;
 		return "<url><loc>{$this->absPath}$url</loc><lastmod>" .strftime("%Y-%m-%d", $lastmod). "</lastmod><changefreq>$changefreq</changefreq></url>\n";
 	}
