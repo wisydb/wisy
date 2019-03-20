@@ -203,6 +203,30 @@ class WISY_FILTER_CLASS
 				);
 		}
 		
+		$zertifikate = $this->getSpezielleStichw(65536);
+		if( sizeof($zertifikate) > 1 )
+		{
+		    $this->presets['zertifikat'] = array
+		    (
+		        'type'		=> 'taglist',
+		        'descr'		=> 'Zertifikat:',
+		        'function'	=> 'zertifikat:',
+		        'options'	=>	$zertifikate
+		    );
+		}
+		
+		$sonstigemerkmale = $this->getSpezielleStichw(1024);
+		if( sizeof($sonstigemerkmale) > 1 )
+		{
+		    $this->presets['sonstigesmerkmal'] = array
+		    (
+		        'type'		=> 'taglist',
+		        'descr'		=> 'Sonstiges Merkmal:',
+		        'function'	=> 'sonstigesmerkmal:',
+		        'options'	=>	$sonstigemerkmale
+		    );
+		}
+		
 		$abschluesse = $this->getSpezielleStichw(1);
 		if( sizeof($abschluesse) > 1 )
 		{
@@ -286,6 +310,12 @@ class WISY_FILTER_CLASS
 		$this->presets['zielgruppe']['classes'] = 'wisyr_c1_3';
 		$this->presets['qualitaetszertifikat']['descr'] = 'Qualitätszertifikat';
 		$this->presets['qualitaetszertifikat']['classes'] = 'wisyr_c2_3';
+		
+		$this->presets['zertifikat']['descr'] = 'Zertifikat';
+		$this->presets['zertifikat']['classes'] = 'wisyr_c2_3';
+		
+		$this->presets['sonstigesmerkmal']['descr'] = 'Sonstiges Merkmal';
+		$this->presets['sonstigesmerkmal']['classes'] = 'wisyr_c2_3';
 		
 		$this->presets['abschluesse']['descr'] = 'Abschluss';
 		$this->presets['abschluesse']['classes'] = 'wisyr_c3_3';
