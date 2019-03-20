@@ -48,10 +48,15 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 		echo '<input type="hidden" name="qf" value="' . $this->framework->QF . '" />';
         
         // Workaround for "Volltext", TODO: optimize
+        // Workaround for "Zeige", TODO: optimize
         if(is_array($this->framework->tokensQF)) {
             foreach($this->framework->tokensQF as $t) {
                 if($t['field'] == 'volltext') {
                     echo '<input type="hidden" name="filter_volltext" value="' . $t['value'] . '" />';
+                    break;
+                }
+                if($t['field'] == 'zeige') {
+                    echo '<input type="hidden" name="filter_zeige" value="' . $t['value'] . '" />';
                     break;
                 }
             }
@@ -136,7 +141,9 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 		$renderformData['fv_foerderung'] = '';
 		$renderformData['fv_zielgruppe'] = '';
 		$renderformData['fv_qualitaetszertifikat'] = '';
-		$renderformData['fv_abschluss'] = '';
+		$renderformData['fv_zertifikat'] = '';
+		$renderformData['fv_sonstigesmerkmal'] = '';
+		$renderformData['fv_abschluesse'] = '';
 		$renderformData['fv_abschlussart'] = '';
 		$renderformData['fv_unterrichtsart'] = '';
 		$renderformData['fv_tageszeit'] = '';
@@ -205,8 +212,16 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 					$renderformData['fv_qualitaetszertifikat'] = $token['value'];
 					break;
 					
-				case 'abschluss':
-				    $renderformData['fv_abschluss'] = $token['value'];
+				case 'zertifikat':
+				    $renderformData['fv_zertifikat'] = $token['value'];
+				    break;
+				    
+				case 'sonstigesmerkmal':
+				    $renderformData['fv_sonstigesmerkmal'] = $token['value'];
+				    break;
+				    
+				case 'abschluesse':
+				    $renderformData['fv_abschluesse'] = $token['value'];
 				    break;
 				    
 				case 'abschlussart':
@@ -398,7 +413,7 @@ class WISY_FILTERMENU_ITEM
                         foreach($filtervalues as $value => $label) {
                                             
                             $ret .= '<div class="wisyr_radiowrapper">';
-                            $ret .= '   <input type="radio" name="filter_' . $fieldname . '" id="filter_' . $fieldname . '_' . $value . '" value="' . ($label == 'Alle' ? '' : str_replace(',', ' ', $label)) . '"';
+                            $ret .= '   <input type="radio" name="filter_' . $fieldname . '" id="filter_' . $fieldname . '_' . $value . '" value="' . ($label == 'Alle' ? '' : str_replace('"', '%20', str_replace(',', ' ', $label))) . '"';
                 
                             if(str_replace(',', ' ', $label) == $fieldvalue) {
                                 $ret .= ' checked="checked"';
@@ -486,6 +501,14 @@ class WISY_FILTERMENU_ITEM
                 return $this->getSpezielleStichw(4, $data['datawhitelist']);
             break;
             
+            case 'zertifikate':
+                return $this->getSpezielleStichw(65536, $data['datawhitelist']);
+                break;
+                
+            case 'sonstigemerkmale':
+                return $this->getSpezielleStichw(1024, $data['datawhitelist']);
+                break;
+                
             case 'abschluesse':
                 return $this->getSpezielleStichw(1, $data['datawhitelist']);
                 break;
