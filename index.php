@@ -262,6 +262,7 @@ $wisyPortalBodyStart		= stripslashes($db->f('bodystart'));
 $wisyPortalEinstellungen	= explodeSettings($db->fs('einstellungen'));
 $wisyPortalFilter			= explodeSettings($db->fs('filter'));
 $wisyPortalEinstcache		= explodeSettings($db->fs('einstcache'));
+$wisyPortalUserGrp          = $db->fs('user_grp');
 
 define('DEF_STICHWORT_BILDUNGSURLAUB',	1);
 define('DEF_STICHWORTTYP_QZERTIFIKAT',	4);
