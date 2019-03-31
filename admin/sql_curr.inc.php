@@ -318,7 +318,7 @@ class DB_Sql
 			return;
 
 	    // printf('<p style="border: 2px solid black;"><b>DB_Sql error:</b> %s<br>MySQL says: Errno %s - %s</p>', $msg, $this->Errno, $this->Error); // sollte nicht im Live-System im Detail ausgegeben werden!
-	    printf('<p style="border: 2px solid black;"><b>DB_Sql error:</b> %s<br>MySQL says: Errno %s - %s</p>', "", $this->Errno, $this->Error);
+			printf('<p style="border: 2px solid black;"><b>DB_Sql error:</b> %s<br>MySQL says: Errno %s - %s</p>', "", $this->Errno, "Aus Sicherheitsgr&uuml;nden hier keine detaillierte Fehlermeldung.");
 		
 		if ($this->Halt_On_Error != "report")
 			die("Session halted.");
