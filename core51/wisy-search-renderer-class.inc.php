@@ -612,10 +612,10 @@ class WISY_SEARCH_RENDERER_CLASS
 				echo '">';
 			
 				if( $queryString == '' ) {
-					echo '<span class="wisyr_aktuelle_angebote">Aktuelle Angebote</span>';
+					echo '<h1 class="wisyr_seitentitel wisyr_aktuelle_angebote">Aktuelle Angebote</h1>';
 				}
 				else {
-					echo '<span class="wisyr_angebote_zum_suchauftrag">';
+					echo '<h1 class="wisyr_seitentitel wisyr_angebote_zum_suchauftrag">';
 					echo $sqlCount==1? '<span class="wisyr_anzahl_angebote">1 Angebot</span> zum Suchauftrag ' : '<span class="wisyr_anzahl_angebote">' . $sqlCount . ' Angebote</span> zum Suchauftrag ';
 					if($this->framework->simplified)
 					{
@@ -628,7 +628,7 @@ class WISY_SEARCH_RENDERER_CLASS
 					{
 						echo '<span class="wisyr_angebote_suchauftrag">"' . htmlspecialchars((trim($queryString, ', '))) . '"</span>';	
 					}
-					echo '</span>';
+					echo '</h1>';
 				}
 				
 				// Show filter / advanced search
