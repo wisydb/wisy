@@ -168,7 +168,7 @@ class WISY_KURS_RENDERER_CLASS
 			}
 			
 			echo '<section class="wisyr_kursinfos clearfix">';
-				echo '<article class="wisy_kurs_inhalt"><h1>Inhalt</h1>';
+				echo '<article class="wisy_kurs_inhalt"><h2>Inhalt</h2>';
 			
 				if( $beschreibung != '' ) {
 					$wiki2html =& createWisyObject('WISY_WIKI2HTML_CLASS', $this->framework);
@@ -199,7 +199,7 @@ class WISY_KURS_RENDERER_CLASS
 			
 				echo '</article><!-- /.wisy_kurs_inhalt -->';
 			
-				echo '<article class="wisy_kurs_anbieter"><h1>Anbieter</h1>';
+				echo '<article class="wisy_kurs_anbieter"><h2>Anbieter</h2>';
 				// visitenkarte des anbieters
 				$anbieterRenderer =& createWisyObject('WISY_ANBIETER_RENDERER_CLASS', $this->framework);
 				echo '<div class="wisy_vcard">';
@@ -211,7 +211,7 @@ class WISY_KURS_RENDERER_CLASS
 				echo '</article><!-- /.wisy_kurs_anbieter -->';
 
 				// Durchfuehrungen vorbereiten
-				echo '<article class="wisy_kurs_durchf"><h1 class="wisy_df_headline">Termine</h1>';
+				echo '<article class="wisy_kurs_durchf"><h2 class="wisy_df_headline">Termine</h2>';
                 
                 $spalten = $wisyPortalSpalten;
                 if($wisyPortalSpaltenDurchf != '') $spalten = $wisyPortalSpaltenDurchf;

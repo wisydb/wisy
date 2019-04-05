@@ -830,9 +830,9 @@ class WISY_SEARCH_RENDERER_CLASS
 			// render head
 			echo '<div class="wisyr_list_header">';
 				echo '<div class="wisyr_listnav"><a href="search?q=' . urlencode(str_replace(array(',,', ', ,'), array(',', ','), str_replace('Zeige:Anbieter', '', $queryString))). '">Kurse</a><span class="active">Anbieter</span></div>';
-				echo '<span class="wisyr_anbieter_zum_suchauftrag">';
+				echo '<h1 class="wisyr_anbieter_zum_suchauftrag">';
 				echo '<span class="wisyr_anzahl_anbieter">' . $sqlCount . ' Anbieter</span> zum Suchauftrag';
-				echo '</span>';
+				echo '</h1>';
 
 				if( $pagesel )
 				{
@@ -917,14 +917,14 @@ class WISY_SEARCH_RENDERER_CLASS
 					
 		echo '<div class="wisy_suggestions">';
 		
-		echo '<span class="wisyr_angebote_zum_suchauftrag"><span class="wisyr_anzahl_angebote">0 Angebote</span> zum Suchauftrag';
+		echo '<h1 class="wisyr_seitentitel wisyr_angebote_zum_suchauftrag"><span class="wisyr_anzahl_angebote">0 Angebote</span> zum Suchauftrag';
 		if(trim($this->framework->QS) != '')
 		{
-			echo ' &quot;' . htmlspecialchars($this->framework->QS) . '&quot;</span></span>';
+			echo ' &quot;' . htmlspecialchars($this->framework->QS) . '&quot;</h1>';
 		}
 		else
 		{
-			echo '</span></span>';
+			echo '</h1>';
 		}
 		
 		echo '<div class="wisy_suggestions_inner">';
@@ -937,7 +937,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			// Leere Suche ohne gesetzte Filter
 			if( sizeof($info['suggestions']) ) 
 			{
-				echo '<h3>Suchvorschläge</h3>';
+				echo '<h2>Suchvorschläge</h2>';
 				echo '<ul>';
 				for( $i = 0; $i < sizeof($info['suggestions']); $i++ )
 				{
@@ -946,15 +946,15 @@ class WISY_SEARCH_RENDERER_CLASS
 				echo '</ul>';
 			}
 		
-			echo '<h3>Anbietersuche</h3>';
+			echo '<h2>Anbietersuche</h2>';
 			echo '<p>Falls Sie auf der Suche nach einem bestimmten Kursanbieter sind, nutzen Sie bitte unser Anbieterverzeichnis.</p>';
 			echo '<a href="/search?q=' . htmlspecialchars($this->framework->QS) . '%2C+Zeige%3AAnbieter">Eine Anbietersuche nach &quot;' . htmlspecialchars(trim($this->framework->QS)) . '&quot; ausführen</a>';
 		
-			echo '<h3>Volltextsuche</h3>';
+			echo '<h2>Volltextsuche</h2>';
 			echo '<p>Das Ergebnis der Volltextsuche enthält alle Kurse, die den Suchbegriff oder den Wortteil in der Kursbeschreibung enthalten.</p>';
 			echo '<a href="/search?q=volltext:' . htmlspecialchars($this->framework->QS) . '">Eine Volltextsuche nach &quot;' . htmlspecialchars(trim($this->framework->QS)) . '&quot; ausführen</a>';
 		
-			echo '<h3>Möglicherweise helfen auch Veränderungen an Ihrem Suchbegriff:</h3>';
+			echo '<h2>Möglicherweise helfen auch Veränderungen an Ihrem Suchbegriff:</h2>';
 			echo '<ul>';
 			echo '<li>Prüfen Sie Ihren Suchbegriff auf Rechtschreibfehler</li>';
 			echo '<li>Nutzen Sie die Suchvorschläge, die während der Eingabe unter dem Eingabefeld angezeigt werden</li>';
@@ -965,7 +965,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		{
 
 			// Leere Suche mit gesetzen Filtern
-			echo '<h3>Möglicherweise helfen Veränderungen an Ihren Filtereinstellungen:</h3>';
+			echo '<h2>Möglicherweise helfen Veränderungen an Ihren Filtereinstellungen:</h2>';
 			echo '<ul>';
 			echo '<li>Ändern oder entfernen Sie einzelne Filter, um mehr Angebote für Ihren Suchauftrag zu erhalten</li>';
 			echo '<li>Suchen Sie nach ähnlichen Stichwörtern oder Kursthemen</li>';
