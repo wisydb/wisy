@@ -1013,7 +1013,9 @@ class WISY_SEARCH_RENDERER_CLASS
 	}
 	
 	function render()
-	{		
+	{	
+		global $wisyPortalName;
+		
 		// get parameters
 		// --------------------------------------------------------------------
 		
@@ -1075,8 +1077,11 @@ class WISY_SEARCH_RENDERER_CLASS
 		// result out
 		// --------------------------------------------------------------------
 		
-		// Suche und Ergebnisliste auf Startseite optional abschalten        
-		if(!(intval(trim($this->framework->iniRead('search.startseite.disable'))) && $this->framework->getPageType() == "startseite")) {
+		// Suche und Ergebnisliste auf Startseite optional abschalten
+		
+		if(intval(trim($this->framework->iniRead('search.startseite.disable'))) && $this->framework->getPageType() == "startseite") {
+			echo '<h1 class="wisyr_seitentitel">' . utf8_encode($wisyPortalName) . '</h1>';
+		} else {
 			$searcher =& createWisyObject('WISY_INTELLISEARCH_CLASS', $this->framework);
 			$searcher->prepare(mysql_real_escape_string($queryString));
 		
