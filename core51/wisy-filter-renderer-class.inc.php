@@ -42,7 +42,7 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
         $renderformData = array();
         
 		echo '<div id="wisyr_filterform" class="wisyr_filterform">';
-		echo '<div class="wisyr_filterform_header"><h' . ($hlevel + 1) . '>Suchauftrag anpassen</h' . ($hlevel + 1) . '><h' . ($hlevel + 3) . '>Nutzen Sie Filter, um Ihre Suche weiter einzugrenzen:</h' . ($hlevel + 2) . '></div>';
+		echo '<div class="wisyr_filterform_header"><h' . ($hlevel + 1) . '>Suchauftrag anpassen</h' . ($hlevel + 1) . '><h' . ($hlevel + 2) . '>Nutzen Sie Filter, um Ihre Suche weiter einzugrenzen:</h' . ($hlevel + 2) . '></div>';
 		echo '<form action="search" method="get" name="filterform">';
 		echo '<input type="hidden" name="qs" value="' . $this->framework->QS . '" />';
 		echo '<input type="hidden" name="qf" value="' . $this->framework->QF . '" />';
