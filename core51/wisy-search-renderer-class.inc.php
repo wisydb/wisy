@@ -638,7 +638,7 @@ class WISY_SEARCH_RENDERER_CLASS
 					echo $this->framework->replacePlaceholders($this->framework->iniRead('searcharea.filterlink', $DEFAULT_FILTERLINK_HTML));
 				
 					$filterRenderer =& createWisyObject('WISY_FILTER_RENDERER_CLASS', $this->framework);
-					$filterRenderer->renderForm($queryString, $searcher->getKurseRecords(0, 0, $orderBy));
+					$filterRenderer->renderForm($queryString, $searcher->getKurseRecords(0, 0, $orderBy), $hlevel);
 				}
 
 				if( $pagesel )
@@ -981,7 +981,7 @@ class WISY_SEARCH_RENDERER_CLASS
 					echo $this->framework->replacePlaceholders($this->framework->iniRead('searcharea.filterlink', $DEFAULT_FILTERLINK_HTML));
 			
 					$filterRenderer =& createWisyObject('WISY_FILTER_RENDERER_CLASS', $this->framework);
-					$filterRenderer->renderForm($this->framework->getParam('q', ''), array());
+					$filterRenderer->renderForm($this->framework->getParam('q', ''), array(), $hlevel);
 				echo '</div>';
 			echo '</div>';
 		}
