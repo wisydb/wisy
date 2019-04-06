@@ -403,7 +403,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		if( $html )
 		{
 			echo "\n" . '<div class="wisy_besondere_kursarten">';
-			echo '<h2>Besondere Kursarten - aktuelle Angebote</h2>';
+			echo '<h3>Besondere Kursarten - aktuelle Angebote</h3>';
 			echo '<p>';
 				echo $html;
 			echo '</p>';
@@ -597,7 +597,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		
 		echo "\n\n" . '<section class="wisyr_anbieterinfos clearfix">';
 		echo "\n" . '<article class="wisyr_anbieter_firmenportraet wisy_anbieter_inhalt" data-tabtitle="Über">' . "\n";
-		echo '<h1>Über den Anbieter</h1>';
+		echo '<h2>Über den Anbieter</h2>';
 
 		// firmenportraet
 		if( $firmenportraet != '' ) {
@@ -616,11 +616,11 @@ class WISY_ANBIETER_RENDERER_CLASS
 		
 		echo "\n</article><!-- /.wisyr_anbieter_steckbrief -->\n\n";
 		
-		echo "\n\n" . '<article class="wisy_anbieter_kursangebot" data-tabtitle="Kurse"><h1>Kurs&shy;angebot</h1>' . "\n";
+		echo "\n\n" . '<article class="wisy_anbieter_kursangebot" data-tabtitle="Kurse"><h2>Kurs&shy;angebot</h2>' . "\n";
 		
 		// link "show all offers"
 		$freq = $this->tagsuggestorObj->getTagFreq(array($this->tag_suchname_id)); if( $freq <= 0 ) $freq = '';
-		echo '<h2>'.$freq.($freq==1? ' aktuelles Angebot' : ' aktuelle Angebote').'</h2>'
+		echo '<h3>'.$freq.($freq==1? ' aktuelles Angebot' : ' aktuelle Angebote').'</h3>'
 		.	'<p>'
 		 .		'<a class="wisyr_anbieter_kurselink" href="' . $this->framework->getUrl('search'). '?filter_anbieter=' . urlencode(htmlspecialchars(str_replace(',', ' ', $tag_suchname))) . '">'
 		.			"Alle $freq Kurse des Anbieters"
