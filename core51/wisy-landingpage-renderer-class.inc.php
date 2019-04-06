@@ -151,7 +151,7 @@ class WISY_LANDINGPAGE_RENDERER_CLASS
 		$searcher->prepare(mysql_real_escape_string($querystring));
 	
 		$searchRenderer = createWisyObject('WISY_SEARCH_RENDERER_CLASS', $this->framework);
-		$searchRenderer->renderKursliste($searcher, $querystring, $offset, false, $baseurl);
+		$searchRenderer->renderKursliste($searcher, $querystring, $offset, false, $baseurl, 2);
 	}
 	
 	/*
@@ -364,7 +364,7 @@ class WISY_LANDINGPAGE_RENDERER_CLASS
 		$searcher->prepare(mysql_real_escape_string($querystring));
 	
 		$searchRenderer = createWisyObject('WISY_SEARCH_RENDERER_CLASS', $this->framework);
-		$searchRenderer->renderKursliste($searcher, $querystring, $offset, false, $baseurl);
+		$searchRenderer->renderKursliste($searcher, $querystring, $offset, false, $baseurl, 2);
 	}
 	
 	/*
@@ -446,7 +446,7 @@ class WISY_LANDINGPAGE_RENDERER_CLASS
 		if($glossar > 0) {
 			$glossarRenderer = createWisyObject('WISY_GLOSSAR_RENDERER_CLASS', $this->framework);
 			$glossareintrag = $glossarRenderer->getGlossareintrag($glossar);
-			$glossarRenderer->renderGlossareintrag($glossar, $glossareintrag);
+			$glossarRenderer->renderGlossareintrag($glossar, $glossareintrag, 2);
 		}
 		
 		// Kursliste
@@ -457,7 +457,7 @@ class WISY_LANDINGPAGE_RENDERER_CLASS
 		$searcher->prepare(mysql_real_escape_string($querystring));
 	
 		$searchRenderer = createWisyObject('WISY_SEARCH_RENDERER_CLASS', $this->framework);
-		$searchRenderer->renderKursliste($searcher, $querystring, $offset, true, $baseurl);
+		$searchRenderer->renderKursliste($searcher, $querystring, $offset, true, $baseurl, 2);
 	}
 	
 	/*
@@ -653,13 +653,13 @@ class WISY_LANDINGPAGE_RENDERER_CLASS
 	private function renderListtitle() {
 		switch($this->type) {
 			case 'orte':
-				echo '<h1 class="wisyr_landingpage_list_title">Alle Orte</h1>';
+				echo '<h1 class="wisyr_seitentitel wisyr_landingpage_list_title">Alle Orte</h1>';
 				break;
 			case 'themen':
-				echo '<h1 class="wisyr_landingpage_list_title">Alle Themen & Orte</h1>';
+				echo '<h1 class="wisyr_seitentitel wisyr_landingpage_list_title">Alle Themen & Orte</h1>';
 				break;
 			case 'abschluesse':
-				echo '<h1 class="wisyr_landingpage_list_title">Alle Abschlüsse</h1>';
+				echo '<h1 class="wisyr_seitentitel wisyr_landingpage_list_title">Alle Abschlüsse</h1>';
 				break;
 		}
 	}
@@ -670,13 +670,13 @@ class WISY_LANDINGPAGE_RENDERER_CLASS
 	private function renderDetailtitle($detail) {
 		switch($this->type) {
 			case 'orte':
-				echo '<h1 class="wisyr_landingpage_detail_title">Alle Kurse in ' . htmlspecialchars($detail) . '</h1>';
+				echo '<h1 class="wisyr_seitentitel wisyr_landingpage_detail_title">Alle Kurse in ' . htmlspecialchars($detail) . '</h1>';
 				break;
 			case 'themen':
-				echo '<h1 class="wisyr_landingpage_detail_title">Alle Kurse für ' . htmlspecialchars($detail) . '</h1>';
+				echo '<h1 class="wisyr_seitentitel wisyr_landingpage_detail_title">Alle Kurse für ' . htmlspecialchars($detail) . '</h1>';
 				break;
 			case 'abschluesse':
-				echo '<h1 class="wisyr_landingpage_detail_title">Abschluß ' . htmlspecialchars($detail) . '</h1>';
+				echo '<h1 class="wisyr_seitentitel wisyr_landingpage_detail_title">Abschluß ' . htmlspecialchars($detail) . '</h1>';
 				break;
 		}
 	}

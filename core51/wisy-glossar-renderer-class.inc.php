@@ -72,7 +72,7 @@ class WISY_GLOSSAR_RENDERER_CLASS
 		return $glossareintrag;
 	}
 	
-	function renderGlossareintrag($glossar_id, $glossar)
+	function renderGlossareintrag($glossar_id, $glossar, $hlevel=1)
 	{
 		$classes  = $this->framework->getAllowFeedbackClass();
 		$classes .= ($classes? ' ' : '') . 'wisy_glossar';
@@ -84,7 +84,7 @@ class WISY_GLOSSAR_RENDERER_CLASS
 				echo '<a class="wisyr_zurueck" href="javascript:history.back();">&laquo; Zur&uuml;ck</a>';
 				echo $this->framework->getLinkList('help.link', ' &middot; ');
 			echo '</p>';
-			echo '<h1 class="wisyr_glossartitel">' . htmlspecialchars($this->framework->encode_windows_chars($glossar['begriff'])) . '</h1>';
+			echo '<h' . $hlevel . ' class="wisyr_glossartitel">' . htmlspecialchars($this->framework->encode_windows_chars($glossar['begriff'])) . '</h' . $hlevel . '>';
 			flush();
 	
 			// render entry
