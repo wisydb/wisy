@@ -1229,7 +1229,7 @@ class WIKI2HTML_CLASS
 					if( $this->hasToplinks && $contentCounter > 1 ) {
 						$out .= $this->renderP($this->renderA('^', 'toplink', '#top', '', 1), 'left', 'toplink');
 					}
-					$out .= '<a name="content' .urlencode($blocks[$i][1]). '"></a>' . $this->renderH($blocks[$i][1], $blocks[$i][2]) . "\n";
+					$out .= '<a name="content' .urlencode($blocks[$i][1]). '"></a>' . $this->renderH($blocks[$i][1], $blocks[$i][2] + 1) . "\n";
 					break;
 
 				case 'hr':
