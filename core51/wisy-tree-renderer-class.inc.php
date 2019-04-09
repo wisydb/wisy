@@ -42,7 +42,7 @@ class WISY_TREE_RENDERER_CLASS
 				// render ...
 				if( strlen($like) == 10 )
 				{
-					$ret .= '<h1>' . $link . '</h1>';
+					$ret .= '<h2>' . $link . '</h2>';
 					$ret .= '<div style="margin-top: 1em; margin-bottom: 2em;">';
 						$ret .= $this->processLevel($kuerzel_sorted.'__________');
 					$ret .= '</div>';
@@ -90,6 +90,7 @@ class WISY_TREE_RENDERER_CLASS
 		echo $this->framework->getSearchField();
 
 		// tree out
+		echo '<h1 class="wisyr_seitentitel wisyr_themenbaum">Themen</h1>';
 		echo '<table cellpadding="0" cellspacing="0" width="100%"><tr><td valign="top" width="50%">';
 		echo $this->processLevel('__________');
 		echo '</td></tr></table>';
