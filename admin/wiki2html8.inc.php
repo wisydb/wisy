@@ -1010,6 +1010,19 @@ class ADDRESS_PATTERN_CLASS extends TXTREPLACERRULE_CLASS
 
 }
 
+class REMOVE_EMPTY_PARAGRAPHS_CLASS extends TXTREPLACERRULE_CLASS
+{
+	function __construct()
+	{
+		$this->pattern = '/<p><\/p>/';
+	}
+
+	function run($matches, &$context)
+	{
+		return '';
+	}
+}
+
 
 //
 // the wiki2html engine itself
@@ -1055,6 +1068,9 @@ class WIKI2HTML_CLASS
 		// are applied to each input line in order. note that each rule
 		// hides the matched text from later rules.
 		$this->lineReplacer = new TXTREPLACER_CLASS;
+		
+		// clean up for accessibility
+		$this->lineReplacer->addRule(new REMOVE_EMPTY_PARAGRAPHS_CLASS);
 
 		// first, translate 'in text'
 		$this->lineReplacer->addRule(new TRANSL_NOWIKI_CLASS);
@@ -1066,8 +1082,6 @@ class WIKI2HTML_CLASS
 		$this->lineReplacer->addRule(new TRANSL_EXTLINK_CLASS);
 		$this->lineReplacer->addRule(new TRANSL_EMAILLINK_CLASS);
 		$this->lineReplacer->addRule(new TRANSL_FOOTNOTEPASS1_CLASS);
-
-
 
 		// translate 'paragraphs'
 		$this->lineReplacer->addRule(new TRANSL_INDENT_CLASS);
@@ -1278,6 +1292,10 @@ class WIKI2HTML_CLASS
 			}
 			$out = str_replace(WIKI_MAGIC.'CONTENT', $content, $out);
 		}
+		
+		// final clean up
+		// remove consecutive <br /> tags
+		$out = preg_replace('/(<br \/>)+/', '<br />', $out);
 
 		// create statistics if needed
 		if( $this->hasStat )
@@ -1582,6 +1600,12 @@ class WIKI2HTML_CLASS
 	//
 	function renderP($html, $align, $style)
 	{
+		if( strlen(trim($html)) == 0 ) return "";
+		
+		// Replace all <p>...</p> tags inside this block with spans,
+		// because nested p tags are not allowed
+		$html = str_ireplace(array('<p', '</p'), array('<span', '</span'), $html);
+		
 		if( $style == 'footnote' ) {
 			return "<p><small>$html</small></p>";
 		}
