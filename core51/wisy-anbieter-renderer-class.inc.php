@@ -298,7 +298,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 							$key != 'Rechtsform' &&
 							$key != 'Gegründet' &&
 							$key != 'Qualitätszertifikate' &&
-							$key != 'Website' &&
+							// $key != 'Website' &&
 							$key != 'Logo') {
 					$ret .= $value;
 				}
