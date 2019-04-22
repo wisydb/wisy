@@ -207,7 +207,7 @@ class WISY_MENU_CLASS
 		{
 		    $autoTitle = '';
 		    $url = '';
-		    $temp = explode('#ODER#', $keywordId);
+		    $temp = explode('#ODER#', strtoupper($keywordId));
 		    for( $i = 0; $i < sizeof($temp); $i++ ) {
 		        $currKeywordId = intval($temp[$i]);
 		        if( $currKeywordId > 0 ) {
