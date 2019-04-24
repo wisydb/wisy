@@ -82,7 +82,7 @@ class WISY_LANDINGPAGE_RENDERER_CLASS
 				'title'		=>	$title,
 				'bodyClass'	=>	'wisyp_search wisyp_landingpage_' . $this->type,
 			));
-			echo '<div id="wisy_resultarea" class="wisy_landingpage">';
+			echo '<div id="wisy_resultarea" class="wisy_landingpage" role="main">';
 			flush();
 			$this->renderOrtsDetail($ortsname, $stadtteilname);
 			echo '</div><!-- /#wisy_resultarea -->';
@@ -94,7 +94,7 @@ class WISY_LANDINGPAGE_RENDERER_CLASS
 				'title'		=>	'Alle Orte',
 				'bodyClass'	=>	'wisyp_search wisyp_landingpage_' . $this->type,
 			));
-			echo '<div id="wisy_resultarea" class="wisy_landingpage">';
+			echo '<div id="wisy_resultarea" class="wisy_landingpage" role="main">';
 			$sql = $this->getOrtslisteSql();
 			$this->renderOrtsliste($sql);
 			echo '</div><!-- /#wisy_resultarea -->';
@@ -275,7 +275,7 @@ class WISY_LANDINGPAGE_RENDERER_CLASS
 				'title'	=> $title,
 				'bodyClass' => 'wisyp_search wisyp_landingpage_' . $this->type,
 			));
-			echo '<div id="wisy_resultarea" class="wisy_landingpage">';
+			echo '<div id="wisy_resultarea" class="wisy_landingpage" role="main">';
 			$this->renderThemaDetail($thema, $ortsname, $stadtteilname);
 			echo '</div><!-- /#wisy_resultarea -->';
 			
@@ -289,7 +289,7 @@ class WISY_LANDINGPAGE_RENDERER_CLASS
 					'title'		=>	'Alle Themen & Orte',
 					'bodyClass'	=>	'wisyp_search wisyp_landingpage_' . $this->type,
 				));
-				echo '<div id="wisy_resultarea" class="wisy_landingpage">';
+				echo '<div id="wisy_resultarea" class="wisy_landingpage" role="main">';
 			
 				$stichworte = $this->quotedArrayFromList(trim($this->framework->iniRead('seo.themen.stichworte')));
 				if(count($stichworte)) {
@@ -412,7 +412,7 @@ class WISY_LANDINGPAGE_RENDERER_CLASS
 				'title'	=> 'Abschluß ' . $abschluss,
 				'bodyClass' => 'wisyp_search wisyp_landingpage_' . $this->type,
 			));
-			echo '<div id="wisy_resultarea" class="wisy_landingpage">';
+			echo '<div id="wisy_resultarea" class="wisy_landingpage" role="main">';
 			$this->renderAbschlussDetail($abschluss, $glossar);
 			echo '</div><!-- /#wisy_resultarea -->';
 			
@@ -423,7 +423,7 @@ class WISY_LANDINGPAGE_RENDERER_CLASS
 				'title'	=>	'Alle Abschlüsse',
 				'bodyClass' => 'wisyp_search wisyp_landingpage_' . $this->type,
 			));
-			echo '<div id="wisy_resultarea" class="wisy_landingpage">';
+			echo '<div id="wisy_resultarea" class="wisy_landingpage" role="main">';
 			$sql = $this->getAbschlusslisteSql();
 			$this->renderAbschlussliste($sql);
 			echo '</div><!-- /#wisy_resultarea -->';

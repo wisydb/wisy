@@ -1783,9 +1783,9 @@ class WISY_FRAMEWORK_CLASS
 			$autocomplete_class = 'ac_keyword_anbieter';
 		}
 		
-		echo "\n" . '<div id="wisy_searcharea">' . "\n";
+		echo "\n" . '<div id="wisy_searcharea" role="search" aria-labelledby="wisyr_searchinput_label">' . "\n";
 			echo '<div class="inner">' . "\n";
-				echo '<form action="/search" method="get" role="search" aria-labelledby="wisyr_searchinput_label">' . "\n";
+				echo '<form action="/search" method="get aria-label="Suche">' . "\n";
 					echo '<div class="formrow wisyr_searchinput">';
 						echo '<label for="qs" id="wisyr_searchinput_label">' . $this->iniRead('searcharea.placeholder', $DEFAULT_PLACEHOLDER) . '</label>';
 						if($this->simplified)

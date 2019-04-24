@@ -76,7 +76,7 @@ class WISY_GLOSSAR_RENDERER_CLASS
 	{
 		$classes  = $this->framework->getAllowFeedbackClass();
 		$classes .= ($classes? ' ' : '') . 'wisy_glossar';
-		echo '<div id="wisy_resultarea" class="' .$classes. '">';
+		echo '<div id="wisy_resultarea" class="' .$classes. '" role="main">';
 
 			// render head
 			echo '<a id="top"></a>'; // make [[toplinks()]] work

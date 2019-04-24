@@ -1087,7 +1087,7 @@ function sendFeedback(rating)
 function initFeedback()
 {
 	$('.wisy_allow_feedback').after(
-			'<div id="wisy_feedback" class="noprint">'
+			'<div id="wisy_feedback" class="noprint" role="contentinfo">'
 		+		'<span class="wisy_feedback_question">War diese Information hilfreich?</span> '
 		+		'<span id="wisy_feedback_yesno"><a href="javascript:sendFeedback(1)">Ja</a> <a href="javascript:sendFeedback(0)">Nein</a></span>'
 		+	'</div>'

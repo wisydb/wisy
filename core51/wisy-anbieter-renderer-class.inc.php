@@ -573,7 +573,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		$tag_suchname = $this->tagsuggestorObj->keyword2tagName($suchname);
 		$this->tag_suchname_id = $this->tagsuggestorObj->getTagId(utf8_decode($tag_suchname));
 		
-		echo "\n\n" . '<div id="wisy_resultarea" class="'.$this->framework->getAllowFeedbackClass().'">';
+		echo "\n\n" . '<div id="wisy_resultarea" class="'.$this->framework->getAllowFeedbackClass().'" role="main">';
 		
 		echo '<p class="noprint"><a class="wisyr_zurueck" href="javascript:history.back();">&laquo; Zur&uuml;ck</a></p>';
 		
@@ -596,8 +596,8 @@ class WISY_ANBIETER_RENDERER_CLASS
 		flush();
 		
 		echo "\n\n" . '<section class="wisyr_anbieterinfos clearfix">';
-		echo "\n" . '<article class="wisyr_anbieter_firmenportraet wisy_anbieter_inhalt" data-tabtitle="Über">' . "\n";
-		echo '<h2>Über den Anbieter</h2>';
+		echo "\n" . '<article class="wisyr_anbieter_firmenportraet wisy_anbieter_inhalt" data-tabtitle="Über" role="region" aria-labelledby="wisy_anbieter_inhalt_title">' . "\n";
+		echo '<h2 id="wisy_anbieter_inhalt_title">Über den Anbieter</h2>';
 
 		// firmenportraet
 		if( $firmenportraet != '' ) {
@@ -606,7 +606,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		}
 		
 		echo "\n</article><!-- /.wisyr_anbieter_firmenportraet -->\n\n";
-		echo "\n" . '<article class="wisyr_anbieter_steckbrief" data-tabtitle="Kontakt">' . "\n";
+		echo "\n" . '<article class="wisyr_anbieter_steckbrief" data-tabtitle="Kontakt" role="region" aria-label="Steckbrief">' . "\n";
 		
 		echo "\n" . '<div class="wisy_steckbrief clearfix">';
 			echo '<div class="wisy_steckbriefcontent" itemscope itemtype="https://schema.org/Organization">';
@@ -616,7 +616,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		
 		echo "\n</article><!-- /.wisyr_anbieter_steckbrief -->\n\n";
 		
-		echo "\n\n" . '<article class="wisy_anbieter_kursangebot" data-tabtitle="Kurse"><h2>Kurs&shy;angebot</h2>' . "\n";
+		echo "\n\n" . '<article class="wisy_anbieter_kursangebot" data-tabtitle="Kurse" role="region" aria-labelledby="wisy_anbieter_kursangebot_title"><h2 id="wisy_anbieter_kursangebot_title">Kurs&shy;angebot</h2>' . "\n";
 		
 		// link "show all offers"
 		$freq = $this->tagsuggestorObj->getTagFreq(array($this->tag_suchname_id)); if( $freq <= 0 ) $freq = '';

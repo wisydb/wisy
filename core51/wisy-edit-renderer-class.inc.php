@@ -620,7 +620,7 @@ class WISY_EDIT_RENDERER_CLASS
 	
 			if( $showLoginForm )
 			{
-				echo '<form action="edit" method="post">';
+				echo '<form action="edit" method="post" aria-label="Benutzeranmeldung">';
 					echo '<table>';
 						echo "<input type=\"hidden\" name=\"action\" value=\"loginSubseq\" />";
 						echo "<script type=\"text/javascript\"><!--\ndocument.write('<input type=\"hidden\" name=\"javascript\" value=\"enabled\" />');\n/"."/--></script>";
@@ -1650,7 +1650,7 @@ class WISY_EDIT_RENDERER_CLASS
 			echo $temp? "<p>$temp</p>" : '';
 		}
 		
-		echo '<form action="edit" method="post" name="kurs">' . "\n";
+		echo '<form action="edit" method="post" name="kurs" aria-label="Kurs bearbeiten">' . "\n";
 			echo '<input type="hidden" name="action" value="ek" /> ' . "\n";
 			echo '<input type="hidden" name="subseq" value="1" /> ' . "\n";
 			echo '<input type="hidden" name="id" value="'.$kurs['id'].'" /> ' . "\n";
@@ -2138,7 +2138,7 @@ class WISY_EDIT_RENDERER_CLASS
 				$fwd = $_REQUEST['fwd'];
 			}
 			
-			echo '<form action="edit" method="post">';
+			echo '<form action="edit" method="post" aria-label="AGB bestätigen">';
 				echo '<input type="hidden" name="fwd" value="'.htmlspecialchars($fwd).'" />';
 				echo '<input type="hidden" name="agb_hash" value="'.htmlspecialchars($this->_agb_get_hash()).'" />';
 				echo '<input type="submit" name="agb_accepted" value="OK - Ich stimme allen Bedingungen ZU" />';

@@ -605,17 +605,17 @@ class WISY_SEARCH_RENDERER_CLASS
 			}
 
 			// render head
-			echo '<div class="wisyr_list_header">';
+			echo '<div class="wisyr_list_header" role="region" aria-labelledby="wisy_list_title">';
 				echo '<div class="wisyr_listnav"><span class="active">Kurse</span><a href="' . $baseurl . '?q=' . urlencode($queryString) . '%2C+Zeige:Anbieter">Anbieter</a></div>';
 				echo '<div class="wisyr_filternav';
 				if($this->framework->simplified && $this->framework->filterer->getActiveFiltersCount() > 0) echo ' wisyr_filters_active';
 				echo '">';
 			
 				if( $queryString == '' ) {
-					echo '<h' . $hlevel . ' class="wisyr_seitentitel wisyr_aktuelle_angebote">Aktuelle Angebote</h' . $hlevel . '>';
+					echo '<h' . $hlevel . ' id="wisy_list_title" class="wisyr_seitentitel wisyr_aktuelle_angebote">Aktuelle Angebote</h' . $hlevel . '>';
 				}
 				else {
-					echo '<h' . $hlevel . ' class="wisyr_seitentitel wisyr_angebote_zum_suchauftrag">';
+					echo '<h' . $hlevel . ' id="wisy_list_title" class="wisyr_seitentitel wisyr_angebote_zum_suchauftrag">';
 					echo $sqlCount==1? '<span class="wisyr_anzahl_angebote">1 Angebot</span> zum Suchauftrag ' : '<span class="wisyr_anzahl_angebote">' . $sqlCount . ' Angebote</span> zum Suchauftrag ';
 					if($this->framework->simplified)
 					{
@@ -652,7 +652,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			flush();
 
 			// render table start
-			echo "\n".'<table class="wisy_list wisyr_kursliste">' . "\n";
+			echo "\n".'<table class="wisy_list wisyr_kursliste" role="region" aria-label="Angebotsliste">' . "\n";
 			
 			// render column titles
 			echo '  <thead><tr>' . "\n";
@@ -723,7 +723,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			
 			if( $pagesel )
 			{
-				echo '<div class="wisyr_list_footer clearfix">';
+				echo '<div class="wisyr_list_footer clearfix" role="contentinfo">';
 					echo '<div class="wisyr_rss_link_wrapper">' . $this->framework->getRSSLink() . '</div>';
 					$this->renderPagination($prevurl, $nexturl, $pagesel, $this->rows, $offset, $sqlCount, 'wisyr_paginate_bottom');
 				echo '</div>';
@@ -771,7 +771,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			        }
 			</script>
 
-			<form method="post" action="https://www.iwwb.de/suchergebnis.php" target="IWWB">
+			<form method="post" action="https://www.iwwb.de/suchergebnis.php" target="IWWB" aria-label="Suche bei IWWB">
 			<input type="hidden" name="external" value="true">
   <input type="hidden" name="method" value="iso">
   <input type="hidden" name="feldname1" id="feldname1" value="Freitext" />
@@ -828,9 +828,9 @@ class WISY_SEARCH_RENDERER_CLASS
 			}
 
 			// render head
-			echo '<div class="wisyr_list_header">';
+			echo '<div class="wisyr_list_header" role="region" aria-labelledby="wisy_list_title">';
 				echo '<div class="wisyr_listnav"><a href="search?q=' . urlencode(str_replace(array(',,', ', ,'), array(',', ','), str_replace('Zeige:Anbieter', '', $queryString))). '">Kurse</a><span class="active">Anbieter</span></div>';
-				echo '<h1 class="wisyr_seitentitel wisyr_anbieter_zum_suchauftrag">';
+				echo '<h1 id="wisy_list_title" class="wisyr_seitentitel wisyr_anbieter_zum_suchauftrag">';
 				echo '<span class="wisyr_anzahl_anbieter">' . $sqlCount . ' Anbieter</span> zum Suchauftrag';
 				echo '</h1>';
 
@@ -842,7 +842,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			flush();
 			
 			// render column titles
-			echo "\n".'<table class="wisy_list wisyr_anbieterliste">' . "\n";
+			echo "\n".'<table class="wisy_list wisyr_anbieterliste" role="region" aria-label="Anbieterliste">' . "\n";
 			echo '  <thead><tr>' . "\n";
 				$this->renderColumnTitle('Anbieter',	'a', 	$orderBy,	311);
 				$this->renderColumnTitle('Straße',		's', 	$orderBy,	0);
@@ -901,7 +901,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			// render tail
 			if( $pagesel )
 			{
-				echo '<div class="wisyr_list_footer clearfix">';
+				echo '<div class="wisyr_list_footer clearfix" role="contentinfo">';
 					echo '<div class="wisyr_rss_link_wrapper">' . $this->framework->getRSSLink() . '</div>';
 					$this->renderPagination($prevurl, $nexturl, $pagesel, $this->rows, $offset, $sqlCount, 'wisyr_paginate_bottom');
 				echo '</div>';
@@ -1086,7 +1086,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		
 			echo $this->framework->replacePlaceholders( $this->framework->iniRead('spalten.above', '') );
 		
-			echo '<div id="wisy_resultarea" class="' .$this->framework->getAllowFeedbackClass(). '">';
+			echo '<div id="wisy_resultarea" class="' .$this->framework->getAllowFeedbackClass(). '" role="main">';
 		
 				if( $_GET['show'] == 'tags' )
 				{

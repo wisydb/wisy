@@ -171,7 +171,7 @@ __NAME__";
 			echo '<p>Bitte geben Sie den Anbieternamen <i>oder</i> die Anbieter-ID <i>oder</i> die bei uns hinterlegte E-Mail-Adresse ein.
 					 Nach einem Klick auf &quot;OK&quot; senden wir eine E-Mail mit einem neuen Passwort und allen weiteren Informationen.</p>';
 
-			echo '<form action="edit" method="post">';
+			echo '<form action="edit" method="post" aria-label="Passwort vergessen">';
 				echo '<table>';
 					echo "<input type=\"hidden\" name=\"action\" value=\"forgotpw\" />";
 					echo "<input type=\"hidden\" name=\"pwsubseq\" value=\"1\" />";

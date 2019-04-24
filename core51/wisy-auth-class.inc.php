@@ -48,7 +48,7 @@ class WISY_AUTH_CLASS
 						<title>Passwort erforderlich!</title>
 					</head>
 					<body>
-						<form action="" method="post" style="text-align: center; margin: 3em;">
+						<form action="" method="post" style="text-align: center; margin: 3em;" aria-label="Benutzeranmeldung">
 							<?php echo $this->framework->iniRead('auth.msg', 'Um fortzufahren, geben Sie bitte einen g&uuml;tigen Benutzernamen und ein g&uuml;ltiges Passwort ein: <br />'); ?>
 							Benutzername: <input name="wisyauth1" type="text" value="<?php echo htmlspecialchars($_REQUEST['wisyauth1']) ?>" /><br />
 							Passwort: <input name="wisyauth2" type="password" value="" /><br />
