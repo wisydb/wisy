@@ -1185,7 +1185,7 @@ function initResponsive()
 	});
 
 	// Navigation Unterpunkte öffnen und schließen mobil
-	$('#themenmenue a').on('click', function() {
+	$('.nav_menu a').on('click', function() {
 		$firstUl = $(this).siblings('ul').first();
 		if($firstUl.length) {
 			if($firstUl.hasClass('open')) {

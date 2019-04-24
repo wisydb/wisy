@@ -8,8 +8,8 @@ body { padding: 0; margin: 0; }
 
 #page { max-width: 1024px; margin: 0 auto; padding: 10px; }
 
-/* Themenmenue */
-#themenmenue { 
+/* Ehemals #themenmenue -> Umbenannt zu .nav_menu */
+.nav_menu { 
 	background-color: #eee;
 	clear: both;
 }
@@ -169,11 +169,11 @@ ul.dropdown ul {
 	
 	#page { padding-top: 50px; }
 	
-	/* Themenmenue */
-	#themenmenue { display: none; }
+	/* Ehemals #themenmenue -> Umbenannt zu .nav_menu */
+	.nav_menu { display: none; }
 	#nav-link { display: block; }
 	
-	.navshowing #themenmenue {
+	.navshowing .nav_menu {
 		display: block;
 		position: absolute;
 		top: 60px;
@@ -182,13 +182,13 @@ ul.dropdown ul {
 		bottom: 0;
 		z-index: 330;
 	}
-	#themenmenue ul, #themenmenue li { position: relative; float: none; visibility: visible!important; }
-	#themenmenue li { padding: 0; border: none; background-color: #eee;}
-	#themenmenue a { display: block; padding: 10px; border-bottom: 1px solid #fff; }
-	#themenmenue li.dir { background-color: #ddd; }
-	#themenmenue ul ul { display: none; }
-	#themenmenue ul.dropdown ul { width: 100%; }
-	#themenmenue ul.dropdown ul ul { left: 0; }
+	.nav_menu ul, .nav_menu li { position: relative; float: none; visibility: visible!important; }
+	.nav_menu li { padding: 0; border: none; background-color: #eee;}
+	.nav_menu a { display: block; padding: 10px; border-bottom: 1px solid #fff; }
+	.nav_menu li.dir { background-color: #ddd; }
+	.nav_menu ul ul { display: none; }
+	.nav_menu ul.dropdown ul { width: 100%; }
+	.nav_menu ul.dropdown ul ul { left: 0; }
 	
 	#favlistlink { width: 100%; }
 	

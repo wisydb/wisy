@@ -378,12 +378,12 @@ class WISY_MENU_CLASS
 			}
 			
 			// get the menu as HTML		
-			$ret = '<ul class="dropdown dropdown-horizontal">';
+			$ret = '<nav class="nav_' . $this->prefix . '"><ul class="dropdown dropdown-horizontal">';
 				for( $i = 0; $i < sizeof($root->children); $i++ )
 				{
 					$ret .= $root->children[$i]->getHtml();
 				}
-			$ret .= '</ul>';
+			$ret .= '</ul></nav>';
 			
 			// add time
 			$secneeded = $this->framework->microtime_float() - $this->start_s;

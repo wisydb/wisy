@@ -1785,9 +1785,9 @@ class WISY_FRAMEWORK_CLASS
 		
 		echo "\n" . '<div id="wisy_searcharea">' . "\n";
 			echo '<div class="inner">' . "\n";
-				echo '<form action="/search" method="get" role="search">' . "\n";
+				echo '<form action="/search" method="get" role="search" aria-labelledby="wisyr_searchinput_label">' . "\n";
 					echo '<div class="formrow wisyr_searchinput">';
-						echo '<label for="qs">' . $this->iniRead('searcharea.placeholder', $DEFAULT_PLACEHOLDER) . '</label>';
+						echo '<label for="qs" id="wisyr_searchinput_label">' . $this->iniRead('searcharea.placeholder', $DEFAULT_PLACEHOLDER) . '</label>';
 						if($this->simplified)
 						{
 							echo '<input type="text" id="wisy_searchinput" class="' . $autocomplete_class . '" name="qs" value="' .$this->QS. '" placeholder="' . $searchinput_placeholder . '" aria-label="' . $this->iniRead('searcharea.placeholder', 'Suchbegriff') . '" role="combobox" aria-controls="wisy_autocomplete" aria-owns="wisy_autocomplete" aria-expanded="false" aria-autocomplete="list" autocomplete="off" />' . "\n";
