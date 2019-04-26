@@ -907,26 +907,6 @@ function initPaginateViaAjax()
 }
 
 /*****************************************************************************
- * dropdown stuff
- *****************************************************************************/
-
-$.fn.dropdown = function()
-{
-	// needed only for IE6 dropdown menu
-	$(this).hover(function(){
-		$(this).addClass("hover");
-		$('> .dir',this).addClass("open");
-		$('ul:first',this).css('visibility', 'visible');
-	},function(){
-		$(this).removeClass("hover");
-		$('.open',this).removeClass("open");
-		$('ul:first',this).css('visibility', 'hidden');
-	});
-
-}
-
-
-/*****************************************************************************
  * old edit stuff
  *****************************************************************************/
 
@@ -1431,6 +1411,81 @@ function initFiltersMobile() {
 }
 
 /*****************************************************************************
+ * Accessible Menus: simple and complex
+ *****************************************************************************/
+
+function initAccessibleMenus() {
+	// Add functionality for "simple" menus, accessible via tab-navigation
+	$(".wisyr_menu_simple_level1").initMenuSimple();
+	
+	// Add functionality for "complex" menus, accessible via WAI-ARIA assisted arrow-navigation
+	// TODO
+}
+
+$.fn.initMenuSimple = function(settings) {
+	
+	settings = jQuery.extend({ menuHoverClass: "wisyr_show_menu" }, settings);
+	
+	// Add tabindex 0 to top level spans because otherwise they can't be tabbed to
+	$(this).find("> li > .nav_no_link").attr("tabIndex", 0);
+	
+	var top_level_links = $(this).find("> li > a, > li > .nav_no_link");
+
+	// Set tabIndex to -1 so that top_level_links can't receive focus until menu is open
+	$(top_level_links)
+		.next("ul")
+		.attr("data-test", "true")
+		.attr({ "aria-hidden": "true" })
+		.find("a")
+		.attr("tabIndex", -1);
+
+	// Focus
+	$(top_level_links).on('focus', function() {
+		$(this)
+			.closest("ul")
+			.find("." + settings.menuHoverClass)
+			.attr("aria-hidden", "true")
+			.removeClass(settings.menuHoverClass)
+			.find("a, .nav_no_link")
+			.attr("tabIndex", -1);
+
+		$(this)
+			.next("ul")
+			.attr("aria-hidden", "false")
+			.addClass(settings.menuHoverClass)
+			.find("a, .nav_no_link")
+			.attr("tabIndex", 0);
+	});
+
+	// Hide menu if the user tabs out of the navigation
+	$(this)
+		.find("a")
+		.last()
+		.keydown(function(e) {
+			if (e.keyCode == 9) {
+				$("." + settings.menuHoverClass)
+					.attr("aria-hidden", "true")
+					.removeClass(settings.menuHoverClass)
+					.find("a, .nav_no_link")
+					.attr("tabIndex", -1);
+			}
+	});
+
+	// Hide menu if click occurs outside of navigation
+	$(document).on('click', function() {
+		$("." + settings.menuHoverClass)
+			.attr("aria-hidden", "true")
+			.removeClass(settings.menuHoverClass)
+			.find("a, .nav_no_link")
+			.attr("tabIndex", -1);
+	});
+
+	$(this).on('click', function(e) {
+		e.stopPropagation();
+	});
+};
+
+/*****************************************************************************
  * main entry point
  *****************************************************************************/
 
@@ -1449,11 +1504,6 @@ $().ready(function()
 	else
 	{
 		initAutocomplete();
-	}
-
-	// init dropdown
-	if ($.browser && $.browser.msie && $.browser.version == '6.0') {
-    	$("ul.dropdown li").dropdown();
 	}	
 	
 	// handle "advanced search" via ajax
@@ -1474,6 +1524,9 @@ $().ready(function()
 	
 	// init responsive stuff
 	initResponsive();
+	
+	// init accessibility stuff
+	initAccessibleMenus();
 	
 	// init filter stuff
 	initFilters();

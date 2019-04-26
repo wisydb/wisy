@@ -27,24 +27,27 @@ class WISY_MENU_ITEM
 		$this->children = array();
 	}
 	
-	function getHtml()
+	function getHtml($toplevel=false)
 	{
 		$liClass = '';
-		if( sizeof($this->children) ) $liClass = ' class="dir '.($this->title == "OhneName" ? "ohneName" : "").'"';
+		if( sizeof($this->children) ) $liClass = ' class="dir has-subnav '.($this->title == "OhneName" ? "ohneName" : "").'" aria-haspopup="true"';
 		elseif($this->title == "OhneName") $liClass = ' class="ohneName"';
 		
 		$ret = "<li$liClass>";
-			if( utf8_encode($this->url) ) $ret .= '<a href="'.htmlspecialchars(utf8_encode($this->url)). /*convert "&" in URLs to "&amp;" in HTML*/
-									'"'.$this->aparam.'>'; 
-			$ret .= $this->title;
-			if( $this->url ) $ret .= '</a>';
+			if( utf8_encode($this->url) ) {
+				$ret .= '<a href="'.htmlspecialchars(utf8_encode($this->url)).'"'.$this->aparam.($toplevel ? ' tabindex="-1"' : '').'>';
+				$ret .= $this->title;
+				$ret .= '</a>';
+			} else {
+				$ret .= '<span class="nav_no_link">'.$this->title.'</span>';
+			}
 
 			if( sizeof($this->children) )
 			{
-				$ret .= '<ul>';
+				$ret .= '<ul data-test="true" aria-hidden="true">';
 					for( $i = 0; $i < sizeof($this->children); $i++ )
 					{
-						$ret .= $this->children[$i]->getHtml();
+						$ret .= $this->children[$i]->getHtml(true);
 					}
 				$ret .= '</ul>';
 			}
@@ -345,6 +348,9 @@ class WISY_MENU_CLASS
 			reset($wisyPortalEinstellungen);
 			$allPrefix = $this->prefix . '.';
 			$allPrefixLen = strlen($allPrefix);
+			
+			$navClass = "wisyr_menu_simple";
+			
 			while( list($key, $value) = each($wisyPortalEinstellungen) )
 			{
 				if( substr($key, 0, $allPrefixLen)==$allPrefix )
@@ -378,7 +384,7 @@ class WISY_MENU_CLASS
 			}
 			
 			// get the menu as HTML		
-			$ret = '<nav class="nav_' . $this->prefix . '"><ul class="dropdown dropdown-horizontal">';
+			$ret = '<nav class="nav_' . $this->prefix . ' ' . $navClass . '"><ul class="dropdown dropdown-horizontal ' . $navClass . '_level1" aria-hidden="false">';
 				for( $i = 0; $i < sizeof($root->children); $i++ )
 				{
 					$ret .= $root->children[$i]->getHtml();
