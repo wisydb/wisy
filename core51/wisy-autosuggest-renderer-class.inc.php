@@ -85,7 +85,7 @@ class WISY_AUTOSUGGEST_RENDERER_CLASS
 				}
 				else
 				{
-					$tags = $tagsuggestor->suggestTags($querystring, array('max'=>10, 'q_tag_type_not'=>array(64,256,512)));
+				    $tags = $tagsuggestor->suggestTags($querystring, array('max'=>10, 'q_tag_type_not'=>array(256,512))); // 64: (offenes) Synonym
 				}
                 
                 // Filter out suggestions with tag_freq == 0
