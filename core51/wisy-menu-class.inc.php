@@ -364,6 +364,7 @@ class WISY_MENU_CLASS
 					//	complex -> arrow-navigation
 					if(count($levels) && $levels[0] == 'type' && $value != '') {
 						$this->a11Type = $value;
+						continue;
 					}
 					
 					// find the correct parent ...
