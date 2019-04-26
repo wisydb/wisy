@@ -65,6 +65,7 @@ class WISY_MENU_CLASS
 	var $framework;
 	var $prefix;
 	var $root;
+	var $a11Type;
 
 	function __construct(&$framework, $param)
 	{
@@ -73,6 +74,7 @@ class WISY_MENU_CLASS
 		$this->prefix = $param['prefix'];
 		$this->db = new DB_Admin;
 		$this->start_s = $this->framework->microtime_float();
+		$this->a11Type = 'simple';
 	}
 	
 	// Themengebiet Items erzeugen (deprecated)
@@ -357,6 +359,13 @@ class WISY_MENU_CLASS
 				{
 					$levels = explode('.', substr($key, $allPrefixLen));
 					
+					// Read optional setting for accessibility type this menu should use
+					//	simple -> tab-navigation
+					//	complex -> arrow-navigation
+					if(count($levels) && $levels[0] == 'type' && $value != '') {
+						$this->a11Type = $value;
+					}
+					
 					// find the correct parent ...
 					$parent =& $root;
 					for( $l = 0; $l < sizeof($levels)-1; $l++ )
@@ -383,7 +392,7 @@ class WISY_MENU_CLASS
 				}
 			}
 			
-			// get the menu as HTML		
+			// get the menu as HTML
 			$ret = '<nav class="nav_' . $this->prefix . ' ' . $navClass . '"><ul class="dropdown dropdown-horizontal ' . $navClass . '_level1" aria-hidden="false">';
 				for( $i = 0; $i < sizeof($root->children); $i++ )
 				{
