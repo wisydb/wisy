@@ -1439,8 +1439,8 @@ $.fn.initMenuSimple = function(settings) {
 		.find("a")
 		.attr("tabIndex", -1);
 
-	// Focus
-	$(top_level_links).on('focus', function() {
+	// Show and hide on focus
+	$(this).find('a, .nav_no_link').on('focus', function() {
 		$(this)
 			.closest("ul")
 			.find("." + settings.menuHoverClass)
@@ -1459,7 +1459,7 @@ $.fn.initMenuSimple = function(settings) {
 
 	// Hide menu if the user tabs out of the navigation
 	$(this)
-		.find("a")
+		.find("a, .nav_no_link")
 		.last()
 		.keydown(function(e) {
 			if (e.keyCode == 9) {
