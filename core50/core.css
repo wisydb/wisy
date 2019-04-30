@@ -327,6 +327,10 @@ advanced form
 edit stuff
 *******************************************************************************/
 
+.wisyp_edit #wisy_contentarea {
+	padding: 5%;
+}
+
 div.wisy_edittoolbar {
 	margin-bottom: 1.5em;
 }
