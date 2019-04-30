@@ -183,10 +183,10 @@ class WISY_KURS_RENDERER_CLASS
 				}
 						
 				// ... Bildungsurlaubsnummer 
-				if (($wisyPortalSpalten & 128) > 0)
+				if (($wisyPortalSpalten & 128) > 0 && $bu_nummer)
 				{
-					$rows .= '<dt>Bildungsurlaubsnummer:&nbsp;</dt>';
-					$rows .= '<dd>' .($bu_nummer? 'Ja' : 'Nein'). '</dd>';
+				    $rows .= '<dt>Bildungsurlaubsnummer:&nbsp;</dt>';
+				    $rows .= '<dd>ja</dd>';
 				}
 
 				if( $rows != '' ) 
