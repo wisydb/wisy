@@ -623,15 +623,15 @@ class WISY_FRAMEWORK_CLASS
 		}
 		else if( $placeholder == '__ANZAHL_KURSE__' || $placeholder == '__ANZAHL_KURSE_G__' )
 		{
-			return intval($this->cacheRead('stats.anzahl_kurse'));
+		    return number_format(intval($this->cacheRead('stats.anzahl_kurse')), 0, ",", ".");
 		}
 		else if( $placeholder == '__ANZAHL_DURCHFUEHRUNGEN__' )
 		{
-			return intval($this->cacheRead('stats.anzahl_durchfuehrungen'));
+		    return number_format(intval($this->cacheRead('stats.anzahl_durchfuehrungen')), 0, ",", ".");
 		}
 		else if( $placeholder == '__ANZAHL_ANBIETER__' || $placeholder == '__ANZAHL_ANBIETER_G__' )
 		{
-			return intval($this->cacheRead('stats.anzahl_anbieter'));
+		    return number_format(intval($this->cacheRead('stats.anzahl_anbieter')), 0, ",", ".");
 		}
 		else if( $placeholder == '__A_PRINT__' )
 		{
