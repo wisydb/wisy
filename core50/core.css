@@ -264,6 +264,10 @@ wisy_list etc.
 	background-color: #FFFFD0;
 }
 
+.wisyr_titel .tag_count {
+  color: white;
+}
+
 span.wisy_promoted_prefix {
 	color: #D60008;
 	font-size: 11px;
