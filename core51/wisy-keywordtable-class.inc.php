@@ -87,12 +87,12 @@ class WISY_KEYWORDTABLE_CLASS
 
 		if( $row_postfix != '' )
 		{
-		    $row_postfix = ' <span class="ac_tag_type">(' . htmlentities($row_postfix) . ')</span> ';
+		    $row_postfix = ' <span class="ac_tag_type">(' . htmlentities(html_entity_decode(strip_tags($row_postfix))) . ')</span> ';
 		}
 
 		/*col1*/
 		$ret .= '<span class="' .$row_class. '">';
-		$ret .= ' <a href="' . $this->framework->getUrl('search', array('q'=>$tag_name)) . '">' . utf8_decode($tag_name) . '</a> ';
+		$ret .= ' <a href="' . $this->framework->getUrl('search', array('q'=>$tag_name)) . '">' . htmlentities($tag_name) . '</a> ';
 			$ret .= $row_postfix;
 		$ret .= '</span>';
 		
