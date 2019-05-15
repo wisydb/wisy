@@ -108,21 +108,21 @@ class WISY_ROBOTS_RENDERER_CLASS
 			    if(strlen($link) >= 1)
 			        echo "Disallow: ".$link."\n";
 			}
-			
-			echo "Crawl-delay: 10\n";
-			
-			echo "\n\n";
-			echo "User-agent: ia_archiver\n";
-			echo "Disallow: /\n";
-			
-			echo "\n\n";
-			echo "User-agent: SemrushBot\n";
-			echo "Disallow: /\n";
-			
-			echo "\n\n";
-			echo "User-agent: SemrushBot-SA\n";
-			echo "Disallow: /\n";
 		}
+		
+		echo "Crawl-delay: 10\n";
+		
+		echo "\n\n";
+		echo "User-agent: ia_archiver\n";
+		echo "Disallow: /\n";
+		
+		echo "\n\n";
+		echo "User-agent: SemrushBot\n";
+		echo "Disallow: /\n";
+		
+		echo "\n\n";
+		echo "User-agent: SemrushBot-SA\n";
+		echo "Disallow: /\n";
 	}
 
 
