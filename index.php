@@ -125,6 +125,7 @@ function fwd301($fwdTo)
 	// wenn man nur "Location:" verwendet, wird von PHP der Code 302 versandt
 	header("HTTP/1.1 301 Moved Permanently");
 	header("Location: $fwdTo");
+	header("Cache-Control: max-age=259200"); // 3 days, to be able to change homepage in future
 	header("Connection: close");
 	exit();
 }
