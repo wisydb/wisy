@@ -48,6 +48,7 @@ class WISY_AUTOSUGGEST_RENDERER_CLASS
 	function render()
 	{
 		$querystring = utf8_decode($_GET["q"]);
+		$querystring = strip_tags($querystring);
 		
 		$tagsuggestor =& createWisyObject('WISY_TAGSUGGESTOR_CLASS', $this->framework);
 
