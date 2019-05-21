@@ -182,12 +182,12 @@ class WISY_KURS_RENDERER_CLASS
 					$rows .= $this->framework->writeStichwoerter($db, 'kurse', $tags);
 				}
 						
-				// ... Bildungsurlaubsnummer 
+				/* // ... Bildungsurlaubsnummer 
 				if (($wisyPortalSpalten & 128) > 0 && $bu_nummer)
 				{
 				    $rows .= '<dt>Bildungsurlaubsnummer:&nbsp;</dt>';
 				    $rows .= '<dd>ja</dd>';
-				}
+				} */
 
 				if( $rows != '' ) 
 				{
