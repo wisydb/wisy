@@ -313,7 +313,7 @@ class WISY_KURS_RENDERER_CLASS
 			        $filtersw = array_map("trim", explode(",", $this->framework->iniRead('sw_cloud.filtertyp', "32, 2048, 8192")));
 			        $distinct_tags = array();
 			        $tags = $this->framework->loadStichwoerter($db, 'kurse', $kursId);
-			        $tag_cloud = '<div id="sw_cloud"><h3>'.$this->framework->iniRead('sw_cloud.bezeichnung_kurs', 'Suchbegriffe').'</h3> ';
+			        $tag_cloud = '<div id="sw_cloud" class="noprint"><h3>'.$this->framework->iniRead('sw_cloud.bezeichnung_kurs', 'Suchbegriffe').'</h3> ';
 			        //$tag_cloud .= '<h4>Suchbegriffe</h4>';
 			        
 			        for($i = 0; $i < count($tags); $i++)

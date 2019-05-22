@@ -792,7 +792,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		    {
 		        $filtersw = array_map("trim", explode(",", $this->framework->iniRead('sw_cloud.filtertyp', "32, 2048, 8192")));
 		        $distinct_tags = array();
-		        $tag_cloud = '<div id="sw_cloud"><h3>'.$this->framework->iniRead('sw_cloud.bezeichnung_suche', 'Suchbegriffe').'</h3> ';
+		        $tag_cloud = '<div id="sw_cloud" class="noprint"><h3>'.$this->framework->iniRead('sw_cloud.bezeichnung_suche', 'Suchbegriffe').'</h3> ';
 		        //$tag_cloud .= '<h4>Suchbegriffe</h4>';
 		        $tag_done = array();
 		        
