@@ -353,7 +353,7 @@ class WISY_KURS_RENDERER_CLASS
 			$kerst = $this->framework->iniRead('kursinfo.erstellt', 1);
 			$kaend = $this->framework->iniRead('kursinfo.geaendert', 1);
 			$kvollst = $this->framework->iniRead('kursinfo.vollstaendigkeit', 1);
-			echo '<div class="wisyr_kurs_meta">';
+			echo '<div class="wisyr_kurs_meta noprint">';
 			if($kerst || $kaend || $kvollst) {
 			    echo 'Kursinformation: ';
 			    if($kerst)

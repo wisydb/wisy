@@ -163,7 +163,7 @@ function fav_update_bar()
 	if( cnt > 0 )
 	{
 		str = '<a href="search?q=Fav%3A" title="Merkliste anzeigen">';
-			str += '<span class="fav_item fav_selected">&#9733;</span> ';
+			str += '<span class="fav_item fav_selected noprint">&#9733;</span> ';
 			str += '<span class="favlistlink_title">Merkliste (' + cnt + ')</span>';
 		str += '</a> ';
 		
@@ -232,7 +232,7 @@ function fav_init()
 	var has_clickable_fav = false;
 	$('.fav_add').each(function() {
 		var id = $(this).attr('data-favid');
-		var cls = fav_is_favourite(id)? 'fav_item fav_selected' : 'fav_item';
+		var cls = fav_is_favourite(id)? 'fav_item fav_selected noprint' : 'fav_item noprint';
 		$(this).parent().append(' <span class="'+cls+'" onclick="fav_click(this, '+id+');" title="Angebot merken">&#9733;</span>');
 		has_clickable_fav = true;
 	});
