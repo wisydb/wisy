@@ -281,7 +281,7 @@ class WISY_DURCHF_CLASS
 			{	
 				$preishinweise_out = implode(', ', $preishinweise_arr);
 				if( $html ) {
-					$ret .= '<div class="wisyr_preis_hinweise">' . htmlentities(utf8_encode($preishinweise_out)) . '</div>';
+				    $ret .= '<div class="wisyr_preis_hinweise">' . htmlentities(utf8_encode($preishinweise_out)) . '</div>';
 				}
 				else {
 					$ret .= " ($preishinweise_out)";
