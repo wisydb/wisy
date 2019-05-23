@@ -92,7 +92,7 @@ class WISY_KEYWORDTABLE_CLASS
 
 		/*col1*/
 		$ret .= '<span class="' .$row_class. '">';
-		$ret .= ' <a href="' . $this->framework->getUrl('search', array('q'=>$tag_name)) . '">' . htmlentities($tag_name) . '</a> ';
+		$ret .= ' <a href="' . $this->framework->getUrl('search', array('q'=>utf8_encode($tag_name))). '">' . htmlentities(utf8_encode($tag_name)). '</a> ';
 			$ret .= $row_postfix;
 		$ret .= '</span>';
 		
