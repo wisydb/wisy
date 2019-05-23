@@ -1139,6 +1139,9 @@ class WISY_SEARCH_RENDERER_CLASS
 				$redirect = true;
 			}
 		}
+		
+		// We need original chars for searches. Check Filter-class constructTokens function for details. Also: https://www.php.net/manual/de/function.htmlspecialchars.php
+		$queryString = str_replace(array("&amp;", "&quot;", "&#039;", "&apos;", "&lt;", "&gt;"), array("&", '"', "'", "'", "<", ">"), $queryString); 
   	
 		// Redirect if $queryString has changed
 		if($redirect && $this->framework->getParam('r', 0) == 1) {
