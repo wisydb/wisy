@@ -271,9 +271,9 @@ class WISY_DURCHF_CLASS
 			
 			foreach( $addParam['stichwoerter'] as $stichwort ) {
 				switch( $stichwort['id'] ) {
-					case 3207:  $preishinweise_arr[] = 'kostenlos per Bildungsgutschein'; 		break;
-					case 6013:  $preishinweise_arr[] = 'kostenlos durch Umschulung';			break;
-					case 16311: $preishinweise_arr[] = 'kostenlos als Aktivierungsmaßnahme';	break;				
+				    case 3207:  $preishinweise_arr[] = utf8_decode('kostenlos per Bildungsgutschein'); 		break;
+				    case 6013:  $preishinweise_arr[] = utf8_decode('kostenlos durch Umschulung');			break;
+				    case 16311: $preishinweise_arr[] = utf8_decode('kostenlos als Aktivierungsmaßnahme');	break;		
 				}
 			}
 			
