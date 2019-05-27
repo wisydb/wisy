@@ -26,7 +26,7 @@ class WISY_KURS_RENDERER_CLASS
 		// query DB
 		$db = new DB_Admin();
 		$db->query("SELECT k.freigeschaltet, k.titel, k.org_titel, k.beschreibung, k.anbieter, k.date_created, k.date_modified, k.bu_nummer, k.fu_knr, k.azwv_knr,
-                           a.pflege_pweinst, a.suchname, a.strasse, a.plz, a.ort, a.stadtteil, a.land, a.anspr_name, a.postname, a.anspr_zeit, a.anspr_tel, a.anspr_fax, a.anspr_email
+                           a.pflege_pweinst, a.suchname, a.strasse, a.plz, a.ort, a.stadtteil, a.land, a.anspr_name, a.postname, a.anspr_zeit, a.anspr_tel, a.anspr_fax, a.anspr_email, a.typ 
 						  FROM kurse k
 						  LEFT JOIN anbieter a ON a.id=k.anbieter
 						  WHERE k.id=$kursId"); // "a.suchname" etc. kann mit "LEFT JOIN anbieter a ON a.id=k.anbieter" zus. abgefragt werden						
@@ -57,6 +57,7 @@ class WISY_KURS_RENDERER_CLASS
 		$anbieterdetails['anspr_tel'] = $db->f8('anspr_tel');
 		$anbieterdetails['anspr_fax'] = $db->f8('anspr_fax');
 		$anbieterdetails['anspr_email'] = $db->f8('anspr_email');
+		$anbieterdetails['typ'] = $db->f8('typ');
 		    
 		$record				= $db->Record;
 		
@@ -109,7 +110,7 @@ class WISY_KURS_RENDERER_CLASS
 		}
 		
 		$bodyClass = 'wisyp_kurs';
-		if( $anbieter_typ == 2 )
+		if( $anbieterdetails['typ'] == 2 )
 		{
 			$bodyClass .= ' wisyp_kurs_beratungsstelle';
 		} elseif($displayAbschluss && $isAbschluss) {
@@ -154,7 +155,7 @@ class WISY_KURS_RENDERER_CLASS
 			
 			echo '<section class="wisyr_kursinfos clearfix">';
     			echo '<h1 class="wisyr_kurstitel">';
-    			if( $anbieter_typ == 2 ) echo '<span class="wisy_icon_beratungsstelle">Beratung<span class="dp">:</span></span> ';
+    			if( $anbieterdetails['typ'] == 2 ) echo '<span class="wisy_icon_beratungsstelle">Beratung<span class="dp">:</span></span> ';
     			if( $displayAbschluss && $isAbschluss ) echo '<span class="wisy_icon_abschluss">Abschluss<span class="dp">:</span></span> ';
     			echo htmlentities($this->framework->encode_windows_chars($title));
     			if( $this->framework->iniRead('fav.use', 0) ) {
