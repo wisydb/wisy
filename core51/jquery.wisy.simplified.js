@@ -1396,7 +1396,8 @@ function initFilters() {
 			lang_clear_date: 'Auswahl entfernen',
 			show_icon: false,
 			open_on_focus: true,
-			show_select_today: false
+			show_select_today: false,
+			direction: 1 /* start calendar tomorrow, because start dates of DF in the past not searchable at this point */
 		}
 	);
 }
