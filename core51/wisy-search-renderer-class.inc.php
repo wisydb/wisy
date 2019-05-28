@@ -927,6 +927,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			echo '<div class="wisyr_list_header">';
 				echo '<div class="wisyr_listnav"><a href="search?q=' . urlencode(str_replace(array(',,', ', ,'), array(',', ','), str_replace('Zeige:Anbieter', '', $queryString))). '">Kurse</a><span class="active">Anbieter</span></div>';
 				echo '<span class="wisyr_anbieter_zum_suchauftrag">';
+				echo '<div class="zurAngeboteSuche">&larr; Hier geht\'s <a href="/">zur Angebote-Suche</a></div>';
 				echo '<span class="wisyr_anzahl_anbieter">' . $sqlCount . ' Anbieter</span> zum Suchauftrag';
 				echo '</span>';
 
@@ -1062,27 +1063,36 @@ class WISY_SEARCH_RENDERER_CLASS
 		else
 		{
 
-			// Leere Suche mit gesetzen Filtern
-			echo '<h3>Möglicherweise helfen Veränderungen an Ihren Filtereinstellungen:</h3>';
-			echo '<ul>';
-			echo '<li>Ändern oder entfernen Sie einzelne Filter, um mehr Angebote für Ihren Suchauftrag zu erhalten</li>';
-			echo '<li>Suchen Sie nach ähnlichen Stichwörtern oder Kursthemen</li>';
-			echo '</ul>';
-			
-			// Auch bei leerem Suchergebnis Filternavigation ausgeben
-			echo '<div class="wisyr_list_header">';
-				echo '<div class="wisyr_filternav';
-				if($this->framework->simplified && $this->framework->filterer->getActiveFiltersCount() > 0) echo ' wisyr_filters_active';
-				echo '">';
-			
-					// Show filter / advanced search
-					$DEFAULT_FILTERLINK_HTML= '<a href="filter?q=__Q_URLENCODE__" id="wisy_filterlink">Suche anpassen</a>';
-					echo $this->framework->replacePlaceholders($this->framework->iniRead('searcharea.filterlink', $DEFAULT_FILTERLINK_HTML));
-			
-					$filterRenderer =& createWisyObject('WISY_FILTER_RENDERER_CLASS', $this->framework);
-					$filterRenderer->renderForm($this->framework->getParam('q', ''), array());
-				echo '</div>';
-			echo '</div>';
+		    if($_GET['filter_zeige'] == "Anbieter") {
+		        // Leere Suche mit gesetzen Filtern
+		        echo '<h3>Leider keinen Anbieter mit diesem Namen gefunden!</h3><br>';
+		        echo '<ul>';
+		        echo '<li>Passen Sie Ihre Suche bitte an und achten Sie ggf. auf die Vorschl&auml;ge bzw. w&auml;hlen einen aus.</li>';
+		        echo '<li>Oder suchen Sie nach Angeboten? Dann bitte hier <a href="/">zur Angebote-Suche...</a></li>';
+		        echo '</ul>';
+		    } else {
+		        // Leere Suche mit gesetzen Filtern
+		        echo '<h3>Möglicherweise helfen Veränderungen an Ihren Filtereinstellungen:</h3>';
+		        echo '<ul>';
+		        echo '<li>Ändern oder entfernen Sie einzelne Filter, um mehr Angebote für Ihren Suchauftrag zu erhalten</li>';
+		        echo '<li>Suchen Sie nach ähnlichen Stichwörtern oder Kursthemen</li>';
+		        echo '</ul>';
+		        
+		        // Auch bei leerem Suchergebnis Filternavigation ausgeben
+		        echo '<div class="wisyr_list_header">';
+		        echo '<div class="wisyr_filternav';
+		        if($this->framework->simplified && $this->framework->filterer->getActiveFiltersCount() > 0) echo ' wisyr_filters_active';
+		        echo '">';
+		        
+		        // Show filter / advanced search
+		        $DEFAULT_FILTERLINK_HTML= '<a href="filter?q=__Q_URLENCODE__" id="wisy_filterlink">Suche anpassen</a>';
+		        echo $this->framework->replacePlaceholders($this->framework->iniRead('searcharea.filterlink', $DEFAULT_FILTERLINK_HTML));
+		        
+		        $filterRenderer =& createWisyObject('WISY_FILTER_RENDERER_CLASS', $this->framework);
+		        $filterRenderer->renderForm($this->framework->getParam('q', ''), array());
+		        echo '</div>';
+		        echo '</div>';
+		    }
 		}
 		
 		// Fehler

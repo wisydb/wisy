@@ -1661,11 +1661,29 @@ class WISY_FRAMEWORK_CLASS
 			$ret .= 'wisyp_homepage';
 		}
 		
+		foreach($_GET as $key => $value) {
+		    $value = trim($value);
+		    if(preg_match("/^filter_/", $key) && $value != "") {
+		        $ret .= strtolower(' '.$key.'_'.$this->deXSS($value));
+		    }
+		}
+		
 		// add nojs class
 		$ret .= ' nojs';
 		
 		// done
 		return $ret;
+	}
+	
+	function deXSS($value) {
+	    $value = strip_tags(html_entity_decode(urldecode($value)));
+	    $value = $this->removeCroco($value);
+	    return $value;
+	}
+	
+	function removeCroco($value) {
+	    $value = htmlspecialchars(str_replace(array(">", "<", "&lt;", "&gt;"), array("", "", "", ""), $value));
+	    return $value;
 	}
 	
 	function getPrologue($param = 0)
