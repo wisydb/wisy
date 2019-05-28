@@ -262,6 +262,8 @@ function berechne_wochentage($beginn, $ende)
 
 function berechne_dauer($start, $ende)
 {
+    date_default_timezone_set('UTC'); // otherwise mktime asumes dst (UTC) wrong => too short duration for DF in March/Oct.
+    
 	// anzahl tage berechnen
 	$d = strtr($start, ' :', '--');
 	$d = explode('-', $d);
@@ -306,5 +308,7 @@ function berechne_dauer($start, $ende)
 	{
 		return $days;
 	}
+	
+	date_default_timezone_get("Europe/Berlin");
 }
 
