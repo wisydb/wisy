@@ -40,6 +40,10 @@ class WISY_EDIT_RENDERER_CLASS
 			{
 				$this->bwd = 'k' . intval($_REQUEST['id']);
 			}
+			else if( $_REQUEST['action'] == 'ea' )
+			{
+			    $this->bwd = 'a' . intval($_SESSION['loggedInAnbieterId']);
+			}
 		}
 		
 		
@@ -318,7 +322,7 @@ class WISY_EDIT_RENDERER_CLASS
 				if( $values[$v] == $value ) {
 					echo ' selected="selected"';
 				}
-				echo '>' .$values[$v+1]. '</option>';
+				echo '>' .htmlspecialchars(utf8_encode($values[$v+1])). '</option>';
 			}
 		echo '</select>';
 	}
@@ -372,8 +376,19 @@ class WISY_EDIT_RENDERER_CLASS
 				}
 			}
 			
+			
+			/* else if( $wisyRequestedFile[0] == 'a' && ($_SESSION['loggedInAnbieterId'] == intval(substr($wisyRequestedFile, 1))))
+			 {
+			 $ret .= ' | <a href="edit?action=ea">Profil bearbeiten</a> ';
+			 } */
+			
 			// link "neuer kurs"
-			$ret .=  ' | <a href="edit?action=ek&amp;id=0">Neuer Kurs</a>';
+			$ret .=  ' | <a href="edit?action=ek&amp;id=0">Neuer Kurs</a> ';
+			
+			/* if($_SESSION['loggedInAnbieterId'] > 0 && $_SESSION['loggedInAnbieterId'] < 99999999999)
+			 $ret .=  ' | <a href="/a'.$_SESSION['loggedInAnbieterId'].'">Zum Profil</a>'; */
+			
+			$ret .= ' | <a href="edit?action=ea">Ihr Profil bearbeiten</a> ';
 			
 			// link "konto"
 			if( $this->canPromote() )
@@ -2049,6 +2064,376 @@ class WISY_EDIT_RENDERER_CLASS
 		echo $this->framework->getEpilogue();
 	}
 	
+	/**************************************************************************
+	 * Anbieterprofil bearbeiten
+	 **************************************************************************/
+	
+	function loadAnbieterFromDb($anbieterId)
+	{
+	    // anbieter laden - das zurückgegebene Array ist wie bei loadKursFromPOST() beschrieben formatiert
+	    
+	    // kursdatensatz und alle durchfuehrungen lesen
+	    $db = new DB_Admin;
+	    $db->query("SELECT * FROM anbieter WHERE id=$anbieterId;");
+	    if( $db->next_record() )
+	    {
+	        $anbieter = $db->Record;
+	    }
+	    else
+	    {
+	        $anbieter['error'][] = 'Die angegebene Kurs-ID existiert nicht oder nicht mehr.';
+	        return $anbieter;
+	    }
+	    
+	    return $anbieter;
+	}
+	
+	function loadAnbieterFromPOST($anbieterId)
+	{
+	    // kurs aus datanbank laden und mit den POST-Daten aktualisieren
+	    //
+	    // kurs ist ein array wie folgt:
+	    // 		$kurs['suchname']
+	    // 		$kurs['postname']
+	    //		.
+	    //		.
+	    //		$kurs['error'][]					(array mit Fehlermeldungen)
+	    
+	    $anbieter = $this->loadAnbieterFromDb($anbieterId);
+	    if( sizeof($anbieter['error']) ) {
+	        return $anbieter;
+	    }
+	    
+	    // adresse
+	    $posted =  utf8_decode($_POST['strasse']);
+	    if( $posted == 'Strasse und Hausnr.' ) $posted = '';
+	    $anbieter['strasse'] = $posted;
+	    
+	    $posted =  utf8_decode($_POST['plz']);
+	    if( $posted == 'PLZ' ) $posted = '';
+	    $anbieter['plz'] = $posted;
+	    
+	    $posted =  utf8_decode($_POST['ort']);
+	    if( $posted == 'Ort' ) $posted = '';
+	    $anbieter['ort'] = $posted;
+	    
+	    if( ($anbieter['strasse'].','.$anbieter['plz'].','.$anbieter['ort']) == utf8_decode($_POST['stadtteil_for']) )
+	        $anbieter['stadtteil'] = utf8_decode($_POST['stadtteil']);
+	        else
+	            $anbieter['stadtteil'] = '';
+	            
+	            // misc.
+	            $anbieter['rechtsform']		= intval(utf8_decode($_POST['rechtsform']));
+	            $anbieter['gruendungsjahr']	= intval(utf8_decode($_POST['gruendungsjahr']));
+	            $anbieter['leitung_name']	= utf8_decode($_POST['leitung_name']);
+	            $anbieter['homepage']		= utf8_decode($_POST['homepage']);
+	            $anbieter['anspr_name']		= utf8_decode($_POST['anspr_name']);
+	            $anbieter['anspr_zeit']		= utf8_decode($_POST['anspr_zeit']);
+	            $anbieter['anspr_tel']		= utf8_decode($_POST['anspr_tel']);
+	            $anbieter['anspr_fax']		= utf8_decode($_POST['anspr_fax']);
+	            $anbieter['anspr_email']	= utf8_decode($_POST['anspr_email']);
+	            $anbieter['pflege_name']	= utf8_decode($_POST['pflege_name']);
+	            $anbieter['pflege_tel']		= utf8_decode($_POST['pflege_tel']);
+	            $anbieter['pflege_fax']		= utf8_decode($_POST['pflege_fax']);
+	            $anbieter['pflege_email']	= utf8_decode($_POST['pflege_email']);
+	            
+	            return $anbieter;
+	}
+	
+	function saveAnbieterToDb(&$newData)
+	{
+	    // anbieter in datenbank speichern
+	    //
+	    // $kurs ist ein array wie unter loadAnbieterFromPOST() beschrieben, der Aufruf dieser Funktion kann dabei das
+	    // Feld $anbieter['error'] erweitern; alle anderen Felder werden nur gelesen
+	    
+	    $db			= new DB_Admin;
+	    $user		= $this->getAdminAnbieterUserId20();
+	    $today		= strftime("%Y-%m-%d %H:%M:%S");
+	    $anbieterId	= $newData['id'];
+	    $oldData	= $this->loadAnbieterFromDb($anbieterId);
+	    if( sizeof($oldData['error']) )
+	    {
+	        $newData['error'] = $oldData['error'];
+	        return;
+	    }
+	    
+	    $logwriter = new LOG_WRITER_CLASS;
+	    $logwriter->addDataFromTable('anbieter', $anbieterId, 'preparediff');
+	    
+	    if( $oldData['rechtsform']		!= $newData['rechtsform']
+	        || $oldData['gruendungsjahr']	!= $newData['gruendungsjahr']
+	        || $oldData['leitung_name']	!= $newData['leitung_name']
+	        || $oldData['homepage']      	!= $newData['homepage']
+	        || $oldData['strasse']      	!= $newData['strasse']
+	        || $oldData['plz']      		!= $newData['plz']
+	        || $oldData['ort']    			!= $newData['ort']
+	        || $oldData['stadtteil']		!= $newData['stadtteil']
+	        || $oldData['anspr_name']		!= $newData['anspr_name']
+	        || $oldData['anspr_zeit']		!= $newData['anspr_zeit']
+	        || $oldData['anspr_tel']		!= $newData['anspr_tel']
+	        || $oldData['anspr_fax']		!= $newData['anspr_fax']
+	        || $oldData['anspr_email']		!= $newData['anspr_email']
+	        || $oldData['pflege_name']		!= $newData['pflege_name']
+	        || $oldData['pflege_tel']		!= $newData['pflege_tel']
+	        || $oldData['pflege_fax']		!= $newData['pflege_fax']
+	        || $oldData['pflege_email']	!= $newData['pflege_email']
+	        )
+	    {
+	        // update record
+	        $sql = "UPDATE anbieter SET rechtsform=".intval($newData['rechtsform']).",
+									 gruendungsjahr=".intval($newData['gruendungsjahr']).",
+									 leitung_name='".addslashes($newData['leitung_name'])."',
+									 homepage='".addslashes($newData['homepage'])."',
+									 strasse='".addslashes($newData['strasse'])."',
+									 plz='".addslashes($newData['plz'])."',
+									 ort='".addslashes($newData['ort'])."',
+									 stadtteil='".addslashes($newData['stadtteil'])."',
+									 anspr_name='".addslashes($newData['anspr_name'])."',
+									 anspr_zeit='".addslashes($newData['anspr_zeit'])."',
+									 anspr_tel='".addslashes($newData['anspr_tel'])."',
+									 anspr_fax='".addslashes($newData['anspr_fax'])."',
+									 anspr_email='".addslashes($newData['anspr_email'])."',
+									 pflege_name='".addslashes($newData['pflege_name'])."',
+									 pflege_tel='".addslashes($newData['pflege_tel'])."',
+									 pflege_fax='".addslashes($newData['pflege_fax'])."',
+									 pflege_email='".addslashes($newData['pflege_email'])."', ";
+	        $sql .=			       " user_modified={$user}, ";	// der Benutzer, wird nur geaendert, wenn etwas im Protokoll steht; dies ist notwendig, da durch die Suche nach dem Benutzer (20) die Redaktion die Aenderungen im Protokoll ueberprueft
+	        // das Datum muss dagegen auch geaendert werden, wenn nur bei der Promotion etwas geaendert wurde, da ansonsten die Aenderungen nicht "live" geschaltet werden (bzw. nur stark verzoegert)
+	        $sql .=				   " date_modified='{$today}' WHERE id=$anbieterId;";
+	        $db->query($sql);
+	        
+	        
+	        // log after the record being written
+	        $logwriter->addDataFromTable('anbieter', $anbieterId, 'creatediff');
+	        $logwriter->log('anbieter', $anbieterId, $user, 'edit');
+	    }
+	}
+	
+	function renderEditAnbieter()
+	{
+	    $anbieterId = intval($_SESSION['loggedInAnbieterId']);
+	    $topnotes   = array();
+	    $showForm   = true;
+	    
+	    // see what to do ...
+	    if( $_POST['subseq'] == 1 && isset($_POST['cancel']) )
+	    {
+	        // ... a subsequent call: "Cancel" hit
+	        header('Location: ' . $this->bwd);
+	        exit();
+	    }
+	    else if( $_POST['subseq'] == 1 )
+	    {
+	        // ... save data
+	        $anbieter = $this->loadAnbieterFromPOST($anbieterId);
+	        if( sizeof($anbieter['error']) == 0 )
+	        {
+	            $this->saveAnbieterToDb($anbieter);
+	        } /* no else: saveAnbieterToDb() may also add errors */
+	        
+	        if( sizeof($anbieter['error']) )
+	        {
+	            $topnotes = $anbieter['error'];
+	        }
+	        else
+	        {
+	            $msg = 'Das Anbieterprofil wurde <b>erfolgreich gespeichert.</b>';
+	            setcookie('editmsg', $msg);
+	            
+	            $bwd = $this->bwd . (strpos($this->bwd,'?')===false?'?':'&') . 'rnd='.time();
+	            header('Location: ' . $bwd);
+	            exit();
+	        }
+	    }
+	    else
+	    {
+	        // ... first call
+	        $anbieter = $this->loadAnbieterFromDb($anbieterId);
+	        if( sizeof($anbieter['error']) )
+	        {
+	            $topnotes = $anbieter['error'];
+	            $showForm = false;
+	        }
+	    }
+	    
+	    // render form
+	    echo $this->framework->getPrologue(array('title'=>'Anbieterprofil bearbeiten', 'bodyClass'=>'wisyp_edit'));
+	    echo '<h1>Anbieterprofil bearbeiten</h1>';
+	    
+	    if( sizeof($topnotes) )
+	    {
+	        echo "<p class=\"wisy_topnote\">" .implode('<br />', $topnotes). "</p>";
+	    }
+	    
+	    $secureaction = "";
+	    
+	    if( $this->framework->iniRead('useredit.secure', 1)==1
+	        && substr($_SERVER['HTTP_HOST'], -6)!='.local'
+	        && $_SERVER['HTTPS'] == "on")
+	    {
+	        $secureaction = 'https://' . $_SERVER['HTTP_HOST'] . '/edit';
+	    }
+	    
+	    $editurl = ($secureaction != "") ? $secureaction : "edit";
+	    
+	    echo '<form action="'.$editurl.'" method="post" name="anbieter">' . "\n";
+	    echo '<input type="hidden" name="action" value="ea" /> ' . "\n";
+	    echo '<input type="hidden" name="subseq" value="1" /> ' . "\n";
+	    echo '<input type="hidden" name="bwd" value="'.htmlspecialchars($this->bwd).'" /> ' . "\n";
+	    
+	    if( $showForm )
+	    {
+	        echo '<table cellspacing="2" cellpadding="0" width="100%">';
+	        
+	        // Titel, ID
+	        echo '<tr>';
+	        echo '<td width="10%">Suchname:</td>';
+	        echo '<td width="90%">' . htmlspecialchars(utf8_encode($anbieter['suchname'])) . '</td>';
+	        echo '</tr>';
+	        echo '<tr>';
+	        echo '<td width="10%">Anbieternummer:</td>';
+	        echo '<td width="90%">'.  htmlspecialchars(utf8_encode($anbieter['id'])) . '</td>';
+	        echo '</tr>';
+	        
+	        // firmenportrait
+	        echo '<tr>';
+	        echo '<td width="10%">Rechtsform:</td>';
+	        echo '<td width="90%">';
+	        $this->controlSelect('rechtsform', $anbieter['rechtsform'], $GLOBALS['codes_rechtsform']);
+	        echo '</td>';
+	        echo '</tr>';
+	        echo '<tr>';
+	        echo '<td width="10%">Gr&uuml;ndungsjahr:</td>';
+	        echo '<td width="90%">';
+	        $ausgabe_jahr = $anbieter['gruendungsjahr']<=0? '' : $anbieter['gruendungsjahr'];
+	        $this->controlText('gruendungsjahr', $ausgabe_jahr, 6, 4, '', '');
+	        echo '</td>';
+	        echo '</tr>';
+	        echo '<tr>';
+	        echo '<td width="10%" nowrap="nowrap">Name des Leiters:</td>';
+	        echo '<td width="90%">';
+	        $this->controlText('leitung_name', $anbieter['leitung_name'], 50, 200, '', '');
+	        echo '</td>';
+	        echo '</tr>';
+	        echo '<tr>';
+	        echo '<td width="10%">Homepage:</td>';
+	        echo '<td width="90%">';
+	        $this->controlText('homepage', $anbieter['homepage'], 64, 200, '', '');
+	        echo '</td>';
+	        echo '</tr>';
+	        
+	        // Adresse
+	        echo '<tr>';
+	        echo '<td width="10%">Adresse:</td>';
+	        echo '<td width="90%">';
+	        $this->controlText('strasse', $anbieter['strasse'], 25, 100, 'Geben Sie hier - soweit bekannt und eindeutig - die Strasse und die Hausnummer ein', 'Strasse und Hausnr.');
+	        
+	        echo ' &nbsp; ';
+	        
+	        $this->controlText('plz', $anbieter['plz'], 5, 16, 'Geben Sie hier - soweit bekannt und eindeutig - die Postleitzahl ein', 'PLZ');
+	        echo ' ';
+	        $this->controlText('ort', $anbieter['ort'], 12, 60, 'Geben Sie hier - soweit bekannt und eindeutig - den Ort bzw. die Stadt ein', 'Ort');
+	        
+	        $this->controlHidden('stadtteil', $anbieter['stadtteil']);
+	        $this->controlHidden('stadtteil_for', $anbieter['strasse'].','.$anbieter['plz'].','.$anbieter['ort']);
+	        echo '</td>';
+	        echo '</tr>';
+	        
+	        // Kundenkontakt
+	        echo '<tr>';
+	        echo '<td colspan="2">&nbsp;<br /><strong>Kundenkontakt:</strong> (öffentlich im Web sichtbar)</td>';
+	        echo '</tr>';
+	        echo '<tr>';
+	        echo '<td width="10%" nowrap="nowrap">Name:</td>';
+	        echo '<td width="90%">';
+	        $this->controlText('anspr_name', $anbieter['anspr_name'], 50, 50, '', '');
+	        echo '</td>';
+	        echo '</tr>';
+	        echo '<tr>';
+	        echo '<td width="10%">Sprechzeiten:</td>';
+	        echo '<td width="90%">';
+	        $this->controlText('anspr_zeit', $anbieter['anspr_zeit'], 64, 200, '', '');
+	        echo '</td>';
+	        echo '</tr>';
+	        echo '<tr>';
+	        echo '<td width="10%">Telefon:</td>';
+	        echo '<td width="90%">';
+	        $this->controlText('anspr_tel', $anbieter['anspr_tel'], 32, 200, '', '');
+	        echo '</td>';
+	        echo '</tr>';
+	        echo '<tr>';
+	        echo '<td width="10%">Telefax:</td>';
+	        echo '<td width="90%">';
+	        $this->controlText('anspr_fax', $anbieter['anspr_fax'], 32, 200, '', '');
+	        echo '</td>';
+	        echo '</tr>';
+	        echo '<tr>';
+	        echo '<td width="10%">E-Mail:</td>';
+	        echo '<td width="90%">';
+	        $this->controlText('anspr_email', $anbieter['anspr_email'], 50, 200, '', '');
+	        echo '</td>';
+	        echo '</tr>';
+	        
+	        // Pflegekontakt
+	        echo '<tr>';
+	        echo '<td colspan="2">&nbsp;<br /><strong>Pflegekontakt:</strong> (nur für die interne Datenredaktion)</td>';
+	        echo '</tr>';
+	        echo '<tr>';
+	        echo '<td width="10%" nowrap="nowrap">Name:</td>';
+	        echo '<td width="90%">';
+	        $this->controlText('pflege_name', $anbieter['pflege_name'], 50, 50, '', '');
+	        echo '</td>';
+	        echo '</tr>';
+	        echo '<tr>';
+	        echo '<td width="10%">Telefon:</td>';
+	        echo '<td width="90%">';
+	        $this->controlText('pflege_tel', $anbieter['pflege_tel'], 32, 200, '', '');
+	        echo '</td>';
+	        echo '</tr>';
+	        echo '<tr>';
+	        echo '<td width="10%">Telefax:</td>';
+	        echo '<td width="90%">';
+	        $this->controlText('pflege_fax', $anbieter['pflege_fax'], 32, 200, '', '');
+	        echo '</td>';
+	        echo '</tr>';
+	        echo '<tr>';
+	        echo '<td width="10%">E-Mail:</td>';
+	        echo '<td width="90%">';
+	        $this->controlText('pflege_email', $anbieter['pflege_email'], 50, 200, '', '');
+	        echo '</td>';
+	        echo '</tr>';
+	        
+	        echo '</table>';
+	    }
+	    
+	    echo '<p>' . "\n";
+	    if( $showForm )
+	    {
+	        echo '<input type="submit" value="OK - Anbieterprofil speichern" title="Alle Änderungen übernehmen und Anbieterprofil speichern" style="font-weight: bold;" /> ' . "\n";
+	    }
+	    
+	    echo '<input type="submit" name="cancel" value="Abbruch" title="Änderungen verwerfen und Kurs nicht speichern" />' . "\n";
+	    echo '</p>' . "\n";
+	    
+	    if( $showForm )
+	    {
+	        $a = '';
+	        $aend = '';
+	        $email = $this->framework->iniRead('useredit.help.mail.to', '');
+	        if( $email != '' ) {
+	            $a    = "<a href=\"mailto:{$email}\">";
+	            $aend = "</a>";
+	        }
+	        
+	        echo "<p>Änderungsbedarf in der Anbieterbeschreibung und weiteren Merkmalen bitte {$a}an die Redaktion mailen{$aend}.</p>";
+	    }
+	    
+	    echo '</form>' . "\n";
+	    
+	    echo $this->framework->getEpilogue();
+	}
+	
 	 /**************************************************************************
 	 * 20.09.2013 new AGB stuff
 	 **************************************************************************/
@@ -2195,6 +2580,10 @@ class WISY_EDIT_RENDERER_CLASS
 				case 'ek':
 					$this->renderEditKurs(intval($_REQUEST['id']) /*may be "0" for "new kurs"*/ );
 					break;
+					
+				case 'ea':
+				    $this->renderEditAnbieter(); // always edit the "logged in" anbieter
+				    break;
 
 				case 'kt':
 					$this->renderEditKonto();
