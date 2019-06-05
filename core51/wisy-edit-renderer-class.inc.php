@@ -703,7 +703,7 @@ class WISY_EDIT_RENDERER_CLASS
 
 		if( !$this->canPromote() )
 		{
-			echo '<p class="wisy_topnote">Das Bewerben von Kursen ist für dieses Portal und/oder diesen Anbieterzugang gesperrt. Bitte wenden Sie sich an den Systemadministrator, der Ihnen den Zugang zu diesem Bereich gewährt hat.</p>';
+		    echo '<p class="wisy_topnote">Das Bewerben von Angeboten ist f&uuml;r dieses Portal und/oder diesen Anbieterzugang gesperrt. Bitte wenden Sie sich an den Systemadministrator, der Ihnen den Zugang zu diesem Bereich gew&auml;hrt hat.</p>';
 			echo $this->framework->getEpilogue();
 			exit();
 		}

@@ -411,7 +411,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		/* frequency, end base type */ 
 		if( $tag_freq > 0 )
 		{
-			$row_postfix = ($tag_freq==1? '1 Kurs' : "$tag_freq Kurse") . $row_preposition . $row_postfix;
+			$row_postfix = ($tag_freq==1? '1 Angebot' : "$tag_freq Angebote") . $row_preposition . $row_postfix;
 		}
 		
 		if( $tag_descr ) 
@@ -458,7 +458,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		$row_class   = 'ac_normal';
 		$row_type  = 'Lernziel';
 		$row_count = '';
-		$row_count_prefix = ($tag_freq == 1) ? ' Kurs zum' : ' Kurse zum';
+		$row_count_prefix = ($tag_freq == 1) ? ' Angebot zum' : ' Angebote zum';
 		$row_info = '';
 		$row_prefix = '';
 		$row_postfix = '';
@@ -466,20 +466,20 @@ class WISY_SEARCH_RENDERER_CLASS
 	
 		/* base type */
 		     if( $tag_type &   1 ) { $row_class = "ac_abschluss";		     $row_type = 'Abschluss'; }
-		else if( $tag_type &   2 ) { $row_class = "ac_foerderung";		     $row_type = 'F&ouml;rderung'; $row_count_prefix = ($tag_freq == 1) ? ' Kurs zur' : ' Kurse zur'; }
+		else if( $tag_type &   2 ) { $row_class = "ac_foerderung";		     $row_type = 'F&ouml;rderung'; $row_count_prefix = ($tag_freq == 1) ? ' Angebot zur' : ' Angebote zur'; }
 		else if( $tag_type &   4 ) { $row_class = "ac_qualitaetszertifikat"; $row_type = 'Qualit&auml;tsmerkmal'; }
-		else if( $tag_type &   8 ) { $row_class = "ac_zielgruppe";		     $row_type = 'Zielgruppe'; $row_count_prefix = ($tag_freq == 1) ? ' Kurs zur' : ' Kurse zur'; }
-		else if( $tag_type &  16 ) { $row_class = "ac_abschlussart";		 $row_type = 'Abschlussart'; $row_count_prefix = ($tag_freq == 1) ? ' Kurs zur' : ' Kurse zur'; }
+		else if( $tag_type &   8 ) { $row_class = "ac_zielgruppe";		     $row_type = 'Zielgruppe'; $row_count_prefix = ($tag_freq == 1) ? ' Angebot zur' : ' Angebote zur'; }
+		else if( $tag_type &  16 ) { $row_class = "ac_abschlussart";		 $row_type = 'Abschlussart'; $row_count_prefix = ($tag_freq == 1) ? ' Angebot zur' : ' Angebote zur'; }
 		else if( $tag_type &  64 ) { $row_class = "ac_synonym";				 $row_type = 'Verweis'; }
 		else if( $tag_type & 128 ) { $row_class = "ac_thema";		 		 $row_type = 'Thema'; }
 		else if( $tag_type & 256 ) { $row_class = "ac_anbieter";		     
-									      if( $tag_type &  0x20000 ) { $row_type = 'Beratungsstelle'; $row_count_prefix = ($tag_freq == 1) ? ' Kurs von der' : ' Kurse von der'; }
+									      if( $tag_type &  0x20000 ) { $row_type = 'Beratungsstelle'; $row_count_prefix = ($tag_freq == 1) ? ' Angebot von der' : ' Angebote von der'; }
 									 else if( $tag_type & 0x400000 ) { $row_type = 'Tr&auml;gerverweis'; }
-									 else							 { $row_type = 'Tr&auml;ger'; $row_count_prefix = ($tag_freq == 1) ? ' Kurs vom' : ' Kurse vom'; }
+									 else							 { $row_type = 'Tr&auml;ger'; $row_count_prefix = ($tag_freq == 1) ? ' Angebot vom' : ' Angebote vom'; }
 								   }
-		else if( $tag_type & 512 ) { $row_class = "ac_ort";                  $row_type = 'Kursort'; $row_count_prefix = ($tag_freq == 1) ? ' Kurs am' : ' Kurse am'; }
+		else if( $tag_type & 512 ) { $row_class = "ac_ort";                  $row_type = 'Kursort'; $row_count_prefix = ($tag_freq == 1) ? ' Angebot am' : ' Angebote am'; }
 		else if( $tag_type & 1024) { $row_class = "ac_merkmal";			 	 $row_type = 'Kursmerkmal'; }
-		else if( $tag_type & 32768){ $row_class = "ac_unterrichtsart";		 $row_type = 'Unterrichtsart'; $row_count_prefix = ($tag_freq == 1) ? ' Kurs zur' : ' Kurse zur'; }
+		else if( $tag_type & 32768){ $row_class = "ac_unterrichtsart";		 $row_type = 'Unterrichtsart'; $row_count_prefix = ($tag_freq == 1) ? ' Angebot zur' : ' Angebote zur'; }
 		else if( $tag_type & 65536){ $row_class = "ac_zertifikat";           $row_type = 'Zertifikat'; }
 
 		if( $tag_descr ) $row_postfix .= ' <span class="ac_tag_type">('. utf8_encode($tag_descr) .')</span>';
@@ -488,7 +488,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		if( $tag_freq > 0 ) {
 			$row_count = $tag_freq;
 			if($row_count_prefix == '') {
-				$row_count .= ($tag_freq == 1) ? ' Kurs' : ' Kurse';
+				$row_count .= ($tag_freq == 1) ? ' Angebot' : ' Angebote';
 			} else {
 				$row_count .= $row_count_prefix;
 			}
@@ -620,7 +620,7 @@ class WISY_SEARCH_RENDERER_CLASS
 
 			// render head
 			echo '<div class="wisyr_list_header">';
-			    echo '<div class="wisyr_listnav"><span class="active">Kurse</span><a href="' . $baseurl . '?q=' . urlencode($queryString) . '%2C+Zeige:Anbieter">Anbieter</a></div>';
+			    echo '<div class="wisyr_listnav"><span class="active">Angebote</span><a href="' . $baseurl . '?q=' . urlencode($queryString) . '%2C+Zeige:Anbieter">Anbieter</a></div>';
 				echo '<div class="wisyr_filternav';
 				if($this->framework->simplified && $this->framework->filterer->getActiveFiltersCount() > 0) echo ' wisyr_filters_active';
 				echo '">';
@@ -925,7 +925,7 @@ class WISY_SEARCH_RENDERER_CLASS
 
 			// render head
 			echo '<div class="wisyr_list_header">';
-				echo '<div class="wisyr_listnav"><a href="search?q=' . urlencode(str_replace(array(',,', ', ,'), array(',', ','), str_replace('Zeige:Anbieter', '', $queryString))). '">Kurse</a><span class="active">Anbieter</span></div>';
+				echo '<div class="wisyr_listnav"><a href="search?q=' . urlencode(str_replace(array(',,', ', ,'), array(',', ','), str_replace('Zeige:Anbieter', '', $queryString))). '">Angebote</a><span class="active">Anbieter</span></div>';
 				echo '<span class="wisyr_anbieter_zum_suchauftrag">';
 				echo '<div class="zurAngeboteSuche">&larr; Hier geht\'s <a href="/">zur Angebote-Suche</a></div>';
 				echo '<span class="wisyr_anzahl_anbieter">' . $sqlCount . ' Anbieter</span> zum Suchauftrag';
@@ -1050,7 +1050,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			echo '<a href="/search?q=' . htmlspecialchars($this->framework->QS) . '%2C+Zeige%3AAnbieter">Eine Anbietersuche nach &quot;' . htmlspecialchars(trim($this->framework->QS)) . '&quot; ausführen</a>';
 		
 			echo '<h3>Volltextsuche</h3>';
-			echo '<p>Das Ergebnis der Volltextsuche enthält alle Kurse, die den Suchbegriff oder den Wortteil in der Kursbeschreibung enthalten.</p>';
+			echo '<p>Das Ergebnis der Volltextsuche enth&auml;lt alle Angebote, die den Suchbegriff oder den Wortteil in der Kursbeschreibung enthalten.</p>';
 			echo '<a href="/search?q=volltext:' . htmlspecialchars($this->framework->QS) . '">Eine Volltextsuche nach &quot;' . htmlspecialchars(trim($this->framework->QS)) . '&quot; ausführen</a>';
 		
 			echo '<h3>Möglicherweise helfen auch Veränderungen an Ihrem Suchbegriff:</h3>';
@@ -1245,7 +1245,7 @@ class WISY_SEARCH_RENDERER_CLASS
 					}
 				
 					// show 'offers that are not "gesperrt"' which are _not_ in the search index (eg. just created offers) below the normal search result
-					echo '<p><span class="wisy_edittoolbar" title="Um einen neuen Kurs hinzuzufügen, klicken Sie oben auf &quot;Neuer Kurs&quot;">Kurse in Vorbereitung:</span>&nbsp; ';
+					echo '<p><span class="wisy_edittoolbar" title="Um einen neuen Kurs hinzuzuf&uuml;gen, klicken Sie oben auf &quot;Neuer Kurs&quot;">Kurse in Vorbereitung:</span>&nbsp; ';
 						$out = 0;
 						reset( $titles );
 						while( list($currId, $currTitel) = each($titles) )

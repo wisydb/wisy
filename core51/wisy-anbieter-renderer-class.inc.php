@@ -616,14 +616,14 @@ class WISY_ANBIETER_RENDERER_CLASS
 		
 		echo "\n</article><!-- /.wisyr_anbieter_steckbrief -->\n\n";
 		
-		echo "\n\n" . '<article class="wisy_anbieter_kursangebot" data-tabtitle="Kurse"><h1>Kurs&shy;angebot</h1>' . "\n";
+		echo "\n\n" . '<article class="wisy_anbieter_kursangebot" data-tabtitle="Kurse"><h1>Angebot</h1>' . "\n";
 		
 		// link "show all offers"
 		$freq = $this->tagsuggestorObj->getTagFreq(array($this->tag_suchname_id)); if( $freq <= 0 ) $freq = '';
 		echo '<h2>'.$freq.($freq==1? ' aktuelles Angebot' : ' aktuelle Angebote').'</h2>'
 		.	'<p>'
 		 .		'<a class="wisyr_anbieter_kurselink" href="' . $this->framework->getUrl('search'). '?filter_anbieter=' . urlencode(htmlspecialchars(str_replace(',', ' ', $tag_suchname))) . '">'
-		.			"Alle $freq Kurse des Anbieters"
+		.			"Alle $freq Angebote des Anbieters"
 		.		'</a>'
 		. 	'</p>';		
 
@@ -651,7 +651,7 @@ class WISY_ANBIETER_RENDERER_CLASS
         		        echo 'zuletzt ge&auml;ndert am ' . $this->framework->formatDatum($date_modified).', ';
         		    if($avollst) {
         		        echo $vollst . '% Vollst&auml;ndigkeit';
-        		        echo '<div class="wisyr_vollst_info"><span class="info">Hinweise zur f&ouml;rmlichen Vollst&auml;ndigkeit der Kursinfos sagen nichts aus &uuml;ber die Qualit&auml;t der Kurse selbst. <a href="' . $this->framework->getHelpUrl(3369) . '">Mehr erfahren</a></span></div>';
+        		        echo '<div class="wisyr_vollst_info"><span class="info">Hinweise zur f&ouml;rmlichen Vollst&auml;ndigkeit der Informationen sagen nichts aus &uuml;ber die Qualit&auml;t der Angebote selbst. <a href="' . $this->framework->getHelpUrl(3369) . '">Mehr erfahren</a></span></div>';
         		    }
 		          }
 				$copyrightClass =& createWisyObject('WISY_COPYRIGHT_CLASS', $this->framework);
