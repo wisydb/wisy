@@ -948,14 +948,14 @@ function describeFeedback()
 	}
 	else
 	{
-		$('#wisy_feedback_line2').html('<strong style="color: green;">Vielen Dank für Ihren Kommentar!</strong>');
+		$('#wisy_feedback_line2').html('<strong style="color: green;">Vielen Dank f&uuml;r Ihren Kommentar!</strong>');
 		ajaxFeedback(0, descr, name, email); // Kommentar zur Bewertung hinzufügen; die Bewertung selbst (erster Parameter) wird an dieser Stelle ignoriert!
 	}
 }
 
 function sendFeedback(rating)
 {
-	$('#wisy_feedback_yesno').html('<strong class="wisy_feedback_thanks">Vielen Dank für Ihr Feedback!</strong>');
+	$('#wisy_feedback_yesno').html('<strong class="wisy_feedback_thanks">Vielen Dank f&uuml;r Ihr Feedback!</strong>');
 	
 	if( rating == 0 )
 	{
