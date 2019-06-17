@@ -140,9 +140,9 @@ class WISY_GLOSSAR_RENDERER_CLASS
         if($gerst || $gaend) {
             echo 'Information: ';
             if($gerst)
-                echo 'erstellt am ' . $this->framework->formatDatum($date_created).', ';
-                if($gaend)
-                    echo 'zuletzt ge&auml;ndert am ' . $this->framework->formatDatum($date_modified);
+                echo 'erstellt am ' . $this->framework->formatDatum($glossar['date_created']).', ';
+            if($gaend)
+                echo 'zuletzt ge&auml;ndert am ' . $this->framework->formatDatum($glossar['date_created']);
         }
         // Copyright-Informationen werden nicht mehr angezeigt
         //$copyrightClass =& createWisyObject('WISY_COPYRIGHT_CLASS', $this->framework);
