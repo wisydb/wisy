@@ -293,6 +293,7 @@ class WISY_FILTERMENU_ITEM
         $filterclasses = $this->getFilterclasses($this->data, array('wisyr_filtergroup'));
 		$legendvalue = $this->getLegendvalue($this->data['legendkey']);
         $title = $this->data['title'];
+        $title = PHP7 ? utf8_decode($title) : $title;
         
 		$ret = '<fieldset class="' . $filterclasses . '">';
         
@@ -326,8 +327,9 @@ class WISY_FILTERMENU_ITEM
 				continue;
             }
             
+            $title = PHP7 ? utf8_decode($data['title']) : $data['title'];
             $ret .= '<fieldset class="' . $filterclasses . '">';
-            $ret .= '<legend data-filtervalue="' . $legendvalue . '">' . $data['title'] . '</legend>';
+            $ret .= '<legend data-filtervalue="' . $legendvalue . '">' . $title . '</legend>';
         
             $ret .= $this->getFormfields($data);
 
