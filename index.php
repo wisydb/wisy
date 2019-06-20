@@ -9,8 +9,14 @@ Portals Main Entry Point
 
 *******************************************************************************/
 
+header('X-Powered-By: Software');
 
 define('IN_WISY', true);
+
+if(substr(PHP_VERSION_ID, 0, 1) > 6)
+    define('PHP7', true);
+else
+    define('PHP7', false);
 
 
 
