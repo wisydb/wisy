@@ -69,13 +69,13 @@ class WISY_KURS_RENDERER_CLASS
 		// #socialmedia
 		$showAllDurchf = intval($_GET['showalldurchf'])==1? 1 : 0;
 		$durchfClass =& createWisyObject('WISY_DURCHF_CLASS', $this->framework);
-		$durchfuehrungenIds = $durchfClass->getDurchfuehrungIds($db, $kursId, $showAllDurchf);	// bereits PLZ-überprüft
+		$durchfuehrungenIds = $durchfClass->getDurchfuehrungIds($db, $kursId, $showAllDurchf);	// bereits PLZ-ueberprueft
 		
 		if(sizeof($durchfuehrungenIds) == 0)
-		    $richtext = false;	// In dem fall kann der Richtext (EducationEvent) nicht vollständig sein und kann/sollte so nicht beworben werden.
+		    $richtext = false;	// In dem fall kann der Richtext (EducationEvent) nicht vollstaendig sein und kann/sollte so nicht beworben werden.
 		    
 		if(intval(trim($this->framework->iniRead('seo.enrich_titles'))) == 1) {
-		  // Nur EIN Ort EINER Durchführung wird verwendet - ähnlich Suchergebnisse -> "x weitere..."
+		  // Nur EIN Ort EINER Durchfuehrung wird verwendet - aehnlich Suchergebnisse -> "x weitere..."
 		  if(is_array($durchfuehrungenIds) && count($durchfuehrungenIds) > 0) {
 		  $db->query("SELECT ort FROM durchfuehrung WHERE id={$durchfuehrungenIds[0]} LIMIT 1"); // id, plz, strasse, land, stadtteil, beginn,
     		      if( $db->next_record() ) {
@@ -296,7 +296,7 @@ class WISY_KURS_RENDERER_CLASS
 			
 			
 	
-			// vollständigkeit feedback, editieren etc.
+			// vollstaendigkeit feedback, editieren etc.
 			echo '<footer class="wisy_kurs_footer">';
 			
 			if($this->framework->iniRead('sw_cloud.kurs_anzeige', 0)) {
@@ -400,7 +400,7 @@ class WISY_KURS_RENDERER_CLASS
 								echo $class? "<span class=\"$class\">" : '';
 									echo "<a class=\"wisyr_angebot_editlink\" href=\"" . 
 										$editurl
-									 .	$this->framework->getUrl('edit', array('action'=>'ek', 'id'=>$kursId))."\" $target title=\"$tooltip\">Angebot bearbeiten (für Anbieter)</a>";
+									 .	$this->framework->getUrl('edit', array('action'=>'ek', 'id'=>$kursId))."\" $target title=\"$tooltip\">Angebot bearbeiten (f&uuml;r Anbieter)</a>";
 								echo $class? "</span>" : '';
 							echo '</span>';
 						}
