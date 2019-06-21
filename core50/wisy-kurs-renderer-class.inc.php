@@ -32,28 +32,29 @@ class WISY_KURS_RENDERER_CLASS
 		if( !$db->next_record() )
 		   $this->framework->error404();
 		
-		$title 				= $db->f8('titel');
-		$originaltitel		= $db->f8('org_titel');
-		$freigeschaltet 	= intval($db->f('freigeschaltet'));
-		$beschreibung		= $db->f8('beschreibung');
-		$anbieterId			= intval($db->f('anbieter'));
-		$date_created		= $db->f('date_created');
-		$date_modified		= $db->f('date_modified');
-		$bu_nummer 			= $db->f8('bu_nummer');
-		$pflege_pweinst		= intval($db->f8('pflege_pweinst'));
-		$anbieter_name = $db->f8('suchname');
+	    $title 				= PHP7 ? $db->f('titel') : $db->f8('titel');
+	    $originaltitel		= PHP7 ? $db->f('org_titel') : $db->f8('org_titel');;
+	    $freigeschaltet 	= intval($db->f('freigeschaltet'));
+	    $beschreibung		= PHP7 ? $db->f('beschreibung') : $db->f8('beschreibung');
+	    $anbieterId			= intval($db->f('anbieter'));
+	    $date_created		= $db->f('date_created');
+	    $date_modified		= $db->f('date_modified');
+		$bu_nummer 			= PHP7 ? $db->f('bu_nummer') : $db->f8('bu_nummer');
+		$pflege_pweinst		= PHP7 ? intval($db->f('pflege_pweinst')) : intval($db->f8('pflege_pweinst'));
+		
+		$anbieter_name = PHP7 ? $db->f('suchname') : $db->f8('suchname');
 		$anbieterdetails['suchname'] = $anbieter_name;
-		$anbieterdetails['postname'] = $db->f8('postname');
-		$anbieterdetails['strasse'] = $db->f8('strasse');
-		$anbieterdetails['plz'] = $db->f8('plz');
-		$anbieterdetails['ort'] = $db->f8('ort');
-		$anbieterdetails['stadtteil'] = $db->f8('stadtteil');
-		$anbieterdetails['land'] = $db->f8('land');
-		$anbieterdetails['anspr_name'] = $db->f8('anspr_name');
-		$anbieterdetails['anspr_zeit'] = $db->f8('anspr_zeit');
-		$anbieterdetails['anspr_tel'] = $db->f8('anspr_tel');
-		$anbieterdetails['anspr_fax'] = $db->f8('anspr_fax');
-		$anbieterdetails['anspr_email'] = $db->f8('anspr_email');
+		$anbieterdetails['postname'] = PHP7 ? $db->f('postname') : $db->f8('postname');
+		$anbieterdetails['strasse'] = PHP7 ? $db->f('strasse') : $db->f8('strasse');
+		$anbieterdetails['plz'] = PHP7 ? $db->f('plz') : $db->f8('plz');
+		$anbieterdetails['ort'] = PHP7 ? $db->f('ort') : $db->f8('ort');
+		$anbieterdetails['stadtteil'] = PHP7 ? $db->f('stadtteil') : $db->f8('stadtteil');
+		$anbieterdetails['land'] = PHP7 ? $db->f('land') : $db->f8('land');
+		$anbieterdetails['anspr_name'] = PHP7 ? $db->f('anspr_name') : $db->f8('anspr_name');
+		$anbieterdetails['anspr_zeit'] = PHP7 ? $db->f('anspr_zeit') : $db->f8('anspr_zeit');
+		$anbieterdetails['anspr_tel'] = PHP7 ? $db->f('anspr_tel') : $db->f8('anspr_tel');
+		$anbieterdetails['anspr_fax'] = PHP7 ? $db->f('anspr_fax') : $db->f8('anspr_fax');
+		$anbieterdetails['anspr_email'] = PHP7 ? $db->f('anspr_email') : $db->f8('anspr_email');
 		    
 		$record				= $db->Record;
 		
@@ -77,7 +78,7 @@ class WISY_KURS_RENDERER_CLASS
     		      if( $db->next_record() ) {
     		          $df = $db->Record;
     		          if(trim($df['ort']) != "") {
-        		          $ort = $df['ort'];	// $df['plz'], $df['strasse'], $df['land'], $df['stadtteil'], $df['beginn'],
+    		              $ort = PHP7 ? $df['ort'] : utf8_encode($df['ort']);	// $df['plz'], $df['strasse'], $df['land'], $df['stadtteil'], $df['beginn'],
         		      }
     		      }
 		  }
@@ -312,7 +313,7 @@ class WISY_KURS_RENDERER_CLASS
 			        
 			        for($i = 0; $i < count($tags); $i++)
 			        {
-			            $tag = array_map("utf8_encode", $tags[$i]);
+			            $tag = PHP7 ? $tags[$i] : array_map("utf8_encode", $tags[$i]);
 			            
 			            if($this->framework->iniRead('sw_cloud.kurs_gewichten', 0)) {
 			                $tag_freq = $this->framework->getTagFreq($db, $tag['stichwort']);
@@ -320,8 +321,10 @@ class WISY_KURS_RENDERER_CLASS
 			            }
 			            
 			            if($tag['eigenschaften'] != $filtersw && $tag_freq > 0); {
-			                if($this->framework->iniRead('sw_cloud.kurs_stichwoerter', 1))
-			                    $tag_cloud .= '<span class="sw_raw typ_'.$tag['eigenschaften'].'" data-weight="'.$weight.'"><a href="/?q='.urlencode($tag['stichwort']).'">'.$tag['stichwort'].'</a></span>, ';
+			                if($this->framework->iniRead('sw_cloud.kurs_stichwoerter', 1)) {
+			                    $tag_stichwort = PHP7 ? utf8_encode($tag['stichwort']) : $tag['stichwort'];
+			                    $tag_cloud .= '<span class="sw_raw typ_'.$tag['eigenschaften'].'" data-weight="'.$weight.'"><a href="/?q='.urlencode($tag_stichwort).'">'.$tag_stichwort.'</a></span>, ';
+			                }
 			                    
 			                if($this->framework->iniRead('sw_cloud.kurs_synonyme', 0))
 			                    $tag_cloud .= $this->framework->writeDerivedTags($this->framework->loadDerivedTags($db, $tag['id'], $distinct_tags, "Synonyme"), $filtersw, "Synonym", $tag['stichwort']);
@@ -426,7 +429,7 @@ class WISY_KURS_RENDERER_CLASS
 		if( !$db->next_record() )
 			$this->framework->error404();
 			
-		$tagId_portal = $db->f8('tag_id');
+		$tagId_portal = $db->f('tag_id');
 			
 		if( !$tagId_portal )
 			$this->framework->error404();
@@ -436,7 +439,7 @@ class WISY_KURS_RENDERER_CLASS
 						
 		$db->query($kurssql);
 						
-		if( trim($this->framework->iniRead('seo.set404_fremdkurse', "")) == 1 && (!$db->next_record() || !$db->f8('id'))) // && ini.read(fremdekurseausschliessen)
+		if( trim($this->framework->iniRead('seo.set404_fremdkurse', "")) == 1 && (!$db->next_record() || !$db->f('id'))) // && ini.read(fremdekurseausschliessen)
 		$this->framework->error404();
 	}
 };
