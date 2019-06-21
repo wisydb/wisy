@@ -302,7 +302,7 @@ class WISY_SEARCH_RENDERER_CLASS
 							if($this->framework->iniRead('label.abschluss', 0) && count($kursAnalyzer->loadKeywordsAbschluss($db, 'kurse', $currKursId))) echo '<span class="wisy_icon_abschluss">Abschluss<span class="dp">:</span></span> ';
 							if($this->framework->iniRead('label.zertifikat', 0) && count($kursAnalyzer->loadKeywordsZertifikat($db, 'kurse', $currKursId))) echo '<span class="wisy_icon_zertifikat">Zertifikat<span class="dp">:</span></span> ';
 						
-							echo htmlspecialchars($this->framework->encode_windows_chars(utf8_encode($record['titel'])));
+							echo PHP7 ? htmlspecialchars($this->framework->encode_windows_chars($record['titel'])) : htmlspecialchars($this->framework->encode_windows_chars(utf8_encode($record['titel'])));
 						
 					echo '</a>';
 					if( $loggedInAnbieterId == $currAnbieterId )
