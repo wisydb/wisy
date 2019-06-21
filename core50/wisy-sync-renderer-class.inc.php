@@ -62,7 +62,7 @@
  
 class WISY_SYNC_STATETABLE_CLASS
 {
-	function WISY_SYNC_STATETABLE_CLASS(&$framework)
+	function __construct(&$framework)
 	{
 		$this->framework 	=& $framework;
 		$this->db 			= new DB_Admin;
@@ -134,7 +134,7 @@ class WISY_SYNC_STATETABLE_CLASS
 
 class TAGTABLE_CLASS
 {
-	function TAGTABLE_CLASS()
+	function __construct()
 	{
 		$this->db = new DB_Admin;
 		$this->tags = array();	
@@ -224,7 +224,7 @@ class TAGTABLE_CLASS
 
 class ATTR2TAG_CLASS
 {
-	function ATTR2TAG_CLASS(&$tagtable, $table, $field)
+	function __construct(&$tagtable, $table, $field)
 	{
 		$this->db = new DB_Admin;
 		$this->tagtable =& $tagtable;
@@ -350,7 +350,7 @@ class KURS2PORTALTAG_CLASS
 	private $portaltags;
 	private $plzfilter;
 	
-	function KURS2PORTALTAG_CLASS(&$framework, &$tagtable, &$statetable, $alle_kurse_str)
+	function __construct(&$framework, &$tagtable, &$statetable, $alle_kurse_str)
 	{
 		$db = new DB_ADMIN;
 		$db2 = new DB_ADMIN;

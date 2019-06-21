@@ -697,7 +697,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			{
 				global $wisyPortalId;
 				$searcher2 =& createWisyObject('WISY_SEARCH_CLASS', $this->framework);
-				$searcher2->prepare(mysql_real_escape_string($queryString) . ', schaufenster:' . $wisyPortalId);
+				$searcher2->prepare($queryString . ', schaufenster:' . $wisyPortalId); // mysql_real_escape_string()
 				if( $searcher2->ok() )
 				{
 					$promoteCnt = $searcher2->getKurseCount();
