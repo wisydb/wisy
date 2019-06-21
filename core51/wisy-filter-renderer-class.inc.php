@@ -36,7 +36,7 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 	}
 	
 	
-	function renderForm($q, $records)
+	function renderForm($q = null, $records = null)
 	{
 		
         $renderformData = array();

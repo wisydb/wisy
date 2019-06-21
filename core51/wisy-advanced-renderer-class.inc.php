@@ -311,7 +311,7 @@ class WISY_ADVANCED_RENDERER_CLASS
 	 * render, misc.
 	 **********************************************************************/
 
-	function renderForm()
+	function renderForm($q = null, $records = null)
 	{
 		
 		// explode the query string to its tokens
