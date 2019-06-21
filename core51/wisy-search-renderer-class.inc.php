@@ -786,7 +786,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		    
 		    if( ($temp=$this->dbCache->lookup($cacheKey))!='' )
 		    {
-		        $tag_cloud = $temp." <!-- tag cloud from cache -->";
+		        $tag_cloud = PHP7 ? html_entity_decode($temp) : html_entity_decode($temp); // " <!-- tag cloud from cache -->"
 		    }
 		    else
 		    {
@@ -812,17 +812,25 @@ class WISY_SEARCH_RENDERER_CLASS
 		                    }
 		                    
 		                    if($tag['eigenschaften'] != $filtersw && $tag_freq > 0); {
-		                        if($this->framework->iniRead('sw_cloud.suche_stichwoerter', 1))
-		                            $tag_cloud .= '<span class="sw_raw typ_'.$tag['eigenschaften'].'" data-weight="'.$weight.'"><a href="/?q='.urlencode(utf8_encode($tag['stichwort'])).'">'.utf8_encode($tag['stichwort']).'</a></span>, ';
-		                            
-		                            if($this->framework->iniRead('sw_cloud.suche_synonyme', 0))
-		                                $tag_cloud .= $this->framework->writeDerivedTags($this->framework->loadDerivedTags($db, $tag['id'], $distinct_tags, "Synonyme"), $filtersw, "Synonym", $tag['stichwort']);
-		                                
-		                            if($this->framework->iniRead('sw_cloud.suche_oberbegriffe', 0))
-		                                $tag_cloud .= $this->framework->writeDerivedTags($this->framework->loadDerivedTags($db, $tag['id'], $distinct_tags, "Oberbegriffe"), $filtersw, "Oberbegriff", $tag['stichwort']);
-		                                    
-		                            if($this->framework->iniRead('sw_cloud.suche_unterbegriffe', 0))
-		                                $tag_cloud .= $this->framework->writeDerivedTags($this->framework->loadDerivedTags($db, $tag['id'], $distinct_tags, "Unterbegriffe"), $filtersw, "Unterbegriff", $tag['stichwort']);
+		                        if($this->framework->iniRead('sw_cloud.suche_stichwoerter', 1)) {
+		                            $tags = '<span class="sw_raw typ_'.$tag['eigenschaften'].'" data-weight="'.$weight.'"><a href="/?q='.urlencode(utf8_encode($tag['stichwort'])).'">'.utf8_encode($tag['stichwort']).'</a></span>, ';
+		                            $tag_cloud .= PHP7 ? utf8_decode($tags) : $tags;
+		                        }
+		                        
+		                        if($this->framework->iniRead('sw_cloud.suche_synonyme', 0))	{
+		                            $tags = $this->framework->writeDerivedTags($this->framework->loadDerivedTags($db, $tag['id'], $distinct_tags, "Synonyme"), $filtersw, "Synonym", $tag['stichwort']);
+		                            $tag_cloud .= PHP7 ? utf8_decode($tags) : $tags;
+		                        }
+		                        
+		                        if($this->framework->iniRead('sw_cloud.suche_oberbegriffe', 0)) {
+		                            $tags = $this->framework->writeDerivedTags($this->framework->loadDerivedTags($db, $tag['id'], $distinct_tags, "Oberbegriffe"), $filtersw, "Oberbegriff", $tag['stichwort']);
+		                            $tag_cloud .= PHP7 ? utf8_decode($tags) : $tags;
+		                        }
+		                        
+		                        if($this->framework->iniRead('sw_cloud.suche_unterbegriffe', 0))	{
+		                            $tags = $this->framework->writeDerivedTags($this->framework->loadDerivedTags($db, $tag['id'], $distinct_tags, "Unterbegriffe"), $filtersw, "Unterbegriff", $tag['stichwort']);
+		                            $tag_cloud .= PHP7 ? utf8_decode($tags) : $tags;
+		                        }
 		                    }
 		                    
 		                    array_push($tag_done, $tag['id']);
@@ -833,7 +841,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		        $tag_cloud = trim($tag_cloud, ", ");
 		        $tag_cloud .= '</div>';
 		        
-		        $this->dbCache->insert($cacheKey, utf8_decode($tag_cloud));
+		        $this->dbCache->insert($cacheKey, htmlentities($tag_cloud));
 		    }
 		    echo $tag_cloud;
 		} // end: tag cloud
