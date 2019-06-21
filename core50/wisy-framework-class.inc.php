@@ -975,7 +975,7 @@ class WISY_FRAMEWORK_CLASS
 			}
 		}
 		
-		return utf8_encode($ret); // UTF-8 encode because the source file (admin/config/codes.inc.php) is still ISO-encoded
+		return (PHP7 ? $ret : utf8_encode($ret)); // UTF-8 encode because the source file (admin/config/codes.inc.php) is still ISO-encoded
 	}
 	
 	function encode_windows_chars($input) {
