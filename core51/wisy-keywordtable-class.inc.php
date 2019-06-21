@@ -80,14 +80,17 @@ class WISY_KEYWORDTABLE_CLASS
 			$row_postfix = ($tag_freq==1? '1 Kurs' : "$tag_freq Kurse") . $row_preposition . $row_postfix;
 		}
 
+		$row_postfix = PHP7 ? utf8_decode($row_postfix) : $row_postfix;
+		
 		if( $tag_descr )
 		{
-			$row_postfix = $tag_descr . ', ' . $row_postfix;
+		    $tag_descr = PHP7 ? $tag_descr : utf8_encode($tag_descr);
+		    $row_postfix = htmlentities(html_entity_decode($tag_descr)) . ', ' . htmlentities(html_entity_decode($row_postfix));
 		}
-
+		
 		if( $row_postfix != '' )
 		{
-		    $row_postfix = ' <span class="ac_tag_type">(' . htmlentities(html_entity_decode(strip_tags($row_postfix))) . ')</span> ';
+		    $row_postfix = ' <span class="ac_tag_type">(' . htmlentities(html_entity_decode($row_postfix)) . ')</span> ';
 		}
 
 		/*col1*/

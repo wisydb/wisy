@@ -82,12 +82,13 @@ class WISY_GLOSSAR_RENDERER_CLASS
         if( !$this->db->next_record() )
             $this->framework->error404();
             
-            $glossareintrag = array('begriff' => $this->db->f8('begriff'),
-                'erklaerung' => $this->db->f8('erklaerung'),
-                'wikipedia' => $this->db->f8('wikipedia'),
-                'date_created' => $this->db->f8('date_created'),
-                'date_modified' => $this->db->f8('date_modified'),
-                'user_grp' => $this->db->f8('user_grp'));
+            $glossareintrag = array(
+                'begriff' => (PHP7 ? $this->db->f('begriff') : $this->db->f8('begriff')),
+                'erklaerung' => (PHP7 ? $this->db->f('erklaerung') : $this->db->f8('erklaerung')),
+                'wikipedia' => (PHP7 ? $this->db->f('wikipedia') : $this->db->f8('wikipedia')),
+                'date_created' => $this->db->f('date_created'),
+                'date_modified' => $this->db->f('date_modified'),
+                'user_grp' => $this->db->f('user_grp'));
             
             $this->db->free();
             return $glossareintrag;
