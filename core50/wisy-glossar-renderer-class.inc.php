@@ -37,7 +37,7 @@ class WISY_GLOSSAR_RENDERER_CLASS
 			$this->framework->error404();
 
 		$begriff 		= PHP7 ? $db->f('begriff') : $db->f8('begriff');
-		$erklaerung 	= PHP7 ? $db->f('erklaerung') : $db->f8('erklaerung'); // ?
+		$erklaerung 	= PHP7 ? $db->f8('erklaerung') : $db->f8('erklaerung'); // ?
 		$wikipedia 		= PHP7 ? $db->f('wikipedia') : $db->f8('wikipedia');
 		$date_created	= $db->f('date_created');
 		$date_modified	= $db->f('date_modified');
