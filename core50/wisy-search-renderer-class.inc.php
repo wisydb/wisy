@@ -589,7 +589,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			echo '<div class="wisy_suggestions">';
 				if( $info['changed_query'] )
 				{
-					echo '<b>Hinweis:</b> Der Suchauftrag wurde abgeändert in <i><a href="'.$this->framework->getUrl('search', array('q'=>$info['changed_query'])).'">'.htmlspecialchars(utf8_encode($info['changed_query'])).'</a></i>';
+					echo '<b>Hinweis:</b> Der Suchauftrag wurde abge&auml;ndert in <i><a href="'.$this->framework->getUrl('search', array('q'=>$info['changed_query'])).'">'.htmlspecialchars(utf8_encode($info['changed_query'])).'</a></i>';
 					if( sizeof($info['suggestions']) ) 
 						echo ' &ndash; ';
 				}
@@ -829,8 +829,8 @@ class WISY_SEARCH_RENDERER_CLASS
 			{
 				$temp = trim($queryString, ', ');
 				echo '<p class="wisy_topnote">';
-					echo 'Keine aktuellen Datensätze für <em>&quot;'  . htmlspecialchars(utf8_encode($temp)) . '&quot;</em> gefunden.<br /><br />';
-					echo '<a href="' . $this->framework->getUrl('search', array('q'=>"$temp, Datum:Alles")) . '">Suche wiederholen und dabei <b>auch abgelaufene Kurse berücksichtigen</b> ...</a>';
+					echo 'Keine aktuellen Datens&auml;tze f&uuml;r <em>&quot;'  . htmlspecialchars(utf8_encode($temp)) . '&quot;</em> gefunden.<br /><br />';
+					echo '<a href="' . $this->framework->getUrl('search', array('q'=>"$temp, Datum:Alles")) . '">Suche wiederholen und dabei <b>auch abgelaufene Kurse ber&uuml;cksichtigen</b> ...</a>';
 				echo "</p>\n";
 			}
 			
@@ -845,7 +845,7 @@ class WISY_SEARCH_RENDERER_CLASS
 				<script type="text/javascript">
 			        var defaultZIP="PLZ";
 			        var defaultCity="Ort";
-			        var defaultKeywords = "Suchwörter eingeben";
+			        var defaultKeywords = "Suchw&ouml;rter eingeben";
 
 			        function IWWBonFocusTextField(field,defaultValue){
 			                if (field.value==defaultValue) field.value="";
@@ -1007,7 +1007,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		}
 		else /* if( sqlCount ) */
 		{
-			echo '<p class="wisy_topnote">Keine Datensätze für <em>&quot;'.htmlspecialchars(utf8_encode(trim($queryString, ', '))).'&quot;</em> gefunden.</p>' . "\n";
+			echo '<p class="wisy_topnote">Keine Datens&auml;tze f&uuml;r <em>&quot;'.htmlspecialchars(utf8_encode(trim($queryString, ', '))).'&quot;</em> gefunden.</p>' . "\n";
 		}
 	}
 	
@@ -1101,7 +1101,7 @@ class WISY_SEARCH_RENDERER_CLASS
 						break;
 				
 					case 'missing_fulltext':
-						echo '<p class="wisy_topnote">Bitte geben Sie die zu suchenden Volltextwörter hinter <em>Volltext:</em> an.</p>' . "\n";
+						echo '<p class="wisy_topnote">Bitte geben Sie die zu suchenden Volltextw&ouml;rter hinter <em>Volltext:</em> an.</p>' . "\n";
 						break;
 				
 					case 'bad_location':
@@ -1112,7 +1112,7 @@ class WISY_SEARCH_RENDERER_CLASS
 						
 					case 'inaccurate_location':
 						// see http://code.google.com/intl/de/apis/maps/documentation/reference.html#GGeoAddressAccuracy
-						$accuracies = array('Unbekannt', 'Land', 'Region', 'Kreis', 'Ortschaft', 'PLZ', 'Strasse', 'Kreuzung', 'Adresse', 'Grundstück');
+						$accuracies = array('Unbekannt', 'Land', 'Region', 'Kreis', 'Ortschaft', 'PLZ', 'Strasse', 'Kreuzung', 'Adresse', 'Grundst&uuml;ck');
 						$ist_accuracy = intval($error['ist_accuracy']);
 						$soll_accuracy = intval($error['soll_accuracy']);
 						echo 	'<p class="wisy_topnote">'
@@ -1127,7 +1127,7 @@ class WISY_SEARCH_RENDERER_CLASS
 						break;
 
 					case 'km_without_bei':
-						echo '<p class="wisy_topnote">Die Angabe von <em>km:</em> ist nur in Kombination mit <em>bei:</em> gültig. Für eine einfache Eingabe der richtigen Werte, verwenden Sie bitte die <em>Erweiterte Suche</em>.</p>' . "\n";
+						echo '<p class="wisy_topnote">Die Angabe von <em>km:</em> ist nur in Kombination mit <em>bei:</em> g&uuml;ltig. F&uuml;r eine einfache Eingabe der richtigen Werte, verwenden Sie bitte die <em>Erweiterte Suche</em>.</p>' . "\n";
 						break;
 				
 					default:
@@ -1162,7 +1162,7 @@ class WISY_SEARCH_RENDERER_CLASS
 				}
 				
 				// show 'offers that are not "gesperrt"' which are _not_ in the search index (eg. just created offers) below the normal search result
-				echo '<p><span class="wisy_edittoolbar" title="Um einen neuen Kurs hinzuzufügen, klicken Sie oben auf &quot;Neuer Kurs&quot;">Kurse in Vorbereitung:</span>&nbsp; ';
+				echo '<p><span class="wisy_edittoolbar" title="Um einen neuen Kurs hinzuzuf&uuml;gen, klicken Sie oben auf &quot;Neuer Kurs&quot;">Kurse in Vorbereitung:</span>&nbsp; ';
 					$out = 0;
 					reset( $titles );
 					while( list($currId, $currTitel) = each($titles) )
@@ -1175,7 +1175,7 @@ class WISY_SEARCH_RENDERER_CLASS
 							$out++; 
 						}
 					}
-					if( $out == 0 ) echo '<i title="Um einen neuen Kurs hinzuzufügen, klicken Sie oben auf &quot;Neuer Kurs&quot;">keine</i>';
+					if( $out == 0 ) echo '<i title="Um einen neuen Kurs hinzuzuf&uuml;gen, klicken Sie oben auf &quot;Neuer Kurs&quot;">keine</i>';
 					//echo ' &ndash; <a href="edit?action=ek&amp;id=0">Neuer Kurs...</a>';
 				echo '</p>';
 			}
