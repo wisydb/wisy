@@ -84,7 +84,7 @@ class WISY_GLOSSAR_RENDERER_CLASS
             
             $glossareintrag = array(
                 'begriff' => (PHP7 ? $this->db->f('begriff') : $this->db->f8('begriff')),
-                'erklaerung' => (PHP7 ? $this->db->f('erklaerung') : $this->db->f8('erklaerung')),
+                'erklaerung' => (PHP7 ? $this->db->f8('erklaerung') : $this->db->f8('erklaerung')),
                 'wikipedia' => (PHP7 ? $this->db->f('wikipedia') : $this->db->f8('wikipedia')),
                 'date_created' => $this->db->f('date_created'),
                 'date_modified' => $this->db->f('date_modified'),
