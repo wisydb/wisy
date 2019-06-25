@@ -85,6 +85,8 @@ class WISY_FRAMEWORK_CLASS
 
 	function __construct($baseObject, $addParam)
 	{
+	    ini_set("default_charset", "UTF-8");
+	    
 	    global $wisyCore;
 	    $this->coreRelPath = '/' . $wisyCore;
 	    

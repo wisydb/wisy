@@ -36,11 +36,11 @@ class WISY_GLOSSAR_RENDERER_CLASS
 		if( !$db->next_record() )
 			$this->framework->error404();
 
-		$begriff 		= PHP7 ? $db->f('begriff') : $db->f8('begriff');
-		$erklaerung 	= PHP7 ? $db->f8('erklaerung') : $db->f8('erklaerung'); // ?
-		$wikipedia 		= PHP7 ? $db->f('wikipedia') : $db->f8('wikipedia');
-		$date_created	= $db->f('date_created');
-		$date_modified	= $db->f('date_modified');
+		$begriff 		= cs8($db->fs('begriff'));
+		$erklaerung 	= cs8($db->fs('erklaerung')); // ?
+		$wikipedia 		= cs8($db->fs('wikipedia'));
+		$date_created	= cs8($db->fs('date_created'));
+		$date_modified	= cs8($db->fs('date_modified'));
 
 		// Wenn es keine Erklärung, aber eine Wikipedia-Seite gibt -> Weiterleitung auf die entspr. Wikipedia-Seite
 		if( $erklaerung == '' && $wikipedia != '' )

@@ -61,6 +61,8 @@ class WISY_FRAMEWORK_CLASS
 
 	function __construct($baseObject, $addParam)
 	{
+	    ini_set("default_charset", "UTF-8");
+	    
 		// constructor
 		$this->includeVersion = '?iv=201'; // change the number on larger changes in included CSS and/or JS files.  May be empty.
 		

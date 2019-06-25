@@ -17,7 +17,21 @@ if(substr(PHP_VERSION_ID, 0, 1) > 6)
     define('PHP7', true);
 else
     define('PHP7', false);
-
+        
+// convert string to UTF-8 or not
+function cs8($string) {
+    if(ini_get("default_charset") == "UTF-8") {
+        if(mb_detect_encoding($string, 'UTF-8', true) === FALSE || mb_detect_encoding($string, 'ISO-8859-1', true))
+            return utf8_encode($string);
+        else
+            return $string;
+    } else {
+        if(mb_detect_encoding($string, 'ISO-8859-1', true) === FALSE || mb_detect_encoding($string, 'UTF-8', true))
+            return utf8_decode($string);
+        else
+            return $string;
+    }
+}
 
 
 /*******************************************************************************
