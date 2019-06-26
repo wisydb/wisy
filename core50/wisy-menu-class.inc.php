@@ -195,7 +195,7 @@ class WISY_MENU_CLASS
 				$currKeywordId = intval($temp[$i]);
 				if( $currKeywordId > 0 ) {
 					$autoTitle .= $autoTitle==''? '' : ' ';
-					$autoTitle = PHP7 ? utf8_decode($g_keywords[ $currKeywordId ]) : $g_keywords[ $currKeywordId ];
+					$autoTitle = cs8($g_keywords[ $currKeywordId ]);
 					$url .= $url==''? '' : urlencode(', ');
 					$url .= urlencode(g_sync_removeSpecialChars($g_keywords[ $currKeywordId ]));
 				}
@@ -206,7 +206,7 @@ class WISY_MENU_CLASS
 		else
 		{
 			$keywordId = intval($keywordId);
-			$autoTitle = PHP7 ? $g_keywords[ $keywordId ] : utf8_decode($g_keywords[ $keywordId ]);
+			$autoTitle = cs8($g_keywords[ $keywordId ]);
 			$url = 'search?q=' . urlencode(g_sync_removeSpecialChars($g_keywords[ $keywordId ]));
 		}
 		
@@ -261,14 +261,14 @@ class WISY_MENU_CLASS
 		if( sizeof($param) == 3 )
 		{
 			// parameters are in the format "title | url | target='_blank'",  "title | url | onclick='...'" etc.
-		    $title = PHP7 ? trim($param[0]) : utf8_encode(trim($param[0]));
+		    $title = cs8(trim($param[0]));
 			$url = trim($param[1]);
 			$aparam = ' ' . $param[2] . ' ';
 		}
 		else if( sizeof($param) == 2 )
 		{
 			// parameters are in the format "title | url"
-		    $title = PHP7 ? trim($param[0]) : utf8_encode(trim($param[0]));
+		    $title = cs8(trim($param[0]));
 			$url = trim($param[1]);
 		}
 		else
@@ -282,7 +282,7 @@ class WISY_MENU_CLASS
 			else
 			{
 				// parameters are in the format "title"
-			    $title = PHP7 ? trim($param[0]) : utf8_encode(trim($param[0]));
+			    $title = cs8(trim($param[0]));
 			}
 		}
 	}
