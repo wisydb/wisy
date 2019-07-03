@@ -119,6 +119,7 @@ class WISY_DURCHF_CLASS
 					'tc4'	=>	array('&#9682;', 	'Abends'),
 					'tc5'	=>	array('<i style="font-family: serif;">WE</i>',		'Wochenende'),
 					1		=>	array('<b>BU</b>',	'Bildungsurlaub'),
+			        7430	=>	array('<b>BL</b>',	'Blended Learning'),
 					7721	=>	array('<big>&#9993;</big>',	'Fernunterricht'),
 					7639	=>	array('WWW', 'Webinar'),
 					17261	=>  array('<b>P</b>',	'Präsenzunterricht'),

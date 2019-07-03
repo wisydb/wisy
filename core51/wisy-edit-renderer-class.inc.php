@@ -1917,14 +1917,14 @@ class WISY_EDIT_RENDERER_CLASS
 												echo "<div class=\"editBeginnoptionenDiv\" $styleBeginnoptionen>";
 													echo '<label title="'.$titleBeginnoptionen.'">';
 														echo "Terminoptionen: ";
-														$this->controlSelect('beginnoptionen[]', $durchf['beginnoptionen'], utf8_encode($GLOBALS['codes_beginnoptionen']));
+														$this->controlSelect('beginnoptionen[]', $durchf['beginnoptionen'], $GLOBALS['codes_beginnoptionen']);
 														
 														echo "<br />Dauer: ";
-														$this->controlSelect('dauer[]', $durchf['dauer'], utf8_encode($GLOBALS['codes_dauer']));			
+														$this->controlSelect('dauer[]', $durchf['dauer'], $GLOBALS['codes_dauer']);			
 														echo '<small> (wird, wenn möglich, aus Beginn-/Endedatum automatisch berechnet)</small>';
 														
 														echo "<br />Tagescode: ";
-														$this->controlSelect('tagescode[]', $durchf['tagescode'], utf8_encode($GLOBALS['codes_tagescode']));		
+														$this->controlSelect('tagescode[]', $durchf['tagescode'], $GLOBALS['codes_tagescode']);		
 														echo '<small>  (wird, wenn möglich, aus Wochentag/Uhrzeit automatisch berechnet)</small>';
 													echo '</label>';
 											echo '</div>';
