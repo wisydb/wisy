@@ -303,7 +303,7 @@ class WISY_EDIT_RENDERER_CLASS
 	function controlText($name, $value, $size = 8, $maxlen = 255, $tooltip = '', $valuehint = '')
 	{
 		$em = intval($size*.6 + .5);
-		echo "<input style=\"width: {$em}em\" type=\"text\" name=\"$name\" value=\"" . htmlentities($value!=''? $value : $valuehint) . "\" size=\"$size\" maxlength=\"$maxlen\" title=\"{$tooltip}\"";
+		echo "<input style=\"width: {$em}em\" type=\"text\" name=\"$name\" value=\"" . htmlentities($value!=''? utf8_encode($value) : $valuehint) . "\" size=\"$size\" maxlength=\"$maxlen\" title=\"{$tooltip}\"";
 		if( $valuehint ) {
 			echo " onfocus=\"if(this.value=='$valuehint'){this.value='';this.className='normal';}return true;\"";
 			echo " onblur=\"if(this.value==''){this.value='$valuehint';this.className='wisy_hinted';}return true;\"";
@@ -1978,7 +1978,7 @@ class WISY_EDIT_RENDERER_CLASS
 												
 												echo "<div class=\"editPreishinweiseDiv\" $stylePreishinweise>";
 													echo 'Preishinweise: ';
-													$this->controlText('preishinweise[]', $durchf['preishinweise'], 50, 200, 'Geben Sie hier eventuelle sonstige Anmerkungen zum Preis ein');
+													$this->controlText('preishinweise[]', utf8_decode($durchf['preishinweise']), 50, 200, 'Geben Sie hier eventuelle sonstige Anmerkungen zum Preis ein');
 												echo "</div>";
 								
 											echo '</td>';
@@ -1986,14 +1986,13 @@ class WISY_EDIT_RENDERER_CLASS
 										echo '<tr>';
 											echo '<td valign="top">Veranstaltungsort:</td>';
 											echo '<td>';
-												$this->controlText('strasse[]', $durchf['strasse'], 25, 100, 'Geben Sie hier - soweit bekannt und eindeutig - die Strasse und die Hausnummer des Veranstaltungsortes ein', 'Strasse und Hausnr.');
-									
+												$this->controlText('strasse[]', utf8_decode($durchf['strasse']), 25, 100, 'Geben Sie hier - soweit bekannt und eindeutig - die Strasse und die Hausnummer des Veranstaltungsortes ein', 'Strasse und Hausnr.'); // utf8_decode shouln't be necessary
 												echo ' &nbsp; ';
 								
 												$this->controlText('plz[]', $durchf['plz'], 5, 16, 'Geben Sie hier - soweit bekannt und eindeutig - die Postleitzahl des Veranstaltungsortes ein', 'PLZ');
 												echo ' ';
-												$this->controlText('ort[]', $durchf['ort'], 12, 60, 'Geben Sie hier - soweit bekannt und eindeutig - den Ort bzw. die Stadt, in der die Veranstaltung stattfindet ein', 'Ort');
-
+												$this->controlText('ort[]', utf8_decode($durchf['ort']), 12, 60, 'Geben Sie hier - soweit bekannt und eindeutig - den Ort bzw. die Stadt, in der die Veranstaltung stattfindet ein', 'Ort'); // utf8_decode shouln't be necessary
+												
 												$this->controlHidden('stadtteil[]', $durchf['stadtteil']);
 												$this->controlHidden('stadtteil_for[]', $durchf['strasse'].','.$durchf['plz'].','.$durchf['ort']);
 
