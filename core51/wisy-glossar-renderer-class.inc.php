@@ -47,10 +47,11 @@ class WISY_GLOSSAR_RENDERER_CLASS
         $glossar_id = intval($_GET['id']);
         $glossarshowall = $this->framework->iniRead('glossarshowall', '');
         $glossarshowgrps = array_map("trim", explode(",", $this->framework->iniRead('glossarshowgrps', '')));
+        $glossarshowids = array_map("trim", explode(",", $this->framework->iniRead('glossarshowids', '')));
         $glossar = $this->getGlossareintrag($glossar_id);
         
         // 404 wenn Usergruppe Portal != Usergruppe Glossar und Gloasser nicht an einem Stichwort und Portalparameter glossarshowall != 1
-        if ($glossarshowall != 1 && $glossar['user_grp'] != $wisyPortalUserGrp  && !in_array($glossar['user_grp'], $glossarshowgrps) && $this->getGlossarArt($glossar_id) == 0) {
+        if ($glossarshowall != 1 && $glossar['user_grp'] != $wisyPortalUserGrp  && !in_array($glossar_id, $glossarshowids) && !in_array($glossar['user_grp'], $glossarshowgrps) && $this->getGlossarArt($glossar_id) == 0) {
             $this->framework->error404();
         }
         // Wenn es keine Erklärung, aber eine Wikipedia-Seite gibt -> Weiterleitung auf die entspr. Wikipedia-Seite
