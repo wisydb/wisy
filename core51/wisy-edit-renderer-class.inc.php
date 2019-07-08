@@ -1682,7 +1682,7 @@ class WISY_EDIT_RENDERER_CLASS
 						echo '<td width="90%" valign="top">';
 							if( $kurs['rights_editTitel'] )
 							{
-								$this->controlText('titel', $kurs['titel'], 64, 200, '', '');
+							    $this->controlText('titel', utf8_decode($kurs['titel']), 64, 200, '', '');
 								echo '<br />';
 							}
 							else
@@ -1859,11 +1859,11 @@ class WISY_EDIT_RENDERER_CLASS
 									
 									echo '<table cellspacing="6" cellpadding="0">';
 									
-										// DURCHFÜHRUNGS-NR
+										// DURCHFUEHRUNGS-NR
 										echo '<tr>';
 											echo '<td valign="top" nowrap="nowrap">Durchführungs-Nr.:&nbsp;&nbsp;&nbsp;</td>';
 											echo '<td>';
-												$this->controlText('nr[]', $durchf['nr'], 24, 64, 'Geben Sie hier eine f&uuml;r Sie eindeutige numerische oder alphanumerische Kennung dieser Durchf&uuml;hrung ein', 'k. A.');
+											$this->controlText('nr[]', utf8_decode($durchf['nr']), 24, 64, 'Geben Sie hier eine f&uuml;r Sie eindeutige numerische oder alphanumerische Kennung dieser Durchf&uuml;hrung ein', 'k. A.');
 											echo '</td>';
 										echo '</tr>';
 										
