@@ -285,11 +285,11 @@ class WISY_EDIT_RENDERER_CLASS
 				$stichwort = $db->f8('stichwort');
 				if( $eigenschaften & 1 )
 				{
-					$retAbschluesse .= ($retAbschluesse?'###' : '') . $id . '###' . htmlspecialchars($stichwort);
+				    $retAbschluesse .= ($retAbschluesse?'###' : '') . $id . '###' . utf8_decode($stichwort);
 				}
 				else if( $eigenschaften & 2 )
 				{
-					$retFoerderungen .= ($retFoerderungen?'###' : '') . $id . '###' . htmlspecialchars($stichwort);
+				    $retFoerderungen .= ($retFoerderungen?'###' : '') . $id . '###' . utf8_decode($stichwort);
 				}
 			}
 		}
