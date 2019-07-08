@@ -2116,10 +2116,12 @@ class WISY_EDIT_RENDERER_CLASS
 	    if( $posted == 'Ort' ) $posted = '';
 	    $anbieter['ort'] = $posted;
 	    
-	    if( ($anbieter['strasse'].','.$anbieter['plz'].','.$anbieter['ort']) == utf8_decode($_POST['stadtteil_for']) )
-	        $anbieter['stadtteil'] = utf8_decode($_POST['stadtteil']);
-	        else
-	            $anbieter['stadtteil'] = '';
+	    if( ($anbieter['strasse'].','.$anbieter['plz'].','.$anbieter['ort']) == utf8_decode($_POST['stadtteil_for']) ) {
+	        $anbieter['stadtteil'] = $_POST['stadtteil'];
+	    }
+	    else {
+	        $anbieter['stadtteil'] = '';
+	    }
 	            
 	            // misc.
 	            $anbieter['rechtsform']		= intval(utf8_decode($_POST['rechtsform']));
