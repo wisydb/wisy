@@ -194,7 +194,8 @@ class WISY_TAGSUGGESTOR_CLASS
 							LEFT JOIN x_tags_freq f ON f.tag_id=t.tag_id $portalIdCond
 							WHERE ( $COND )
 							$portalIdCond
-							ORDER BY LEFT(tag_name,$LEN)<>'$QUERY', tag_name LIMIT 0, $max"; // sortierung alphabetisch, richtiger Wortanfang aber immer zuerst!
+							GROUP BY tag_name 
+							ORDER BY LEFT(tag_name,$LEN)<>'$QUERY', tag_name LIMIT 0, $max"; // sortierung alphabetisch, richtiger Wortanfang aber immer zuerst! Grou By wg. evtl. doppelter tag_names (soll eigentl. n. noetig, wenn Loeschroutine alle Typen zuruecksetzt)
                             
 				$this->db->query($sql); 
 				while( $this->db->next_record() )

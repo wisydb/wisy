@@ -157,7 +157,8 @@ class WISY_TAGSUGGESTOR_CLASS
 							FROM x_tags t 
 							LEFT JOIN x_tags_freq f ON f.tag_id=t.tag_id $portalIdCond
 							WHERE ( $COND )
-							$portalIdCond
+							$portalIdCond 
+                            GROUP BY tag_name 
 							ORDER BY LEFT(tag_name,$LEN)<>'$QUERY', tag_name LIMIT 0, $max"; // sortierung alphabetisch, richtiger Wortanfang aber immer zuerst!
 
 				$this->db->query($sql); 
@@ -174,7 +175,7 @@ class WISY_TAGSUGGESTOR_CLASS
 					$tag_groups = array();
 					
 					if( !$tags_done [ $tag_name ]   // kein Tag zweimal ausgeben (koennte passieren, wenn es sowohl durch die buchstabenadditive und duch die fehlertolerante Suche gefunden wuerde)
-					 && !$links_done[ $tag_name ] ) // wenn zuvor auf ein lemma via Synonym verwiesen wurde, dieses Lemma nicht noch einmal einzeln hinzufügen
+					 && !$links_done[ $tag_name ] ) // wenn zuvor auf ein lemma via Synonym verwiesen wurde, dieses Lemma nicht noch einmal einzeln hinzufï¿½gen
 					{
 						$fuzzy = $tries==1? 0x20000000 : 0;
 						$tags_done[ $tag_name ] = 1;
@@ -318,9 +319,9 @@ class WISY_TAGSUGGESTOR_CLASS
 			// 15.11.2012: Der Vorschlag zur Volltextsuche kann nun ausgeschaltet werden
 			if( $suggest_fulltext )
 			{
-				// 13.02.2010: die folgende Erweiterung bewirkt, das neben den normalen Vorschlägen auch immer die Volltextsuche vorgeschlagen wird -
+				// 13.02.2010: die folgende Erweiterung bewirkt, das neben den normalen Vorschlï¿½gen auch immer die Volltextsuche vorgeschlagen wird -
 				// und zwar in der Ajax-Vorschlagliste und auch unter "Bitte verfeinern Sie Ihren Suchauftrag"
-				// wenn man hier differenzierter Vorgehen möchte, muss man ein paar Ebenen höher ansetzen (bp)
+				// wenn man hier differenzierter Vorgehen mï¿½chte, muss man ein paar Ebenen hï¿½her ansetzen (bp)
 				$ret[] = array(
 					'tag'	=>	'volltext:' . $q_tag_name,
 					'tag_descr' => '',
