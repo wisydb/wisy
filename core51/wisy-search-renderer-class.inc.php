@@ -783,12 +783,13 @@ class WISY_SEARCH_RENDERER_CLASS
 		    $cacheKey = "sw_cloud_p".$wisyPortalId."_s".$queryString;
 		    $this->dbCache		=& createWisyObject('WISY_CACHE_CLASS', $this->framework, array('table'=>'x_cache_tagcloud', 'itemLifetimeSeconds'=>60*60*24));
 		    
+		    $tag_cloud = "";
 		    
 		    if( ($temp=$this->dbCache->lookup($cacheKey))!='' )
 		    {
 		        $tag_cloud = PHP7 ? html_entity_decode($temp) : html_entity_decode($temp); // " <!-- tag cloud from cache -->"
 		    }
-		    else
+		    elseif($tags_heap)
 		    {
 		        $filtersw = array_map("trim", explode(",", $this->framework->iniRead('sw_cloud.filtertyp', "32, 2048, 8192")));
 		        $distinct_tags = array();
