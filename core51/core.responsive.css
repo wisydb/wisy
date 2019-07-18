@@ -56,6 +56,9 @@ body { padding: 0; margin: 0; }
 
 #favlistlink { display: inline-block; padding: 2px; }
 
+ul.dropdown {
+  z-index: unset;
+}
 ul.dropdown ul {
 	width: 16rem;
 }

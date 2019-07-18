@@ -351,8 +351,6 @@ class WISY_MENU_CLASS
 			$allPrefix = $this->prefix . '.';
 			$allPrefixLen = strlen($allPrefix);
 			
-			$navClass = "wisyr_menu_simple";
-			
 			while( list($key, $value) = each($wisyPortalEinstellungen) )
 			{
 				if( substr($key, 0, $allPrefixLen)==$allPrefix )
@@ -394,6 +392,7 @@ class WISY_MENU_CLASS
 			}
 			
 			// get the menu as HTML
+			$navClass = 'wisyr_menu wisyr_menu_' . $this->a11Type;
 			$ret = '<nav class="nav_' . $this->prefix . ' ' . $navClass . '"><ul class="dropdown dropdown-horizontal ' . $navClass . '_level1" aria-hidden="false">';
 				for( $i = 0; $i < sizeof($root->children); $i++ )
 				{
