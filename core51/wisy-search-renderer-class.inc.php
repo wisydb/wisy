@@ -792,8 +792,8 @@ class WISY_SEARCH_RENDERER_CLASS
 			<td align="right" style="font-family: Verdana, Arial, Helvetica, sans-serif;font-size: 11px;color: #5F6796;font-weight: bold;
 			"><a href="https://www.iwwb.de" target="_blank"><img src="https://www.iwwb.de/web/images/iwwb.gif" border="0"></a>&nbsp;</td>
 			</tr>
-			</form>
 			</table>
+			</form>
 			</div>
 			';
 		

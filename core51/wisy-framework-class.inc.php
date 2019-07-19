@@ -1345,6 +1345,7 @@ class WISY_FRAMEWORK_CLASS
 		$ret[] = $this->coreRelPath . '/lib/jquery/jquery-1.12.4.min.js';
 		$ret[] = $this->coreRelPath . '/lib/jquery/jquery-ui-1.12.1.custom.min.js';
 		$ret[] = $this->coreRelPath . '/lib/zebra-datepicker/zebra_datepicker.min.js';
+		$ret[] = $this->coreRelPath . '/lib/aria-menubar/aria_menubar_module.min.js';
 		
 		if($this->simplified)
 		{

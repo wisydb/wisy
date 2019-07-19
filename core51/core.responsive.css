@@ -60,7 +60,19 @@ ul.dropdown {
   z-index: unset;
 }
 ul.dropdown ul {
-	width: 16rem;
+  width: 16rem;
+}
+ul.dropdown ul:not([aria-hidden="true"]) {
+  visibility: visible;
+}
+ul.dropdown ul.hidden {
+  visibility: hidden;
+}
+ul.dropdown ul li.has-subnav:after {
+  content: '>';
+	position: absolute;
+	right: 0.5em;
+	top: 0.1em;
 }
 
 /* Contentarea */

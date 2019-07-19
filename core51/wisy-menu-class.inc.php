@@ -18,43 +18,67 @@ class WISY_MENU_ITEM
 	var $level;
 	var $children;
 	
-	function __construct($title, $url, $aparam, $level)
+	function __construct($title, $url, $aparam, $level, $prefix='', $a11Type='simple')
 	{
 		$this->title 	= $title;
 		$this->url   	= $url;
 		$this->aparam   = $aparam;
 		$this->level 	= $level;
+		$this->prefix	= $prefix;
+		$this->a11Type  = $a11Type;
 		$this->children = array();
 	}
 	
 	function getHtml($toplevel=false)
 	{
-		$liClass = '';
-		if( sizeof($this->children) ) $liClass = ' class="dir has-subnav '.($this->title == "OhneName" ? "ohneName" : "").'" aria-haspopup="true"';
-		elseif($this->title == "OhneName") $liClass = ' class="ohneName"';
+		$liTag = '<li';
+		if( sizeof($this->children) ) $liTag .= ' class="dir has-subnav'.($this->title == "OhneName" ? " ohneName" : "").'" aria-haspopup="true"';
+		elseif($this->title == "OhneName") $liTag .= ' class="ohneName"';
+		$liTag .= ($this->a11Type == 'complex') ? ' role="presentation">' : '>';
 		
-		$ret = "<li$liClass>";
+		$submenuId = uniqid('submenu-'.$this->prefix.'-'.$this->level.'-');
+		
+		$ret = $liTag;
 			if( utf8_encode($this->url) ) {
-				$ret .= '<a href="'.htmlspecialchars(utf8_encode($this->url)).'"'.$this->aparam.($toplevel ? ' tabindex="-1"' : '').'>';
+				$ret .= '<a href="'.htmlspecialchars(utf8_encode($this->url)).'"';
+				$ret .= $this->aparam.($toplevel ? ' tabindex="-1"' : '');
+				$ret .= sizeof($this->children) ? ' data-submenu-id="'.$submenuId.'"' : '';
+				$ret .= ($this->a11Type == 'complex') ? ' role="menuitem">' : '>';
 				$ret .= $this->title;
 				$ret .= '</a>';
 			} else {
-				$ret .= '<span class="nav_no_link">'.$this->title.'</span>';
+				$ret .= '<span class="nav_no_link"';
+				$ret .= sizeof($this->children) ? ' data-submenu-id="'.$submenuId.'"' : '';
+				$ret .= ($this->a11Type == 'complex') ? ' role="menuitem">' : '>';
+				$ret .= $this->title;
+				$ret .= '</span>';
 			}
 
 			if( sizeof($this->children) )
 			{
-				$ret .= '<ul data-test="true" aria-hidden="true">';
-					for( $i = 0; $i < sizeof($this->children); $i++ )
-					{
-						$ret .= $this->children[$i]->getHtml(true);
-					}
+				$ret .= '<ul id="'.$submenuId.'"';
+				if($this->a11Type == 'complex') {
+					$ret .= ' class="vertical menu hidden" role="menu"';
+				} else {
+					$ret .= ' data-test="true" aria-hidden="true"';
+				}
+				$ret .= '>';
+				for( $i = 0; $i < sizeof($this->children); $i++ )
+				{
+					$ret .= $this->children[$i]->getHtml(true);
+				}
 				$ret .= '</ul>';
 			}
 			
 		$ret .= '</li>';
 		
 		return $ret;
+	}
+	
+	function microtime_int()
+	{
+		list($usec, $sec) = explode(" ", microtime());
+		return ((int)$usec + (int)$sec);
 	}
 };
 
@@ -92,7 +116,7 @@ class WISY_MENU_CLASS
 		
 		$q = g_sync_removeSpecialChars($thema);
 		
-		$parent = new WISY_MENU_ITEM($title, 'search?q='.urlencode($q), $aparam, $level);
+		$parent = new WISY_MENU_ITEM($title, 'search?q='.urlencode($q), $aparam, $level, $this->prefix, $this->a11Type);
 		
 		$startKuerzel = $g_themen[$startIndex]['kuerzel_sorted'];
 		$startKuerzelLen = strlen($startKuerzel);
@@ -148,7 +172,7 @@ class WISY_MENU_CLASS
 		{
 			$startIndex = $this->idOrKuerzel2Index(substr($startIdOrKuerzel, 0, $p));
 			$endIndex = $this->idOrKuerzel2Index(substr($startIdOrKuerzel, $p+1));
-			if( $endIndex == -1 ) return array( new WISY_MENU_ITEM("Thema $startIdOrKuerzel nicht gefunden", '', '', $level) );
+			if( $endIndex == -1 ) return array( new WISY_MENU_ITEM("Thema $startIdOrKuerzel nicht gefunden", '', '', $level, $this->prefix, $this->a11Type) );
 		}
 		else
 		{
@@ -157,7 +181,7 @@ class WISY_MENU_CLASS
 		}
 		
 		if( $startIndex == -1 ) 
-			return array( new WISY_MENU_ITEM("Thema $startIdOrKuerzel nicht gefunden", '', '', $level) );
+			return array( new WISY_MENU_ITEM("Thema $startIdOrKuerzel nicht gefunden", '', '', $level, $this->prefix, $this->a11Type) );
 
 		if( $endIndex == -1 )
 			$endIndex = $startIndex;
@@ -187,7 +211,7 @@ class WISY_MENU_CLASS
 		// check for timeout
 		$timeout_after_s = 5.000;
 		if( $this->framework->microtime_float() - $this->start_s > $timeout_after_s ) {
-			return new WISY_MENU_ITEM('Timeout error', '', '', $level);;
+			return new WISY_MENU_ITEM('Timeout error', '', '', $level);
 		}		
 		
 		// add the item itself
@@ -215,7 +239,7 @@ class WISY_MENU_CLASS
 			$url = 'search?q=' . urlencode(g_sync_removeSpecialChars($g_keywords[ $keywordId ]));
 		}
 		
-		$item = new WISY_MENU_ITEM($manualTitle!=''? $manualTitle : $autoTitle, $url, '', $level);
+		$item = new WISY_MENU_ITEM($manualTitle!=''? $manualTitle : $autoTitle, $url, '', $level, $this->prefix, $this->a11Type);
 		
 		// check, if there are child items
 		if( $addChildren > 0 ) 
@@ -328,7 +352,7 @@ class WISY_MENU_CLASS
 			if( $title == '' ) $title = 'OhneName';
 		}
 		
-		return array( new WISY_MENU_ITEM($title, $url, $aparam, $level) );
+		return array( new WISY_MENU_ITEM($title, $url, $aparam, $level, $this->prefix, $this->a11Type) );
 	}
 	
 	function getHtml()
@@ -345,7 +369,7 @@ class WISY_MENU_CLASS
 		else
 		{
 			// build menu tree ...
-			$root = new WISY_MENU_ITEM('', '', '', 0);
+			$root = new WISY_MENU_ITEM('', '', '', 0, $this->prefix, $this->a11Type);
 			
 			reset($wisyPortalEinstellungen);
 			$allPrefix = $this->prefix . '.';
@@ -379,7 +403,7 @@ class WISY_MENU_CLASS
 						
 						if( !$levelFound )
 						{
-							$parent->children[] = new WISY_MENU_ITEM('OhneName', '', '', $level);
+							$parent->children[] = new WISY_MENU_ITEM('OhneName', '', '', $level, $this->prefix, $this->a11Type);
 							$parent =& $parent->children[sizeof($parent->children)-1];;
 						}
 					}
@@ -393,11 +417,21 @@ class WISY_MENU_CLASS
 			
 			// get the menu as HTML
 			$navClass = 'wisyr_menu wisyr_menu_' . $this->a11Type;
-			$ret = '<nav class="nav_' . $this->prefix . ' ' . $navClass . '"><ul class="dropdown dropdown-horizontal ' . $navClass . '_level1" aria-hidden="false">';
-				for( $i = 0; $i < sizeof($root->children); $i++ )
-				{
-					$ret .= $root->children[$i]->getHtml();
-				}
+			$nav = '<nav class="nav_' . $this->prefix . ' ' . $navClass . '"';
+			$ul = '<ul id="wisyr_menu_' . $this->prefix . '" aria-hidden="false"';
+			if($this->a11Type == 'complex') {
+				$nav .= ' role="application" aria-label="MenuBar">';
+				$ul .= ' class="dropdown dropdown-horizontal horizontal menubar ' . $navClass . '_level1" role="menubar">';
+			} else {
+				$nav .= '>';
+				$ul .= ' class="dropdown dropdown-horizontal ' . $navClass . '_level1">';
+			}
+			$ret = $nav.$ul;
+			
+			for( $i = 0; $i < sizeof($root->children); $i++ )
+			{
+				$ret .= $root->children[$i]->getHtml();
+			}
 			$ret .= '</ul></nav>';
 			
 			// add time

@@ -1416,14 +1416,13 @@ function initFiltersMobile() {
 
 function initAccessibleMenus() {
 	// Add functionality for "simple" menus, accessible via tab-navigation
-	$(".wisyr_menu_simple_level1").initMenuSimple();
+	$(".wisyr_menu_simple > ul").initMenuSimple();
 	
 	// Add functionality for "complex" menus, accessible via WAI-ARIA assisted arrow-navigation
-	// TODO
+	$(".wisyr_menu_complex > ul").initMenuComplex();
 }
 
 $.fn.initMenuSimple = function(settings) {
-	
 	settings = jQuery.extend({ menuHoverClass: "wisyr_show_menu" }, settings);
 	
 	// Add tabindex 0 to top level spans because otherwise they can't be tabbed to
@@ -1482,6 +1481,40 @@ $.fn.initMenuSimple = function(settings) {
 
 	$(this).on('click', function(e) {
 		e.stopPropagation();
+	});
+};
+
+$.fn.initMenuComplex = function(settings) {	
+	var myMB = new ARIAMenuBar({
+		topMenuBarSelector: '.wisyr_menu_complex ul[role="menubar"]',
+		hiddenClass: 'hidden',
+
+		// Click handler that executes whenever an A tag that includes role="menuitem" is clicked
+		handleMenuItemClick: function(ev) {
+			top.location.href = this.href;
+		},
+
+		// Handle opening of dynamic submenus
+		openMenu: function(subMenu, menuContainer) {
+			$(subMenu).removeClass('hidden');
+
+			// Focus callback for use when adding animation effect; must be moved into animation callback after animation finishes rendering
+			if (myMB.cb && typeof myMB.cb === 'function'){
+				myMB.cb();
+				myMB.cb = null;
+			}
+		},
+
+		// Handle closing of dynamic submenus
+		closeMenu: function(subMenu) {
+			$(subMenu).addClass('hidden');
+		},
+
+		// Accessible offscreen text to specify necessary keyboard directives for non-sighted users.
+		dualHorizontalTxt: 'Press Enter to navigate to page, or Down to open dropdown',
+		dualVerticalTxt: 'Press Enter to navigate to page, or Right to open dropdown',
+		horizontalTxt: 'Press Down to open dropdown',
+		verticalTxt: 'Press Right to open dropdown'
 	});
 };
 
