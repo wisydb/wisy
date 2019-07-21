@@ -1332,7 +1332,7 @@ function initFilters() {
 	// Sortierung Selectfeld via jQuery UI stylebar machen
 	$(".filter_weiterekriterien .wisyr_selectmenu").selectmenu();
 	$(".filter_sortierung .wisyr_selectmenu").selectmenu({
-		select: function(event, ui) { $('.wisyr_filterform form').submit(); }
+		change: function(event, ui) { $('.wisyr_filterform form').submit() }
 	});
 
 	// Zebra Datepicker für Datum in Filtern

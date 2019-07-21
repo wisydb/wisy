@@ -457,7 +457,6 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 	border-radius: 2px;
 	background: #EEE;
 	padding-left: 7px;
-	outline: 0;
 }
 .wisyr_filterform .ui-selectmenu-button .ui-icon {
 	display: none;
@@ -520,7 +519,6 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 .wisyr_filterform form > fieldset select {
 	line-height: 1.5;
 	background-color: #fff;
-	outline: 0;
 }
 .wisyr_filterform form > fieldset select option:hover {
 	background-color: #798D94;
