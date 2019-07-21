@@ -276,7 +276,7 @@ class WISY_FILTERMENU_ITEM
 		$legendvalue = $this->getLegendvalue($this->data['legendkey']);
         $title = $this->data['title'];
         
-		$ret = '<fieldset class="' . $filterclasses . '" style="z-index:' . $this->zindex . '">';
+		$ret = '<fieldset class="' . $filterclasses . '" style="z-index:' . $this->zindex . '" tabindex="0">';
         
 		    $ret .= '<legend data-filtervalue="' . $legendvalue . '">' . $title . '</legend>';
             $ret .= '<div class="filter_inner clearfix">';
