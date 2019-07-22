@@ -1446,6 +1446,7 @@ class WISY_FRAMEWORK_CLASS
 					
 			// Hide Revoke Button and enable custom revoke function in e.g. "Datenschutzhinweise"
 			// Add an <a> tag with ID #wisy_cookieconsent_settings anywhere on your site. It will re-open the cookieconsent popup when clicked
+			// Add eventhandler to make buttons accessible via keyboard
 			$ret .= '},
 					function(popup){
 						popup.toggleRevokeButton(false);
@@ -1455,6 +1456,22 @@ class WISY_FRAMEWORK_CLASS
 							window.cookiebanner.optedOut = false;
 							updateCookieSettings();
 							return false;
+						});
+						$(".cc-allow").on("keyup.ccallow", function(event) {
+							if(event.keyCode === 13) {
+								window.cookieconsent.popup.setStatus("allow");
+								window.cookieconsent.popup.close();
+								$(".cc-deny").off("keyup.ccdeny");
+								$(".cc-allow").off("keyup.ccallow");
+							}
+						});
+						$(".cc-deny").on("keyup.ccdeny", function(event) {
+							if(event.keyCode === 13) {
+								window.cookieconsent.popup.setStatus("deny");
+								window.cookieconsent.popup.close();
+								$(".cc-deny").off("keyup.ccdeny");
+								$(".cc-allow").off("keyup.ccallow");
+							}
 						});
 					}';
 			

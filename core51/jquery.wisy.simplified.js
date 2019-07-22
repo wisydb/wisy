@@ -233,7 +233,7 @@ function fav_init()
 	$('.fav_add').each(function() {
 		var id = $(this).attr('data-favid');
 		var cls = fav_is_favourite(id)? 'fav_item fav_selected' : 'fav_item';
-		$(this).parent().append(' <span class="'+cls+'" onclick="fav_click(this, '+id+');" title="Angebot merken">&#9733;</span>');
+		$(this).parent().append(' <a href="#" class="'+cls+'" onclick="fav_click(this, '+id+');return false;" title="Angebot merken" tabindex="0">&#9733;</a>');
 		has_clickable_fav = true;
 	});
 	
