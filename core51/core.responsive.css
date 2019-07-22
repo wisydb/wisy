@@ -96,7 +96,7 @@ ul.dropdown ul li.has-subnav:after {
 /* Suche: Formular */
 #wisy_searcharea { position: relative; padding: 15px 0 45px 0; }
 #wisy_searcharea .formrow { display: inline; position: relative; }
-#wisy_searcharea label { display: none; }
+#wisy_searcharea label { margin-right: 0.5em; }
 #wisy_searchinput {
 	width: 100%;
 	max-width: 500px;

@@ -1805,10 +1805,10 @@ class WISY_FRAMEWORK_CLASS
 			echo '<div class="inner">' . "\n";
 				echo '<form action="/search" method="get" aria-label="Suche">' . "\n";
 					echo '<div class="formrow wisyr_searchinput">';
-						echo '<label for="qs" id="wisyr_searchinput_label">' . $this->iniRead('searcharea.placeholder', $DEFAULT_PLACEHOLDER) . '</label>';
+						echo '<label for="qs" id="wisyr_searchinput_label">Suchen nach:</label>';
 						if($this->simplified)
 						{
-							echo '<input type="text" id="wisy_searchinput" class="' . $autocomplete_class . '" name="qs" value="' .$this->QS. '" placeholder="' . $searchinput_placeholder . '" aria-label="' . $this->iniRead('searcharea.placeholder', 'Suchbegriff') . '" role="combobox" aria-controls="wisy_autocomplete" aria-owns="wisy_autocomplete" aria-expanded="false" aria-autocomplete="list" autocomplete="off" />' . "\n";
+							echo '<input type="text" id="wisy_searchinput" class="' . $autocomplete_class . '" name="qs" value="' .$this->QS. '" placeholder="' . $searchinput_placeholder . '" aria-label="Suchen nach Suchbegriff oder Kursthema" role="combobox" aria-controls="wisy_autocomplete" aria-owns="wisy_autocomplete" aria-expanded="false" aria-autocomplete="list" autocomplete="off" />' . "\n";
 							echo '<input type="hidden" id="wisy_searchinput_q" name="q" value="' . $this->Q . '" />' . "\n";
 							echo '<input type="hidden" id="wisy_searchinput_qf" name="qf" value="' . $this->QF . '" />' . "\n";
 							if( isset($tokens['show']) && $tokens['show'] == 'anbieter' ) {
