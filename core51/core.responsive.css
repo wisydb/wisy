@@ -994,3 +994,45 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 		height: 34px;
 	}
 }
+
+/* Barrierefreie Formulare */
+.wisy-form {
+	line-height: 1.5;
+}
+.wisy-form * {
+	box-sizing: border-box;
+}
+.wisy-form fieldset {
+	max-width: 600px;
+	padding: 1rem;
+	box-sizing: border-box;
+}
+.wisy-form label {
+	font-weight: bold;
+}
+.wisy-form input[type="text"],
+.wisy-form input[type="password"],
+.wisy-form textarea,
+.wisy-form select {
+	display: block;
+	width: 100%;
+	font-size: 1rem;
+	margin: 0.25rem 0 1rem 0;
+}
+.wisy-form input[type="text"],
+.wisy-form input[type="password"],
+.wisy-form textarea {
+	padding: 0.5rem;
+}
+.wisy-form input[type="search"] {
+	font-size: 1rem;
+	padding: 0.5rem;
+}
+.wisy-form textarea {
+	padding: 1rem 0.5rem;
+	min-height: 6rem;
+}
+.wisy-form input[type="submit"],
+.wisy-form button {
+	font-size: 1rem;
+}
