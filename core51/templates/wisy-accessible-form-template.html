@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WISY Accessible Forms Template</title>
+<link rel="stylesheet" type="text/css" href="../core.css?iv=511" />
+<link rel="stylesheet" type="text/css" href="../core.responsive.css?iv=511" />
+<link rel="stylesheet" type="text/css" href="../lib/jquery/jquery-ui-1.12.1.custom.min.css?iv=511" />
+<link rel="stylesheet" type="text/css" href="../lib/zebra-datepicker/zebra_datepicker.min.css?iv=511" />
+<script type="text/javascript" src="../lib/jquery/jquery-1.12.4.min.js" charset="utf-8"></script>
+<script type="text/javascript" src="../lib/jquery/jquery-ui-1.12.1.custom.min.js" charset="utf-8"></script>
+<script type="text/javascript" src="../lib/zebra-datepicker/zebra_datepicker.min.js" charset="utf-8"></script>
+<script type="text/javascript" src="../jquery.wisy.simplified.js?iv=511" charset="utf-8"></script>
+<body class="wisyp_glossar nojs"><script type="text/javascript">document.body.className = document.body.className.replace("nojs","yesjs");</script>
+<div id="page">
+
+	<h2>WISY Accessible Forms Template</h2>
+	<p>Version 0.1 (22.07.2019)</p>
+
+	<h3>Name</h3>
+
+	<form class="wisy-form">
+	
+		<fieldset>
+		
+			<legend>Ihr Name</legend>
+		
+			<label for="first-name">Vorname</label>
+			<input id="first-name" name="first-name" type="text" required aria-required="true">
+		
+			<label for="middle-name">Zweiter Vorname<span class="wisy-input-label-helper">(optional)</span></label>
+			<input id="middle-name" name="middle-name" type="text">
+		
+			<label for="last-name">Nachname</label>
+			<input id="last-name" name="last-name" type="text" required aria-required="true">
+
+		</fieldset>
+	
+	</form>
+
+	<hr />
+
+	<h3>Postalische Adresse</h3>
+
+	<form class="wisy-form">
+	
+		<fieldset>
+		
+			<legend>Adresse</legend>
+		
+			<label for="mailing-address-1">Straße und Hausnummer</label>
+			<input id="mailing-address-1" name="mailing-address-1" type="text">
+		
+			<label for="mailing-address-2">Adresszusatz <span class="wisy-input-label-helper">(optional)</span></label>
+			<input id="mailing-address-2" name="mailing-address-2" type="text">
+		
+			<!--
+				Abfrage Postleitzahl unter Nutzung des pattern-Attributs
+				Ermöglicht die Validierung der Eingabe anhand eines
+				vorgegebenen RegExp-Musters
+			-->
+			<label for="zip">Postleitzahl</label>
+			<input id="zip" name="zip" type="text" pattern="[0-9]{5}">
+		
+			<label for="city">Stadt</label>
+			<input id="city" name="city" type="text">
+		
+			<label for="remarks">Anmerkungen</label>
+			<textarea id="remarks" name="remarktext"></textarea>
+		
+			<h3>Auswahlliste</h3>
+		
+			<label for="state">Bundesland</label>
+			<select id="state" name="state">
+				<option value>Bitte wählen…</option>
+				<option value="bay">Baden-Württemberg</option>
+				<option value="ber">Berlin</option>
+				<option value="bra">Brandenburg</option>
+				<option value="bre">Bremen</option>
+				<option value="ham">Hamburg</option>
+				<option value="hes">Hessen</option>
+				<option value="mvp">Mecklenburg-Vorpommern</option>
+				<option value="nie">Niedersachsen</option>
+				<option value="nrw">Nordrhein-Westfalen</option>
+				<option value="rlp">Rheinland-Pfalz</option>
+				<option value="sar">Saarland</option>
+				<option value="sac">Sachsen</option>
+				<option value="saa">Sachsen-Anhalt</option>
+				<option value="swh">Schleswig-Holstein</option>
+				<option value="thn">Thüringen</option>
+			</select>
+		
+			<h3>Auswahlliste gruppiert</h3>
+		
+			<label for="favcity">Wählen Sie ihre Lieblingsstadt</label>
+			<select id="favcity" name="favcity">
+				<optgroup label="Asien">
+					<option value="3">Delhi</option>
+					<option value="4">Hong Kong</option>
+					<option value="8">Mumbai</option>
+					<option value="11">Tokyo</option>
+				</optgroup>
+				<optgroup label="Europa">
+					<option value="1">Amsterdam</option>
+					<option value="5">London</option>
+					<option value="7">Moscow</option>
+				</optgroup>
+				<optgroup label="Nordamerika">
+					<option value="6">Los Angeles</option>
+					<option value="9">New York</option>
+				</optgroup>
+				<optgroup label="Südamerika">
+					<option value="2">Buenos Aires</option>
+					<option value="10">Sao Paulo</option>
+				</optgroup>
+			</select>
+		
+		</fieldset>
+	
+	</form>
+
+	<hr />
+
+	<h3>Checkboxen</h3>
+
+	<form class="wisy-form">
+	
+		<fieldset>
+		
+			<legend>Pizzabelag auswählen:</legend>
+		
+			<input id="ham" type="checkbox" name="toppings" value="ham">
+			<label for="ham">Schinken</label><br>
+		
+			<input id="pepperoni" type="checkbox" name="toppings" value="pepperoni">
+			<label for="pepperoni">Pepperoni</label><br>
+		
+			<input id="mushrooms" type="checkbox" name="toppings" value="mushrooms">
+			<label for="mushrooms">Pilze</label><br>
+		
+			<input id="olives" type="checkbox" name="toppings" value="olives">
+			<label for="olives">Oliven</label>
+		
+		</fieldset>
+	
+		<h3>Radio Buttons</h3>
+
+		<fieldset>
+		
+			<legend>Versandart wählen:</legend>
+		
+			<input id="overnight" type="radio" name="shipping" value="overnight">
+			<label for="overnight">Express</label><br>
+		
+			<input id="twoday" type="radio" name="shipping" value="twoday">
+			<label for="twoday">Schnell</label><br>
+		
+			<input id="ground" type="radio" name="shipping" value="ground">
+			<label for="ground">Standard</label>
+		
+		</fieldset>
+
+	</form>
+
+	<hr />
+
+	<h3>Anmeldeformular (Login) mit Hinweis</h3>
+
+	<form class="wisy-form">
+	
+		<fieldset>
+		
+			<legend>Anmelden</legend>
+		
+			<div class="wisy-alert wisy-alert-info">
+				<div class="wisy-alert-body">
+					<h3 class="wisy-alert-heading">Bitte beachten</h3>
+					<p class="wisy-alert-text">
+						Hier steht ein wichtiger Hinweis,<br>
+						den der Nutzer beachten sollte.
+					</p>
+				</div>
+			</div>
+		
+			<label for="username">Benutzername oder E-Mail-Adresse</label>
+			<input id="username" name="username" type="text" autocapitalize="off" autocorrect="off">
+		
+			<label for="password-sign-in">Passwort</label>
+			<input id="password-sign-in" name="password" type="password">
+		
+			<input type="submit" name="submit" value="Anmelden">
+		
+		</fieldset>
+	
+	</form>
+
+	<hr />
+
+	<h3>Beispiel für Eingabefeld (Suche) ohne sichtbares Label / aria-label</h3>
+
+	<form class="wisy-form">
+	
+		<input type="search" name="search" aria-label="Suche" autocorrect="off" value="Suchbegriff" />
+	
+		<button type="submit">Suchen</button>
+	
+	</form>
+</div><!-- /#page -->
+</body>
+</html>
