@@ -1484,38 +1484,40 @@ $.fn.initMenuSimple = function(settings) {
 	});
 };
 
-$.fn.initMenuComplex = function(settings) {	
-	var myMB = new ARIAMenuBar({
-		topMenuBarSelector: '.wisyr_menu_complex ul[role="menubar"]',
-		hiddenClass: 'hidden',
+$.fn.initMenuComplex = function(settings) {
+	if (typeof ARIAMenuBar !== "undefined") {
+		var myMB = new ARIAMenuBar({
+			topMenuBarSelector: '.wisyr_menu_complex ul[role="menubar"]',
+			hiddenClass: 'hidden',
 
-		// Click handler that executes whenever an A tag that includes role="menuitem" is clicked
-		handleMenuItemClick: function(ev) {
-			top.location.href = this.href;
-		},
+			// Click handler that executes whenever an A tag that includes role="menuitem" is clicked
+			handleMenuItemClick: function(ev) {
+				top.location.href = this.href;
+			},
 
-		// Handle opening of dynamic submenus
-		openMenu: function(subMenu, menuContainer) {
-			$(subMenu).removeClass('hidden');
+			// Handle opening of dynamic submenus
+			openMenu: function(subMenu, menuContainer) {
+				$(subMenu).removeClass('hidden');
 
-			// Focus callback for use when adding animation effect; must be moved into animation callback after animation finishes rendering
-			if (myMB.cb && typeof myMB.cb === 'function'){
-				myMB.cb();
-				myMB.cb = null;
-			}
-		},
+				// Focus callback for use when adding animation effect; must be moved into animation callback after animation finishes rendering
+				if (myMB.cb && typeof myMB.cb === 'function'){
+					myMB.cb();
+					myMB.cb = null;
+				}
+			},
 
-		// Handle closing of dynamic submenus
-		closeMenu: function(subMenu) {
-			$(subMenu).addClass('hidden');
-		},
+			// Handle closing of dynamic submenus
+			closeMenu: function(subMenu) {
+				$(subMenu).addClass('hidden');
+			},
 
-		// Accessible offscreen text to specify necessary keyboard directives for non-sighted users.
-		dualHorizontalTxt: 'Press Enter to navigate to page, or Down to open dropdown',
-		dualVerticalTxt: 'Press Enter to navigate to page, or Right to open dropdown',
-		horizontalTxt: 'Press Down to open dropdown',
-		verticalTxt: 'Press Right to open dropdown'
-	});
+			// Accessible offscreen text to specify necessary keyboard directives for non-sighted users.
+			dualHorizontalTxt: 'Press Enter to navigate to page, or Down to open dropdown',
+			dualVerticalTxt: 'Press Enter to navigate to page, or Right to open dropdown',
+			horizontalTxt: 'Press Down to open dropdown',
+			verticalTxt: 'Press Right to open dropdown'
+		});
+	}
 };
 
 /*****************************************************************************
