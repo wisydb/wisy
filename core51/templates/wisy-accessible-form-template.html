@@ -15,8 +15,8 @@
 <body class="wisyp_glossar nojs"><script type="text/javascript">document.body.className = document.body.className.replace("nojs","yesjs");</script>
 <div id="page">
 
-	<h2>WISY Accessible Forms Template</h2>
-	<p>Version 0.1 (22.07.2019)</p>
+	<h1>WISY Accessible Forms Template</h1>
+	<h2>Version 0.2 (22.07.2019)</h2>
 
 	<h3>Name</h3>
 
@@ -27,13 +27,13 @@
 			<legend>Ihr Name</legend>
 		
 			<label for="first-name">Vorname</label>
-			<input id="first-name" name="first-name" type="text" required aria-required="true">
+			<input id="first-name" name="first-name" type="text" required>
 		
 			<label for="middle-name">Zweiter Vorname<span class="wisy-input-label-helper">(optional)</span></label>
 			<input id="middle-name" name="middle-name" type="text">
 		
 			<label for="last-name">Nachname</label>
-			<input id="last-name" name="last-name" type="text" required aria-required="true">
+			<input id="last-name" name="last-name" type="text" required>
 
 		</fieldset>
 	
@@ -173,10 +173,10 @@
 		
 			<legend>Anmelden</legend>
 		
-			<div class="wisy-alert wisy-alert-info">
+			<div class="wisy-alert wisy-alert-info" aria-describedby="wisy-form-info-text">
 				<div class="wisy-alert-body">
 					<h3 class="wisy-alert-heading">Bitte beachten</h3>
-					<p class="wisy-alert-text">
+					<p id="wisy-form-info-text" class="wisy-alert-text">
 						Hier steht ein wichtiger Hinweis,<br>
 						den der Nutzer beachten sollte.
 					</p>
