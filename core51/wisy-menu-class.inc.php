@@ -417,7 +417,7 @@ class WISY_MENU_CLASS
 			
 			// get the menu as HTML
 			$navClass = 'wisyr_menu wisyr_menu_' . $this->a11Type;
-			$nav = '<nav class="nav_' . $this->prefix . ' ' . $navClass . '"';
+			$nav = '<nav class="nav_' . $this->prefix . ' ' . $navClass . ' clearfix"';
 			$ul = '<ul id="wisyr_menu_' . $this->prefix . '" aria-hidden="false"';
 			if($this->a11Type == 'complex') {
 				$nav .= ' role="application" aria-label="MenuBar">';
