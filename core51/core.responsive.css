@@ -1010,6 +1010,7 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 .wisy-form fieldset {
 	max-width: 600px;
 	padding: 1rem;
+	margin-bottom: 1rem;
 	box-sizing: border-box;
 }
 .wisy-form label {
@@ -1017,6 +1018,7 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 }
 .wisy-form input[type="text"],
 .wisy-form input[type="password"],
+.wisy-form input[type="email"],
 .wisy-form textarea,
 .wisy-form select {
 	display: block;
@@ -1026,6 +1028,7 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 }
 .wisy-form input[type="text"],
 .wisy-form input[type="password"],
+.wisy-form input[type="email"],
 .wisy-form textarea {
 	padding: 0.5rem;
 }
@@ -1040,4 +1043,12 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 .wisy-form input[type="submit"],
 .wisy-form button {
 	font-size: 1rem;
+}
+.wisy-form--error {
+	color: red;
+	font-weight: bold;
+}
+input + .wisy-form--error,
+textarea + .wisy-form--error {
+	margin-top: -0.8rem;
 }

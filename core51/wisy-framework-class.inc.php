@@ -2041,6 +2041,9 @@ class WISY_FRAMEWORK_CLASS
 			case 'sitemap-landingpages.xml':
 			case 'sitemap-landingpages.xml.gz':
 				return createWisyObject('WISY_LANDINGPAGE_RENDERER_CLASS', $this, array('type'=>$wisyRequestedFile));
+				
+			case 'kontakt':
+				return createWisyObject('WISY_CONTACTFORM_RENDERER_CLASS', $this);
 			
 			// deprecated URLs
 			case 'kurse.php':
