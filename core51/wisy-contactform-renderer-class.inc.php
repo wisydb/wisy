@@ -6,8 +6,11 @@ class WISY_CONTACTFORM_RENDERER_CLASS
 	var $framework;
 	var $contactform_enabled;
 	var $contactorm_email;
-	var $contactform_dsgvolink;
-	var $contactform_thankyoutext;
+	var $contactform_dsgvo_checkbox;
+	var $contactform_dsgvo_text;
+	var $contactform_dsgvo_link;
+	var $contactform_thankyou_title;
+	var $contactform_thankyou_text;
 
 	function __construct(&$framework)
 	{		
@@ -15,9 +18,11 @@ class WISY_CONTACTFORM_RENDERER_CLASS
 		$this->framework =& $framework;
 		$this->contactform_enabled = $this->framework->iniRead('contactform', '');
 		$this->contactform_email = $this->framework->iniRead('contactform.email', '');
-		$this->contactform_dsgvolink = $this->framework->iniRead('contactform.dsgvolink', '');
-		$this->contactform_thankyoutitle = $this->framework->iniRead('contactform.thankyoutitle', 'Danke für Ihre Nachricht');
-		$this->contactform_thankyoutext = $this->framework->iniRead('contactform.thankyoutext', 'Wir haben Ihre Nachricht erhalten und werden Sie baldmöglichst bearbeiten.');
+		$this->contactform_dsgvo_checkbox = $this->framework->iniRead('contactform.dsgvo.checkbox', '');
+		$this->contactform_dsgvo_text = $this->framework->iniRead('contactform.dsgvo.text', '');
+		$this->contactform_dsgvo_link = $this->framework->iniRead('contactform.dsgvo.link', '');
+		$this->contactform_thankyou_title = $this->framework->iniRead('contactform.thankyou.title', 'Danke für Ihre Nachricht');
+		$this->contactform_thankyou_text = $this->framework->iniRead('contactform.thankyou.text', 'Wir haben Ihre Nachricht erhalten und werden Sie baldmöglichst bearbeiten.');
 	}	
 	
 	function render()
@@ -75,13 +80,19 @@ class WISY_CONTACTFORM_RENDERER_CLASS
 		$ret .= '</fieldset>';
 		
 		// DSGVO
-		if($this->contactform_dsgvolink != '') {
-			$ret .= '<fieldset class="wisy-form--dsgvo">';
-			$ret .= '<legend>Datenschutz</legend>';
-			$ret .= '<input id="dsgvo" name="dsgvo" type="checkbox" value="checked" '. $_POST['dsgvo'] .' required /><label for="dsgvo">Wir erheben und verwenden die von Ihnen eingegebenen Daten entsprechend unserer <a href="'. $this->contactform_dsgvolink .'">Datenschutzerklärung</a> *</label>';
+		$ret .= '<fieldset class="wisy-form--dsgvo">';
+		$ret .= '<legend>Datenschutz</legend>';
+		if($this->contactform_dsgvo_checkbox == 1) {
+			$ret .= '<input id="dsgvo" name="dsgvo" type="checkbox" value="checked" '. $_POST['dsgvo'] .' required /><label for="dsgvo">';
+			$ret .= $this->contactform_dsgvo_text ? $this->contactform_dsgvo_text : 'Ich willige ein, dass die von mir gemachten Angaben zum Zwecke der Bearbeitung meiner Anfrage gespeichert werden und ich zur Beantwortung meines Anliegens per E-Mail kontaktiert werden kann. Die Hinweise zum '. ($this->contactform_dsgvo_link ? '<a href="'. $this->contactform_dsgvo_link .'" target="_blank">Datenschutz</a>' : 'Datenschutz') .' habe ich zur Kenntnis genommen.';
+			$ret .= ' *</label>';
 			if(array_key_exists('dsgvo', $errors)) { $ret .= '<p class="wisy-form--error">'. $errors['dsgvo'] .'</p>'; }
-			$ret .= '</fieldset>';
+		} else {
+			$ret .= '<p class="wisy-form--dsgvotext">';
+			$ret .= $this->contactform_dsgvo_text ? $this->contactform_dsgvo_text : 'Mit dem Absenden des Formulars willige ich ein, dass die von mir gemachten Angaben zum Zwecke der Bearbeitung meiner Anfrage gespeichert werden. Ich erteile meine Einwilligung, per E-Mail zur Beantwortung meines Anliegens kontaktiert zu werden. Die Hinweise zum '. ($this->contactform_dsgvo_link ? '<a href="'. $this->contactform_dsgvo_link .'" target="_blank">Datenschutz</a>' : 'Datenschutz') .' habe ich zur Kenntnis genommen.';
+			$ret .= '</p>';
 		}
+		$ret .= '</fieldset>';
 		
 		$ret .= '<button type="submit">Abschicken</button>';
 		$ret .= '<p class="wisy-form--pflichtfelder">* Pflichtfelder</p>';
@@ -94,7 +105,7 @@ class WISY_CONTACTFORM_RENDERER_CLASS
 	{
 		$errors = array();
 		$required_fields = array('name', 'email', 'nachricht');
-		if($this->contactform_dsgvolink != '') {
+		if($this->contactform_dsgvo_checkbox != '') {
 			$required_fields[] = 'dsgvo';
 		}
 		foreach($required_fields as $required_field) {
@@ -161,7 +172,7 @@ class WISY_CONTACTFORM_RENDERER_CLASS
 	
 	function thankyouText()
 	{
-		echo '<h2>'. $this->contactform_thankyoutitle .'</h2>';
-		echo '<p>'. $this->contactform_thankyoutext .'</p>';
+		echo '<h2>'. $this->contactform_thankyou_title .'</h2>';
+		echo '<p>'. $this->contactform_thankyou_text .'</p>';
 	}
 }
