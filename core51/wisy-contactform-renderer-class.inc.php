@@ -59,7 +59,7 @@ class WISY_CONTACTFORM_RENDERER_CLASS
 	
 	function returnContactform($errors=array())
 	{
-		$ret = '<form class="wisy-form" action="/kontakt/" method="post">';
+		$ret = '<form class="wisy-form" action="/kontakt" method="post">';
 		$ret .= '<input type="hidden" name="kontaktformular" value="true" />';
 		$ret .= '<h2>Kontaktformular</h2>';
 
