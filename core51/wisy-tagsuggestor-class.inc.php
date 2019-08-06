@@ -353,10 +353,12 @@ class WISY_TAGSUGGESTOR_CLASS
 						}
 					}
 				}
+				
+				require_once("admin/lib/soundex/x3m_soundex_ger.php");
 
 				// if there are only very few results, try an additional soundex search
 				if( sizeof($ret) < $min && $use_soundex )
-					$COND = "tag_soundex='".soundex($q_tag_name)."'";
+					$COND = "tag_soundex='".soundex_ger($q_tag_name)."'";
 				else
 					break;
 			}

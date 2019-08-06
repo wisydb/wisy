@@ -172,7 +172,9 @@ class TAGTABLE_CLASS
 		
 		if( $this->lookup($tag_name) == 0 )
 		{
-			$tag_soundex = soundex($tag_name);
+		    require_once("admin/lib/soundex/x3m_soundex_ger.php");
+		    
+			$tag_soundex = soundex_ger($tag_name);
 			$tag_metaphone = metaphone($tag_name);
 			$this->db->query("INSERT INTO x_tags (tag_name, tag_descr, tag_type, tag_help, tag_soundex, tag_metaphone) VALUES ('".addslashes($tag_name)."', '".addslashes($tag_descr)."', $tag_type, $tag_help, '$tag_soundex', '$tag_metaphone')");
 			$this->tags[ $tag_name ] = array( intval($this->db->insert_id()), $tag_type, $tag_help, $tag_descr );
