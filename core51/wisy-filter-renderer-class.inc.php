@@ -145,6 +145,7 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 		$renderformData['fv_sonstigesmerkmal'] = '';
 		$renderformData['fv_abschluesse'] = '';
 		$renderformData['fv_abschlussart'] = '';
+		$renderformData['fv_metaabschlussart'] = '';
 		$renderformData['fv_unterrichtsart'] = '';
 		$renderformData['fv_tageszeit'] = '';
 		
@@ -227,6 +228,10 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 				case 'abschlussart':
 				    $renderformData['fv_abschlussart'] = $token['value'];
 				    break;
+				    
+				case 'metaabschlussart':
+				    $renderformData['fv_metaabschlussart'] = $token['value'];
+				    break;
 					
 				case 'unterrichtsart':
 					$renderformData['fv_unterrichtsart'] = $token['value'];
@@ -247,13 +252,20 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
         $filtermenu = new WISY_FILTERMENU_CLASS($this->framework, $renderformData);
         echo $filtermenu->getHtml();
         
-		$orders = array(
-			'b'  => 'Datum: aufsteigend', 
-			'p'  => 'Preis: aufsteigend',
-			'pd' => 'Preis: absteigend',
-			'a'  => 'Anbieter: aufsteigend',
-			'ad' => 'Anbieter: absteigend',
-		);
+        $orders = array(
+            'b'  => 'Datum: aufsteigend',
+            'd'  => 'Dauer: aufsteigend',
+            'dd'  => 'Dauer: absteigend',
+            'p'  => 'Preis: aufsteigend',
+            'pd' => 'Preis: absteigend',
+            'a'  => 'Anbieter: aufsteigend',
+            'ad' => 'Anbieter: absteigend',
+            't'  => 'Angebot: Titel',
+            'rand'  => 'Zuf&auml;llig sortiert'
+        );
+        
+        $portal_order = $this->framework->iniRead('kurse.sortierung', false);
+        if($portal_order && $renderformData['order'] == '') $renderformData['order'] = $portal_order;
 		if($renderformData['order'] == '') $renderformData['order'] = 'b';
 		echo '<fieldset class="wisyr_filtergroup wisyr_filter_select filter_sortierung ui-front">';
         echo '	<legend data-filtervalue="' . $orders[$renderformData['order']] . '">Sortierung</legend>';
@@ -610,6 +622,10 @@ class WISY_FILTERMENU_ITEM
 			
 			case 'taglist':
 				if(is_array($this->renderformData['records_taglist']) && !in_array($value, $this->renderformData['records_taglist'])) $disabled = true;
+			break;
+			
+			case 'taglist_unfiltered':
+			    $disabled = false;
 			break;
 		}
 		
