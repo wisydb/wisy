@@ -1809,7 +1809,8 @@ class WISY_FRAMEWORK_CLASS
 		// echo the search field
 		$DEFAULT_PLACEHOLDER	= '';
 		$DEFAULT_ADVLINK_HTML	= '<a href="advanced?q=__Q_URLENCODE__" id="wisy_advlink">Erweitern</a>';
-		$DEFAULT_RIGHT_HTML		= '| <a href="javascript:window.print();">Drucken</a>';
+		if( $this->simplified ) $DEFAULT_ADVLINK_HTML = '';
+		$DEFAULT_RIGHT_HTML		= '<a href="javascript:window.print();">Drucken</a>';
 		$DEFAULT_BOTTOM_HINT	= 'bitte <strong>Suchwörter</strong> eingeben - z.B. Englisch, VHS, Bildungsurlaub, ...';
 		
 		// Kurse oder Anbieter?
