@@ -511,6 +511,9 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 .Zebra_DatePicker .dp_daypicker.dp_body .dp_current {
 	color: #3E7AB8;
 }
+.wisyr_filterform .Zebra_DatePicker_Icon {
+	display: none;
+}
 
 .wisyr_filterform form > fieldset.filter_sortierung:after {
 	display: none;
@@ -1080,12 +1083,20 @@ textarea + .wisy-form--error {
 	.wisyr_filterform .ui-selectmenu-menu .ui-widget-content.ui-widget,
 	.wisyr_kursliste,
 	.wisyr_anbieterliste,
-	.wisyr_durchfuehrungen {
+	.wisyr_durchfuehrungen,
+	.Zebra_DatePicker {
 		border: 1px solid windowText;
 	}
 	.wisyr_kursliste th,
 	.wisyr_anbieterliste th,
-	.wisyr_durchfuehrungen th {
+	.wisyr_durchfuehrungen th,
+	.Zebra_DatePicker .dp_header {
 		border-bottom: 1px solid windowText;
+	}
+	.wisyr_filterform .Zebra_DatePicker_Icon {
+		display: block;
+		text-indent: 0;
+		margin-top: 0.5em;
+		border: 1px solid windowText;
 	}
 }

@@ -1342,7 +1342,7 @@ function initFilters() {
 			days: ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'],
 			months: ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'],
 			lang_clear_date: 'Auswahl entfernen',
-			show_icon: false,
+			show_icon: true,
 			open_on_focus: true,
 			show_select_today: false
 		}
