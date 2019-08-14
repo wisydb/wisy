@@ -1071,3 +1071,23 @@ input + .wisy-form--error,
 textarea + .wisy-form--error {
 	margin-top: -0.8rem;
 }
+
+@media screen and (-ms-high-contrast: active) {
+	.cc-window,
+	.wisyr_filterform form > fieldset,
+	.wisyr_filterform fieldset.active .filter_inner,
+	.wisyr_filterform input[type='text'],
+	.wisyr_filterform .filter_submit,
+	.wisyr_filterform .ui-selectmenu-button,
+	.wisyr_filterform .ui-selectmenu-menu .ui-widget-content.ui-widget,
+	.wisyr_kursliste,
+	.wisyr_anbieterliste,
+	.wisyr_durchfuehrungen {
+		border: 1px solid windowText;
+	}
+	.wisyr_kursliste th,
+	.wisyr_anbieterliste th,
+	.wisyr_durchfuehrungen th {
+		border-bottom: 1px solid windowText;
+	}
+}
