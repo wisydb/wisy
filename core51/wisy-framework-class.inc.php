@@ -813,9 +813,9 @@ class WISY_FRAMEWORK_CLASS
 	{
 		// get all seals
 		$seals = array();
-		$db->query("SELECT a.attr_id AS sealId, s.glossar AS glossarId FROM anbieter_stichwort a, stichwoerter s WHERE a.primary_id=" . intval($vars['anbieterId']) . " AND a.attr_id=s.id AND s.eigenschaften=" .DEF_STICHWORTTYP_QZERTIFIKAT. " ORDER BY a.structure_pos;");
+		$db->query("SELECT a.attr_id AS sealId, s.glossar AS glossarId, g.begriff AS sealTitle FROM anbieter_stichwort a, stichwoerter s, glossar g WHERE a.primary_id=" . intval($vars['anbieterId']) . " AND a.attr_id=s.id AND s.eigenschaften=" .DEF_STICHWORTTYP_QZERTIFIKAT. " AND g.id=s.glossar ORDER BY a.structure_pos;");
 		while( $db->next_record() )
-			$seals[] = array($db->f8('sealId'), $db->f8('glossarId'));
+			$seals[] = array($db->f8('sealId'), $db->f8('glossarId'), $db->f8('sealTitle'));
 	
 		// no seals? -> done.
 		if( sizeof($seals) == 0 )
@@ -840,14 +840,26 @@ class WISY_FRAMEWORK_CLASS
 		{
 			$sealId    = $seals[$i][0];
 			$glossarId = $seals[$i][1];
+			$sealTitle = $seals[$i][2];
 	
 			if( $vars['size'] == 'small' )
 			{
-				$img = "files/seals/$sealId-small.gif";
-				if( @file_exists($img) )
+				$img = false;
+				$svg = "files/seals/$sealId.svg";
+				if( @file_exists($svg) )
+				{
+					$img = $svg;
+				} else {
+					$gif = "files/seals/$sealId-small.gif";
+					if( @file_exists($gif) )
+					{
+						$img = $gif;
+					}
+				}
+				if( $img )
 				{
 					$ret .= '<a href="' . $this->getHelpUrl($glossarId) . '" class="help">';
-						$ret .= "<img src=\"$img\" alt=\"Pr&uuml;siegel\" title=\"$title\" class=\"seal_small\"/>";
+					$ret .= "<img src=\"/$img\" alt=\"Pr&uuml;fsiegel: $sealTitle\" title=\"$title: $sealTitle\" class=\"seal_small\" width=\"32\" />";
 					$ret .= '</a>';
 					$sealsOut++;
 					break; // only one logo in small view
@@ -855,11 +867,22 @@ class WISY_FRAMEWORK_CLASS
 			}
 			else
 			{
-				$img = "files/seals/$sealId-large.gif";
-				if( @file_exists($img) )
+				$img = false;
+				$svg = "files/seals/$sealId.svg";
+				if( @file_exists($svg) )
+				{
+					$img = $svg;
+				} else {
+					$gif = "files/seals/$sealId-large.gif";
+					if( @file_exists($gif) )
+					{
+						$img = $gif;
+					}
+				}
+				if( $img )
 				{
 					$ret .= $sealsOut? $vars['break'] : '';
-					$ret .= "<img src=\"$img\" alt=\"Pr&uuml;siegel\" title=\"$title\" class=\"seal\" />";
+					$ret .= "<img src=\"$img\" alt=\"Pr&uuml;siegel: $sealTitle\" title=\"$title: $sealTitle\" class=\"seal\" width=\"120\" />";
 					$sealsOut++;
 				}
 			}

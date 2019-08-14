@@ -431,28 +431,39 @@ class WISY_ANBIETER_RENDERER_CLASS
 		// get all seals
 
 		$db = new DB_Admin;
-		$db->query("SELECT a.attr_id AS sealId, s.stichwort AS title, s.glossar AS glossarId FROM anbieter_stichwort a, stichwoerter s WHERE a.primary_id=" . $anbieter_id . " AND a.attr_id=s.id AND s.eigenschaften=" .DEF_STICHWORTTYP_QZERTIFIKAT. " ORDER BY a.structure_pos;");
+		$db->query("SELECT a.attr_id AS sealId, s.glossar AS glossarId, g.begriff AS sealTitle FROM anbieter_stichwort a, stichwoerter s, glossar g WHERE a.primary_id=" . $anbieter_id . " AND a.attr_id=s.id AND s.eigenschaften=" .DEF_STICHWORTTYP_QZERTIFIKAT. " AND g.id=s.glossar ORDER BY a.structure_pos;");
 		while( $db->next_record() )
 		{
 			$sealId = $db->f8('sealId');
 			$glossarId = $db->f8('glossarId');
-			$title = $db->f8('title');
-			$glossarLink = $glossarId>0? (' <a href="' . $this->framework->getHelpUrl($glossarId) . '" class="wisy_help" title="Hilfe" aria-label="Ratgeber zu ' . $title . '">i</a>') : '';
-
-			$img = "files/seals/$sealId-large.gif";
-			if( @file_exists($img) )
+			$sealTitle = $db->f8('sealTitle');
+			$glossarLink = $glossarId>0? (' <a href="' . $this->framework->getHelpUrl($glossarId) . '" class="wisy_help" title="Hilfe" aria-label="Ratgeber zu ' . $sealTitle . '">i</a>') : '';
+			
+			$img = false;
+			$svg = "files/seals/$sealId.svg";
+			if( @file_exists($svg) )
+			{
+				$img = $svg;
+			} else {
+				$gif = "files/seals/$sealId-large.gif";
+				if( @file_exists($gif) )
+				{
+					$img = $gif;
+				}
+			}
+			if( $img )
 			{
 				$img_seals .= $img_seals==''? '' : '<br /><br />';
-				$img_seals .= "<img src=\"$img\" border=\"0\" alt=\"Pr&uuml;siegel\" title=\"$title\" aria-hidden=\"true\" /><br />";
-				$img_seals .= $title . $glossarLink;
+				$img_seals .= "<img src=\"$img\" alt=\"Pr&uuml;siegel: $sealTitle\" title=\"$sealTitle\" width=\"120\" /><br />";
+				$img_seals .= $sealTitle . $glossarLink;
 				if( $seit ) { $img_seals .= '<br />'  . $seit; $seit = ''; }
 				
-				$seals_steckbrief .= "<img src=\"$img\" border=\"0\" alt=\"Pr&uuml;siegel\" title=\"$title\" aria-hidden=\"true\" />";
+				$seals_steckbrief .= "<img src=\"$img\" alt=\"Pr&uuml;siegel: $sealTitle\" title=\"$sealTitle\" width=\"120\" />";
 			}
 			else
 			{
 				$txt_seals .= $txt_seals==''? '' : '<br />';
-				$txt_seals .= $title . $glossarLink;
+				$txt_seals .= $sealTitle . $glossarLink;
 			}
 						
 		}

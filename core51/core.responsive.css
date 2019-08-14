@@ -74,10 +74,14 @@ ul.dropdown ul.hidden {
   visibility: hidden;
 }
 ul.dropdown ul li.has-subnav:after {
-  content: '>';
+	content: '';
 	position: absolute;
-	right: 0.5em;
+	right: 0;
 	top: 0.1em;
+	width: 1.5em;
+	height: 1.5em;
+	/* https://materialdesignicons.com: chevron-right */
+	background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23787878' d='M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z' /%3E%3C/svg%3E") center center/contain;
 }
 
 /* Contentarea */
@@ -119,11 +123,12 @@ ul.dropdown ul li.has-subnav:after {
 .wisyr_searchinput { position: relative; }
 .wisyr_searchinput .clear_btn {
 	position: absolute;
-	top: 0;
+	top: -0.2em;
 	right: 1.5em;
-	width: 1em;
-	height: 1em;
-	background: #fff url(close-red.png) no-repeat center center/1em;
+	width: 1.5em;
+	height: 1.5em;
+	/* https://materialdesignicons.com: close */
+	background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23787878' d='M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z' /%3E%3C/svg%3E") no-repeat center center/contain;
 	cursor: pointer;
 }
 
@@ -424,14 +429,21 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 	color: #333;
 }
 .wisyr_filterform form > fieldset:after {
-	content: 'v';
+	content: '';
 	position: absolute;
-	right: 0.5em;
+	right: 0.3em;
 	top: 0.3em;
+	width: 1.5em;
+	height: 1.5em;
+	/* https://materialdesignicons.com: chevron-down */
+	background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23787878' d='M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z' /%3E%3C/svg%3E") center center/contain;
 }
 
 .wisyr_filterform form > fieldset.filter_weiterekriterien { width: 9rem; }
-.wisyr_filterform form > fieldset.filter_weiterekriterien:after { content: '+'; font-family: 'Roboto', sans-serif; }
+.wisyr_filterform form > fieldset.filter_weiterekriterien:after {
+	/* https://materialdesignicons.com: plus */
+	background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23787878' d='M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z' /%3E%3C/svg%3E") center center/contain;
+}
 
 .wisyr_filterform form > fieldset.filter_weiterekriterien .filter_inner {
 	padding-right: 10px;
@@ -472,10 +484,14 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 .wisyr_filterform .ui-selectmenu-button .ui-selectmenu-text { color: #606060; margin-right: 0; }
 .wisyr_filterform .ui-selectmenu-button .ui-selectmenu-text:hover { color: #333; }
 .wisyr_filterform .ui-selectmenu-button:after {
-	content: 'v';
+	content: '';
 	position: absolute;
-	right: 0.5em;
-	top: 0.5em;
+	right: 0.3em;
+	top: 0.3em;
+	width: 1.5em;
+	height: 1.5em;
+	/* https://materialdesignicons.com: chevron-down */
+	background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23787878' d='M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z' /%3E%3C/svg%3E") center center/contain;
 }
 .wisyr_filterform .ui-selectmenu-menu { text-align: left; }
 .wisyr_filterform .ui-selectmenu-menu .ui-menu-item { background-color: #eee; border: 0; }
@@ -594,7 +610,8 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 
 .wisyr_filtergroup .wisyr_datepicker {
 	padding-right: 20px;
-	background: #fff url(calendar.png) no-repeat 95% center/auto 60%;
+	/* https://materialdesignicons.com: calendar */
+	background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23787878' d='M19,19H5V8H19M16,1V3H8V1H6V3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3H18V1M17,12H12V17H17V12Z' /%3E%3C/svg%3E") no-repeat 95% center/auto 66%;
 }
 
 /* Clear button */
@@ -602,11 +619,12 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 .wisyr_filtergroup .filter_clearbutton_wrapper input[type="text"] { width: 100%;}
 .wisyr_filtergroup .filter_clearbutton_wrapper .clear_btn {
 	position: absolute;
-	top: 3px;
-	right: -6px;
-	width: 25px;
-	height: 21px;
-	background: #fff url(close-red.png) no-repeat 45% center/10px;
+	top: 0.5em;
+	right: -0.5em;
+	width: 1.5em;
+	height: 1.5em;
+	/* https://materialdesignicons.com: close */
+	background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23787878' d='M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z' /%3E%3C/svg%3E") no-repeat center center/contain;
 	cursor: pointer;
 }
 
@@ -682,12 +700,14 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 	text-decoration: none;
 }
 .wisyr_activefilters .wisyr_filter a:after {
-	content: 'x';
-	display: block;
+	content: '';
 	position: absolute;
-	line-height: 14px;
-	right: 0.2em;
 	top: 0.5em;
+	right: 0.25em;
+	width: 1em;
+	height: 1em;
+	/* https://materialdesignicons.com: close */
+	background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ffffff' d='M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z' /%3E%3C/svg%3E") no-repeat center center/contain;
 }
 
 /* Nichts gefunden / leergefiltert Seite */
@@ -715,10 +735,12 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 		margin: 0;
 		background-color: transparent;
 		overflow: hidden;
-		background: url(filter_grau.png) no-repeat center center/24px;
+		/* https://materialdesignicons.com: tune */
+		background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23787878' d='M3,17V19H9V17H3M3,5V7H13V5H3M13,21V19H21V17H13V15H11V21H13M7,9V11H3V13H7V15H9V9H7M21,13V11H11V13H21M15,9H17V7H21V5H17V3H15V9Z' /%3E%3C/svg%3E") no-repeat center center/24px;
 	}
 	.wisyr_filternav.wisyr_filters_active #wisy_filterlink {
-		background: url(filter_grau_filtered.png) no-repeat center center/24px;
+		/* https://materialdesignicons.com: tune */
+		background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23000000' d='M3,17V19H9V17H3M3,5V7H13V5H3M13,21V19H21V17H13V15H11V21H13M7,9V11H3V13H7V15H9V9H7M21,13V11H11V13H21M15,9H17V7H21V5H17V3H15V9Z' /%3E%3C/svg%3E") no-repeat center center/24px;
 	}
 	.wisyr_activefilters {
 		display: none;
@@ -758,15 +780,14 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 		box-sizing: border-box;
 	}
 	.wisyr_filterform_header:after {
-		display: block;
-		content: 'x';
+		content: '';
 		position: absolute;
-		right: 0.7em;
-		top: 0;
-		color: #fff;
-		font-size: 24px;
-		padding: 0 0.5em;
-		cursor: pointer;
+		top: 1em;
+		right: 1em;
+		width: 2em;
+		height: 2em;
+		/* https://materialdesignicons.com: close */
+		background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ffffff' d='M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z' /%3E%3C/svg%3E") no-repeat center center/contain;	
 	}
 	.wisyr_filterform_header h3 {
 		color: #fff;
@@ -840,19 +861,19 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 		height: 38px;
 		margin: 0;
 		padding: 5px 0;
-	    border-bottom: 1px solid #ddd;
+		border-bottom: 1px solid #ddd;
 	}
 	.wisyr_filterform form > fieldset:after,
 	.wisyr_filterform form > fieldset.filter_sortierung:after,
 	.wisyr_filterform form > fieldset.filter_weiterekriterien fieldset:after {
-		content: '>';
-		display: block;
+		content: '';
 		position: absolute;
-		color: #3E7AB8;
-		font-size: 24px;
-		line-height: 48px;
-		right: 0.5em;
-		top: 0;
+		right: 0;
+		top: 0.1em;
+		width: 1.5em;
+		height: 1.5em;
+		/* https://materialdesignicons.com: chevron-right */
+		background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23787878' d='M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z' /%3E%3C/svg%3E") center center/contain;
 	}
 	.wisyr_filterform form > fieldset.filter_weiterekriterien > legend { display: none; }
 	.wisyr_filterform form > fieldset.filter_weiterekriterien > .filter_inner { 
@@ -867,8 +888,8 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 		display: block;
 		position: absolute;
 		z-index: 1114!important;
-	    margin: 0 15px;
-	    width: calc(100% - 30px);
+		margin: 0 15px;
+		width: calc(100% - 30px);
 	}
 	
 	.wisyr_filterform form > fieldset.filter_weiterekriterien > .filter_inner > fieldset > * { display: none; }
@@ -901,16 +922,14 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 	}
 	.wisyr_filterform fieldset.active:after { display: none!important; }
 	.wisyr_filterform fieldset.active > legend:after {
-		display: block;
-		content: 'x'!important;
+		content: '';
 		position: absolute;
-		right: 0;
-		top: 0;
-		color: #fff!important;
-		font-size: 24px!important;
-		line-height: 48px!important;
-		padding: 0 0.5em;
-		cursor: pointer;
+		top: 1em;
+		right: 1em;
+		width: 2em;
+		height: 2em;
+		/* https://materialdesignicons.com: close */
+		background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ffffff' d='M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z' /%3E%3C/svg%3E") no-repeat center center/contain;
 	}
 	.wisyr_filterform fieldset.active > legend {
 		left: 0!important;
