@@ -62,7 +62,7 @@ body { padding: 0; margin: 0; }
 #favlistlink { display: inline-block; padding: 2px; }
 
 ul.dropdown {
-  z-index: unset;
+  z-index: auto;
 }
 ul.dropdown ul {
   width: 16rem;
@@ -423,11 +423,9 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 	top: 0.3em;
 }
 .wisyr_filterform form > fieldset:hover > legend,
-.wisyr_filterform form > fieldset.active > legend,
+.wisyr_filterform form > fieldset.active > legend { color: #333; }
 .wisyr_filterform form > fieldset:focus > legend,
-.wisyr_filterform form > fieldset:focus-within > legend {
-	color: #333;
-}
+.wisyr_filterform form > fieldset:focus-within > legend { color: #333; }
 .wisyr_filterform form > fieldset:after {
 	content: '';
 	position: absolute;
@@ -530,7 +528,7 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 	padding: 10px 20px 20px 10px;
 	z-index: 11;
 }
-.wisyr_filterform fieldset.active .filter_inner,
+.wisyr_filterform fieldset.active .filter_inner { display: block; cursor: default; }
 .wisyr_filterform fieldset:focus .filter_inner,
 .wisyr_filterform fieldset:focus-within .filter_inner { display: block; cursor: default; }
 .wisyr_filterform .filter_inner legend {
