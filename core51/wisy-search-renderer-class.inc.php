@@ -789,8 +789,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			="button" style="font-family: Verdana, Arial, Helvetica, sans-serif;font-size: 9px;height: 22px;width: 90px;background-color:
 			 #A5AAC6;font-weight: bold;color: #FFFFFF;margin: 0px;border: 1px solid #FFFFFF;padding: 0px;" value="Suche starten" onClick=
 			"IWWBsearch(this)"></td>
-			<td align="right" style="font-family: Verdana, Arial, Helvetica, sans-serif;font-size: 11px;color: #5F6796;font-weight: bold;
-			"><a href="https://www.iwwb.de" target="_blank"><img src="https://www.iwwb.de/web/images/iwwb.gif" border="0"></a>&nbsp;</td>
+			<td style="font-family: Verdana, Arial, Helvetica, sans-serif;font-size: 11px;color: #5F6796;font-weight: bold; text-align: right;"><a href="https://www.iwwb.de" target="_blank"><img src="https://www.iwwb.de/web/images/iwwb.gif" alt="IWWB Logo" border="0"></a>&nbsp;</td>
 			</tr>
 			</table>
 			</form>
@@ -889,7 +888,7 @@ class WISY_SEARCH_RENDERER_CLASS
 							echo '<a href="' . $anbieterRenderer->createMailtoLink($link) . '" target="_blank">E-Mail</a>';
 					echo ' </td>';
 					echo '<td class="wisyr_telefon" data-title="Telefon">';
-						echo '<a href="tel:' . htmlspecialchars(utf8_encode($record['anspr_tel'])) . '">' . htmlspecialchars(utf8_encode($record['anspr_tel'])) . '</a>';
+						echo '<a href="tel:' . $this->framework->formatTelUrl(htmlspecialchars(utf8_encode($record['anspr_tel']))) . '">' . htmlspecialchars(utf8_encode($record['anspr_tel'])) . '</a>';
 					echo ' </td>';
 				echo '  </tr>' . "\n";
 			}

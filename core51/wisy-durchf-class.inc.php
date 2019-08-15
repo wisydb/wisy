@@ -255,7 +255,7 @@ class WISY_DURCHF_CLASS
 				$beginn = mktime(0, 0, 0, $beginn[1], $beginn[2], $beginn[0]) - $sonderpreistage*86400;
 				if( time() >= $beginn ) {
 					if( $html ) {
-						$ret = "<strike>$ret</strike><br /><span class=\"red\">" . $this->formatPreis($sonderpreis, -1, 0, 0, '', $html, 0) . '</span>';
+						$ret = "<del>$ret</del><br /><span class=\"red\">" . $this->formatPreis($sonderpreis, -1, 0, 0, '', $html, 0) . '</span>';
 					}
 					else {
 						$ret = $this->formatPreis($sonderpreis, -1, 0, 0, '', $html, 0) . " (bisheriger Preis: $ret)";
@@ -495,7 +495,7 @@ class WISY_DURCHF_CLASS
 				
 				$cell .= $this->formatArtSpalte($dfStichw, $details);
 
-				if( $details && $this->framework->iniRead('details.kurstage', 1)==1 ) {			
+				if( $details && $this->framework->iniRead('details.kurstage', 1)==1 ) {
 					$temp = $this->formatKurstage(intval($record['kurstage']));
 					if( $temp ) {
 						$cell .= "<div class=\"wisyr_art_kurstage\">$temp</div>";
@@ -503,7 +503,7 @@ class WISY_DURCHF_CLASS
 				}
 				
 				if( $cell == $this->seeAboveArt && $details ) {
-					echo '<span class="noprint">'.$cell.'</span><span class="printonly">s.o.</span>';
+					echo $cell;
 				}
 				else {
 					echo $cell;

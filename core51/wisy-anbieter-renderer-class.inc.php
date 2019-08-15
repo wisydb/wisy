@@ -184,7 +184,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		
 		// Telefonnummer
 		if( $anspr_tel )
-			$vc['Telefon'] .= "\n" . '<div class="wisyr_anbieter_telefon"><a itemprop="telephone" href="tel:' . $anspr_tel . '">'. $anspr_tel . '</a></div>';
+			$vc['Telefon'] .= "\n" . '<div class="wisyr_anbieter_telefon"><a itemprop="telephone" href="tel:' . $this->framework->formatTelUrl($anspr_tel) . '">'. $anspr_tel . '</a></div>';
 
 		if( $anspr_fax )
 			$vc['Fax'] .= "\n" . '<div class="wisyr_anbieter_fax"><span itemprop="faxNumber">'. $anspr_fax . '</span></div>';
@@ -371,7 +371,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 			echo '<h3>Zertifikate - aktuelle Angebote</h3>';
 			echo '<p>';
 				echo $html;
-			echo '<p>';
+			echo '</p>';
 		}
 		
 		// besondere Kursarten - diese Liste enthält nur eine Auswahl von Stichworten, definiert von einer Liste von Stichwort-IDs

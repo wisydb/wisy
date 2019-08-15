@@ -621,33 +621,26 @@ class WISY_EDIT_RENDERER_CLASS
 			if( $showLoginForm )
 			{
 				echo '<form action="edit" method="post" aria-label="Benutzeranmeldung">';
-					echo '<table>';
+					echo '<div class="wisyr_loginform">';
 						echo "<input type=\"hidden\" name=\"action\" value=\"loginSubseq\" />";
 						echo "<script type=\"text/javascript\"><!--\ndocument.write('<input type=\"hidden\" name=\"javascript\" value=\"enabled\" />');\n/"."/--></script>";
 						echo "<input type=\"hidden\" name=\"fwd\" value=\"".htmlspecialchars($fwd)."\" />";
 						echo "<input type=\"hidden\" name=\"bwd\" value=\"".htmlspecialchars($this->bwd)."\" />";
-						echo '<tr>';
-							echo '<td nowrap="nowrap">Anbietername oder -ID:</td>';
-							echo "<td><input type=\"text\" name=\"as\" value=\"".htmlspecialchars($anbieterSuchname)."\" size=\"50\" /></td>";
-						echo '</tr>';
-						echo '<tr>';
-							echo '<td align="right">Passwort:</td>';
-							echo '<td nowrap="nowrap">';
-								echo '<input type="password" name="wepw" value="" size="30" />';
-																																// der Anbietername wird _nicht_ weitergegeben, damit ein Missbrauch mehr als nur einen Klick erfordert.
-								echo ' <a href="'.htmlspecialchars($this->framework->getUrl('edit', array('action'=>'forgotpw' /*, 'as'=>$anbieterSuchname*/))).'">Passwort vergessen?</a>';
-								
-							echo '</td>';
-						echo '</tr>';
-						echo '<tr>';
-							echo '<td nowrap="nowrap">';
-							echo '</td>';
-							echo '<td nowrap="nowrap">';
-								echo '<input type="submit" value="OK - Login" /> ';
-								echo '<input type="submit" name="cancel" value="Abbruch" />';
-							echo '</td>';
-						echo '</tr>';
-					echo '</table>';
+						echo '<div class="wisyr_loginform--row">';
+							echo '<label for="login_as">Anbietername oder -ID:</label>';
+							echo "<input id=\"login_as\" type=\"text\" name=\"as\" value=\"".htmlspecialchars($anbieterSuchname)."\" size=\"50\" />";
+						echo '</div>';
+						echo '<div class="wisyr_loginform--row">';
+							echo '<label for="login_pw">Passwort:</td>';
+							echo '<input id="login_pw" type="password" name="wepw" value="" size="30" />';
+							// der Anbietername wird _nicht_ weitergegeben, damit ein Missbrauch mehr als nur einen Klick erfordert.
+							echo ' <a href="'.htmlspecialchars($this->framework->getUrl('edit', array('action'=>'forgotpw' /*, 'as'=>$anbieterSuchname*/))).'">Passwort vergessen?</a>';								
+						echo '</div>';
+						echo '<div class="wisyr_loginform--row">';
+							echo '<input type="submit" value="OK - Login" /> ';
+							echo '<input type="submit" name="cancel" value="Abbruch" />';
+						echo '</div>';
+					echo '</div>';
 				echo '</form>';
 		
 				// additional login message

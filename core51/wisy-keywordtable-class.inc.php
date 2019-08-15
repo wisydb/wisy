@@ -97,7 +97,7 @@ class WISY_KEYWORDTABLE_CLASS
 		$ret .= '</span>';
 		
 		/*col2*/
-		$ret .= '</td><td width="10%" nowrap="nowrap" align="center">';
+		$ret .= '</td><td width="10%" nowrap="nowrap" class="wisyr_align--center">';
 		if( $tag_help != 0 )
 		{
 			$ret .=
@@ -263,13 +263,10 @@ class WISY_KEYWORDTABLE_CLASS
 		$ret .= '<div class="wisy_glskeytime">Erstellt '.strftime('%Y-%m-%d %H:%M:%S').' in '.$secneeded_str.' s</div>';
 
 		// add to cache
-		$this->dbCache->insert($cacheKey, $ret);		
+		$this->dbCache->insert($cacheKey, $ret);
 
 		// done
 		return $ret;
 	}
 	
-		
 };
-
-

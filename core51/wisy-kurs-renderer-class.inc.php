@@ -332,14 +332,12 @@ class WISY_KURS_RENDERER_CLASS
 								$tooltip = 'Login f&uuml;r Anbieter';
 								$editurl = $copyrightClass->getEditUrl($db, 'kurse', $kursId);
 							}
-							echo '<span class="noprint">';
-								$target = $editurl==''? '' : 'target="_blank"';
-								echo $class? "<span class=\"$class\">" : '';
-									echo "<a class=\"wisyr_angebot_editlink\" href=\"" . 
-										$editurl
-									 .	$this->framework->getUrl('edit', array('action'=>'ek', 'id'=>$kursId))."\" $target title=\"$tooltip\">Angebot bearbeiten (für Anbieter)</a>";
-								echo $class? "</span>" : '';
-							echo '</span>';
+							$target = $editurl==''? '' : 'target="_blank"';
+							echo $class? "<span class=\"$class\">" : '';
+								echo "<a class=\"wisyr_angebot_editlink\" href=\"" . 
+									$editurl
+								 .	$this->framework->getUrl('edit', array('action'=>'ek', 'id'=>$kursId))."\" $target title=\"$tooltip\">Angebot bearbeiten (für Anbieter)</a>";
+							echo $class? "</span>" : '';
 						}
 					} 
 				echo '</div><!-- /.wisyr_kurs_edit -->';

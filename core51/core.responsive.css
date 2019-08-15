@@ -1073,6 +1073,16 @@ textarea + .wisy-form--error {
 	margin-top: -0.8rem;
 }
 
+.wisyr_align--left {
+	text-align: left;
+}
+.wisyr_align--right {
+	text-align: right;
+}
+.wisyr_align--center {
+	text-align: center;
+}
+
 @media screen and (-ms-high-contrast: active) {
 	.cc-window,
 	.wisyr_filterform form > fieldset,
