@@ -1180,7 +1180,7 @@ class WISY_EDIT_RENDERER_CLASS
 				reset($newData['durchf'][$n]);
 				while( list($name, $newValue) = each($newData['durchf'][$n]) ) 	
 				{
-					if( $newValue != $oldData['durchf'][$o][$name] 
+				    if( $newValue != utf8_encode($oldData['durchf'][$o][$name])  
 					 && !in_array($name, $allowed_dfields) )
 					{
 						$o_is_fine = false;
