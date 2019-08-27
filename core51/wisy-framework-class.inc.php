@@ -24,7 +24,6 @@ function g_sync_removeSpecialChars($str)
 class WISY_FRAMEWORK_CLASS
 {
 	var $includeVersion;
-	var $coreRelPath;
 	
 	var $editCookieName;
 	var $editSessionStarted;
@@ -80,15 +79,13 @@ class WISY_FRAMEWORK_CLASS
 	    'sonstigesmerkmal',
 	    'abschluesse',
 	    'abschlussart',
+	    'metaabschlussart',
 	    'unterrichtsart',
 		'tageszeit');
 
 	function __construct($baseObject, $addParam)
 	{
 	    ini_set("default_charset", "UTF-8");
-	    
-	    global $wisyCore;
-	    $this->coreRelPath = '/' . $wisyCore;
 	    
 		// constructor
 		$this->includeVersion = '?iv=511'; // change the number on larger changes in included CSS and/or JS files.  May be empty.
@@ -131,7 +128,9 @@ class WISY_FRAMEWORK_CLASS
         }
 				
 		$searcher =& createWisyObject('WISY_SEARCH_CLASS', $this);
-				
+		
+		$this->order = $this->iniRead('kurse.sortierung', false);
+		
 		// Simple Search
 		$this->simplified = $this->iniRead('search.simplified', 0);
 		
@@ -262,9 +261,8 @@ class WISY_FRAMEWORK_CLASS
         if($skip_contentdescription) {
             ;
         } else {
-            // leer lassen, wenn leer, sonst haben zu viele Seiten die Default Description und Google ignoriert sie auf der Startseite.
             $metadesct_default = PHP7 ? trim($this->iniRead('meta.description_default', "")) : utf8_encode(trim($this->iniRead('meta.description_default', "")));
-            $ret .= ($description_parsed == "") ? "\n".''."\n" : "\n".'<meta name="description" content="'.$description_parsed.'">'."\n";
+            $ret .= ($description_parsed == "") ? "\n".'<meta name="description" content="'.$metadesct_default.'">'."\n" : "\n".'<meta name="description" content="'.$description_parsed.'">'."\n";
         }
 		
 		return $ret;
@@ -696,15 +694,15 @@ class WISY_FRAMEWORK_CLASS
 		}
 		else if( $placeholder == '__ANZAHL_KURSE__' || $placeholder == '__ANZAHL_KURSE_G__' )
 		{
-			return intval($this->cacheRead('stats.anzahl_kurse'));
+		    return number_format(intval($this->cacheRead('stats.anzahl_kurse')), 0, ",", ".");
 		}
 		else if( $placeholder == '__ANZAHL_DURCHFUEHRUNGEN__' )
 		{
-			return intval($this->cacheRead('stats.anzahl_durchfuehrungen'));
+		    return number_format(intval($this->cacheRead('stats.anzahl_durchfuehrungen')), 0, ",", ".");
 		}
 		else if( $placeholder == '__ANZAHL_ANBIETER__' || $placeholder == '__ANZAHL_ANBIETER_G__' )
 		{
-			return intval($this->cacheRead('stats.anzahl_anbieter'));
+		    return number_format(intval($this->cacheRead('stats.anzahl_anbieter')), 0, ",", ".");
 		}
 		else if( $placeholder == '__A_PRINT__' )
 		{
@@ -922,7 +920,7 @@ class WISY_FRAMEWORK_CLASS
 	{
 	    $ret = array();
 	    
-	    if(strtolower($type) == "synonyme")
+	    if(strtolower($type) == "synonyme") // also hidden synonyms! just checks if mapped to other tag in DB
 	       $sql = "SELECT DISTINCT id, stichwort, eigenschaften, zusatzinfo FROM stichwoerter, stichwoerter_verweis WHERE stichwoerter_verweis.primary_id = stichwoerter.id and stichwoerter_verweis.attr_id = ".$tags_id;
 	    elseif(strtolower($type) == "unterbegriffe")
 	       $sql = "SELECT DISTINCT id, stichwort, eigenschaften, zusatzinfo FROM stichwoerter, stichwoerter_verweis2 WHERE stichwoerter_verweis2.attr_id = stichwoerter.id and stichwoerter_verweis2.primary_id = ".$tags_id;
@@ -1499,10 +1497,16 @@ class WISY_FRAMEWORK_CLASS
 	        $ret .= '<script src="'.$js_defered[$i].'" defer></script>' . "\n";
 	    }
 	    
+	    if($this->iniRead('ajax.infoi', '') == 1) {
+	        $ret .= "<script>\n";
+	        $ret .= "window.ajax_infoi = 1;";
+	        $ret .= "</script>\n";
+	    }
+	    
 	    // Cookie Banner settings
 		if($this->iniRead('cookiebanner', '') == 1) {
 			
-			$ret .= "<script type=\"text/javascript\">\n";
+			$ret .= "<script>\n";
 			$ret .= "window.cookiebanner = {};\n";
 			$ret .= "window.cookiebanner.optoutCookies = \"{$this->iniRead('cookiebanner.cookies.optout', '')},fav,fav_init_hint\";\n";
 			$ret .= "window.cookiebanner.optedOut = false;\n";
@@ -1944,7 +1948,7 @@ class WISY_FRAMEWORK_CLASS
 		    $searchAction = ($richtext) ? 'itemprop="potentialAction" itemscope itemtype="https://schema.org/SearchAction"' : '';
 		    $target = ($richtext) ? '<meta itemprop="target" content="https://'.$_SERVER['SERVER_NAME'].'/search?qs={qs}"/>' : '';
 		    if($pagetype == "startseite") { $q = $this->iniRead('searcharea.placeholder', $DEFAULT_PLACEHOLDER); }
-		    $queryinput = ($richtext) ? 'itemprop="query-input" placeholder="'.$q.'"': '';
+		    $queryinput = ($richtext) ? 'itemprop="query-input" ': ''; // placeholder="'.$q.'"
 		    $q = ""; // sonst aendert sich mit jedr Seite der DefaultValue
 		} else {
 		    $searchAction = ($richtext) ? 'itemscope itemtype="https://schema.org/FindAction"' : '';
@@ -1970,7 +1974,7 @@ class WISY_FRAMEWORK_CLASS
 		    $hint = $this->iniRead('searcharea.anbieter.hint', $searchinput_placeholder);
 		}
 		
-		echo "\n" . '<div id="wisy_searcharea">' . "\n";
+		echo "\n" . '<div id="wisy_searcharea" class="activefilters_cnt'.$this->filterer->getActiveFiltersCount().'">' . "\n";
 		echo '<div class="inner">' . "\n";
 		echo '<form action="search" method="get" '.$searchAction.'>' . "\n" . $target; // #richtext
 		echo '<div class="formrow wisyr_searchinput">';
@@ -2228,6 +2232,42 @@ class WISY_FRAMEWORK_CLASS
 
 			case 'paypalipn':
 				return createWisyObject('WISY_BILLING_RENDERER_CLASS', $this);
+				
+			case 'surveyresult':
+			     $insert_surveyresult = 'INSERT IGNORE INTO tickets SET '
+			         .'msgid="'.md5(microtime()).'", '
+			         .'date_created="'.date("Y-m-d H:i:s").'", '
+			         .'date_modified="'.date("Y-m-d H:i:s").'", '
+			         .'von_name="--", '
+			         .'von_email="'.utf8_decode($_POST['E-Mail']).'", '
+			         .'antwortan_name = "--", '
+			         .'antwortan_email="'.utf8_decode($_POST['E-Mail']).'", '
+			         .'betreff="'.$this->iniRead('survey.betreff', "").'", '
+			         .'nachricht_txt="'
+			         .$this->iniRead('survey.f1.label', "").'\n'.utf8_decode($_POST['survey.f1.postname']).'\n\n'
+			         .$this->iniRead('survey.f2.label', "").'\n'.utf8_decode($_POST['survey.f2.postname']).'\n\n'
+			         .$this->iniRead('survey.f3.label', "").'\n'.utf8_decode($_POST['survey.f3.postname']).'\n\n'
+			         .$this->iniRead('survey.f4.label', "").'\n'.utf8_decode($_POST['survey.f4.postname']).'\n\n'
+			         .$this->iniRead('survey.f5.label', "").'\n'.utf8_decode($_POST['survey.f5.postname']).'\n\n'
+			         .$this->iniRead('survey.f6.label', "").'\n'.utf8_decode($_POST['survey.f6.postname']).'\n\n'
+			         .$this->iniRead('survey.f7.label', "").'\n'.utf8_decode($_POST['survey.f7.postname']).'\n\n'
+			         .$this->iniRead('survey.f8.label', "").'\n'.utf8_decode($_POST['survey.f8.postname']).'\n\n'
+			         .$this->iniRead('survey.f9.label', "").'\n'.utf8_decode($_POST['survey.f9.postname']).'\n\n'
+			         .$this->iniRead('survey.f10.label', "").'\n'.utf8_decode($_POST['survey.f10.postname']).'\n\n'
+			         .'", '
+			         .'nachricht_html="", '
+			         .'groesse="1kB", '
+			         .'notizen="", '
+                     .'status=0, '
+                     .'user_created='.$this->iniRead('survey.user_nr', "").', '
+			         .'user_modified='.$this->iniRead('survey.user_nr', "").', '
+			         .'user_grp='.$this->iniRead('survey.benutzergruppe', "").', '
+			         .'user_access=56';
+			                                                                                                                     
+                     $db = new DB_Admin;
+                     $db->query($insert_surveyresult);
+			                                                                                                                     
+                     exit(0);
 			
 			case 'orte':
 			case 'themen':
