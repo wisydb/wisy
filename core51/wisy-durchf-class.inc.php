@@ -481,11 +481,6 @@ class WISY_DURCHF_CLASS
 				$cell .= '<span class="wisyr_termin_ka">k. A.</span>'; 
 			}
 			
-			if( $addParam['record']['freigeschaltet'] == 4 )
-			{
-			    $cell .= ' <span class="wisyr_termin_dauerhaft">dauerhaftes Angebot</span>';
-			}
-			
 			echo $cell . ' </td>' . "\n";
 		}
 		
