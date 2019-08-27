@@ -577,12 +577,12 @@ class WISY_DURCHF_CLASS
 				$cell = '';
 				
 				if( $strasse ) {
-					$cell .=  '<a title="Adresse in Google Maps ansehen" href="' . $map_URL . '">' . $strasse . '</a>';
+					$cell .=  '<a title="Adresse in Google Maps ansehen" href="' . $map_URL . '" target="_blank">' . $strasse . '</a>';
 				}
 				
 				if( $ort ) {
 					$cell .= $cell? '<br />' : '';
-					$cell .= '<a title="Adresse in Google Maps ansehen" href="' . $map_URL . '">' . "$plz $ort" . '</a>';
+					$cell .= '<a title="Adresse in Google Maps ansehen" href="' . $map_URL . '" target="_blank">' . "$plz $ort" . '</a>';
 				}
 	
 				if( $land ) {
