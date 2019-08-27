@@ -186,10 +186,13 @@ class WISY_TAGSUGGESTOR_CLASS
 			$ret = array();
 			$tags_done  = array();
 			$links_done = array();
+			
+			// Usually only one try - two tries for fuzzy post-search-searches
 			for( $tries = 0; $tries <= 1; $tries ++ )
 			{
+			    // First try: search for tags containing q-string
 				$COND .= $COND_TAGTYPE;
-				$sql = "SELECT t.tag_id, tag_name, tag_descr, tag_type, tag_help, tag_freq 
+                $sql = "SELECT t.tag_id, tag_name, tag_descr, tag_type, tag_help, SUM(tag_freq) AS tag_freq 
 							FROM x_tags t 
 							LEFT JOIN x_tags_freq f ON f.tag_id=t.tag_id $portalIdCond
 							WHERE ( $COND )
@@ -200,6 +203,7 @@ class WISY_TAGSUGGESTOR_CLASS
 				$this->db->query($sql); 
 				while( $this->db->next_record() )
 				{
+				    // tag matching q-string found...
 					// add the tag
 					$tag_id   = intval($this->db->f8('tag_id'));
 					$tag_name = $this->db->f8('tag_name');
@@ -217,9 +221,18 @@ class WISY_TAGSUGGESTOR_CLASS
 						$tags_done[ $tag_name ] = 1;
 						$names = array();
 						
-						// get synonyms ...
-						if( $tag_type&64 )
+						// check if found tag (matching q-string) is a synonym ...
+						if($tag_type&64 || $tag_type&262144) //  // 64: Public synonym // 262144: Public Anbieternamensverweisung // 131072 = 65: Invisible Anbieternamensverweisung
 						{
+						    // While it's not useful to add a simple synonym (one destination) an open synonym or Anbieter-Namensverweisung may point to several tags / Anbieter => useful to add to suggestions / search by synonym/Anbieter-Namensverweisung
+						    if($tag_type&64 || $tag_type&262144) {
+						        $names[] = array(	'tag_name'=>$tag_name,
+						            'tag_descr'=>$tag_descr,
+						            'tag_type'=>$tag_type,
+						            'tag_help'=>$tag_help,
+						            'tag_freq'=>$tag_freq);
+						    }
+						    
 							$this->db2->query("SELECT tag_name, tag_descr, tag_type, tag_help, tag_freq
 													FROM x_tags t 
 													LEFT JOIN x_tags_syn s ON s.lemma_id=t.tag_id 
@@ -240,7 +253,8 @@ class WISY_TAGSUGGESTOR_CLASS
 							// Anbieter-ID abfragen
 							if( $tag_type&256 )
 							{
-								$this->db3->query("SELECT id FROM anbieter WHERE suchname=". $this->db3->quote($tag_name));
+							    $sql = "SELECT id FROM anbieter WHERE REPLACE(suchname, ',', '')=". $this->db3->quote($tag_name);	// Commas are always removed from tag names => ignore in comparison
+							    $this->db3->query($sql);
 								$this->db3->next_record();
 								$tag_anbieter_id = $this->db3->f8('id');
 							}
@@ -356,11 +370,11 @@ class WISY_TAGSUGGESTOR_CLASS
 				
 				require_once("admin/lib/soundex/x3m_soundex_ger.php");
 
-				// if there are only very few results, try an additional soundex search
+				// if there are only very few results, try an additional soundex search = has equal word value
 				if( sizeof($ret) < $min && $use_soundex )
 					$COND = "tag_soundex='".soundex_ger($q_tag_name)."'";
 				else
-					break;
+				    break; // stop searching with one try if no tag found containing q
 			}
 
 			// 15.11.2012: Der Vorschlag zur Volltextsuche kann nun ausgeschaltet werden
