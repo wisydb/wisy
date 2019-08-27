@@ -194,7 +194,7 @@ class WISY_MENU_CLASS
 			for( $i = 0; $i < sizeof($temp); $i++ ) {
 				$currKeywordId = intval($temp[$i]);
 				if( $currKeywordId > 0 ) {
-					$autoTitle .= $autoTitle==''? '' : ' ';
+					// $autoTitle .= $autoTitle==''? '' : ' ';
 					$autoTitle = cs8($g_keywords[ $keywordId ]);
 					$autoTitle .= $g_keywords[ $currKeywordId ];
 					$url .= $url==''? '' : urlencode(', ');
@@ -204,7 +204,7 @@ class WISY_MENU_CLASS
 			$url = 'search?q=' . $url;
 			$addChildren = false;
 		}
-		elseif( strpos($keywordId, '#ODER#') !== false )
+		elseif( stripos($keywordId, '#ODER#') !== false ) 
 		{
 		    $autoTitle = '';
 		    $url = '';
