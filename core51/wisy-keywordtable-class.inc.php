@@ -85,12 +85,12 @@ class WISY_KEYWORDTABLE_CLASS
 		if( $tag_descr )
 		{
 		    $tag_descr = PHP7 ? $tag_descr : utf8_encode($tag_descr);
-		    $row_postfix = htmlentities(html_entity_decode($tag_descr)) . ', ' . htmlentities(html_entity_decode($row_postfix));
+		    $row_postfix = htmlentities(html_entity_decode($tag_descr)) . ', ' . htmlentities(html_entity_decode(strip_tags($row_postfix)));
 		}
 		
 		if( $row_postfix != '' )
 		{
-		    $row_postfix = ' <span class="ac_tag_type">(' . htmlentities(html_entity_decode($row_postfix)) . ')</span> ';
+		    $row_postfix = ' <span class="ac_tag_type">(' . htmlentities(html_entity_decode(strip_tags($row_postfix))) . ')</span> ';
 		}
 
 		/*col1*/
