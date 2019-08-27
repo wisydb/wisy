@@ -1168,6 +1168,7 @@ class WISY_EDIT_RENDERER_CLASS
 			}
 		}
 		
+		$diff_df = "";
 		// nach Änderungen in den Durchführungen suchen (Löschen von Df sind Bagatellen)
 		for( $n = 0; $n < sizeof($newData['durchf']); $n++ ) 
 		{	
@@ -1978,7 +1979,7 @@ class WISY_EDIT_RENDERER_CLASS
 												
 												echo "<div class=\"editPreishinweiseDiv\" $stylePreishinweise>";
 													echo 'Preishinweise: ';
-													$this->controlText('preishinweise[]', utf8_decode($durchf['preishinweise']), 50, 200, 'Geben Sie hier eventuelle sonstige Anmerkungen zum Preis ein');
+													$this->controlText('preishinweise[]', utf8_decode($durchf['preishinweise']), 50, 200, 'Geben Sie hier eventuelle sonstige Anmerkungen zum Preis ein'); // utf8_decode shouln't be necessary
 												echo "</div>";
 								
 											echo '</td>';
@@ -2336,8 +2337,9 @@ class WISY_EDIT_RENDERER_CLASS
 	        echo ' ';
 	        $this->controlText('ort', $anbieter['ort'], 12, 60, 'Geben Sie hier - soweit bekannt und eindeutig - den Ort bzw. die Stadt ein', 'Ort');
 	        
-	        $this->controlHidden('stadtteil', $anbieter['stadtteil']);
-	        $this->controlHidden('stadtteil_for', $anbieter['strasse'].','.$anbieter['plz'].','.$anbieter['ort']);
+	        $this->controlHidden('stadtteil', utf8_encode($anbieter['stadtteil']));
+	        
+	        $this->controlHidden('stadtteil_for', utf8_encode($anbieter['strasse']).','.utf8_encode($anbieter['plz']).','.utf8_encode($anbieter['ort']));
 	        echo '</td>';
 	        echo '</tr>';
 	        
