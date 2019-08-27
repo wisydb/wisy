@@ -577,7 +577,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		
 		echo '<p class="noprint"><a class="wisyr_zurueck" href="javascript:history.back();">&laquo; Zur&uuml;ck</a></p>';
 		
-		echo '<div class="wisyr_anbieter_kopf">';
+		echo '<div class="wisyr_anbieter_kopf '.($logo_name? "" : "nologo").'">';
 		echo "\n\n" . '<h1 class="wisyr_anbietertitel">';
 			if( $typ == 2 ) echo '<span class="wisy_icon_beratungsstelle">Beratungsstelle<span class="dp">:</span></span> ';
 			echo htmlentities($suchname);
