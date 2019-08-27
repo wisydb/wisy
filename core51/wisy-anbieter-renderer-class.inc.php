@@ -228,7 +228,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		
 		/* Link zum Anbieter */
 		$vc['Link'] .= "\n" . '<div class="wisyr_anbieter_link">';
-		$vc['Link'] .= '<a href="/'.$this->framework->getUrl('a', array('id'=>$anbieterId)).'">';
+		$vc['Link'] .= '<a href="/'.$this->framework->getUrl('a', array('id'=>$anbieterId), true).'">';
 		$vc['Link'] .= 'Details zum Anbieter</a>';
 		$vc['Link'] .= '</div>';
 		
