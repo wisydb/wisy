@@ -616,7 +616,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		
 		echo "\n</article><!-- /.wisyr_anbieter_steckbrief -->\n\n";
 		
-		echo "\n\n" . '<article class="wisy_anbieter_kursangebot" data-tabtitle="Kurse"><h1>Angebot</h1>' . "\n";
+		echo "\n\n" . '<article class="wisy_anbieter_kursangebot '.($logo_name? "" : "nologo").'" data-tabtitle="Kurse"><h1>Angebot</h1>' . "\n";
 		
 		// link "show all offers"
 		$freq = $this->tagsuggestorObj->getTagFreq(array($this->tag_suchname_id)); if( $freq <= 0 ) $freq = '';
