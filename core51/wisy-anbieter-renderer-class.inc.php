@@ -138,7 +138,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		{
 			if( $steckbrief )
 			{
-				$vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_strasse" itemprop="streetAddress"><a title="Adresse in Google Maps ansehen" href="' . $map_URL . '">' . $strasse . '</a></div>';
+				$vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_strasse" itemprop="streetAddress"><a title="Adresse in Google Maps ansehen" href="' . $map_URL . '" target="_blank">' . $strasse . '</a></div>';
 			} else {
 				$vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_strasse" itemprop="streetAddress">' . $strasse . '</div>';
 			}
@@ -148,7 +148,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		{
 			if( $steckbrief )
 			{
-				$vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_ort"><a title="Adresse in Google Maps ansehen" href="' . $map_URL . '">';
+				$vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_ort"><a title="Adresse in Google Maps ansehen" href="' . $map_URL . '" target="_blank">';
 			} else {
 				$vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_ort">';
 			}
