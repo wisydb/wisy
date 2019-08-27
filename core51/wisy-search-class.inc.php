@@ -119,6 +119,9 @@ class WISY_SEARCH_CLASS
 				
 		// pass 2: create SQL
 		$abgelaufeneKurseAnzeigen = 'no';
+		$tag_heap = array();
+		$this->double_tags = array();
+		
 		for( $i = 0; $i < sizeof($this->tokens['cond']); $i++ )
 		{
 			// build SQL statements for this part
@@ -127,54 +130,84 @@ class WISY_SEARCH_CLASS
 			{
 				case 'tag':
 					$tagNotFound = false;
-					if( strpos($value, ' ODER ') !== false )
+					if( stripos($value, ' ODER ') !== false )
 					{
-						// ODER-Suche
-						$subval = explode(' ODER ', $value);
-						$rawOr = '';
-						for( $s = 0; $s < sizeof($subval); $s++ )
-						{	
-							$tag_id = $this->lookupTag(trim($subval[$s]));
-							if( $tag_id == 0 )
-								{ $tagNotFound = true; break; }							
-							$rawOr .= $rawOr==''? '' : ' OR ';
-							$rawOr .= "j$i.tag_id=$tag_id";
-						}
-						if( !$tagNotFound )
-						{
-							$this->rawJoin  .= " LEFT JOIN x_kurse_tags j$i ON x_kurse.kurs_id=j$i.kurs_id";
-							$this->rawWhere .= $this->rawWhere? ' AND ' : ' WHERE ';
-							$this->rawWhere .= "($rawOr)";
-						}
+					    
+					    // ODER-Suche
+					    $subval = explode(' ODER ', strtoupper($value));
+					    $rawOr = '';
+					    for( $s = 0; $s < sizeof($subval); $s++ )
+					    {
+					        // check after explode "ODER"
+					        if($this->isRedundantSearchTag($subval[$s], $tag_heap) === true)
+					            continue;
+					            
+					            array_push($tag_heap, trim($subval[$s]));
+					            
+					            $tag_id = $this->lookupTag(trim($subval[$s]));
+					            if( $tag_id == 0 )
+					            { $tagNotFound = true; break; }
+					            $rawOr .= $rawOr==''? '' : ' OR ';
+					            $rawOr .= "j$i.tag_id=$tag_id";
+					    }
+					    if( !$tagNotFound )
+					    {
+					        $this->rawJoin  .= " LEFT JOIN x_kurse_tags j$i ON x_kurse.kurs_id=j$i.kurs_id";
+					        $this->rawWhere .= $this->rawWhere? ' AND ' : ' WHERE ';
+					        $this->rawWhere .= "($rawOr)";
+					    }
 					}
 					else
 					{
-						// einfache UND- oder NICHT-Suche
-						$op = '';
-						if( $value{0} == '-' )
-						{
-							$value = substr($value, 1);
-							$op = 'not';
-						}
-						
-						$tag_id = $this->lookupTag($value);
-						if( $tag_id == 0 )
-						{
-							$tagNotFound = true;
-						}
-						else
-						{
-							$this->rawWhere .= $this->rawWhere? ' AND ' : ' WHERE ';
-							if( $op == 'not' )
-							{
-								$this->rawWhere .= "x_kurse.kurs_id NOT IN(SELECT kurs_id FROM x_kurse_tags WHERE tag_id=$tag_id)";
-							}
-							else
-							{
-								$this->rawJoin  .= " LEFT JOIN x_kurse_tags j$i ON x_kurse.kurs_id=j$i.kurs_id";
-								$this->rawWhere .= "j$i.tag_id=$tag_id";
-							}
-						}
+					    // simple AND- or NOT search
+					    $op = '';
+					    if( $value{0} == '-' )
+					    {
+					        $value = substr($value, 1);
+					        $op = 'not';
+					    }
+					    
+					    $tag_id = intval($this->lookupTag($value));
+					    
+					    
+					    if( $tag_id == 0 )
+					    {
+					        $tagNotFound = true;
+					    }
+					    else
+					    {
+					        if($this->isRedundantSearchTag($value, $tag_heap) === true)
+					            continue;
+					            
+					            array_push($tag_heap, $value);
+					            
+					            $this->rawWhere .= $this->rawWhere? ' AND ' : ' WHERE ';
+					            if( $op == 'not' )
+					            {
+					                $this->rawWhere .= "x_kurse.kurs_id NOT IN(SELECT kurs_id FROM x_kurse_tags WHERE tag_id=$tag_id)";
+					            }
+					            else
+					            {
+					                $this->rawJoin  .= " LEFT JOIN x_kurse_tags j$i ON x_kurse.kurs_id=j$i.kurs_id";
+					                
+					                // synonym 1:n
+					                if(strpos($tag_id, "#")) {
+					                    $this->rawJoin  .= " LEFT JOIN x_tags_freq k$i ON k$i.tag_id=j$i.tag_id";
+					                    
+					                    $tag_ids = explode("#", $tag_id);
+					                    
+					                    for($k = 0; $k < count($tag_ids); $k++) {
+					                        $this->rawWhere .= "(j$i.tag_id=".$tag_ids[$k]." AND k$i.portal_id = ".$GLOBALS['wisyPortalId'].") OR ";	//  AND k$i.tag_freq > 0 -- not necessary -> if in table x_tags_freq must be used at least once
+					                    }
+					                    
+					                    $this->rawWhere = substr($this->rawWhere, 0, count($this->rawWhere)-4); // remove last OR
+					                    
+					                } else {
+					                    $this->rawWhere .= "j$i.tag_id=$tag_id";
+					                }
+					                
+					            }
+					    }
 					}
 
 					if( $tagNotFound )
@@ -343,7 +376,7 @@ class WISY_SEARCH_CLASS
 						}
 						else
 						{
-							$abgelaufeneKurseAnzeigen = 'void';
+						    $abgelaufeneKurseAnzeigen = 'yes';
 							$wantedday = strftime("%Y-%m-%d", $timestamp);
 							$this->rawWhere .= $this->rawWhere? ' AND ' : ' WHERE ';
 							$this->rawWhere .= "(x_kurse.beginn_last>='$wantedday')"; // 13:59 30.01.2013: war: x_kurse.beginn='0000-00-00' OR ...
@@ -427,6 +460,60 @@ class WISY_SEARCH_CLASS
 				$this->rawWhere .= "(x_kurse.beginn>='$today')"; // 13:59 30.01.2013: war: x_kurse.beginn='0000-00-00' OR ...
 			}
 		}
+	}
+	
+	function isRedundantSearchTag($q_tag, $tag_heap) {
+	    
+	    $sql = "SELECT id FROM stichwoerter WHERE stichwort='".addslashes($q_tag)."';";
+	    
+	    if($_GET['debug'] == 8) echo $sql."<br>";
+	    
+	    $this->db->query($sql);
+	    if( $this->db->next_record() )
+	        $tag_orig_id = intval($this->db->f('id'));
+	        $this->db->free();
+	        
+	        // tag is used at lest twice in query ?
+	        if(in_array(strtolower(trim($q_tag)), array_map('strtolower', $tag_heap))) {
+	            array_push($this->double_tags, $q_tag." (Grund: Wort mehrfach vorhanden)");
+	            return true;
+	        }
+	        
+	        if($tag_orig_id) {
+	            $distinct_tags = array();
+	            $this->framework->loadDerivedTags($this->db, $tag_orig_id, $distinct_tags, "Oberbegriffe");
+	            foreach($distinct_tags AS $ancestor) {
+	                if(in_array(strtolower(trim($ancestor)), array_map('strtolower', $tag_heap))) {
+	                    array_push($this->double_tags, $ancestor." (Grund: Oberbegriff von ".$q_tag.")");
+	                    return true;
+	                }
+	            }
+	            
+	            $distinct_tags = array();
+	            $this->framework->loadDerivedTags($this->db, $tag_orig_id, $distinct_tags, "Unterbegriffe");
+	            foreach($distinct_tags AS $descendant) {
+	                if(in_array(strtolower(trim($descendant)), array_map('strtolower', $tag_heap))) {
+	                    array_push($this->double_tags, $descendant." (Grund: Unterbegriff von ".$q_tag.")");
+	                    return true;
+	                }
+	            }
+	            
+	            $distinct_tags = array();
+	            // also hidden synonyms! just checks if mapped to other tag
+	            $this->framework->loadDerivedTags($this->db, $tag_orig_id, $distinct_tags, "Synonyme");
+	            foreach($distinct_tags AS $synonym) {
+	                if(in_array(strtolower(trim($synonym)), array_map('strtolower', $tag_heap))) {
+	                    array_push($this->double_tags, $synonym.'" (Grund: Synonym zu '.$q_tag.')');
+	                    return true;
+	                }
+	            }
+	        }
+	        
+	        return false;
+	}
+	
+	function getDoubleTags() {
+	    return $this->double_tags;
 	}
 	
 	function ok()
@@ -562,8 +649,12 @@ class WISY_SEARCH_CLASS
 						case 'od':		$orderBy = "x_kurse.ort_sortonly DESC";						break;
 						case 'creat':	$orderBy = 'x_kurse.begmod_date';							break;	// sortiere nach beginnaenderungsdatum (hauptsaechlich fuer die RSS-Feeds interessant)
 						case 'creatd':	$orderBy = 'x_kurse.begmod_date DESC';						break;
-						case 'rand':	$orderBy = 'RAND()';										break;
-						default:		$orderBy = 'kurse.id';										die('invalid order!');
+						case 'rand':
+						                $ip = str_replace('.', '', $_SERVER['REMOTE_ADDR']);
+						                $seed = ($ip + date('d') );
+						                $orderBy = 'RAND('.$seed.')';
+						                break;
+						default:		$orderBy = 'kurse.id';
 					}
 					
 					$sql = $this->getKurseRecordsSql("kurse.id, kurse.anbieter, kurse.thema, kurse.freigeschaltet, kurse.titel, kurse.vollstaendigkeit, kurse.date_modified, kurse.bu_nummer, kurse.fu_knr, kurse.azwv_knr, x_kurse.begmod_date");

@@ -10,9 +10,7 @@ class WISY_INTELLISEARCH_CLASS
 	function __construct(&$framework, $param)
 	{
 		$this->framework	=& $framework;
-		$this->searcher		=& createWisyObject('WISY_SEARCH_CLASS', $framework, $param);
-		
-		
+		$this->searcher		=& createWisyObject('WISY_SEARCH_CLASS', $framework, $param);	
 	}
 	
 	function prepare($queryString)
@@ -81,6 +79,10 @@ class WISY_INTELLISEARCH_CLASS
 		}
 	}	
 
+	function getDoubleTags() {
+	    return $this->searcher->getDoubleTags();
+	}
+	
 	function ok()
 	{	
 		if( $this->searcher->error['id'] == 'tag_not_found' )
