@@ -1200,5 +1200,24 @@ $().ready(function()
 	// init responsive stuff
 	initResponsive();
 	
+	// append parameter for searches triggered by human interaction
+	if($("#wisy_searchbtn")) {
+	  $("#wisy_searchbtn").click(function(event){
+	   if (event.originalEvent === undefined) {
+	    /* robot: console.log(event); */
+	   } else {
+	       event.preventDefault();
+	       $(this).before("<input type=hidden id=qsrc name=qsrc value=s>");
+	       $(this).before("<input type=hidden id=qtrigger name=qtrigger value=h>");
+	       $(this).closest("form").submit();
+	   }
+	  });
+	 }
+	
+	// Human triggered search, propagate to filter form + pagination
+	 if(window.qtrigger)
+	  $("form[name='filterform']").prepend("<input type=hidden name='qtrigger' value="+window.qtrigger+">");
+	 if(window.force)
+	  $("form[name='filterform']").prepend("<input type=hidden name='force' value="+window.force+">");
+	
 });
-

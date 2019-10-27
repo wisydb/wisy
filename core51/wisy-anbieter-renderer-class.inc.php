@@ -202,7 +202,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 			 	$homepage = 'http:/'.'/'.$homepage;
 			}
 			
-			$vc['Website'] .= "\n<div class=\"wisyr_anbieter_homepage\" itemprop=\"url\"><a href=\"$homepage\" target=\"_blank\">" . $this->trimLength($homepage, $MAX_URL_LEN). '</a></div>';
+			$vc['Website'] .= "\n<div class=\"wisyr_anbieter_homepage\" itemprop=\"url\"><a href=\"$homepage\" target=\"_blank\">" . trim($this->trimLength($homepage, $MAX_URL_LEN), "/"). '</a></div>';
 		}
 		
 		/* email*/
@@ -262,8 +262,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		$tag_suchname = $this->tagsuggestorObj->keyword2tagName($suchname);
 		$this->tag_suchname_id = $this->tagsuggestorObj->getTagId(utf8_decode($tag_suchname));
 		$freq = $this->tagsuggestorObj->getTagFreq(array($this->tag_suchname_id)); if( $freq <= 0 ) $freq = '';
-        $vc['Alle Angebote'] = '<a class="wisy_showalloffers" href="' . $this->framework->getUrl('search'). '?filter_anbieter=' . urlencode(htmlspecialchars(str_replace(',', ' ', $suchname))) . '">Alle ' . $freq . ' Angebote des Anbieters</a>';
-		
+        $vc['Alle Angebote'] = '<a class="wisy_showalloffers" href="' . $this->framework->getUrl('search'). '?qs=zeige:kurse&filter_anbieter=' . urlencode(htmlspecialchars(str_replace(',', ' ', $suchname))) . '">Alle ' . $freq . ' Angebote des Anbieters</a>';
 		/* Qualitätszertifikate */
 		$seals = $this->renderSealsOverview($anbieterId, $pruefsiegel_seit, true);			
 		if( $seals )
@@ -622,7 +621,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		$freq = $this->tagsuggestorObj->getTagFreq(array($this->tag_suchname_id)); if( $freq <= 0 ) $freq = '';
 		echo '<h2>'.$freq.($freq==1? ' aktuelles Angebot' : ' aktuelle Angebote').'</h2>'
 		.	'<p>'
-		 .		'<a class="wisyr_anbieter_kurselink" href="' . $this->framework->getUrl('search'). '?filter_anbieter=' . urlencode(htmlspecialchars(str_replace(',', ' ', $tag_suchname))) . '">'
+        .       '<a class="wisyr_anbieter_kurselink" href="' . $this->framework->getUrl('search'). '?qs=zeige:kurse&filter_anbieter=' .urlencode(str_replace(',', ' ', $tag_suchname)) . '">'
 		.			"Alle $freq Angebote des Anbieters"
 		.		'</a>'
 		. 	'</p>';		

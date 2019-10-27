@@ -1325,6 +1325,10 @@ class WISY_FRAMEWORK_CLASS
 		{
 			global $wisyPortalKurzname;
 			$q = rtrim($this->simplified ? $this->Q : $this->getParam('q', ''), ', ');
+			
+			if($q == '' || strpos($q, 'volltext') !== FALSE) // don't allow rss-feed subscriptions for full text searches
+			    return false;
+			
 			$title = $wisyPortalKurzname . ' - ' . ($q==''? 'aktuelle Kurse' : $q);
 			$ret .= '<link rel="alternate" type="application/rss+xml" title="'.htmlspecialchars($title).'" href="' .$this->getRSSFile(). '" />' . "\n";
 		}
@@ -1338,6 +1342,9 @@ class WISY_FRAMEWORK_CLASS
 	
 		if( $this->iniRead('rsslink', 1) )
 		{
+		    if($this->getRSSFile() == '' || strpos($this->getRSSFile(), 'volltext') !== FALSE) // don't allow rss-feed subscriptions for full text searches
+		        return false;
+		    
 			$ret .= ' <a href="'.$this->getRSSFile().'" class="wisy_rss_link" title="Suchauftrag als RSS-Feed abonnieren">Updates abonnieren</a> ';
 			
 			$glossarId = intval($this->iniRead('rsslink.help', 2953));
@@ -1502,6 +1509,12 @@ class WISY_FRAMEWORK_CLASS
 	        $ret .= "window.ajax_infoi = 1;";
 	        $ret .= "</script>\n";
 	    }
+	    
+	    if(isset($_GET['qtrigger']))
+	        $ret .= "<script>window.qtrigger = '".$_GET['qtrigger']."';</script>"."\n";
+	        
+	    if(isset($_GET['force']))
+	        $ret .= "<script> window.force = '".$_GET['force']."';</script>"."\n";
 	    
 	    // Cookie Banner settings
 		if($this->iniRead('cookiebanner', '') == 1) {

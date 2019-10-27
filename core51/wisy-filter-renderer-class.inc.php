@@ -335,7 +335,7 @@ class WISY_FILTERMENU_ITEM
 			$legendvalue = $this->getLegendvalue($data['legendkey']);
 			
             if(isset($data['resetfilter']) && strlen($data['resetfilter'])) {
-                $ret .= '<a class="wisyr_filterform_reset" href="' . $this->framework->filterer->getSearchUrlWithoutFilters() . '">' . $data['resetfilter'] . '</a>';
+                $ret .= '<a class="wisyr_filterform_reset" href="' . $this->framework->filterer->getSearchUrlWithoutFilters() . (isset($_GET['qtrigger']) ? '&qtrigger='.$_GET['qtrigger'] : '') . (isset($_GET['force']) ? '&force='.$_GET['force'] : '') . '">' . $data['resetfilter'] . '</a>';
 				continue;
             }
             

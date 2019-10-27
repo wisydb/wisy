@@ -441,7 +441,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		
 		
 		/* help link */
-		if( $tag_help != 0 )
+		if( $tag_help > 0 )
 		{
 			$row_postfix .=
 			 " <a class=\"wisy_help\" href=\"" . $this->framework->getUrl('g', array('id'=>$tag_help, 'q'=>$tag_name)) . "\" title=\"Ratgeber\">&nbsp;i&nbsp;</a>";
@@ -631,7 +631,7 @@ class WISY_SEARCH_RENDERER_CLASS
 	           echo '<div class="wisyr_list_header">';
 	           echo '<div class="wisyr_listnav">';
 	           echo '<span class="active tab_kurse">Angebote</span>';
-	           echo '<a href="search?q=' . urlencode($queryString) . '%2C+Zeige:Anbieter" class="tab_anbieter">Anbieter</a>';
+	           echo '<a href="search?q=' . urlencode($queryString) . '%2C+Zeige:Anbieter' . (isset($_GET['qtrigger']) ? '&qtrigger='.$_GET['qtrigger'] : '') . (isset($_GET['force']) ? '&force='.$_GET['force'] : '') . '" class="tab_anbieter">Anbieter</a>';
 	           echo '</div>';
 	           echo '<div class="wisyr_filternav';
 	           if($this->framework->simplified && $this->framework->filterer->getActiveFiltersCount() > 0) echo ' wisyr_filters_active';
@@ -673,7 +673,7 @@ class WISY_SEARCH_RENDERER_CLASS
 	           // Show filter / advanced search
 				if( $showFilters )
 				{
-				    $DEFAULT_FILTERLINK_HTML= '<a href="/filter?q=__Q_URLENCODE__" id="wisy_filterlink">Suche anpassen</a>';
+				    $DEFAULT_FILTERLINK_HTML= '<a href="filter?q=__Q_URLENCODE__'. (isset($_GET['qtrigger']) ? '&qtrigger='.$_GET['qtrigger'] : '') . (isset($_GET['force']) ? '&force='.$_GET['force'] : '')  .'" id="wisy_filterlink">Suche anpassen</a>';
 				    echo $this->framework->replacePlaceholders($this->framework->iniRead('searcharea.filterlink', $DEFAULT_FILTERLINK_HTML));
 				    
 				    $filterRenderer =& createWisyObject('WISY_FILTER_RENDERER_CLASS', $this->framework);
@@ -722,7 +722,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			{
 				global $wisyPortalId;
 				$searcher2 =& createWisyObject('WISY_SEARCH_CLASS', $this->framework);
-				searcher2->prepare(mysql_real_escape_string($queryString) . ', schaufenster:' . $wisyPortalId);
+				$searcher2->prepare(mysql_real_escape_string($queryString) . ', schaufenster:' . $wisyPortalId);
 				if( $searcher2->ok() )
 				{
 					$promoteCnt = $searcher2->getKurseCount();
@@ -839,7 +839,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		                    
 		                    if($tag['eigenschaften'] != $filtersw && $tag_freq > 0); {
 		                        if($this->framework->iniRead('sw_cloud.suche_stichwoerter', 1)) {
-		                            $tags = '<span class="sw_raw typ_'.$tag['eigenschaften'].'" data-weight="'.$weight.'"><a href="/?q='.urlencode(utf8_encode($tag['stichwort'])).'">'.utf8_encode($tag['stichwort']).'</a></span>, ';
+		                            $tags = '<span class="sw_raw typ_'.$tag['eigenschaften'].'" data-weight="'.$weight.'"><a href="/search?q='.urlencode(utf8_encode($tag['stichwort'])).(isset($_GET['qtrigger']) ? '&qtrigger='.$_GET['qtrigger'] : '').(isset($_GET['force']) ? '&force='.$_GET['force'] : '').'">'.utf8_encode($tag['stichwort']).'</a></span>, ';
 		                            $tag_cloud .= PHP7 ? utf8_decode($tags) : $tags;
 		                        }
 		                        
@@ -960,7 +960,9 @@ class WISY_SEARCH_RENDERER_CLASS
 			// render head
 			echo '<div class="wisyr_list_header">';
 			 echo '<div class="wisyr_listnav">';
-			    echo '<a href="search?q=' . urlencode(str_replace(array(',,', ', ,'), array(',', ','), str_replace('Zeige:Anbieter', '', $queryString))). '" class="tab_kurse">Angebote</a>';
+			 $link_angebote = trim(urlencode(str_replace(array(',,', ', ,'), array(',', ','), str_replace('Zeige:Anbieter', '', $queryString))));
+			 if($link_angebote)
+			     echo '<a href="search?q=' . $link_angebote . '" class="tab_kurse">Angebote</a>';
 			    echo '<span class="active tab_anbieter">Anbieter</span>';
 			    echo '</div>';
 				echo '<span class="wisyr_anzahl_anbieter">' . $sqlCount . ' Anbieter</span> zum Suchauftrag';
@@ -993,11 +995,11 @@ class WISY_SEARCH_RENDERER_CLASS
 			
 			while( list($i, $record) = each($records['records']) )
 			{
-			    if($sqlCount == 1 && $this->framework->iniRead('anbietersuche.redirect', false)) {
+			    if($sqlCount == 1 && $this->framework->iniRead('anbietersuche.redirect', false)  && strpos($_GET['q'], 'volltext') === FALSE  && strpos($_GET['qs'], 'volltext') === FALSE) {
 			    ?>
 					<script>
 						/* redirect to Anbieter if only 1 in search result */
-						window.location.href = '/a<?php echo $record['id']."?qs=".$_GET['qs']."&q=".$_GET['q']."&qf=".$_GET['qf']."&anbieterRedirect=1"; ?>';
+						window.location.href = '/a<?php echo $record['id']."?qs=".$_GET['qs']."&q=".$_GET['q']."&qf=".$_GET['qf']."&anbieterRedirect=1". (isset($_GET['qtrigger']) ? '&qtrigger='.$_GET['qtrigger'] : '') . (isset($_GET['force']) ? '&force='.$_GET['force'] : ''); ?>';
 					</script>
 				<?php
 				exit;
@@ -1084,7 +1086,7 @@ class WISY_SEARCH_RENDERER_CLASS
 				echo '<ul>';
 				for( $i = 0; $i < sizeof($info['suggestions']); $i++ )
 				{
-					echo '<li>' . $this->formatItem($info['suggestions'][$i]['tag'], $info['suggestions'][$i]['tag_descr'], $info['suggestions'][$i]['tag_type'], intval($info['suggestions'][$i]['tag_help']), intval($suggestions[$i]['tag_freq'])) . '</li>';
+				    echo '<li>' . str_replace('?q=volltext', '?force=1&q=volltext', $this->formatItem($info['suggestions'][$i]['tag'], $info['suggestions'][$i]['tag_descr'], $info['suggestions'][$i]['tag_type'], intval($info['suggestions'][$i]['tag_help']), intval($suggestions[$i]['tag_freq']))) . '</li>';
 				}
 				echo '</ul>';
 			}
@@ -1095,7 +1097,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		
 			echo '<h3>Volltextsuche</h3>';
 			echo '<p>Das Ergebnis der Volltextsuche enth&auml;lt alle Angebote, die den Suchbegriff oder den Wortteil in der Kursbeschreibung enthalten.</p>';
-			echo '<a href="/search?q=volltext:' . htmlspecialchars($this->framework->QS) . '">Eine Volltextsuche nach &quot;' . htmlspecialchars(trim($this->framework->QS)) . '&quot; ausf&uuml;hren</a>';
+			echo '<a href="/search?q=volltext:' . htmlspecialchars($this->framework->QS) . '&force=1">Eine Volltextsuche nach &quot;' . htmlspecialchars(trim($this->framework->QS)) . '&quot; ausf√ºhren</a>';
 		
 			echo '<h3>M&ouml;glicherweise helfen auch Ver&auml;nderungen an Ihrem Suchbegriff:</h3>';
 			echo '<ul>';
@@ -1129,7 +1131,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		        echo '">';
 		        
 		        // Show filter / advanced search
-		        $DEFAULT_FILTERLINK_HTML= '<a href="filter?q=__Q_URLENCODE__" id="wisy_filterlink">Suche anpassen</a>';
+		        $DEFAULT_FILTERLINK_HTML= '<a href="filter?q=__Q_URLENCODE__'. (isset($_GET['qtrigger']) ? '&qtrigger='.$_GET['qtrigger'] : '') . (isset($_GET['force']) ? '&force='.$_GET['force'] : '')  .'" id="wisy_filterlink">Suche anpassen</a>';
 		        echo $this->framework->replacePlaceholders($this->framework->iniRead('searcharea.filterlink', $DEFAULT_FILTERLINK_HTML));
 		        
 		        $filterRenderer =& createWisyObject('WISY_FILTER_RENDERER_CLASS', $this->framework);
@@ -1207,8 +1209,8 @@ class WISY_SEARCH_RENDERER_CLASS
 		}
 		if($redirect && $this->framework->getParam('r', 0) != 1)
 		{
-			header('Location: search?q=' . urlencode($queryString) . '&qs=' . urlencode(htmlspecialchars($this->framework->QS)) . '&qf=' . urlencode(htmlspecialchars($this->framework->QF)) . '&r=1');
-			exit();
+		    header('Location: search?q=' . urlencode($queryString) . '&qs=' . urlencode(htmlspecialchars($this->framework->QS)) . '&qf=' . urlencode(htmlspecialchars($this->framework->QF)) . '&r=1'. (isset($_GET['qtrigger']) ? '&qtrigger='.$_GET['qtrigger'] : '') . (isset($_GET['force']) ? '&force='.$_GET['force'] : ''));
+		    exit();
 		}
 		
 		$offset = htmlspecialchars(intval($_GET['offset'])); if( $offset < 0 ) $offset = 0;
