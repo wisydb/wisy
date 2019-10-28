@@ -466,8 +466,6 @@ class WISY_SEARCH_CLASS
 	    
 	    $sql = "SELECT id FROM stichwoerter WHERE stichwort='".addslashes($q_tag)."';";
 	    
-	    if($_GET['debug'] == 8) echo $sql."<br>";
-	    
 	    $this->db->query($sql);
 	    if( $this->db->next_record() )
 	        $tag_orig_id = intval($this->db->f('id'));
