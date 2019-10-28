@@ -29,7 +29,7 @@ class WISY_KURS_RENDERER_CLASS
                            a.pflege_pweinst, a.suchname, a.strasse, a.plz, a.ort, a.stadtteil, a.land, a.anspr_name, a.postname, a.anspr_zeit, a.anspr_tel, a.anspr_fax, a.anspr_email, a.typ 
 						  FROM kurse k
 						  LEFT JOIN anbieter a ON a.id=k.anbieter
-						  WHERE k.id=$kursId"); // "a.suchname" etc. kann mit "LEFT JOIN anbieter a ON a.id=k.anbieter" zus. abgefragt werden						
+						  WHERE k.id=$kursId && a.freigeschaltet=1"); // "a.suchname" etc. kann mit "LEFT JOIN anbieter a ON a.id=k.anbieter" zus. abgefragt werden						
 
 		if( !$db->next_record() )
 			$this->framework->error404();

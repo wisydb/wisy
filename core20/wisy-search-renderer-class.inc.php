@@ -264,9 +264,13 @@ class WISY_SEARCH_RENDERER_CLASS
 			echo "  <tr$class>\n";
 
 				// SPALTE: kurstitel
-				$db->query("SELECT id, suchname, pruefsiegel_seit, anspr_tel, typ FROM anbieter WHERE id=$currAnbieterId");
+				$db->query("SELECT id, suchname, pruefsiegel_seit, anspr_tel, typ, freigeschaltet FROM anbieter WHERE id=$currAnbieterId");
 				$db->next_record();
 				$anbieter_record = $db->Record;
+				
+				// continue if Anbieter disabled!
+				if($anbieter_record['freigeschaltet'] == 2)
+				    continue;
 					
 				echo '    <td class="wisy_kurstitel">';
 					$aparam = array('id'=>$currKursId, 'q'=>$param['q']);

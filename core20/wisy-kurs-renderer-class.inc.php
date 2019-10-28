@@ -28,7 +28,7 @@ class WISY_KURS_RENDERER_CLASS
 		$db->query("SELECT	k.freigeschaltet, k.titel, k.org_titel, k.beschreibung, k.anbieter, k.date_created, k.date_modified, k.bu_nummer, k.fu_knr, k.azwv_knr, a.pflege_pweinst, a.typ
 						FROM kurse k
 						LEFT JOIN anbieter a ON a.id=k.anbieter
-						WHERE k.id=$kursId"); // "a.suchname" etc. kann mit "LEFT JOIN anbieter a ON a.id=k.anbieter" zus. abgefragt werden
+						WHERE k.id=$kursId && a.freigeschaltet=1"); // "a.suchname" etc. kann mit "LEFT JOIN anbieter a ON a.id=k.anbieter" zus. abgefragt werden
 		if( !$db->next_record() )
 			$this->framework->error404();
 		$title 				= $db->fs('titel');
