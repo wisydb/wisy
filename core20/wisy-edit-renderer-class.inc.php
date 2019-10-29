@@ -681,7 +681,8 @@ class WISY_EDIT_RENDERER_CLASS
 		session_destroy();
 		setcookie($this->framework->editCookieName, '', 0, '/'); // remove cookie
 
-		header('Location: search');
+		$redirect = "a".$_SESSION['loggedInAnbieterId'];
+		header('Location: '.$redirect);
 	}
 	
 
