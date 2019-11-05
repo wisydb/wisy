@@ -458,8 +458,8 @@ class WISY_EDIT_RENDERER_CLASS
 			$loggedInAnbieterSuchname = 0;
 			$loggedInAnbieterPflegemail = "";
 
-			// Anbieter ID in name konvertieren (neuer Auftrag vom 13.09.2012)
-			$db->query("SELECT suchname FROM anbieter WHERE id=".intval($anbieterSuchname));
+			// Anbieter ID in name konvertieren
+			$db->query("SELECT suchname FROM anbieter WHERE id=".intval($anbieterSuchname_utf8dec)." AND freigeschaltet = 1");
 			if( $db->next_record() ) {
 				$anbieterSuchname = $db->f8('suchname');
 			}
@@ -482,7 +482,7 @@ class WISY_EDIT_RENDERER_CLASS
 						require_once('admin/acl.inc.php');
 						if( acl_check_access('kurse.COMMON', -1, ACL_EDIT, $db->f8('id')) )
 						{
-							$db->query("SELECT id FROM anbieter WHERE suchname='".addslashes($anbieterSuchname)."'");
+							$db->query("SELECT id FROM anbieter WHERE suchname='".addslashes($anbieterSuchname_utf8dec)."' AND freigeschaltet = 1");
 							if( $db->next_record() )
 							{
 								$logwriter->addData('loginname', $temp[0] . ' as ' . $anbieterSuchname);
@@ -498,7 +498,7 @@ class WISY_EDIT_RENDERER_CLASS
 			{
 				// ...Login als normaler Anbieter in der Form "<passwort>"
 				$logwriter->addData('loginname', $anbieterSuchname);
-				$db->query("SELECT pflege_email, pflege_passwort, pflege_pweinst, id FROM anbieter WHERE suchname='".addslashes($anbieterSuchname)."'");
+				$db->query("SELECT pflege_email, pflege_passwort, pflege_pweinst, id FROM anbieter WHERE suchname='".addslashes($anbieterSuchname_utf8dec)."' AND freigeschaltet = 1");
 				if( $db->next_record() )
 				{
 					$dbPw = $db->f8('pflege_passwort');
@@ -522,7 +522,7 @@ class WISY_EDIT_RENDERER_CLASS
 
 			if( $loggedInAnbieterId == 0 )
 			{
-				$db->query("SELECT id FROM anbieter WHERE suchname='".addslashes($anbieterSuchname)."'");
+				$db->query("SELECT id FROM anbieter WHERE suchname='".addslashes($anbieterSuchname_utf8dec)."' AND freigeschaltet = 1");
 				$db->next_record();
 				
 				$logwriter->log('anbieter', intval($db->f8('id')), $this->getAdminAnbieterUserId20(), 'loginfailed');
@@ -560,7 +560,7 @@ class WISY_EDIT_RENDERER_CLASS
 			// erster Aufruf der Seite - initialisieren
 			if( $_REQUEST['action'] == 'ek' )
 			{
-				$sql = "SELECT suchname FROM anbieter LEFT JOIN kurse ON kurse.anbieter=anbieter.id WHERE kurse.id=".intval($_REQUEST['id']);
+				$sql = "SELECT suchname FROM anbieter LEFT JOIN kurse ON kurse.anbieter=anbieter.id WHERE kurse.id=".intval($_REQUEST['id'])." AND anbieter.freigeschaltet = 1";
 				$db->query($sql);
 				if( $db->next_record() )
 				{
@@ -1259,7 +1259,7 @@ class WISY_EDIT_RENDERER_CLASS
 		if( $kursId == 0 )
 		{
 			$anbieter = intval($_SESSION['loggedInAnbieterId']);
-			$db->query("SELECT user_grp, user_access FROM anbieter WHERE id=$anbieter;");
+			$db->query("SELECT user_grp, user_access FROM anbieter WHERE id=$anbieter AND freigeschaltet = 1;");
 			$db->next_record();
 			$user_grp = intval($db->f8('user_grp'));
 			$user_access =  intval($db->f8('user_access'));
