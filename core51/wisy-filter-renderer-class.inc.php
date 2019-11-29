@@ -5,7 +5,7 @@ loadWisyClass('WISY_ADVANCED_RENDERER_CLASS');
 class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 {
 	var $framework;
-    var $tokens;
+	var $tokens;
 
 	function __construct(&$framework)
 	{
@@ -128,7 +128,7 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 					break;
 					
 				case 'km':	
-					$renderformData['fv_km'] =  intval($token['value']);
+					$renderformData['fv_km'] = intval($token['value']);
 					if( $renderformData['fv_km'] <= 0 ) $renderformData['fv_km'] = '';
 					if( !$renderformData['km_arr'][$renderformData['fv_km']] ) $renderformData['km_arr'][$renderformData['fv_km']] = $renderformData['fv_km'] . " km";
 					break;
@@ -336,10 +336,10 @@ class WISY_FILTERMENU_ITEM
 	
 	function getFilterclasses($data, $fsc=array()) {
 		
-		$fsc[] = $data['class']; // -> filtermenu.1.class = filter_zweispaltig        
+		$fsc[] = $data['class']; // -> filtermenu.1.class = filter_zweispaltig
 		if($data['autosubmit'] == 1) $fsc[] = 'wisyr_filter_autosubmit'; // -> filtermenu.1.autosubmit = 1
-		if($data['autoclear'] == 1) $fsc[] = 'wisyr_filter_autoclear'; // -> filtermenu.1.autoclear = 1   
-		if(isset($data['no_autosubmit_mobile']) && $data['no_autosubmit_mobile'] == 1) $fsc[] = 'no_autosubmit_mobile';     
+		if($data['autoclear'] == 1) $fsc[] = 'wisyr_filter_autoclear'; // -> filtermenu.1.autoclear = 1
+		if(isset($data['no_autosubmit_mobile']) && $data['no_autosubmit_mobile'] == 1) $fsc[] = 'no_autosubmit_mobile';
 		
 		if(isset($data['function']) && strlen($data['function'])) {
 			$fsc[] = 'filter_' . $data['function'];
@@ -398,7 +398,7 @@ class WISY_FILTERMENU_ITEM
 						if($clearbutton) $ret .= '<div class="filter_clearbutton_wrapper">';
 						$ret .= '<input type="text" name="filter_' . $fieldname . '" id="filter_' . $fieldname . '" class="' . $fieldclass . '" value="' . $fieldvalue . '" placeholder="' . $fieldplaceholder . '" />';
 						if($clearbutton) $ret .= '</div>';
-						$ret .=  $fieldsuffix . '<br /><br />';
+						$ret .= $fieldsuffix . '<br /><br />';
 						
 						break;
 						
@@ -407,7 +407,7 @@ class WISY_FILTERMENU_ITEM
 						foreach($filtervalues as $value => $label) {
 							
 							$ret .= '<div class="wisyr_radiowrapper">';
-							$ret .= '   <input type="radio" name="filter_' . $fieldname . '" id="filter_' . $fieldname . '_' . $value . '" value="' . ($label == 'Alle' ? '' : str_replace(',', ' ', $label)) . '"';
+							$ret .= '	<input type="radio" name="filter_' . $fieldname . '" id="filter_' . $fieldname . '_' . $value . '" value="' . ($label == 'Alle' ? '' : str_replace(',', ' ', $label)) . '"';
 							
 							if(str_replace(',', ' ', $label) == $fieldvalue) {
 								$ret .= ' checked="checked"';
@@ -436,7 +436,7 @@ class WISY_FILTERMENU_ITEM
 							
 							$ret .= '<div class="wisyr_radiowrapper">';
 							
-							$ret .= '   <input type="radio" name="filter_' . $fieldname . '" id="filter_' . $fieldname . '_' . $value . '" value="' . $processed_value . '"';
+							$ret .= '	<input type="radio" name="filter_' . $fieldname . '" id="filter_' . $fieldname . '_' . $value . '" value="' . $processed_value . '"';
 							if(strlen($autofilltarget)) {
 								$ret .= 'data-autofilltarget="#filter_' . $autofilltarget . '" data-autofillvalue="' . $processed_value . '"';
 							}
@@ -445,7 +445,7 @@ class WISY_FILTERMENU_ITEM
 							if($disabled) $ret .= ' disabled="disabled"';
 							
 							$ret .= ' />';
-							$ret .= '   <label for="filter_' . $fieldname . '_' . $value . '">' . $label . '</label>';
+							$ret .= '	<label for="filter_' . $fieldname . '_' . $value . '">' . $label . '</label>';
 							$ret .= '</div>';
 						}
 						
@@ -631,7 +631,7 @@ class WISY_FILTERMENU_ITEM
 		
 		return $checked;
 	}
-    
+	
 	private function getSpezielleStichw($flag, $whitelist='')
 	{
 		// nur die stichwörter zurückgeben, die im aktuellem Portal auch verwendet werden!
