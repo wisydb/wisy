@@ -466,7 +466,8 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 	padding: 0;
 	background: transparent;
 }
-.wisyr_filterform form > fieldset.filter_sortierung legend { display: none; }
+.wisyr_filterform form > fieldset.filter_sortierung legend,
+.wisyr_filterform form > .wisyr_filterform_listheader > fieldset.filter_sortierung legend { display: none; }
 .wisyr_filterform .ui-selectmenu-button {
 	width: 170px;
 	box-sizing: border-box;
@@ -475,6 +476,18 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 	background: #EEE;
 	padding-left: 7px;
 }
+.wisyr_filterform form .wisyr_filterform_listheader {
+	margin-top: 1em;
+}
+.wisyr_filterform form .wisyr_filterform_listheader .wisyr_list_anzahl_angebote {
+	float: left;
+	height: 1.75em;
+	line-height: 1.75rem;
+}
+.wisyr_filterform form .wisyr_filterform_listheader fieldset.filter_sortierung {
+	float: right;
+}
+
 .wisyr_filterform .ui-selectmenu-button .ui-icon {
 	display: none;
 	background-image: none;

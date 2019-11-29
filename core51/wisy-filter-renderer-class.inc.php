@@ -35,79 +35,56 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 		}
 	}
 	
-	
-	function renderForm($q, $records, $hlevel=1)
+	function prepareFormData($q, $records)
 	{
+		$renderformData = array();
 		
-        $renderformData = array();
-        
-		echo '<div id="wisyr_filterform" class="wisyr_filterform">';
-		echo '<div class="wisyr_filterform_header"><h' . ($hlevel + 1) . '>Suchauftrag anpassen</h' . ($hlevel + 1) . '><h' . ($hlevel + 2) . '>Nutzen Sie Filter, um Ihre Suche weiter einzugrenzen:</h' . ($hlevel + 2) . '></div>';
-		echo '<form action="search" method="get" name="filterform" role="search" aria-label="Suchauftrag anpassen">';
-		echo '<input type="hidden" name="qs" value="' . $this->framework->QS . '" />';
-		echo '<input type="hidden" name="qf" value="' . $this->framework->QF . '" />';
-        
-        // Workaround for "Volltext", TODO: optimize
-		// Workaround for "Zeige", TODO: optimize
-        if(is_array($this->framework->tokensQF)) {
-            foreach($this->framework->tokensQF as $t) {
-                if($t['field'] == 'volltext') {
-                    echo '<input type="hidden" name="filter_volltext" value="' . $t['value'] . '" />';
-                    break;
-                }
-                if($t['field'] == 'zeige') {
-                    echo '<input type="hidden" name="filter_zeige" value="' . $t['value'] . '" />';
-                    break;
-                }
-            }
-        }
+		if(count($records))
+		{
+			$renderformData['records_simple'] = $records;
+			
+			$renderformData['records_ids'] = array();
+			$renderformData['records_themen'] = array();
+			$renderformData['records_anbieter'] = array();
+			while( list($i, $record) = each($renderformData['records_simple']['records']) )
+			{
+				$renderformData['records_ids'][] = $record['id'];
+				$renderformData['records_themen'][] = $record['thema'];
+				$renderformData['records_anbieter'][] = $record['anbieter'];
+			}
+			$renderformData['records_themen'] = array_unique($renderformData['records_themen']);
+			sort($renderformData['records_themen']);
 		
-        if(count($records))
-        {
-    		$renderformData['records_simple'] = $records;
-		
-    		$renderformData['records_ids'] = array();
-    		$renderformData['records_themen'] = array();
-    		$renderformData['records_anbieter'] = array();
-    		while( list($i, $record) = each($renderformData['records_simple']['records']) )
-    		{
-    			$renderformData['records_ids'][] = $record['id'];
-    			$renderformData['records_themen'][] = $record['thema'];
-    			$renderformData['records_anbieter'][] = $record['anbieter'];
-    		}
-    		$renderformData['records_themen'] = array_unique($renderformData['records_themen']);
-    		sort($renderformData['records_themen']);
-		
-    		$renderformData['records_anbieter'] = array_unique($renderformData['records_anbieter']);
-    		sort($renderformData['records_anbieter']);
-		
-    		// Anfrage anhand der Liste der $records['id']s die alle Durchführungen dafür findet um enthaltene Kursbeginne, Preise und Orte (für Umkreis) sowie Dauer zu finden.
-    		$kursids = implode(',', $renderformData['records_ids']);
-    		$renderformData['records_preis_min'] = 99999;
-    		$renderformData['records_beginn_max'] = 0;
-    		$renderformData['records_plz'] = array();
-    		$renderformData['records_ort'] = array();
+			$renderformData['records_anbieter'] = array_unique($renderformData['records_anbieter']);
+			sort($renderformData['records_anbieter']);
+			
+			// Anfrage anhand der Liste der $records['id']s die alle Durchführungen dafür findet um enthaltene Kursbeginne, Preise und Orte (für Umkreis) sowie Dauer zu finden.
+			$kursids = implode(',', $renderformData['records_ids']);
+			$renderformData['records_preis_min'] = 99999;
+			$renderformData['records_beginn_max'] = 0;
+			$renderformData['records_plz'] = array();
+			$renderformData['records_ort'] = array();
 			$renderformData['records_dauer'] = array();
 			$renderformData['records_dauer_min'] = 0;
 			$renderformData['records_dauer_max'] = 0;
-    		$this->db->query("SELECT preis, beginn, plz, ort, dauer FROM kurse_durchfuehrung, durchfuehrung WHERE primary_id IN($kursids) AND id=secondary_id AND (beginn>='".strftime("%Y-%m-%d 00:00:00")."' OR (beginn='0000-00-00 00:00:00' AND beginnoptionen>0))");
-    		while( $this->db->next_record() )
-    		{
-    			$renderformData['preis'] = intval($this->db->f8('preis'));
-    			if($renderformData['preis'] !== '' && $renderformData['preis'] >= 0 && $renderformData['preis'] < $renderformData['records_preis_min']) $renderformData['records_preis_min'] = $renderformData['preis'];
-
-    			$renderformData['beginn'] = strtotime($this->db->f8('beginn'));
-    			if($renderformData['beginn'] !== false && $renderformData['beginn'] > $renderformData['records_beginn_max']) $renderformData['records_beginn_max'] = $renderformData['beginn'];
-			
-    			$renderformData['records_beginn'][] = $this->db->f8('beginn');
-    			$renderformData['records_plz'][] = $this->db->f8('plz');
-    			$renderformData['records_ort'][] = $this->db->f8('ort');
+			$this->db->query("SELECT preis, beginn, plz, ort, dauer FROM kurse_durchfuehrung, durchfuehrung WHERE primary_id IN($kursids) AND id=secondary_id AND (beginn>='".strftime("%Y-%m-%d 00:00:00")."' OR (beginn='0000-00-00 00:00:00' AND beginnoptionen>0))");
+			while( $this->db->next_record() )
+			{
+				$renderformData['preis'] = intval($this->db->f8('preis'));
+				if($renderformData['preis'] !== '' && $renderformData['preis'] >= 0 && $renderformData['preis'] < $renderformData['records_preis_min']) $renderformData['records_preis_min'] = $renderformData['preis'];
+				
+				$renderformData['beginn'] = strtotime($this->db->f8('beginn'));
+				if($renderformData['beginn'] !== false && $renderformData['beginn'] > $renderformData['records_beginn_max']) $renderformData['records_beginn_max'] = $renderformData['beginn'];
+				
+				$renderformData['records_beginn'][] = $this->db->f8('beginn');
+				$renderformData['records_plz'][] = $this->db->f8('plz');
+				$renderformData['records_ort'][] = $this->db->f8('ort');
 				
 				$renderformData['records_dauer'][] = $this->db->f8('dauer');
-    		}
+			}
 			$this->db->free();
-    		$renderformData['records_plz'] = array_unique($renderformData['records_plz']);
-    		$renderformData['records_ort'] = array_unique($renderformData['records_ort']);
+			$renderformData['records_plz'] = array_unique($renderformData['records_plz']);
+			$renderformData['records_ort'] = array_unique($renderformData['records_ort']);
 			$renderformData['records_dauer'] = array_unique($renderformData['records_dauer']);
 			sort($renderformData['records_dauer']);
 			if(count($renderformData['records_dauer'])) {
@@ -117,13 +94,13 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 			
 			// Anfrage anhand der Liste der $records['id']s die alle Durchführungs-Tags findet um enthaltene Tageszeit, Förderungen, Zielgruppe, Zertifikate, Unterrichtsart zu finden.
 			$renderformData['records_taglist'] = array();
-    		$this->db->query("SELECT DISTINCT t.tag_name as tagname FROM x_kurse_tags k LEFT JOIN x_tags t ON k.tag_id=t.tag_id WHERE k.kurs_id IN($kursids)");
-    		while( $this->db->next_record() )
-    		{
+			$this->db->query("SELECT DISTINCT t.tag_name as tagname FROM x_kurse_tags k LEFT JOIN x_tags t ON k.tag_id=t.tag_id WHERE k.kurs_id IN($kursids)");
+			while( $this->db->next_record() )
+			{
 				$renderformData['records_taglist'][] = $this->db->f8('tagname');
 			}
 			$this->db->free();
-        }
+		}
 		
 		// TODO db: analoger zu filter-klasse aufbauen und nicht manuell zb. hier den q-tag ausgeben:
 		$searcher =& createWisyObject('WISY_SEARCH_CLASS', $this->framework);
@@ -161,7 +138,7 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 					if( preg_match('/^([0-9]{1,9})$/', $renderformData['fv_preis'], $matches) )
 					{	
 						$renderformData['fv_preis'] = intval($matches[1]);
-                        $renderformData['fv_preis_bis'] = intval($matches[1]);
+						$renderformData['fv_preis_bis'] = intval($matches[1]);
 					}
 					else if( preg_match('/^([0-9]{1,9})\s?-\s?([0-9]{1,9})$/', $renderformData['fv_preis'], $matches) )
 					{	
@@ -221,12 +198,38 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 					break;
 			}
 		}
+		return $renderformData;
+	}
+	
+	function renderForm($q, $records, $hlevel=1, $number_of_results_string='')
+	{
 		
-		$renderformData['order'] = $this->framework->order;
-        
-        $filtermenu = new WISY_FILTERMENU_CLASS($this->framework, $renderformData);
-        echo $filtermenu->getHtml();
-        
+		echo '<div id="wisyr_filterform" class="wisyr_filterform">';
+		echo '<div class="wisyr_filterform_header"><h' . ($hlevel + 1) . '>Suchauftrag anpassen</h' . ($hlevel + 1) . '><h' . ($hlevel + 2) . '>Nutzen Sie Filter, um Ihre Suche weiter einzugrenzen:</h' . ($hlevel + 2) . '></div>';
+		echo '<form action="search" method="get" name="filterform" role="search" aria-label="Suchauftrag anpassen">';
+		echo '<input type="hidden" name="qs" value="' . $this->framework->QS . '" />';
+		echo '<input type="hidden" name="qf" value="' . $this->framework->QF . '" />';
+		
+		// Workaround for "Volltext", TODO: optimize
+		// Workaround for "Zeige", TODO: optimize
+		if(is_array($this->framework->tokensQF)) {
+			foreach($this->framework->tokensQF as $t) {
+				if($t['field'] == 'volltext') {
+					echo '<input type="hidden" name="filter_volltext" value="' . $t['value'] . '" />';
+					break;
+				}
+				if($t['field'] == 'zeige') {
+					echo '<input type="hidden" name="filter_zeige" value="' . $t['value'] . '" />';
+					break;
+				}
+			}
+		}
+		
+		$renderformData = $this->prepareFormData($q, $records);
+		$filtermenu = new WISY_FILTERMENU_CLASS($this->framework, $renderformData);
+		echo $filtermenu->getHtml();
+		
+		// output "number of results" string if set and order selector
 		$orders = array(
 			'b'  => 'Datum: aufsteigend', 
 			'p'  => 'Preis: aufsteigend',
@@ -234,18 +237,27 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 			'a'  => 'Anbieter: aufsteigend',
 			'ad' => 'Anbieter: absteigend',
 		);
-		if($renderformData['order'] == '') $renderformData['order'] = 'b';
-		echo '<fieldset class="wisyr_filtergroup wisyr_filter_select filter_sortierung ui-front">';
-        echo '	<legend data-filtervalue="' . $orders[$renderformData['order']] . '">Sortierung</legend>';
-		echo '	<select name="filter_order" class="wisyr_selectmenu">';
+		if($this->framework->order == '') $this->framework->order = 'b';
+		$order_selector_string  = '<fieldset class="wisyr_filtergroup wisyr_filter_select filter_sortierung ui-front">';
+		$order_selector_string .= '	<legend data-filtervalue="' . $orders[$this->framework->order] . '">Sortierung</legend>';
+		$order_selector_string .= '	<select name="filter_order" class="wisyr_selectmenu">';
 		foreach($orders as $key => $value)
 		{
-			echo '		<option value="' . $key . '"';
-			if($key == $renderformData['order']) echo ' selected="selected"';
-			echo '>' . $value . '</option>';
+			$order_selector_string .= '		<option value="' . $key . '"';
+			if($key == $this->framework->order) $order_selector_string .= ' selected="selected"';
+			$order_selector_string .= '>' . $value . '</option>';
 		}
-		echo '	</select>';
-		echo '</fieldset>';
+		$order_selector_string .= '	</select>';
+		$order_selector_string .= '</fieldset>';
+		
+		if ($number_of_results_string != '') {
+			echo '<div class="wisyr_filterform_listheader clearfix">';
+			echo $number_of_results_string;
+			echo $order_selector_string;
+			echo '</div>';
+		} else {
+			echo $order_selector_string;
+		}
 		
 		echo '</form>';
 		echo '</div>';

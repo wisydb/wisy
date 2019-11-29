@@ -616,7 +616,7 @@ class WISY_SEARCH_RENDERER_CLASS
 				}
 				else {
 					echo '<h' . $hlevel . ' id="wisy_list_title" class="wisyr_seitentitel wisyr_angebote_zum_suchauftrag">';
-					echo $sqlCount==1? '<span class="wisyr_anzahl_angebote">1 Angebot</span> zum Suchauftrag ' : '<span class="wisyr_anzahl_angebote">' . $sqlCount . ' Angebote</span> zum Suchauftrag ';
+					echo 'Suchauftrag ';
 					if($this->framework->simplified)
 					{
 						if(trim($this->framework->QS) != '')
@@ -631,19 +631,23 @@ class WISY_SEARCH_RENDERER_CLASS
 					echo '</h' . $hlevel . '>';
 				}
 				
+				// prepare "number of results" string
+				$number_of_results_string  = '<h' . ($hlevel+2) . ' class="wisyr_list_anzahl_angebote">';
+				$number_of_results_string .= $sqlCount==1? '<span class="wisyr_anzahl_angebote">1 Angebot</span> zum Suchauftrag ' : '<span class="wisyr_anzahl_angebote">' . $sqlCount . ' Angebote</span> zum Suchauftrag ';
+				$number_of_results_string .= '</h' . ($hlevel+2) . '>';
+				
 				// Show filter / advanced search
+				// pass "number of results" string to filterRenderer so that it is output ahead of the "filter_order" select
 				if( $showFilters )
 				{
 					$DEFAULT_FILTERLINK_HTML= '<a href="/filter?q=__Q_URLENCODE__" id="wisy_filterlink">Suche anpassen</a>';
 					echo $this->framework->replacePlaceholders($this->framework->iniRead('searcharea.filterlink', $DEFAULT_FILTERLINK_HTML));
 				
 					$filterRenderer =& createWisyObject('WISY_FILTER_RENDERER_CLASS', $this->framework);
-					$filterRenderer->renderForm($queryString, $searcher->getKurseRecords(0, 0, $orderBy), $hlevel);
-				}
-
-				if( $pagesel )
-				{
-					$this->renderPagination($prevurl, $nexturl, $pagesel, $this->rows, $offset, $sqlCount, 'wisyr_paginate_top');
+					$filterRenderer->renderForm($queryString, $searcher->getKurseRecords(0, 0, $orderBy), $hlevel, $number_of_results_string);
+				} else {
+					// Show number of results
+					echo $number_of_results_string;
 				}
 				
 				echo '</div>';
