@@ -123,11 +123,11 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 		
 		foreach($this->framework->tokensQF as $token) {
 			switch( $token['field'] ) {
-				case 'bei':	
+				case 'bei':
 					$renderformData['fv_bei'] = $token['value']; 
 					break;
 					
-				case 'km':	
+				case 'km':
 					$renderformData['fv_km'] = intval($token['value']);
 					if( $renderformData['fv_km'] <= 0 ) $renderformData['fv_km'] = '';
 					if( !$renderformData['km_arr'][$renderformData['fv_km']] ) $renderformData['km_arr'][$renderformData['fv_km']] = $renderformData['fv_km'] . " km";
@@ -284,7 +284,7 @@ class WISY_FILTERMENU_ITEM
 	
 	function getHtml()
 	{
-		$filterclasses = $this->getFilterclasses($this->data, array('wisyr_filtergroup'));
+		$filterclasses = $this->getFilterclasses($this->data, true);
 		$legendvalue = $this->getLegendvalue($this->data['legendkey']);
 		$title = $this->data['title'];
 		
@@ -334,7 +334,13 @@ class WISY_FILTERMENU_ITEM
 		return $ret;
 	}
 	
-	function getFilterclasses($data, $fsc=array()) {
+	function getFilterclasses($data, $is_filtergroup=false) {
+		
+		if($data['metagroup'] == 1) {
+			$fsc[] = 'wisyr_filter_metagroup'; // -> filtermenu.1.metagroup = 1
+		} else if($is_filtergroup) {
+			$fsc[] = 'wisyr_filtergroup';
+		}
 		
 		$fsc[] = $data['class']; // -> filtermenu.1.class = filter_zweispaltig
 		if($data['autosubmit'] == 1) $fsc[] = 'wisyr_filter_autosubmit'; // -> filtermenu.1.autosubmit = 1
@@ -710,64 +716,96 @@ class WISY_FILTERMENU_CLASS
 				
 				if(!array_key_exists($levels[0], $filterStructure)) $filterStructure[$levels[0]] = array();
 				
+				// TODO: abgleichen mit altem Code: was sind sections?
+				
 				switch(count($levels)) {
 					
+					// Possible cases:
+					// A. is_numeric -> title (filtermenu.2 = Preis)
+					// B. is_numeric and "parent" is "options" -> option (filtermenu.2.1.input.1.options.0 = Kostenlos)
+					// C. Attribute -> (filtermenu.1.class = filter_zweispaltig)
+					// D. "options" -> array() (filtermenu.2.1.input.1.options)
+					
+					// TODO "sections" vs [levels[1]]?
+					
 					case 1:
-						// Title of top level element
-						// -> filtermenu.2 = Preis
+						// Title of top level element -> filtermenu.2 = Preis
 						$filterStructure[$levels[0]]['title'] = utf8_encode($value);
-						
-						break;
+					break;
 						
 					case 2:
 						if(is_numeric($levels[1])) {
-							// Title of 2nd level element
-							// -> filtermenu.2.1 = Vorschläge
+							// Title of 2nd level element -> filtermenu.2.1 = Vorschläge
 							$filterStructure[$levels[0]]['sections'][$levels[1]]['title'] = utf8_encode($value);
 						} else {
-							// Option of top level element
-							// -> filtermenu.1.class = filter_zweispaltig
+							// Attribute of top level element -> filtermenu.1.class = filter_zweispaltig
 							$filterStructure[$levels[0]][$levels[1]] = utf8_encode($value);
 						}
-						
-						break;
+					break;
 						
 					case 3:
-						// Option of 2nd level element
-						// -> filtermenu.2.1.function = preis_vorschlaege
-						$filterStructure[$levels[0]]['sections'][$levels[1]][$levels[2]] = utf8_encode($value);
-						
-						break;
+						if(is_numeric($levels[2])) {
+							$filterStructure[$levels[0]]['sections'][$levels[1]][$levels[2]]['title'] = utf8_encode($value);
+						} else {
+							$filterStructure[$levels[0]][$levels[1]][$levels[2]] = utf8_encode($value);
+						}
+					break;
 						
 					case 4:
-						// Instance of 1st level input element
-						// -> filtermenu.4.input.1.type = radiolinklist
-						$filterStructure[$levels[0]][$levels[1]][$levels[2]][$levels[3]] = utf8_encode($value);
-						
-						break;
+						if(is_numeric($levels[3])) {
+							$filterStructure[$levels[0]]['sections'][$levels[1]][$levels[2]][$levels[3]]['title'] = utf8_encode($value);
+						} else {
+							$filterStructure[$levels[0]][$levels[1]][$levels[2]][$levels[3]] = utf8_encode($value);
+						}
+					break;
 						
 					case 5:
-						// Second level Input options
-						// -> filtermenu.2.2.input.1.type = textfield
-						if([$levels[4]] == 'options') {
+						if($levels[4] == 'options') {
 							$filterStructure[$levels[0]][$levels[1]][$levels[2]][$levels[3]][$levels[4]] = array();
+						} else if(is_numeric($levels[4])) {
+							$filterStructure[$levels[0]]['sections'][$levels[1]][$levels[2]][$levels[3]][$levels[4]]['title'] = utf8_encode($value);
 						} else {
-							$filterStructure[$levels[0]]['sections'][$levels[1]][$levels[2]][$levels[3]][$levels[4]] = utf8_encode($value);
+							$filterStructure[$levels[0]][$levels[1]][$levels[2]][$levels[3]][$levels[4]] = utf8_encode($value);
 						}
-						
-						break;
+					break;
 						
 					case 6:
-						// Second level Input Option options
-						// -> filtermenu.2.1.input.1.options.0 = Kostenlos
-						$filterStructure[$levels[0]]['sections'][$levels[1]][$levels[2]][$levels[3]][$levels[4]][$levels[5]] = utf8_encode($value);
+						if($levels[5] == 'options') {
+							$filterStructure[$levels[0]][$levels[1]][$levels[2]][$levels[3]][$levels[4]][$levels[5]] = array();
+						} else if(is_numeric($levels[5]) && $levels[4] != 'options') {
+							$filterStructure[$levels[0]]['sections'][$levels[1]][$levels[2]][$levels[3]][$levels[4]][$levels[5]]['title'] = utf8_encode($value);
+						} else {
+							$filterStructure[$levels[0]][$levels[1]][$levels[2]][$levels[3]][$levels[4]][$levels[5]] = utf8_encode($value);
+						}
+					break;
 						
-						break;
+					case 7:
+						if($levels[6] == 'options') {
+							$filterStructure[$levels[0]][$levels[1]][$levels[2]][$levels[3]][$levels[4]][$levels[5]][$levels[6]] = array();
+						} else if(is_numeric($levels[6]) && $levels[5] != 'options') {
+							$filterStructure[$levels[0]]['sections'][$levels[1]][$levels[2]][$levels[3]][$levels[4]][$levels[5]][$levels[6]]['title'] = utf8_encode($value);
+						} else {
+							$filterStructure[$levels[0]][$levels[1]][$levels[2]][$levels[3]][$levels[4]][$levels[5]][$levels[6]] = utf8_encode($value);
+						}
+					break;
+					
+					case 8:
+						if($levels[7] == 'options') {
+							$filterStructure[$levels[0]][$levels[1]][$levels[2]][$levels[3]][$levels[4]][$levels[5]][$levels[6]][$levels[7]] = array();
+						} else if(is_numeric($levels[7]) && $levels[6] != 'options') {
+							$filterStructure[$levels[0]]['sections'][$levels[1]][$levels[2]][$levels[3]][$levels[4]][$levels[5]][$levels[6]][$levels[7]]['title'] = utf8_encode($value);
+						} else {
+							$filterStructure[$levels[0]][$levels[1]][$levels[2]][$levels[3]][$levels[4]][$levels[5]][$levels[6]][$levels[7]] = utf8_encode($value);
+						}
+					break;
 				}
 			}
 		}
 		
 		ksort($filterStructure);
+		echo '<pre>';
+		var_dump($filterStructure);
+		echo '</pre>';
 		return $filterStructure;
 	}
 	
