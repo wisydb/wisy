@@ -285,8 +285,8 @@ class WISY_FILTERMENU_ITEM
 	function getHtml()
 	{
 		$filterclasses = $this->getFilterclasses($this->data, true);
-		$legendvalue = $this->getLegendvalue($this->data['legendkey']);
-		$title = $this->data['title'];
+		$legendvalue = isset($this->data['legendkey']) ? $this->getLegendvalue($this->data['legendkey']) : '';
+		$title = isset($this->data['title']) ? $this->data['title'] : '';
 		
 		$ret = '<fieldset class="' . $filterclasses . '" style="z-index:' . $this->zindex . '" tabindex="0">';
 		
@@ -336,15 +336,17 @@ class WISY_FILTERMENU_ITEM
 	
 	function getFilterclasses($data, $is_filtergroup=false) {
 		
-		if($data['metagroup'] == 1) {
+		$fsc = array();
+		
+		if(isset($data['metagroup']) && $data['metagroup'] == 1) {
 			$fsc[] = 'wisyr_filter_metagroup'; // -> filtermenu.1.metagroup = 1
 		} else if($is_filtergroup) {
 			$fsc[] = 'wisyr_filtergroup';
 		}
 		
-		$fsc[] = $data['class']; // -> filtermenu.1.class = filter_zweispaltig
-		if($data['autosubmit'] == 1) $fsc[] = 'wisyr_filter_autosubmit'; // -> filtermenu.1.autosubmit = 1
-		if($data['autoclear'] == 1) $fsc[] = 'wisyr_filter_autoclear'; // -> filtermenu.1.autoclear = 1
+		if(isset($data['class'])) $fsc[] = $data['class']; // -> filtermenu.1.class = filter_zweispaltig
+		if(isset($data['autosubmit']) && $data['autosubmit'] == 1) $fsc[] = 'wisyr_filter_autosubmit'; // -> filtermenu.1.autosubmit = 1
+		if(isset($data['autoclear']) && $data['autoclear'] == 1) $fsc[] = 'wisyr_filter_autoclear'; // -> filtermenu.1.autoclear = 1
 		if(isset($data['no_autosubmit_mobile']) && $data['no_autosubmit_mobile'] == 1) $fsc[] = 'no_autosubmit_mobile';
 		
 		if(isset($data['function']) && strlen($data['function'])) {
@@ -712,100 +714,120 @@ class WISY_FILTERMENU_CLASS
 			
 			if( substr($key, 0, $allPrefixLen)==$allPrefix )
 			{
-				$levels = explode('.', substr($key, $allPrefixLen));
 				
-				if(!array_key_exists($levels[0], $filterStructure)) $filterStructure[$levels[0]] = array();
+				// Possible cases:
+				// A. is_numeric -> title (filtermenu.2 = Preis)
+				// B. is_numeric and "parent" is "options" -> option (filtermenu.2.1.input.1.options.0 = Kostenlos)
+				// C. Attribute -> (filtermenu.1.class = filter_zweispaltig)
+				// D. "options" -> array() (filtermenu.2.1.input.1.options)
+				// E. is_numeric and "parent" is_numeric -> sections (filtermenu.2.1)
 				
-				// TODO: abgleichen mit altem Code: was sind sections?
-				
-				switch(count($levels)) {
-					
-					// Possible cases:
-					// A. is_numeric -> title (filtermenu.2 = Preis)
-					// B. is_numeric and "parent" is "options" -> option (filtermenu.2.1.input.1.options.0 = Kostenlos)
-					// C. Attribute -> (filtermenu.1.class = filter_zweispaltig)
-					// D. "options" -> array() (filtermenu.2.1.input.1.options)
-					
-					// TODO "sections" vs [levels[1]]?
-					
-					case 1:
-						// Title of top level element -> filtermenu.2 = Preis
-						$filterStructure[$levels[0]]['title'] = utf8_encode($value);
-					break;
+				$levels = substr($key, $allPrefixLen);
+				$newDots = array();
+				$dots = explode(".", $levels);
+				if(count($dots) > 1) {
+					$last = &$newDots[ $dots[0] ];
+					$wasnum = false;
+					foreach($dots as $k => $dot) {
 						
-					case 2:
-						if(is_numeric($levels[1])) {
-							// Title of 2nd level element -> filtermenu.2.1 = Vorschläge
-							$filterStructure[$levels[0]]['sections'][$levels[1]]['title'] = utf8_encode($value);
-						} else {
-							// Attribute of top level element -> filtermenu.1.class = filter_zweispaltig
-							$filterStructure[$levels[0]][$levels[1]] = utf8_encode($value);
-						}
-					break;
+						// Add "sections" whenever two numbers follow one another -> e.g. filtermenu.2.1
+						$isnum = is_numeric($dot);
+						if($isnum && $wasnum) $last = &$last['sections'];
+						$wasnum = $isnum;
 						
-					case 3:
-						if(is_numeric($levels[2])) {
-							$filterStructure[$levels[0]]['sections'][$levels[1]][$levels[2]]['title'] = utf8_encode($value);
-						} else {
-							$filterStructure[$levels[0]][$levels[1]][$levels[2]] = utf8_encode($value);
-						}
-					break;
-						
-					case 4:
-						if(is_numeric($levels[3])) {
-							$filterStructure[$levels[0]]['sections'][$levels[1]][$levels[2]][$levels[3]]['title'] = utf8_encode($value);
-						} else {
-							$filterStructure[$levels[0]][$levels[1]][$levels[2]][$levels[3]] = utf8_encode($value);
-						}
-					break;
-						
-					case 5:
-						if($levels[4] == 'options') {
-							$filterStructure[$levels[0]][$levels[1]][$levels[2]][$levels[3]][$levels[4]] = array();
-						} else if(is_numeric($levels[4])) {
-							$filterStructure[$levels[0]]['sections'][$levels[1]][$levels[2]][$levels[3]][$levels[4]]['title'] = utf8_encode($value);
-						} else {
-							$filterStructure[$levels[0]][$levels[1]][$levels[2]][$levels[3]][$levels[4]] = utf8_encode($value);
-						}
-					break;
-						
-					case 6:
-						if($levels[5] == 'options') {
-							$filterStructure[$levels[0]][$levels[1]][$levels[2]][$levels[3]][$levels[4]][$levels[5]] = array();
-						} else if(is_numeric($levels[5]) && $levels[4] != 'options') {
-							$filterStructure[$levels[0]]['sections'][$levels[1]][$levels[2]][$levels[3]][$levels[4]][$levels[5]]['title'] = utf8_encode($value);
-						} else {
-							$filterStructure[$levels[0]][$levels[1]][$levels[2]][$levels[3]][$levels[4]][$levels[5]] = utf8_encode($value);
-						}
-					break;
-						
-					case 7:
-						if($levels[6] == 'options') {
-							$filterStructure[$levels[0]][$levels[1]][$levels[2]][$levels[3]][$levels[4]][$levels[5]][$levels[6]] = array();
-						} else if(is_numeric($levels[6]) && $levels[5] != 'options') {
-							$filterStructure[$levels[0]]['sections'][$levels[1]][$levels[2]][$levels[3]][$levels[4]][$levels[5]][$levels[6]]['title'] = utf8_encode($value);
-						} else {
-							$filterStructure[$levels[0]][$levels[1]][$levels[2]][$levels[3]][$levels[4]][$levels[5]][$levels[6]] = utf8_encode($value);
-						}
-					break;
-					
-					case 8:
-						if($levels[7] == 'options') {
-							$filterStructure[$levels[0]][$levels[1]][$levels[2]][$levels[3]][$levels[4]][$levels[5]][$levels[6]][$levels[7]] = array();
-						} else if(is_numeric($levels[7]) && $levels[6] != 'options') {
-							$filterStructure[$levels[0]]['sections'][$levels[1]][$levels[2]][$levels[3]][$levels[4]][$levels[5]][$levels[6]][$levels[7]]['title'] = utf8_encode($value);
-						} else {
-							$filterStructure[$levels[0]][$levels[1]][$levels[2]][$levels[3]][$levels[4]][$levels[5]][$levels[6]][$levels[7]] = utf8_encode($value);
-						}
-					break;
+						if($k == 0) continue;
+						$last = &$last[$dot];
+					}
+					$last = $value;
+				} else {
+					$newDots[$levels]['title'] = $value;
 				}
+				$filterStructure = array_replace_recursive($filterStructure, $newDots);
+				
+				//switch(count($levels)) {
+					
+					//case 1:
+					//	// Title of top level element -> filtermenu.2 = Preis
+					//	$filterStructure[$levels[0]]['title'] = utf8_encode($value);
+					//break;
+					//	
+					//case 2:
+					//	if(is_numeric($levels[1])) {
+					//		// Title of 2nd level section -> filtermenu.2.1 = Vorschläge
+					//		$filterStructure[$levels[0]]['sections'][$levels[1]]['title'] = utf8_encode($value);
+					//	} else {
+					//		// Attribute of top level element -> filtermenu.1.class = filter_zweispaltig
+					//		$filterStructure[$levels[0]][$levels[1]] = utf8_encode($value);
+					//	}
+					//break;
+					//	
+					//case 3:
+					//	if(is_numeric($levels[2])) {
+					//		$filterStructure[$levels[0]]['sections'][$levels[1]][$levels[2]]['title'] = utf8_encode($value);
+					//	} else {
+					//		$filterStructure[$levels[0]]['sections'][$levels[1]][$levels[2]] = utf8_encode($value);
+					//	}
+					//break;
+					//	
+					//case 4:
+					//	if(is_numeric($levels[3])) {
+					//		if(is_numeric($levels[2])) {
+					//			$filterStructure[$levels[0]]['sections'][$levels[1]][$levels[2]][$levels[3]]['title'] = utf8_encode($value);
+					//		} else {
+					//			$filterStructure[$levels[0]][$levels[1]][$levels[2]][$levels[3]]['title'] = utf8_encode($value);
+					//		}
+					//	} else {
+					//		$filterStructure[$levels[0]][$levels[1]][$levels[2]][$levels[3]] = utf8_encode($value);
+					//	}
+					//break;
+					//	
+					//case 5:
+					//	if($levels[4] == 'options') {
+					//		$filterStructure[$levels[0]]['sections'][$levels[1]][$levels[2]][$levels[3]][$levels[4]] = array();
+					//	} else if(is_numeric($levels[4])) {
+					//		$filterStructure[$levels[0]]['sections'][$levels[1]][$levels[2]][$levels[3]][$levels[4]]['title'] = utf8_encode($value);
+					//	} else {
+					//		$filterStructure[$levels[0]]['sections'][$levels[1]][$levels[2]][$levels[3]][$levels[4]] = utf8_encode($value);
+					//	}
+					//break;
+					//	
+					//case 6:
+					//	if($levels[5] == 'options') {
+					//		$filterStructure[$levels[0]]['sections'][$levels[1]][$levels[2]][$levels[3]][$levels[4]][$levels[5]] = array();
+					//	} else if(is_numeric($levels[5]) && $levels[4] != 'options') {
+					//		$filterStructure[$levels[0]]['sections'][$levels[1]][$levels[2]][$levels[3]][$levels[4]][$levels[5]]['title'] = utf8_encode($value);
+					//	} else {
+					//		$filterStructure[$levels[0]]['sections'][$levels[1]][$levels[2]][$levels[3]][$levels[4]][$levels[5]] = utf8_encode($value);
+					//	}
+					//break;
+					//	
+					//case 7:
+					//	if($levels[6] == 'options') {
+					//		$filterStructure[$levels[0]][$levels[1]][$levels[2]][$levels[3]][$levels[4]][$levels[5]][$levels[6]] = array();
+					//	} else if(is_numeric($levels[6]) && $levels[5] != 'options') {
+					//		$filterStructure[$levels[0]]['sections'][$levels[1]][$levels[2]][$levels[3]][$levels[4]][$levels[5]][$levels[6]]['title'] = utf8_encode($value);
+					//	} else {
+					//		$filterStructure[$levels[0]][$levels[1]][$levels[2]][$levels[3]][$levels[4]][$levels[5]][$levels[6]] = utf8_encode($value);
+					//	}
+					//break;
+					//
+					//case 8:
+					//	if($levels[7] == 'options') {
+					//		$filterStructure[$levels[0]][$levels[1]][$levels[2]][$levels[3]][$levels[4]][$levels[5]][$levels[6]][$levels[7]] = array();
+					//	} else if(is_numeric($levels[7]) && $levels[6] != 'options') {
+					//		$filterStructure[$levels[0]]['sections'][$levels[1]][$levels[2]][$levels[3]][$levels[4]][$levels[5]][$levels[6]][$levels[7]]['title'] = utf8_encode($value);
+					//	} else {
+					//		$filterStructure[$levels[0]][$levels[1]][$levels[2]][$levels[3]][$levels[4]][$levels[5]][$levels[6]][$levels[7]] = utf8_encode($value);
+					//	}
+					//break;
+					//}
 			}
 		}
 		
 		ksort($filterStructure);
-		echo '<pre>';
-		var_dump($filterStructure);
-		echo '</pre>';
+		#echo '----------------------------------------------------<pre>';
+		#var_dump($filterStructure);
+		#echo '</pre>';
 		return $filterStructure;
 	}
 	
