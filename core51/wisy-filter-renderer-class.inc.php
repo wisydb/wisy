@@ -311,7 +311,6 @@ class WISY_FILTERMENU_ITEM
 	{
 		$ret = '';
 		foreach($sections as $key => $data) {
-			
 			$filterclasses = $this->getFilterclasses($data);
 			$legendvalue = $this->getLegendvalue($data['legendkey']);
 			
@@ -716,118 +715,47 @@ class WISY_FILTERMENU_CLASS
 			{
 				
 				// Possible cases:
-				// A. is_numeric -> title (filtermenu.2 = Preis)
-				// B. is_numeric and "parent" is "options" -> option (filtermenu.2.1.input.1.options.0 = Kostenlos)
-				// C. Attribute -> (filtermenu.1.class = filter_zweispaltig)
-				// D. "options" -> array() (filtermenu.2.1.input.1.options)
-				// E. is_numeric and "parent" is_numeric -> sections (filtermenu.2.1)
+				// √ A. is_numeric -> title (filtermenu.2 = Preis)
+				// √ B. is_numeric and "parent" is "options" -> option (filtermenu.2.1.input.1.options.0 = Kostenlos)
+				// √ C. Attribute -> (filtermenu.1.class = filter_zweispaltig)
+				// √ D. "options" -> array() (filtermenu.2.1.input.1.options)
+				// √ E. is_numeric and "parent" is_numeric -> sections (filtermenu.2.1)
 				
 				$levels = substr($key, $allPrefixLen);
-				$newDots = array();
-				$dots = explode(".", $levels);
-				if(count($dots) > 1) {
-					$last = &$newDots[ $dots[0] ];
-					$wasnum = false;
-					foreach($dots as $k => $dot) {
+				$newStructure = array();
+				$elements = explode(".", $levels);
+				if(count($elements) > 1) {
+					$last = &$newStructure[ $elements[0] ];
+					$wasNumeric = false;
+					$wasOption = false;
+					foreach($elements as $k => $el) {
 						
 						// Add "sections" whenever two numbers follow one another -> e.g. filtermenu.2.1
-						$isnum = is_numeric($dot);
-						if($isnum && $wasnum) $last = &$last['sections'];
-						$wasnum = $isnum;
+						$isNumeric = is_numeric($el);
+						if($isNumeric && $wasNumeric) $last = &$last['sections'];
+						$wasNumeric = $isNumeric;
+						
+						// Check for "options" elements:
+						$wasOption = $isOption;
+						$isOption = ($el == 'options');
 						
 						if($k == 0) continue;
-						$last = &$last[$dot];
+						$last = &$last[$el];
 					}
-					$last = $value;
+					if($isNumeric && !$wasOption) {
+						// Add title if parent was not "options"
+						$last['title'] = $value;
+					} else {
+						$last = $value;
+					}
 				} else {
-					$newDots[$levels]['title'] = $value;
+					$newStructure[$levels]['title'] = $value;
 				}
-				$filterStructure = array_replace_recursive($filterStructure, $newDots);
-				
-				//switch(count($levels)) {
-					
-					//case 1:
-					//	// Title of top level element -> filtermenu.2 = Preis
-					//	$filterStructure[$levels[0]]['title'] = utf8_encode($value);
-					//break;
-					//	
-					//case 2:
-					//	if(is_numeric($levels[1])) {
-					//		// Title of 2nd level section -> filtermenu.2.1 = Vorschläge
-					//		$filterStructure[$levels[0]]['sections'][$levels[1]]['title'] = utf8_encode($value);
-					//	} else {
-					//		// Attribute of top level element -> filtermenu.1.class = filter_zweispaltig
-					//		$filterStructure[$levels[0]][$levels[1]] = utf8_encode($value);
-					//	}
-					//break;
-					//	
-					//case 3:
-					//	if(is_numeric($levels[2])) {
-					//		$filterStructure[$levels[0]]['sections'][$levels[1]][$levels[2]]['title'] = utf8_encode($value);
-					//	} else {
-					//		$filterStructure[$levels[0]]['sections'][$levels[1]][$levels[2]] = utf8_encode($value);
-					//	}
-					//break;
-					//	
-					//case 4:
-					//	if(is_numeric($levels[3])) {
-					//		if(is_numeric($levels[2])) {
-					//			$filterStructure[$levels[0]]['sections'][$levels[1]][$levels[2]][$levels[3]]['title'] = utf8_encode($value);
-					//		} else {
-					//			$filterStructure[$levels[0]][$levels[1]][$levels[2]][$levels[3]]['title'] = utf8_encode($value);
-					//		}
-					//	} else {
-					//		$filterStructure[$levels[0]][$levels[1]][$levels[2]][$levels[3]] = utf8_encode($value);
-					//	}
-					//break;
-					//	
-					//case 5:
-					//	if($levels[4] == 'options') {
-					//		$filterStructure[$levels[0]]['sections'][$levels[1]][$levels[2]][$levels[3]][$levels[4]] = array();
-					//	} else if(is_numeric($levels[4])) {
-					//		$filterStructure[$levels[0]]['sections'][$levels[1]][$levels[2]][$levels[3]][$levels[4]]['title'] = utf8_encode($value);
-					//	} else {
-					//		$filterStructure[$levels[0]]['sections'][$levels[1]][$levels[2]][$levels[3]][$levels[4]] = utf8_encode($value);
-					//	}
-					//break;
-					//	
-					//case 6:
-					//	if($levels[5] == 'options') {
-					//		$filterStructure[$levels[0]]['sections'][$levels[1]][$levels[2]][$levels[3]][$levels[4]][$levels[5]] = array();
-					//	} else if(is_numeric($levels[5]) && $levels[4] != 'options') {
-					//		$filterStructure[$levels[0]]['sections'][$levels[1]][$levels[2]][$levels[3]][$levels[4]][$levels[5]]['title'] = utf8_encode($value);
-					//	} else {
-					//		$filterStructure[$levels[0]]['sections'][$levels[1]][$levels[2]][$levels[3]][$levels[4]][$levels[5]] = utf8_encode($value);
-					//	}
-					//break;
-					//	
-					//case 7:
-					//	if($levels[6] == 'options') {
-					//		$filterStructure[$levels[0]][$levels[1]][$levels[2]][$levels[3]][$levels[4]][$levels[5]][$levels[6]] = array();
-					//	} else if(is_numeric($levels[6]) && $levels[5] != 'options') {
-					//		$filterStructure[$levels[0]]['sections'][$levels[1]][$levels[2]][$levels[3]][$levels[4]][$levels[5]][$levels[6]]['title'] = utf8_encode($value);
-					//	} else {
-					//		$filterStructure[$levels[0]][$levels[1]][$levels[2]][$levels[3]][$levels[4]][$levels[5]][$levels[6]] = utf8_encode($value);
-					//	}
-					//break;
-					//
-					//case 8:
-					//	if($levels[7] == 'options') {
-					//		$filterStructure[$levels[0]][$levels[1]][$levels[2]][$levels[3]][$levels[4]][$levels[5]][$levels[6]][$levels[7]] = array();
-					//	} else if(is_numeric($levels[7]) && $levels[6] != 'options') {
-					//		$filterStructure[$levels[0]]['sections'][$levels[1]][$levels[2]][$levels[3]][$levels[4]][$levels[5]][$levels[6]][$levels[7]]['title'] = utf8_encode($value);
-					//	} else {
-					//		$filterStructure[$levels[0]][$levels[1]][$levels[2]][$levels[3]][$levels[4]][$levels[5]][$levels[6]][$levels[7]] = utf8_encode($value);
-					//	}
-					//break;
-					//}
+				$filterStructure = array_replace_recursive($filterStructure, $newStructure);
 			}
 		}
 		
 		ksort($filterStructure);
-		#echo '----------------------------------------------------<pre>';
-		#var_dump($filterStructure);
-		#echo '</pre>';
 		return $filterStructure;
 	}
 	
