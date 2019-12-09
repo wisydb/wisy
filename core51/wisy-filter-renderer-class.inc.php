@@ -282,21 +282,23 @@ class WISY_FILTERMENU_ITEM
 		$this->zindex = $zindex;
 	}
 	
-	function getHtml()
+	function getHtml($data=false)
 	{
-		$filterclasses = $this->getFilterclasses($this->data, true);
-		$legendvalue = isset($this->data['legendkey']) ? $this->getLegendvalue($this->data['legendkey']) : '';
-		$title = isset($this->data['title']) ? $this->data['title'] : '';
+		if(!$data) $data = $this->data;
+		
+		$filterclasses = $this->getFilterclasses($data, true);
+		$legendvalue = isset($data['legendkey']) ? $this->getLegendvalue($data['legendkey']) : '';
+		$title = isset($data['title']) ? $data['title'] : '';
 		
 		$ret = '<fieldset class="' . $filterclasses . '" style="z-index:' . $this->zindex . '" tabindex="0">';
 		
 		$ret .= '<legend data-filtervalue="' . $legendvalue . '">' . $title . '</legend>';
 		$ret .= '<div class="filter_inner clearfix">';
 		
-		if(isset($this->data['sections']) && count($this->data['sections'])) {
-			$ret .= $this->getSections($this->data['sections']);
+		if(isset($data['sections']) && count($data['sections'])) {
+			$ret .= $this->getSections($data['sections']);
 		} else {
-			$ret .= $this->getFormfields($this->data);
+			$ret .= $this->getFormfields($data);
 		}
 		
 		$ret .= '<input class="filter_submit" type="submit" value="Übernehmen" />';
@@ -360,7 +362,6 @@ class WISY_FILTERMENU_ITEM
 	}
 	
 	function getFormfields($data) {
-		
 		$ret = '';
 		
 		$function = '';
@@ -475,9 +476,10 @@ class WISY_FILTERMENU_ITEM
 						$ret .= '</select>';
 						
 						break;
-						
 				}
 			}
+		} else if(isset($data['sections']) && count($data['sections'])) {
+			$ret .= $this->getHtml($data);
 		}
 		
 		return $ret;
@@ -722,7 +724,7 @@ class WISY_FILTERMENU_CLASS
 				// √ E. is_numeric and "parent" is_numeric -> sections (filtermenu.2.1)
 				
 				$levels = substr($key, $allPrefixLen);
-				$newStructure = array();
+				$newStructure = false;
 				$elements = explode(".", $levels);
 				if(count($elements) > 1) {
 					$last = &$newStructure[ $elements[0] ];
@@ -751,17 +753,21 @@ class WISY_FILTERMENU_CLASS
 				} else {
 					$newStructure[$levels]['title'] = $value;
 				}
-				$filterStructure = array_replace_recursive($filterStructure, $newStructure);
+				if($newStructure) {
+					$filterStructure = array_replace_recursive($filterStructure, $newStructure);
+				}
 			}
 		}
 		
 		ksort($filterStructure);
+		//echo '----------------------------------------------------<pre>';
+		//var_dump($filterStructure);
+		//echo '</pre>';
 		return $filterStructure;
 	}
 	
 	function getHtml()
 	{
-		
 		global $wisyPortalModified;
 		
 		// TODO db: // read the menu from the cache ...
