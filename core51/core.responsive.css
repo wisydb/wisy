@@ -596,6 +596,9 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 .wisyr_filterform .filter_breit .filter_inner { width: 21rem; }
 .filter_spalte1,
 .filter_spalte2 { float: left; width: 50%; }
+.wisyr_filterform .filter_ohnetitel > legend {
+	display: none;
+}
 
 .wisyr_filterform form fieldset.filter_weiterekriterien .filter_schmal .ui-selectmenu-button {
 	float: right;

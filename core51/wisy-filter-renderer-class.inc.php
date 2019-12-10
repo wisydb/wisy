@@ -282,11 +282,17 @@ class WISY_FILTERMENU_ITEM
 		$this->zindex = $zindex;
 	}
 	
-	function getHtml($data=false)
+	function getHtml($data=false, $subsection=false)
 	{
-		if(!$data) $data = $this->data;
+		if(!$data) {
+			$data = $this->data;
+		}
 		
-		$filterclasses = $this->getFilterclasses($data, true);
+		if($subsection) {
+			$filterclasses = 'wisyr_filtergroup';
+		} else {
+			$filterclasses = $this->getFilterclasses($data, true);
+		}
 		$legendvalue = isset($data['legendkey']) ? $this->getLegendvalue($data['legendkey']) : '';
 		$title = isset($data['title']) ? $data['title'] : '';
 		
@@ -479,7 +485,7 @@ class WISY_FILTERMENU_ITEM
 				}
 			}
 		} else if(isset($data['sections']) && count($data['sections'])) {
-			$ret .= $this->getHtml($data);
+			$ret .= $this->getHtml($data, true);
 		}
 		
 		return $ret;
