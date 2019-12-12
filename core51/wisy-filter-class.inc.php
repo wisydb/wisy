@@ -358,7 +358,6 @@ class WISY_FILTER_CLASS
 		
 		if($this->DEBUG) echo 'parseFilterForm()';
 		
-		
 		while( list($field_name, $preset) = each($this->presets) )
 		{
 			$field_name = mb_strtolower($field_name);
@@ -368,9 +367,13 @@ class WISY_FILTER_CLASS
 			
 			$this->filtered = true;
 			
+			
+			
 			$field = '';
-			$value = htmlspecialchars(trim($_GET['filter_' . $field_name])); // '&' -> '&amp;', '"' -> '&quot;', wenn n. ENT_NOQUOTES, "'" -> '&#039;' (oder &apos;), wenn n. ENT_QUOTES, '<' -> '&lt;', '>' -> '&gt;'
+			$value = $this->implodeArray($_GET['filter_' . $field_name]);
+			$value = htmlspecialchars(trim($value)); // '&' -> '&amp;', '"' -> '&quot;', wenn n. ENT_NOQUOTES, "'" -> '&#039;' (oder &apos;), wenn n. ENT_QUOTES, '<' -> '&lt;', '>' -> '&gt;'
 			$value = str_replace("&amp;", "&", $value);
+
 			if( $value != '' )
 			{
 				
@@ -379,12 +382,12 @@ class WISY_FILTER_CLASS
 					$preis = $value;
 					continue;
 				}
-                
-                if($field_name == 'datum')
-                {
-                    $datum = $value;
-                    continue;
-                }
+				
+				if($field_name == 'datum')
+				{
+					$datum = $value;
+					continue;
+				}
 				
 				if($field_name == 'bei')
 				{
@@ -405,23 +408,27 @@ class WISY_FILTER_CLASS
 		}
 		
 		// Sonderfall Preisspanne. TODO db: Über Presets umsetzen?
-		if(isset($_GET['filter_preis']) || isset($_GET['filter_preis_von']) || isset($_GET['filter_preis_bis']))
+		$filter_preis = trim($this->implodeArray($_GET['filter_preis']));
+		$filter_preis_von = trim($this->implodeArray($_GET['filter_preis_von']));
+		$filter_preis_bis = trim($this->implodeArray($_GET['filter_preis_bis']));
+				
+		if($filter_preis != '' || $filter_preis_von != '' || $filter_preis_bis != '')
 		{
-			if(trim($_GET['filter_preis']) != '')
+			if($filter_preis != '')
 			{
-				$preis = trim($_GET['filter_preis']);
+				$preis = $filter_preis;
 			}
 			
 			$preis_von = false;
-			if(isset($_GET['filter_preis_von']) && trim($_GET['filter_preis_von']) != '')
+			if($filter_preis_von != '')
 			{
-				$preis_von = intval($_GET['filter_preis_von']);
+				$preis_von = intval($filter_preis_von);
 			}
 			
 			$preis_bis = false;
-			if(isset($_GET['filter_preis_bis']) && trim($_GET['filter_preis_bis']) != '')
+			if($filter_preis_bis != '')
 			{
-				$preis_bis = intval($_GET['filter_preis_bis']);
+				$preis_bis = intval($filter_preis_bis);
 			}
 			
 			if($preis_von !== false && $preis_bis !== false)
@@ -442,31 +449,36 @@ class WISY_FILTER_CLASS
 				$queryfilters[] = array('field' => 'preis', 'value' => $preis);
 			}
 		}
-        
-        // Sonderfall Kursbeginn. TODO db: optimieren?
-		if(isset($_GET['filter_datum_von']) && trim($_GET['filter_datum_von']) != '')
+		
+		// Sonderfall Kursbeginn. TODO db: optimieren?
+		$filter_datum_von = trim($this->implodeArray($_GET['filter_datum_von']));
+		
+		if($filter_datum_von != '')
 		{
-            $datum = trim($_GET['filter_datum_von']);
-        }
+			$datum = $filter_datum_von;
+		}
 		if($datum != '')
 		{
 			$queryfilters[] = array('field' => 'datum', 'value' => $datum);
 		}
 		
 		// Sonderfall Dauer. TODO db: Über Presets umsetzen?
-		if(isset($_GET['filter_dauer_von']) || isset($_GET['filter_dauer_bis']))
+		$filter_dauer_von = trim($this->implodeArray($_GET['filter_dauer_von']));
+		$filter_dauer_bis = trim($this->implodeArray($_GET['filter_dauer_bis']));
+		
+		if($filter_dauer_von != '' || $filter_dauer_bis != '')
 		{	
 			$dauer = '';
 			$dauer_von = false;
-			if(isset($_GET['filter_dauer_von']) && trim($_GET['filter_dauer_von']) != '')
+			if($filter_dauer_von != '')
 			{
-				$dauer_von = intval($_GET['filter_dauer_von']);
+				$dauer_von = intval($filter_dauer_von);
 			}
 			
 			$dauer_bis = false;
-			if(isset($_GET['filter_dauer_bis']) && trim($_GET['filter_dauer_bis']) != '')
+			if($filter_dauer_bis != '')
 			{
-				$dauer_bis = intval($_GET['filter_dauer_bis']);
+				$dauer_bis = intval($filter_dauer_bis);
 			}
 			
 			if($dauer_von && $dauer_bis)
@@ -494,6 +506,14 @@ class WISY_FILTER_CLASS
 		if($this->DEBUG) echo 'count(queryfilters): ' . count($queryfilters);
 		
 		$this->framework->tokensQF = $queryfilters;
+	}
+	
+	function implodeArray($input) {
+		if(is_array($input)) {
+			$input = array_filter($input, function($value) { return !is_null($value) && $value !== ''; });
+			$input = implode('_', $input);
+		}
+		return $input;
 	}
 	
 	function constructTokens() {

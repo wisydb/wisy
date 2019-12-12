@@ -307,7 +307,9 @@ class WISY_FILTERMENU_ITEM
 			$ret .= $this->getFormfields($data);
 		}
 		
-		$ret .= '<input class="filter_submit" type="submit" value="Übernehmen" />';
+		if($subsection) {
+			$ret .= '<input class="filter_submit" type="submit" value="Übernehmen" />';
+		}
 		$ret .= '</div>';
 		
 		$ret .= '</fieldset>';
@@ -393,6 +395,7 @@ class WISY_FILTERMENU_ITEM
 				$fieldname = $fieldvaluename;
 				if(isset($input['name']) && strlen($input['name'])) $fieldname = $input['name'];
 				if(isset($this->renderformData['fv_' . $fieldvaluename])) $fieldvalue = $this->renderformData['fv_' . $fieldvaluename];
+				if(isset($input['label']) && strlen($input['label'])) $fieldlabel = $input['label'];
 				if(isset($input['class'])) $fieldclass = $input['class'];
 				if(isset($input['placeholder'])) $fieldplaceholder = $input['placeholder'];
 				if(isset($input['autofilltarget'])) $autofilltarget = $input['autofilltarget'];
@@ -401,6 +404,8 @@ class WISY_FILTERMENU_ITEM
 				
 				if(isset($input['options']) && count($input['options'])) {
 					$filtervalues = $input['options'];
+				} else if(isset($input['stichwort'])) {
+					$filtervalues = $this->getStichwort($input['stichwort'], $fieldlabel);
 				} else {
 					$filtervalues = $this->getFiltervalues($input);
 				}
@@ -410,7 +415,7 @@ class WISY_FILTERMENU_ITEM
 					case 'textfield':
 					
 						if($clearbutton) $ret .= '<div class="filter_clearbutton_wrapper">';
-						$ret .= '<input type="text" name="filter_' . $fieldname . '" id="filter_' . $fieldname . '" class="' . $fieldclass . '" value="' . $fieldvalue . '" placeholder="' . $fieldplaceholder . '" />';
+						$ret .= '<input type="text" name="filter_' . $fieldname . '[]" id="filter_' . $fieldname . '" class="' . $fieldclass . '" value="' . $fieldvalue . '" placeholder="' . $fieldplaceholder . '" />';
 						if($clearbutton) $ret .= '</div>';
 						$ret .= $fieldsuffix . '<br /><br />';
 						
@@ -421,7 +426,7 @@ class WISY_FILTERMENU_ITEM
 						foreach($filtervalues as $value => $label) {
 							
 							$ret .= '<div class="wisyr_radiowrapper">';
-							$ret .= '	<input type="radio" name="filter_' . $fieldname . '" id="filter_' . $fieldname . '_' . $value . '" value="' . ($label == 'Alle' ? '' : str_replace(',', ' ', $label)) . '"';
+							$ret .= '	<input type="radio" name="filter_' . $fieldname . '[]" id="filter_' . $fieldname . '_' . $value . '" value="' . ($label == 'Alle' ? '' : str_replace(',', ' ', $label)) . '"';
 							
 							if(str_replace(',', ' ', $label) == $fieldvalue) {
 								$ret .= ' checked="checked"';
@@ -435,12 +440,13 @@ class WISY_FILTERMENU_ITEM
 						}
 						
 						if(!$currentFound && trim($fieldvalue) != '') {
-							$ret .= '<input type="hidden" name="filter_' . $fieldname . '" value="' . $fieldvalue . '" />';
+							$ret .= '<input type="hidden" name="filter_' . $fieldname . '[]" value="' . $fieldvalue . '" />';
 						}
 						
 						break;
 						
 					case 'radiolist':
+					case 'radiobuttons':
 					
 						foreach($filtervalues as $value => $label) {
 							
@@ -448,9 +454,13 @@ class WISY_FILTERMENU_ITEM
 							$checked = $this->getCheckedValue($function, $value, $label, $processed_value, $fieldvalue, $fieldname);
 							$disabled = $this->getDisabledValue($function, $value, $label, $processed_value, $fieldvalue, $fieldname);
 							
-							$ret .= '<div class="wisyr_radiowrapper">';
+							if($type == 'radiobuttons') {
+								$ret .= '<div class="wisyr_radioboxwrapper wisyr_radiobutton">';
+							} else {
+								$ret .= '<div class="wisyr_radiowrapper">';
+							}
 							
-							$ret .= '	<input type="radio" name="filter_' . $fieldname . '" id="filter_' . $fieldname . '_' . $value . '" value="' . $processed_value . '"';
+							$ret .= '	<input type="radio" name="filter_' . $fieldname . '[]" id="filter_' . $fieldname . '_' . $value . '" value="' . $processed_value . '"';
 							if(strlen($autofilltarget)) {
 								$ret .= 'data-autofilltarget="#filter_' . $autofilltarget . '" data-autofillvalue="' . $processed_value . '"';
 							}
@@ -467,7 +477,7 @@ class WISY_FILTERMENU_ITEM
 						
 					case 'selectmenu':
 					
-						$ret .= '<select name="filter_' . $fieldname . '" class="wisyr_selectmenu">';
+						$ret .= '<select name="filter_' . $fieldname . '[]" class="wisyr_selectmenu">';
 						foreach($filtervalues as $value => $label) {
 							
 							$processed_value = $this->getProcessedValue($function, $value, $label);
@@ -480,6 +490,34 @@ class WISY_FILTERMENU_ITEM
 							$ret .= '>' . $label . '</option>';
 						}
 						$ret .= '</select>';
+						
+						break;
+						
+					case 'checkbuttons':
+					
+						foreach($filtervalues as $value => $label) {
+							
+							// Don't show empty value ("Alle") button:
+							if($value === '') continue;
+							
+							$processed_value = $this->getProcessedValue($function, $value, $label);
+							$checked = $this->getCheckedValue($function, $value, $label, $processed_value, $fieldvalue, $fieldname);
+							$disabled = $this->getDisabledValue($function, $value, $label, $processed_value, $fieldvalue, $fieldname);
+							
+							$ret .= '<div class="wisyr_checkboxwrapper wisyr_checkbutton">';
+							
+							$ret .= '	<input type="checkbox" name="filter_' . $fieldname . '[]" id="filter_' . $fieldname . '_' . $value . '" value="' . $processed_value . '"';
+							if(strlen($autofilltarget)) {
+								$ret .= 'data-autofilltarget="#filter_' . $autofilltarget . '" data-autofillvalue="' . $processed_value . '"';
+							}
+							
+							if($checked) $ret .= ' checked="checked"';
+							if($disabled) $ret .= ' disabled="disabled"';
+							
+							$ret .= ' />';
+							$ret .= '	<label for="filter_' . $fieldname . '_' . $value . '">' . $label . '</label>';
+							$ret .= '</div>';
+						}
 						
 						break;
 				}
@@ -501,22 +539,22 @@ class WISY_FILTERMENU_ITEM
 				break;
 				
 			case 'foerderungen':
-				return $this->getSpezielleStichw(2, $data['datawhitelist']);
+				return $this->getSpezielleStichw(2, $data['datawhitelist'], $data['orderbywhitelist']);
 				
 				break;
 				
 			case 'zielgruppen':
-				return $this->getSpezielleStichw(8, $data['datawhitelist']);
+				return $this->getSpezielleStichw(8, $data['datawhitelist'], $data['orderbywhitelist']);
 				
 				break;
 				
 			case 'qualitaetszertifikate':
-				return $this->getSpezielleStichw(4, $data['datawhitelist']);
+				return $this->getSpezielleStichw(4, $data['datawhitelist'], $data['orderbywhitelist']);
 				
 				break;
 				
 			case 'unterrichtsarten':
-				return $this->getSpezielleStichw(32768, $data['datawhitelist']);
+				return $this->getSpezielleStichw(32768, $data['datawhitelist'], $data['orderbywhitelist']);
 				
 				break;
 				
@@ -613,6 +651,7 @@ class WISY_FILTERMENU_ITEM
 				break;
 			
 			case 'taglist':
+			case 'checkboxes':
 				if(is_array($this->renderformData['records_taglist']) && !in_array($value, $this->renderformData['records_taglist'])) $disabled = true;
 				
 				break;
@@ -623,31 +662,33 @@ class WISY_FILTERMENU_ITEM
 	
 	function getCheckedValue($function, $value, $label, $processed_value, $fieldvalue, $fieldname) {
 		
-		$checked = '';
+		$checked = false;
 		
-		/*
 		switch($function) {
-			case 'xyz':
-				if(1 != 1) {
-					$checked = true;
-				}
-			}
-			break;
-		}
-		*/
-		
-		if($checked === '') { // allows checked-test to be overriden above
-			if($processed_value === $fieldvalue) {
-				$checked = true;
-			} else {
+			case 'checkboxes':
+				if(!is_array($fieldvalue)) $fieldvalue = explode('_', $fieldvalue);
 				$checked = false;
-			}
+				foreach($fieldvalue as $fieldval) {
+					if($processed_value == $fieldval) {
+						$checked = true;
+						break;
+					}
+				}
+			break;
+			
+			default:
+				if($processed_value === $fieldvalue) {
+					$checked = true;
+				} else {
+					$checked = false;
+				}
+			break;
 		}
 		
 		return $checked;
 	}
 	
-	private function getSpezielleStichw($flag, $whitelist='')
+	private function getSpezielleStichw($flag, $whitelist='', $orderbywhitelist=false)
 	{
 		// nur die stichwörter zurückgeben, die im aktuellem Portal auch verwendet werden!
 		$keyPrefix = "advStichw.$flag";
@@ -676,8 +717,11 @@ class WISY_FILTERMENU_ITEM
 		$ret = array(''=>'Alle');
 		if(strlen(trim($ids_filtered))) {
 			$db = new DB_Admin;
-			//$db->query("SELECT stichwort FROM stichwoerter WHERE eigenschaften=$flag ORDER BY stichwort_sorted;");
-			$db->query("SELECT stichwort FROM stichwoerter WHERE id IN ($ids_filtered) ORDER BY stichwort_sorted;");
+			if($orderbywhitelist) {
+				$db->query("SELECT stichwort FROM stichwoerter WHERE id IN ($ids_filtered) ORDER BY FIELD(id, $ids_filtered);");
+			} else {
+				$db->query("SELECT stichwort FROM stichwoerter WHERE id IN ($ids_filtered) ORDER BY stichwort_sorted;");
+			}
 			while( $db->next_record() )
 			{
 				$stichw = htmlspecialchars($db->f8('stichwort'));
@@ -686,6 +730,23 @@ class WISY_FILTERMENU_ITEM
 				$ret[ $stichw ] = $stichw;
 			}
 			$db->free();
+		}
+		return $ret;
+	}
+	
+	private function getStichwort($stichwort, $label='') {
+		$ret = array();
+		$stichwort = intval($stichwort);
+		if($stichwort) {
+			$db = new DB_Admin;
+			$db->query("SELECT stichwort FROM stichwoerter WHERE id='$stichwort' LIMIT 1");
+			while( $db->next_record() )
+			{
+				$stichw = htmlspecialchars($db->f8('stichwort'));
+				$stichw = trim(strtr($stichw, array(': '=>' ', ':'=>' ', ', '=>' ', ','=>' ')));
+				
+				$ret[ $stichw ] = strlen($label) ? $label : $stichw;
+			}
 		}
 		return $ret;
 	}

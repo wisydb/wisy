@@ -448,7 +448,8 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 }
 
 /* Sonderfall "Weitere Kriterien" */
-.wisyr_filterform form fieldset.filter_weiterekriterien { width: 9rem; }
+.wisyr_filterform form fieldset.filter_weiterekriterien,
+.wisyr_filterform form fieldset.filter_weiterekriterien > .wisyr_filtergroup { width: 9rem; }
 .wisyr_filterform form fieldset.filter_weiterekriterien:after {
 	/* https://materialdesignicons.com: plus */
 	background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23787878' d='M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z' /%3E%3C/svg%3E") center center/contain;
@@ -599,6 +600,9 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 .wisyr_filterform .filter_ohnetitel > legend {
 	display: none;
 }
+.wisyr_filterform .filter_inline {
+	float: left;
+}
 
 .wisyr_filterform form fieldset.filter_weiterekriterien .filter_schmal .ui-selectmenu-button {
 	float: right;
@@ -608,7 +612,6 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 	float: left;
 }
 .wisyr_filterform form fieldset.filter_weiterekriterien .ui-selectmenu-menu .ui-state-disabled { display: none; }
-
 
 /* Kursthemen und andere Linklisten */
 .wisyr_filterlinklist .filter_inner {
@@ -691,6 +694,35 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 .wisyr_filterradiolinklist label:hover {
 	text-decoration: underline;
 	cursor: pointer;
+}
+
+/* Checkboxen und Checkboxbuttons */
+.wisyr_radioboxwrapper,
+.wisyr_checkboxwrapper {
+	float: left;
+}
+.wisyr_radiobutton input,
+.wisyr_checkbutton input {
+	display: none;
+}
+.wisyr_radiobutton label,
+.wisyr_checkbutton label {
+	display: block;
+	max-width: 15rem;
+	text-transform: uppercase;
+	padding: 0.5em 1em;
+	margin: 0 0.3em 1em 0;
+	background: #EEE;
+	border-radius: 2px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	cursor: pointer;
+}
+.wisyr_radiobutton input:checked + label,
+.wisyr_checkbutton input:checked + label {
+	color: #fff;
+	background-color: #3E7AB8;
 }
 
 /* Aktive Filter */
