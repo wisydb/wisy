@@ -214,6 +214,18 @@ class WISY_FILTER_CLASS
 					'options'	=>	$unterrichtsarten
 				);
 		}
+		
+		$sonstigemerkmale = $this->getSpezielleStichw(1024);
+		if( sizeof($sonstigemerkmale) > 1 )
+		{
+			$this->presets['sonstigesmerkmal'] = array
+				(
+					'type'		=> 'taglist',
+					'descr'		=> 'Sonstiges Merkmal:',
+					'function'	=> 'sonstigesmerkmal:',
+					'options'	=>	$sonstigemerkmale
+				);
+		}
 				
 		if( $this->framework->iniRead('search.adv.fulltext', 1)!=0 )
 		{

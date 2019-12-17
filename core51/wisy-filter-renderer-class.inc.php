@@ -558,6 +558,11 @@ class WISY_FILTERMENU_ITEM
 				
 				break;
 				
+			case 'sonstigesmerkmal':
+				return $this->getSpezielleStichw(1024, $data['datawhitelist'], $data['orderbywhitelist']);
+			
+				break;
+				
 			default:
 				return array();
 		}
