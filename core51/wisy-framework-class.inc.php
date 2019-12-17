@@ -79,7 +79,7 @@ class WISY_FRAMEWORK_CLASS
 		'unterrichtsart',
 		'tageszeit');
 		
-	var $filterValueSeparator = '_';
+	var $filterValueSeparator = ',';
 
 	function __construct($baseObject, $addParam)
 	{
