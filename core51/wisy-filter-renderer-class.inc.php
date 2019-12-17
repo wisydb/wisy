@@ -666,7 +666,7 @@ class WISY_FILTERMENU_ITEM
 		
 		switch($function) {
 			case 'checkboxes':
-				if(!is_array($fieldvalue)) $fieldvalue = explode('_', $fieldvalue);
+				if(!is_array($fieldvalue)) $fieldvalue = explode($this->framework->filterValueSeparator, $fieldvalue);
 				$checked = false;
 				foreach($fieldvalue as $fieldval) {
 					if($processed_value == $fieldval) {

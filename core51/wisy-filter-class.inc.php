@@ -511,7 +511,8 @@ class WISY_FILTER_CLASS
 	function implodeArray($input) {
 		if(is_array($input)) {
 			$input = array_filter($input, function($value) { return !is_null($value) && $value !== ''; });
-			$input = implode('_', $input);
+			$input = array_unique($input);
+			$input = implode($this->framework->filterValueSeparator, $input);
 		}
 		return $input;
 	}
@@ -695,118 +696,147 @@ class WISY_FILTER_CLASS
 		return 'search?qs=' . urlencode($this->framework->QS) . '&qf=' . urlencode($this->framework->QF);
 	}
 	
-	function getUrlRemoveFilterByName($removefilter) {
-        if($removefilter == 'bei') {
-    		$tokens = array_filter($this->framework->tokensQF, function($filter) use($removefilter) {
-    			return ($filter['field'] != $removefilter && $filter['field'] != 'km');
-    		});
-        } else {
-    		$tokens = array_filter($this->framework->tokensQF, function($filter) use($removefilter) {
-    			return $filter['field'] != $removefilter;
-    		});
-        }
+	function getUrlRemoveFilterByName($removefilter, $value=false) {
+		if($value) {
+			global $extraTokens;
+			$extraTokens = array();
+			$tokens = array_filter($this->framework->tokensQF, function($filter) use($removefilter, $value) {
+				global $extraTokens;
+				if($filter['field'] == $removefilter) {
+					$filteredValue = array();
+					foreach(explode($this->framework->filterValueSeparator, $filter['value']) as $val) {
+						if($val != $value) {
+							$filteredValue[] = $val;
+						}
+					}
+					if(count($filteredValue)) {
+						$extraTokens[] = array(
+							'field' => $filter['field'],
+							'value' => implode($this->framework->filterValueSeparator, $filteredValue)
+						);
+					}
+					return false;
+				} else {
+					return true;
+				}
+			});
+			$tokens = array_merge($tokens, $extraTokens);
+		} else if($removefilter == 'bei') {
+			$tokens = array_filter($this->framework->tokensQF, function($filter) use($removefilter) {
+				return ($filter['field'] != $removefilter && $filter['field'] != 'km');
+			});
+		} else {
+			$tokens = array_filter($this->framework->tokensQF, function($filter) use($removefilter) {
+				return $filter['field'] != $removefilter;
+			});
+		}
 		
-        return $this->framework->getUrl('search', array('qs' => $this->framework->QS, 'qf' => $this->stringFromTokens($tokens)));
+		return $this->framework->getUrl('search', array('qs' => $this->framework->QS, 'qf' => $this->stringFromTokens($tokens)));
 	}
 	
 	function getUrlRemoveFilterByValue($tokenconditions, $removevalue) {
 		$query = array();
 		for( $i = 0; $i < sizeof($tokenconditions); $i++ ) {
-            if($tokenconditions[$i]['field'] == 'tag') 
-            {
+			if($tokenconditions[$i]['field'] == 'tag') 
+			{
 				if($tokenconditions[$i]['value'] != $removevalue)
 				{
 					$query[] = $tokenconditions[$i]['value'];
 				}
-            }
-            else if($tokenconditions[$i]['field'] != $removefield)
-            {
-                $query[] = $tokenconditions[$i]['field'] . ':' . $tokenconditions[$i]['value'];
-            }
+			}
+			else if($tokenconditions[$i]['field'] != $removefield)
+			{
+				$query[] = $tokenconditions[$i]['field'] . ':' . $tokenconditions[$i]['value'];
+			}
 		}
-                
-        return $this->framework->getUrl('search', array('q' => implode(',', $query)));
+		
+		return $this->framework->getUrl('search', array('q' => implode(',', $query)));
 	}
+	
 	function getUrlAddFilter($tokenconditions, $addfilter) {
 		$query = array();
 		for( $i = 0; $i < sizeof($tokenconditions); $i++ ) {
-            if($tokenconditions[$i]['field'] == 'tag') 
-            {
-                $query[] = $tokenconditions[$i]['value'];
-            }
-            else
-            {
-                $query[] = $tokenconditions[$i]['field'] . ':' . $tokenconditions[$i]['value'];
-            }
+			if($tokenconditions[$i]['field'] == 'tag') 
+			{
+				$query[] = $tokenconditions[$i]['value'];
+			}
+			else
+			{
+				$query[] = $tokenconditions[$i]['field'] . ':' . $tokenconditions[$i]['value'];
+			}
 		}
 		$query[] = $addfilter;
-                
-        return $this->framework->getUrl('search', array('q' => implode(',', $query)));
+		
+		return $this->framework->getUrl('search', array('q' => implode(',', $query)));
 	}
 	
 	function getActiveFilters() {
 		$active_filters = '';
 		foreach($this->framework->tokensQF as $token) {
-			if(trim($token['value']) !== '' && $token['field'] != 'tag') {
-				$ignore = false;
-				switch($token['field']) {
-					case 'preis':
-						$filterlabel = number_format($token['value'], 0, ',', '.') . ' EUR';
-						if($token['value'] > 0 && strpos($token['value'], '-') === false) {
-							$filterlabel = 'bis ' . $filterlabel;
-						} else if($token['value'] === 0) {
-							$filterlabel = 'kostenlos';
-						}
-						break;
+			foreach(explode($this->framework->filterValueSeparator, $token['value']) as $value) {
+				if(trim($value) !== '' && $token['field'] != 'tag') {
+					$ignore = false;
+					switch($token['field']) {
+						case 'preis':
+							$filterlabel = number_format($value, 0, ',', '.') . ' EUR';
+							if($value > 0 && strpos($value, '-') === false) {
+								$filterlabel = 'bis ' . $filterlabel;
+							} else if($value === 0) {
+								$filterlabel = 'kostenlos';
+							}
+							break;
 						
-					case 'km':
-						$filterlabel = $token['value'] . ' km Umkreis';
-						if($token['value'] > 400) $filterlabel = '> 50 km Umkreis';
-						break;
+						case 'km':
+							$filterlabel = $value . ' km Umkreis';
+							if($value > 400) $filterlabel = '> 50 km Umkreis';
+							break;
 						
-					case 'datum':
-						$filterlabel = 'Beginn: ' . $token['value'];
-						break;
+						case 'datum':
+							$filterlabel = 'Beginn: ' . $value;
+							break;
 						
-					case 'volltext':
-						$filterlabel = 'Volltext: ' . $token['value'];
-						break;
+						case 'volltext':
+							$filterlabel = 'Volltext: ' . $value;
+							break;
 						
-					case 'dauer':
-						$filterlabel = 'Dauer: ';
-						if($token['value'] === 1)
-						{
-							$filterlabel .= $token['value'] . ' Tag';
-						}
-						else if($token['value'] < 7)
-						{
-							$filterlabel .= $token['value'] . ' Tage';
-						}
-						else if($token['value'] < 32)
-						{
-							$filterlabel .= floor($token['value'] / 7) . ' Wochen';
-						} 
-						else
-						{
-							$filterlabel .= floor($token['value'] / 31) . ' Monate';
-						}
-						break;
+						case 'dauer':
+							$filterlabel = 'Dauer: ';
+							if($value === 1)
+							{
+								$filterlabel .= $value . ' Tag';
+							}
+							else if($value < 7)
+							{
+								$filterlabel .= $value . ' Tage';
+							}
+							else if($value < 32)
+							{
+								$filterlabel .= floor($value / 7) . ' Wochen';
+							} 
+							else
+							{
+								$filterlabel .= floor($value / 31) . ' Monate';
+							}
+							break;
 						
-					case 'fav':
-						$ignore = true;
-						break;
+						case 'fav':
+							$ignore = true;
+							break;
 						
-					case 'zeige':
-						$ignore = true;
-						break;
+						case 'zeige':
+							$ignore = true;
+							break;
 				
-					default:
-						$filterlabel = $token['value'];
-						break;
+						default:
+							$filterlabel = $value;
+							break;
+					}
 				}
-				
 				if(!$ignore) {
-					$active_filters .= '<li class="wisyr_filter"><a href="' . $this->getUrlRemoveFilterByName($token['field']) . '">' . $filterlabel . '</a></li>';
+					// TODO: Hier entweder getUrlRemoveFilterByValue nutzen oder sonstwie sicherstellen das nicht unbedingt
+					// gleich der ganze Filter entfernt wird sondern ggf. nur ein konkatenierter wert wenn zb. "Eltern (Teilnehmende)_Kinder (Teilnehmende)" drinsteht.
+					// TODO: evtl. erst mal den value string überprüfen ob da der separator drin vorkommt?
+					$active_filters .= '<li class="wisyr_filter"><a href="' . $this->getUrlRemoveFilterByName($token['field'], $value) . '">' . $filterlabel . '</a></li>';
 				}
 			}
 		}
@@ -844,15 +874,15 @@ class WISY_FILTER_CLASS
 		$removelink = '';
 		
 		$themenliste = $this->getThemenByIdList($idList);
-        $themen = $themenliste['records'];
-        natcasesort($themen);
+		$themen = $themenliste['records'];
+		natcasesort($themen);
 				
 		foreach($themen as $thema)
 		{
 			$remove = false;
 			for( $i = 0; $i < sizeof($tokenconditions); $i++ ) {
-	            if($tokenconditions[$i]['field'] == 'tag' && $tokenconditions[$i]['value'] == g_sync_removeSpecialChars($thema)) 
-	            {
+				if($tokenconditions[$i]['field'] == 'tag' && $tokenconditions[$i]['value'] == g_sync_removeSpecialChars($thema)) 
+				{
 					$remove = true;
 					break;
 				}

@@ -78,6 +78,8 @@ class WISY_FRAMEWORK_CLASS
 		'qualitaetszertifikat',
 		'unterrichtsart',
 		'tageszeit');
+		
+	var $filterValueSeparator = '_';
 
 	function __construct($baseObject, $addParam)
 	{
