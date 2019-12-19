@@ -558,7 +558,7 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 }
 .wisyr_filterform fieldset.active .filter_inner { display: block; cursor: default; }
 .wisyr_filterform fieldset:focus .filter_inner,
-.wisyr_filterform fieldset:focus-within .filter_inner { display: block; cursor: default; }
+.wisyr_filterform fieldset:focus-within > .filter_inner { display: block; cursor: default; }
 .wisyr_filterform .filter_inner legend {
 	color: #798D94;
 	font-weight: 700;
