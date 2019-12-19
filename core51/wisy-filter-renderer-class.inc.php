@@ -822,12 +822,12 @@ class WISY_FILTERMENU_CLASS
 					}
 					if($isNumeric && !$wasOption) {
 						// Add title if parent was not "options"
-						$last['title'] = $value;
+						$last['title'] = utf8_encode($value);
 					} else {
-						$last = $value;
+						$last = utf8_encode($value);
 					}
 				} else {
-					$newStructure[$levels]['title'] = $value;
+					$newStructure[$levels]['title'] = utf8_encode($value);
 				}
 				if($newStructure) {
 					$filterStructure = array_replace_recursive($filterStructure, $newStructure);
@@ -836,9 +836,6 @@ class WISY_FILTERMENU_CLASS
 		}
 		
 		ksort($filterStructure);
-		//echo '----------------------------------------------------<pre>';
-		//var_dump($filterStructure);
-		//echo '</pre>';
 		return $filterStructure;
 	}
 	
