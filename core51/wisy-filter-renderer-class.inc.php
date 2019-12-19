@@ -205,7 +205,7 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 	{
 		
 		echo '<div id="wisyr_filterform" class="wisyr_filterform">';
-		echo '<div class="wisyr_filterform_header"><h' . ($hlevel + 1) . '>Suchauftrag anpassen</h' . ($hlevel + 1) . '><h' . ($hlevel + 2) . '>Nutzen Sie Filter, um Ihre Suche weiter einzugrenzen:</h' . ($hlevel + 2) . '></div>';
+		echo '<div class="wisyr_filterform_header"><h' . ($hlevel + 1) . ' class="wisyr_filterform_header_titel">Suchauftrag anpassen</h' . ($hlevel + 1) . '><h' . ($hlevel + 2) . ' class="wisyr_filterform_header_text">Nutzen Sie Filter, um Ihre Suche weiter einzugrenzen:</h' . ($hlevel + 2) . '></div>';
 		echo '<form action="search" method="get" name="filterform" role="search" aria-label="Suchauftrag anpassen">';
 		echo '<input type="hidden" name="qs" value="' . $this->framework->QS . '" />';
 		echo '<input type="hidden" name="qf" value="' . $this->framework->QF . '" />';
@@ -298,7 +298,9 @@ class WISY_FILTERMENU_ITEM
 		
 		$ret = '<fieldset class="' . $filterclasses . '" style="z-index:' . $this->zindex . '" tabindex="0">';
 		
-		$ret .= '<legend data-filtervalue="' . $legendvalue . '">' . $title . '</legend>';
+		if(trim($title) !== '') {
+			$ret .= '<legend data-filtervalue="' . $legendvalue . '">' . $title . '</legend>';
+		}
 		$ret .= '<div class="filter_inner clearfix">';
 		
 		if(isset($data['sections']) && count($data['sections'])) {
@@ -330,7 +332,9 @@ class WISY_FILTERMENU_ITEM
 			}
 			
 			$ret .= '<fieldset class="' . $filterclasses . '">';
-			$ret .= '<legend data-filtervalue="' . $legendvalue . '">' . $data['title'] . '</legend>';
+			if(trim($data['title']) != '') {
+				$ret .= '<legend data-filtervalue="' . $legendvalue . '">' . $data['title'] . '</legend>';
+			}
 			
 			$ret .= $this->getFormfields($data);
 			

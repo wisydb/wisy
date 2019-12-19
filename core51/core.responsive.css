@@ -444,7 +444,7 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 .wisyr_filterform form fieldset.wisyr_filter_metagroup > legend {
 	color: #798D94;
 	font-weight: 700;
-	margin-bottom: 1em;
+	margin-bottom: 0.5em;
 }
 
 /* Sonderfall "Weitere Kriterien" */
@@ -600,7 +600,8 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 .wisyr_filterform .filter_ohnetitel > legend {
 	display: none;
 }
-.wisyr_filterform .filter_inline {
+.wisyr_filterform .filter_inline,
+.wisyr_filterform .filter_inline_desktop {
 	float: left;
 }
 
@@ -778,7 +779,7 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 	}
 }
 @media screen and (max-width: 840px) {
-	.wisyr_filterform form fieldset.filter_sortierung {
+	.wisyr_filterform form .wisyr_filterform_listheader fieldset.filter_sortierung {
 		display: block;
 		float: none;
 	}
@@ -848,13 +849,15 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 		/* https://materialdesignicons.com: close */
 		background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ffffff' d='M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z' /%3E%3C/svg%3E") no-repeat center center/contain;	
 	}
-	.wisyr_filterform_header h3 {
+	.wisyr_filterform_header_titel {
 		color: #fff;
 		font-size: 14px;
 		font-weight: 500;
 		text-transform: uppercase;
 	}
-	.wisyr_filterform_header h4 { display: none; }
+	.wisyr_filterform_header_text {
+		display: none!important;
+	}
 	
 	.wisyr_filterform form { height: auto; margin-top: 98px; }
 	
@@ -909,11 +912,16 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 	}
 	.wisyr_filterform form fieldset.filter_sortierung > * { display: none; }
 	.wisyr_filterform form fieldset.filter_sortierung.active > .ui-selectmenu-menu { display: block; }
-	.wisyr_filterform form fieldset.filter_sortierung > legend { display: block; }
+	.wisyr_filterform form .wisyr_filterform_listheader fieldset.filter_sortierung > legend { display: block; }
 	
 	.wisyr_filterform .ui-selectmenu-button { width: 100%; }
 	
-	.wisyr_filterform form fieldset.filter_weiterekriterien { width: 100%; z-index: 1112!important; }
+	.wisyr_filterform form fieldset.filter_weiterekriterien {
+		position: relative;
+	}
+	
+	.wisyr_filterform form fieldset.filter_weiterekriterien,
+	.wisyr_filterform form fieldset.filter_weiterekriterien > .wisyr_filtergroup { width: 100%; z-index: 1112!important; }
 	.wisyr_filterform form fieldset.filter_weiterekriterien:after { display: none; }
 	.wisyr_filterform form fieldset.filter_weiterekriterien fieldset { 
 		position: relative;
@@ -928,20 +936,25 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 		content: '';
 		position: absolute;
 		right: 0;
-		top: 0.1em;
+		top: 1em;
 		width: 1.5em;
 		height: 1.5em;
 		/* https://materialdesignicons.com: chevron-right */
 		background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23787878' d='M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z' /%3E%3C/svg%3E") center center/contain;
 	}
+	.wisyr_filterform form fieldset.filter_weiterekriterien fieldset .ui-selectmenu-button::after {
+		top: -3em;
+	}
 	.wisyr_filterform form fieldset.filter_weiterekriterien > legend { display: none; }
-	.wisyr_filterform form fieldset.filter_weiterekriterien > .filter_inner { 
+	.wisyr_filterform form fieldset.filter_weiterekriterien > .filter_inner,
+	.wisyr_filterform form fieldset.filter_weiterekriterien > .wisyr_filtergroup > .filter_inner { 
 		display: block; 
 		top: 0;
 		width: 100%;
 		padding: 0;
 		box-shadow: none;
 	}
+	
 	.wisyr_filterform form fieldset.filter_weiterekriterien > .filter_inner > .filter_submit { display: none; }
 	.wisyr_filterform form fieldset.filter_weiterekriterien > .filter_inner > .no_autosubmit_mobile.active + .filter_filtersection_submit { 
 		display: block;
@@ -951,18 +964,22 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 		width: calc(100% - 30px);
 	}
 	
-	.wisyr_filterform form fieldset.filter_weiterekriterien > .filter_inner > fieldset > * { display: none; }
-	.wisyr_filterform form fieldset.filter_weiterekriterien > .filter_inner > fieldset > legend {
+	.wisyr_filterform form fieldset.filter_weiterekriterien > .filter_inner > fieldset > *,
+	.wisyr_filterform form fieldset.filter_weiterekriterien > .wisyr_filtergroup > .filter_inner > fieldset > * { display: none; }
+	.wisyr_filterform form fieldset.filter_weiterekriterien > .filter_inner > fieldset > legend,
+	.wisyr_filterform form fieldset.filter_weiterekriterien > .wisyr_filtergroup > .filter_inner > fieldset > legend {
 		display: block;
 		position: absolute;
 		top: 0.3em;
 		font-weight: 500;
 		line-height: 42px;
 	}
-	.wisyr_filterform form fieldset.filter_weiterekriterien > .filter_inner > fieldset:not(.active) > legend:not([data-filtervalue='']) {
+	.wisyr_filterform form fieldset.filter_weiterekriterien > .filter_inner > fieldset:not(.active) > legend:not([data-filtervalue='']),
+	.wisyr_filterform form fieldset.filter_weiterekriterien > .wisyr_filtergroup > .filter_inner > fieldset:not(.active) > legend:not([data-filtervalue='']) {
 		line-height: 24px;
 	}
-	.wisyr_filterform form fieldset.filter_weiterekriterien > .filter_inner > fieldset.active > legend {
+	.wisyr_filterform form fieldset.filter_weiterekriterien > .filter_inner > fieldset.active > legend,
+	.wisyr_filterform form fieldset.filter_weiterekriterien > .wisyr_filtergroup > .filter_inner > fieldset.active > legend {
 		height: 48px;
 		line-height: 48px;
 	}
@@ -981,7 +998,7 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 	}
 	.wisyr_filterform fieldset.active:after { display: none!important; }
 	.wisyr_filterform fieldset.active > legend:after {
-		content: '';
+		content: ''!important;
 		position: absolute;
 		top: 1em;
 		right: 1em;
@@ -1024,8 +1041,10 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 		margin-bottom: 15px;
 	}
 	
-	.wisyr_filterform form fieldset.filter_weiterekriterien > .filter_inner > fieldset.active { padding-top: 50px; }
-	.wisyr_filterform form fieldset.filter_weiterekriterien > .filter_inner > fieldset.active > * { display: block;  }
+	.wisyr_filterform form fieldset.filter_weiterekriterien > .filter_inner > fieldset.active,
+	.wisyr_filterform form fieldset.filter_weiterekriterien > .wisyr_filtergroup > .filter_inner > fieldset.active { padding-top: 50px; }
+	.wisyr_filterform form fieldset.filter_weiterekriterien > .filter_inner > fieldset.active > *,
+	.wisyr_filterform form fieldset.filter_weiterekriterien > .wisyr_filtergroup > .filter_inner > fieldset.active > * { display: block;  }
 	
 	.wisyr_filterform form fieldset.filter_sortierung .ui-selectmenu-button,
 	.wisyr_filterform form fieldset.filter_weiterekriterien .ui-selectmenu-button {
@@ -1066,6 +1085,17 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 		max-height: none;
 	}
 	
+	.wisyr_filterform fieldset.filter_checkboxes {
+		padding: 0 15px;
+	}
+	
+	.wisyr_checkbutton label {
+		border: 1px solid black;
+	}
+	.wisyr_checkbutton input:checked + label {
+		border-color: #3E7AB8;
+	}
+	
 	.wisyr_filterform_reset { 
 		display: block;
 		line-height: 48px;
@@ -1075,6 +1105,30 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 	.filter_ortundumkreis_ort .clear_btn {
 		right: 6px;
 		height: 34px;
+	}
+	
+	.wisyr_filterform form fieldset.wisyr_filter_metagroup {
+		margin-top: 0;
+	}
+	
+	.wisyr_filterform form fieldset.wisyr_filter_metagroup > legend {
+		margin-bottom: 0;
+		padding: 0 15px;
+	}
+	.wisyr_filterform form fieldset.wisyr_filter_metagroup.filter_checkboxes > legend {
+		padding: 0;
+	}
+	
+	.wisyr_filterform .filter_inline,
+	.wisyr_filterform .filter_inline_mobile {
+		float: left;
+	}
+	.wisyr_filterform .filter_inline_desktop {
+		float: none;
+	}
+	
+	.wisyr_filterform form .wisyr_filterform_listheader .wisyr_list_anzahl_angebote {
+		display: none;
 	}
 }
 
