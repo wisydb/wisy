@@ -1246,6 +1246,25 @@ function initFilters() {
 			$target.val($this.data('autofillvalue'));
 		}
 	});
+	
+	// Eventuelle weitere Instanzen dieses Filters auf gleichen Wert setzen vor dem Abschicken
+	$('.wisyr_filterform input, .wisyr_filterform select, wisyr_selectmenu').on('change selectmenuchange', function() {
+		var $this = $(this);
+		var newVal = $this.val();
+		if ($this.attr('type') == 'checkbox' && !$this.prop('checked')) newVal = '';
+		
+		// Selectmenus
+		$('[name="' + $this.attr('name') + '"] [value="' + $this.val() + '"]').val(newVal);
+		
+		// Inputs etc.
+		$('input:not([type="checkbox"])[name="' + $this.attr('name') + '"]').val(newVal);
+		
+		// Checkboxes
+		$('input[type="checkbox"][name="' + $this.attr('name') + '"]').prop('checked', false);
+		if(newVal != '') {
+			$('input[type="checkbox"][name="' + $this.attr('name') + '"][value="' + $this.val() + '"]').prop('checked', true);
+		}
+	});
 
 	// Filter automatisch abschicken
 	$('.wisyr_filter_autosubmit .filter_submit').hide();
