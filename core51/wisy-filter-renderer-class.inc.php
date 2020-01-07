@@ -119,6 +119,7 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 		$renderformData['fv_zielgruppe'] = '';
 		$renderformData['fv_qualitaetszertifikat'] = '';
 		$renderformData['fv_unterrichtsart'] = '';
+		$renderformData['fv_sonstigesmerkmal'] = '';
 		$renderformData['fv_tageszeit'] = '';
 		
 		foreach($this->framework->tokensQF as $token) {
@@ -187,6 +188,10 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 					
 				case 'unterrichtsart':
 					$renderformData['fv_unterrichtsart'] = $token['value'];
+					break;
+					
+				case 'sonstigesmerkmal':
+					$renderformData['fv_sonstigesmerkmal'] = $token['value'];
 					break;
 					
 				case 'tageszeit':

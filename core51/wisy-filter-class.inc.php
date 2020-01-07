@@ -535,7 +535,7 @@ class WISY_FILTER_CLASS
 		$qs = htmlspecialchars(trim($this->framework->getParam('qs', ''), ', '));
 		$qf = htmlspecialchars(trim($this->framework->getParam('qf', ''), ', '));
 		
-		if($this->DEBUG) echo 'Vorher' . "<br />\n";
+		if($this->DEBUG) echo '<br />Vorher' . "<br />\n";
 		if($this->DEBUG) echo 'q: ' .  $q . "<br />\n";
 		if($this->DEBUG) echo 'qs: ' . $qs . "<br />\n";
 		if($this->DEBUG) echo 'qf: ' . $qf . "<br />\n";
