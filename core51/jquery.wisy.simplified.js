@@ -1310,6 +1310,10 @@ function initFilters() {
 				if($wrapper.children('.clear_btn').length == 0) {
 					$wrapper.append('<div class="clear_btn" aria-label="Eingabe löschen"></div>');
 					$wrapper.children('.clear_btn').one('click', function() {
+						// Wert von qs leeren und auch aus q entfernen
+						var oldVal = $el.val();
+						var oldQVal = $('#wisy_searchinput_q').val();
+						$('#wisy_searchinput_q').val(oldQVal.replace(oldVal, ''));
 						$el.val('');
 						$wrapper.children('.clear_btn').remove();
 						$el.focus();
