@@ -77,6 +77,7 @@ class WISY_FRAMEWORK_CLASS
 		'foerderung',
 		'qualitaetszertifikat',
 		'unterrichtsart',
+		'sonstigesmerkmal',
 		'tageszeit');
 		
 	var $filterValueSeparator = ',';
