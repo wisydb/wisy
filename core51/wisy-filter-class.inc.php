@@ -368,12 +368,12 @@ class WISY_FILTER_CLASS
 		$datum = false;
 		$km = false;
 		
-		if($this->DEBUG) echo 'parseFilterForm()';
+		if($this->DEBUG) echo "parseFilterForm()<br />\n";
 		
 		while( list($field_name, $preset) = each($this->presets) )
 		{
 			$field_name = mb_strtolower($field_name);
-			if($this->DEBUG) echo $field_name;
+			if($this->DEBUG) echo $field_name . "<br />\n";
 			 
 			if(!isset($_GET['filter_' . $field_name])) continue;
 			
@@ -515,7 +515,7 @@ class WISY_FILTER_CLASS
 		$this->framework->order = trim($_GET['order']);
 		if( isset($_GET['filter_order']) && trim($_GET['filter_order']) != '') $this->framework->order = trim($_GET['filter_order']);
 		
-		if($this->DEBUG) echo 'count(queryfilters): ' . count($queryfilters);
+		if($this->DEBUG) echo 'count(queryfilters): ' . count($queryfilters) . "<br />\n";
 		
 		$this->framework->tokensQF = $queryfilters;
 	}
@@ -535,7 +535,7 @@ class WISY_FILTER_CLASS
 		$qs = htmlspecialchars(trim($this->framework->getParam('qs', ''), ', '));
 		$qf = htmlspecialchars(trim($this->framework->getParam('qf', ''), ', '));
 		
-		if($this->DEBUG) echo 'Vorher' . "<br />\n";
+		if($this->DEBUG) echo '<br />Vorher' . "<br />\n";
 		if($this->DEBUG) echo 'q: ' .  $q . "<br />\n";
 		if($this->DEBUG) echo 'qs: ' . $qs . "<br />\n";
 		if($this->DEBUG) echo 'qf: ' . $qf . "<br />\n";
@@ -845,9 +845,6 @@ class WISY_FILTER_CLASS
 					}
 				}
 				if(!$ignore) {
-					// TODO: Hier entweder getUrlRemoveFilterByValue nutzen oder sonstwie sicherstellen das nicht unbedingt
-					// gleich der ganze Filter entfernt wird sondern ggf. nur ein konkatenierter wert wenn zb. "Eltern (Teilnehmende)_Kinder (Teilnehmende)" drinsteht.
-					// TODO: evtl. erst mal den value string überprüfen ob da der separator drin vorkommt?
 					$active_filters .= '<li class="wisyr_filter"><a href="' . $this->getUrlRemoveFilterByName($token['field'], $value) . '">' . $filterlabel . '</a></li>';
 				}
 			}

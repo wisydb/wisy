@@ -119,6 +119,7 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 		$renderformData['fv_zielgruppe'] = '';
 		$renderformData['fv_qualitaetszertifikat'] = '';
 		$renderformData['fv_unterrichtsart'] = '';
+		$renderformData['fv_sonstigesmerkmal'] = '';
 		$renderformData['fv_tageszeit'] = '';
 		
 		foreach($this->framework->tokensQF as $token) {
@@ -187,6 +188,10 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 					
 				case 'unterrichtsart':
 					$renderformData['fv_unterrichtsart'] = $token['value'];
+					break;
+					
+				case 'sonstigesmerkmal':
+					$renderformData['fv_sonstigesmerkmal'] = $token['value'];
 					break;
 					
 				case 'tageszeit':
@@ -430,7 +435,7 @@ class WISY_FILTERMENU_ITEM
 						foreach($filtervalues as $value => $label) {
 							
 							$ret .= '<div class="wisyr_radiowrapper">';
-							$ret .= '	<input type="radio" name="filter_' . $fieldname . '[]" id="filter_' . $fieldname . '_' . $value . '" value="' . ($label == 'Alle' ? '' : str_replace(',', ' ', $label)) . '"';
+							$ret .= '	<input type="radio" name="filter_' . $fieldname . '[]" id="filter_' . $fieldname . '_' . $this->framework->cleanClassname($value) . '" value="' . ($label == 'Alle' ? '' : str_replace(',', ' ', $label)) . '"';
 							
 							if(str_replace(',', ' ', $label) == $fieldvalue) {
 								$ret .= ' checked="checked"';
@@ -438,7 +443,7 @@ class WISY_FILTERMENU_ITEM
 							}
 							
 							$ret .= ' />';
-							$ret .= '	<label for="filter_' . $fieldname . '_' . $value . '">' . $label . '</label>';
+							$ret .= '	<label for="filter_' . $fieldname . '_' . $this->framework->cleanClassname($value) . '">' . $label . '</label>';
 							
 							$ret .= '</div>';
 						}
@@ -464,7 +469,7 @@ class WISY_FILTERMENU_ITEM
 								$ret .= '<div class="wisyr_radiowrapper">';
 							}
 							
-							$ret .= '	<input type="radio" name="filter_' . $fieldname . '[]" id="filter_' . $fieldname . '_' . $value . '" value="' . $processed_value . '"';
+							$ret .= '	<input type="radio" name="filter_' . $fieldname . '[]" id="filter_' . $fieldname . '_' . $this->framework->cleanClassname($value) . '" value="' . $processed_value . '"';
 							if(strlen($autofilltarget)) {
 								$ret .= 'data-autofilltarget="#filter_' . $autofilltarget . '" data-autofillvalue="' . $processed_value . '"';
 							}
@@ -473,7 +478,7 @@ class WISY_FILTERMENU_ITEM
 							if($disabled) $ret .= ' disabled="disabled"';
 							
 							$ret .= ' />';
-							$ret .= '	<label for="filter_' . $fieldname . '_' . $value . '">' . $label . '</label>';
+							$ret .= '	<label for="filter_' . $fieldname . '_' . $this->framework->cleanClassname($value) . '">' . $label . '</label>';
 							$ret .= '</div>';
 						}
 						
@@ -510,7 +515,7 @@ class WISY_FILTERMENU_ITEM
 							
 							$ret .= '<div class="wisyr_checkboxwrapper wisyr_checkbutton">';
 							
-							$ret .= '	<input type="checkbox" name="filter_' . $fieldname . '[]" id="filter_' . $fieldname . '_' . $value . '" value="' . $processed_value . '"';
+							$ret .= '	<input type="checkbox" name="filter_' . $fieldname . '[]" id="filter_' . $fieldname . '_' . $this->framework->cleanClassname($value) . '" value="' . $processed_value . '"';
 							if(strlen($autofilltarget)) {
 								$ret .= 'data-autofilltarget="#filter_' . $autofilltarget . '" data-autofillvalue="' . $processed_value . '"';
 							}
@@ -519,7 +524,7 @@ class WISY_FILTERMENU_ITEM
 							if($disabled) $ret .= ' disabled="disabled"';
 							
 							$ret .= ' />';
-							$ret .= '	<label for="filter_' . $fieldname . '_' . $value . '">' . $label . '</label>';
+							$ret .= '	<label for="filter_' . $fieldname . '_' . $this->framework->cleanClassname($value) . '">' . $label . '</label>';
 							$ret .= '</div>';
 						}
 						
