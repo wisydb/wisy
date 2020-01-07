@@ -77,7 +77,7 @@ class WISY_SEARCH_RENDERER_CLASS
 	function renderColumnTitle($title, $sollOrder, $istOrder, $info=0)
 	{
 		// Add column title class for use in responsive CSS
-		echo '    <th class="wisyr_'. $this->framework->cleanClassname($title) .'">';
+		echo '    <th class="wisyr_'. $this->framework->cleanClassname($title, true) .'">';
 			
 			if($this->framework->simplified)
 			{

@@ -471,7 +471,7 @@ class WISY_FILTERMENU_ITEM
 							
 							$ret .= '	<input type="radio" name="filter_' . $fieldname . '[]" id="filter_' . $fieldname . '_' . $this->framework->cleanClassname($value) . '" value="' . $processed_value . '"';
 							if(strlen($autofilltarget)) {
-								$ret .= 'data-autofilltarget="#filter_' . $autofilltarget . '" data-autofillvalue="' . $processed_value . '"';
+								$ret .= ' data-autofilltarget="#filter_' . $autofilltarget . '" data-autofillvalue="' . $processed_value . '"';
 							}
 							
 							if($checked) $ret .= ' checked="checked"';
@@ -517,7 +517,7 @@ class WISY_FILTERMENU_ITEM
 							
 							$ret .= '	<input type="checkbox" name="filter_' . $fieldname . '[]" id="filter_' . $fieldname . '_' . $this->framework->cleanClassname($value) . '" value="' . $processed_value . '"';
 							if(strlen($autofilltarget)) {
-								$ret .= 'data-autofilltarget="#filter_' . $autofilltarget . '" data-autofillvalue="' . $processed_value . '"';
+								$ret .= ' data-autofilltarget="#filter_' . $autofilltarget . '" data-autofillvalue="' . $processed_value . '"';
 							}
 							
 							if($checked) $ret .= ' checked="checked"';
