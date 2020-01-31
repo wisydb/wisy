@@ -192,7 +192,7 @@ function update_kurs_state($kurs_id, $param)
 	/*$neuer_status_gueltig	= true;*/
 	for( $i = 0; $i < $anz_durchf; $i++ )
 	{
-		$db->query("SELECT beginn, beginnoptionen, ende, kurstage, preis, strasse, plz, ort, stadtteil, bemerkungen, dauer, tagescode, nr, stunden, teilnehmer, zeit_von, zeit_bis FROM durchfuehrung WHERE id={$durchf_ids[$i]};");
+		$db->query("SELECT beginn, beginnoptionen, ende, kurstage, preis, strasse, plz, ort, stadtteil, bemerkungen, dauer, dauer_fix, tagescode, nr, stunden, teilnehmer, zeit_von, zeit_bis FROM durchfuehrung WHERE id={$durchf_ids[$i]};");
 		if( $db->next_record() )
 		{
 			$beginn			= $db->f('beginn');
@@ -206,6 +206,7 @@ function update_kurs_state($kurs_id, $param)
 			$stadtteil		= $db->fs('stadtteil');
 			$bemerkungen 	= $db->fs('bemerkungen');
 			$alte_dauer 	= intval($db->f('dauer'));
+			$dauer_fix 	= intval($db->f('dauer_fix'));
 			$alter_tagescode= intval($db->f('tagescode'));
 			$nr 			= $db->fs('nr');
 			$stunden		= intval($db->f('stunden'));
@@ -272,8 +273,8 @@ function update_kurs_state($kurs_id, $param)
 			}
 
 			// dauer überprüfen (06.12.2012: wenn kein Wert berechnet werden konnte, alten (evtl. manuell gesetzten) Wert lassen)
-			$neue_dauer = berechne_dauer($beginn, $ende);
-			if( $neue_dauer != 0 && $neue_dauer != $alte_dauer )
+			$neue_dauer = berechne_dauer(str_replace("00:00:00", $zeit_von.":00", $beginn), str_replace("00:00:00", $zeit_bis.":00", $ende));
+			if( $neue_dauer != 0 && $neue_dauer != $alte_dauer && !$dauer_fix)
 			{
 				$update .= ($update==''? '' : ', ') . " dauer=$neue_dauer ";
 				//if( $alte_dauer != 0 ) 20:32 30.01.2014: die entsprechende Nachricht wird immer ausgegeben, s. [**]
