@@ -63,21 +63,47 @@ class WISY_ADVANCED_RENDERER_CLASS
 					'340-380'	=> 'ca. 1 Jahr',
 				),
 			);
-		$this->presets['tageszeit'] = array
+			$this->presets['tageszeit'] = array
 			(
-				'type'		=> 'taglist',
-				'descr'		=> 'Tageszeit/Fernunterr.:',
-				'options'	=> array(
-					''					=> '',
-					'Ganztags'			=> 'Ganztags',
-					'Vormittags'		=> 'Vormittags',
-					'Nachmittags'		=> 'Nachmittags',
-					'Abends'			=> 'Abends',
-					'Wochenende'		=> 'Wochenende',
-					'Fernunterricht'	=> 'nur Fernunterricht',
-					'-Fernunterricht'	=> 'ohne Fernunterricht',
-					'Bildungsurlaub'	=> 'Bildungsurlaub',
-				),
+			    'type'		=> 'taglist',
+			    'descr'		=> 'Tageszeit/Fernunterr.:',
+			    'options'	=> array(
+			        ''					=> '',
+			        'Ganztags'			=> 'Ganztags',
+			        'Vormittags'		=> 'Vormittags',
+			        'Nachmittags'		=> 'Nachmittags',
+			        'Abends'			=> 'Abends',
+			        'Wochenende'		=> 'Wochenende',
+			        'Fernunterricht'	=> 'nur Fernunterricht',
+			        '-Fernunterricht'	=> 'ohne Fernunterricht',
+			        'Bildungsurlaub'	=> 'Bildungsurlaub'
+			    ),
+			);
+			/* Todo: portal setting ! */
+			$this->presets['stadtteil'] = array
+			(
+			    'type'		=> 'taglist',
+			    'descr'		=> 'Stadtteil:',
+			    'options'	=> array(
+			        ''					=> '',
+			        'Altenwerder'		=> 'Altenwerder',
+			        'Cranz'		        => 'Cranz',
+			        'Eißendorf'		    => 'Eißendorf',
+			        'Francop'			=> 'Francop',
+			        'Harburg'		    => 'Harburg',
+			        'Hausbruch'	        => 'Hausbruch',
+			        'Gut Moor'	        => 'Gut Moor'
+			    ),
+			);
+			$this->presets['metaabschlussart'] = array
+			(
+			    'type'		=> 'taglist',
+			    'descr'		=> 'Abschlussart:',
+			    'options'	=> array(
+			        ''					=> '',
+			        'Abschluss'			=> 'Abschluss',
+			        'Zertifikate'		=> 'Zertifikate'
+			    ),
 			);
 			
 			// umkreissuche
@@ -212,29 +238,6 @@ class WISY_ADVANCED_RENDERER_CLASS
 		        'options'	=>	$abschlussarten
 		    );
 		}
-		
-		
-		$abschluesse = $this->getSpezielleStichw(1);
-		if( sizeof($abschluesse) > 1 )
-		{
-		    $this->presets['abschluesse'] = array
-		    (
-		        'type'		=> 'taglist',
-		        'descr'		=> 'Abschlüsse:',
-		        'options'	=>	$abschluesse
-		    );
-		}
-		
-		$abschlussarten = $this->getSpezielleStichw(1);
-		if( sizeof($abschlussarten) > 1 )
-		{
-		    $this->presets['abschlussarten'] = array
-		    (
-		        'type'		=> 'taglist',
-		        'descr'		=> 'Abschlussarten:',
-		        'options'	=>	$abschlussarten
-		    );
-		}
 				
 		if( $this->framework->iniRead('search.adv.fulltext', 1)!=0 )
 		{
@@ -276,6 +279,9 @@ class WISY_ADVANCED_RENDERER_CLASS
 			
 			$ret[ $stichw ] = $stichw;
 		}
+		
+		// $db->close(); // Ressource needed for search list
+		
 		return $ret;
 	}
 
