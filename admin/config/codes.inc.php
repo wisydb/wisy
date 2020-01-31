@@ -316,3 +316,7 @@ function berechne_dauer($start, $ende)
 	date_default_timezone_get("Europe/Berlin");
 }
 
+// not for security relavant features
+function berechne_loginid() {
+    return md5($_SERVER['REMOTE_ADDR'].$_SERVER['HTTP_USER_AGENT'].date("d.m.Y")); // $_SERVER['SERVER_SIGNATURE']
+}
