@@ -267,7 +267,7 @@ function clickAutocompleteHelp(tag_help, tag_name_encoded)
 
 function clickAutocompleteMore(tag_name_encoded)
 {
-	location.href = 'search?ie=UTF-8&show=tags&q=' + tag_name_encoded;
+	location.href = 'search?show=tags&q=' + tag_name_encoded; // ie=UTF-8&
 }
 
 function htmlspecialchars(text)
@@ -301,7 +301,7 @@ function formatItem(row)
 	{
 		/* add the "more" link */
 		row_class = 'ac_more';
-		tag_name = '<a href="" onclick="return clickAutocompleteMore(&#39;' + encodeURIComponent(tag_name) + '&#39;)">' + tag_descr + '</a>';
+		tag_name = '<a href="" onclick="return clickAutocompleteMore(&#39;' + encodeURIComponent(tag_name).replace('/&/', '%26') + '&#39;)">' + tag_descr + '</a>';
 	}
 	else
 	{
@@ -500,7 +500,7 @@ if (jQuery.ui)
 		
 		// highlight search string
 		var regex = new RegExp("(?![^&;]+;)(?!<[^<>]*)(" + request_term.replace(/([\^\$\(\)\[\]\{\}\*\.\+\?\|\\])/gi, "\\$1") + ")(?![^<>]*>)(?![^&;]+;)", "gi");
-		tag_name = tag_name.replace(regex, "<em>$1</em>");
+		tag_name = tag_name.replace(regex, "<em>$1</em>").replace('&amp;', '&');
 	
 		return '<span class="row '+row_class+'">' + 
 					'<span class="tag_name">' + row_prefix + tag_name + row_postfix + '</span>' + 
@@ -656,7 +656,7 @@ if (jQuery.ui)
 //Prevent empty search (<2 chars): on hompage: output message, on other page: search for all courses
 function preventEmptySearch(homepage) {
   // only if no other submit event is attached to search submit button:
-	if( typeof $._data( $("#wisy_searcharea form[action=search]")[0], "events" ) == 'undefined' ) {
+	if($._data( $("#wisy_searcharea form[action=search]")[0], "events" )['submit'].length < 2) {
    
    $('#wisy_searcharea form[action=search]').on('submit', function(e) {
     e.preventDefault();
@@ -990,7 +990,7 @@ function sendFeedback(rating)
 	{
 		$('#wisy_feedback').append(
 				'<div id="wisy_feedback_line2">'
-			+		'<p>Bitte schildern Sie uns noch kurz, warum diese Information nicht hilfreich war und was wir besser machen können:</p>'
+			+		'<p>Bitte schildern Sie uns noch kurz, warum diese Seite nicht hilfreich war und was wir besser machen können:</p>'
 				+	'<textarea id="wisy_feedback_descr" name="wisy_feedback_descr" rows="2" cols="20"></textarea><br />'
 				+	'<br><b>Wenn Sie eine Antwort w&uuml;nschen</b>, geben Sie bitte auch Ihre E-Mail-Adresse an (optional).<br />Wir verwenden Ihre E-Mailadresse und ggf. Name nur, um Ihr Anliegen zu bearbeiten und l&ouml;schen diese personenbezogenen Daten alle 12 Monate.<br><br>'
 				+	'<label for="wisy_feedback_name">Name (optional): </label><input type="text" id="wisy_feedback_name" name="wisy_feedback_name">&nbsp; <label for="wisy_feedback_email">E-Mailadresse (optional): </label><input type="text" id="wisy_feedback_email" name="wisy_feedback_email"><br><br>'
@@ -1020,7 +1020,7 @@ function initFeedback()
 {
 	$('.wisy_allow_feedback').after(
 			'<div id="wisy_feedback" class="noprint">'
-		+		'<span class="wisy_feedback_question">War diese Information hilfreich?</span> '
+		+		'<span class="wisy_feedback_question">War diese Seite hilfreich?</span> '
 		+		'<span id="wisy_feedback_yesno"><a href="javascript:sendFeedback(1)">Ja</a> <a href="javascript:sendFeedback(0)">Nein</a></span>'
 		+	'</div>'
 	);
