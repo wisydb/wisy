@@ -55,6 +55,8 @@ class WISY_BILLING_RENDERER_CLASS
 		$db->query(  "INSERT INTO anbieter_billing
 					 (user_created,  user_modified, user_grp,  user_access,  date_created, date_modified, anbieter_id, portal_id,     bill_type, credits,          eur,      raw_data) VALUES
 					 ($user_created, $user_created, $user_grp, $user_access, '$todayHour', '$todayHour',  $anbieterId, $wisyPortalId, $bill_type, $credits_to_add, '$price', '".addslashes($raw_data)."')");
+		
+		$db->close();
 	}
 	
 	/**************************************************************************
@@ -231,5 +233,7 @@ class WISY_BILLING_RENDERER_CLASS
 		{
 			echo 'OK';
 		}
+		
+		$db->close();
 	}
 }
