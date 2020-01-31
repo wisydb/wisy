@@ -65,14 +65,18 @@ $codes_stichwort_eigenschaften =
 	.'64###Synonym###'
 	.'128###Veranstaltungsort###'			// wird von der Redaktion/von Juergen verwendet - aber: wozu soll das sein? (bp) ACHTUNG: Wird in tag_type anders verwendet!
 	//.'256###Termin###'					// wird nicht verwendet - wozu soll das sein? (bp)
-	.'256###Volltext Titel###'				// ACHTUNG: Wird in tag_type anders verwendet!
-	.'512###Volltext Beschreibung###'		// ACHTUNG: Wird in tag_type anders verwendet!
-	.'1024###Sonstiges Merkmal###'
-	.'2048###Verwaltungsstichwort###'
-	.'4096###Thema###'
-	.'8192###Schlagwort nicht verwenden###'	// 8192 war mal "Hierarchie", "Schlagwort nicht verwenden" war mal bit 32 -- in beiden Fällen: wozu soll das sein? (bp)
-	.'16384###Anbieterstichwort';			// sollte mal exklusiv die Kurse infizieren, wenn bei einem Anbieter verwendet, aktuell (12/2014) nicht verwendet, alle nicht-versteckten Stichwoerter infizieren die Kurse, wenn einem Anbieter zugeordnet
-											// ACHTUNG: Werte ab 0x10000 werden in tag_type anders verwendet!
+    //.'256###Volltext Titel###'				// ACHTUNG: Wird in tag_type anders verwendet!
+    //.'512###Volltext Beschreibung###'		// ACHTUNG: Wird in tag_type anders verwendet!
+    .'1024###Sonstiges Merkmal###'
+    .'2048###Verwaltungsstichwort###'
+    .'4096###Thema###'
+    .'8192###Schlagwort nicht verwenden###'	// 8192 war mal "Hierarchie", "Schlagwort nicht verwenden" war mal bit 32 -- in beiden Fällen: wozu soll das sein? (bp)
+    .'16384###Anbieterstichwort';			// sollte mal exklusiv die Kurse infizieren, wenn bei einem Anbieter verwendet, aktuell (12/2014) nicht verwendet, alle nicht-versteckten Stichwoerter infizieren die Kurse, wenn einem Anbieter zugeordnet
+    // ACHTUNG: Werte ab 0x10000 werden in tag_type anders verwendet!
+    // 131072 versteckte Anbieter-Namensverweisung
+    // 262144 = neue Namensverweisung, damit von SW-Synonym (64) unterscheidbar
+    // -> s. db.inc.php f¸r Anbieter-Typ-Codes
+            
 										
 global $hidden_stichwort_eigenschaften;
 $hidden_stichwort_eigenschaften = 32 + 128 + 256 + 512 + 2048 + 8192; // EDIT 5/2017: Stichworttyp "Thema" (4096) wird nicht mehr gefiltern (warum war dies in der Vergangenheit so?) (bp)
