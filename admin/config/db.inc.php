@@ -46,7 +46,8 @@ if( !$use_neweditor ) {
 }
 $ratgeber->add_row(TABLE_TEXTAREA|TABLE_WIKI|TABLE_NEWSECTION,'erklaerung',		'Erklärung', '', '', '', array('ctrl.rows'=>20));
 $ratgeber->add_row(TABLE_TEXT,								'wikipedia',		'Stichw. Wikipedia', '', '', '', array('ctrl.size'=>'10-20-60'));
-$ratgeber->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,			'notizen',			'Journal', '', '', '', array('layout.section'=>1));
+$ratgeber->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,			'notizen_fix',			'Anmerkungen', '', '', '',  array('layout.section'=>1));
+$ratgeber->add_row(TABLE_TEXTAREA,			                'notizen',			'Journal', '', '', '');
 
 
 
@@ -74,9 +75,11 @@ $stichwoerter->add_row(TABLE_SATTR,											'thema',			'Thema', 0, $themen);
 $stichwoerter->add_row(TABLE_SATTR,											'glossar',			'Ratgeberseite', 0, $ratgeber);
 $stichwoerter->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,						'scope_note',		'Scope note');
 $stichwoerter->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,						'algorithmus',		'Algorithmus');
-$stichwoerter->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,						'notizen',			'Journal', '', '', '', array('layout.section'=>1));
+$stichwoerter->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,			            'notizen_fix',			'Anmerkungen', '', '', '',  array('layout.section'=>1));
+$stichwoerter->add_row(TABLE_TEXTAREA,						                'notizen',			'Journal', '', '', '');
 $stichwoerter->rows[2]->addparam = $stichwoerter;
 $stichwoerter->rows[3]->addparam = $stichwoerter;
+
 
 
 
@@ -180,7 +183,8 @@ $anbieter->add_row(TABLE_BITFIELD|TABLE_NEWSECTION,			'pflege_pweinst',	$use_new
 																				.'4###nur Bagatelländerungen zulassen',
 																				 'Onlinepflege', array('layout.section'=>'Onlinepflege', 'ctrl.checkboxes'=>1));
 $anbieter->add_row(TABLE_PASSWORD,							'pflege_passwort',	'Passwort', 0, '');
-$anbieter->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,			'notizen',			'Journal', '', '', '',  array('layout.section'=>1));
+$anbieter->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,			'notizen_fix',			'Anmerkungen', '', '', '',  array('layout.section'=>1));
+$anbieter->add_row(TABLE_TEXTAREA,			'notizen',			'Journal', '', '', '');
 $anbieter->add_row(TABLE_TEXTAREA|TABLE_WIKI,				'pflege_msg',		'Nachricht an den Anbieter', 0, 0, '', array('ctrl.rows'=>3, 'help.tooltip'=>'die Nachricht wird dem Anbieter immer angezeigt, wenn er sich in der Onlinepflege einloggt'));
 $anbieter->add_row(TABLE_DATE|TABLE_DAYMONTHOPT,			'in_wisy_seit',		'in WISY seit ');
 $anbieter->add_row(TABLE_ENUM,								'aufnahme_durch',	'Aufnahme durch', 0,
@@ -266,7 +270,8 @@ $portale->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION, 					'bodystart',		'HTML', 0,
 $portale->add_row(TABLE_TEXTAREA, 									'css',				'CSS', 0, 0, 'Layout', array('help.url'=>'https://b2b.kursportal.info/index.php?title=Portallayout', 'ctrl.rows'=>3));
 $portale->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION, 					'filter',			'Filter', 0, 0, 'Filter', array('help.url'=>'https://b2b.kursportal.info/index.php?title=Portaleinstellungen#Filtereinstellungen', 'ctrl.rows'=>3, 'layout.section'=>'Filter'));
 $portale->add_row(TABLE_TEXTAREA|TABLE_READONLY,					'einstcache',		'Cache', 0, 0, '', array('layout.defhide'=>2, 'layout.descr.hide'=>1, 'layout.join'=>1));
-$portale->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,					'notizen',			'Journal', '', '', '', array('layout.section'=>1));
+$portale->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,			'notizen_fix',			'Anmerkungen', '', '', '',  array('layout.section'=>1));
+$portale->add_row(TABLE_TEXTAREA,					'notizen',			'Journal', '', '', '');
 /*** /HINWEIS: Einstellungen gehören als INI-Wert in das Feld portale.einstellungen - sonst haben wir hier ganz schnell Chaos! (bp) ***/
 /*** Verworfene Werte: skindir, iwwb, iwwb_filter, iwwb_style, logo_1, logo_1_href, logo_2, logo_2_href, menuswitch, print_img, spalten, themen_erlauben, themen_verbieten, qual_logo, qual_logo_gloss, qual_logo_stich, horizont, horizontende, betreiberID (bp) ***/
 
@@ -309,7 +314,8 @@ if(!$use_neweditor) {
 	$kurse->add_row(TABLE_TEXT, 									'foerder_knr', 		'Förder-Kursnummer', '','', '', array('layout.join'=>1));
 	$kurse->add_row(TABLE_TEXT, 									'azwv_knr', 		'AZAV-Kursnummer', '','', '', array('layout.join'=>1));
 }
-$kurse->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,				'notizen',			'Journal', '', '', '', array('layout.section'=>1));
+$kurse->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,			'notizen_fix',			'Anmerkungen', '', '', '',  array('layout.section'=>1));
+$kurse->add_row(TABLE_TEXTAREA,				'notizen',			'Journal', '', '', '');
 $kurse->set_trigger('config/trigger_kurse.inc.php');
 
 
