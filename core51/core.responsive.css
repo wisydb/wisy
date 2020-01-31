@@ -6,7 +6,7 @@
 body { padding: 0; margin: 0; }
 .acclink { display: none; }
 
-#page { max-width: 1024px; margin: 0 auto; padding: 10px; }
+#page { max-width: 1024px; margin: 0 auto; padding: 10px; overflow-x: hidden; }
 
 /* Themenmenue */
 #themenmenue { 
@@ -377,52 +377,73 @@ body { padding: 0; margin: 0; }
 .wisyr_filterform fieldset { border: 0; padding: 0.01em 0 0 0; margin: 0; min-width: 0; }
 body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell;}
 
-.wisyr_filterform form > fieldset {
+.wisyr_filterform form fieldset.wisyr_filtergroup {
 	position: relative;
 	display: inline-block;
-	width: 110px;
-	height: 28px;
+	width: 7rem;
+	height: 1.75rem;
 	border: 0;
 	border-radius: 2px;
 	background: #EEE;
 	margin-right: 0.3em;
 	cursor: pointer;
 }
-.wisyr_filterform form > fieldset > legend {
+.wisyr_filterform form fieldset.wisyr_filtergroup > legend {
 	position: absolute;
 	left: 0.5em;
 	top: 0.3em;
 }
-.wisyr_filterform form > fieldset:hover > legend,
-.wisyr_filterform form > fieldset.active > legend {
-	color: #333;
-}
-.wisyr_filterform form > fieldset:after {
-	content: 'v';
+.wisyr_filterform form fieldset.wisyr_filtergroup:hover > legend,
+.wisyr_filterform form fieldset.wisyr_filtergroup.active > legend { color: #333; }
+.wisyr_filterform form fieldset.wisyr_filtergroup:focus > legend,
+.wisyr_filterform form fieldset.wisyr_filtergroup:focus-within > legend { color: #333; }
+.wisyr_filterform form fieldset.wisyr_filtergroup:after {
+	content: '';
 	position: absolute;
-	right: 0.5em;
+	right: 0.1em;
 	top: 0.3em;
+	width: 1.5em;
+	height: 1.5em;
+	/* https://materialdesignicons.com: chevron-down */
+	background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 23 23'%3E%3Cpath fill='%23787878' d='M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z' /%3E%3C/svg%3E") center center/contain;
 }
 
-.wisyr_filterform form > fieldset.filter_weiterekriterien { width: 140px; }
-.wisyr_filterform form > fieldset.filter_weiterekriterien:after { content: '+'; font-family: 'Roboto', sans-serif; }
-
-.wisyr_filterform form > fieldset.filter_weiterekriterien .filter_inner {
-	padding-right: 10px;
+/* Metagroup: Filtergruppe mit Ueberschrift und Umbruch danach */
+.wisyr_filterform form fieldset.wisyr_filter_metagroup {
+	margin-top: 2em;
 }
-.wisyr_filterform form > fieldset.filter_weiterekriterien fieldset {
-	margin-bottom: 1em;
-}
-.wisyr_filterform form > fieldset.filter_weiterekriterien legend {
+.wisyr_filterform form fieldset.wisyr_filter_metagroup > legend {
+	color: #798D94;
+	font-weight: 700;
 	margin-bottom: 0.5em;
 }
-.wisyr_filterform form > fieldset.filter_weiterekriterien .ui-selectmenu-button {
+
+/* Sonderfall "Weitere Kriterien" */
+.wisyr_filterform form fieldset.filter_weiterekriterien,
+.wisyr_filterform form fieldset.filter_weiterekriterien > .wisyr_filtergroup { width: 9rem; }
+.wisyr_filterform form fieldset.filter_weiterekriterien:after {
+	/* https://materialdesignicons.com: plus */
+/* fontabhaengig + wird nicht verstanden // background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'%3E%3Cpath fill='%23787878' d='M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z' /%3E%3C/svg%3E") center center/contain; */
+	background-repeat:no-repeat;
+	right: 0.1em;
+}
+
+.wisyr_filterform form fieldset.filter_weiterekriterien .filter_inner {
+	padding-right: 10px;
+}
+.wisyr_filterform form fieldset.filter_weiterekriterien fieldset {
+	margin-bottom: 1em;
+}
+.wisyr_filterform form fieldset.filter_weiterekriterien legend {
+	margin-bottom: 0.5em;
+}
+.wisyr_filterform form fieldset.filter_weiterekriterien .ui-selectmenu-button {
 	width: 100%;
 	background: #fff;
 }
-.wisyr_filterform form > fieldset.filter_weiterekriterien .filter_filtersection_submit { display: none; }
+.wisyr_filterform form fieldset.filter_weiterekriterien .filter_filtersection_submit { display: none; }
 
-.wisyr_filterform form > fieldset.filter_sortierung { 
+.wisyr_filterform form fieldset.filter_sortierung { 
 	float: right;
 	width: 170px;
 	text-align: right;
@@ -430,7 +451,8 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 	padding: 0;
 	background: transparent;
 }
-.wisyr_filterform form > fieldset.filter_sortierung legend { display: none; }
+.wisyr_filterform form fieldset.filter_sortierung legend,
+.wisyr_filterform form .wisyr_filterform_listheader > fieldset.filter_sortierung legend { display: none; }
 .wisyr_filterform .ui-selectmenu-button {
 	width: 170px;
 	box-sizing: border-box;
@@ -438,8 +460,19 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 	border-radius: 2px;
 	background: #EEE;
 	padding-left: 7px;
-	outline: 0;
 }
+.wisyr_filterform form .wisyr_filterform_listheader {
+	margin-top: 1em;
+}
+.wisyr_filterform form .wisyr_filterform_listheader .wisyr_list_anzahl_angebote {
+	float: left;
+	height: 1.75em;
+	line-height: 1.75rem;
+}
+.wisyr_filterform form .wisyr_filterform_listheader fieldset.filter_sortierung {
+	float: right;
+}
+
 .wisyr_filterform .ui-selectmenu-button .ui-icon {
 	display: none;
 	background-image: none;
@@ -447,10 +480,14 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 .wisyr_filterform .ui-selectmenu-button .ui-selectmenu-text { color: #606060; margin-right: 0; }
 .wisyr_filterform .ui-selectmenu-button .ui-selectmenu-text:hover { color: #333; }
 .wisyr_filterform .ui-selectmenu-button:after {
-	content: 'v';
+	content: '';
 	position: absolute;
-	right: 0.5em;
-	top: 0.5em;
+	right: 0.1em;
+	top: 0.3em;
+	width: 1.5em;
+	height: 1.5em;
+	/* https://materialdesignicons.com: chevron-down */
+	background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23787878' d='M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z' /%3E%3C/svg%3E") center center/contain;
 }
 .wisyr_filterform .ui-selectmenu-menu { text-align: left; }
 .wisyr_filterform .ui-selectmenu-menu .ui-menu-item { background-color: #eee; border: 0; }
@@ -472,13 +509,16 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 .Zebra_DatePicker .dp_daypicker.dp_body .dp_current {
 	color: #3E7AB8;
 }
+.wisyr_filterform .Zebra_DatePicker_Icon {
+	display: none;
+}
 
-.wisyr_filterform form > fieldset.filter_sortierung:after {
+.wisyr_filterform form fieldset.filter_sortierung:after {
 	display: none;
 	content: '';
 }
 
-.wisyr_filterform .filter_inner {
+.wisyr_filterform fieldset:not(.wisyr_filter_metagroup) > .filter_inner {
 	display: none;
 	position: absolute;
 	top: 32px;
@@ -490,20 +530,26 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 	z-index: 11;
 }
 .wisyr_filterform fieldset.active .filter_inner { display: block; cursor: default; }
+.wisyr_filterform fieldset:focus .filter_inner,
+.wisyr_filterform fieldset:focus-within > .filter_inner { display: block; cursor: default; }
 .wisyr_filterform .filter_inner legend {
 	color: #798D94;
 	font-weight: 700;
 	margin-bottom: 1em;
 }
 
-.wisyr_radiowrapper { display: block; }
+.wisyr_filterform .filter_inner legend {
+	font-weight: 500;
+	font-size: 1em;
+}
 
-.wisyr_filterform form > fieldset select {
+.wisyr_radiowrapper { display: block; white-space: nowrap; }
+
+.wisyr_filterform form fieldset.wisyr_filtergroup select {
 	line-height: 1.5;
 	background-color: #fff;
-	outline: 0;
 }
-.wisyr_filterform form > fieldset select option:hover {
+.wisyr_filterform form fieldset.wisyr_filtergroup select option:hover {
 	background-color: #798D94;
 }
 
@@ -526,20 +572,25 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 }
 
 .wisyr_filterform .filter_zweispaltig .filter_inner,
-.wisyr_filterform .filter_breit .filter_inner { width: 337px; }
+.wisyr_filterform .filter_breit .filter_inner { width: 21rem; }
 .filter_spalte1,
 .filter_spalte2 { float: left; width: 50%; }
+.wisyr_filterform .filter_ohnetitel > legend {
+	display: none;
+}
+.wisyr_filterform .filter_inline,
+.wisyr_filterform .filter_inline_desktop {
+	float: left;
+}
 
-
-.wisyr_filterform form > fieldset.filter_weiterekriterien .filter_schmal .ui-selectmenu-button {
+.wisyr_filterform form fieldset.filter_weiterekriterien .filter_schmal .ui-selectmenu-button {
 	float: right;
 	width: 49%;
 }
-.wisyr_filterform form > fieldset.filter_weiterekriterien .filter_schmal .ui-selectmenu-button:first-of-type {
+.wisyr_filterform form fieldset.filter_weiterekriterien .filter_schmal .ui-selectmenu-button:first-of-type {
 	float: left;
 }
-.wisyr_filterform form > fieldset.filter_weiterekriterien .ui-selectmenu-menu .ui-state-disabled { display: none; }
-
+.wisyr_filterform form fieldset.filter_weiterekriterien .ui-selectmenu-menu .ui-state-disabled { display: none; }
 
 /* Kursthemen und andere Linklisten */
 .wisyr_filterlinklist .filter_inner {
@@ -568,7 +619,8 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 
 .wisyr_filtergroup .wisyr_datepicker {
 	padding-right: 20px;
-	background: #fff url(calendar.png) no-repeat 95% center/auto 60%;
+	/* https://materialdesignicons.com: calendar */
+	background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23787878' d='M19,19H5V8H19M16,1V3H8V1H6V3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3H18V1M17,12H12V17H17V12Z' /%3E%3C/svg%3E") no-repeat 95% center/auto 66%;
 }
 
 /* Clear button */
@@ -576,11 +628,12 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 .wisyr_filtergroup .filter_clearbutton_wrapper input[type="text"] { width: 100%;}
 .wisyr_filtergroup .filter_clearbutton_wrapper .clear_btn {
 	position: absolute;
-	top: 3px;
-	right: -6px;
-	width: 25px;
-	height: 21px;
-	background: #fff url(close-red.png) no-repeat 45% center/10px;
+	top: 0.5em;
+	right: -0.5em;
+	width: 1.5em;
+	height: 1.5em;
+	/* https://materialdesignicons.com: close */
+	background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23787878' d='M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z' /%3E%3C/svg%3E") no-repeat center center/contain;
 	cursor: pointer;
 }
 
@@ -600,7 +653,7 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 /* Anbieter und andere Radiolinklisten */
 
 .wisyr_filterradiolinklist .filter_inner {
-	width: 420px;
+	width: 26rem;
 	max-height: 50vh;
 	overflow-y: scroll;
 	list-style-type: none;
@@ -622,10 +675,39 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 	cursor: pointer;
 }
 
+/* Checkboxen und Checkboxbuttons */
+.wisyr_radioboxwrapper,
+.wisyr_checkboxwrapper {
+	float: left;
+}
+.wisyr_radiobutton input,
+.wisyr_checkbutton input {
+	display: none;
+}
+.wisyr_radiobutton label,
+.wisyr_checkbutton label {
+	display: block;
+	max-width: 15rem;
+	text-transform: uppercase;
+	padding: 0.5em 1em;
+	margin: 0 0.3em 1em 0;
+	background: #EEE;
+	border-radius: 2px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	cursor: pointer;
+}
+.wisyr_radiobutton input:checked + label,
+.wisyr_checkbutton input:checked + label {
+	color: #fff;
+	background-color: #3E7AB8;
+}
+
 /* Aktive Filter */
 .wisyr_activefilters {
 	position: absolute;
-	top: 65px;
+	top: 4.5rem;
 	left: 0;
 	list-style-type: none;
 	padding: 0;
@@ -636,6 +718,7 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 	float: left;
 	margin-right: 0.5em;
 	margin-bottom: 0.3em;
+	z-index: 9;
 }
 .wisyr_activefilters .wisyr_filter a {
 	color: #fff;
@@ -647,7 +730,7 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 	padding: 0.5em 1.5em 0.5em 0.5em;
 	
 	display: block;
-	max-width: 140px;
+	max-width: 9rem;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -656,24 +739,40 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 	text-decoration: none;
 }
 .wisyr_activefilters .wisyr_filter a:after {
-	content: 'x';
-	display: block;
+	content: '';
 	position: absolute;
-	line-height: 14px;
-	right: 0.2em;
 	top: 0.5em;
+	right: 0.25em;
+	width: 1em;
+	height: 1em;
+	/* https://materialdesignicons.com: close */
+	background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ffffff' d='M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z' /%3E%3C/svg%3E") no-repeat center center/contain;
 }
 
 /* Nichts gefunden / leergefiltert Seite */
 .wisy_suggestions .wisyr_filterform_header { display: none; }
 
+/* Make filtergroups appear neutral until there are neutral filter metagroups */
+.wisyr_filterform form > fieldset
+{ background-color: transparent; }
+
+.wisyr_filterform_header_titel 
+{ display: none; } 
+
+/* Titel of Metagroup, tmp. don't display */
+.wisyr_filter_metagroup > legend {
+ display: none;	
+}
+
+/* *************** */ 
+
 @media screen and (min-width: 761px) {
 	.wisyr_filterform .ui-selectmenu-menu .ui-widget.ui-widget-content {
-		max-width: 337px;
+		max-width: 26rem;
 	}
 }
 @media screen and (max-width: 840px) {
-	.wisyr_filterform form > fieldset.filter_sortierung {
+	.wisyr_filterform form .wisyr_filterform_listheader fieldset.filter_sortierung {
 		display: block;
 		float: none;
 	}
@@ -689,10 +788,12 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 		margin: 0;
 		background-color: transparent;
 		overflow: hidden;
-		background: url(filter_grau.png) no-repeat center center/24px;
+		/* https://materialdesignicons.com: tune */
+		background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23787878' d='M3,17V19H9V17H3M3,5V7H13V5H3M13,21V19H21V17H13V15H11V21H13M7,9V11H3V13H7V15H9V9H7M21,13V11H11V13H21M15,9H17V7H21V5H17V3H15V9Z' /%3E%3C/svg%3E") no-repeat center center/24px;
 	}
 	.wisyr_filternav.wisyr_filters_active #wisy_filterlink {
-		background: url(filter_grau_filtered.png) no-repeat center center/24px;
+		/* https://materialdesignicons.com: tune */
+		background: url("data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill-rule%3D%22evenodd%22%20clip-rule%3D%22evenodd%22%20stroke-linejoin%3D%22round%22%20stroke-miterlimit%3D%222%22%3E%3Cpath%20d%3D%22M3%2017v2h6v-2H3M3%205v2h10V5H3m10%2016v-2h8v-2h-8v-2h-2v6h2M7%209v2H3v2h4v2h2V9H7m14%204v-2H11v2h10m-6-4h2V7h4V5h-4V3h-2v6z%22%20fill-rule%3D%22nonzero%22%2F%3E%3Ccircle%20cx%3D%2217.809%22%20cy%3D%226.108%22%20r%3D%224.163%22%20fill%3D%22%233e7ab8%22%2F%3E%3C%2Fsvg%3E") no-repeat center center/24px;
 	}
 	.wisyr_activefilters {
 		display: none;
@@ -732,23 +833,24 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 		box-sizing: border-box;
 	}
 	.wisyr_filterform_header:after {
-		display: block;
-		content: 'x';
+		content: '';
 		position: absolute;
-		right: 0.7em;
-		top: 0;
-		color: #fff;
-		font-size: 24px;
-		padding: 0 0.5em;
-		cursor: pointer;
+		top: 1em;
+		right: 1em;
+		width: 2em;
+		height: 2em;
+		/* https://materialdesignicons.com: close */
+		background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ffffff' d='M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z' /%3E%3C/svg%3E") no-repeat center center/contain;	
 	}
-	.wisyr_filterform_header h3 {
+	.wisyr_filterform_header_titel {
 		color: #fff;
 		font-size: 14px;
 		font-weight: 500;
 		text-transform: uppercase;
 	}
-	.wisyr_filterform_header h4 { display: none; }
+	.wisyr_filterform_header_text {
+		display: none!important;
+	}
 	
 	.wisyr_filterform form { height: auto; margin-top: 98px; }
 	
@@ -764,7 +866,7 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 		box-sizing: border-box;
 	}
 	
-	.wisyr_filterform form > fieldset {
+	.wisyr_filterform form fieldset.wisyr_filtergroup {
 		display: block;
 		width: 100%;
 		height: 38px;
@@ -785,7 +887,7 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 	}
 	.wisyr_filterform form fieldset legend:after,
 	.wisyr_filterform form fieldset .filter_inner legend:after,
-	.wisyr_filterform form > fieldset.filter_sortierung > legend:after {
+	.wisyr_filterform form fieldset.filter_sortierung > legend:after {
 		content: attr(data-filtervalue);
 		display: block;
 		font-size: 14px;
@@ -793,7 +895,7 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 		color: #606060;
 	}
 	
-	.wisyr_filterform form > fieldset.filter_sortierung {
+	.wisyr_filterform form fieldset.filter_sortierung {
 		position: absolute;
 		top:48px;
 		width: 100%;
@@ -801,62 +903,76 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 		text-align: left; 
 		padding: 5px 0;
 	}
-	.wisyr_filterform form > fieldset.filter_sortierung > * { display: none; }
-	.wisyr_filterform form > fieldset.filter_sortierung.active > .ui-selectmenu-menu { display: block; }
-	.wisyr_filterform form > fieldset.filter_sortierung > legend { display: block; }
+	.wisyr_filterform form fieldset.filter_sortierung > * { display: none; }
+	.wisyr_filterform form fieldset.filter_sortierung.active > .ui-selectmenu-menu { display: block; }
+	.wisyr_filterform form .wisyr_filterform_listheader fieldset.filter_sortierung > legend { display: block; }
 	
 	.wisyr_filterform .ui-selectmenu-button { width: 100%; }
 	
-	.wisyr_filterform form > fieldset.filter_weiterekriterien { width: 100%; }
-	.wisyr_filterform form > fieldset.filter_weiterekriterien:after { display: none; }
-	.wisyr_filterform form > fieldset.filter_weiterekriterien fieldset { 
+	.wisyr_filterform form fieldset.filter_weiterekriterien {
+		position: relative;
+	}
+	
+	.wisyr_filterform form fieldset.filter_weiterekriterien,
+	.wisyr_filterform form fieldset.filter_weiterekriterien > .wisyr_filtergroup { width: 100%; z-index: 1112!important; }
+	.wisyr_filterform form fieldset.filter_weiterekriterien:after { display: none; }
+	.wisyr_filterform form fieldset.filter_weiterekriterien fieldset { 
 		position: relative;
 		height: 38px;
 		margin: 0;
 		padding: 5px 0;
-	    border-bottom: 1px solid #ddd;
+		border-bottom: 1px solid #ddd;
 	}
-	.wisyr_filterform form > fieldset:after,
-	.wisyr_filterform form > fieldset.filter_sortierung:after,
-	.wisyr_filterform form > fieldset.filter_weiterekriterien fieldset:after {
-		content: '>';
-		display: block;
+	.wisyr_filterform form fieldset.wisyr_filtergroup:after,
+	.wisyr_filterform form fieldset.filter_sortierung:after,
+	.wisyr_filterform form fieldset.filter_weiterekriterien fieldset:after {
+		content: '';
 		position: absolute;
-		color: #3E7AB8;
-		font-size: 24px;
-		line-height: 48px;
-		right: 0.5em;
-		top: 0;
+		right: 0;
+		top: 1em;
+		width: 1.5em;
+		height: 1.5em;
+		/* https://materialdesignicons.com: chevron-right */
+		background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23787878' d='M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z' /%3E%3C/svg%3E") center center/contain;
 	}
-	.wisyr_filterform form > fieldset.filter_weiterekriterien > legend { display: none; }
-	.wisyr_filterform form > fieldset.filter_weiterekriterien > .filter_inner { 
+	.wisyr_filterform form fieldset.filter_weiterekriterien fieldset .ui-selectmenu-button::after {
+		top: -3em;
+	}
+	.wisyr_filterform form fieldset.filter_weiterekriterien > legend { display: none; }
+	.wisyr_filterform form fieldset.filter_weiterekriterien > .filter_inner,
+	.wisyr_filterform form fieldset.filter_weiterekriterien > .wisyr_filtergroup > .filter_inner { 
 		display: block; 
 		top: 0;
 		width: 100%;
 		padding: 0;
 		box-shadow: none;
 	}
-	.wisyr_filterform form > fieldset.filter_weiterekriterien > .filter_inner > .filter_submit { display: none; }
-	.wisyr_filterform form > fieldset.filter_weiterekriterien > .filter_inner > .no_autosubmit_mobile.active + .filter_filtersection_submit { 
+	
+	.wisyr_filterform form fieldset.filter_weiterekriterien > .filter_inner > .filter_submit { display: none; }
+	.wisyr_filterform form fieldset.filter_weiterekriterien > .filter_inner > .no_autosubmit_mobile.active + .filter_filtersection_submit { 
 		display: block;
 		position: absolute;
-		z-index: 111;
-	    margin: 0 15px;
-	    width: calc(100% - 30px);
+		z-index: 1114!important;
+		margin: 0 15px;
+		width: calc(100% - 30px);
 	}
 	
-	.wisyr_filterform form > fieldset.filter_weiterekriterien > .filter_inner > fieldset > * { display: none; }
-	.wisyr_filterform form > fieldset.filter_weiterekriterien > .filter_inner > fieldset > legend {
+	.wisyr_filterform form fieldset.filter_weiterekriterien > .filter_inner > fieldset > *,
+	.wisyr_filterform form fieldset.filter_weiterekriterien > .wisyr_filtergroup > .filter_inner > fieldset > * { display: none; }
+	.wisyr_filterform form fieldset.filter_weiterekriterien > .filter_inner > fieldset > legend,
+	.wisyr_filterform form fieldset.filter_weiterekriterien > .wisyr_filtergroup > .filter_inner > fieldset > legend {
 		display: block;
 		position: absolute;
 		top: 0.3em;
 		font-weight: 500;
 		line-height: 42px;
 	}
-	.wisyr_filterform form > fieldset.filter_weiterekriterien > .filter_inner > fieldset:not(.active) > legend:not([data-filtervalue='']) {
+	.wisyr_filterform form fieldset.filter_weiterekriterien > .filter_inner > fieldset:not(.active) > legend:not([data-filtervalue='']),
+	.wisyr_filterform form fieldset.filter_weiterekriterien > .wisyr_filtergroup > .filter_inner > fieldset:not(.active) > legend:not([data-filtervalue='']) {
 		line-height: 24px;
 	}
-	.wisyr_filterform form > fieldset.filter_weiterekriterien > .filter_inner > fieldset.active > legend {
+	.wisyr_filterform form fieldset.filter_weiterekriterien > .filter_inner > fieldset.active > legend,
+	.wisyr_filterform form fieldset.filter_weiterekriterien > .wisyr_filtergroup > .filter_inner > fieldset.active > legend {
 		height: 48px;
 		line-height: 48px;
 	}
@@ -870,21 +986,19 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 		box-shadow: none;
 		padding: 0;
 		margin: 0!important;
-		z-index: 111;
+		z-index: 1114!important;
 		background: #eee!important;
 	}
 	.wisyr_filterform fieldset.active:after { display: none!important; }
 	.wisyr_filterform fieldset.active > legend:after {
-		display: block;
-		content: 'x'!important;
+		content: ''!important;
 		position: absolute;
-		right: 0;
-		top: 0;
-		color: #fff!important;
-		font-size: 24px!important;
-		line-height: 48px!important;
-		padding: 0 0.5em;
-		cursor: pointer;
+		top: 1em;
+		right: 1em;
+		width: 2em;
+		height: 2em;
+		/* https://materialdesignicons.com: close */
+		background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ffffff' d='M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z' /%3E%3C/svg%3E") no-repeat center center/contain;
 	}
 	.wisyr_filterform fieldset.active > legend {
 		left: 0!important;
@@ -920,19 +1034,21 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 		margin-bottom: 15px;
 	}
 	
-	.wisyr_filterform form > fieldset.filter_weiterekriterien > .filter_inner > fieldset.active { padding-top: 50px; }
-	.wisyr_filterform form > fieldset.filter_weiterekriterien > .filter_inner > fieldset.active > * { display: block;  }
+	.wisyr_filterform form fieldset.filter_weiterekriterien > .filter_inner > fieldset.active,
+	.wisyr_filterform form fieldset.filter_weiterekriterien > .wisyr_filtergroup > .filter_inner > fieldset.active { padding-top: 50px; }
+	.wisyr_filterform form fieldset.filter_weiterekriterien > .filter_inner > fieldset.active > *,
+	.wisyr_filterform form fieldset.filter_weiterekriterien > .wisyr_filtergroup > .filter_inner > fieldset.active > * { display: block;  }
 	
-	.wisyr_filterform form > fieldset.filter_sortierung .ui-selectmenu-button,
-	.wisyr_filterform form > fieldset.filter_weiterekriterien .ui-selectmenu-button {
+	.wisyr_filterform form fieldset.filter_sortierung .ui-selectmenu-button,
+	.wisyr_filterform form fieldset.filter_weiterekriterien .ui-selectmenu-button {
 		display: block;
 		opacity: 0;
 		height: 50px;
 		margin-top: -50px;
 		z-index: -1;
 	}
-	.wisyr_filterform form > fieldset.filter_sortierung .ui-selectmenu-button { margin-top: 0; }
-	.wisyr_filterform form > fieldset.filter_weiterekriterien .ui-selectmenu-button { margin-top: -50px; }
+	.wisyr_filterform form fieldset.filter_sortierung .ui-selectmenu-button { margin-top: 0; }
+	.wisyr_filterform form fieldset.filter_weiterekriterien .ui-selectmenu-button { margin-top: -50px; }
 	.wisyr_filterform form .ui-selectmenu-menu .ui-widget.ui-widget-content { box-shadow: none; padding: 0; margin: 0; }
 	.wisyr_filterform form .ui-selectmenu-menu .ui-menu-item-wrapper { color: #3E7AB8; }
 	.wisyr_filterform form .ui-selectmenu-menu .ui-menu-item-wrapper.ui-state-active,
@@ -962,6 +1078,17 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 		max-height: none;
 	}
 	
+	.wisyr_filterform fieldset.filter_checkboxes {
+		padding: 0 15px;
+	}
+	
+	.wisyr_checkbutton label {
+		border: 1px solid black;
+	}
+	.wisyr_checkbutton input:checked + label {
+		border-color: #3E7AB8;
+	}
+	
 	.wisyr_filterform_reset { 
 		display: block;
 		line-height: 48px;
@@ -971,5 +1098,120 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 	.filter_ortundumkreis_ort .clear_btn {
 		right: 6px;
 		height: 34px;
+	}
+	
+	.wisyr_filterform form fieldset.wisyr_filter_metagroup {
+		margin-top: 0;
+	}
+	
+	.wisyr_filterform form fieldset.wisyr_filter_metagroup > legend {
+		margin-bottom: 0;
+		padding: 0 15px;
+	}
+	.wisyr_filterform form fieldset.wisyr_filter_metagroup.filter_checkboxes > legend {
+		padding: 0;
+	}
+	
+	.wisyr_filterform .filter_inline,
+	.wisyr_filterform .filter_inline_mobile {
+		float: left;
+	}
+	.wisyr_filterform .filter_inline_desktop {
+		float: none;
+	}
+	
+	.wisyr_filterform form .wisyr_filterform_listheader .wisyr_list_anzahl_angebote {
+		display: none;
+	}
+}
+
+/* Barrierefreie Formulare */
+.wisy-form {
+	line-height: 1.5;
+}
+.wisy-form * {
+	box-sizing: border-box;
+}
+.wisy-form fieldset {
+	max-width: 600px;
+	padding: 1rem;
+	margin-bottom: 1rem;
+	box-sizing: border-box;
+}
+.wisy-form label {
+	font-weight: bold;
+}
+.wisy-form input[type="text"],
+.wisy-form input[type="password"],
+.wisy-form input[type="email"],
+.wisy-form textarea,
+.wisy-form select {
+	display: block;
+	width: 100%;
+	font-size: 1rem;
+	margin: 0.25rem 0 1rem 0;
+}
+.wisy-form input[type="text"],
+.wisy-form input[type="password"],
+.wisy-form input[type="email"],
+.wisy-form textarea {
+	padding: 0.5rem;
+}
+.wisy-form input[type="search"] {
+	font-size: 1rem;
+	padding: 0.5rem;
+}
+.wisy-form textarea {
+	padding: 1rem 0.5rem;
+	min-height: 6rem;
+}
+.wisy-form input[type="submit"],
+.wisy-form button {
+	font-size: 1rem;
+}
+.wisy-form--error {
+	color: red;
+	font-weight: bold;
+}
+input + .wisy-form--error,
+textarea + .wisy-form--error {
+	margin-top: -0.8rem;
+}
+
+.wisyr_align--left {
+	text-align: left;
+}
+.wisyr_align--right {
+	text-align: right;
+}
+.wisyr_align--center {
+	text-align: center;
+}
+
+@media screen and (-ms-high-contrast: active) {
+	.cc-window,
+	.wisyr_filterform form fieldset.wisyr_filtergroup,
+	.wisyr_filterform fieldset.active .filter_inner,
+	.wisyr_filterform input[type='text'],
+	.wisyr_filterform .filter_submit,
+	.wisyr_filterform .ui-selectmenu-button,
+	.wisyr_filterform .ui-selectmenu-menu .ui-widget-content.ui-widget,
+	.wisyr_kursliste,
+	.wisyr_anbieterliste,
+	.wisyr_durchfuehrungen,
+	.Zebra_DatePicker {
+		border: 1px solid windowText;
+	}
+	.wisyr_kursliste th,
+	.wisyr_anbieterliste th,
+	.wisyr_durchfuehrungen th,
+	.Zebra_DatePicker .dp_header {
+		border-bottom: 1px solid windowText;
+	}
+	.wisyr_filterform .Zebra_DatePicker_Icon {
+		display: block;
+		text-indent: 0;
+		margin-top: 0.5em;
+		border: 1px solid windowText;
 	}
 }
