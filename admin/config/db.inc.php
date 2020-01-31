@@ -116,7 +116,7 @@ $anbieter->add_row(TABLE_ENUM|TABLE_SUMMARY|TABLE_LIST|TABLE_NEWSECTION,
 if( $use_neweditor ) {
     $anbieter->add_row(TABLE_MATTR|TABLE_SHOWREF,			'verweis',			'Namensverweisung', 0, 0 /*set below*/, '', array('layout.join'=>1, 'layout.defhide'=>1));
 }
-$anbieter->add_row(TABLE_TEXT,								'postname',			'Originalname',  '', '', '', array('ctrl.size'=>'20-80'));
+$anbieter->add_row(TABLE_TEXTAREA,								'postname',			'Originalname',  '', '', '', array('ctrl.rows'=>'2'));
 $anbieter->add_row(TABLE_TEXT|TABLE_ACNESTSTART,			'strasse',			'Straße ', '', '', '', array('layout.descr'=>'Ort','ctrl.size'=>'8-16-48', 'ctrl.placeholder'=>1));
 $anbieter->add_row(TABLE_TEXT|TABLE_ACNESTSTART|TABLE_ACNEST,'plz',				'PLZ ', '', 5, '', array('layout.after'=>' ', 'layout.descr.hide'=>1, 'ctrl.placeholder'=>1));
 $anbieter->add_row(TABLE_TEXT|TABLE_ACNEST,					'ort',				'Ort ', '', '', '', array('layout.descr.hide'=>1, 'ctrl.placeholder'=>1, 'ctrl.size'=>'8-16-48'));
