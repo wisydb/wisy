@@ -268,6 +268,10 @@ wisy_list etc.
 	background-color: #FFFFD0;
 }
 
+.wisyr_titel .tag_count {
+  color: white;
+}
+
 span.wisy_promoted_prefix {
 	color: #D60008;
 	font-size: 11px;
@@ -283,6 +287,17 @@ img.seal, img.seal_small {
 
 img.seal_small {
  float: right;
+}
+
+.wisyr_termin_weitere  {
+  display: block;
+}
+
+.info_conflict {
+  max-width: 80%;
+  padding: 0;
+  margin: 0 auto;
+  margin-bottom: 2em;
 }
 
 /*******************************************************************************
@@ -331,6 +346,10 @@ advanced form
 edit stuff
 *******************************************************************************/
 
+.wisyp_edit #wisy_contentarea {
+	padding: 4%;
+}
+
 div.wisy_edittoolbar {
 	margin-bottom: 1.5em;
 }
@@ -340,6 +359,16 @@ div.wisy_edittoolbar {
 	border: 2px solid #FAD163;
 	padding: 1px 8px 1px 8px;
 	font-weight: normal !important;
+}
+
+#kurse_invorbereitung a {
+  display: block;
+  line-height: 1em;
+  padding: .5em;
+}
+
+#kurse_invorbereitung a.wisy_even {
+  background-color: #ececec;
 }
 
 input.wisy_hinted {
@@ -747,6 +776,24 @@ SEO
 }
 
 /*******************************************************************************
+Error pages, 404 etc.
+*******************************************************************************/
+.wisyp_error .portal_index {
+	margin-top: 2em;
+	background-color: #bffcbf;
+	border: 2px solid white;
+	padding: 1em;
+}
+
+.wisyp_error .portal_index h4 {
+	margin-top: 0;
+}
+
+.wisyp_error .portal_index a {
+	color: darkblue;
+}
+
+/*******************************************************************************
 print 
 *******************************************************************************/
 
@@ -800,4 +847,16 @@ print
 		font-size: 14px; /*org: 11px*/
 	}
  
+ .wisy_paginate_pagelink,
+ .wisy_paginate_text,
+ .wisy_paginate,
+ .wisy_paginate .ppp, 
+ .wisyr_paginate_bottom,
+ .wisy_paginate_prev,
+ .wisy_paginate_next,
+ .zurAngeboteSuche,
+ #sw_cloud {
+   display: none !important;
+  }
+
 }
