@@ -330,6 +330,25 @@ $feedback->add_row(TABLE_TEXT|TABLE_LIST|TABLE_READONLY,					'name',			'Name');
 $feedback->add_row(TABLE_TEXT|TABLE_LIST|TABLE_READONLY,					'email',			'Email');
 $feedback->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION, 						'notizen', 			'Journal', '', '', '', array('layout.section'=>1));
 
+/*** Ticketing-System ***/
+$tickets = new Table_Def_Class(0,											'tickets',			'Tickets (Kunden-Anfragen)');
+$tickets->add_row(TABLE_ENUM,								'status',	        'Status ', 1, '0###Neu###1###In Bearbeitung###3###Erledigt###4###Archiviert', '', array('layout.join'=>1));
+
+$tickets->add_row(TABLE_TEXT|TABLE_LIST|TABLE_READONLY,					'von_name',			'Von', 	'', '', '', array('layout.section'=>'Absender'));
+$tickets->add_row(TABLE_TEXT|TABLE_LIST|TABLE_READONLY,					'von_email',			'E-Mail', 	'', '', '',	array('ctrl.size'=>'10-200', 'layout.join'=>1));
+$tickets->add_row(TABLE_TEXT|TABLE_LIST|TABLE_READONLY,					'antwortan_name',			'Antwort an', 	'', '', '');
+$tickets->add_row(TABLE_TEXT|TABLE_LIST|TABLE_READONLY,					'antwortan_email',			'E-mail', 	'', '', '',	array('ctrl.size'=>'10-200', 'layout.join'=>1));
+$tickets->add_row(TABLE_TEXT|TABLE_SUMMARY|TABLE_LIST|TABLE_READONLY,
+    'betreff',			'Betreff', '', '', '', array('layout.section'=>'Nachricht', 'layout.bg.class'=>'betreff', 'layout.descr.class'=>'e_bolder', 'ctrl.class'=>'e_bolder'));
+$tickets->add_row(TABLE_TEXTAREA|TABLE_LIST|TABLE_READONLY,		'nachricht_txt',			'Nachricht');
+$tickets->add_row(TABLE_DATETIME|TABLE_LIST|TABLE_READONLY,
+    'date_created',			'Eingang', '', '', '', array('layout.descr'=>'Eingang'));
+// $tickets->add_row(TABLE_TEXTAREA|TABLE_LIST|TABLE_READONLY,		'nachricht_html',			'Nachricht');
+$tickets->add_row(TABLE_TEXT|TABLE_LIST|TABLE_READONLY,					'groesse',			'Größe');
+$tickets->add_row(TABLE_TEXT|TABLE_LIST|TABLE_MUST|TABLE_READONLY,			'msgid',				'Nachrichten-ID');
+$tickets->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION, 						'notizen', 			'Journal', '', '', '', array('layout.section'=>1));
+
+
 
 /*** anbieter_promote etc. (fuer die Werbung) ***/
 $anbieter_promote = new Table_Def_Class(0,			'anbieter_promote',	'Anbieterwerbung');
@@ -370,6 +389,8 @@ $apikeys->set_trigger('config/trigger_apikeys.inc.php');
 
 
 
+$Table_Def[] = $tickets;
+$Table_Def[] = $feedback;
 $Table_Def[] = $kurse; // the order may be changed and is only important for layout reasons
 $Table_Def[] = $durchfuehrung;
 $Table_Def[] = $anbieter;
@@ -380,7 +401,6 @@ $Table_Def[] = $ratgeber;
 $Table_Def[] = $stichwoerter;
 $Table_Def[] = $themen;
 $Table_Def[] = $portale;
-$Table_Def[] = $feedback;
 $Table_Def[] = $apikeys;
 
 
