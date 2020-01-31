@@ -22,7 +22,7 @@ class WISY_AUTOSUGGEST_RENDERER_CLASS
 		}
 	
 		// convert a UTF-8-encoded string to a JSON-encoded string.
-		// to use this with strings encoded with ISO-8859-1, call utf8_encode() before
+		// to use this with strings encoded with ISO-8859-15, call utf8_encode() before
 		$oldEnc = mb_internal_encoding();
 		mb_internal_encoding("UTF-8");
 			static $convmap = array(0x80, 0xFFFF, 0, 0xFFFF);
@@ -80,22 +80,41 @@ class WISY_AUTOSUGGEST_RENDERER_CLASS
 				} 
 				else if(isset($_GET['type']) &&  $_GET['type'] == 'anbieter')
 				{
-					$tag_type_anbieter = $this->framework->iniRead('autosuggest_sw_typ_anbieter', array(64,256));
-					$tag_type_anbieter = (is_array($tag_type_anbieter)) ? $tag_type_anbieter : array_map("trim", explode(",", $tag_type_anbieter));
-					$tags = $tagsuggestor->suggestTags($querystring, array('max'=>10, 'q_tag_type'=>$tag_type_anbieter));
+				    $tag_type_anbieter = $this->framework->iniRead('autosuggest_sw_typ_anbieter', array(2, 131328, 256, 262144));
+				    $tag_type_anbieter = (is_array($tag_type_anbieter)) ? $tag_type_anbieter : array_map("trim", explode(",", $tag_type_anbieter));
+				    $tags = $tagsuggestor->suggestTags($querystring, array('max'=>10, 'q_tag_type'=>$tag_type_anbieter, 'q_tag_type_not'=>array(0,1,65536,4,8,32768,16,32,64,128,512,1024,2048,4096,8192,16384,65)));
 				}
 				else
 				{
-				    $tags = $tagsuggestor->suggestTags($querystring, array('max'=>10, 'q_tag_type_not'=>array(256,512))); // 64: (offenes) Synonym
+
+				    $tags = $tagsuggestor->suggestTags($querystring, array('max'=>10, 'q_tag_type_not'=>array(0,32,128,256,2048,4096,131072,262144)));
+				    
+				    if($this->framework->iniRead('search.ajax.combine_angebote_anbieter', false)) {
+				        $tag_type_anbieter = $this->framework->iniRead('autosuggest_sw_typ_anbieter', array(2, 131328, 256, 262144));
+				        $tag_type_anbieter = (is_array($tag_type_anbieter)) ? $tag_type_anbieter : array_map("trim", explode(",", $tag_type_anbieter));
+				        $tags_anbieter = $tagsuggestor->suggestTags($querystring, array('max'=>10, 'q_tag_type'=>$tag_type_anbieter, 'q_tag_type_not'=>array(0,1,65536,4,8,32768,16,32,64,128,512,1024,2048,4096,8192,16384,65))); // 131072 = 65
+				        
+				        $tags = array_merge($tags, $tags_anbieter);
+				    }
+				    
 				}
                 
                 // Filter out suggestions with tag_freq == 0
                 $filtered_tags = array();
-				for( $i = 0; $i < sizeof($tags); $i++ )
-				{
-					if(intval($tags[$i]['tag_help']) == 0 && intval($tags[$i]['tag_freq']) == 0) continue;
-                    $filtered_tags[] = $tags[$i];
-				}
+                for( $i = 0; $i < sizeof($tags); $i++ )
+                {
+                    $skip = false;
+                    
+                    foreach($filtered_tags AS $filtered_tag) {
+                        // eliminate double tags and tags without courses (except for synonyms)
+                        if( ($filtered_tag['tag'] == $tags[$i]['tag']) || (intval($tags[$i]['tag_help']) == 0 && (intval($tags[$i]['tag_freq']) == 0 && intval($tags[$i]['tag_type']) != 64)) )
+                            $skip = true;
+                    }
+                    
+                    if(!$skip) {
+                        $filtered_tags[] = $tags[$i];
+                    }
+                }
                 
 
 				// No results
@@ -104,7 +123,7 @@ class WISY_AUTOSUGGEST_RENDERER_CLASS
 					if(count($filtered_tags) == 0) {
 						$filtered_tags[] = array(
 							'tag'	=>	$querystring,
-							'tag_descr' => 'Keine Suchvorschläge möglich',
+							'tag_descr' => 'Keine Suchvorschl&auml;ge m&ouml;glich',
 							'tag_type'	=> 0,
 							'tag_help'	=> -2 // indicates "no results"
 						);
@@ -113,7 +132,7 @@ class WISY_AUTOSUGGEST_RENDERER_CLASS
                             
 						$filtered_tags[] = array(
 							'tag'	=>	$querystring,
-							'tag_descr' => 'Alle Suchvorschläge anzeigen',
+							'tag_descr' => 'Alle Suchvorschl&auml;ge anzeigen',
 							'tag_type'	=> 0,
 							'tag_help'	=> 1 // indicates "more"
 						);
