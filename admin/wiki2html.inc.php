@@ -1271,7 +1271,7 @@ class WIKI2HTML_CLASS
 				$currDepth = $this->content[$i][0];
 				if( $this->hasContent >= $currDepth )
 				{
-					$content .= '<table cellpadding="0" cellspacing="0" border="0"><tr><td>' . str_repeat('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;', $currDepth-1) . '</td><td>';
+					$content .= '<table class="content_table" cellpadding="0" cellspacing="0" border="0"><tr><td class="l">' . str_repeat('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;', $currDepth-1) . '</td><td class="r">';
 						$content .= $this->renderA($this->content[$i][1], 'content', "#content".urlencode($this->content[$i][1]), '', 1);
 					$content .= '</td></tr></table>';
 				}
