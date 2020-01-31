@@ -46,7 +46,7 @@ $codes_rechtsform =
 	.'5###Einzelunternehmen###'
 	.'6###GbR###'
 	.'7###Stiftung###'
-	.'8###Anstalt öff. Rechts###'
+	.'8###Staatlicher Träger###' // ehem. Anstalt oeff. Rechts
 	.'9###Körperschaft öff. Rechts###'
 	.'10###Aktiengesellschaft###'
 	.'11###Sonstige';
