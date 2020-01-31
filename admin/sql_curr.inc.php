@@ -257,6 +257,32 @@ class DB_Sql
 		}
 	}
 	
+	function prev_record()
+	{
+	    // correct?
+	    if( $this->use_phys_connection )
+	    {
+	        $this->Record = @mysql_fetch_assoc($this->phys_query_id);
+	        if( is_array($this->Record) ) {
+	            return true;
+	        }
+	        else {
+	            @mysql_free_result($this->phys_query_id);
+	            $this->phys_query_id = 0;
+	            return false;
+	        }
+	    }
+	    else
+	    {
+	        if( $this->ResultI < 1 ) {
+	            return 0;  // no more records - this is no error
+	        }
+	        $this->Record =& $this->Result[ $this->ResultI ];
+	        $this->ResultI--;
+	        return 1; // prev record
+	    }
+	}
+	
 	function quote($str)
 	{
 		return "'" . addslashes($str) . "'";		// you should prefer quote() instead of calling addslashes() directly - this makes stuff compatible to SQLite
@@ -292,6 +318,15 @@ class DB_Sql
 		return $this->ResultInsertId;
 	}
 	
+	function close() {
+	    $this->free();
+	    
+	    if($this->Link_ID)
+	        return mysql_close($this->Link_ID); // @mysql...
+	        else
+	        return false;
+	}
+	
 	function free()
 	{
 		$this->Result = array();
@@ -304,24 +339,37 @@ class DB_Sql
 		}
 	}
 
-	private function halt($msg) 
+	private function halt($msg)
 	{
-		if( $this->Link_ID ) {
-			$this->Error = @mysql_error($this->Link_ID);
-			$this->Errno = @mysql_errno($this->Link_ID);
-		}
-		else {
-			$this->Error = @mysql_error();
-			$this->Errno = @mysql_errno();
-		}
-		if( $this->Halt_On_Error == 'no' )
-			return;
-
-		// printf('<p style="border: 2px solid black;"><b>DB_Sql error:</b> %s<br>MySQL says: Errno %s - %s</p>', $msg, $this->Errno, $this->Error); // sollte nicht im Live-System im Detail ausgegeben werden!
-		printf('<p style="border: 2px solid black;"><b>DB_Sql error:</b> %s<br>MySQL says: Errno %s - %s</p>', "", $this->Errno, "Aus Sicherheitsgr&uuml;nden hier keine detaillierte Fehlermeldung.");
-		
-		if ($this->Halt_On_Error != "report")
-			die("Session halted.");
+	    if( $this->Link_ID ) {
+	        $this->Error = "* ".@mysql_error($this->Link_ID);
+	        $this->Errno = "* ".@mysql_errno($this->Link_ID);
+	    }
+	    else {
+	        $this->Error = "** ".@mysql_error();
+	        $this->Errno = "** ".@mysql_errno();
+	    }
+	    if( $this->Halt_On_Error == 'no' )
+	        return;
+	        
+	        // !
+	        // printf('<p style="border: 2px solid black;"><b>DB_Sql error// :</b> %s<br>MySQL says: Errno %s - %s</p>', $msg, $this->Errno, $this->Error);
+	        
+	        
+	        $error_info = "";
+	        if( strpos($this->Errno, "1203") !== FALSE )
+	            $error_info = "Die Datenbank ist aktuell leider durch zu viele Verbindungen &uuml;berlastet!<br><br>";
+	            elseif( strpos($this->Errno, "1153") !== FALSE )
+	            $error_info = "Diese Datenbank-Abfrage f&uuml;hrte zu einem zu gro&szlig;en Ergebnis - abgebrochen!<br><br>";
+	            elseif( strpos($this->Errno, "1062") !== FALSE )
+	            $error_info = "Diese Datenbank-Abfrage f&uuml;hrte zu einem unzul&auml;ssigen, uneindeutigen Ergebnis! Evtl. hat sich der Suchindex gleichzeitig ver&auml;ndert und muss aktualisiert werden. Bitte versuchen Sie gleich oder etwas sp&auml;ter nochmals.<br><br>";
+	            else
+	            $error_info = "Aus Sicherheitsgr&uuml;nden hier keine detaillierte Fehlermeldung.";
+	                	                	                
+	            printf('<p style="border: 2px solid black;"><b>DB_Sql errorb> %s<br>MySQL says: Errno %s - %s</p>', "", $this->Errno, "<div style='margin-top: 20px; color:darkred;'>".$error_info."</div>");
+	                
+	            if ($this->Halt_On_Error != "report")
+	               die("Session halted.");
 	}
 
 	/**************************************************************************
