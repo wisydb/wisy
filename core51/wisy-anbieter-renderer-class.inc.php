@@ -28,33 +28,47 @@ class WISY_ANBIETER_RENDERER_CLASS
 		return shortenurl($str, $max_length);
 	}
 
-	public function createMailtoLink($adr, $kursId=0) // called from search renderer
+	public function createMailtoLink($adr, $kursId=0, $aID=0) // called from search renderer
 	{
-		// create base
-		$link = 'mailto:'.$adr;
-		
-		// add a fine subject
-		$subject = $this->framework->iniRead('mailto.anbieter.subject', '');
-		if( $subject == '' )
-		{
-			global $wisyPortalKurzname;
-			$subject = "Anfrage via $wisyPortalKurzname";
-		}
-		if( $kursId )
-		{
-			$subject .= ' [Kurs #'.$kursId.']';
-		}
-		$subject .= ' [Ticket #'.time().']';
-		$link .= '?subject='.rawurlencode($subject);
-		
-		// add cc, if needed
-		$cc = $this->framework->iniRead('mailto.anbieter.cc', '');
-		if( $cc != '' )
-		{
-			$link .= '&cc='.rawurlencode($cc);
-		}
-		
-		return $link;
+	    $db_kurs = new DB_Admin();
+	    $db_kurs->query("SELECT org_titel, titel FROM kurse WHERE id =".$kursId);
+	    
+	    if($db_kurs->next_record()) {
+	        $k_orgtitle = $db_kurs->f8('org_titel');
+	        $k_title = $db_kurs->f8('titel');
+	    }
+	    
+	    if(!$k_orgtitle)
+	        $k_orgtitle = $k_title;
+	    
+	        // create base
+	        $link = 'mailto:'.$adr;
+	        
+	        // add a fine subject
+	        $subject = $this->framework->iniRead('mailto.anbieter.subject', '');
+	        if( $subject == '' )
+	        {
+	            global $wisyPortalKurzname;
+	            $subject = ($kursId > 0) ? "Anfrage via ".$_SERVER['SERVER_NAME'].'/k'.$kursId : "Anfrage via ".$_SERVER['SERVER_NAME']."/a".$aID;
+	        }
+	        if( $kursId )
+	        {
+	            $k_orgtitle = (strlen($k_orgtitle) > 60 ? substr($k_orgtitle, 0, 60).".." : $k_orgtitle);
+	            $subject .= ' -- "'.($k_orgtitle != "" ? $k_orgtitle : "").'"';
+	        }
+	        /* $subject .= ' [Ticket #'.time().']'; */
+	        $link .= '?subject='.rawurlencode($subject);
+	        
+	        // add cc, if needed
+	        $cc = $this->framework->iniRead('mailto.anbieter.cc', '');
+	        if( $cc != '' )
+	        {
+	            $link .= '&cc='.rawurlencode($cc);
+	        }
+	        
+	        // $db_kurs->close();
+	        
+	        return $link;
 	}
 	
 	protected function fit_to_rect($orgw, $orgh, $maxw, $maxh, &$scaledw, &$scaledh)
@@ -207,7 +221,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		
 		/* email*/
 		if( $anspr_email )
-			$vc['E-Mail'] .= "\n<div class=\"wisyr_anbieter_email\" itemprop=\"email\"><a href=\"".$this->createMailtoLink($anspr_email, $kursId)."\">" . $this->trimLength($anspr_email, $MAX_URL_LEN  ). '</a></div>';
+			$vc['E-Mail'] .= "\n<div class=\"wisyr_anbieter_email\" itemprop=\"email\"><a href=\"".$this->createMailtoLink($anspr_email, $kursId, $anbieterId)."\">" . $this->trimLength($anspr_email, $MAX_URL_LEN  ). '</a></div>';
 		
 		/* Anbieternummer */
 		$anbieter_nr = $din_nr? $din_nr : $anbieterId;
@@ -262,7 +276,9 @@ class WISY_ANBIETER_RENDERER_CLASS
 		$tag_suchname = $this->tagsuggestorObj->keyword2tagName($suchname);
 		$this->tag_suchname_id = $this->tagsuggestorObj->getTagId(utf8_decode($tag_suchname));
 		$freq = $this->tagsuggestorObj->getTagFreq(array($this->tag_suchname_id)); if( $freq <= 0 ) $freq = '';
-        $vc['Alle Angebote'] = '<a class="wisy_showalloffers" href="' . $this->framework->getUrl('search'). '?qs=zeige:kurse&filter_anbieter=' . urlencode(htmlspecialchars(str_replace(',', ' ', $suchname))) . '">Alle ' . $freq . ' Angebote des Anbieters</a>';
+		$searchlink = $this->framework->getUrl('search');
+		$vc['Alle Angebote'] = '<a class="wisy_showalloffers" href="' . $searchlink . ((strpos($searchlink, '?') === FALSE) ? '?' : '&') . 'qs=zeige:kurse&filter_anbieter=' . urlencode(htmlspecialchars(str_replace(',', ' ', $suchname))) . '">Alle ' . $freq . ' Angebote des Anbieters</a>';
+		
 		/* Qualitätszertifikate */
 		$seals = $this->renderSealsOverview($anbieterId, $pruefsiegel_seit, true);			
 		if( $seals )
@@ -331,6 +347,9 @@ class WISY_ANBIETER_RENDERER_CLASS
 
 			
 		}
+		
+		// $db->close();
+		
 		return $html;
 	}
 	
@@ -415,6 +434,8 @@ class WISY_ANBIETER_RENDERER_CLASS
 				echo '<p>Hinweis f&uuml;r den Anbieter:</p><p>Die Werte werden ca. <b>einmal t&auml;glich</b> neu berechnet.</p>';
 			echo '</div>';
 		}
+		
+		// $db->close();
 	} 
 	
 	
@@ -461,8 +482,10 @@ class WISY_ANBIETER_RENDERER_CLASS
 		$ret = $img_seals;
 
 		if( $txt_seals!= '' ) {
-			$ret .= '<br />' . $txt_seals;
+		    $ret .= '<br />' . $txt_seals;
 		}
+		
+		// $db->close();
 		
 		return $ret;
 	}
@@ -493,12 +516,17 @@ class WISY_ANBIETER_RENDERER_CLASS
 			$map->addPoint2($record, 0);
 		}
 		
+		// $db->close();
+		
 		echo $map->render();
 	}
 	
 	public function render()
 	{
 		$anbieter_id = intval($_GET['id']);
+		
+		if(trim($this->framework->iniRead('disable.anbieter', false)))
+		    $this->framework->error404();
 
 		$db = new DB_Admin();
 
@@ -619,12 +647,13 @@ class WISY_ANBIETER_RENDERER_CLASS
 		
 		// link "show all offers"
 		$freq = $this->tagsuggestorObj->getTagFreq(array($this->tag_suchname_id)); if( $freq <= 0 ) $freq = '';
+		$searchlink = $this->framework->getUrl('search');
 		echo '<h2>'.$freq.($freq==1? ' aktuelles Angebot' : ' aktuelle Angebote').'</h2>'
-		.	'<p>'
-        .       '<a class="wisyr_anbieter_kurselink" href="' . $this->framework->getUrl('search'). '?qs=zeige:kurse&filter_anbieter=' .urlencode(str_replace(',', ' ', $tag_suchname)) . '">'
-		.			"Alle $freq Angebote des Anbieters"
-		.		'</a>'
-		. 	'</p>';		
+		    .	'<p>'
+		    .		'<a class="wisyr_anbieter_kurselink" href="' . $searchlink . ((strpos($searchlink, '?') === FALSE) ? '?' : '&') .'qs=zeige:kurse&filter_anbieter=' .urlencode(str_replace(',', ' ', $tag_suchname)) . '">'
+		    .			"Alle $freq Angebote des Anbieters"
+		    .		'</a>'
+		    . 	'</p>';	
 
 		// current offers overview
 		if( $this->framework->iniRead('anbieter.angebotsuebersicht', 1) )
@@ -680,6 +709,8 @@ class WISY_ANBIETER_RENDERER_CLASS
 		echo "\n</footer><!-- /.wisy_anbieter_footer -->\n\n";
 		
 		echo "\n</div><!-- /#wisy_resultarea -->";
+		
+		// $db->close();
 		
 		echo $this->framework->getEpilogue();
 	}
