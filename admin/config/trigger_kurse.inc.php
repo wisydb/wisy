@@ -468,9 +468,20 @@ function trigger_kurse(&$param)
 			
 			$param['returnmsg'] .= ($param['returnmsg']? '<br />' : '') . 'Alle Freischaltungen &uuml;berpr&uuml;ft.';
 		}
+		
+		update_titel_sorted($param['id']);
 	}
 	
 	return 1;
 }
 
 
+function update_titel_sorted($kurs_id, $titel = "") {
+    $db = new DB_Admin;
+    if($titel == "") {
+        $db->query("SELECT titel FROM kurse WHERE id=".$kurs_id);
+        $db->next_record();
+        $titel = $db->fs('titel');
+    }
+    $db->query("UPDATE kurse SET titel_sorted = '".g_eql_normalize_natsort($titel)."' WHERE id=".$kurs_id);
+}
