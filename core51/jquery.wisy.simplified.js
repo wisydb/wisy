@@ -505,12 +505,21 @@ if (jQuery.ui)
 		
 		// highlight search string
 		var regex = new RegExp("(?![^&;]+;)(?!<[^<>]*)(" + request_term.replace(/([\^\$\(\)\[\]\{\}\*\.\+\?\|\\])/gi, "\\$1") + ")(?![^<>]*>)(?![^&;]+;)", "gi");
-		tag_name = tag_name.replace(regex, "<em>$1</em>");
+		tag_name = tag_name.replace(regex, "<em>$1</em>").replace('&amp;', '&');
 
-		return '<span class="row '+row_class+'">' + 
-					'<span class="tag_name">' + row_prefix + tag_name + '</span>' + 
-					'<span class="tag_count">' + row_count + '</span>' +
-				'</span>';
+		  // 
+		  if(typeof ajax_infoi != "undefined" && ajax_infoi)
+		   var postfix_help = (tag_help > 0) ? '<span data-tag_help="##g'+tag_help+'##"></span>' : '';
+		   // var postfix_help = (tag_help > 0) ? '<span class="tag_info">' + '<a href="/g'+tag_help+'" class="tag_help">'+'Infos'+'</a>' + '</span>' : '';
+		  
+		  var postfix_text = '<span class="row '+row_class+'">' + 
+							'<span class="tag_name">' + row_prefix + tag_name + '</span>' + 
+							'<span class="tag_count">' + row_count + '</span></span>';
+		    
+		  if(typeof ajax_infoi != "undefined" && ajax_infoi)
+		   return postfix_text + postfix_help;
+	  
+			return postfix_text;
 	}
 	
 	function ac_sourcecallback_anbieter(request, response_callback)
@@ -1092,7 +1101,7 @@ function sendFeedback(rating)
 	{
 		$('#wisy_feedback').append(
 				'<div id="wisy_feedback_line2">'
-			+		'<p>Bitte schildern Sie uns noch kurz, warum diese Information nicht hilfreich war und was wir besser machen können:</p>'
+			+		'<p>Bitte schildern Sie uns noch kurz, warum diese Seite nicht hilfreich war und was wir besser machen können:</p>'
 				+	'<textarea id="wisy_feedback_descr" name="wisy_feedback_descr" rows="2" cols="20"></textarea><br />'
 				+	'<br><b>Wenn Sie eine Antwort w&uuml;nschen</b>, geben Sie bitte auch Ihre E-Mail-Adresse an (optional).<br />Wir verwenden Ihre E-Mailadresse und ggf. Name nur, um Ihr Anliegen zu bearbeiten und l&ouml;schen diese personenbezogenen Daten alle 12 Monate.<br><br>'
 				+	'<label for="wisy_feedback_name">Name (optional): </label><input type="text" id="wisy_feedback_name" name="wisy_feedback_name">&nbsp; <label for="wisy_feedback_email">E-Mailadresse (optional): </label><input type="text" id="wisy_feedback_email" name="wisy_feedback_email"><br><br>'
@@ -1122,7 +1131,7 @@ function initFeedback()
 {
 	$('.wisy_allow_feedback').after(
 			'<div id="wisy_feedback" class="noprint">'
-		+		'<span class="wisy_feedback_question">War diese Information hilfreich?</span> '
+		+		'<span class="wisy_feedback_question">War diese Seite hilfreich?</span> '
 		+		'<span id="wisy_feedback_yesno"><a href="javascript:sendFeedback(1)">Ja</a> <a href="javascript:sendFeedback(0)">Nein</a></span>'
 		+	'</div>'
 	);
@@ -1298,6 +1307,25 @@ function initFilters() {
 			$target.val($this.data('autofillvalue'));
 		}
 	});
+	
+	// Eventuelle weitere Instanzen dieses Filters auf gleichen Wert setzen vor dem Abschicken
+	$('.wisyr_filterform input, .wisyr_filterform select, wisyr_selectmenu').on('change selectmenuchange', function() {
+		var $this = $(this);
+		var newVal = $this.val();
+		if ($this.attr('type') == 'checkbox' && !$this.prop('checked')) newVal = '';
+		
+		// Selectmenus
+		$('[name="' + $this.attr('name') + '"] [value="' + $this.val() + '"]').val(newVal);
+		
+		// Inputs etc.
+		$('input:not([type="checkbox"])[name="' + $this.attr('name') + '"]').val(newVal);
+		
+		// Checkboxes
+		$('input[type="checkbox"][name="' + $this.attr('name') + '"]').prop('checked', false);
+		if(newVal != '') {
+			$('input[type="checkbox"][name="' + $this.attr('name') + '"][value="' + $this.val() + '"]').prop('checked', true);
+		}
+	});
 
 	// Filter automatisch abschicken
 	$('.wisyr_filter_autosubmit .filter_submit').hide();
@@ -1341,8 +1369,12 @@ function initFilters() {
 		if($el) {
 			if($el.val() && $el.val().length) {
 				if($wrapper.children('.clear_btn').length == 0) {
-					$wrapper.append('<div class="clear_btn"></div>');
+					$wrapper.append('<div class="clear_btn" aria-label="Eingabe löschen"></div>');
 					$wrapper.children('.clear_btn').one('click', function() {
+						// Wert von qs leeren und auch aus q entfernen
+						var oldVal = $el.val();
+						var oldQVal = $('#wisy_searchinput_q').val();
+						$('#wisy_searchinput_q').val(oldQVal.replace(oldVal, ''));
 						$el.val('');
 						$wrapper.children('.clear_btn').remove();
 						$el.focus();
@@ -1384,22 +1416,24 @@ function initFilters() {
 	// Sortierung Selectfeld via jQuery UI stylebar machen
 	$(".filter_weiterekriterien .wisyr_selectmenu").selectmenu();
 	$(".filter_sortierung .wisyr_selectmenu").selectmenu({
-		select: function(event, ui) { $('.wisyr_filterform form').submit(); }
+		change: function(event, ui) { $('.wisyr_filterform form').submit() }
 	});
 
-	// Zebra Datepicker für Datum in Filtern
-	$(".wisyr_datepicker").Zebra_DatePicker(
-		{
-			format: 'd.m.Y',
-			days: ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'],
-			months: ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'],
-			lang_clear_date: 'Auswahl entfernen',
-			show_icon: false,
-			open_on_focus: true,
-			show_select_today: false,
-			direction: 1 /* start calendar tomorrow, because start dates of DF in the past not searchable at this point */
-		}
-	);
+	if($(".wisyr_datepicker").length) {
+		// Zebra Datepicker für Datum in Filtern
+		$(".wisyr_datepicker").Zebra_DatePicker(
+			{
+				format: 'd.m.Y',
+				days: ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'],
+				months: ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'],
+				lang_clear_date: 'Auswahl entfernen',
+				show_icon: false,
+				open_on_focus: true,
+				show_select_today: false,
+				direction: 1 /* start calendar tomorrow, because start dates of DF in the past not searchable at this point */
+			}
+		);
+	}
 }
 
 function initFiltersMobile() {
@@ -1417,7 +1451,7 @@ function initFiltersMobile() {
 	});
 
 	// Zweite Filterebene wird mobil wie erste Filterebene behandelt
-	$('.wisyr_filtergroup.filter_weiterekriterien > .filter_inner > fieldset, .wisyr_filtergroup.filter_weiterekriterien > .filter_inner > fieldset > legend').on('click', function(e) {
+	$('.wisyr_filtergroup.filter_weiterekriterien > .filter_inner > fieldset, .wisyr_filterform form fieldset.filter_weiterekriterien > .wisyr_filtergroup > .filter_inner > fieldset, .wisyr_filtergroup.filter_weiterekriterien > .filter_inner > fieldset > legend, .wisyr_filterform form fieldset.filter_weiterekriterien > .wisyr_filtergroup > .filter_inner > fieldset > legend').on('click', function(e) {
 		// Workaround für "Alle".
 		// Mobil in zweiter Filterebene passiert nichts wenn dieser Filter nicht gesetzt ist und "Alle" geklickt wird.
 		var isMobile = $(window).width() < 761;
