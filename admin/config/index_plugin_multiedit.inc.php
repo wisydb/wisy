@@ -46,7 +46,8 @@ class MULTIEDIT_PLUGIN_CLASS
 		{
 			$rowflags = $table_def->rows[$r]->flags;
 			$rowname = $table_def->rows[$r]->name;
-			$rowdescr = $site->htmldeentities(trim($table_def->rows[$r]->descr)); if( strlen($rowdescr) > 16) $rowdescr = substr($rowdescr, 0, 14).'..'; 
+			$rowdescr = $site->htmldeentities(trim($table_def->rows[$r]->descr));
+			/* if( strlen($rowdescr) > 16) $rowdescr = substr($rowdescr, 0, 14).'..'; */
 			if( !($rowflags & TABLE_READONLY) )
 			{
 				switch( $rowflags & TABLE_ROW )
@@ -156,7 +157,7 @@ class MULTIEDIT_PLUGIN_CLASS
 						$options .= "del_old_durchf###Abgelaufene Durchführungen LÖSCHEN###";
 					}
 					
-					$options .= "field__user_grp__settext###Benutzergruppe: setze auf 'Parameter2' (nur ID)###";
+					$options .= "field__user_grp__settext###Benutzergruppe: setze auf 'Parameter2' (nur ID) ###";
 					$options .= "field__user_access__settext###Rechte: setze auf 'Parameter2'###";
 					
 					$options .= "nop2######";
