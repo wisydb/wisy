@@ -399,7 +399,9 @@ function login_check()
 		
 		// set last login time, reset login error counter
 		$new_login_errors = $enter_as? 0 : 1;
-		$db->query("UPDATE user SET last_login='" .strftime("%Y-%m-%d %H:%M:%S"). "', num_login_errors=$new_login_errors WHERE id=$db_id");
+		// last_login_id NOT (to be used) for security purposes!
+		$db->query("UPDATE user SET last_login_id='" .berechne_loginid(). "', last_login='" .strftime("%Y-%m-%d %H:%M:%S"). "', num_login_errors=$new_login_errors WHERE id=$db_id");
+		// setcookie("editor", "yes");
 	}
 	else
 	{
