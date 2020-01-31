@@ -101,17 +101,20 @@ if( $use_neweditor ) {
 $anbieter->add_row(TABLE_TEXT|TABLE_SUMMARY|TABLE_LIST|TABLE_MUST|TABLE_UNIQUE,
 															'suchname',			($use_neweditor?'Suchname':'Suchname '), '', '', '', array('ctrl.size'=>'20-80', 'layout.descr.class'=>'e_bolder', 'layout.bg.class'=>'e_bglite', 'ctrl.class'=>'e_bolder'));
 if( !$use_neweditor ) {
-	$anbieter->add_row(TABLE_ENUM,							'freigeschaltet',	'Status', 1, '1###Freigegeben###2###Gesperrt');
-	$anbieter->add_row(TABLE_MATTR|TABLE_SHOWREF,			'verweis',			'Namensverweisung', 0, 0 /*set below*/, '', array('layout.join'=>1, 'layout.defhide'=>1));
+    $anbieter->add_row(TABLE_ENUM,							'freigeschaltet',	'Status', 1, '1###Freigegeben###2###Gesperrt');
+    $anbieter->add_row(TABLE_MATTR|TABLE_SHOWREF,			'verweis',			'Namensverweisung', 0, 0 /*set below*/, '', array('layout.join'=>1, 'layout.defhide'=>1));
 }
 $anbieter->add_row(TABLE_ENUM|TABLE_SUMMARY|TABLE_LIST|TABLE_NEWSECTION,
-															'typ',				 'Typ', 0,
-																				 '0###Anbieter###'
-																				/*.'1###Trainer###' - entfernt, s. WISY_2014_TODO, 4-14*/
-																				.'2###Beratungsstelle###'
-																				.'64###Namensverweisung', 'Allgemein');
+    'typ',				 'Typ', 0,
+    '0###Anbieter###'
+    /*.'1###Trainer###' - entfernt, s. WISY_2014_TODO, 4-14*/
+    .'2###Beratungsstelle###'
+    // .'64###Namensverweisung (ALT)###'
+    .'65###Versteckte Namensverweisung###'
+    .'262144###Namensverweisung###', 'Allgemein');
+
 if( $use_neweditor ) {
-	$anbieter->add_row(TABLE_MATTR|TABLE_SHOWREF,			'verweis',			'Namensverweisung', 0, 0 /*set below*/, '', array('layout.join'=>1, 'layout.defhide'=>1));
+    $anbieter->add_row(TABLE_MATTR|TABLE_SHOWREF,			'verweis',			'Namensverweisung', 0, 0 /*set below*/, '', array('layout.join'=>1, 'layout.defhide'=>1));
 }
 $anbieter->add_row(TABLE_TEXT,								'postname',			'Originalname',  '', '', '', array('ctrl.size'=>'20-80'));
 $anbieter->add_row(TABLE_TEXT|TABLE_ACNESTSTART,			'strasse',			'Straße ', '', '', '', array('layout.descr'=>'Ort','ctrl.size'=>'8-16-48', 'ctrl.placeholder'=>1));
