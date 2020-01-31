@@ -48,6 +48,7 @@ class WISY_DUMP_RENDERER_CLASS
 	            
 	        }
 	        $db->free($sql);
+	        $db->close();
 	    } elseif( $this->param['src'] == 'core.css' )
 	    {
 	        $gzip = (strpos($_SERVER['HTTP_ACCEPT_ENCODING'], 'gzip') !== FALSE);
@@ -75,6 +76,7 @@ class WISY_DUMP_RENDERER_CLASS
 	            
 	        }
 	        $db->free($sql);
+	        $db->close();
 	    }
 	}
 }
