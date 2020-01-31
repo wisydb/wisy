@@ -240,6 +240,7 @@ $durchfuehrung->add_row(TABLE_ENUM,							'tagescode',		'Tagescode', 0, $codes_t
 if( $use_neweditor )
 {
 	$durchfuehrung->add_row(TABLE_ENUM,						'dauer',			'Dauer', 0, $codes_dauer, '', array('layout.defhide'=>1, 'layout.descr.hide'=>1, 'layout.join'=>1, 'help.tooltip'=>'Die Dauer wird aus Beginn- und Endedatum automatisch berechnet; nur wenn dort keine Angaben gemacht werden, gilt der direkt eingestellte Wert'));
+	$durchfuehrung->add_row(TABLE_BITFIELD|TABLE_LIST,		'dauer_fix',		'Dauer Fix', 0, '1###', '', array('layout.defhide'=>1, 'layout.join'=>1, 'ctrl.checkboxes'=>1, 'layout.descr.class'=>'dauer_fix_label', 'ctrl.class'=>'dauer_fix'));
 	$durchfuehrung->add_row(TABLE_ENUM|TABLE_SUMMARY,		'beginnoptionen',	'Terminoption', 0, $codes_beginnoptionen, '', array('layout.join'=>1, 'layout.defhide'=>1, 'layout.descr.hide'=>1)); // nur ca. 10% der Kurse haben eine Terminoption, kann man also verstecken ...
 }
 $durchfuehrung->add_row(TABLE_TEXT|TABLE_NEWSECTION|TABLE_ACNESTSTART,
