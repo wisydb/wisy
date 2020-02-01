@@ -77,8 +77,14 @@ class WISY_KEYWORDTABLE_CLASS
 		/* frequency, end base type */
 		if( $tag_freq > 0 )
 		{
-			$row_postfix = ($tag_freq==1? '1 Kurs' : "$tag_freq Kurse") . $row_preposition . $row_postfix;
+			if( preg_match("/Beratung.$/i", trim($tag_name)) || strpos($tag_name, "Beratungssuche") !== FALSE )
+				$row_postfix = ($tag_freq==1? '1 Angebot' : "$tag_freq Angebote") . $row_preposition . $row_postfix;
+			else
+				$row_postfix = ($tag_freq==1? '1 Kurs' : "$tag_freq Kurse") . $row_preposition . $row_postfix;
+		} else {
+			return "<small>Z.Z. leider keine Angebote ".$row_preposition . $row_postfix.": ".htmlentities(utf8_encode($tag_name))."</small>";
 		}
+
 
 		$row_postfix = PHP7 ? utf8_decode($row_postfix) : $row_postfix;
 		
@@ -169,7 +175,7 @@ class WISY_KEYWORDTABLE_CLASS
 	protected function getKeywordsDivRecursive($keywordId, $level, $expand, $defhidden = false)
 	{
 		// check for timeout
-		$timeout_after_s = 5.000;
+	    $timeout_after_s = 10.000;
 		if( $this->framework->microtime_float() - $this->start > $timeout_after_s ) {
 			return '<tr><td>Timeout, Erstellung der Tabelle abgebrochen.</td></tr>';
 		}
