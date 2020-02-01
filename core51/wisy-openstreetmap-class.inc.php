@@ -258,6 +258,8 @@ class WISY_OPENSTREETMAP_CLASS
 				exit();
 			}
 			echo '{"lat": '.floatval($coord['lat']).',"lng": '.floatval($coord['lng']).'}'; 
+			
+			$db->close();
 			return;
 		}
 		
