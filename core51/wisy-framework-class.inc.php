@@ -7,7 +7,8 @@
  ******************************************************************************/
 
 // necessary for G_BLOB_CLASS / logo output
-require_once('admin/classes.inc.php'); 
+require_once('admin/classes.inc.php');
+require_once('admin/config/codes.inc.php');
 
 // Funktionen, die ohne irgendwelche instanzen laufen sollten
 function g_sync_removeSpecialChars($str)
@@ -70,10 +71,10 @@ class WISY_FRAMEWORK_CLASS
 	var $tokensQF;
 	
 	var $filterTokens = array(
-		'anbieter',
-		'zielgruppe',
-		'thema',
-		'foerderung',
+	    'anbieter',
+	    'zielgruppe',
+	    'thema',
+	    'foerderung',
 	    'qualitaetszertifikat',
 	    'zertifikat',
 	    'sonstigesmerkmal',
@@ -81,14 +82,20 @@ class WISY_FRAMEWORK_CLASS
 	    'abschlussart',
 	    'metaabschlussart',
 	    'unterrichtsart',
-		'tageszeit');
-
+	    'sonstigesmerkmal',
+	    'tageszeit',
+	    'stadtteil',
+	    'bezirk'
+	);
+	
+	var $filterValueSeparator = ',';
+	
 	function __construct($baseObject, $addParam)
 	{
-	    ini_set("default_charset", "UTF-8");
+	    // ini_set("default_charset", "UTF-8");
 	    
 		// constructor
-		$this->includeVersion = '?iv=511'; // change the number on larger changes in included CSS and/or JS files.  May be empty.
+	    $this->includeVersion = ''; //'?iv=511'; // change the number on larger changes in included CSS and/or JS files.  May be empty.
 		
 		// init edit stuff
 		$this->editCookieName		= 'wisyEdit20';
@@ -127,9 +134,9 @@ class WISY_FRAMEWORK_CLASS
     		if( strpos($temp, 'entfernung,'			)!==false ) $GLOBALS['wisyPortalSpaltenDurchf'] += 512;
         }
 				
-		$searcher =& createWisyObject('WISY_SEARCH_CLASS', $this);
-		
-		$this->order = $this->iniRead('kurse.sortierung', false);
+        $this->order = $this->iniRead('kurse.sortierung', false);
+        
+        $searcher =& createWisyObject('WISY_SEARCH_CLASS', $this);
 		
 		// Simple Search
 		$this->simplified = $this->iniRead('search.simplified', 0);
@@ -216,7 +223,8 @@ class WISY_FRAMEWORK_CLASS
 	
 		$db = new DB_Admin;
 		$db->query("UPDATE portale SET einstcache='".addslashes($ret)."' WHERE id=$portalId;");
-		$db->free();
+		// $db->free();
+		// $db->close();
 	}
 	
 	/******************************************************************************
@@ -360,7 +368,7 @@ class WISY_FRAMEWORK_CLASS
 		$this->getAnbieterLogoCache[$cacheKey] = $this->anbieterlogos[$anbieterId];
 					
 		return $this->getAnbieterLogoCache[$cacheKey];
-	
+		$db->close();
     }
 	
 	function pUrl($url) {
@@ -508,44 +516,44 @@ class WISY_FRAMEWORK_CLASS
 	 Various Tools
 	 ******************************************************************************/
 
-	function error404()
+	function error404($custom_title = "", $add_info = "")
 	{
-		/* show an error page. For simple errors, eg. a bad or expired ID, we use an error message in the layout of the portal.
-		However, these messages only work in the root directory (remember, we use relative paths, so whn requesting /abc/def/ghi.html all images, css etc. won't work).
-		So, for errors outside the root directory, we use the global error404() function declared in /index.php */
-		$uri = $_SERVER['REQUEST_URI']; // 
-		if( substr_count($uri, '/') == 1 )
-		{
-			global $wisyCore;
-			header("HTTP/1.1 404 Not Found");
-			header('Content-Type: text/html; charset=utf-8');
-
-			$title = 'Fehler 404 - Seite nicht gefunden';
-
-			echo $this->getPrologue(array('title'=>$title, 'bodyClass'=>'wisyp_error'));
-			echo $this->getSearchField();
-
-			echo '
+	    /* show an error page. For simple errors, eg. a bad or expired ID, we use an error message in the layout of the portal.
+	     However, these messages only work in the root directory (remember, we use relative paths, so whn requesting /abc/def/ghi.html all images, css etc. won't work).
+	     So, for errors outside the root directory, we use the global error404() function declared in /index.php */
+	    $uri = $_SERVER['REQUEST_URI']; //
+	    if( substr_count($uri, '/') == 1 )
+	    {
+	        global $wisyCore;
+	        header("HTTP/1.1 404 Not Found");
+	        header('Content-Type: text/html; charset=utf-8');
+	        
+	        $title = $custom_title ? $custom_title : 'Fehler 404 - Seite nicht gefunden';
+	        
+	        echo $this->getPrologue(array('title'=>$title, 'bodyClass'=>'wisyp_error'));
+	        echo $this->getSearchField();
+	        
+	        echo '
 						<div class="wisy_topnote">
-							<p><b>Fehler 404 - Seite nicht gefunden</b></p>
-							<p>Entschuldigung, aber die von Ihnen gewünschte Seite konnte leider nicht gefunden werden. Sie k&ouml;nnen jedoch ...
-							<ul>
-								<li><a href="//'.$_SERVER['HTTP_HOST'].'">Die Startseite von '.$_SERVER['HTTP_HOST'].' aufrufen ...</a></li>
-								<li><a href="javascript:history.back();">Zur&uuml;ck zur zuletzt besuchten Seite wechseln ...</a></li>
-							</ul>
+							<p><b>'.$title.'</b></p>
+							<p>Entschuldigung, aber die von Ihnen gew&uuml;nschte Seite konnte leider nicht gefunden werden. Sie k&ouml;nnen jedoch:
+								<ul>
+									<li><a href="//'.$_SERVER['HTTP_HOST'].'">Die Startseite von '.$_SERVER['HTTP_HOST'].' aufrufen ...</a></li>
+									<li><a href="javascript:history.back();">Zur&uuml;ck zur zuletzt besuchten Seite wechseln ...</a></li>
+								</ul>
+								'.$add_info.'
+							</p>
+							<p><br><br><small>(Technischer Hinweis: die angeforderte Seite war <i>'.htmlspecialchars($uri).'</i> in <i>/'.htmlspecialchars($wisyCore).'</i> auf <i>' .$_SERVER['HTTP_HOST']. '</i>)</small></p>
 						</div>
-						<p>
-							(die angeforderte Seite war <i>'.htmlspecialchars($uri).'</i> in <i>/'.htmlspecialchars($wisyCore).'</i> auf <i>' .$_SERVER['HTTP_HOST']. '</i>)
-						</p>
 				';
-			
-			echo $this->getEpilogue();
-			exit();
-		}
-		else
-		{
-			error404();
-		}
+	        
+	        echo $this->getEpilogue();
+	        exit();
+	    }
+	    else
+	    {
+	        error404();
+	    }
 	}
 
 	function log($file, $msg)
@@ -661,6 +669,19 @@ class WISY_FRAMEWORK_CLASS
 			$i++;
 		}
 		
+		if(strpos($ret, 'offset=') === FALSE) {
+		    // human trigger of page
+		    if($i > 0)
+		        $ret .= (isset($_GET['qtrigger']) ? '&qtrigger='.$_GET['qtrigger'] : '').(isset($_GET['force']) ? '&force='.$_GET['force'] : '');
+		        else
+		            $ret .= (isset($_GET['qtrigger']) ? '?qtrigger='.$_GET['qtrigger'] : '').(isset($_GET['force']) && !isset($_GET['qtrigger']) ? '?force='.$_GET['force'] : '');
+		} else {
+		    if(isset($_GET['qtrigger']))
+		        $ret = str_replace('offset=', 'qtrigger='.$_GET['qtrigger'].'&offset=', $ret);
+		    if(isset($_GET['force']))
+		        $ret = str_replace('offset=', 'force='.$_GET['force'].'&offset=', $ret);
+		}
+		
 		if($rel)
 		  return $ret;
 		else
@@ -765,13 +786,17 @@ class WISY_FRAMEWORK_CLASS
 	{
 		return preg_replace_callback('/__[A-Z0-9_]+?__/', array($this, 'replacePlaceholders_Callback'), $snippet);
 	}	
-
-	function cleanClassname($input)
+	
+	function cleanClassname($input, $allowNumbers=false)
 	{
-		$output = strtolower($input);
-		$output = strtr($output, array('ä'=>'ae', 'ö'=>'oe', 'ü'=>'ue', 'ß'=>'ss'));
-		$output = preg_replace('/[^a-z,]/', '', $output);
-		return $output;
+	    $output = strtolower($input);
+	    $output = strtr($output, array('ä'=>'ae', 'ö'=>'oe', 'ü'=>'ue', 'ß'=>'ss'));
+	    if($allowNumbers) {
+	        $output = preg_replace('/[^a-z0-9,]/', '', $output);
+	    } else {
+	        $output = preg_replace('/[^a-z,]/', '', $output);
+	    }
+	    return $output;
 	}
 
 
@@ -818,6 +843,11 @@ class WISY_FRAMEWORK_CLASS
 			$sqldatum = explode(' ', strtr($sqldatum, '-:', '  '));
 			return $sqldatum[2] . '.' . $sqldatum[1] . '.' . substr($sqldatum[0], 2, 2);
 		}
+	}
+	
+	function formatTelUrl($tel)
+	{
+	    return preg_replace("/[^0-9]/", "", $tel);
 	}
 
 	function getSeals(&$db, $vars)
@@ -1338,76 +1368,77 @@ class WISY_FRAMEWORK_CLASS
 
 	function getRSSLink()
 	{
-		$ret = '';
-	
-		if( $this->iniRead('rsslink', 1) )
-		{
-		    if($this->getRSSFile() == '' || strpos($this->getRSSFile(), 'volltext') !== FALSE) // don't allow rss-feed subscriptions for full text searches
-		        return false;
-		    
-			$ret .= ' <a href="'.$this->getRSSFile().'" class="wisy_rss_link" title="Suchauftrag als RSS-Feed abonnieren">Updates abonnieren</a> ';
-			
-			$glossarId = intval($this->iniRead('rsslink.help', 2953));
-			if( $glossarId )
-			{
-				$ret .= ' <a href="' .$this->getHelpUrl($glossarId). '" class="wisy_help" title="Hilfe">i</a>';
-			}
-		}
-		
-		return $ret;
+	    $ret = '';
+	    
+	    if($this->getRSSFile() == '' || strpos($this->getRSSFile(), 'volltext') !== FALSE) // don't allow rss-feed subscriptions for full text searches
+	        return false;
+	        
+	        if( $this->iniRead('rsslink', 1) )
+	        {
+	            $ret .= ' <a href="'.$this->getRSSFile().'" class="wisy_rss_link" title="Suchauftrag als RSS-Feed abonnieren">Updates abonnieren</a> ';
+	            
+	            $glossarId = intval($this->iniRead('rsslink.help', 2953));
+	            if( $glossarId )
+	            {
+	                $ret .= ' <a href="' .$this->getHelpUrl($glossarId). '" class="wisy_help" title="Hilfe">i</a>';
+	            }
+	        }
+	        
+	        return $ret;
 	}
 
 
 	function getCSSFiles()
 	{
-		// return all CSS as an array
-		global $wisyPortalCSS;
-		global $wisyPortalId;
-		global $wisyCore; // > 51!
-		$coreAbsPath = $_SERVER['DOCUMENT_ROOT'].'/'.$wisyCore.'/';
-		
-		$ret = array();
-
-		// core styles
-		$date_modified = filectime($coreAbsPath.'core.css');
-		$ret[] = 'core.css' . '?ver='.date("Y-m-d_h-i-s", $date_modified);
-		
-		// core responsive styles
-		$date_modified = filectime($coreAbsPath.'core.responsive.css');
-		$ret[] = 'core.responsive.css' . '?ver='.date("Y-m-d_h-i-s", $date_modified);
-		
-		$date_modified = filectime($coreAbsPath.'/lib/jquery/jquery-ui-1.12.1.custom.min.css');
-		$ret[] = $wisyCore.'/lib/jquery/jquery-ui-1.12.1.custom.min.css' . '?ver='.date("Y-m-d_h-i-s", $date_modified);
-		
-		$date_modified = filectime($coreAbsPath.'/lib/zebra-datepicker/zebra_datepicker.min.css');
-		$ret[] = $wisyCore.'/lib/zebra-datepicker/zebra_datepicker.min.css' . '?ver='.date("Y-m-d_h-i-s", $date_modified);
-		
-		if($this->iniRead('cookiebanner', '') == 1) {
-		    $date_modified = filectime($coreAbsPath.'/lib/cookieconsent/cookieconsent.min.css');
-		    $ret[] = $wisyCore.'/lib/cookieconsent/cookieconsent.min.css' . '?ver='.date("Y-m-d_h-i-s", $date_modified);
-		}
-		
-		// the portal may overwrite everything ...
-		if( $wisyPortalCSS )
-		{
-		    $db = new DB_Admin;
-		    $db->query("SELECT date_modified FROM portale WHERE id=$wisyPortalId;");
-		    if($db->next_record())
-		        $date_modified = $db->f('date_modified');
-		        $db->free();
-		        $ret[] = 'portal.css'. '?ver='.date("Y-m-d_h-i-s", strtotime($date_modified));
-		}
-		
-		if( ($tempCSS=$this->iniRead('head.css', '')) != '')
-		{
-			$addCss = explode(",", $tempCSS);
-			
-			foreach($addCss AS $cssFile) {
-				$ret[] = trim($cssFile);
-			}
-		}
-		
-		return $ret;
+	    // return all CSS as an array
+	    global $wisyPortalCSS;
+	    global $wisyPortalId;
+	    global $wisyCore; // > 51!
+	    $coreAbsPath = $_SERVER['DOCUMENT_ROOT'].'/'.$wisyCore.'/';
+	    
+	    $ret = array();
+	    
+	    // core styles
+	    $date_modified = filectime($coreAbsPath.'core.css');
+	    $ret[] = '/core.css' . '?ver='.date("Y-m-d_h-i-s", $date_modified);
+	    
+	    // core responsive styles
+	    $date_modified = filectime($coreAbsPath.'core.responsive.css');
+	    $ret[] = '/core.responsive.css' . '?ver='.date("Y-m-d_h-i-s", $date_modified);
+	    
+	    $date_modified = filectime($coreAbsPath.'/lib/jquery/jquery-ui-1.12.1.custom.min.css');
+	    $ret[] = $wisyCore.'/lib/jquery/jquery-ui-1.12.1.custom.min.css' . '?ver='.date("Y-m-d_h-i-s", $date_modified);
+	    
+	    $date_modified = filectime($coreAbsPath.'/lib/zebra-datepicker/zebra_datepicker.min.css');
+	    $ret[] = $wisyCore.'/lib/zebra-datepicker/zebra_datepicker.min.css' . '?ver='.date("Y-m-d_h-i-s", $date_modified);
+	    
+	    if($this->iniRead('cookiebanner', '') == 1) {
+	        $date_modified = filectime($coreAbsPath.'/lib/cookieconsent/cookieconsent.min.css');
+	        $ret[] = $wisyCore.'/lib/cookieconsent/cookieconsent.min.css' . '?ver='.date("Y-m-d_h-i-s", $date_modified);
+	    }
+	    
+	    // the portal may overwrite everything ...
+	    if( $wisyPortalCSS )
+	    {
+	        $db = new DB_Admin;
+	        $db->query("SELECT date_modified FROM portale WHERE id=$wisyPortalId;");
+	        if($db->next_record())
+	            $date_modified = $db->f('date_modified');
+	            $db->free();
+	            $ret[] = '/portal.css'. '?ver='.date("Y-m-d_h-i-s", strtotime($date_modified));
+	            // $db->close();
+	    }
+	    
+	    if( ($tempCSS=$this->iniRead('head.css', '')) != '')
+	    {
+	        $addCss = explode(",", $tempCSS);
+	        
+	        foreach($addCss AS $cssFile) {
+	            $ret[] = trim($cssFile);
+	        }
+	    }
+	    
+	    return $ret;
 	}
 
 	function getCSSTags()
@@ -1605,6 +1636,21 @@ class WISY_FRAMEWORK_CLASS
 		return $ret;
 	}
 	
+	function match_loginid(&$db, $hoursago) {
+	    $visitor_login_id = berechne_loginid();
+	    $add_cond = $hoursago > 0 ? "AND last_login >= now() - INTERVAL $hoursago HOUR" : "";
+	    $db->query("SELECT id FROM user WHERE last_login_id='$visitor_login_id' ".$add_cond);
+	    return $db->num_rows();
+	}
+	
+	function is_editor_active(&$db, $hoursago = 0) {
+	    return $this->match_loginid($db, $hoursago); // default: false = normal visitor
+	}
+	
+	function is_frondendeditor_active() {
+	    return $this->editSessionStarted; // default: false = normal visitor
+	}
+	
 	function getJSOnload()
 	{
 		// stuff to add to <body onload=...> - if possible, please prefer jQuery's onload functionality instead of <body onload=...>
@@ -1692,6 +1738,9 @@ class WISY_FRAMEWORK_CLASS
 		}
 		
 		foreach($_GET as $key => $value) {
+		    if(is_array($value))
+		        continue;
+		    
 		    $value = trim($value);
 		    if(preg_match("/^filter_/", $key) && $value != "") {
 		        $ret .= strtolower(' '.$key.'_'.$this->deXSS($value));
@@ -2122,7 +2171,7 @@ class WISY_FRAMEWORK_CLASS
 		// this function returns the renderer object to use _or_ a string with the URL to forward to
 		global $wisyRequestedFile;
 
-		switch( $wisyRequestedFile )
+		switch( trim($wisyRequestedFile, '/') )
 		{
 			// homepage
 			// (in WISY 5.0 gibt es keine Datei "index.php", diese wird vom Framework aber als Synonym für "Homepage" verwendet)
@@ -2279,7 +2328,7 @@ class WISY_FRAMEWORK_CLASS
 			                                                                                                                     
                      $db = new DB_Admin;
                      $db->query($insert_surveyresult);
-			                                                                                                                     
+                     $db->close();
                      exit(0);
 			
 			case 'orte':
@@ -2307,6 +2356,25 @@ class WISY_FRAMEWORK_CLASS
 		{
 			$auth =& createWisyObject('WISY_AUTH_CLASS', $this);
 			$auth->check();
+		}
+		
+		/* Don't allow search request parameters to be set, if search isn't valid for page type -> don't let search engines and hackers consume unecessary ressources ! */
+		global $wisyRequestedFile;
+		$valid_searchrequests = array('rss', 'search', 'advanced', 'filter', 'tree', 'geocode', 'autosuggest', 'autosuggestplzort', 'opensearch', 'kurse.php', 'anbieter.php', 'glossar.php');
+		if(
+		    (isset($_GET['q']) || isset($_GET['qs']) || isset($_GET['qf']) || isset($_GET['qsrc']) || isset($_GET['offset']))
+		    && !in_array($wisyRequestedFile, $valid_searchrequests)
+		    && stripos($wisyRequestedFile, 'k') !== 0 && strpos($wisyRequestedFile, 'a') !== 0 && strpos($wisyRequestedFile, 'g') !== 0 ){
+		        $this->error404("Anfrage nicht erlaubt: q, qs, wf, qsrc, qtrigger, offset f&uuml;r  ".trim($wisyRequestedFile, '.php'));
+		} elseif( isset($_GET['offset']) && !isset($_GET['q']) && !isset($_GET['qs']) && !isset($_GET['qf']) ) { // offset without query
+		    $this->error404("Anfrage nicht erlaubt: offset ohne q, qs f&uuml;r  ".trim($wisyRequestedFile, '.php'));
+		} elseif( (!isset($_GET['q']) && !isset($_GET['qs']) && !isset($_GET['qf']) && !isset($_GET['qsrc']) && !isset($_GET['offset'])) && stripos($wisyRequestedFile, 'search') === 0) {
+		    $this->error404("Diese Suchanfrage ist nicht zugelassen.");
+		}
+		
+		foreach($_GET AS $get) {
+		    if(!is_array($get) && strpos($get, 'volltext') !== FALSE && $_GET['qtrigger'] != 'h' && $_GET['force'] != 1) // qtrigger = h -> human search (click/return), force = link from unsuccessful searches
+		        $this->error404("Volltextanfrage per direkter Verlinkung aus Ressourcengr&uuml;nden nicht erlaubt.<br><br>Bitte geben Sie Ihre Volltextanfrage unbedingt manuell in das Suchfeld ein - bzw. klicken Sie noch mal selbst auf 'Kurse finden' !<br><br>");
 		}
 
 		// see what to do
