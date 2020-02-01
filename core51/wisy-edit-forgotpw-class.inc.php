@@ -44,8 +44,8 @@ class WISY_EDIT_FORGOTPW_CLASS
 			// confirmation link
 			// ================================================================
 			
-			$db	= new DB_Admin;
-			$sql = "SELECT id, pflege_email FROM anbieter WHERE pflege_pweinst&1 AND (id=".intval($anbieterSuchname)." OR pflege_email=".$db->quote($anbieterSuchname_utf8dec)." OR suchname=".$db->quote($anbieterSuchname_utf8dec)." OR postname=".$db->quote($anbieterSuchname_utf8dec).");";
+		    $db	= new DB_Admin;
+		    $sql = "SELECT id, pflege_email FROM anbieter WHERE pflege_pweinst&1 AND (id=".intval($anbieterSuchname)." OR pflege_email=".$db->quote($anbieterSuchname_utf8dec)." OR suchname=".$db->quote($anbieterSuchname_utf8dec)." OR postname=".$db->quote($anbieterSuchname_utf8dec).") AND freigeschaltet = 1";
 			$db->query($sql);
 			if( $db->next_record() )
 			{
@@ -197,6 +197,9 @@ __NAME__";
 		{
 			echo '<p>' . $temp . '</p>';
 		}
+		
+		if(is_object($db))
+		    $db->close();
 					 
 		echo $this->framework->getEpilogue();
 	}
