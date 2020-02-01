@@ -13,6 +13,10 @@ class WISY_INTELLISEARCH_CLASS
 		$this->searcher		=& createWisyObject('WISY_SEARCH_CLASS', $framework, $param);	
 	}
 	
+	function getDoubleTags() {
+	    return $this->searcher->getDoubleTags();
+	}
+	
 	function prepare($queryString)
 	{
 		$this->suggestions = array();
