@@ -68,6 +68,8 @@ class WISY_FEEDBACK_RENDERER_CLASS
 					VALUES ('".addslashes($url)."', '".addslashes($ip)."', $rating, '".addslashes($descr)."', '$today', '$today', $user_grp, $user_access)");
 
 		echo 'FEEDBACK ADDED';
+		
+		$db->close();
 	}
 };
 
