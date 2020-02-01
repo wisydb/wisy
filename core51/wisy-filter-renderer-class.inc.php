@@ -36,34 +36,12 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 	}
 	
 	
-	function renderForm($q = null, $records = null)
+	function prepareFormData($q, $records)
 	{
-		
-        $renderformData = array();
-        
-		echo '<div id="wisyr_filterform" class="wisyr_filterform">';
-		echo '<div class="wisyr_filterform_header"><h3>Suchauftrag anpassen</h3><h4>Nutzen Sie Filter, um Ihre Suche weiter einzugrenzen:</h4></div>';
-		echo '<form action="search" method="get" name="filterform">';
-		echo '<input type="hidden" name="qs" value="' . $this->framework->QS . '" />';
-		echo '<input type="hidden" name="qf" value="' . $this->framework->QF . '" />';
-        
-        // Workaround for "Volltext", TODO: optimize
-        // Workaround for "Zeige", TODO: optimize
-        if(is_array($this->framework->tokensQF)) {
-            foreach($this->framework->tokensQF as $t) {
-                if($t['field'] == 'volltext') {
-                    echo '<input type="hidden" name="filter_volltext" value="' . $t['value'] . '" />';
-                    break;
-                }
-                if($t['field'] == 'zeige') {
-                    echo '<input type="hidden" name="filter_zeige" value="' . $t['value'] . '" />';
-                    break;
-                }
-            }
-        }
-		
-        if(count($records))
-        {
+	    $renderformData = array();
+	    
+	    if(count($records))
+	    {
     		$renderformData['records_simple'] = $records;
 		
     		$renderformData['records_ids'] = array();
@@ -131,6 +109,7 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 		
 		$renderformData['fv_bei'] = '';
 		$renderformData['fv_km'] = '';
+		$renderformData['fv_volltext'] = '';
 		$renderformData['km_arr'] = array('' => 'Umkreis', '10' => '10 km', '25' => '25 km', '50' => '50 km', '500' => '>50 km');
 		$renderformData['fv_preis'] = '';
 		$renderformData['fv_datum'] = '';
@@ -148,6 +127,11 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 		$renderformData['fv_metaabschlussart'] = '';
 		$renderformData['fv_unterrichtsart'] = '';
 		$renderformData['fv_tageszeit'] = '';
+		$renderformData['fv_stadtteil'] = '';
+		$renderformData['fv_bezirk'] = '';
+		
+		// if(!is_array($this->framework->tokensQF))
+		//	return false;
 		
 		foreach($this->framework->tokensQF as $token) {
 			switch( $token['field'] ) {
@@ -160,6 +144,10 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 					if( $renderformData['fv_km'] <= 0 ) $renderformData['fv_km'] = '';
 					if( !$renderformData['km_arr'][$renderformData['fv_km']] ) $renderformData['km_arr'][$renderformData['fv_km']] = $renderformData['fv_km'] . " km";
 					break;
+					
+				case 'volltext':
+				    $renderformData['fv_volltext'] = $token['value'];
+				    break;
 				
 				case 'preis':
 					$renderformData['fv_preis'] = $token['value'];
@@ -240,47 +228,87 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 				case 'tageszeit':
 					$renderformData['fv_tageszeit'] = $token['value'];
 					break;
-					
+				
+				case 'stadtteil':
+				    $renderformData['fv_stadtteil'] = $token['value'];
+				    break;
+				    
+				case 'bezirk':
+				    $renderformData['fv_bezirk'] = $token['value'];
+				    break;
+				    
 				case 'anbieter':
-					$renderformData['fv_anbieter'] = $token['value'];
-					break;
+				    $renderformData['fv_anbieter'] = $token['value'];
+				    break;
 			}
 		}
-		
-		$renderformData['order'] = $this->framework->order;
-        
-        $filtermenu = new WISY_FILTERMENU_CLASS($this->framework, $renderformData);
-        echo $filtermenu->getHtml();
-        
-        $orders = array(
-            'b'  => 'Datum: aufsteigend',
-            'd'  => 'Dauer: aufsteigend',
-            'dd'  => 'Dauer: absteigend',
-            'p'  => 'Preis: aufsteigend',
-            'pd' => 'Preis: absteigend',
-            'a'  => 'Anbieter: aufsteigend',
-            'ad' => 'Anbieter: absteigend',
-            't'  => 'Angebot: Titel',
-            'rand'  => 'Zuf&auml;llig sortiert'
-        );
-        
-        $portal_order = $this->framework->iniRead('kurse.sortierung', false);
-        if($portal_order && $renderformData['order'] == '') $renderformData['order'] = $portal_order;
-		if($renderformData['order'] == '') $renderformData['order'] = 'b';
-		echo '<fieldset class="wisyr_filtergroup wisyr_filter_select filter_sortierung ui-front">';
-        echo '	<legend data-filtervalue="' . $orders[$renderformData['order']] . '">Sortierung</legend>';
-		echo '	<select name="filter_order" class="wisyr_selectmenu">';
-		foreach($orders as $key => $value)
-		{
-			echo '		<option value="' . $key . '"';
-			if($key == $renderformData['order']) echo ' selected="selected"';
-			echo '>' . $value . '</option>';
-		}
-		echo '	</select>';
-		echo '</fieldset>';
-		
-		echo '</form>';
-		echo '</div>';
+		return $renderformData;
+	}
+	
+	function renderForm($q, $records, $hlevel=1, $number_of_results_string='')
+	{
+	    
+	    echo '<div id="wisyr_filterform" class="wisyr_filterform">';
+	    echo '<div class="wisyr_filterform_header"><h' . ($hlevel + 1) . ' class="wisyr_filterform_header_titel">Suchauftrag anpassen</h' . ($hlevel + 1) . '><h' . ($hlevel + 2) . ' class="wisyr_filterform_header_text">Nutzen Sie Filter, um Ihre Suche weiter einzugrenzen:</h' . ($hlevel + 2) . '></div>';
+	    echo '<form action="search" method="get" name="filterform" role="search" aria-label="Suchauftrag anpassen">';
+	    echo '<input type="hidden" name="qs" value="' . $this->framework->QS . '" />';
+	    echo '<input type="hidden" name="qf" value="' . $this->framework->QF . '" />';
+	    
+	    // Workaround for "Volltext", TODO: optimize
+	    // Workaround for "Zeige", TODO: optimize
+	    if(is_array($this->framework->tokensQF)) {
+	        foreach($this->framework->tokensQF as $t) {
+	            if($t['field'] == 'volltext') {
+	                echo '<input type="hidden" name="filter_volltext" value="' . $t['value'] . '" />';
+	                break;
+	            }
+	            if($t['field'] == 'zeige') {
+	                echo '<input type="hidden" name="filter_zeige" value="' . $t['value'] . '" />';
+	                break;
+	            }
+	        }
+	    }
+	    
+	    $renderformData = $this->prepareFormData($q, $records);
+	    
+	    $filtermenu = new WISY_FILTERMENU_CLASS($this->framework, $renderformData);
+	    echo $filtermenu->getHtml();
+	    
+	    // output "number of results" string if set and order selector
+	    $renderformData['order'] = $this->framework->order;
+	    
+	    $orders = array(
+	        'b'  => 'Datum: aufsteigend',
+	        'd'  => 'Dauer: aufsteigend',
+	        'dd'  => 'Dauer: absteigend',
+	        'p'  => 'Preis: aufsteigend',
+	        'pd' => 'Preis: absteigend',
+	        'a'  => 'Anbieter: aufsteigend',
+	        // 'ad' => 'Anbieter: absteigend',
+	        't'  => 'Angebot: Titel',
+	        'o'  => 'Ort: aufsteigend',
+	        't'  => 'Angebot: Titel',
+	        'rand'  => 'Zuf&auml;llig sortiert'
+	    );
+	    
+	    $portal_order = $this->framework->iniRead('kurse.sortierung', false);
+	    if($portal_order && $renderformData['order'] == '') $renderformData['order'] = $portal_order;
+	    if($renderformData['order'] == '') $renderformData['order'] = 'b';
+	    
+	    echo '<fieldset class="wisyr_filtergroup wisyr_filter_select filter_sortierung ui-front">';
+	    echo '	<legend data-filtervalue="' . $orders[$renderformData['order']] . '">Sortierung</legend>';
+	    echo '	<select name="filter_order" class="wisyr_selectmenu">';
+	    foreach($orders as $key => $value)
+	    {
+	        echo '		<option value="' . $key . '"';
+	        if($key == $renderformData['order']) echo ' selected="selected"';
+	        echo '>' . $value . '</option>';
+	    }
+	    echo '	</select>';
+	    echo '</fieldset>';
+	    
+	    echo '</form>';
+	    echo '</div>';
 	}
 };
 
@@ -288,43 +316,56 @@ class WISY_FILTERMENU_ITEM
 {
     var $framework;
     var $renderer;
-	var $data;
+    var $data;
     var $renderformData;
-	var $children;
-	
-	function __construct($framework, $data, $renderformData)
-	{
+    var $children;
+    var $zindex;
+    
+    function __construct($framework, $data, $renderformData, $zindex)
+    {
         $this->framework = $framework;
-		$this->data = $data;
+        $this->data = $data;
         $this->renderformData = $renderformData;
-		$this->children = array();
-	}
-	
-	function getHtml()
-	{
-        $filterclasses = $this->getFilterclasses($this->data, array('wisyr_filtergroup'));
-		$legendvalue = $this->getLegendvalue($this->data['legendkey']);
-        $title = $this->data['title'];
-        $title = PHP7 ? utf8_decode($title) : $title;
+        $this->children = array();
+        $this->zindex = $zindex;
+    }
+    
+    function getHtml($data=false, $subsection=false)
+    {
+        if(!$data) {
+            $data = $this->data;
+        }
         
-		$ret = '<fieldset class="' . $filterclasses . '">';
+        if($subsection) {
+            $filterclasses = 'wisyr_filtergroup';
+        } else {
+            $filterclasses = $this->getFilterclasses($data, true);
+        }
+        $legendvalue = isset($data['legendkey']) ? $this->getLegendvalue($data['legendkey']) : '';
+        $title = isset($data['title']) ? $data['title'] : '';
         
-		    $ret .= '<legend data-filtervalue="' . $legendvalue . '">' . $title . '</legend>';
-            $ret .= '<div class="filter_inner clearfix">';
-            
-            if(isset($this->data['sections']) && count($this->data['sections'])) {
-                $ret .= $this->getSections($this->data['sections']);
-            } else {
-                $ret .= $this->getFormfields($this->data);
-            }
-            
-            $ret .= '<input class="filter_submit" type="submit" value="Übernehmen" />';
-            $ret .= '</div>';
-            
-		$ret .= '</fieldset>';
-		
-		return $ret;
-	}
+        $ret = '<fieldset class="' . $filterclasses . '" style="z-index:' . $this->zindex . '" tabindex="0">';
+        
+        if(trim($title) !== '') {
+            $ret .= '<legend data-filtervalue="' . $legendvalue . '">' . $title . '</legend>';
+        }
+        $ret .= '<div class="filter_inner clearfix">';
+        
+        if(isset($data['sections']) && count($data['sections'])) {
+            $ret .= $this->getSections($data['sections']);
+        } else {
+            $ret .= $this->getFormfields($data);
+        }
+        
+        if($subsection || (isset($data['no_autosubmit']) && $data['no_autosubmit'] == 1) ) {
+            $ret .= '<input class="filter_submit" type="submit" value="übernehmen" />';
+        }
+        $ret .= '</div>';
+        
+        $ret .= '</fieldset>';
+        
+        return $ret;
+    }
     
     function getSections($sections)
     {
@@ -332,34 +373,42 @@ class WISY_FILTERMENU_ITEM
         foreach($sections as $key => $data) {
             
             $filterclasses = $this->getFilterclasses($data);
-			$legendvalue = $this->getLegendvalue($data['legendkey']);
-			
+            $legendvalue = $this->getLegendvalue($data['legendkey']);
+            
             if(isset($data['resetfilter']) && strlen($data['resetfilter'])) {
                 $ret .= '<a class="wisyr_filterform_reset" href="' . $this->framework->filterer->getSearchUrlWithoutFilters() . (isset($_GET['qtrigger']) ? '&qtrigger='.$_GET['qtrigger'] : '') . (isset($_GET['force']) ? '&force='.$_GET['force'] : '') . '">' . $data['resetfilter'] . '</a>';
-				continue;
+                continue;
             }
             
             $title = PHP7 ? utf8_decode($data['title']) : $data['title'];
             $ret .= '<fieldset class="' . $filterclasses . '">';
             $ret .= '<legend data-filtervalue="' . $legendvalue . '">' . $title . '</legend>';
-        
+            
             $ret .= $this->getFormfields($data);
-
+            
             $ret .= '</fieldset>';
-			if(isset($data['no_autosubmit_mobile']) && $data['no_autosubmit_mobile'] == 1) {
-				$ret .= '<input class="filter_submit filter_filtersection_submit" type="submit" value="Übernehmen" />';
-			}
+            if( (isset($data['no_autosubmit_mobile']) && $data['no_autosubmit_mobile'] == 1) || (isset($data['no_autosubmit']) && $data['no_autosubmit'] == 1) ) {
+                $ret .= '<input class="filter_submit filter_filtersection_submit" type="submit" value="übernehmen" />';
+            }
         }
         
         return $ret;
     }
     
-    function getFilterclasses($data, $fsc=array()) {
-                
-        $fsc[] = $data['class']; // -> filtermenu.1.class = filter_zweispaltig        
-        if($data['autosubmit'] == 1) $fsc[] = 'wisyr_filter_autosubmit'; // -> filtermenu.1.autosubmit = 1
-        if($data['autoclear'] == 1) $fsc[] = 'wisyr_filter_autoclear'; // -> filtermenu.1.autoclear = 1   
-		if(isset($data['no_autosubmit_mobile']) && $data['no_autosubmit_mobile'] == 1) $fsc[] = 'no_autosubmit_mobile';     
+    function getFilterclasses($data, $is_filtergroup=false) {
+        
+        $fsc = array();
+        
+        if(isset($data['metagroup']) && $data['metagroup'] == 1) {
+            $fsc[] = 'wisyr_filter_metagroup'; // -> filtermenu.1.metagroup = 1
+        } else if($is_filtergroup) {
+            $fsc[] = 'wisyr_filtergroup';
+        }
+        
+        if(isset($data['class'])) $fsc[] = $data['class']; // -> filtermenu.1.class = filter_zweispaltig
+        if(isset($data['autosubmit']) && $data['autosubmit'] == 1) $fsc[] = 'wisyr_filter_autosubmit'; // -> filtermenu.1.autosubmit = 1
+        if(isset($data['autoclear']) && $data['autoclear'] == 1) $fsc[] = 'wisyr_filter_autoclear'; // -> filtermenu.1.autoclear = 1
+        if(isset($data['no_autosubmit_mobile']) && $data['no_autosubmit_mobile'] == 1) $fsc[] = 'no_autosubmit_mobile';
         
         if(isset($data['function']) && strlen($data['function'])) {
             $fsc[] = 'filter_' . $data['function'];
@@ -399,6 +448,7 @@ class WISY_FILTERMENU_ITEM
                 $fieldname = $fieldvaluename;
                 if(isset($input['name']) && strlen($input['name'])) $fieldname = $input['name'];
                 if(isset($this->renderformData['fv_' . $fieldvaluename])) $fieldvalue = $this->renderformData['fv_' . $fieldvaluename];
+                if(isset($input['label']) && strlen($input['label'])) $fieldlabel = $input['label'];
                 if(isset($input['class'])) $fieldclass = $input['class'];
                 if(isset($input['placeholder'])) $fieldplaceholder = $input['placeholder'];
                 if(isset($input['autofilltarget'])) $autofilltarget = $input['autofilltarget'];
@@ -407,6 +457,8 @@ class WISY_FILTERMENU_ITEM
         
                 if(isset($input['options']) && count($input['options'])) {
                     $filtervalues = $input['options'];
+                } else if(isset($input['stichwort'])) {
+                    $filtervalues = $this->getStichwort($input['stichwort'], $fieldlabel);
                 } else {
                     $filtervalues = $this->getFiltervalues($input);
                 }
@@ -423,80 +475,131 @@ class WISY_FILTERMENU_ITEM
                     break;
             
                     case 'radiolinklist':
-            
+                        
                         foreach($filtervalues as $value => $label) {
-                                            
+                            $value = mb_detect_encoding($value, 'UTF-8', true) ? $value : utf8_encode($value);
+                            
+                            // Funktioniert auch fuer Anbieter?!
+                            $processed_value = $this->getProcessedValue($function, $value, $label);
+                            $disabled = $this->getDisabledValue($function, $value, $label, $processed_value, $fieldvalue, $fieldname);
+                            
                             $ret .= '<div class="wisyr_radiowrapper">';
-                            $ret .= '   <input type="radio" name="filter_' . $fieldname . '" id="filter_' . $fieldname . '_' . $value . '" value="' . ($label == 'Alle' ? '' : str_replace('"', '%20', str_replace(',', ' ', $label))) . '"';
-                
+                            $ret .= '	<input type="radio" name="filter_' . $fieldname . '[]" id="filter_' . $fieldname . '_' . $this->framework->cleanClassname($value, true) . '" value="' . ($label == 'Alle' ? '' : str_replace('"', '%20', str_replace(',', ' ', $label))) . '"';
+                            
                             if(str_replace(',', ' ', $label) == $fieldvalue) {
                                 $ret .= ' checked="checked"';
                                 $currentFound = true;
                             }
-                
+                            
+                            if($disabled) $ret .= ' disabled="disabled"';
+                            
                             $ret .= ' />';
-                            $ret .= '	<label for="filter_' . $fieldname . '_' . $value . '">' . $label . '</label>';
-            
+                            $ret .= '	<label for="filter_' . $fieldname . '_' . $this->framework->cleanClassname($value, true) . '">' . $label . '</label>';
+                            
                             $ret .= '</div>';
                         }
-            
+                        
                         if(!$currentFound && trim($fieldvalue) != '') {
-                            $ret .= '<input type="hidden" name="filter_' . $fieldname . '" value="' . $fieldvalue . '" />';
+                            $ret .= '<input type="hidden" name="filter_' . $fieldname . '[]" value="' . $fieldvalue . '" />';
                         }
-            
-                    break;
-            
+                        
+                        break;
+                        
                     case 'radiolist':
-            
+                    case 'radiobuttons':
+                        
                         foreach($filtervalues as $value => $label) {
-                    
-							$processed_value = $this->getProcessedValue($function, $value, $label);
+                            $value = mb_detect_encoding($value, 'UTF-8', true) ? $value : utf8_encode($value);
+                            
+                            $processed_value = $this->getProcessedValue($function, $value, $label);
                             $checked = $this->getCheckedValue($function, $value, $label, $processed_value, $fieldvalue, $fieldname);
                             $disabled = $this->getDisabledValue($function, $value, $label, $processed_value, $fieldvalue, $fieldname);
-                    
-                            $ret .= '<div class="wisyr_radiowrapper">';
-                    
-                        	$ret .= '   <input type="radio" name="filter_' . $fieldname . '" id="filter_' . $fieldname . '_' . $value . '" value="' . $processed_value . '"';
+                            
+                            if($type == 'radiobuttons') {
+                                $ret .= '<div class="wisyr_radioboxwrapper wisyr_radiobutton">';
+                            } else {
+                                $ret .= '<div class="wisyr_radiowrapper">';
+                            }
+                            
+                            $ret .= '	<input type="radio" name="filter_' . $fieldname . '[]" id="filter_' . $fieldname . '_' . $this->framework->cleanClassname($value, true) . '" value="' . $processed_value . '"';
                             if(strlen($autofilltarget)) {
                                 $ret .= ' data-autofilltarget="#filter_' . $autofilltarget . '" data-autofillvalue="' . $processed_value . '"';
                             }
-                    
+                            
                             if($checked) $ret .= ' checked="checked"';
                             if($disabled) $ret .= ' disabled="disabled"';
-                    
-                        	$ret .= ' />';
-                        	$ret .= '   <label for="filter_' . $fieldname . '_' . $value . '">' . $label . '</label>';
-                        	$ret .= '</div>';
+                            
+                            $ret .= ' />';
+                            $ret .= '	<label for="filter_' . $fieldname . '_' . $this->framework->cleanClassname($value, true) . '">' . $label . '</label>';
+                            $ret .= '</div>';
                         }
-            
-                    break;
-                    
+                        
+                        break;
+                        
                     case 'selectmenu':
                         
-                        $ret .= '<select name="filter_' . $fieldname . '" class="wisyr_selectmenu">';
+                        
+                        $ret .= '<select name="filter_' . $fieldname . '[]" class="wisyr_selectmenu">';
                         foreach($filtervalues as $value => $label) {
-							
-							$processed_value = $this->getProcessedValue($function, $value, $label);
-							$checked = $this->getCheckedValue($function, $value, $label, $processed_value, $fieldvalue, $fieldname);
-							$disabled = $this->getDisabledValue($function, $value, $label, $processed_value, $fieldvalue, $fieldname);
-
-                			$ret .= '<option value="' . $processed_value . '"';
+                            $value = mb_detect_encoding($value, 'UTF-8', true) ? $value : utf8_encode($value);
+                            
+                            
+                            $processed_value = $this->getProcessedValue($function, $value, $label);
+                            $checked = $this->getCheckedValue($function, $value, $label, $processed_value, $fieldvalue, $fieldname);
+                            $disabled = $this->getDisabledValue($function, $value, $label, $processed_value, $fieldvalue, $fieldname);
+                            
+                            $ret .= '<option value="' . $processed_value . '"';
                             if($checked) $ret .= ' selected="selected"';
-							if($disabled && $processed_value != '') $ret .= ' disabled="disabled"';
+                            if($disabled && $processed_value != '') $ret .= ' disabled="disabled"';
                             $ret .= '>' . $label . '</option>';
                         }
                         $ret .= '</select>';
-                    break;
-            
+                        
+                        break;
+                        
+                    case 'checkbuttons':
+                        
+                        foreach($filtervalues as $value => $label) {
+                            $value = mb_detect_encoding($value, 'UTF-8', true) ? $value : utf8_encode($value);
+                            
+                            // Don't show empty value ("Alle") button:
+                            if($value === '') continue;
+                            
+                            $processed_value = $this->getProcessedValue($function, $value, $label);
+                            $checked = $this->getCheckedValue($function, $value, $label, $processed_value, $fieldvalue, $fieldname);
+                            
+                            // echo "<script>console.log('Function: ".$function.", Value: ".$value.", Label: ".$label.", Processed Value: ".$processed_value.", Fieldvalue: ".mysql_real_escape_string(print_r($this->renderformData, true)).", Fieldname: ".$fieldname."');</script>";
+                            // echo "<script>console.log('checked: ".$checked."');</script>";
+                            
+                            $disabled = $this->getDisabledValue($function, $value, $label, $processed_value, $fieldvalue, $fieldname);
+                            
+                            $ret .= '<div class="wisyr_checkboxwrapper wisyr_checkbutton">';
+                            
+                            $ret .= '	<input type="checkbox" name="filter_' . $fieldname . '[]" id="filter_' . $fieldname . '_' . $this->framework->cleanClassname($value, true) . '" value="' . $processed_value . '"';
+                            if(strlen($autofilltarget)) {
+                                $ret .= ' data-autofilltarget="#filter_' . $autofilltarget . '" data-autofillvalue="' . $processed_value . '"';
+                            }
+                            
+                            if($checked) $ret .= ' checked="checked"';
+                            if($disabled) $ret .= ' disabled="disabled"';
+                            
+                            $ret .= ' />';
+                            $ret .= '	<label for="filter_' . $fieldname . '_' . $this->framework->cleanClassname($value, true) . '">' . $label . '</label>';
+                            $ret .= '</div>';
+                        }
+                        
+                        break;
                 }
             }
+        } else if(isset($data['sections']) && count($data['sections'])) {
+            $ret .= $this->getHtml($data, true);
         }
         
         return $ret;
     }
     
     function getFiltervalues($data)
-    {        
+    {
         switch($data['datafunction']) {
             
             case 'anbieter':
@@ -533,7 +636,11 @@ class WISY_FILTERMENU_ITEM
             
             case 'unterrichtsarten':
                 return $this->getSpezielleStichw(32768, $data['datawhitelist']);
-            break;
+                break;
+                
+            case 'sonstigesmerkmal':
+                return $this->getSpezielleStichw(1024, $data['datawhitelist'], $data['orderbywhitelist']);
+                break;
                 
             default:
                 return array();
@@ -548,6 +655,8 @@ class WISY_FILTERMENU_ITEM
             $legendvalue = $this->renderformData['fv_' . $legendkey];
 			
 			switch($legendkey) {
+			    case 'volltext':
+			        break;
 				case 'preis':
 					if($legendvalue > 0) {
 						if(strpos($legendvalue, '-') === false) {
@@ -621,6 +730,7 @@ class WISY_FILTERMENU_ITEM
 			break;
 			
 			case 'taglist':
+			case 'checkboxes':
 				if(is_array($this->renderformData['records_taglist']) && !in_array($value, $this->renderformData['records_taglist'])) $disabled = true;
 			break;
 			
@@ -633,72 +743,94 @@ class WISY_FILTERMENU_ITEM
 	}
 	
 	function getCheckedValue($function, $value, $label, $processed_value, $fieldvalue, $fieldname) {
-		
-		$checked = '';
-		
-		/*
-		switch($function) {
-			case 'xyz':
-				if(1 != 1) {
-					$checked = true;
-				}
-			}
-			break;
-		}
-		*/
-		
-		if($checked === '') { // allows checked-test to be overriden above
-			if($processed_value === $fieldvalue) {
-				$checked = true;
-			} else {
-				$checked = false;
-			}
-		}
-		
-		return $checked;
+	    
+	    $checked = false;
+	    
+	    switch($function) {
+	        case 'checkboxes':
+	            if(!is_array($fieldvalue)) $fieldvalue = explode($this->framework->filterValueSeparator, $fieldvalue);
+	            $checked = false;
+	            foreach($fieldvalue as $fieldval) {
+	                if($processed_value == $fieldval) {
+	                    $checked = true;
+	                    break;
+	                }
+	            }
+	            break;
+	            
+	        default:
+	            if($processed_value === $fieldvalue) {
+	                $checked = true;
+	            } else {
+	                $checked = false;
+	            }
+	            break;
+	    }
+	    
+	    return $checked;
 	}
     
-	private function getSpezielleStichw($flag, $whitelist='')
+	private function getSpezielleStichw($flag, $whitelist='', $orderbywhitelist=false)
 	{
-		// nur die stichwörter zurückgeben, die im aktuellem Portal auch verwendet werden!
-		$keyPrefix = "advStichw.$flag";
-		$magic = strftime("%Y-%m-%d-v5-").md5($GLOBALS['wisyPortalFilter']['stdkursfilter']);
-		if( $this->framework->cacheRead("adv_stichw.$flag.magic") != $magic )
-		{
-			$specialInfo =& createWisyObject('WISY_SPECIAL_INFO_CLASS', $this->framework);
-			$specialInfo->recalcAdvStichw($magic, $flag);
-		}
-		$ids_str = $this->framework->cacheRead("adv_stichw.$flag.ids");
+	    // nur die stichwörter zurückgeben, die im aktuellem Portal auch verwendet werden!
+	    $keyPrefix = "advStichw.$flag";
+	    $magic = strftime("%Y-%m-%d-v5-").md5($GLOBALS['wisyPortalFilter']['stdkursfilter']);
+	    if( $this->framework->cacheRead("adv_stichw.$flag.magic") != $magic )
+	    {
+	        $specialInfo =& createWisyObject('WISY_SPECIAL_INFO_CLASS', $this->framework);
+	        $specialInfo->recalcAdvStichw($magic, $flag);
+	    }
+	    $ids_str = $this->framework->cacheRead("adv_stichw.$flag.ids");
+	    
+	    $ids_filtered = $ids_str;
+	    if(strlen(trim($whitelist))) {
+	        $ids_filtered = array();
+	        $og_ids = array_map('trim', explode(',', $ids_str));
+	        $wl_ids = explode(',', $whitelist);
+	        foreach($wl_ids as $wl_id) {
+	            if(in_array($wl_id, $og_ids)) {
+	                $ids_filtered[] = $wl_id;
+	            }
+	        }
+	        $ids_filtered = implode(',', $ids_filtered);
+	    }
+	    
+	    // query!
+	    $ret = array(''=>'Alle');
+	    if(strlen(trim($ids_filtered))) {
+	        $db = new DB_Admin;
+	        if($orderbywhitelist) {
+	            $db->query("SELECT stichwort FROM stichwoerter WHERE id IN ($ids_filtered) ORDER BY FIELD(id, $ids_filtered);");
+	        } else {
+	            $db->query("SELECT stichwort FROM stichwoerter WHERE id IN ($ids_filtered) ORDER BY stichwort_sorted;");
+	        }
+	        while( $db->next_record() )
+	        {
+	            $stichw = htmlspecialchars($db->f8('stichwort'));
+	            $stichw = trim(strtr($stichw, array(': '=>' ', ':'=>' ', ', '=>' ', ','=>' ')));
+	            
+	            $ret[ $stichw ] = $stichw;
+	        }
+	        $db->free();
+	    }
+	    return $ret;
+	}
 	
-        $ids_filtered = $ids_str;
-        if(strlen(trim($whitelist))) {
-            $ids_filtered = array();
-            $og_ids = array_map('trim', explode(',', $ids_str));
-            $wl_ids = explode(',', $whitelist);
-            foreach($wl_ids as $wl_id) {
-                if(in_array($wl_id, $og_ids)) {
-                    $ids_filtered[] = $wl_id;
-                }
-            }
-            $ids_filtered = implode(',', $ids_filtered);
-        }
-    
-		// query!
-		$ret = array(''=>'Alle');
-        if(strlen(trim($ids_filtered))) {
-    		$db = new DB_Admin;
-    		//$db->query("SELECT stichwort FROM stichwoerter WHERE eigenschaften=$flag ORDER BY stichwort_sorted;");
-    		$db->query("SELECT stichwort FROM stichwoerter WHERE id IN ($ids_filtered) ORDER BY stichwort_sorted;");
-    		while( $db->next_record() )
-    		{
-    			$stichw = htmlspecialchars($db->f8('stichwort'));
-    			$stichw = trim(strtr($stichw, array(': '=>' ', ':'=>' ', ', '=>' ', ','=>' ')));
-			
-    			$ret[ $stichw ] = $stichw;
-    		}
-			$db->free();
-        }
-		return $ret;
+	private function getStichwort($stichwort, $label='') {
+	    $ret = array();
+	    $stichwort = intval($stichwort);
+	    if($stichwort) {
+	        $db = new DB_Admin;
+	        $db->query("SELECT stichwort FROM stichwoerter WHERE id='$stichwort' LIMIT 1");
+	        while( $db->next_record() )
+	        {
+	            $stichw = htmlspecialchars($db->f8('stichwort'));
+	            $stichw = trim(strtr($stichw, array(': '=>' ', ':'=>' ', ', '=>' ', ','=>' ')));
+	            
+	            $ret[ $stichw ] = strlen($label) ? $label : $stichw;
+	        }
+	    }
+	    return $ret;
 	}
 };
 
@@ -718,97 +850,82 @@ class WISY_FILTERMENU_CLASS
 		$this->start_s = $this->framework->microtime_float();
 	}
 	
-    function parseStructure()
-    {
-        global $wisyPortalEinstellungen;
-        reset($wisyPortalEinstellungen);
-            
-        $filterStructure = array();        
-        
-		$allPrefix = $this->prefix . '.';
-		$allPrefixLen = strlen($allPrefix);
-		while( list($key, $value) = each($wisyPortalEinstellungen) )
-		{
-            
-            if( substr($key, 0, $allPrefixLen)==$allPrefix )
-            {
-                $levels = explode('.', substr($key, $allPrefixLen));
-                
-                if(!array_key_exists($levels[0], $filterStructure)) $filterStructure[$levels[0]] = array();
-                
-                switch(count($levels)) {
-                                        
-                    case 1:
-                        // Title of top level element
-                        // -> filtermenu.2 = Preis
-                        $filterStructure[$levels[0]]['title'] = utf8_encode($value);
-                    break;
-                    
-                    case 2:
-                        if(is_numeric($levels[1])) {
-                            // Title of 2nd level element
-                            // -> filtermenu.2.1 = Vorschläge
-                            $filterStructure[$levels[0]]['sections'][$levels[1]]['title'] = utf8_encode($value);
-                        } else {
-                            // Option of top level element
-                            // -> filtermenu.1.class = filter_zweispaltig
-                            $filterStructure[$levels[0]][$levels[1]] = utf8_encode($value);
-                        }
-                    break;
-                    
-                    case 3:
-                        // Option of 2nd level element
-                        // -> filtermenu.2.1.function = preis_vorschlaege
-                        $filterStructure[$levels[0]]['sections'][$levels[1]][$levels[2]] = utf8_encode($value);
-                    break;
-                    
-                    case 4:
-                        // Instance of 1st level input element
-                        // -> filtermenu.4.input.1.type = radiolinklist
-                        $filterStructure[$levels[0]][$levels[1]][$levels[2]][$levels[3]] = utf8_encode($value);
-                    break;
-                    
-                    case 5:
-                        // Second level Input options
-                        // -> filtermenu.2.2.input.1.type = textfield
-                        if([$levels[4]] == 'options') {
-                            $filterStructure[$levels[0]][$levels[1]][$levels[2]][$levels[3]][$levels[4]] = array();
-                        } else {
-                            $filterStructure[$levels[0]]['sections'][$levels[1]][$levels[2]][$levels[3]][$levels[4]] = utf8_encode($value);
-                        }
-                    break;
-                    
-                    case 6:
-                        // Second level Input Option options
-                        // -> filtermenu.2.1.input.1.options.0 = Kostenlos
-                        $filterStructure[$levels[0]]['sections'][$levels[1]][$levels[2]][$levels[3]][$levels[4]][$levels[5]] = utf8_encode($value);
-                    break;                
-                }              
-            }
-        }
-        
-        ksort($filterStructure);
-        return $filterStructure;
-    }
-    
-    function getHtml()
-    {
-        
-		global $wisyPortalModified;
-        
-        // TODO db: // read the menu from the cache ...
-        
-        
-        
-        $filterStructure = $this->parseStructure();        
-        
-        foreach($filterStructure as $key => $filterItem) {
-            $item = new WISY_FILTERMENU_ITEM($this->framework, $filterItem, $this->renderformData);
-            echo $item->getHtml();
-        }
-        
-        // TODO db: // add time
-        
-        // TODO db: // write the complete menu to the cache
-    }
+	function parseStructure()
+	{
+	    global $wisyPortalEinstellungen;
+	    reset($wisyPortalEinstellungen);
+	    
+	    $filterStructure = array();
+	    
+	    $allPrefix = $this->prefix . '.';
+	    $allPrefixLen = strlen($allPrefix);
+	    while( list($key, $value) = each($wisyPortalEinstellungen) )
+	    {
+	        
+	        if( substr($key, 0, $allPrefixLen)==$allPrefix )
+	        {
+	            
+	            // Possible cases:
+	            // √ A. is_numeric -> title (filtermenu.2 = Preis)
+	            // √ B. is_numeric and "parent" is "options" -> option (filtermenu.2.1.input.1.options.0 = Kostenlos)
+	            // √ C. Attribute -> (filtermenu.1.class = filter_zweispaltig)
+	            // √ D. "options" -> array() (filtermenu.2.1.input.1.options)
+	            // √ E. is_numeric and "parent" is_numeric -> sections (filtermenu.2.1)
+	            
+	            $levels = substr($key, $allPrefixLen);
+	            $newStructure = false;
+	            $elements = explode(".", $levels);
+	            if(count($elements) > 1) {
+	                $last = &$newStructure[ $elements[0] ];
+	                $wasNumeric = false;
+	                $wasOption = false;
+	                foreach($elements as $k => $el) {
+	                    
+	                    // Add "sections" whenever two numbers follow one another -> e.g. filtermenu.2.1
+	                    $isNumeric = is_numeric($el);
+	                    if($isNumeric && $wasNumeric) $last = &$last['sections'];
+	                    $wasNumeric = $isNumeric;
+	                    
+	                    // Check for "options" elements:
+	                    $wasOption = $isOption;
+	                    $isOption = ($el == 'options');
+	                    
+	                    if($k == 0) continue;
+	                    $last = &$last[$el];
+	                }
+	                if($isNumeric && !$wasOption) {
+	                    // Add title if parent was not "options"
+	                    $last['title'] = utf8_encode($value);
+	                } else {
+	                    $last = utf8_encode($value);
+	                }
+	            } else {
+	                $newStructure[$levels]['title'] = utf8_encode($value);
+	            }
+	            if($newStructure) {
+	                $filterStructure = array_replace_recursive($filterStructure, $newStructure);
+	            }
+	        }
+	    }
+	    
+	    ksort($filterStructure);
+	    return $filterStructure;
+	}
+	
+	function getHtml()
+	{
+	    global $wisyPortalModified;
+	    
+	    // TODO db: // read the menu from the cache ...
+	    
+	    $filterStructure = $this->parseStructure();
+	    $zindex = 1111;
+	    foreach($filterStructure as $key => $filterItem) {
+	        $item = new WISY_FILTERMENU_ITEM($this->framework, $filterItem, $this->renderformData, $zindex--);
+	        echo $item->getHtml();
+	    }
+	    
+	    // TODO db: // add time
+	    // TODO db: // write the complete menu to the cache
+	}
 };

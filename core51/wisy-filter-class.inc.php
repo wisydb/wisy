@@ -94,10 +94,41 @@ class WISY_FILTER_CLASS
 					'Nachmittags'		=> 'Nachmittags',
 					'Abends'			=> 'Abends',
 					'Wochenende'		=> 'Wochenende',
-					'Fernunterricht'	=> 'nur Fernunterricht',
-					'-Fernunterricht'	=> 'ohne Fernunterricht',
-					'Bildungsurlaub'	=> 'Bildungsurlaub',
+				    'Fernunterricht'	=> 'nur Fernunterricht',
+				    '-Fernunterricht'	=> 'ohne Fernunterricht',
+				    'Datum:alles'	=> 'Auch abgelaufene Termine'
 				),
+			);
+		    /* TODO: content as portal settting */
+			$this->presets['stadtteil'] = array
+			(
+			    'type'		=> 'taglist',
+			    'descr'		=> 'Stadtteil:',
+			    'function'	=> 'stadtteil:',
+			    'options'	=> array(
+			        ''					=> ''
+			    ),
+			);
+			/* TODO: content as portal settting */
+			$this->presets['bezirk'] = array
+			(
+			    'type'		=> 'taglist',
+			    'descr'		=> 'Bezirk:',
+			    'function'	=> 'bezirk:',
+			    'options'	=> array(
+			        ''					=> ''
+			    ),
+			);
+			$this->presets['metaabschlussart'] = array
+			(
+			    'type'		=> 'taglist_unfiltered',
+			    'descr'		=> 'Abschlussart:',
+			    'function'	=> 'metaabschlussart:',
+			    'options'	=> array(
+			        ''					=> '',
+			        'Abschluss'			=> 'Abschluss',
+			        'Zertifikate'		=> 'Zertifikate'
+			    ),
 			);
 			
 			// umkreissuche
@@ -130,6 +161,12 @@ class WISY_FILTER_CLASS
 						'20'		=> '20 km',
 						'50'		=> '50 km',
 					),
+				);
+				$this->presets['volltext'] = array
+				(
+				    'type'		=> 'text',
+				    'function'	=> 'volltext:',
+				    'descr'		=> 'Volltext:'
 				);
 		}
 
@@ -292,12 +329,22 @@ class WISY_FILTER_CLASS
 		$this->presets['tageszeit']['descr'] = 'Tageszeit';
 		$this->presets['tageszeit']['classes'] = 'wisyr_c1_3';
 		
+		// Volltext
+		$this->presets['volltext']['decoration']['headline_left'] = '';
+		$this->presets['volltext']['descr'] = 'Volltext';
+		$this->presets['volltext']['classes'] = 'wisyr_c1_3';
+		
 		// Umkreissuche
 		$this->presets['bei']['decoration']['headline_right'] = '';
 		$this->presets['bei']['descr'] = 'PLZ oder Ort';
 		$this->presets['bei']['classes'] = 'wisyr_c2_3';
 		$this->presets['km']['descr'] = 'Umkreis';
 		$this->presets['km']['classes'] = 'wisyr_c1_3';
+		
+		$this->presets['stadtteil']['descr'] = 'Stadtteil';
+		$this->presets['stadtteil']['classes'] = 'wisyr_c1_3';
+		$this->presets['bezirk']['descr'] = 'Bezirk';
+		$this->presets['bezirk']['classes'] = 'wisyr_c1_3';
 		
 		// Weitere Optionen
 		$this->presets['preis']['decoration']['headline_left'] = 'Weitere Optionen';
@@ -322,6 +369,9 @@ class WISY_FILTER_CLASS
 		
 		$this->presets['abschlussarten']['descr'] = 'Abschlussart';
 		$this->presets['abschlussarten']['classes'] = 'wisyr_c4_3';
+		
+		$this->presets['metaabschlussart']['descr'] = 'MetaAbschlussart';
+		$this->presets['metaabschlussart']['classes'] = 'wisyr_c4_3';
 		
 		$this->presets['unterrichtsart']['descr'] = 'Unterrichtsart';
 		$this->presets['unterrichtsart']['classes'] = 'wisyr_c1_3';
@@ -413,6 +463,7 @@ class WISY_FILTER_CLASS
 		$this->filtered = false;
 		
 		$preis = false;
+		$volltext = false;
 		$datum = false;
 		$km = false;
 		
@@ -429,7 +480,9 @@ class WISY_FILTER_CLASS
 			$this->filtered = true;
 			
 			$field = '';
-			$value = htmlspecialchars(trim($_GET['filter_' . $field_name])); // '&' -> '&amp;', '"' -> '&quot;', wenn n. ENT_NOQUOTES, "'" -> '&#039;' (oder &apos;), wenn n. ENT_QUOTES, '<' -> '&lt;', '>' -> '&gt;'
+			$value = $this->implodeArray($_GET['filter_' . $field_name]);
+			$value = htmlspecialchars(trim($value)); // '&' -> '&amp;', '"' -> '&quot;', wenn n. ENT_NOQUOTES, "'" -> '&#039;' (oder &apos;), wenn n. ENT_QUOTES, '<' -> '&lt;', '>' -> '&gt;'
+			
 			$value = str_replace("&amp;", "&", $value);
 			if( $value != '' )
 			{
@@ -438,6 +491,12 @@ class WISY_FILTER_CLASS
 				{
 					$preis = $value;
 					continue;
+				}
+				
+				if($field_name == 'volltext')
+				{
+				    $volltext = $value;
+				    continue;
 				}
                 
                 if($field_name == 'datum')
@@ -465,24 +524,28 @@ class WISY_FILTER_CLASS
 		}
 		
 		// Sonderfall Preisspanne. TODO db: Über Presets umsetzen?
-		if(isset($_GET['filter_preis']) || isset($_GET['filter_preis_von']) || isset($_GET['filter_preis_bis']))
+		$filter_preis = trim($this->implodeArray($_GET['filter_preis']));
+		$filter_preis_von = trim($this->implodeArray($_GET['filter_preis_von']));
+		$filter_preis_bis = trim($this->implodeArray($_GET['filter_preis_bis']));
+		
+		if($filter_preis != '' || $filter_preis_von != '' || $filter_preis_bis != '')
 		{
-			if(trim($_GET['filter_preis']) != '')
-			{
-				$preis = trim($_GET['filter_preis']);
-			}
-			
-			$preis_von = false;
-			if(isset($_GET['filter_preis_von']) && trim($_GET['filter_preis_von']) != '')
-			{
-				$preis_von = intval($_GET['filter_preis_von']);
-			}
-			
-			$preis_bis = false;
-			if(isset($_GET['filter_preis_bis']) && trim($_GET['filter_preis_bis']) != '')
-			{
-				$preis_bis = intval($_GET['filter_preis_bis']);
-			}
+		    if($filter_preis != '')
+		    {
+		        $preis = $filter_preis;
+		    }
+		    
+		    $preis_von = false;
+		    if($filter_preis_von != '')
+		    {
+		        $preis_von = intval($filter_preis_von);
+		    }
+		    
+		    $preis_bis = false;
+		    if($filter_preis_bis != '')
+		    {
+		        $preis_bis = intval($filter_preis_bis);
+		    }
 			
 			if($preis_von !== false && $preis_bis !== false)
 			{
@@ -503,31 +566,41 @@ class WISY_FILTER_CLASS
 			}
 		}
         
-        // Sonderfall Kursbeginn. TODO db: optimieren?
-		if(isset($_GET['filter_datum_von']) && trim($_GET['filter_datum_von']) != '')
+		if(trim($_GET['filter_volltext']) != '')
 		{
-            $datum = trim($_GET['filter_datum_von']);
-        }
+		    $preis = trim($_GET['filter_volltext']);
+		}
+		
+		// Sonderfall Kursbeginn. TODO db: optimieren?
+		$filter_datum_von = trim($this->implodeArray($_GET['filter_datum_von']));
+		
+		if($filter_datum_von != '')
+		{
+		    $datum = $filter_datum_von;
+		}
 		if($datum != '')
 		{
-			$queryfilters[] = array('field' => 'datum', 'value' => $datum);
+		    $queryfilters[] = array('field' => 'datum', 'value' => $datum);
 		}
 		
 		// Sonderfall Dauer. TODO db: Über Presets umsetzen?
-		if(isset($_GET['filter_dauer_von']) || isset($_GET['filter_dauer_bis']))
-		{	
-			$dauer = '';
-			$dauer_von = false;
-			if(isset($_GET['filter_dauer_von']) && trim($_GET['filter_dauer_von']) != '')
-			{
-				$dauer_von = intval($_GET['filter_dauer_von']);
-			}
-			
-			$dauer_bis = false;
-			if(isset($_GET['filter_dauer_bis']) && trim($_GET['filter_dauer_bis']) != '')
-			{
-				$dauer_bis = intval($_GET['filter_dauer_bis']);
-			}
+		$filter_dauer_von = trim($this->implodeArray($_GET['filter_dauer_von']));
+		$filter_dauer_bis = trim($this->implodeArray($_GET['filter_dauer_bis']));
+		
+		if($filter_dauer_von != '' || $filter_dauer_bis != '')
+		{
+		    $dauer = '';
+		    $dauer_von = false;
+		    if($filter_dauer_von != '')
+		    {
+		        $dauer_von = intval($filter_dauer_von);
+		    }
+		    
+		    $dauer_bis = false;
+		    if($filter_dauer_bis != '')
+		    {
+		        $dauer_bis = intval($filter_dauer_bis);
+		    }
 			
 			if($dauer_von && $dauer_bis)
 			{
@@ -556,22 +629,37 @@ class WISY_FILTER_CLASS
 		$this->framework->tokensQF = $queryfilters;
 	}
 	
+	function implodeArray($input) {
+	    if(is_array($input)) {
+	        $input = array_filter($input, function($value) { return !is_null($value) && $value !== ''; });
+	        $input = array_unique($input);
+	        $input = implode($this->framework->filterValueSeparator, $input);
+	    }
+	    return $input;
+	}
+	
 	function constructTokens() {
-		
-		$q =  htmlspecialchars(trim($this->framework->getParam('q',  ''), ', '));
-		$qs = htmlspecialchars(trim($this->framework->getParam('qs', ''), ', '));
-		$qf = htmlspecialchars(trim($this->framework->getParam('qf', ''), ', '));
-		
-		if($this->DEBUG) echo 'Vorher' . "<br />\n";
-		if($this->DEBUG) echo 'q: ' .  $q . "<br />\n";
-		if($this->DEBUG) echo 'qs: ' . $qs . "<br />\n";
-		if($this->DEBUG) echo 'qf: ' . $qf . "<br />\n";
-		if($this->DEBUG) echo "<br />\n<br />\n";
-		
-		if(strlen($q) && !strlen($qs) && !strlen($qf) && !count($this->framework->QF)) {
-			// Case 4: Only q is filled, qs and qf are empty
-			
-			// Q
+	    
+	    // $q =  htmlspecialchars(trim(utf8_encode($this->framework->getParam('q',  '')), ', ')); // ! utf8_encode
+	    $q =  htmlspecialchars(trim($this->framework->getParam('q',  ''), ', ')); // ! utf8_encode
+	    if(preg_match("/fav:$/i", $q)) $q = str_replace("fav:", "", $q);
+	    
+	    $qs = htmlspecialchars(trim($this->framework->getParam('qs', ''), ', ')); // ! utf8_encode
+	    if(preg_match("/fav:$/i", $qs)) $qs = str_replace("fav:", "", $qs);
+	    
+	    $qf = htmlspecialchars(trim($this->framework->getParam('qf', ''), ', ')); // ! utf8_encode
+	    if(preg_match("/fav:$/i", $qf)) $qf = str_replace("fav:", "", $qf);
+	    
+	    if($this->DEBUG) echo 'Vorher' . "<br />\n";
+	    if($this->DEBUG) echo 'q: ' .  $q . "<br />\n";
+	    if($this->DEBUG) echo 'qs: ' . $qs . "<br />\n";
+	    if($this->DEBUG) echo 'qf: ' . $qf . "<br />\n";
+	    if($this->DEBUG) echo "<br />\n<br />\n";
+	    
+	    if(strlen($q) && !strlen($qs) && !strlen($qf) && !count($this->framework->QF)) {
+	        // Case 4: Only q is filled, qs and qf are empty
+	        
+	        // Q
 			$this->framework->Q = $q;
 			$this->framework->tokensQ = $this->tokensFromString($q);
 			
@@ -735,18 +823,42 @@ class WISY_FILTER_CLASS
 		return 'search?qs=' . urlencode($this->framework->QS) . '&qf=' . urlencode($this->framework->QF);
 	}
 	
-	function getUrlRemoveFilterByName($removefilter) {
-        if($removefilter == 'bei') {
-    		$tokens = array_filter($this->framework->tokensQF, function($filter) use($removefilter) {
-    			return ($filter['field'] != $removefilter && $filter['field'] != 'km');
-    		});
-        } else {
-    		$tokens = array_filter($this->framework->tokensQF, function($filter) use($removefilter) {
-    			return $filter['field'] != $removefilter;
-    		});
-        }
-		
-        return $this->framework->getUrl('search', array('qs' => $this->framework->QS, 'qf' => $this->stringFromTokens($tokens)));
+	function getUrlRemoveFilterByName($removefilter, $value=false) {
+	    if($value) {
+	        global $extraTokens;
+	        $extraTokens = array();
+	        $tokens = array_filter($this->framework->tokensQF, function($filter) use($removefilter, $value) {
+	            global $extraTokens;
+	            if($filter['field'] == $removefilter) {
+	                $filteredValue = array();
+	                foreach(explode($this->framework->filterValueSeparator, $filter['value']) as $val) {
+	                    if($val != $value) {
+	                        $filteredValue[] = $val;
+	                    }
+	                }
+	                if(count($filteredValue)) {
+	                    $extraTokens[] = array(
+	                        'field' => $filter['field'],
+	                        'value' => implode($this->framework->filterValueSeparator, $filteredValue)
+	                    );
+	                }
+	                return false;
+	            } else {
+	                return true;
+	            }
+	        });
+	            $tokens = array_merge($tokens, $extraTokens);
+	    } else if($removefilter == 'bei') {
+	        $tokens = array_filter($this->framework->tokensQF, function($filter) use($removefilter) {
+	            return ($filter['field'] != $removefilter && $filter['field'] != 'km');
+	        });
+	    } else {
+	        $tokens = array_filter($this->framework->tokensQF, function($filter) use($removefilter) {
+	            return $filter['field'] != $removefilter;
+	        });
+	    }
+	    
+	    return $this->framework->getUrl('search', array('qs' => $this->framework->QS, 'qf' => $this->stringFromTokens($tokens)));
 	}
 	
 	function getUrlRemoveFilterByValue($tokenconditions, $removevalue) {
@@ -785,72 +897,83 @@ class WISY_FILTER_CLASS
 	}
 	
 	function getActiveFilters() {
-		$active_filters = '';
-		foreach($this->framework->tokensQF as $token) {
-			if(trim($token['value']) !== '' && $token['field'] != 'tag') {
-				$ignore = false;
-				switch($token['field']) {
-					case 'preis':
-						$filterlabel = number_format($token['value'], 0, ',', '.') . ' EUR';
-						if($token['value'] > 0 && strpos($token['value'], '-') === false) {
-							$filterlabel = 'bis ' . $filterlabel;
-						} else if($token['value'] === 0) {
-							$filterlabel = 'kostenlos';
-						}
-						break;
-						
-					case 'km':
-						$filterlabel = $token['value'] . ' km Umkreis';
-						if($token['value'] > 400) $filterlabel = '> 50 km Umkreis';
-						break;
-						
-					case 'datum':
-						$filterlabel = 'Beginn: ' . $token['value'];
-						break;
-						
-					case 'volltext':
-						$filterlabel = 'Volltext: ' . $token['value'];
-						break;
-						
-					case 'dauer':
-						$filterlabel = 'Dauer: ';
-						if($token['value'] === 1)
-						{
-							$filterlabel .= $token['value'] . ' Tag';
-						}
-						else if($token['value'] < 7)
-						{
-							$filterlabel .= $token['value'] . ' Tage';
-						}
-						else if($token['value'] < 32)
-						{
-							$filterlabel .= floor($token['value'] / 7) . ' Wochen';
-						} 
-						else
-						{
-							$filterlabel .= floor($token['value'] / 31) . ' Monate';
-						}
-						break;
-						
-					case 'fav':
-						$ignore = true;
-						break;
-						
-					case 'zeige':
-						$ignore = true;
-						break;
-				
-					default:
-						$filterlabel = $token['value'];
-						break;
-				}
-				
-				if(!$ignore) {
-					$active_filters .= '<li class="wisyr_filter"><a href="' . $this->getUrlRemoveFilterByName($token['field']) . '">' . $filterlabel . '</a></li>';
-				}
-			}
-		}
-		return $active_filters;	
+	    $active_filters = '';
+	    foreach($this->framework->tokensQF as $token) {
+	        foreach(explode($this->framework->filterValueSeparator, $token['value']) as $value) {
+	            if(trim($value) !== '' && $token['field'] != 'tag') {
+	                $ignore = false;
+	                switch($token['field']) {
+	                    case 'preis':
+	                        $filterlabel = number_format($value, 0, ',', '.') . ' EUR';
+	                        if($value > 0 && strpos($value, '-') === false) {
+	                            $filterlabel = 'bis ' . $filterlabel;
+	                        } else if($value === 0) {
+	                            $filterlabel = 'kostenlos';
+	                        }
+	                        break;
+	                        
+	                    case 'km':
+	                        $filterlabel = $value . ' km Umkreis';
+	                        if($value > 400) $filterlabel = '> 50 km Umkreis';
+	                        break;
+	                        
+	                    case 'datum':
+	                        $filterlabel = 'Beginn: ' . $value;
+	                        break;
+	                        
+	                    case 'volltext':
+	                        $filterlabel = 'Volltext: ' . $value;
+	                        break;
+	                        
+	                    case 'dauer':
+	                        if(strpos($value, "-") === FALSE && $_GET['filter_dauer_bis'] > 0)
+	                            $filterlabel = 'Dauer max: ';
+	                            else
+	                                $filterlabel = 'Dauer: ';
+	                                
+	                                if($value === 1)
+	                                {
+	                                    $filterlabel .= $value . ' Tag';
+	                                }
+	                                else if($value < 7)
+	                                {
+	                                    $filterlabel .= $value . ' Tage';
+	                                }
+	                                else if($value < 32)
+	                                {
+	                                    $filterlabel .= floor($value / 7) . ' Wochen';
+	                                    
+	                                    if(strpos($filterlabel, "-") === FALSE && $_GET['filter_dauer_von'] > 0 && !$_GET['filter_dauer_bis'] )
+	                                        $filterlabel = str_replace('Dauer', 'Dauer min', $filterlabel);
+	                                }
+	                                else
+	                                {
+	                                    $filterlabel .= floor($value / 31) . ' Monate';
+	                                    
+	                                    if(strpos($filterlabel, "-") === FALSE && $_GET['filter_dauer_von'] > 0 && !$_GET['filter_dauer_bis'])
+	                                        $filterlabel = str_replace('Dauer', 'Dauer min', $filterlabel);
+	                                }
+	                                break;
+	                                
+	                    case 'fav':
+	                        $ignore = true;
+	                        break;
+	                        
+	                    case 'zeige':
+	                        $ignore = true;
+	                        break;
+	                        
+	                    default:
+	                        $filterlabel = $value;
+	                        break;
+	                }
+	            }
+	            if(!$ignore) {
+	                $active_filters .= '<li class="wisyr_filter"><a href="' . $this->getUrlRemoveFilterByName($token['field'], $value) . '">' . $filterlabel . '</a></li>';
+	            }
+	        }
+	    }
+	    return $active_filters;
 	}
 	
 	function getActiveFiltersCount()
