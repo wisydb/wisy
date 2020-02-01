@@ -70,10 +70,60 @@ class WISY_SEARCH_CLASS
 	 * performing a search
 	 **************************************************************************/
 
+	function isRedundantSearchTag($q_tag, $tag_heap) {
+	    
+	    $sql = "SELECT id FROM stichwoerter WHERE stichwort='".addslashes($q_tag)."';";
+	    
+	    $this->db->query($sql);
+	    if( $this->db->next_record() )
+	        $tag_orig_id = intval($this->db->f('id'));
+	        $this->db->free();
+	        
+	        // tag is used at lest twice in query ?
+	        if(in_array(strtolower(trim($q_tag)), array_map('strtolower', $tag_heap))) {
+	            array_push($this->double_tags, $q_tag." (Grund: Wort mehrfach vorhanden)");
+	            return true;
+	        }
+	        
+	        if($tag_orig_id) {
+	            $distinct_tags = array();
+	            $this->framework->loadDerivedTags($this->db, $tag_orig_id, $distinct_tags, "Oberbegriffe");
+	            foreach($distinct_tags AS $ancestor) {
+	                if(in_array(strtolower(trim($ancestor)), array_map('strtolower', $tag_heap))) {
+	                    array_push($this->double_tags, $ancestor." (Grund: Oberbegriff von ".$q_tag.")");
+	                    return true;
+	                }
+	            }
+	            
+	            $distinct_tags = array();
+	            $this->framework->loadDerivedTags($this->db, $tag_orig_id, $distinct_tags, "Unterbegriffe");
+	            foreach($distinct_tags AS $descendant) {
+	                if(in_array(strtolower(trim($descendant)), array_map('strtolower', $tag_heap))) {
+	                    array_push($this->double_tags, $descendant." (Grund: Unterbegriff von ".$q_tag.")");
+	                    return true;
+	                }
+	            }
+	            
+	            $distinct_tags = array();
+	            // also hidden synonyms! just checks if mapped to other tag
+	            $this->framework->loadDerivedTags($this->db, $tag_orig_id, $distinct_tags, "Synonyme");
+	            foreach($distinct_tags AS $synonym) {
+	                if(in_array(strtolower(trim($synonym)), array_map('strtolower', $tag_heap))) {
+	                    array_push($this->double_tags, $synonym.'" (Grund: Synonym zu '.$q_tag.')');
+	                    return true;
+	                }
+	            }
+	        }
+	        
+	        return false;
+	}
+	
+	
 	function prepare($queryString)
 	{
-		// Convert utf-8 input back to ISO-8859-1 because the DB ist still encoded with ISO
-		$queryString = iconv("UTF-8", "ISO-8859-1//IGNORE", $queryString);
+	    
+	    // Convert utf-8 input back to ISO-8859-15 because the DB ist still encoded with ISO
+	    $queryString = iconv("UTF-8", "ISO-8859-15//IGNORE", $queryString);
 		
 		// first, apply the stdkursfilter
 		global $wisyPortalFilter;
@@ -257,6 +307,9 @@ class WISY_SEARCH_CLASS
 					break;
 				
 				case 'id';
+				case 'kid':
+				    $this->rawWhere .= $this->rawWhere? ' AND ' : ' WHERE ';
+				    $this->rawWhere .= "x_kurse.kurs_id =$value";
 				case 'fav':
 				case 'favprint': // favprint is deprecated
 					$ids = array();
@@ -291,6 +344,19 @@ class WISY_SEARCH_CLASS
 						$this->rawWhere .= '(0)';
 					}							
 					break;
+					
+				case 'anbieter_tag':
+				    // search for anbieter_ids
+				    $k_ids = $this->anbieter_tag2k_ids($value);
+				    $this->rawCanCache = true;
+				    $this->rawWhere .= $this->rawWhere? ' AND ' : ' WHERE ';
+				    if( sizeof($k_ids) >= 1 ) {
+				        $this->rawWhere .= "(x_kurse.kurs_id IN (".implode(',', $k_ids)."))";
+				    }
+				    else {
+				        $this->rawWhere .= '(0)';
+				    }
+				    break;
 				
 				case 'bei':
 					if( preg_match('/^\s*(\d+(\.\d+)?)\s*\/\s*(\d+(\.\d+)?)\s*$/', $value, $matches) ) // angabe lat/lng
@@ -376,6 +442,7 @@ class WISY_SEARCH_CLASS
 						}
 						else
 						{
+						    // $abgelaufeneKurseAnzeigen = 'void';
 						    $abgelaufeneKurseAnzeigen = 'yes';
 							$wantedday = strftime("%Y-%m-%d", $timestamp);
 							$this->rawWhere .= $this->rawWhere? ' AND ' : ' WHERE ';
@@ -425,6 +492,9 @@ class WISY_SEARCH_CLASS
 					// kann der alte Volltextindex verworfen werden. ALSO:
 					if( $value != '' )
 					{
+					    if(strpos($value, '.') !== FALSE) // char "." in (valid) search terms is being misinterpreted without quotes
+					        $value = '"'.$value.'"';
+					    
 						$this->rawJoinKurse = " LEFT JOIN kurse ON x_kurse.kurs_id=kurse.id";	 // this join is needed only to query COUNT(*)
 						
 						$this->rawWhere    .= $this->rawWhere? ' AND ' : ' WHERE ';				
@@ -460,54 +530,6 @@ class WISY_SEARCH_CLASS
 				$this->rawWhere .= "(x_kurse.beginn>='$today')"; // 13:59 30.01.2013: war: x_kurse.beginn='0000-00-00' OR ...
 			}
 		}
-	}
-	
-	function isRedundantSearchTag($q_tag, $tag_heap) {
-	    
-	    $sql = "SELECT id FROM stichwoerter WHERE stichwort='".addslashes($q_tag)."';";
-	    
-	    $this->db->query($sql);
-	    if( $this->db->next_record() )
-	        $tag_orig_id = intval($this->db->f('id'));
-	        $this->db->free();
-	        
-	        // tag is used at lest twice in query ?
-	        if(in_array(strtolower(trim($q_tag)), array_map('strtolower', $tag_heap))) {
-	            array_push($this->double_tags, $q_tag." (Grund: Wort mehrfach vorhanden)");
-	            return true;
-	        }
-	        
-	        if($tag_orig_id) {
-	            $distinct_tags = array();
-	            $this->framework->loadDerivedTags($this->db, $tag_orig_id, $distinct_tags, "Oberbegriffe");
-	            foreach($distinct_tags AS $ancestor) {
-	                if(in_array(strtolower(trim($ancestor)), array_map('strtolower', $tag_heap))) {
-	                    array_push($this->double_tags, $ancestor." (Grund: Oberbegriff von ".$q_tag.")");
-	                    return true;
-	                }
-	            }
-	            
-	            $distinct_tags = array();
-	            $this->framework->loadDerivedTags($this->db, $tag_orig_id, $distinct_tags, "Unterbegriffe");
-	            foreach($distinct_tags AS $descendant) {
-	                if(in_array(strtolower(trim($descendant)), array_map('strtolower', $tag_heap))) {
-	                    array_push($this->double_tags, $descendant." (Grund: Unterbegriff von ".$q_tag.")");
-	                    return true;
-	                }
-	            }
-	            
-	            $distinct_tags = array();
-	            // also hidden synonyms! just checks if mapped to other tag
-	            $this->framework->loadDerivedTags($this->db, $tag_orig_id, $distinct_tags, "Synonyme");
-	            foreach($distinct_tags AS $synonym) {
-	                if(in_array(strtolower(trim($synonym)), array_map('strtolower', $tag_heap))) {
-	                    array_push($this->double_tags, $synonym.'" (Grund: Synonym zu '.$q_tag.')');
-	                    return true;
-	                }
-	            }
-	        }
-	        
-	        return false;
 	}
 	
 	function getDoubleTags() {
@@ -652,10 +674,10 @@ class WISY_SEARCH_CLASS
 						                $seed = ($ip + date('d') );
 						                $orderBy = 'RAND('.$seed.')';
 						                break;
-						default:		$orderBy = 'kurse.id';
+						default:		$orderBy = 'kurse.id';										die('invalid order!');
 					}
 					
-					$sql = $this->getKurseRecordsSql("kurse.id, kurse.anbieter, kurse.thema, kurse.freigeschaltet, kurse.titel, kurse.vollstaendigkeit, kurse.date_modified, kurse.bu_nummer, kurse.fu_knr, kurse.azwv_knr, x_kurse.begmod_date");
+					$sql = $this->getKurseRecordsSql("kurse.id, kurse.user_grp, kurse.anbieter, kurse.thema, kurse.freigeschaltet, kurse.titel, kurse.vollstaendigkeit, kurse.date_modified, kurse.bu_nummer, kurse.fu_knr, kurse.azwv_knr, x_kurse.begmod_date, x_kurse.bezirk, x_kurse.ort_sortonly, x_kurse.ort_sortonly_secondary");
 					$sql .= " ORDER BY $orderBy, vollstaendigkeit DESC, x_kurse.kurs_id ";
 					if($rows != 0) $sql .= " LIMIT $offset, $rows ";
 					
@@ -747,7 +769,7 @@ class WISY_SEARCH_CLASS
 			}
 			
 			// create complete SQL query
-			$sql =  "SELECT id, date_created, date_modified, suchname, strasse, plz, ort, homepage, anspr_email, anspr_tel, typ FROM anbieter WHERE anbieter.id IN($this->anbieterIds)";
+			$sql =  "SELECT id, date_created, date_modified, suchname, strasse, plz, bezirk, ort, homepage, anspr_email, anspr_tel, typ FROM anbieter WHERE anbieter.id IN($this->anbieterIds)";
 			$sql .= " ORDER BY $orderBy, anbieter.id ";
 			if($rows != 0) $sql .= " LIMIT $offset, $rows ";
 
@@ -828,39 +850,60 @@ class WISY_SEARCH_CLASS
 	}
 	
 	function lookupTag($tag_name)
-	{		
-		// search a single tag
-		$tag_id = 0;
-		if( $tag_name != '' )
-		{
-			$this->db->query("SELECT tag_id, tag_type FROM x_tags WHERE tag_name='".addslashes($tag_name)."';");
-			if( $this->db->next_record() )
-			{
-				$tag_type = PHP7 ? $this->db->f('tag_type') : $this->db->f8('tag_type');
-				if( $tag_type & 64 )
-				{
-					// synonym - ein lookup klappt nur, wenn es nur _genau_ ein synonym gibt
-					$temp_id   = $this->db->f('tag_id');
-					$syn_ids = array();
-					$this->db->query("SELECT t.tag_id FROM x_tags t LEFT JOIN x_tags_syn s ON s.lemma_id=t.tag_id WHERE s.tag_id=$temp_id");
-					while( $this->db->next_record() )
-					{
-						$syn_ids[] = $this->db->f('tag_id');
-					}
-					
-					if( sizeof( $syn_ids ) == 1 )
-					{
-						$tag_id = $syn_ids[0]; /*directly follow 1-dest-only-synonyms*/
-					}
-				}
-				else
-				{
-					// normales lemma
-					$tag_id   = $this->db->f('tag_id');
-				}
-			}
-		}
-		return $tag_id;
+	{
+	    // search a single tag
+	    $tag_id = 0;
+	    if( $tag_name != '' )
+	    {
+	        // $tag_name = utf8_encode($tag_name);
+	        
+	        
+	        
+	        $sql = "SELECT tag_id, tag_eigenschaften, tag_type FROM x_tags WHERE tag_name='".addslashes($tag_name)."' ";
+	        
+	        if($_GET['typ'] > 0 && strpos($tag_name, 'portal') === FALSE) {
+	            $eigenschaften = $_GET['typ'];
+	            $sql .= "AND tag_eigenschaften = ".$_GET['typ'];
+	            echo $sql."<br>";
+	        }
+	        
+	        $this->db->query($sql);
+	        if( $this->db->next_record() )
+	        {
+	            
+	            $tag_type = PHP7 ? $this->db->f('tag_type') : $this->db->f8('tag_type');
+	            if( $tag_type & 64 || $tag_type == 65 || $tag_type & 262144) // 131072 = 65 // == 65, weil 64 + 1 den Typ Abschlüsse (=1) mit abdecken würde
+	            {
+	                
+	                // synonym - ein lookup klappt nur, wenn es nur _genau_ ein synonym gibt
+	                $temp_id   = $this->db->f('tag_id');
+	                $syn_ids = array();
+	                $sql = "SELECT t.tag_id FROM x_tags t LEFT JOIN x_tags_syn s ON s.lemma_id=t.tag_id WHERE s.tag_id=$temp_id";
+	                $this->db->query($sql);
+	                
+	                while( $this->db->next_record() )
+	                {
+	                    $tag_id = $this->db->f('tag_id');
+	                    $syn_ids[] = $tag_id;
+	                }
+	                
+	                if( sizeof( $syn_ids ) == 1 )
+	                {
+	                    $tag_id = $syn_ids[0]; /*directly follow 1-dest-only-synonyms*/
+	                } else {
+	                    $tag_id = implode("#", $syn_ids); // must be analyzed for # and exploded at place of usage
+	                }
+	            }
+	            else
+	            {
+	                // normales lemma
+	                $tag_id   = $this->db->f('tag_id');
+	            }
+	        }
+	        
+	    }
+	    
+	    return $tag_id;
 	}
 
 
