@@ -17,6 +17,7 @@ class WISY_EDIT_RENDERER_CLASS
 		require_once('admin/table_def.inc.php');	// needed for db.inc.php
 		require_once('admin/config/db.inc.php');	// needed for LOG_WRITER_CLASS
 		require_once('admin/date.inc.php');
+		require_once('admin/eql.inc.php');
 		require_once('admin/classes.inc.php');
 		require_once('admin/config/trigger_kurse.inc.php');
 
@@ -64,6 +65,7 @@ class WISY_EDIT_RENDERER_CLASS
 			{
 				$this->_anbieter_ini_settings = explodeSettings($db->f8('x'));
 			}
+			// $db->close();
 		}
 		
 		if( isset( $this->_anbieter_ini_settings[ $key ] ) )
@@ -93,6 +95,7 @@ class WISY_EDIT_RENDERER_CLASS
 			
 			$db = new DB_Admin;
 			$db->query("UPDATE anbieter SET settings='" .addslashes($data). "' WHERE id=".intval($_SESSION['loggedInAnbieterId']));
+			// $db->close();
 		}
 	}
 	
@@ -124,6 +127,7 @@ class WISY_EDIT_RENDERER_CLASS
 				{
 					$this->cachePwEinst = $db->f8('pflege_pweinst');
 				}
+				// $db->close();
 			} 
 		}
 
@@ -253,6 +257,7 @@ class WISY_EDIT_RENDERER_CLASS
 			$_SESSION['stockStichw'][$oldStichwId] = 1;
 			$db->query("DELETE FROM kurse_stichwort WHERE primary_id=$kursId AND attr_id=$oldStichwId;");
 		}
+		// $db->close();
 	}
 	
 	function moeglicheAbschluesseUndFoerderungen(&$retAbschluesse, &$retFoerderungen)
@@ -293,6 +298,7 @@ class WISY_EDIT_RENDERER_CLASS
 				}
 			}
 		}
+		// $db->close();
 	}
 	
 	function controlHidden($name, $value)
@@ -374,6 +380,7 @@ class WISY_EDIT_RENDERER_CLASS
 						$ret .=  ' | <a href="edit?action=ek&amp;id=' . $kursId . '">Kurs bearbeiten</a>';
 					}
 				}
+				// $db->close();
 			}
 			
 			
@@ -421,11 +428,13 @@ class WISY_EDIT_RENDERER_CLASS
 		$db->query("SELECT anbieter, freigeschaltet, user_created FROM kurse WHERE id=$kursId;");
 		if( !$db->next_record() )
 		{
+		    // $db->close();
 			return 'no'; // bad record ID - not editable
 		}
 			
 		if( $db->f8('anbieter')!=$_SESSION['loggedInAnbieterId'] )
 		{
+		    // $db->close();
 			return 'loginneeded'; // may be editable, but bad login data
 		}
 		
@@ -434,9 +443,11 @@ class WISY_EDIT_RENDERER_CLASS
 		 || $db->f8('freigeschaltet') == 3 /*abgelaufen*/
 		 ||	($db->f8('freigeschaltet') == 0 /*in Vorbereitung*/ ) ) // Kurse in Vorbereitung sollen über Direktlinks editierbar sein, daher an dieser Stelle keine Überprüfung, ob der Kurs von getAdminAnbieterUserIds() angelegt wurde, s. https://mail.google.com/mail/#all/132aa92c4ec2cda7
 		{
+		    // $db->close();
 			return 'yes'; // editable
 		}
 		
+		// $db->close();
 		return 'no'; // not editable
 	}
 	
@@ -674,6 +685,8 @@ class WISY_EDIT_RENDERER_CLASS
 			}
 			
 			echo '</section><!-- /#loginform -->';
+			
+		// $db->close();
 
 		echo $this->framework->getEpilogue();
 	}
@@ -799,6 +812,7 @@ class WISY_EDIT_RENDERER_CLASS
 			echo "Kurse, die Sie nicht explizit beworben werden, tauchen wie gewohnt in den Suchergebnissen auf. ";
 		echo "</p>";
 		
+		// $db->close();
 		
 		echo $this->framework->getEpilogue();
 	}
@@ -843,6 +857,7 @@ class WISY_EDIT_RENDERER_CLASS
 		else
 		{
 			$kurs['error'][] = 'Die angegebene Kurs-ID existiert nicht oder nicht mehr.';
+			// $db->close();
 			return $kurs;
 		}
 		
@@ -865,6 +880,8 @@ class WISY_EDIT_RENDERER_CLASS
 		$kurs['promote_active'] = intval($db->f8('promote_active'));
 		$kurs['promote_mode']   = $db->f8('promote_mode');
 		$kurs['promote_param']  = $db->f8('promote_param');
+		
+		// $db->close();
 		
 		return $kurs;
 	}
@@ -1025,6 +1042,7 @@ class WISY_EDIT_RENDERER_CLASS
 							';
 					}
 				}
+				// $db->close();
 			}
 			
 		}
@@ -1270,6 +1288,7 @@ class WISY_EDIT_RENDERER_CLASS
 				$newData['error'][] = 'Fehler: Der angemeldete Benutzer hat <b>nicht das Recht</b> diese Änderungen am Feld <i>'.htmlspecialchars($this->keine_bagatelle_why).'</i> vorzunehmen.<br />
 									   Es dürfen nur Datum und Preis und andere Felder in gewissen Grenzen geändert werden. 
 									   <a href="'.$this->framework->getHelpUrl($this->framework->iniRead('useredit.help.norights', '20')).'" target="_blank">Weitere Informationen hierzu ...</a><br />';
+				// $db->close();
 				return;
 			}
 		}
@@ -1278,16 +1297,16 @@ class WISY_EDIT_RENDERER_CLASS
 		// CREATE A NEW RECORD?
 		if( $kursId == 0 )
 		{
-			$anbieter = intval($_SESSION['loggedInAnbieterId']);
-			$db->query("SELECT user_grp, user_access FROM anbieter WHERE id=$anbieter AND freigeschaltet = 1");
-			$db->next_record();
-			$user_grp = intval($db->f8('user_grp'));
-			$user_access =  intval($db->f8('user_access'));
-			$db->query("INSERT INTO kurse  (user_created, date_created, user_modified, date_modified, user_grp,  user_access,  anbieter,  freigeschaltet) 
-									VALUES ($user, 		  '$today',     $user,         '$today',      $user_grp, $user_access, $anbieter, 0)
+		    $anbieter = intval($_SESSION['loggedInAnbieterId']);
+		    $db->query("SELECT user_grp, user_access FROM anbieter WHERE id=$anbieter AND freigeschaltet = 1;");
+		    $db->next_record();
+		    $user_grp = intval($db->f8('user_grp'));
+		    $user_access =  intval($db->f8('user_access'));
+		    $db->query("INSERT INTO kurse  (user_created, date_created, user_modified, date_modified, user_grp,  user_access,  anbieter,  freigeschaltet, titel_sorted)
+									VALUES ($user, 		  '$today',     $user,         '$today',      $user_grp, $user_access, $anbieter, 0, '".addslashes(g_eql_normalize_natsort($newData['titel']))."')
 									;");
-			$kursId = $db->insert_id();
-			$newData['id'] = $kursId;
+		    $kursId = $db->insert_id();
+		    $newData['id'] = $kursId;
 		}
 		
 		// DURCHFÜHRUNGS-Änderungen ablegen
@@ -1455,6 +1474,7 @@ class WISY_EDIT_RENDERER_CLASS
 			
 			// update record
 			$sql = "UPDATE kurse SET titel='".addslashes($newData['titel'])."',
+                                     titel_sorted='".addslashes(g_eql_normalize_natsort($newData['titel']))."', 
 									 beschreibung='".addslashes($newData['beschreibung'])."', 
 									 msgtooperator='".addslashes($newData['msgtooperator'])."', 
 									 bu_nummer='".addslashes($newData['bu_nummer'])."',
@@ -1487,6 +1507,7 @@ class WISY_EDIT_RENDERER_CLASS
 		}
 				
 		// echo $actions;
+		// $db->close();
 	}
 
 	function deleteKurs($kursId)
@@ -1510,6 +1531,7 @@ class WISY_EDIT_RENDERER_CLASS
 			$logwriter->addData('freigeschaltet', array($oldFreigeschaltet, 2));
 			$logwriter->log('kurse', $kursId, $user, 'edit');
 		}
+		// $db->close();
 	}
 
 	function renderEditorToolbar($addKursUrl)
@@ -1563,6 +1585,7 @@ class WISY_EDIT_RENDERER_CLASS
 			// ... "Delete" hit - maybe this is a subsequent call, but not necessarily
 			$this->deleteKurs($kursId__);
 			header('Location: ' . $this->bwd);
+			// $db->close();
 			exit();
 		}
 		else if( $_POST['subseq'] == 1 && isset($_POST['cancel']) )
@@ -2061,6 +2084,8 @@ class WISY_EDIT_RENDERER_CLASS
 			}
 		
 		echo '</form>' . "\n";
+		
+		// $db->close();
 
 		echo $this->framework->getEpilogue();
 	}
@@ -2083,9 +2108,11 @@ class WISY_EDIT_RENDERER_CLASS
 	    else
 	    {
 	        $anbieter['error'][] = 'Die angegebene Kurs-ID existiert nicht oder nicht mehr.';
+	        // $db->close();
 	        return $anbieter;
 	    }
 	    
+	    // $db->close();
 	    return $anbieter;
 	}
 	
@@ -2158,6 +2185,7 @@ class WISY_EDIT_RENDERER_CLASS
 	    if( sizeof($oldData['error']) )
 	    {
 	        $newData['error'] = $oldData['error'];
+	        // $db->close();
 	        return;
 	    }
 	    
@@ -2211,6 +2239,7 @@ class WISY_EDIT_RENDERER_CLASS
 	        $logwriter->addDataFromTable('anbieter', $anbieterId, 'creatediff');
 	        $logwriter->log('anbieter', $anbieterId, $user, 'edit');
 	    }
+	    // $db->close();
 	}
 	
 	function renderEditAnbieter()
@@ -2460,6 +2489,7 @@ class WISY_EDIT_RENDERER_CLASS
 		$temp = strtr($temp, "\n\r\t", "   "); $temp = str_replace(' ', '', $temp);
 		$hash = md5($temp);
 		
+		// $db->close();
 		return $hash; // AGB-hash to confirm
 	}
 	
@@ -2492,10 +2522,12 @@ class WISY_EDIT_RENDERER_CLASS
 				$db = new DB_Admin;
 				$today = strftime("%d.%m.%y");
 				$db->query("UPDATE anbieter SET notizen = CONCAT('$today: AGB akzeptiert\n', notizen) WHERE id=".intval($_SESSION['loggedInAnbieterId']));
+				// $db->close();
 			}
 			
 			$_SESSION['_agb_ok_for_this_session'] = true;
 			header("Location: ".$_REQUEST['fwd']);
+			// $db->close();
 			exit();
 		}
 			
@@ -2541,7 +2573,8 @@ class WISY_EDIT_RENDERER_CLASS
 					der Anbieter wird die AGB sobald er sich selbst einloggt erneut best&auml;tigen müssen. Dieser Hinweis erscheint nur f&uuml;r Redakteure.</p>';
 				
 			}
-			
+		
+		// $db->close();
 		echo $this->framework->getEpilogue();
 	}
 	 
