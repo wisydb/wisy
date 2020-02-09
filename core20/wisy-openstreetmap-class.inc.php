@@ -209,7 +209,7 @@ class WISY_OPENSTREETMAP_CLASS
 			);
 			$temp = $g_countryTransl;
 			reset($temp);
-			while( list($n, $v) = each($temp) )
+			foreach($temp as $n => $v)
 			{
 				$g_countryTransl[ strtolower($v) ] = $v; // also add the english names in lower-case to the table
 			}
@@ -236,7 +236,7 @@ class WISY_OPENSTREETMAP_CLASS
 
 	function hasPoints()
 	{
-		return sizeof($this->points)>0;
+	    return sizeof((array) $this->points)>0;
 	}
 	
 	function render()
@@ -294,7 +294,7 @@ class WISY_OPENSTREETMAP_CLASS
 			}
 		}
 
-		if( $this->framework->iniRead('map.disable', '') || sizeof($markers) == 0 ) {
+		if( $this->framework->iniRead('map.disable', '') || sizeof((array) $markers) == 0 ) {
 			return '';
 		}
 		

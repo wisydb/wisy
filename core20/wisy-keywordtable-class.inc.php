@@ -302,7 +302,7 @@ class WISY_KEYWORDTABLE_CLASS
 		
 		// ... pass 2: render all rows for each keyword ID		
 		$ret_items = array();
-		for( $k = 0; $k < sizeof($keywordIds); $k++ ) 
+		for( $k = 0; $k < sizeof((array) $keywordIds); $k++ ) 
 		{
 			$expand = 0;
 			$keywordId = $keywordIds[$k];

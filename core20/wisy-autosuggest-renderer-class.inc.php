@@ -64,7 +64,7 @@ class WISY_AUTOSUGGEST_RENDERER_CLASS
 				header('Content-type: application/json');
 				
 				echo '["' .$this->utf8_to_json(utf8_encode($querystring)). '",[';
-					for( $i = 0; $i < sizeof($tags); $i++ )
+				    for( $i = 0; $i < sizeof((array) $tags); $i++ )
 					{
 						echo $i? ',' : '';
 						echo '"' .$this->utf8_to_json(utf8_encode($tags[$i]['tag'])). '"';
@@ -88,7 +88,7 @@ class WISY_AUTOSUGGEST_RENDERER_CLASS
 					),
 					array(
 						'tag'	=>	$querystring,
-						'tag_descr' => sizeof($tags)? 'Alle Vorschl&auml;ge im Hauptfenster anzeigen ...' : 'Keine Treffer',
+					    'tag_descr' => sizeof((array) $tags)? 'Alle Vorschl&auml;ge im Hauptfenster anzeigen ...' : 'Keine Treffer',
 						'tag_type'	=> 0,
 						'tag_help'	=> 1 // indicates "more"
 					));	
@@ -97,7 +97,7 @@ class WISY_AUTOSUGGEST_RENDERER_CLASS
 				// addMoreLink at the end
 				$tags[] = array(
 					'tag'	=>	$querystring,
-					'tag_descr' => sizeof($tags)? 'Alle Vorschl&auml;ge im Hauptfenster anzeigen ...' : 'Keine Treffer',
+				    'tag_descr' => sizeof((array) $tags)? 'Alle Vorschl&auml;ge im Hauptfenster anzeigen ...' : 'Keine Treffer',
 					'tag_type'	=> 0,
 					'tag_help'	=> 1 // indicates "more"
 				);			

@@ -503,7 +503,7 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 
 		// keyword overview
 		/*
-		if( sizeof($stichwoerter) ) {
+		if( sizeof((array) $stichwoerter) ) {
 			echo '<table cellpadding="0" cellspacing="0" border="0" class="">';
 				echo $this->framework->writeStichwoerter($db, 'anbieter', $stichwoerter);
 			echo '</table>';

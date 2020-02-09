@@ -96,7 +96,7 @@ class WISY_SEARCH_CLASS
 		$max_km = 500;
 		$default_km = $this->framework->iniRead('radiussearch.defaultkm', 2);
 		$km = floatval($default_km);
-		for( $i = 0; $i < sizeof($this->tokens['cond']); $i++ )
+		for( $i = 0; $i < sizeof((array) $this->tokens['cond']); $i++ )
 		{
 			$value = $this->tokens['cond'][$i]['value'];
 			switch( $this->tokens['cond'][$i]['field'] )
@@ -116,7 +116,7 @@ class WISY_SEARCH_CLASS
 				
 		// pass 2: create SQL
 		$abgelaufeneKurseAnzeigen = 'no';
-		for( $i = 0; $i < sizeof($this->tokens['cond']); $i++ )
+		for( $i = 0; $i < sizeof((array) $this->tokens['cond']); $i++ )
 		{
 			// build SQL statements for this part
 			$value = $this->tokens['cond'][$i]['value'];
@@ -129,7 +129,7 @@ class WISY_SEARCH_CLASS
 						// ODER-Suche
 						$subval = explode(' ODER ', $value);
 						$rawOr = '';
-						for( $s = 0; $s < sizeof($subval); $s++ )
+						for( $s = 0; $s < sizeof((array) $subval); $s++ )
 						{	
 							$tag_id = $this->lookupTag(trim($subval[$s]));
 							if( $tag_id == 0 )

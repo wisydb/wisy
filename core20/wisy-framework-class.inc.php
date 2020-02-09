@@ -105,7 +105,7 @@ class WISY_FRAMEWORK_CLASS
 		$ret = '';
 		ksort($values);
 		reset($values);
-		while( list($regKey, $regValue) = each($values) )
+		foreach($values as $regKey => $regValue)
 		{
 			$regKey		= strval($regKey);
 			$regValue	= strval($regValue);
@@ -402,7 +402,7 @@ class WISY_FRAMEWORK_CLASS
 		// append all additional parameters, for the parameter q= we remove trailing spaces and commas 
 		$i = 0;
 		reset($param);
-		while( list($key, $value) = each($param) )
+		foreach($param as $key => $value)
 		{
 			if( $key == 'q' )
 			{	
@@ -558,7 +558,7 @@ class WISY_FRAMEWORK_CLASS
 			$seals[] = array($db->f('sealId'), $db->f('glossarId'));
 	
 		// no seals? -> done.
-		if( sizeof($seals) == 0 )
+		if( sizeof((array) $seals) == 0 )
 			return '';
 	
 		// get common seal information
@@ -576,7 +576,7 @@ class WISY_FRAMEWORK_CLASS
 		
 		$ret = '';
 		$sealsOut = 0;
-		for( $i = 0; $i < sizeof($seals); $i++ )
+		for( $i = 0; $i < sizeof((array) $seals); $i++ )
 		{
 			$sealId    = $seals[$i][0];
 			$glossarId = $seals[$i][1];
@@ -711,7 +711,7 @@ class WISY_FRAMEWORK_CLASS
 				
 			$anythingOfThisCode = 0;
 			
-			for( $s = 0; $s < sizeof($tags); $s++ )
+			for( $s = 0; $s < sizeof((array) $stichwoerter); $s++ )
 			{
 				$glossarLink = '';
 				$glossarId = $this->glossarDb($db, 'stichwoerter', $tags[$s]['id']);
@@ -992,7 +992,7 @@ class WISY_FRAMEWORK_CLASS
 		$ret = '';
 		
 		$css = $this->getCSSFiles();
-		for( $i = 0; $i < sizeof($css); $i++ )
+		for( $i = 0; $i < sizeof((array) $css); $i++ )
 		{	
 			$ret .= '<link rel="stylesheet" type="text/css" href="'.$css[$i].'" />' . "\n";
 		}
@@ -1039,7 +1039,7 @@ class WISY_FRAMEWORK_CLASS
 		$ret = '';
 		
 		$js = $this->getJSFiles();
-		for( $i = 0; $i < sizeof($js); $i++ )
+		for( $i = 0; $i < sizeof((array) $js); $i++ )
 		{	
 			$ret .= '<script type="text/javascript" src="'.$js[$i].'"></script>' . "\n";
 		}
@@ -1310,7 +1310,7 @@ class WISY_FRAMEWORK_CLASS
 			$q = '';
 			$bei = '';
 			$km = '';			
-			for( $i = 0; $i < sizeof($tokens['cond']); $i++ ) {
+			for( $i = 0; $i < sizeof((array) $tokens['cond']); $i++ ) {
 				switch( $tokens['cond'][$i]['field'] ) {
 					case 'bei':	
 						$bei = $tokens['cond'][$i]['value']; 

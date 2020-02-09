@@ -81,7 +81,7 @@ class WISY_EDIT_RENDERER_CLASS
 			$data = '';
 			ksort($this->_anbieter_ini_settings);
 			reset($this->_anbieter_ini_settings);
-			while( list($regKey, $regValue) = each($this->_anbieter_ini_settings) ) 
+			foreach($this->_anbieter_ini_settings as $regKey => $regValue)
 			{
 				$regKey		= strval($regKey);
 				$regValue	= strval($regValue);
@@ -269,7 +269,7 @@ class WISY_EDIT_RENDERER_CLASS
 		// kuerzlich geloeschte stichworte hinzufuegen (falls z.B. der letzte Kurse mit einem best. Abschluss geloescht wurde - dieser Abschluss darf dann dennoch wieder vergeben werden)
 		if( is_array($_SESSION['stockStichw']) ) {
 			reset($_SESSION['stockStichw']); 
-			while( list($id) = each($_SESSION['stockStichw']) ) {
+			foreach(array_keys($_SESSION['stockStichw']) as $id) {
 				$alleStichw .= ($alleStichw==''? '' : ', ') .  $id; 
 			}
 		}
@@ -884,7 +884,7 @@ class WISY_EDIT_RENDERER_CLASS
 		// 		$kurs['durchf'][0]['strasse']		(und 'plz', 'ort', 'stadtteil', 'bemerkungen')
 		
 		$kurs = $this->loadKursFromDb($kursId);
-		if( sizeof($kurs['error']) )
+		if( sizeof((array) $kurs['error']) )
 			return $kurs;
 		
 		$kurs['titel'] 			= $_POST['titel'];
@@ -896,7 +896,7 @@ class WISY_EDIT_RENDERER_CLASS
 		$kurs['foerderung']		= intval($_POST['foerderung']);
 		$kurs['msgtooperator']	= $_POST['msgtooperator'];
 		$kurs['durchf'] = array();
-		for( $i = 0; $i < sizeof($_POST['nr']); $i ++ )
+		for( $i = 0; $i < sizeof((array) $_POST['nr']); $i ++ )
 		{	
 			// id, if any (may be 0 for copied areas)
 			$kurs['durchf'][$i]['id'] = intval($_POST['durchfid'][$i]);
@@ -1029,17 +1029,17 @@ class WISY_EDIT_RENDERER_CLASS
 			$kurs['error'][] = 'Fehler: Keine Kursbeschreibung angegeben.';
 		}
 		
-		if( sizeof($kurs['durchf']) < 1 )
+		if( sizeof((array) $kurs['durchf']) < 1 )
 		{
 			$kurs['error'][] = 'Fehler: Der Kurs muss mindestens eine Durchführung haben.';
 		}
 		
 		$max_df = $this->framework->iniRead('useredit.durchf.max', 25);
-		if( sizeof($kurs['durchf']) > $max_df )
+		if( sizeof((array) $kurs['durchf']) > $max_df )
 		{
 			$kurs['error'][] =	'
 								Fehler: <b>Die Anzahl überschaubarer Durchführungen ist überschritten</b> -  
-								erlaubt sind maximal '.$max_df.' Durchführungen pro Kurs; der aktuelle Kurs hat jedoch '.sizeof($kurs['durchf']).' Durchführungen.<br />
+								erlaubt sind maximal '.$max_df.' Durchführungen pro Kurs; der aktuelle Kurs hat jedoch '.sizeof((array) $kurs['durchf']).' Durchführungen.<br />
 								Bei häufigeren Beginnterminen wählen Sie bitte eine Terminoption wie beispielsweise <i>Beginnt laufend</i> oder <i>Beginnt wöchentlich</i>
 								und denken Sie auch daran, abgelaufene Durchführungen zu löschen.<br />
 								';
@@ -1053,7 +1053,7 @@ class WISY_EDIT_RENDERER_CLASS
 		foreach( $kurs['durchf'] as $durchf )
 		{
 			$durchf_urls = $this->tools->getUrls($durchf['preishinweise']);
-			if( sizeof($durchf_urls) ) {
+			if( sizeof((array) $durchf_urls) ) {
 				$kurs['error'][] = 'Fehler: Im Feld <i>Preishinweise</i> sind keine URLs erlaubt.';
 			}
 			if( strlen($durchf['preishinweise']) > $maxlen_preishinweise ) {
@@ -1062,9 +1062,9 @@ class WISY_EDIT_RENDERER_CLASS
 			
 			$check_maxlen_bemerkungen = 0;
 			$durchf_urls = $this->tools->getUrls($durchf['bemerkungen']);
-			if( sizeof($durchf_urls) ) {
+			if( sizeof((array) $durchf_urls) ) {
 				$has_durchf_urls = true;
-				if( sizeof($durchf_urls) > 1 ) {
+				if( sizeof((array) $durchf_urls) > 1 ) {
 					$kurs['error'][] = 'Fehler: Pro Feld <i>Bemerkungen</i> ist nur eine URL erlaubt. Gefundene URLs: '.implode(', ', $durchf_urls);
 				}
 				else if( $this->tools->isAnbieterUrl($durchf_urls) ) {
@@ -1090,11 +1090,11 @@ class WISY_EDIT_RENDERER_CLASS
 		}
 		
 		$kurs_urls = $this->tools->getUrls($kurs['beschreibung']);
-		if( sizeof($kurs_urls) ) {
+		if( sizeof((array) $kurs_urls) ) {
 			if( $has_durchf_urls ) {
 				$kurs['error'][] = 'Fehler: URLs können nicht gleichzeitig im Feld <i>Kursbeschreibung</i> und im Feld <i>Bemerkungen</i> angegeben werden.';
 			}
-			if( sizeof($kurs_urls) > 1 ) {
+			if( sizeof((array) $kurs_urls) > 1 ) {
 				$kurs['error'][] = 'Fehler: Im Feld <i>Kursbeschreibung</i> ist nur eine URL erlaubt. Gefundene URLs: '.implode(', ', $kurs_urls);
 			}			
 			else if( $this->tools->isAnbieterUrl($kurs_urls) ) {
@@ -1116,7 +1116,7 @@ class WISY_EDIT_RENDERER_CLASS
 			{
 				$kurs['promote_mode'] = $_POST['promote_mode'];
 				$kurs['promote_param'] = substr($this->checkDate($_POST['promote_param_date'], $kurs['error']), 0, 10);
-				$kurs['promote_active'] = (sizeof($kurs['error'])==0 && $kurs['promote_param']>strftime("%Y-%m-%d"))? 1 : 0;
+				$kurs['promote_active'] = (sizeof((array) $kurs['error'])==0 && $kurs['promote_param']>strftime("%Y-%m-%d"))? 1 : 0;
 			}
 			
 					// TODEL: Promote AGB
@@ -1155,7 +1155,7 @@ class WISY_EDIT_RENDERER_CLASS
 
 		// nach Änderungen im Kurs suchen
 		reset($newData);
-		while( list($name, $newValue) = each($newData) ) {
+		foreach($newData as $name => $newValue) {
 			if( $newValue != $oldData[$name] ) {
 				if( !in_array($name, $allowed_kfields) ) {
 					$this->keine_bagatelle_why = "$name";
@@ -1165,16 +1165,16 @@ class WISY_EDIT_RENDERER_CLASS
 		}
 		
 		// nach Änderungen in den Durchführungen suchen (Löschen von Df sind Bagatellen)
-		for( $n = 0; $n < sizeof($newData['durchf']); $n++ ) 
+		for( $n = 0; $n < sizeof((array) $newData['durchf']); $n++ ) 
 		{	
 			// suche nach einer alten Df, die dieselben Daten wie die Neue hat bzw. nur Änderungen, die erlaubt sind
 			$template_found = false;
 			
-			for( $o = 0; $o < sizeof($oldData['durchf']); $o++ ) 
+			for( $o = 0; $o < sizeof((array) $oldData['durchf']); $o++ ) 
 			{
 				$o_is_fine = true;
 				reset($newData['durchf'][$n]);
-				while( list($name, $newValue) = each($newData['durchf'][$n]) ) 	
+				foreach($newData['durchf'][$n] as $name => $newValue)
 				{
 					if( $newValue != $oldData['durchf'][$o][$name] 
 					 && !in_array($name, $allowed_dfields) )
@@ -1215,7 +1215,7 @@ class WISY_EDIT_RENDERER_CLASS
 		$today		= strftime("%Y-%m-%d %H:%M:%S");
 		$kursId		= $newData['id'];
 		$oldData	= $this->loadKursFromDb($kursId);
-		if( sizeof($oldData['error']) )
+		if( sizeof((array) $oldData['error']) )
 		{
 			$newData['error'] = $oldData['error'];
 			return;
@@ -1271,7 +1271,7 @@ class WISY_EDIT_RENDERER_CLASS
 		}
 		
 		// DURCHFÜHRUNGS-Änderungen ablegen
-		for( $d = 0; $d < sizeof($newData['durchf']); $d++ )
+		for( $d = 0; $d < sizeof((array) $newData['durchf']); $d++ )
 		{
 			// neue daten holen
 			$newDurchf = $newData['durchf'][$d];
@@ -1282,7 +1282,7 @@ class WISY_EDIT_RENDERER_CLASS
 			if( $newDurchf['id'] )
 			{
 				// existierende durchführung
-				for( $d2 = 0; $d2 < sizeof($oldData['durchf']); $d2++ )
+			    for( $d2 = 0; $d2 < sizeof((array) $oldData['durchf']); $d2++ )
 				{
 					if( $oldData['durchf'][$d2]['id'] == $newDurchf['id'] )
 					{
@@ -1291,7 +1291,7 @@ class WISY_EDIT_RENDERER_CLASS
 						break;
 					}
 				}
-				if( sizeof($oldDurchf) == 0 )
+				if( sizeof((array) $oldDurchf) == 0 )
 					{ $newData['error'][] = "Fataler Fehler: Die Durchführung ID ".$newDurchf['id']." kann nicht gefunden werden!"; return; }
 			}
 			else
@@ -1320,7 +1320,7 @@ class WISY_EDIT_RENDERER_CLASS
 			// änderungen überprüfen
 			$sqlExpr = '';
 			reset( $newDurchf );
-			while( list($name, $value) = each($newDurchf) )
+			foreach($newDurchf as $name => $value)
 			{
 				if( strval($value) != strval($oldDurchf[$name]) || !isset($oldDurchf[$name]) )
 				{
@@ -1356,7 +1356,7 @@ class WISY_EDIT_RENDERER_CLASS
 		
 		// ÜBERSCHÜSSIGE durchführungen löschen
 		$delCnt = 0;
-		for( $d2 = 0; $d2 < sizeof($oldData['durchf']); $d2++ )
+		for( $d2 = 0; $d2 < sizeof((array) $oldData['durchf']); $d2++ )
 		{
 			if( $oldData['durchf'][$d2]['id'] )
 			{
@@ -1426,7 +1426,7 @@ class WISY_EDIT_RENDERER_CLASS
 			}
 
 			$fields = array('titel', 'bu_nummer', 'fu_knr', 'azwv_knrd', 'foerderung', 'abschluss', 'msgtooperator');
-			while( list($key, $value) = each($fields) )
+			foreach($fields as $key => $value)
 			{
 				if( $oldData[$value] != $newData[$value] ) 
 					{ $protocol = true; }
@@ -1554,17 +1554,17 @@ class WISY_EDIT_RENDERER_CLASS
 		{
 			// ... a subsequent call: "OK" hit
 			$kurs = $this->loadKursFromPOST($kursId__);
-			if( sizeof($kurs['error']) == 0 )
+			if( sizeof((array) $kurs['error']) == 0 )
 			{
 				$this->saveKursToDb($kurs);
 			} /* no else: saveKursToDb() may also add errors */
 			
-			if( sizeof($kurs['error']) > 0 )
+			if( sizeof((array) $kurs['error']) > 0 )
 			{
 				$kurs['error'][] = 'Der Kurs wurde aufgrund der angegebenen Fehler <b>nicht gespeichert.</b>';
 			}
 
-			if( sizeof($kurs['error']) )
+			if( sizeof((array) $kurs['error']) )
 			{
 				$topnotes = $kurs['error'];
 			}
@@ -1583,7 +1583,7 @@ class WISY_EDIT_RENDERER_CLASS
 		{
 			// the first call
 			$kurs = $this->loadKursFromDb($kursId__);
-			if( sizeof($kurs['error']) )
+			if( sizeof((array) $kurs['error']) )
 			{
 				$topnotes = $kurs['error'];
 				$showForm = false;
@@ -1612,7 +1612,7 @@ class WISY_EDIT_RENDERER_CLASS
 		
 		echo "\n\n<h1>$pageTitle</h1>\n";
 		
-		if( sizeof($topnotes) )
+		if( sizeof((array) $topnotes) )
 		{
 			echo "<p class=\"wisy_topnote\">" .implode('<br />', $topnotes). "</p>";
 		}
@@ -1811,7 +1811,7 @@ class WISY_EDIT_RENDERER_CLASS
 					echo '</tr>';
 					
 					// DURCHFÜHRUNGEN
-					for( $d = 0; $d < sizeof($kurs['durchf']); $d++ )
+					for( $d = 0; $d < sizeof((array) $kurs['durchf']); $d++ )
 					{
 						$durchf = $kurs['durchf'][$d];
 						echo '<tr class="editDurchfRow">';

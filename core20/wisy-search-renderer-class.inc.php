@@ -185,7 +185,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		if( is_array($recordsToSkip['records']) )
 		{
 			reset($recordsToSkip['records']);
-			while( list($i, $record) = each($recordsToSkip['records']) )
+			foreach($recordsToSkip['records'] as $i => $record)
 			{
 				$recordsToSkipHash[ $record['id'] ] = true;
 			}
@@ -197,7 +197,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		{
 			$ids = '';
 			reset($records['records']);
-			while( list($i, $record) = each($records['records']) )
+			foreach($records['records'] as $i => $record)
 			{
 				$ids .= ($ids==''? '' : ', ') . $record['id'];
 			}
@@ -241,7 +241,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		$tag_cloud = array();
 		
 		reset($records['records']);
-		while( list($i, $record) = each($records['records']) )
+		foreach($records['records'] as $i => $record)
 		{	
 			// get kurs basics
 			$currKursId = $record['id'];
@@ -314,10 +314,10 @@ class WISY_SEARCH_RENDERER_CLASS
 				
 				// SPALTEN: durchfuehrung
 				$addText = '';
-				if( sizeof($durchfuehrungenIds) > 1 )
+				if( sizeof((array) $durchfuehrungenIds) > 1 )
 				{
 					$addText = '<small><a href="' .$this->framework->getUrl('k', $aparam). '">';
-						$temp = sizeof($durchfuehrungenIds) - 1;
+					    $temp = sizeof((array) $durchfuehrungenIds) - 1;
 						$addText .= $temp==1? "1 weiterer..." : "$temp weitere...";
 					$addText .= '</a></small>';
 				}
@@ -532,7 +532,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		$tagsuggestor =& createWisyObject('WISY_TAGSUGGESTOR_CLASS', $this->framework);
 		$suggestions = $tagsuggestor->suggestTags($queryString);
 
-		if( sizeof($suggestions) ) 
+		if( sizeof((array) $suggestions) )
 		{
 			if($this->framework->iniRead('search.suggest.v2') == 1)
 			{
@@ -547,7 +547,7 @@ class WISY_SEARCH_RENDERER_CLASS
 							'</tr>';
 				echo '	</thead>';
 				echo '	<tbody>';
-				for( $i = 0; $i < sizeof($suggestions); $i++ )
+				for( $i = 0; $i < sizeof((array) $suggestions); $i++ )
 				{
 					$tr_class = ($i%2) ? 'ac_even' : 'ac_odd';
 					echo $this->formatItem_v2($suggestions[$i]['tag'], $suggestions[$i]['tag_descr'], $suggestions[$i]['tag_type'], intval($suggestions[$i]['tag_help']), intval($suggestions[$i]['tag_freq']), $suggestions[$i]['tag_anbieter_id'], $suggestions[$i]['tag_groups'], $tr_class, $queryString);
@@ -559,7 +559,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			{
 				echo 'Gefundene Rechercheziele - verfeinern Sie Ihren Suchauftrag:';
 				echo '<ul>';
-					for( $i = 0; $i < sizeof($suggestions); $i++ )
+				    for( $i = 0; $i < sizeof((array) $suggestions); $i++ )
 					{
 						echo '<li>' . $this->formatItem($suggestions[$i]['tag'], $suggestions[$i]['tag_descr'], $suggestions[$i]['tag_type'], intval($suggestions[$i]['tag_help']), intval($suggestions[$i]['tag_freq'])) . '</li>';
 					}
@@ -582,21 +582,21 @@ class WISY_SEARCH_RENDERER_CLASS
 		$orderBy = $_GET['order']; if( !in_array($orderBy, $validOrders) ) $orderBy = 'b';
 
 		$info = $searcher->getInfo();
-		if( $info['changed_query'] || sizeof($info['suggestions']) )
+		if( $info['changed_query'] || sizeof((array) $info['suggestions']) )
 		{
 			echo '<div class="wisy_suggestions">';
 				if( $info['changed_query'] )
 				{
-					echo '<b>Hinweis:</b> Der Suchauftrag wurde abge�ndert in <i><a href="'.$this->framework->getUrl('search', array('q'=>$info['changed_query'])).'">'.isohtmlspecialchars($info['changed_query']).'</a></i>';
-					if( sizeof($info['suggestions']) ) 
+					echo '<b>Hinweis:</b> Der Suchauftrag wurde abge&auml;dert in <i><a href="'.$this->framework->getUrl('search', array('q'=>$info['changed_query'])).'">'.isohtmlspecialchars($info['changed_query']).'</a></i>';
+					if( sizeof((array) $info['suggestions']) )
 						echo ' &ndash; ';
 				}
 				
-				if( sizeof($info['suggestions']) ) 
+				if( sizeof((array) $info['suggestions']) )
 				{
 					echo 'Gefundene Rechercheziele - verfeinern Sie Ihren Suchauftrag:';
 					echo '<ul>';
-						for( $i = 0; $i < sizeof($info['suggestions']); $i++ )
+					    for( $i = 0; $i < sizeof((array) $info['suggestions']); $i++ )
 						{
 							echo '<li>' . $this->formatItem($info['suggestions'][$i]['tag'], $info['suggestions'][$i]['tag_descr'], $info['suggestions'][$i]['tag_type'], intval($info['suggestions'][$i]['tag_help']), intval($suggestions[$i]['tag_freq'])) . '</li>';
 						}
@@ -816,12 +816,12 @@ class WISY_SEARCH_RENDERER_CLASS
 		}
 		else 
 		{
-			if( sizeof($info['suggestions']) == 0 )
+		    if( sizeof((array) $info['suggestions']) == 0 )
 			{
 				$temp = trim($queryString, ', ');
 				echo '<p class="wisy_topnote">';
-					echo 'Keine aktuellen Datens�tze f�r <em>&quot;'  . isohtmlspecialchars($temp) . '&quot;</em> gefunden.<br /><br />';
-					echo '<a href="' . $this->framework->getUrl('search', array('q'=>"$temp, Datum:Alles")) . '">Suche wiederholen und dabei <b>auch abgelaufene Kurse ber�cksichtigen</b> ...</a>';
+					echo 'Keine aktuellen Datens&auml;tze f&uuml;r <em>&quot;'  . isohtmlspecialchars($temp) . '&quot;</em> gefunden.<br /><br />';
+					echo '<a href="' . $this->framework->getUrl('search', array('q'=>"$temp, Datum:Alles")) . '">Suche wiederholen und dabei <b>auch abgelaufene Kurse ber&uuml;cksichtigen</b> ...</a>';
 				echo "</p>\n";
 			}
 			else
@@ -940,7 +940,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			$records = $searcher->getAnbieterRecords($offset, $this->rows, $orderBy);
 			$rows = 0;
 			
-			while( list($i, $record) = each($records['records']) )
+			foreach($records['records'] as $i => $record)
 			{
 				echo '  <tr>' . "\n";
 					$this->renderAnbieterCell2($db2, $record, array('q'=>$queryString, 'addPhone'=>false, 'clickableName'=>true, 'addIcon'=>true));
@@ -1118,7 +1118,7 @@ class WISY_SEARCH_RENDERER_CLASS
 						break;
 
 					case 'km_without_bei':
-						echo '<p class="wisy_topnote">Die Angabe von <em>km:</em> ist nur in Kombination mit <em>bei:</em> g�ltig. F�r eine einfache Eingabe der richtigen Werte, verwenden Sie bitte die <em>Erweiterte Suche</em>.</p>' . "\n";
+						echo '<p class="wisy_topnote">Die Angabe von <em>km:</em> ist nur in Kombination mit <em>bei:</em> g&uuml;ltig. F&uuml;r eine einfache Eingabe der richtigen Werte, verwenden Sie bitte die <em>Erweiterte Suche</em>.</p>' . "\n";
 						break;
 				
 					default:
@@ -1156,7 +1156,7 @@ class WISY_SEARCH_RENDERER_CLASS
 				echo '<p><span class="wisy_edittoolbar" title="Um einen neuen Kurs hinzuzuf�gen, klicken Sie oben auf &quot;Neuer Kurs&quot;">Kurse in Vorbereitung:</span>&nbsp; ';
 					$out = 0;
 					reset( $titles );
-					while( list($currId, $currTitel) = each($titles) )
+					foreach($title as $currId => $currTitel)
 					{
 						if( !$liveIds[ $currId ] )
 						{
@@ -1166,7 +1166,7 @@ class WISY_SEARCH_RENDERER_CLASS
 							$out++; 
 						}
 					}
-					if( $out == 0 ) echo '<i title="Um einen neuen Kurs hinzuzuf�gen, klicken Sie oben auf &quot;Neuer Kurs&quot;">keine</i>';
+					if( $out == 0 ) echo '<i title="Um einen neuen Kurs hinzuzuf&uuml;gen, klicken Sie oben auf &quot;Neuer Kurs&quot;">keine</i>';
 					//echo ' &ndash; <a href="edit?action=ek&amp;id=0">Neuer Kurs...</a>';
 				echo '</p>';
 			}

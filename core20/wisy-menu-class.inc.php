@@ -30,7 +30,7 @@ class WISY_MENU_ITEM
 	function getHtml()
 	{
 		$liClass = '';
-		if( sizeof($this->children) ) $liClass = ' class="dir '.($this->title == "OhneName" ? "ohneName" : "").'"';
+		if( sizeof((array) $this->children) ) $liClass = ' class="dir '.($this->title == "OhneName" ? "ohneName" : "").'"';
 		elseif($this->title == "OhneName") $liClass = ' class="ohneName"';
 		
 		$ret = "<li$liClass>";
@@ -39,10 +39,10 @@ class WISY_MENU_ITEM
 			$ret .= $this->title;
 			if( $this->url ) $ret .= '</a>';
 
-			if( sizeof($this->children) )
+			if( sizeof((array) $this->children) )
 			{
 				$ret .= '<ul>';
-					for( $i = 0; $i < sizeof($this->children); $i++ )
+				    for( $i = 0; $i < sizeof((array) $this->children); $i++ )
 					{
 						$ret .= $this->children[$i]->getHtml();
 					}
@@ -91,7 +91,7 @@ class WISY_MENU_CLASS
 		
 		$startKuerzel = $g_themen[$startIndex]['kuerzel_sorted'];
 		$startKuerzelLen = strlen($startKuerzel);
-		for( $i = 0; $i < sizeof($g_themen); $i++ )
+		for( $i = 0; $i < sizeof((array) $g_themen); $i++ )
 		{
 			if( substr($g_themen[$i]['kuerzel_sorted'], 0, $startKuerzelLen) == $startKuerzel 
 			 && strlen($g_themen[$i]['kuerzel_sorted']) == $startKuerzelLen+10 )
@@ -345,7 +345,7 @@ class WISY_MENU_CLASS
 			reset($wisyPortalEinstellungen);
 			$allPrefix = $this->prefix . '.';
 			$allPrefixLen = strlen($allPrefix);
-			while( list($key, $value) = each($wisyPortalEinstellungen) )
+			foreach($wisyPortalEinstellungen as $key => $value)
 			{
 				if( substr($key, 0, $allPrefixLen)==$allPrefix )
 				{
@@ -372,14 +372,14 @@ class WISY_MENU_CLASS
 					
 					// add item to parent
 					$addChildren =& $this->createItems($value, intval($levels[sizeof($levels)-1]));
-					for( $a = 0; $a < sizeof($addChildren); $a++ )
+					for( $a = 0; $a < sizeof((array) $addChildren); $a++ )
 						$parent->children[] =& $addChildren[$a];
 				}
 			}
 			
 			// get the menu as HTML		
 			$ret = '<ul class="dropdown dropdown-horizontal">';
-				for( $i = 0; $i < sizeof($root->children); $i++ )
+			    for( $i = 0; $i < sizeof((array) $root->children); $i++ )
 				{
 					$ret .= $root->children[$i]->getHtml();
 				}

@@ -249,7 +249,7 @@ class WISY_DURCHF_CLASS
 	
 		$c = 0;
 		reset($codes_kurstage_array);
-		while( list($value, $descr) = each($codes_kurstage_array) ) {
+		foreach($codes_kurstage_array as $value => $descr){
 			if( $kurstage & $value ) {
 				$c++;
 			}
@@ -257,7 +257,7 @@ class WISY_DURCHF_CLASS
 	
 		$ret = '';
 		reset($codes_kurstage_array);
-		while( list($value, $descr) = each($codes_kurstage_array) ) {
+		foreach($codes_kurstage_array as $value => $descr) {
 			if( $kurstage & $value ) {
 				$ret .= $ret? ($c==1? ' und ' : ', ') : '';
 				$ret .= $descr;
@@ -370,7 +370,7 @@ class WISY_DURCHF_CLASS
 				}
 			}
 			
-			if( sizeof($preishinweise_arr) )
+			if( sizeof((array) $preishinweise_arr) )
 			{	
 				$preishinweise_out = implode(', ', $preishinweise_arr);
 				if( $html ) {
@@ -430,7 +430,7 @@ class WISY_DURCHF_CLASS
 				}
 			}
 			
-			if( sizeof($durchfuehrungenIds) )
+			if( sizeof((array) $durchfuehrungenIds) )
 				break;
 		}
 		

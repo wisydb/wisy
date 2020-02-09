@@ -150,7 +150,7 @@ class WISY_KURS_RENDERER_CLASS
 			
 			// ... Stichwoerter
 			$tags = $this->framework->loadStichwoerter($db, 'kurse', $kursId);
-			if( sizeof($tags) )
+			if( sizeof((array) $tags) )
 			{
 				$rows .= $this->framework->writeStichwoerter($db, 'kurse', $tags);
 			}
@@ -179,14 +179,14 @@ class WISY_KURS_RENDERER_CLASS
 			$durchfClass =& createWisyObject('WISY_DURCHF_CLASS', $this->framework);
 			$durchfuehrungenIds = $durchfClass->getDurchfuehrungIds($db, $kursId, $showAllDurchf);
 			echo '<p>';
-				if( sizeof($durchfuehrungenIds)==0 ) {
+			    if( sizeof((array) $durchfuehrungenIds)==0 ) {
 					echo $this->framework->iniRead('durchf.msg.keinedf', 'F&uuml;r dieses Angebot ist momentan keine Zeit und kein Ort bekannt.');
 				}
-				else if( sizeof($durchfuehrungenIds) == 1 ) {
+				else if( sizeof((array) $durchfuehrungenIds) == 1 ) {
 					echo 'F&uuml;r dieses Angebot ist momentan eine Zeit bzw. Ort bekannt:';
 				}
 				else {
-					echo 'F&uuml;r dieses Angebot sind momentan ' .sizeof($durchfuehrungenIds). ' Zeiten bzw. Orte bekannt:';
+				    echo 'F&uuml;r dieses Angebot sind momentan ' .sizeof((array) $durchfuehrungenIds). ' Durchf&uuml;hrungen bekannt:';
 				}
 			echo '</p>';
 		
@@ -194,7 +194,7 @@ class WISY_KURS_RENDERER_CLASS
 			$this->framework->map =& createWisyObject('WISY_OPENSTREETMAP_CLASS', $this->framework);
 		
 			// Durchfuehrungen ausgeben
-			if( sizeof($durchfuehrungenIds) )
+			if( sizeof((array) $durchfuehrungenIds) )
 			{
 				echo '<table class="wisy_list"' . html3(' cellpadding="0" cellspacing="0" border="0"') . '>';
 					echo '<tr>';
@@ -214,7 +214,7 @@ class WISY_KURS_RENDERER_CLASS
 					*/
 					
 					$renderedDurchf = 0;
-					for( $d = 0; $d < sizeof($durchfuehrungenIds); $d++ )
+					for( $d = 0; $d < sizeof((array) $durchfuehrungenIds); $d++ )
 					{
 						$class = ($d%2)==1? ' class="wisy_even"' : '';
 						echo "  <tr$class>\n";
@@ -239,7 +239,7 @@ class WISY_KURS_RENDERER_CLASS
 					}
 				echo '</table>';
 				
-				$allAvailDurchfCnt = sizeof($durchfClass->getDurchfuehrungIds($db, $kursId, true));
+				$allAvailDurchfCnt = sizeof((array) $durchfClass->getDurchfuehrungIds($db, $kursId, true));
 				if( $allAvailDurchfCnt > $renderedDurchf )
 				{
 					$missinglDurchfCnt = $allAvailDurchfCnt-$renderedDurchf;
