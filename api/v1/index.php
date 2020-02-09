@@ -273,7 +273,7 @@ class REST_API_CLASS
 
 	function haltOnBadGrp($wanted_grp_id)
 	{
-		if( sizeof($this->apikeygrps)==0 ) {
+	    if( sizeof((array) $this->apikeygrps)==0 ) {
 			return; // no group restrictions specified -> access always granted -> continue
 		}
 		else if( $this->apikeygrps[ intval($wanted_grp_id) ] ) {
@@ -531,7 +531,7 @@ class REST_API_CLASS
 		$out = 0;
 		$ret = '{';
 		reset($this->fields[$table]);
-		while( list($name, $prop) = each($this->fields[$table]) )
+		foreach($this->fields[$table] as $name => $prop)
 		{
 			$ret .= $out? ",\n" : '';
 			$ret .= '"' . $name . '": ';
@@ -689,7 +689,7 @@ class REST_API_CLASS
 		
 		$sql = '';
 		reset($this->fields[$table]);
-		while( list($name, $prop) = each($this->fields[$table]) )
+		foreach($this->fields[$table] as $name => $prop)
 		{
 			if( isset($_REQUEST[$name]) )
 			{
@@ -794,7 +794,7 @@ class REST_API_CLASS
 		$db = new DB_Admin;
 		$db->Halt_On_Error = 'no';
 		reset($this->fields[$table]);
-		while( list($name, $prop) = each($this->fields[$table]) )
+		foreach($this->fields[$table] as $name => $prop)
 		{
 		
 			if( $prop['flags']&REST_MATTR )
