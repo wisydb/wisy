@@ -26,11 +26,11 @@ while( $db->next_record() )
 	$db2->query("SELECT primary_id FROM kurse_verweis WHERE attr_id=$primary_id");
 	while( $db2->next_record() ) { $zugId = $db2->f('primary_id'); if( $zugId != $kursId && !in_array($zugId, $zugIds) ) { $zugIds[] = $zugId; } }
 	
-	if( sizeof($zugIds) )
+	if( sizeof((array) $zugIds) )
 	{
 		$beschreibung = $db->fs('beschreibung');
 		$add_beschr = '';
-		for( $i = 0; $i < sizeof($zugIds); $i++ )
+		for( $i = 0; $i < sizeof((array) $zugIds); $i++ )
 		{
 			$db2->query("SELECT titel FROM kurse WHERE id={$zugIds[$i]}");
 			if( $db2->next_record() )

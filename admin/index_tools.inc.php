@@ -126,7 +126,7 @@ function rows_per_page_sel($baseUrl, $currRowsPerPage)
 	// get the "number of rows" options string
 	$options = '';
 	$hiliteDone = 0;
-	for( $i = 0; $i < sizeof($rows_per_page_options); $i++ ) 
+	for( $i = 0; $i < sizeof((array) $rows_per_page_options); $i++ )
 	{
 		if( !$hiliteDone 
 		 && $currRowsPerPage<$rows_per_page_options[$i] )

@@ -31,7 +31,7 @@ class G_SUMMARIZER_CLASS
 
 		$list_or_summary = TABLE_LIST; // if no summary rows are specified, TABLE_LIST is used
 		if( !$force_TABLE_LIST ) {
-			for( $r = 0; $r < sizeof($tableDef->rows); $r++ )
+		    for( $r = 0; $r < sizeof((array) $tableDef->rows); $r++ )
 			{
 				if( $tableDef->rows[$r]->flags & TABLE_SUMMARY ) {
 					$list_or_summary = TABLE_SUMMARY;
@@ -40,7 +40,7 @@ class G_SUMMARIZER_CLASS
 			}
 		}
 		
-		for( $r = 0; $r < sizeof($tableDef->rows); $r++ )
+		for( $r = 0; $r < sizeof((array) $tableDef->rows); $r++ )
 		{
 			if( $tableDef->rows[$r]->flags & $list_or_summary )
 			{

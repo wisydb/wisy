@@ -302,6 +302,11 @@ class DB_Sql
 	{
 		return utf8_encode($this->Record[$Name]);	// UTF-8 encode because the DB is still ISO-encoded. Used in core50
 	}
+	
+	function fcs8($Name)
+	{
+	    return (substr(PHP_VERSION_ID, 0, 1) > 6) ? $this->Record[$Name] : utf8_encode($this->Record[$Name]);	// UTF-8 only if not > PHP7
+	}
 
 	function affected_rows() 
 	{

@@ -18,7 +18,7 @@ class stichwoerter_tree
 
 	function markDescendents($id)
 	{
-		for( $i = sizeof($this->flat[$id]['unterbegriffe']) - 1; $i >= 0; $i-- )
+	    for( $i = sizeof((array) $this->flat[$id]['unterbegriffe']) - 1; $i >= 0; $i-- )
 		{
 			$unterbegriff_id = $this->flat[$id]['unterbegriffe'][$i];
 			if( !$this->flat[$unterbegriff_id][ 'ist_descendent' ] )
@@ -66,7 +66,7 @@ class stichwoerter_tree
 	
 		// mark root-level stichwoerter
 		reset($this->flat);
-		while( list($id, $vars) = each($this->flat) )
+		foreach($this->flat as $id => $vars)
 		{
 			// check for some errors
 			if( $vars['ist_synonym'] && !($vars['eigenschaften']&32+64) ) { 
@@ -77,7 +77,7 @@ class stichwoerter_tree
 				$this->flat[ $id ]['ist_synonym'] = 2;
 			}
 			
-			if( !$vars['ist_synonym'] && sizeof($vars['unterbegriffe']) )
+			if( !$vars['ist_synonym'] && sizeof((array) $vars['unterbegriffe']) )
 			{
 				$this->markDescendents($id);
 			}
@@ -105,16 +105,16 @@ class stichwoerter_tree
 		
 		$astyle = ''; 
 		$sstyle = ' font-style:italic;  '; // font-size: 80%;
-		if( sizeof($this->flat[$id]['unterbegriffe']) ) { $astyle = ' font-weight: bold; '; }
-		if( sizeof($stack) >= 2 ) { $astyle .= ' font-size: 80%; '; $sstyle .= '  '; }
+		if( sizeof((array) $this->flat[$id]['unterbegriffe']) ) { $astyle = ' font-weight: bold; '; }
+		if( sizeof((array) $stack) >= 2 ) { $astyle .= ' font-size: 80%; '; $sstyle .= '  '; }
 		
 		$site->skin->rowStart();
-			$site->skin->cellStart('style="width: 50%; padding-left: '.(sizeof($stack)*20).'px;"');
-				echo $this->renderStichwortLink($id, $astyle);
-			$site->skin->cellEnd();
-			
-			$site->skin->cellStart('style="width: 50%;"');
-				for( $i = 0; $i < sizeof($this->flat[$id]['synonyme']); $i++ )
+		$site->skin->cellStart('style="width: 50%; padding-left: '.(sizeof((array) $stack)*20).'px;"');
+		echo $this->renderStichwortLink($id, $astyle);
+		$site->skin->cellEnd();
+		
+		$site->skin->cellStart('style="width: 50%;"');
+		for( $i = 0; $i < sizeof((array) $this->flat[$id]['synonyme']); $i++ )
 				{
 					$synonym_id = $this->flat[$id]['synonyme'][$i];
 					echo $i? ', ' : '';
@@ -124,16 +124,16 @@ class stichwoerter_tree
 			
 		$site->skin->rowEnd();
 		
-		if( sizeof($stack) > 25 )
+		if( sizeof((array) $stack) > 25 )
 			{ $this->errors[] = "Zu tiefe Verschachtelung bei ".$this->renderStichwortLink($id); return; }
 
 		$stack[] = $id;
-		for( $i = 0; $i < sizeof($this->flat[$id]['unterbegriffe']); $i++ )
+		for( $i = 0; $i < sizeof((array) $this->flat[$id]['unterbegriffe']); $i++ )
 		{
 			$unterbegriff_id = $this->flat[$id]['unterbegriffe'][$i];
 			$unterbegriff_html = isohtmlspecialchars($this->flat[$unterbegriff_id]['stichwort']);
 			
-			for( $s = 0; $s < sizeof($stack)-2; $s++ )
+			for( $s = 0; $s < sizeof((array) $stack)-2; $s++ )
 			{
 				if( $stack[$s] == $unterbegriff_id )
 				{
@@ -161,7 +161,7 @@ class stichwoerter_tree
 			$site->skin->headEnd();
 		
 			reset($this->flat);
-			while( list($id, $vars) = each($this->flat) )
+			foreach($this->flat as $id => $vars)
 			{
 				if( !$vars['ist_descendent'] && !$vars['ist_synonym'] )
 				{
@@ -173,14 +173,14 @@ class stichwoerter_tree
 		if( sizeof($this->errors) )
 		{
 			$site->skin->msgStart('e');
-				for( $i = 0; $i < sizeof($this->errors); $i++ )
+			for( $i = 0; $i < sizeof((array) $this->errors); $i++ )
 					echo '<b>Fehler:</b> ' .  $this->errors[$i] . '<br />';
 			$site->skin->msgEnd();
 		}
 		if( sizeof($this->warnings) )
 		{
 			$site->skin->msgStart('w');
-				for( $i = 0; $i < sizeof($this->warnings); $i++ )
+			for( $i = 0; $i < sizeof((array) $this->warnings); $i++ )
 					echo '<b>Warnung:</b> ' . $this->warnings[$i] . '<br />';
 			$site->skin->msgEnd();
 		}

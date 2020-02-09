@@ -90,7 +90,7 @@ function render_print_dialog($id, $printArea, $view, $printViewCnt, $printSelect
 			
 				$viewopt = "";
 				reset($all_print_plugins);
-				while( list($name, $descr) = each($all_print_plugins) ) {
+				foreach($all_print_plugins as $name => $descr) {
 					$viewopt .= $viewopt? "###" : "";
 					$viewopt .= "$name###$descr";
 				}
@@ -103,7 +103,7 @@ function render_print_dialog($id, $printArea, $view, $printViewCnt, $printSelect
 			if( is_array($module->options) )
 			{
 				reset($module->options);
-				while( list($optionName, $optionParam) = each($module->options) )
+				foreach($module->options as $optionName => $optionParam)
 				{
 					if( $optionName == 'fontsize' )
 					{
@@ -269,7 +269,7 @@ if( $module->param['fontsize']<=4 || $module->param['fontsize']>=40 ) {
 if( is_array($module->options) && (!$prevview || $prevview==$view) )
 {
 	reset($module->options);
-	while( list($optionName, $optionParam) = each($module->options) )
+	foreach($module->options as $optionName => $optionParam)
 	{
 		if( $optionName!='pagebreak' && $optionName!='fontsize' && $optionParam[0]!='remark') 
 		{

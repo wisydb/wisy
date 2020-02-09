@@ -104,14 +104,14 @@ class IMP_MIXFILE_CLASS
 		// create all index
 		$indexToCreate = array();
 		global $Table_Def;
-		for( $t = 0; $t < sizeof($Table_Def); $t++ )
+		for( $t = 0; $t < sizeof((array) $Table_Def); $t++ )
 		{
 			$tableDef = $Table_Def[$t];
 			if( in_array($tableDef->name, $this->all_tables) )
 			{
 				$indexToCreate[] = array($tableDef->name, 'id');
 				$rows  = $tableDef->rows;
-				for( $r = 0; $r < sizeof($rows); $r++ )
+				for( $r = 0; $r < sizeof((array) $rows); $r++ )
 				{
 					switch( $rows[$r]->flags & TABLE_ROW ) 
 					{

@@ -42,7 +42,7 @@ class SYNC_TOOLS_CLASS
 		}
 
 		// find a record matching the exact database name
-		for( $i = 0; $i < sizeof($g_sync_data); $i++ ) {
+		for( $i = 0; $i < sizeof((array) $g_sync_data); $i++ ) {
 			$dbs = explode(',', str_replace(' ','',$g_sync_data[$i]['dbs']));
 			if( in_array($this->db->Database, $dbs) ) {
 				return $g_sync_data[$i];
@@ -50,7 +50,7 @@ class SYNC_TOOLS_CLASS
 		}
 		
 		// use the default record
-		for( $i = 0; $i < sizeof($g_sync_data); $i++ ) {
+		for( $i = 0; $i < sizeof((array) $g_sync_data); $i++ ) {
 			if( $g_sync_data[$i]['dbs']=='*' ) {
 				return $g_sync_data[$i];
 			}
@@ -125,7 +125,7 @@ class SYNC_TOOLS_CLASS
 		// go through all tables and set the triggers and the default and start values
 		$all_triggers = $this->get_triggers();
 		global $Table_Def;
-		for( $t = 0; $t < sizeof($Table_Def); $t++ )
+		for( $t = 0; $t < sizeof((array) $Table_Def); $t++ )
 		{
 			$table_name		= $Table_Def[$t]->name;
 			$trigger_name	= "{$table_name}_bi_v{$this->trigger_version}_".$sync_info['inc'].'_'.$sync_info['offset']; //  naming scheme is <table>_bi_v<version>_<inc>_<offset>

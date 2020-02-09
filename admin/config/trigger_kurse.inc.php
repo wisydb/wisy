@@ -14,7 +14,7 @@ function explode_settings($in)
 	$out = array();
 	$in = strtr($in, "\r\t", "\n ");
 	$in = explode("\n", $in);
-	for( $i = 0; $i < sizeof($in); $i++ )
+	for( $i = 0; $i < sizeof((array) $in); $i++ )
 	{
 		$equalPos = strpos($in[$i], '=');
 		if( $equalPos )
@@ -159,7 +159,7 @@ function update_kurs_state($kurs_id, $param)
 	{
 		$durchf_ids[] = $db->f('secondary_id');
 	}
-	$anz_durchf = sizeof($durchf_ids);
+	$anz_durchf = sizeof((array) $durchf_ids);
 
 	// stichw. holen
 	$anz_stichw = 0;

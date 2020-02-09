@@ -259,7 +259,7 @@ $site->skin->workspaceStart();
 		$last_modification_table = '';
 		$last_modification_user = 0;
 		
-		for( $t = 0; $t < sizeof($Table_Def); $t++ )
+		for( $t = 0; $t < sizeof((array) $Table_Def); $t++ )
 		{
 			// last monification
 			$curr_last_modification = '0000-00-00 00:00:00';

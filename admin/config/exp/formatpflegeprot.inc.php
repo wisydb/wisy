@@ -217,7 +217,7 @@ function wisy_durchfuehrung_kurstage($kurstage)
 
 	$c = 0;
 	reset($codes_kurstage_array);
-	while( list($value, $descr) = each($codes_kurstage_array) ) {
+	foreach($codes_kurstage_array as $value => $descr) {
 		if( $kurstage & $value ) {
 			$c++;
 		}
@@ -225,7 +225,7 @@ function wisy_durchfuehrung_kurstage($kurstage)
 
 	$ret = '';
 	reset($codes_kurstage_array);
-	while( list($value, $descr) = each($codes_kurstage_array) ) {
+	foreach($codes_kurstage_array as $value => $descr) {
 		if( $kurstage & $value ) {
 			$ret .= $ret? ($c==1? ' und ' : ', ') : '';
 			$ret .= $descr;
@@ -390,12 +390,12 @@ class EXP_FORMATPFLEGEPROT_CLASS extends EXP_PLUGIN_CLASS
 		$this->options['dummy2']		=	array('remark', 'Verwenden Sie für die Basis-URL bitte die kurzmöglichste funktionierende Form.');
 		
 		$allgroups = acl_get_all_groups();
-		for( $i = 0; $i < sizeof($allgroups); $i++ )
+		for( $i = 0; $i < sizeof((array) $allgroups); $i++ )
 		{
 			$this->options["group{$allgroups[$i][0]}"] = array('check', 
-				$i==sizeof($allgroups)-1? $allgroups[$i][1] : "{$allgroups[$i][1]} " /*trailing space->no wrap*/,
-				1, 
-				$i==0? 'Anbietergruppen' : '');
+			    $i==sizeof((array) $allgroups)-1? $allgroups[$i][1] : "{$allgroups[$i][1]} " /*trailing space->no wrap*/,
+			    1,
+			    $i==0? 'Anbietergruppen' : '');
 		}		
 		
 		$this->options['send']		=	array('enum', 'E-Mails versenden', 0, '0###Nein, keine E-Mails versenden###1###Ja, E-Mails an ALLE ANBIETER versenden');
@@ -626,7 +626,7 @@ class EXP_FORMATPFLEGEPROT_CLASS extends EXP_PLUGIN_CLASS
 		$ret = "";
 		
 		$kurse = $this->getAnbieterKurseAsArray($anbieterId);
-		for( $k = 0; $k < sizeof($kurse); $k++ )
+		for( $k = 0; $k < sizeof((array) $kurse); $k++ )
 		{
 			if( $k )
 			{
@@ -666,7 +666,7 @@ class EXP_FORMATPFLEGEPROT_CLASS extends EXP_PLUGIN_CLASS
 			}
 
 			// durchfuehrungen...
-			for( $d = 0; $d < sizeof($kurse[$k]['durchf']); $d++ )
+			for( $d = 0; $d < sizeof((array) $kurse[$k]['durchf']); $d++ )
 			{
 				$ret .= "\nAng.-Nr:     " . $kurse[$k]['durchf'][$d]['nr'];
 				$ret .= "\n  Termin:    " . $kurse[$k]['durchf'][$d]['termin'];
@@ -878,7 +878,7 @@ class EXP_FORMATPFLEGEPROT_CLASS extends EXP_PLUGIN_CLASS
 		
 		// create the ZIP-file
 		$zipfile = new EXP_ZIPWRITER_CLASS($this->allocateFileName('pflegeprotokoll-' . getFilename($site->htmldeentities($monatName)) . '.zip'));
-		for( $i = 0; $i < sizeof($this->names); $i++ ) 
+		for( $i = 0; $i < sizeof((array) $this->names); $i++ )
 		{
 			if( !$zipfile->add_data($this->dumps[$i], $this->names[$i]) )
 				$this->progress_abort('cannot write zip');

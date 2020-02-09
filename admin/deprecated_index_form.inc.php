@@ -204,7 +204,7 @@ class DBSEARCH_FORM_CLASS
 		$newRows = $this->rows;
 		
 		$prevEmptyRows = 0;
-		for( $i = 0; $i < sizeof($newRows); $i++ ) 
+		for( $i = 0; $i < sizeof((array) $newRows); $i++ ) 
 		{
 			$and="a{$i}"; 	$field="f{$i}";   $op="o{$i}";	$value="v{$i}";
 
@@ -231,7 +231,7 @@ class DBSEARCH_FORM_CLASS
 		
 		// remove empty rows
 		$this->rows = array();
-		for( $i = 0; $i < sizeof($newRows); $i++ ) {
+		for( $i = 0; $i < sizeof((array) $newRows); $i++ ) {
 			if( $newRows[$i][3] != '' ) {
 				$this->rows[] = $newRows[$i];
 			}
@@ -247,7 +247,7 @@ class DBSEARCH_FORM_CLASS
 		}
 	
 		// force a minimal number of rows
-		while( sizeof($this->rows) < $this->settings['rows_min'] ) {
+		while( sizeof((array) $this->rows) < $this->settings['rows_min'] ) {
 			$this->rows[] = array('', '', '', '');
 			$newEmptyRows++;
 		}
@@ -280,7 +280,7 @@ class DBSEARCH_FORM_CLASS
 		
 		if( $loadAll 
 		 || $this->settingsFields["$indentFuncs$fieldName"]
-		 || (sizeof($this->settingsFields)==0 && $isDefaultField)
+		 || (sizeof((array) $this->settingsFields)==0 && $isDefaultField)
 		 ||	$isDefaultField==2 )
 		{
 			$fieldNormName					= g_eql_normalize_func_name($name, 1);
@@ -291,10 +291,10 @@ class DBSEARCH_FORM_CLASS
 			
 			if( $loadAll )
 			{
-				// store indent for further usage in index_listattr.php
-				$this->fieldIndent[]	= $indentCnt;
-				$this->fieldIsSelected[]= ($this->settingsFields["$indentFuncs$fieldName"] || (sizeof($this->settingsFields)==0 && $isDefaultField) || $isDefaultField==2)? 1 : 0;
-				$this->fieldIsDefault[]	= $isDefaultField;
+			    // store indent for further usage in index_listattr.php
+			    $this->fieldIndent[]	= $indentCnt;
+			    $this->fieldIsSelected[]= ($this->settingsFields["$indentFuncs$fieldName"] || (sizeof((array) $this->settingsFields)==0 && $isDefaultField) || $isDefaultField==2)? 1 : 0;
+			    $this->fieldIsDefault[]	= $isDefaultField;
 			}
 			else
 			{
@@ -336,7 +336,7 @@ class DBSEARCH_FORM_CLASS
 		}
 		
 		// add all rows
-		for( $r = 0; $r < sizeof($tableDef->rows); $r++ ) 
+		for( $r = 0; $r < sizeof((array) $tableDef->rows); $r++ )
 		{
 			$rowflags	= $tableDef->rows[$r]->flags;
 			$rowtype	= $rowflags&TABLE_ROW;
@@ -390,7 +390,7 @@ class DBSEARCH_FORM_CLASS
 		$this->columnNames[]		= $name;
 		$this->columnDescr[]		= htmlconstant($descr);
 		$this->columnIndent[]		= $indentCnt;
-		$this->columnIsSelected[]	= ($this->settingsColumns[$name] || (sizeof($this->settingsColumns)==0 && $isDefaultColumn) || $isDefaultColumn==2)? 1 : 0;
+		$this->columnIsSelected[]	= ($this->settingsColumns[$name] || (sizeof((array) $this->settingsColumns)==0 && $isDefaultColumn) || $isDefaultColumn==2)? 1 : 0;
 		$this->columnIsDefault[]	= $isDefaultColumn;
 	}
 	
@@ -410,7 +410,7 @@ class DBSEARCH_FORM_CLASS
 		// go through all columns
 		$hasSecondary = 0;
 		$secondaryIsDefault = 0;
-		for( $r = 0; $r < sizeof($tableDef->rows); $r++ ) 
+		for( $r = 0; $r < sizeof((array) $tableDef->rows); $r++ ) 
 		{
 			$rowflags	= $tableDef->rows[$r]->flags;
 			$rowtype	= $rowflags&TABLE_ROW;
@@ -427,7 +427,7 @@ class DBSEARCH_FORM_CLASS
 				$this->_addColumn__('adummyfield', $tableDef->rows[$r]->descr, 0, 0);
 
 				$sTableDef = Table_Find_Def($tableDef->rows[$r]->addparam->name);
-				for( $sr = 0; $sr < sizeof($sTableDef->rows); $sr++ ) {
+				for( $sr = 0; $sr < sizeof((array) $sTableDef->rows); $sr++ ) {
 					$rowflags	= $sTableDef->rows[$sr]->flags;
 					$rowtype	= $rowflags&TABLE_ROW;
 					if( $rowtype != TABLE_SECONDARY ) {
@@ -476,7 +476,7 @@ class DBSEARCH_FORM_CLASS
 		}
 		
 		// check if the row exists
-		for( $i = 0; $i < sizeof($rows); $i++ ) {
+		for( $i = 0; $i < sizeof((array) $rows); $i++ ) {
 			if( $rows[$i][1]==$field && $rows[$i][3]==$value ) {
 				if( $remove ) {
 					$rows[$i][3] = '';
@@ -516,12 +516,12 @@ class DBSEARCH_FORM_CLASS
 
 		$ret  = "$formStart<table border=\"0\">";
 		
-			for( $rowNum = 0; $rowNum < sizeof($this->rows); $rowNum++ ) 
+		    for( $rowNum = 0; $rowNum < sizeof((array) $this->rows); $rowNum++ )
 			{
 				$ret .= '<tr>';
 				
 					// and / or
-					if( sizeof($this->rows) > 1 ) {
+				    if( sizeof((array) $this->rows) > 1 ) {
 						$ret .= '<td>';
 							if( $rowNum ) {
 								$ret .= "<select name=\"a{$rowNum}\" size=\"1\">";
@@ -539,7 +539,7 @@ class DBSEARCH_FORM_CLASS
 						$ret .= "<select name=\"f{$rowNum}\" size=\"1\" onchange=\"dbsearch_chf($rowNum, '{$optionsHref}');\" class=\"acselect\">";
 							$ret .= $this->_renderOption('', $this->rows[$rowNum][1], '');
 							$ret .= $this->_renderOption('ANY', $this->rows[$rowNum][1], htmlconstant('_MOD_DBSEARCH_FIELDANY'));
-							for( $i = 0; $i < sizeof($this->fieldNames); $i++ ) {
+							for( $i = 0; $i < sizeof((array) $this->fieldNames); $i++ ) {
 								$ret .= $this->_renderOption($this->fieldNames[$i], $this->rows[$rowNum][1], $this->fieldDescr[$i]);
 							}
 							
@@ -609,7 +609,7 @@ class DBSEARCH_FORM_CLASS
 	{
 		$eql = '';
 		
-		for( $i = 0; $i < sizeof($this->rows); $i++ ) 
+		for( $i = 0; $i < sizeof((array) $this->rows); $i++ )
 		{
 			$value = trim($this->rows[$i][3]);
 			if( $value!='' ) 

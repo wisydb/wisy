@@ -53,7 +53,7 @@ function regSaveToDb__($userId, $settings)
 	$ret = '';
 	ksort($settings);
 	reset($settings);
-	while( list($regKey, $regValue) = each($settings) ) 
+	foreach($settings as $regKey => $regValue)
 	{
 		$regKey		= strval($regKey);
 		$regValue	= strval($regValue);
@@ -789,7 +789,7 @@ function bin_render($table, $id)
 	
 	// render
 	$html = "<script type=\"text/javascript\"><!--\n";
-		$html .= "binRender('$table',$id,$state" .($g_num_bin_rendered==0? (",'".$_SESSION['g_session_bin']->getName($_SESSION['g_session_bin']->activeBin)."','{$site->skin->imgFolder}',".sizeof($_SESSION['g_session_bin']->getBins()).','.$g_curr_bin_editable) : ""). ");";
+	$html .= "binRender('$table',$id,$state" .($g_num_bin_rendered==0? (",'".$_SESSION['g_session_bin']->getName($_SESSION['g_session_bin']->activeBin)."','{$site->skin->imgFolder}',".sizeof((array) $_SESSION['g_session_bin']->getBins()).','.$g_curr_bin_editable) : ""). ");";
 	$html .= "/" . "/--></script>";
 	
 	// prepare for next

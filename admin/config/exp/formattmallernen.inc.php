@@ -115,7 +115,7 @@ class RTF_WRITER_CLASS
 		}
 		
 		// search color
-		for( $i = 0; $i < sizeof($this->colors); $i++ ) {
+		for( $i = 0; $i < sizeof((array) $this->colors); $i++ ) {
 			if( $this->colors[$i] == $rtfcolor ) {
 				return $i; // success
 			}
@@ -364,13 +364,13 @@ class RTF_WRITER_CLASS
 			$this->w("{\\comment File creation date is " . strftime("%Y-%m-%d %H:%M:%S") . " }\n");
 			
 			// fonttable
-			if( sizeof($this->fonts) == 0 ) {	
+			if( sizeof((array) $this->fonts) == 0 ) {
 				$this->defineFont('Arial');
 			}
 			
 			if( $this->write_style_format ) {
 				$this->w("{\\fonttbl\n");
-					for( $i = 0; $i < sizeof($this->fonts); $i++ ) {
+				for( $i = 0; $i < sizeof((array) $this->fonts); $i++ ) {
 						$this->w('{\f' . $i . '\f' . $this->fonts[$i] . ";}\n");
 					}
 				$this->w("}\n");
@@ -378,7 +378,7 @@ class RTF_WRITER_CLASS
 			
 			// color table
 			$this->w("{\colortbl\n");
-				for( $i = 0; $i < sizeof($this->colors); $i++ ) {
+			    for( $i = 0; $i < sizeof((array) $this->colors); $i++ ) {
 					$this->w($this->colors[$i] . ";\n");
 				}
 			$this->w("}\n");
@@ -393,7 +393,7 @@ class RTF_WRITER_CLASS
 			$this->w(" Normal;}\n");
 				
 				reset($this->styles);
-				while( list($name, $style) = each($this->styles) ) {
+				foreach($this->styles as $name => $style) {
 					$index = $this->styles_index[$name];
 					if( $index > 0 ) {
 						if( $this->styles_type[$name] == 'para' ) {
@@ -425,10 +425,10 @@ class RTF_WRITER_CLASS
 			// tabs
 			global $debug_count;
 			if( $this->write_style_format || $debug_count ) {
-				for( $i = 0; $i < sizeof($this->global_tabs); $i++ ) {
+			    for( $i = 0; $i < sizeof((array) $this->global_tabs); $i++ ) {
 					$this->w('\tx' . $this->global_tabs[$i]);
 				}
-				if( sizeof($this->global_tabs) ) {
+				if( sizeof((array) $this->global_tabs) ) {
 					$this->w("\n");
 				}
 			}
@@ -512,7 +512,7 @@ class EXP_FORMATTMALLERNEN_CLASS extends EXP_PLUGIN_CLASS
 		}
 
 		$allgroups = acl_get_all_groups();
-		for( $i = 0; $i < sizeof($allgroups); $i++ )
+		for( $i = 0; $i < sizeof((array) $allgroups); $i++ )
 		{
 			$this->options["group{$allgroups[$i][0]}"] = array('check', 
 				"{$allgroups[$i][1]} ", /*trailing space->no wrap*/
@@ -581,7 +581,7 @@ class EXP_FORMATTMALLERNEN_CLASS extends EXP_PLUGIN_CLASS
 			
 				// write this level
 				$this->fp->wSect();
-					$this->fp->wStyle('Überschrift '.strval($i+1));
+					$this->fp->wStyle('ï¿½berschrift '.strval($i+1));
 
 					if( $this->themennr ) {
 						$this->fp->wText($kuerzel.' ');
@@ -591,7 +591,7 @@ class EXP_FORMATTMALLERNEN_CLASS extends EXP_PLUGIN_CLASS
 					$thema			= substr($thema, 1);
 					
 					$this->fp->wSect();
-						$this->fp->wStyle('Überschrift '.strval($i+1). ' Erster Buchstabe');
+						$this->fp->wStyle('ï¿½berschrift '.strval($i+1). ' Erster Buchstabe');
 						$this->fp->wText($thema1stLetter);
 					$this->fp->wSectEnd();
 					
@@ -639,8 +639,8 @@ class EXP_FORMATTMALLERNEN_CLASS extends EXP_PLUGIN_CLASS
 			// ...guetesiegel
 			if( $pruefsiegel ) {
 				$this->fp->wSect();
-					$this->fp->wStyle('Veranstalter Prüfsiegel');
-					$this->fp->wText('(Prüfsiegel)');
+					$this->fp->wStyle('Veranstalter Prï¿½fsiegel');
+					$this->fp->wText('(Prï¿½fsiegel)');
 				$this->fp->wSectEnd();
 				$this->fp->wText(' ');
 			}
@@ -760,7 +760,7 @@ class EXP_FORMATTMALLERNEN_CLASS extends EXP_PLUGIN_CLASS
 		}
 		
 		if( sizeof($durchf) == 0 ) {
-			$this->log("FEHLER: keine Durchführungs für Kurs ID $kursId ($kursTitel)");
+			$this->log("FEHLER: keine Durchfï¿½hrungs fï¿½r Kurs ID $kursId ($kursTitel)");
 			return;
 		}
 
@@ -780,7 +780,7 @@ class EXP_FORMATTMALLERNEN_CLASS extends EXP_PLUGIN_CLASS
 		$KURS_TH = explode("\n", $KURS_TH);
 
 		reset($durchf);
-		while( list($dummy, $param) = each($durchf) ) 
+		foreach($durchf as $dummy => $param)
 		{
 			$this->fp->wSect();
 				$this->fp->wStyle('Kurs');
@@ -808,7 +808,7 @@ class EXP_FORMATTMALLERNEN_CLASS extends EXP_PLUGIN_CLASS
 				$symbolfont = 'Wingdings';
 				switch( $param['tagescode'] ) 
 				{
-					case 1: // ganztägig
+					case 1: // ganztï¿½gig
 					case 2: // vorm.
 					case 3: // nachm
 						$symbolfont = 'Wingdings 2';
@@ -878,7 +878,7 @@ class EXP_FORMATTMALLERNEN_CLASS extends EXP_PLUGIN_CLASS
 				if( $text < 0 ) {
 					$text = '??'; // unknown
 				}
-				$text .=  ' €';
+				$text .=  ' ï¿½';
 				
 				$this->fp->wTab();
 				$this->fp->wSect();
@@ -908,7 +908,7 @@ class EXP_FORMATTMALLERNEN_CLASS extends EXP_PLUGIN_CLASS
 				if( $refdate ) 
 				{
 					$termine = array();
-					for( $i = 0; $i < sizeof($param['beginn']); $i++ ) {
+					for( $i = 0; $i < sizeof((array) $param['beginn']); $i++ ) {
 						if( $param['beginn'][$i]
 						 && $param['beginn'][$i] != '0000-00-00 00:00:00' 
 						 && $param['beginn'][$i] >= $refdate ) {
@@ -916,15 +916,15 @@ class EXP_FORMATTMALLERNEN_CLASS extends EXP_PLUGIN_CLASS
 						}
 					}
 					
-					if( sizeof($termine) )
+					if( sizeof((array) $termine) )
 					{
-						$this->fp->wTab();
-						$this->fp->wText(sizeof($termine)==1? 'Termin: ' : 'Termine: ');
-						
-						ksort($termine);
-						reset($termine);
-						$i = 0;
-						while( list($termin) = each($termine) )
+					    $this->fp->wTab();
+					    $this->fp->wText(sizeof((array) $termine)==1? 'Termin: ' : 'Termine: ');
+					    
+					    ksort($termine);
+					    reset($termine);
+					    $i = 0;
+					    foreach(array_keys($termine) as $termin)
 						{
 							if( $i ) { $this->fp->wText(', '); }
 						
@@ -946,7 +946,7 @@ class EXP_FORMATTMALLERNEN_CLASS extends EXP_PLUGIN_CLASS
 		// Stichwoerter / Abschluesse
 		//
 	
-		for( $i = 0; $i < sizeof($stichwIds); $i++ ) {
+		for( $i = 0; $i < sizeof((array) $stichwIds); $i++ ) {
 			if( is_array($this->stichw[$stichwIds[$i]]) ) {
 				$this->fp->wSect();
 					$this->fp->wCmd($this->stichw[$stichwIds[$i]][1]&1? '\xe\v\b' : '\xe\v');
@@ -1068,7 +1068,7 @@ class EXP_FORMATTMALLERNEN_CLASS extends EXP_PLUGIN_CLASS
 		//
 		// build stichwoerter hash
 		//
-		$this->progress_info("lade Stichwörter...");
+		$this->progress_info("lade Stichwï¿½rter...");
 		$this->stichw = array();
 		$db1->query("SELECT id, stichwort, eigenschaften FROM stichwoerter");
 		while( $db1->next_record() ) {
@@ -1111,15 +1111,15 @@ class EXP_FORMATTMALLERNEN_CLASS extends EXP_PLUGIN_CLASS
 		$this->fp->defineGlobalTab(7087); 
 		$this->fp->defineGlobalTab(7371); 
 		$this->fp->defineGlobalTab(8505); 
-		$this->fp->defineStyle('Überschrift 1',						'para',	'\f0\fs24\cf1\b'	);
-		$this->fp->defineStyle('Überschrift 2',						'para',	'\f0\fs24\cf1\b'	);
-		$this->fp->defineStyle('Überschrift 3',						'para',	'\f0\fs24\cf1\b'	);
-		$this->fp->defineStyle('Überschrift 1 Erster Buchstabe',	'char',	'\f0\fs34\cf1\b'	);
-		$this->fp->defineStyle('Überschrift 2 Erster Buchstabe',	'char',	'\f0\fs34\cf1\b'	);
-		$this->fp->defineStyle('Überschrift 3 Erster Buchstabe',	'char',	'\f0\fs34\cf1\b'	);
+		$this->fp->defineStyle('ï¿½berschrift 1',						'para',	'\f0\fs24\cf1\b'	);
+		$this->fp->defineStyle('ï¿½berschrift 2',						'para',	'\f0\fs24\cf1\b'	);
+		$this->fp->defineStyle('ï¿½berschrift 3',						'para',	'\f0\fs24\cf1\b'	);
+		$this->fp->defineStyle('ï¿½berschrift 1 Erster Buchstabe',	'char',	'\f0\fs34\cf1\b'	);
+		$this->fp->defineStyle('ï¿½berschrift 2 Erster Buchstabe',	'char',	'\f0\fs34\cf1\b'	);
+		$this->fp->defineStyle('ï¿½berschrift 3 Erster Buchstabe',	'char',	'\f0\fs34\cf1\b'	);
 		$this->fp->defineStyle('Erster Buchstabe',					'char',	'\f0\fs30\cf1\b'	);
 		$this->fp->defineStyle('Veranstalter',						'para',	'\cf0\f0\fs16\b'	);
-		$this->fp->defineStyle('Veranstalter Prüfsiegel',			'char',	'\cf1' 				);
+		$this->fp->defineStyle('Veranstalter Prï¿½fsiegel',			'char',	'\cf1' 				);
 		$this->fp->defineStyle('Veranstalter Telefon',				'char',	'\cf0' 				);
 		$this->fp->defineStyle('Veranstalter WISY-Nr.',				'char',	'\cf2'				);
 		$this->fp->defineStyle('Kurs',								'para',	'\f0\fs16\cf0' 		);
@@ -1280,8 +1280,8 @@ class EXP_FORMATTMALLERNEN_CLASS extends EXP_PLUGIN_CLASS
 		$this->log('geschriebene Kurse',				$recWritten);
 		$this->log('ausgelassene Kurse',				$recSkipped);
 		$this->log('fehlerhafte Kurse',					$recErrors);
-		$this->log('bearbeitete Durchführungen',		$this->durchfAvailable);
-		$this->log('geschriebene Durchführungen',		$this->durchfWritten);
+		$this->log('bearbeitete Durchfï¿½hrungen',		$this->durchfAvailable);
+		$this->log('geschriebene Durchfï¿½hrungen',		$this->durchfWritten);
 		$this->log('geschriebene Anbieter',				$this->anbieterWritten);
 		$this->log('geschriebene Trainer',				$this->trainerWritten);
 		$this->log('geschriebene Beratungsstellen',		$this->beratungsstellenWritten);
@@ -1292,7 +1292,7 @@ class EXP_FORMATTMALLERNEN_CLASS extends EXP_PLUGIN_CLASS
 		// erstelle die ZIP-Datei
 		//
 		$zipfile = new EXP_ZIPWRITER_CLASS($this->allocateFileName('1001-mal-lernen.zip'));
-		for( $i = 0; $i < sizeof($this->names); $i++ ) 
+		for( $i = 0; $i < sizeof((array) $this->names); $i++ )
 		{
 			if( !$zipfile->add_data($this->dumps[$i], $this->names[$i]) )
 				$this->progress_abort('cannot write zip');
@@ -1323,22 +1323,22 @@ class EXP_FORMATTMALLERNEN_CLASS extends EXP_PLUGIN_CLASS
 		
 		$this->fp->defineStyle('Anbieter',						'para',	'\cf0\f0\fs16'		);
 		$this->fp->defineStyle('Anbieter Name',					'char',	'\b' 				);
-		$this->fp->defineStyle('Anbieter Prüfsiegel',			'char',	'\cf1' 				);
+		$this->fp->defineStyle('Anbieter Prï¿½fsiegel',			'char',	'\cf1' 				);
 		$this->fp->defineStyle('Anbieter WISY-Nr.',				'char',	'\cf2'				);
 
-		$this->fp->defineStyle('Anbieter Prüfs.',				'para',	'\cf0\f0\fs16'		);
-		$this->fp->defineStyle('Anbieter Prüfs. Name',			'char',	'\b' 				);
-		$this->fp->defineStyle('Anbieter Prüfs. Prüfsiegel',	'char',	'\cf1' 				);
-		$this->fp->defineStyle('Anbieter Prüfs. WISY-Nr.',		'char',	'\cf2'				);
+		$this->fp->defineStyle('Anbieter Prï¿½fs.',				'para',	'\cf0\f0\fs16'		);
+		$this->fp->defineStyle('Anbieter Prï¿½fs. Name',			'char',	'\b' 				);
+		$this->fp->defineStyle('Anbieter Prï¿½fs. Prï¿½fsiegel',	'char',	'\cf1' 				);
+		$this->fp->defineStyle('Anbieter Prï¿½fs. WISY-Nr.',		'char',	'\cf2'				);
 		
 		$this->fp->defineStyle('Trainer',						'para',	'\cf0\f0\fs16'		);
 		$this->fp->defineStyle('Trainer Name',					'char',	'\b' 				);
-		$this->fp->defineStyle('Trainer Prüfsiegel',			'char',	'\cf1' 				);
+		$this->fp->defineStyle('Trainer Prï¿½fsiegel',			'char',	'\cf1' 				);
 		$this->fp->defineStyle('Trainer WISY-Nr.',				'char',	'\cf2'				);
 		
 		$this->fp->defineStyle('Beratungsstelle',				'para',	'\cf0\f0\fs16'		);
 		$this->fp->defineStyle('Beratungsstelle Name',			'char',	'\b' 				);
-		$this->fp->defineStyle('Beratungsstelle Prüfsiegel',	'char',	'\cf1' 				);
+		$this->fp->defineStyle('Beratungsstelle Prï¿½fsiegel',	'char',	'\cf1' 				);
 		$this->fp->defineStyle('Beratungsstelle WISY-Nr.',		'char',	'\cf2'				);
 		
 		$this->fp->defineStyle('Namensverweisung',				'para',	'\cf1\f0\fs16'		);
@@ -1436,7 +1436,7 @@ class EXP_FORMATTMALLERNEN_CLASS extends EXP_PLUGIN_CLASS
 				}
 				else {
 					$this->anbieterWritten++;
-					$paraStyle = $pruefsiegel? 'Anbieter Prüfs.' : 'Anbieter';
+					$paraStyle = $pruefsiegel? 'Anbieter Prï¿½fs.' : 'Anbieter';
 				}
 
 				$this->fp->wSect();
@@ -1453,7 +1453,7 @@ class EXP_FORMATTMALLERNEN_CLASS extends EXP_PLUGIN_CLASS
 					// ...pruefsiegel
 					if( $pruefsiegel ) {
 						$this->fp->wSect();
-							$this->fp->wStyle("$paraStyle Prüfsiegel");
+							$this->fp->wStyle("$paraStyle Prï¿½fsiegel");
 							$this->fp->wSymbol(0x4a /* Smily */);
 						$this->fp->wSectEnd();
 						$this->fp->wText(' ');

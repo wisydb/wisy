@@ -29,7 +29,7 @@ class AUTOCOMPLETE_JSON_CLASS
 	private function _find_first_summary_field($table, &$ret_field, &$ret_rowtype)
 	{
 		$this->_find_table_def($table, 'id', $temp_table_def, $dummy);
-		for( $r = 0; $r < sizeof($temp_table_def->rows); $r++ ) {
+		for( $r = 0; $r < sizeof((array) $temp_table_def->rows); $r++ ) {
 			if( $temp_table_def->rows[$r]->flags & TABLE_SUMMARY ) {
 				$ret_field = $temp_table_def->rows[$r]->name;
 				$ret_rowtype = $temp_table_def->rows[$r]->flags & TABLE_ROW;
@@ -65,7 +65,7 @@ class AUTOCOMPLETE_JSON_CLASS
 		
 		require_once('eql.inc.php');
 		
-		for( $r = 0; $r < sizeof($ret_table_def->rows); $r++ ) {
+		for( $r = 0; $r < sizeof((array) $ret_table_def->rows); $r++ ) {
 			if( $ret_table_def->rows[$r]->name == $field
              || g_eql_normalize_func_name($ret_table_def->rows[$r]->name, 0) == $field	) {
 				$ret_row_index = $r;
@@ -89,7 +89,7 @@ class AUTOCOMPLETE_JSON_CLASS
 		if( ($table_def->rows[$row_index]->flags & TABLE_ROW)==TABLE_TEXT
 		 && $table_def->rows[$row_index]->flags & TABLE_ACNESTSTART  )
 		{
-			for( $r = $row_index + 1; $r < sizeof($table_def->rows); $r++ ) {
+		    for( $r = $row_index + 1; $r < sizeof((array) $table_def->rows); $r++ ) {
 				if( ($table_def->rows[$r]->flags & TABLE_ROW)==TABLE_TEXT
 				 &&  $table_def->rows[$r]->flags & TABLE_ACNEST ) {
 					$fields[] = $table_def->rows[$r]->name;
@@ -141,7 +141,7 @@ class AUTOCOMPLETE_JSON_CLASS
 			$href = "autocomplete.php?acdata=$table.$field"; 
 			$label = '';
 			$nest = array();
-			for( $r = 0; $r < sizeof($fields); $r++ ) {
+			for( $r = 0; $r < sizeof((array) $fields); $r++ ) {
 				$href .= "&v$r=".urlencode($this->db->fs($fields[$r]));
 				$temp = $this->db->fs($fields[$r]);
 				if( $temp!='' ) {
@@ -315,18 +315,18 @@ class AUTOCOMPLETE_JSON_CLASS
 		}
 		
 		// show "nothing found" on debug
-		if( $this->debug && sizeof($suggestions) == 0 ) {
+		if( $this->debug && sizeof((array) $suggestions) == 0 ) {
 			$this->_die("no suggestions found for $suggest_table.$suggest_field (row_type=$suggest_row_type)");
 		}
 		
 		// result output - format: [{"label":"label1","value":"value1"},{"label":"label2","value":"value2"}]
 		$json = '[';
-		for( $i = 0; $i < sizeof($suggestions); $i++ ) {
+		for( $i = 0; $i < sizeof((array) $suggestions); $i++ ) {
 			$json .= $i? ', ' : '';
 			$json .= '{';
 				$inner = 0;
 				reset($suggestions[$i]);
-				while( list($cnt1, $cnt2) = each($suggestions[$i]) ) 
+				foreach($suggestions[$i] as $cnt1 => $cnt2)
 				{
 					if( is_array($cnt2) ) {
 						if( $cnt1 == 'nest' && sizeof($cnt2) > 0 ) {

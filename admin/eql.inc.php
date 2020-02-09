@@ -185,7 +185,7 @@ function g_eql_normalize_words($words_, $unique = 0, $keepNumbers = 0, $keepWild
 		$temp = array_flip($words);
 		$words = array();
 		reset($temp);
-		while( list($word) = each($temp) ) {
+		foreach(array_keys($temp) as $word) {
 			$words[] = $word;
 		}
 	}
@@ -241,7 +241,7 @@ function g_eql_normalize_natsort($str)
 function g_eql_array2string($tables, $sep = ' ')
 {
 	$ret = '';
-	for( $i = 0; $i < sizeof($tables); $i++ ) {
+	for( $i = 0; $i < sizeof((array) $tables); $i++ ) {
 		$ret .= ($i? $sep : '') . $tables[$i];
 	}
 	return $ret;
@@ -312,7 +312,7 @@ function g_addJoin(&$joins, $joinedTable, $joinedField, $primaryField)
 	global $g_joinHash;
 
 	// does the join exist? if so, re-use it.
-	for( $i = 1; $i <= sizeof($joins); $i++ ) {
+	for( $i = 1; $i <= sizeof((array) $joins); $i++ ) {
 		if( $joins[$i-1] == "LEFT JOIN $joinedTable AS j$i ON j$i.$joinedField=$primaryField" ) {
 			return "j$i";
 		}
@@ -325,7 +325,7 @@ function g_addJoin(&$joins, $joinedTable, $joinedField, $primaryField)
 	if( $g_joinHash[$joinedTable] )
 	{
 		$g_joinHash[$joinedTable] = $g_joinHash[$joinedTable]=='self'? 'self' : 'alias';
-		$i = sizeof($joins)+1;
+		$i = sizeof((array) $joins)+1;
 		$joins[] = "LEFT JOIN $joinedTable AS j$i ON j$i.$joinedField=$primaryField";
 		return "j$i";
 	}
@@ -545,7 +545,7 @@ class EQL_PARSER_CLASS
 		$testArray = array();
 		for( $try = 0; $try <= 2; $try++ )
 		{
-			for( $i = 0; $i < sizeof($strArray); $i += 2 )
+		    for( $i = 0; $i < sizeof((array) $strArray); $i += 2 )
 			{
 				$testArray[$i/2] = $strArray[$i+1];
 				if( $try < 2 ) {
@@ -572,7 +572,7 @@ class EQL_PARSER_CLASS
 
 				// search for the value
 				$valuesFound = 0;
-				for( $i = 0; $i < sizeof($strArray); $i += 2 )
+				for( $i = 0; $i < sizeof((array) $strArray); $i += 2 )
 				{
 					if( strcmp($test, $testArray[$i/2]) == 0 )
 					{
@@ -600,10 +600,10 @@ class EQL_PARSER_CLASS
 	//
 	function getArrayIdsCond($field, &$ids)
 	{
-		if( sizeof($ids) == 0 ) {
+	    if( sizeof((array) $ids) == 0 ) {
 			return '(0)';
 		}
-		else if( sizeof($ids) == 1 )
+		else if( sizeof((array) $ids) == 1 )
 		{
 			return "$field={$ids[0]}";
 		}
@@ -624,7 +624,7 @@ class EQL_PARSER_CLASS
 	{
 		$allowedFunc = 'id()';
 		$tableDef = Table_Find_Def($tableDefName, 0 /* no access check */);
-		for( $r = 0; $r < sizeof($tableDef->rows); $r++ ) {
+		for( $r = 0; $r < sizeof((array) $tableDef->rows); $r++ ) {
 			$allowedFunc .= ', ' . g_eql_normalize_func_name($tableDef->rows[$r]->name, 0) . '()';
 		}
 
@@ -641,7 +641,7 @@ class EQL_PARSER_CLASS
 	{
 		$tableDef = Table_Find_Def($tableDefName, 0 /* no access check  */);
 		$field = g_eql_normalize_func_name($field);
-		for( $r = 0; $r < sizeof($tableDef->rows); $r++ )
+		for( $r = 0; $r < sizeof((array) $tableDef->rows); $r++ )
 		{
 			$row_name = g_eql_normalize_func_name($tableDef->rows[$r]->name);
 			if( $row_name == $field ) {
@@ -667,7 +667,7 @@ class EQL_PARSER_CLASS
 
 		// ...build subselect select statement
 		$currSelect = "SELECT ";
-		if( sizeof($joins) ) {
+		if( sizeof((array) $joins) ) {
 			$currSelect .= "DISTINCT ";
 		}
 		$currSelect .= "$table.$idField FROM $table " . g_eql_array2string($joins) . " WHERE $cond";
@@ -686,8 +686,8 @@ class EQL_PARSER_CLASS
 				}
 
 		if( $debug ) {
-			$msneeded = g_eql_getmicrotime() - $msneeded;
-			g_debug_sql_out('EQL_PARSER_CLASS->select2ids():', $currSelect . ' => ' . (sizeof($ids)? implode(', ', $ids) : 'EMPTY ROWS') . ' (' . $msneeded . ' seconds needed)', 'yellow');
+		    $msneeded = g_eql_getmicrotime() - $msneeded;
+		    g_debug_sql_out('EQL_PARSER_CLASS->select2ids():', $currSelect . ' => ' . (sizeof((array) $ids)? implode(', ', $ids) : 'EMPTY ROWS') . ' (' . $msneeded . ' seconds needed)', 'yellow');
 		}
 
 		return $ids;
@@ -697,7 +697,7 @@ class EQL_PARSER_CLASS
 	{
 		$rowType = $rowType & TABLE_ROW; // force masked row type
 
-		if( sizeof($ids) == 0 )
+		if( sizeof((array) $ids) == 0 )
 		{
 			// nothing found, add brackets around '0' to avoid a 'false' result
 			return "(0)";
@@ -887,7 +887,7 @@ class EQL_PARSER_CLASS
 		{
 			// get date (span) from ident
 			$dates = sql_date_from_human($ident, 'dateoptspan');
-			if( sizeof($dates) == 0 ) {
+			if( sizeof((array) $dates) == 0 ) {
 				return '(0)'; // error
 			}
 
@@ -938,7 +938,7 @@ class EQL_PARSER_CLASS
 
 		// check all fields
 		$ret = '';
-		for( $r = 0; $r < sizeof($tableDef->rows); $r++ )
+		for( $r = 0; $r < sizeof((array) $tableDef->rows); $r++ )
 		{
 			$rowflags	= $tableDef->rows[$r]->flags;
 			$rowtype	= $rowflags & TABLE_ROW;
@@ -970,7 +970,7 @@ class EQL_PARSER_CLASS
 					else
 					{
 						$tempIds = $this->select2ids($tempTable, $tempJoins, $tempCond);
-						if( sizeof($tempIds) ) {
+						if( sizeof((array) $tempIds) ) {
 							$ret .= $ret? ' OR ' : '';
 							$ret .= $this->ids2primaryselect($tempIds, $retJoins, $tableDefName, $rowname, $rowtype);
 						}
@@ -1105,10 +1105,10 @@ class EQL_PARSER_CLASS
 		$fulltext_fields = '';
 		$index = $g_eql_db->index_info($tableDefName);
 		reset($index);
-		while( list($index_name, $index_info) = each($index) )
+		foreach($index as $index_name => $index_info)
 		{
 			if( $index_info['fulltext']  ) {
-				for( $i = 0; $i < sizeof($index_info['fields']); $i++ ) {
+			    for( $i = 0; $i < sizeof((array) $index_info['fields']); $i++ ) {
 					$fulltext_fields .= $fulltext_fields? ', ' : '';
 					$fulltext_fields .= "$tableDefName." . $index_info['fields'][$i];
 				}
@@ -1122,7 +1122,7 @@ class EQL_PARSER_CLASS
 		$like_fields = '';
 		$tableDef = Table_Find_Def($tableDefName, 0 /* no access check */);
 		$like_count = 0;
-		for( $r = 0; $r < sizeof($tableDef->rows); $r++ )
+		for( $r = 0; $r < sizeof((array) $tableDef->rows); $r++ )
 		{
 			$rowflags	= $tableDef->rows[$r]->flags;
 			$rowtype	= $rowflags & TABLE_ROW;
@@ -1156,7 +1156,7 @@ class EQL_PARSER_CLASS
 					// query using fulltext index
 					$temp = '';
 					$tempBool = '';
-					for( $v = 0; $v < sizeof($words); $v++ )
+					for( $v = 0; $v < sizeof((array) $words); $v++ )
 					{
 						$temp .= $temp? ' ' : '';
 
@@ -1208,7 +1208,7 @@ class EQL_PARSER_CLASS
 					$temp .= str_replace('%s', $word, $like_fields);
 				}
 
-				if( sizeof($words) > 1 ) { $temp = "($temp)"; }
+				if( sizeof((array) $words) > 1 ) { $temp = "($temp)"; }
 				$ret .= $temp;
 			}
 
@@ -1218,7 +1218,7 @@ class EQL_PARSER_CLASS
 		//
 		// search for secondary tables
 		//
-		for( $r = 0; $r < sizeof($tableDef->rows); $r++ )
+		for( $r = 0; $r < sizeof((array) $tableDef->rows); $r++ )
 		{
 			$rowflags	= $tableDef->rows[$r]->flags;
 			$rowtype	= $rowflags & TABLE_ROW;
@@ -1245,7 +1245,7 @@ class EQL_PARSER_CLASS
 					else
 					{
 						$tempIds = $this->select2ids($tempTable, $tempJoins, $tempCond);
-						if( sizeof($tempIds) ) {
+						if( sizeof((array) $tempIds) ) {
 							$ret .= $ret? ' OR ' : '';
 							$ret .= $this->ids2primaryselect($tempIds, $retJoins, $tableDefName, $rowname, $rowtype);
 							$retCount++;
@@ -1300,8 +1300,8 @@ class EQL_PARSER_CLASS
 
 			$words = array();
 			$temp = g_eql_normalize_words($ident, 1 /*unique*/, 1 /*keepNumbers*/, 1 /*keepWildcards*/);
-			if( sizeof($temp) == 0 ) $temp = array($ident);
-			for( $i = 0; $i < sizeof($temp); $i++ )
+			if( sizeof((array) $temp) == 0 ) $temp = array($ident);
+			for( $i = 0; $i < sizeof((array) $temp); $i++ )
 			{
 				$words[$i][0] = $temp[$i];
 				if( $use_fuzzy
@@ -1332,7 +1332,7 @@ class EQL_PARSER_CLASS
 		//
 		$ret = '';
 		$retCount = 0;
-		for( $w = 0; $w < sizeof($words); $w++ )
+		for( $w = 0; $w < sizeof((array) $words); $w++ )
 		{
 			$temp = $this->selectFulltextSingleWord($retJoins, $tableDefName, $words[$w], $modifiers);
 			if( $temp ) {
@@ -1370,7 +1370,7 @@ class EQL_PARSER_CLASS
 		else {
 			$soll = strtolower($ident);
 			$bins = $_SESSION['g_session_bin']->getBins();
-			for( $i = 0; $i < sizeof($bins); $i++ ) {
+			for( $i = 0; $i < sizeof((array) $bins); $i++ ) {
 				if( strtolower($bins[$i]) == $soll ) {
 					$joblist = $bins[$i];
 					break;
@@ -1380,14 +1380,14 @@ class EQL_PARSER_CLASS
 
 		// anything in jobist?
 		$joblist = $_SESSION['g_session_bin']->getRecords($tableDefName, $joblist);
-		if( sizeof($joblist) == 0 ) {
+		if( sizeof((array) $joblist) == 0 ) {
 			return '(0)'; // nothing found
 		}
 
 		// get return statement
 		$ret = '';
 		reset($joblist);
-		while( list($id, $state) = each($joblist) ) {
+		foreach($joblist as $id => $state) {
 			$ret .= $ret? ', ' : "$tableDefName.id IN (";
 			$ret .= $id;
 		}
@@ -1434,7 +1434,7 @@ class EQL_PARSER_CLASS
 			else {
 				$tempSql = $this->selectSingleIdent($tempJoins, 'user_grp', $ident, $modifiers, 'shortname');
 				$tempIds = $this->select2ids('user_grp', $tempJoins, $tempSql);
-				if( !sizeof($tempIds) ) {
+				if( !sizeof((array) $tempIds) ) {
 					$tempSql = $this->selectSingleIdent($tempJoins, 'user_grp', $ident, $modifiers, 'name');
 					$tempIds = $this->select2ids('user_grp', $tempJoins, $tempSql);
 				}
@@ -1451,7 +1451,7 @@ class EQL_PARSER_CLASS
 			else {
 				$tempSql = $this->selectSingleIdent($tempJoins, 'user', $ident, $modifiers, 'loginname');
 				$tempIds = $this->select2ids('user', $tempJoins, $tempSql);
-				if( !sizeof($tempIds) ) {
+				if( !sizeof((array) $tempIds) ) {
 					$tempSql = $this->selectSingleIdent($tempJoins, 'user', $ident, $modifiers, 'name');
 					$tempIds = $this->select2ids('user', $tempJoins, $tempSql);
 				}
@@ -1655,11 +1655,11 @@ class EQL_PARSER_CLASS
 			 && $g_joinHash[$tableDefName]  == 'self' // on root level?
 			 && $g_joinHash[$tableDefName1] != 'alias'
 			 && !isset($g_joinHash[$tableDefName1]) // EDIT BY ME in 2008: NO joins on AND conditions (this would require one additional join per table)
-			 && sizeof($joins1)==0 // EDIT 2015: this code does not work eg. with "not(stichwort=7 and stichwort=5480)", the select2ids-code seems to work, hopefully, there are not other disadvantages
+			 && sizeof((array) $joins1)==0 // EDIT 2015: this code does not work eg. with "not(stichwort=7 and stichwort=5480)", the select2ids-code seems to work, hopefully, there are not other disadvantages
 			 && count($retJoins)==0 // EDIT, jm, 2017: to allow search for courses without keywords
 			 && $tableDefName1=="stichwoerter" // EDIT, jm, 2017: to allow search for courses without keywords
 			 && $row->name=="stichwort" // EDIT, jm, 2017: to allow search for courses without keywords
-			 && ($tableDefName=="kurse" || $tableDefName=="anbieter")) // EDIT, jm, 2017 and bp 2018: to allow search for courses without keywords
+			 && $tableDefName=="kurse") // EDIT, jm, 2017: to allow search for courses without keywords
 			{
 				// this variation works, but is slower
 				g_addRelation($retJoins, $tableDefName1, $row->name, $tableDefName, $rowType);
@@ -2287,13 +2287,13 @@ class EQL2SQL_CLASS
 
 		// fuzzy info
 		global $g_fuzzyInfo;
-		if( $addFuzzyInfo && sizeof($g_fuzzyInfo) )
+		if( $addFuzzyInfo && sizeof((array) $g_fuzzyInfo) )
 		{
 			$ret .= '<table cellpadding="0" cellspacing="0" border="0">';
 				ksort($g_fuzzyInfo);
 				reset($g_fuzzyInfo);
 				$c = 0;
-				while( list($word, $info) = each($g_fuzzyInfo) ) {
+				foreach($g_fuzzyInfo as $word => $info) {
 					$ret .= '<tr>';
 						$ret .= '<td align="right" valign="top" nowrap="nowrap">';
 							$ret .= htmlconstant('_MOD_DBSEARCH_FUZZYINFOFOR');
@@ -2303,7 +2303,7 @@ class EQL2SQL_CLASS
 							reset($info);
 							krsort($info);
 							$i = 0;
-							while( list($dummy, $similarWord) = each($info) ) {
+							foreach($info as $dummy => $similarWord) {
 								$ret .= $i? ',' : htmlconstant('_MOD_DBSEARCH_FUZZYINFOALT');
 								$ret .= ' &quot;' . isohtmlentities($similarWord[0]) . '&quot;';
 								$percent = $similarWord[1] . '%';

@@ -93,7 +93,7 @@ class ADMIN_SITE_CLASS
 				}
 				echo '<script type="text/javascript" src="functions.js?iv='.CMS_VERSION.'"></script>' . "\n";
 				
-				for( $i = 0; $i < sizeof($this->scripts); $i++ ) {
+				for( $i = 0; $i < sizeof((array) $this->scripts); $i++ ) {
 					echo $this->scripts[$i] . "\n";
 				}
 				
@@ -153,7 +153,7 @@ class ADMIN_SITE_CLASS
 			if( $_SESSION['g_session_userid'] ) 
 			{
 				$anything_hilited = 0;
-				for( $t = 0; $t < sizeof($Table_Def); $t++ )
+				for( $t = 0; $t < sizeof((array) $Table_Def); $t++ )
 				{
 					if( ($Table_Def[$t]->flags & TABLE_PRIMARY)
 					 && ($Table_Def[$t]->name != 'user')
@@ -237,7 +237,7 @@ class ADMIN_SITE_CLASS
 			
 			if( $_SESSION['g_session_userid'] ) 
 			{
-				for( $i = ($anything_hilited? 1 : 0); $i < sizeof($this->menuItems); $i++ )
+			    for( $i = ($anything_hilited? 1 : 0); $i < sizeof((array) $this->menuItems); $i++ )
 				{
 					$this->skin->submenuItem($this->menuItems[$i][0], $this->menuItems[$i][1], $this->menuItems[$i][2]);
 					$submenuItems++;
@@ -386,7 +386,7 @@ class ADMIN_SITE_CLASS
 		}
 		else {
 			$newmsg = array();
-			for( $i = 0; $i < sizeof($this->msg); $i++ ) {
+			for( $i = 0; $i < sizeof((array) $this->msg); $i++ ) {
 				if( substr($this->msg[$i], 0, 1) != $type ) {
 					$newmsg[] = $this->msg[$i];
 				}
@@ -400,11 +400,11 @@ class ADMIN_SITE_CLASS
 	function msgCount($type = 'e')
 	{
 		if( $type == '' /*all types*/ ) {
-			return sizeof($this->msg);
+		    return sizeof((array) $this->msg);
 		}
 		else {
 			$cnt = 0;
-			for( $i = 0; $i < sizeof($this->msg); $i++ ) {
+			for( $i = 0; $i < sizeof((array) $this->msg); $i++ ) {
 				if( substr($this->msg[$i], 0, 1) == $type ) {
 					$cnt++;
 				}
@@ -416,7 +416,7 @@ class ADMIN_SITE_CLASS
 	function msgRender() // private
 	{
 		$msg = array();
-		for( $m = $this->msgRendered; $m < sizeof($this->msg); $m++ ) 
+		for( $m = $this->msgRendered; $m < sizeof((array) $this->msg); $m++ ) 
 		{
 			$currType = substr($this->msg[$m], 0, 1);
 			$currMsg  = substr($this->msg[$m], 2);
@@ -429,19 +429,19 @@ class ADMIN_SITE_CLASS
 			}
 		}
 		
-		if( sizeof($msg) ) {
-			reset($msg);
-			while( list($name, $value) = each($msg) ) {
-				$value = trim($value);
-				while(strpos($value, "\n\n\n")) { $value = str_replace("\n\n\n", "\n\n", $value); }
-				$value = str_replace("\n", "<br />", $value);
-				$this->skin->msgStart($name);
-					echo $value;
-				$this->skin->msgEnd();
-			}
+		if( sizeof((array) $msg) ) {
+		    reset($msg);
+		    foreach($msg as $name => $value) {
+		        $value = trim($value);
+		        while(strpos($value, "\n\n\n")) { $value = str_replace("\n\n\n", "\n\n", $value); }
+		        $value = str_replace("\n", "<br />", $value);
+		        $this->skin->msgStart($name);
+		        echo $value;
+		        $this->skin->msgEnd();
+		    }
 		}
-	
-		$this->msgRendered = sizeof($this->msg); // prepare for future message rendering
+		
+		$this->msgRendered = sizeof((array) $this->msg); // prepare for future message rendering
 		
 		$_SESSION['g_session_msg'] = array();
 	}

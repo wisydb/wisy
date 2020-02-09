@@ -50,7 +50,7 @@ $embed_htmlcode = array
 function render_embed__search_hash(&$arr, $keyOrValue /* 'key' or 'value' */, $keyToFind)
 {
 	reset($arr);
-	while( list($currKey, $currValue) = each($arr) ) 
+	foreach($arr as $currKey => $currValue)
 	{
 		if( $keyOrValue == 'value' ) {
 			$temp = $currKey;
@@ -402,7 +402,7 @@ function preview_do($table, $id, $renderLinks, $view = 'details' /*or 'list'*/,
 	if( $db->next_record() )
 	{
 		// go through all fields (rows)
-		for( $r = 0; $r < sizeof($table_def->rows); $r++ )
+	    for( $r = 0; $r < sizeof((array) $table_def->rows); $r++ )
 		{
 			// parse this field
 			$rowflags	= $table_def->rows[$r]->flags;

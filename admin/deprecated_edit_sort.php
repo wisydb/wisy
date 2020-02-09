@@ -80,8 +80,8 @@ if( isset($sort_index) && isset($sort_dir) )
 		$swap_index_a = $sort_index;
 		$swap_index_b = $sort_index + ($sort_dir=='up'?-1:1);
 		
-		if( $swap_index_a >= 0 && $swap_index_a < sizeof($attr_values)
-		 && $swap_index_b >= 0 && $swap_index_b < sizeof($attr_values) )
+		if( $swap_index_a >= 0 && $swap_index_a < sizeof((array) $attr_values)
+		 && $swap_index_b >= 0 && $swap_index_b < sizeof((array) $attr_values) )
 		{
 			$temp						= $attr_values[$swap_index_a];
 			$attr_values[$swap_index_a]	= $attr_values[$swap_index_b];
@@ -91,7 +91,7 @@ if( isset($sort_index) && isset($sort_dir) )
 	}
 	else if( ($sort_dir=='top' || $sort_dir=='bottom') 
 		  && $sort_index >= 0
-		  && $sort_index <  sizeof($attr_values) )
+	      && $sort_index <  sizeof((array) $attr_values) )
 	{
 		// handle top / bottom
 		$temp = $attr_values[$sort_index];
@@ -185,17 +185,17 @@ $site->skin->dialogStart();
 	form_control_start($attr_name, 0);
 
 		echo '<table cellpadding="0" cellspacing="0" border="0">';
-			for( $a = 0; $a < sizeof($attr_values); $a++ )
+		    for( $a = 0; $a < sizeof((array) $attr_values); $a++ )
 			{
 				echo '<tr>';
 					// sort icons
-					if( sizeof($attr_values) > 2 ) {
+				    if( sizeof((array) $attr_values) > 2 ) {
 					  render_sort_icon('top',	htmlconstant('_EDIT_SORTTOP'),		$a, $a==0);
 					}
 					render_sort_icon('up',		htmlconstant('_EDIT_SORTUP'),		$a, $a==0);
 					render_sort_icon('down',	htmlconstant('_EDIT_SORTDOWN'),		$a, $a==(sizeof($attr_values)-1));
-					if( sizeof($attr_values) > 2 ) {
-					  render_sort_icon('bottom',htmlconstant('_EDIT_SORTBOTTOM'),	$a, $a==(sizeof($attr_values)-1));
+					if( sizeof((array) $attr_values) > 2 ) {
+					    render_sort_icon('bottom',htmlconstant('_EDIT_SORTBOTTOM'),	$a, $a==(sizeof((array) $attr_values)-1));
 					}
 					
 					// attribute name

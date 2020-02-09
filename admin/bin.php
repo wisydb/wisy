@@ -59,7 +59,7 @@ function render_bin_overview()
 		
 		echo '<table cellpadding="3" cellspacing="0" border="0">';
 		
-			for( $i = 0; $i < sizeof($bins); $i++ )
+		for( $i = 0; $i < sizeof((array) $bins); $i++ )
 			{
 				echo '<tr><td valign="top">';
 				
@@ -81,7 +81,7 @@ function render_bin_overview()
 						echo ' ' . htmlconstant('_SETTINGS_BINREADONLY');
 					}
 					
-					if( sizeof($bins) > 1 && $bins[$i]==$_SESSION['g_session_bin']->activeBin ) {
+					if( sizeof((array) $bins) > 1 && $bins[$i]==$_SESSION['g_session_bin']->activeBin ) {
 						echo ' ' . htmlconstant('_SETTINGS_BINISACTIVEBIN');
 					}
 
@@ -139,7 +139,7 @@ if( $_REQUEST['toggle'] )
 	
 	// add/remove all given IDs
 	reset($ids);
-	while( list($id, $dummy) = each($ids) ) {
+	foreach($ids as $id => $dummy) {
 		if( $action == 'add' )  {
 			$_SESSION['g_session_bin']->recordAdd($table, $id, $_REQUEST['list']);
 		}

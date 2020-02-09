@@ -30,11 +30,11 @@ class IMP_OPTIONSRENDERER_CLASS extends IMP_FUNCTIONS_CLASS
 		$del_cnt = 0;
 		$ovw_cnt = 0;
 		$tables = $this->mixfile->get_tables();
-		for( $t = 0; $t < sizeof($tables); $t++ )
+		for( $t = 0; $t < sizeof((array) $tables); $t++ )
 		{
 			$records = $this->mixfile->get_records($tables[$t], GET_UPDATES|GET_DELETE);
 			reset($records);
-			while( list($id, $currRecord) = each($records) )
+			foreach($records as $id => $currRecord)
 			{	
 				if( $showall || $currRecord['dest_date_modified'] != $currRecord['src_date_modified'] ) {
 					$possible_changes[] = array(
@@ -82,7 +82,7 @@ class IMP_OPTIONSRENDERER_CLASS extends IMP_FUNCTIONS_CLASS
 		{
 			$db = new DB_Admin;
 			$tables = $this->mixfile->get_tables();
-			for( $t = 0; $t < sizeof($tables); $t++ ) {
+			for( $t = 0; $t < sizeof((array) $tables); $t++ ) {
 				//$sql = "SELECT MAX(date_modified) AS Update_time FROM " . $tables[$t];
 				$sql = "SHOW TABLE STATUS LIKE '{$tables[$t]}'"; // this is a much better approch as this also includes deletion or insertion of records with older dates (as usual on imports)
 				$db->query($sql); 
@@ -167,7 +167,7 @@ class IMP_OPTIONSRENDERER_CLASS extends IMP_FUNCTIONS_CLASS
 
 		// paging
 		$site->skin->mainmenuStart();
-			$record_cnt = sizeof($browsing_list['possible_changes']);
+		    $record_cnt = sizeof((array) $browsing_list['possible_changes']);
 			$baseurl = "imp.php?page=options&mix=".urlencode($this->mix)."&offset=";
 			echo page_sel($baseurl, IMP_ROWS_PER_PAGE, $offset, $record_cnt, 1);
 		$site->skin->mainmenuEnd();
@@ -206,7 +206,7 @@ class IMP_OPTIONSRENDERER_CLASS extends IMP_FUNCTIONS_CLASS
 			$records_rendered = 0;
 			
 			$sqlite_db_filename = 'imp-'.$_SESSION['g_session_userid'].'-'.$this->mix;
-			for( $i = $offset; $i < sizeof($browsing_list['possible_changes']); $i++ )
+			for( $i = $offset; $i < sizeof((array) $browsing_list['possible_changes']); $i++ )
 			{
 				$record = $browsing_list['possible_changes'][$i];
 				$site->skin->rowStart();

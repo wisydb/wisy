@@ -421,7 +421,7 @@ function sql_date_from_human_1sttry($s, $type = 'date' /*or datetime or dateopt*
 		$s = str_replace(' ',  '/', $s);
 		$s = explode('/', $s);
 		
-		if( sizeof($s)!=3 ) {
+		if( sizeof((array) $s)!=3 ) {
 			return 0; // error
 		}
 		
@@ -471,7 +471,7 @@ function sql_date_from_human_2ndtry($s, &$ret2)
 	// explode by spaces
 	$monthGiven = 0;
 	$s = explode(' ', $s);
-	if( sizeof($s) == 2 ) {
+	if( sizeof((array) $s) == 2 ) {
 		$month = sql_date_from_human_correctmonth($s[0]);
 		if( $month < 1 || $month > 12 ) {
 			return 0; // error

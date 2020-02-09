@@ -39,7 +39,7 @@ class IMP_FILESRENDERER_CLASS extends IMP_FUNCTIONS_CLASS
 
 			reset($files);
 			$filesCnt = 0;
-			while( list($key, $currFile) = each($files) )
+			foreach($files as $key => $currFile)
 			{
 				$ob = new IMP_MIXFILE_CLASS;
 				$ok = $ob->open($GLOBALS['g_temp_dir'].'/imp-'.$_SESSION['g_session_userid'].'-'.$currFile->name_wo_scope);
@@ -151,7 +151,7 @@ class IMP_FILESRENDERER_CLASS extends IMP_FUNCTIONS_CLASS
 			// delete one/all files
 			$delete = $_REQUEST['delete'];
 			$files = $this->scanner->scan('imp');
-			for( $i = 0; $i < sizeof($files); $i++ ) {
+			for( $i = 0; $i < sizeof((array) $files); $i++ ) {
 				if( $delete == $files[$i]->name_wo_scope || $delete == 'all' ) {
 					unlink( $files[$i]->full_path );
 				}

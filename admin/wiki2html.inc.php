@@ -321,7 +321,7 @@ class TXTREPLACER_CLASS
 		$this->replacements = array();
 
 		// run all rules
-		$cRules = sizeof($this->rules);
+		$cRules = sizeof((array) $this->rules);
 		for( $i = 0; $i < $cRules; $i++ )
 		{
 		    // ...in short, the function returns the original string, but all substrings
@@ -338,7 +338,7 @@ class TXTREPLACER_CLASS
 	function _runSingleRuleCallback($matches)
 	{
 		$this->replacements[] = $this->rules[$this->ruleIndex]->run($matches, $this->context);
-		return $this->mark2 . (sizeof($this->replacements)-1) . $this->mark2;
+		return $this->mark2 . (sizeof((array) $this->replacements)-1) . $this->mark2;
 	}
 
 	// Make one pass expanding tokens in the line, replacing
@@ -348,7 +348,7 @@ class TXTREPLACER_CLASS
 	{
 		$in = explode($this->mark2, $in);
 		$out = '';
-		while( list($i, $chunk) = each($in) ) {
+		foreach($in as $i => $chunk) {
 			if( $i % 2 == 0 ) {
 				// output unmatched substring verbatim
 				if( $runRest && $chunk ) {
@@ -992,20 +992,21 @@ class ADDRESS_PATTERN_CLASS extends TXTREPLACERRULE_CLASS
 
 	function run($matches, &$context)
 	{
-		$arguments = explode("|",$matches[1]);
-		$sql = "SELECT ";
-		$sql .= addslashes($arguments[0]);
-		$sql .= " as ergebnis from anbieter where id = ".intval($arguments[1]).";";
-		$los = @mysql_query($sql);
-		if( $los ) {
-			$ausgabe = @mysql_result($los, 0, "ergebnis");
-			return htmlsmartentities($ausgabe, '', 0);
-		}
-		else {
-			return '{'.htmlsmartentities($matches[1]).'}';
-		}
-		
-
+	    $arguments = explode("|",$matches[1]);
+	    $sql = "SELECT ";
+	    $sql .= addslashes($arguments[0]);
+	    $sql .= " as ergebnis from anbieter where id = ".intval($arguments[1]).";";
+	    $db = new DB_Admin;
+	    $db->query($sql);
+	    if( $db->next_record() ) {
+	        $ausgabe = $db->f('ergebnis');
+	        return htmlsmartentities($ausgabe, '', 0);
+	    }
+	    else {
+	        return '{'.htmlsmartentities($matches[1]).'}';
+	    }
+	    
+	    
 	}
 
 }
@@ -1223,7 +1224,7 @@ class WIKI2HTML_CLASS
 					break;
 
 				case 'h':
-					$contentCounter = sizeof($this->content)+1;
+				    $contentCounter = sizeof((array) $this->content)+1;
 					$this->content[] = array($blocks[$i][2], $blocks[$i][1], $contentCounter);
 					$out .= $this->indentTo__(0);
 					if( $this->hasToplinks && $contentCounter > 1 ) {
@@ -1266,7 +1267,7 @@ class WIKI2HTML_CLASS
 		if( $this->hasContent )
 		{
 			$content = '';
-			for( $i = 0; $i < sizeof($this->content); $i++ )
+			for( $i = 0; $i < sizeof((array) $this->content); $i++ )
 			{
 				$currDepth = $this->content[$i][0];
 				if( $this->hasContent >= $currDepth )
@@ -1292,7 +1293,7 @@ class WIKI2HTML_CLASS
 			$temp = $cBlocks;
 			$out = str_replace(WIKI_MAGIC.'STATBLOCKS', $temp, $out);
 
-			$temp = sizeof($this->content);
+			$temp = sizeof((array) $this->content);
 			$out = str_replace(WIKI_MAGIC.'STATCHAPTERS', $temp, $out);
 
 			$temp = intval(strlen($in__)/1024); if( $temp <= 0 ) $temp = 1;

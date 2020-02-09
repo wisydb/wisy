@@ -33,7 +33,7 @@ class EXP_FORMATWORDS_CLASS extends EXP_PLUGIN_CLASS
 
 		$fields = array();
 		$natsort = array();
-		for( $r = 0; $r < sizeof($tableDef->rows); $r++ )
+		for( $r = 0; $r < sizeof((array) $tableDef->rows); $r++ )
 		{
 			$rowtype = intval($tableDef->rows[$r]->flags & TABLE_ROW);
 			
@@ -62,7 +62,7 @@ class EXP_FORMATWORDS_CLASS extends EXP_PLUGIN_CLASS
 			for( $f = 0; $f < $fieldsCount; $f++ )
 			{
 				$words = g_eql_normalize_words($db->f($fields[$f]));
-				$wordsCount = sizeof($words);
+				$wordsCount = sizeof((array) $words);
 				
 				// go through all words
 				for( $w = 0; $w < $wordsCount; $w++ ) {
@@ -117,9 +117,9 @@ class EXP_FORMATWORDS_CLASS extends EXP_PLUGIN_CLASS
 		// update table 'user_fuzzy', create file list
 		$handle = fopen($this->allocateFileName('words.txt'), 'w+');if( !$handle ) $this->progress_abort("Cannot open dest file.");
 		$recCount = 0;
-		$totalCount = sizeof($this->words);
+		$totalCount = sizeof((array) $this->words);
 		reset($this->words);
-		while( list($word) = each($this->words) )
+		foreach(array_keys($this->words) as $word)
 		{
 			// update table 'user_fuzzy' (addslashes() not needed as $word does not contain slashes by definition)
 			$db->query("SELECT word FROM user_fuzzy WHERE word='$word'");

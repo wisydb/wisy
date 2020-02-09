@@ -40,10 +40,10 @@ class EXP_GENERICTABLE_CLASS extends EXP_PLUGIN_CLASS
 	{
 		$tdl = array();
 		global $Table_Def;
-		for( $t = 0; $t < sizeof($Table_Def); $t++ ) {
+		for( $t = 0; $t < sizeof((array) $Table_Def); $t++ ) {
 			$table = $Table_Def[$t];
 			$rows  = $table->rows;
-			for( $r = 0; $r < sizeof($rows); $r++ ) {
+			for( $r = 0; $r < sizeof((array) $rows); $r++ ) {
 				$row = $rows[$r];
 				switch( $row->flags&TABLE_ROW ) {
 					case TABLE_SATTR:
@@ -70,7 +70,7 @@ class EXP_GENERICTABLE_CLASS extends EXP_PLUGIN_CLASS
 		// get table definition
 		$tableDef	= Table_Find_Def($table);
 		$rows		= $tableDef->rows;
-		$rowsCount	= sizeof($rows);
+		$rowsCount	= sizeof((array) $rows);
 
 		// start table
 		$this->tableStart($table, TABLE_EXP_TYPE_NORMALDATA);
@@ -331,7 +331,7 @@ class EXP_GENERICTABLE_CLASS extends EXP_PLUGIN_CLASS
 		// loop through query queue until it is empty
 		$affected_tables = array();
 		$cntAll = 0;
-		while( sizeof($query_queue) )
+		while( sizeof((array) $query_queue) )
 		{
 			list($table, $sql) = array_shift($query_queue);
 
@@ -344,7 +344,7 @@ class EXP_GENERICTABLE_CLASS extends EXP_PLUGIN_CLASS
 							$cntAll++;
 							$idsHere[] = $id;
 							$stuff_to_write[$table][$id] = 1;
-							for( $i = 0; $i < sizeof($this->tdl[$table]['sattr']); $i++ ) {
+							for( $i = 0; $i < sizeof((array) $this->tdl[$table]['sattr']); $i++ ) {
 								$currTable = $this->tdl[$table]['sattr'][$i][0];
 								$currId    = $db->f($this->tdl[$table]['sattr'][$i][2]);
 								if( $currId && !$stuff_to_write[$currTable][$currId] ) {
@@ -354,9 +354,9 @@ class EXP_GENERICTABLE_CLASS extends EXP_PLUGIN_CLASS
 						}
 					}
 					
-					if( sizeof($idsHere) ) {
-						$idsHere = implode(',', $idsHere);
-						for( $i = 0; $i < sizeof($this->tdl[$table]['mattr']); $i++ )
+					if( sizeof((array) $idsHere) ) {
+					    $idsHere = implode(',', $idsHere);
+					    for( $i = 0; $i < sizeof((array) $this->tdl[$table]['mattr']); $i++ )
 						{
 							$currTable = $this->tdl[$table]['mattr'][$i][0];
 							$field     = $this->tdl[$table]['mattr'][$i][2];
@@ -373,8 +373,8 @@ class EXP_GENERICTABLE_CLASS extends EXP_PLUGIN_CLASS
 					// add queries to the query queue for the new stuff to check
 					if( $this->attrasids ) {
 						reset($stuff_to_check);
-						while( list($currTable, $currIds) = each($stuff_to_check) ) {
-							if( sizeof($currIds) ) {
+						foreach($stuff_to_check as $currTable => $currIds) {
+						    if( sizeof((array) $currIds) ) {
 								$currIds = implode(',', $currIds);
 								$sql = "SELECT id{$this->tdl[$currTable]['fields']} FROM $currTable WHERE id IN ($currIds);";
 								array_push($query_queue, array($currTable, $sql));
@@ -388,15 +388,15 @@ class EXP_GENERICTABLE_CLASS extends EXP_PLUGIN_CLASS
 		// write $stuff_to_write
 		$any_records_written = false;
 		reset($stuff_to_write);
-		while( list($table, $ids) = each($stuff_to_write) ) {
-			if( sizeof($ids) ) {
+		foreach($stuff_to_write as $table => $ids) {
+		    if( sizeof((array) $ids) ) {
 				$any_records_written = true;
 				$ids = implode(',', array_keys($ids));
 				$sql = "SELECT * FROM $table WHERE id IN ($ids);";
 				$affected_tables[$table] = 1;
 				$this->exportNormalTable($table, $sql);
 				if( $this->attrasids ) {
-					for( $i = 0; $i < sizeof($this->tdl[$table]['mattr']); $i++ ) {
+				    for( $i = 0; $i < sizeof((array) $this->tdl[$table]['mattr']); $i++ ) {
 						$this->exportAttrTable($this->tdl[$table]['mattr'][$i][1], $this->tdl[$table]['mattr'][$i][2], $ids);
 					}
 				}
@@ -412,7 +412,7 @@ class EXP_GENERICTABLE_CLASS extends EXP_PLUGIN_CLASS
 		// write enums
 		if( $param['enums'] )
 		{
-			for( $t = 0; $t < sizeof($this->enums); $t++ )
+		    for( $t = 0; $t < sizeof((array) $this->enums); $t++ )
 			{
 				$this->tableStart($this->enums[$t][0], TABLE_EXP_TYPE_ENUM);
 					$this->declareStart();
@@ -443,7 +443,7 @@ class EXP_GENERICTABLE_CLASS extends EXP_PLUGIN_CLASS
 					$this->declareField('ids',  TABLE_TEXT);
 				$this->declareEnd();
 				global $Table_Def;
-				for( $t = 0; $t < sizeof($Table_Def); $t++ )
+				for( $t = 0; $t < sizeof((array) $Table_Def); $t++ )
 				{
 		
 					$table = $Table_Def[$t]->name;

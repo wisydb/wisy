@@ -28,7 +28,7 @@ class G_BIN_CLASS
 		$ret = array();
 		
 		reset($this->bins);
-		while( list($name) = each($this->bins) ) {
+		foreach(array_keys($this->bins) as $name) {
 			$ret[] = $name;
 		}
 		
@@ -106,7 +106,7 @@ class G_BIN_CLASS
 			$this->bins = array();
 			$firstBinLeft = '';
 			reset($temp);
-			while( list($k, $v) = each($temp) ) {
+			foreach($temp as $k => $v) {
 				if( $k != $bin ) {
 					$this->bins[$k] = $v;
 					if( !$firstBinLeft ) {
@@ -116,7 +116,7 @@ class G_BIN_CLASS
 			}
 			
 			// any bin left?
-			if( sizeof($this->bins) == 0 ) {
+			if( sizeof((array) $this->bins) == 0 ) {
 				$this->init_();
 			} 
 			
@@ -317,22 +317,22 @@ class G_BIN_CLASS
 			$temp = $this->bins[$bin][$table];
 			$this->bins[$bin][$table] = array();
 			reset($temp);
-			while( list($k, $v) = each($temp) ) {
+			foreach($temp as $k => $v) {
 				if( $k != $id ) {
 					$this->bins[$bin][$table][$k] = $v;
 				}
 			}
 			
 			// remove table hash?
-			if( sizeof($this->bins[$bin][$table]) == 0 ) {
-				$temp = $this->bins[$bin];
-				$this->bins[$bin] = array();
-				reset($temp);
-				while( list($k, $v) = each($temp) ) {
-					if( $k != $table ) {
-						$this->bins[$bin][$k] = $v;
-					}
-				}
+			if( sizeof((array) $this->bins[$bin][$table]) == 0 ) {
+			    $temp = $this->bins[$bin];
+			    $this->bins[$bin] = array();
+			    reset($temp);
+			    foreach($temp as $k => $v) {
+			        if( $k != $table ) {
+			            $this->bins[$bin][$k] = $v;
+			        }
+			    }
 			}
 			
 			// save all data
@@ -364,17 +364,17 @@ class G_BIN_CLASS
 			$i = 0;
 			reset($this->bins[$this->activeBin]);
 			$bin = $this->getRecords('', $this->activeBin);
-			while( list($k1, $v1) = each($bin) ) 
+			foreach($bin as $k1 => $v1)
 			{
-				if( $i++ ) { echo ':'; }
-				echo "$k1:";
-				
-				$j = 0;
-				reset($v1);
-				while( list($k2, $v2) = each($v1) ) {
-					if( $j++ ) { echo ' '; }
-					echo $k2;
-				}
+			    if( $i++ ) { echo ':'; }
+			    echo "$k1:";
+			    
+			    $j = 0;
+			    reset($v1);
+			    foreach($v1 as $k2 => $v2) {
+			        if( $j++ ) { echo ' '; }
+			        echo $k2;
+			    }
 			}
 			
 			echo "','" .$this->getName($this->activeBin). "','{$site->skin->imgFolder}');";

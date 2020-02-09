@@ -112,7 +112,7 @@ function find_id(&$id, &$idprev, &$idnext)
 	$idnext = '';
 	$idfound = 0;
 	reset($help_sort2id);
-	while( list($dummy, $currId) = each($help_sort2id) ) 
+	foreach($help_sort2id as $dummy => $currId)
 	{
 		if( $idfound && !$idnext ) {
 			$idnext = $currId;
@@ -479,9 +479,14 @@ else {
 	$id = $idlast;
 	find_id($id, $idprev, $idnext);
 	if( !$id ) {
-		reset($help_sort2id);
-		list($dummy, $id) = each($help_sort2id);
-		find_id($id, $idprev, $idnext);
+	    reset($help_sort2id);
+	    
+	    $dummy = array_keys($help_sort2id);
+	    $dummy = $dummy[0]; // array_key_first() only > php7
+	    $id = array_values($help_sort2id);
+	    $id = $id[0];
+	    
+	    find_id($id, $idprev, $idnext);
 	}
 }
 
@@ -504,7 +509,7 @@ if( $printdlg )
 		$site->skin->dialogStart();
 			form_control_start(htmlconstant('_PRINT_AREA'));
 				$options = 'page###' . htmlconstant('_PRINT_AREA_CURRENTPAGE');
-				for( $i = 0; $i < sizeof($help_chapters)-1; $i++ ) {
+				for( $i = 0; $i < sizeof((array) $help_chapters)-1; $i++ ) {
 					$options .= "###{$help_chapters[$i]}###" . htmlconstant("_SYSINFO_HELP_CHAPTER{$help_chapters[$i]}");
 				}
 				form_control_radio('printchapter', 'page', $options);
@@ -552,7 +557,7 @@ if( $print )
 			echo '<table cellpadding="0" cellspacing="0" border="0">';
 				$i = 1;
 				reset($help_sort2id);
-				while( list($currSort, $currId) = each($help_sort2id) )
+				foreach($help_sort2id as $currSort => $currId)
 				{
 					if( $help_id2chapter[$currId] == $printchapter )
 					{
@@ -566,7 +571,7 @@ if( $print )
 			
 			$i = 1;			
 			reset($help_sort2id);
-			while( list($currSort, $currId) = each($help_sort2id) )
+			foreach($help_sort2id as $currSort => $currId)
 			{
 				if( $help_id2chapter[$currId] == $printchapter )
 				{
@@ -607,7 +612,7 @@ $site->pageStart(array('popfit'=>1));
 	
 	echo '<a name="top"></a>';
 	$site->skin->mainmenuStart();
-		for( $i = 0; $i < sizeof($help_chapters); $i++ )  {
+	for( $i = 0; $i < sizeof((array) $help_chapters); $i++ )  {
 			$descr = $site->htmldeentities(htmlconstant("_SYSINFO_HELP_CHAPTER{$help_chapters[$i]}"));
 			$title = '';
 			if( $chapter!=$help_chapters[$i] && strlen($descr)>10 && $i != sizeof($help_chapters)-1 ) {
@@ -639,7 +644,7 @@ $site->pageStart(array('popfit'=>1));
 				echo '<table cellpadding="0" cellspacing="0" border="0"><tr><td valign="top">';
 					reset($help_sort2id);
 					$num_themes = 0;
-					while( list($currSort, $currId) = each($help_sort2id) ) 
+					foreach($help_sort2id as $currSort => $currId)
 					{
 						if( $chapter == 0
 						 || $help_id2chapter[$currId] == $chapter )
@@ -652,7 +657,7 @@ $site->pageStart(array('popfit'=>1));
 					$last_char = '';
 					$item_count = 0;
 					$break_done = 0;
-					while( list($currSort, $currId) = each($help_sort2id) ) 
+					foreach($help_sort2id as $currSort => $currId)
 					{
 						if( $chapter == 0
 						 || $help_id2chapter[$currId] == $chapter )
