@@ -88,7 +88,8 @@ if( !@function_exists('mysql_connect') )
 
 
 // PHP 7 changes the default characters set to UTF-8; we still prefer ISO-8859-1
-// @ini_set('default_charset', 'ISO-8859-1');
+if(substr(PHP_VERSION, 0, 1) > 6)
+    @ini_set('default_charset', 'ISO-8859-1');
 
 
 class DB_Sql
@@ -323,15 +324,6 @@ class DB_Sql
 		return $this->ResultInsertId;
 	}
 	
-	function close() {
-	    $this->free();
-	    
-	    if($this->Link_ID)
-	        return mysql_close($this->Link_ID); // @mysql...
-	        else
-	        return false;
-	}
-	
 	function free()
 	{
 		$this->Result = array();
@@ -342,6 +334,15 @@ class DB_Sql
 			@mysql_free_result($this->phys_query_id);
 			$this->phys_query_id = 0;
 		}
+	}
+	
+	function close() {
+	    $this->free();
+	    
+	    if($this->Link_ID)
+	        return true; // mysql_close($this->Link_ID); // @mysql... #PHP7
+	        else
+	            return false;
 	}
 
 	private function halt($msg)

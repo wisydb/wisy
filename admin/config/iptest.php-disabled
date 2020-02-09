@@ -36,7 +36,7 @@ $db = new DB_Admin;
 $db->query("SELECT COUNT(ip) AS cnt FROM feedback;");
 $db->next_record();
 $totalRecords = $db->fs('cnt');
-echo "Anzahl Datensï¿½tze gesamt: $totalRecords<br />";
+echo "Anzahl Datensätze gesamt: $totalRecords<br />";
 
 $differentIps = 0;
 $anon_ip1_arr = array();

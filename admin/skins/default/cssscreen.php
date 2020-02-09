@@ -487,7 +487,7 @@ div.e_toolbar, div.e_section {
 .e_attractype1 { /*Abschluss: Gruen*/
 	background-color: #C0FFC0;
 }
-.e_attractype2, .e_attractype4 { /*F�rderungsart, Qualitaetszertifikat: Dunkleres Grau*/
+.e_attractype2, .e_attractype4 { /*Foerderungsart, Qualitaetszertifikat: Dunkleres Grau*/
 	/*background-color: #E0E0E0;*/
 }
 .e_attractype2048 { /*Verwaltungsstichwort: Gelb*/
@@ -546,6 +546,28 @@ code {
  line-height: 20px;
 }
 
+/* textarea[name=f_beschreibung], textarea[name=f_firmenportraet] {
+	height: 400px;
+} */
+
 input[name=f_titel], input[name=f_suchname] {
 	width: 90%;
+}
+
+tr.archiv td {
+	color: #999;
+}
+
+tr.gesperrt td {
+	color: #999;
+}
+
+input[readonly] {
+	color: #999;
+	border: none !important;
+}
+
+input.anbieter_bezirk,
+input.df_bezirk {
+	display: none;
 }

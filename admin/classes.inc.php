@@ -15,7 +15,7 @@ Author:
 
 
 // changing the CMS version will force reloading of .js and .css files  
-define('CMS_VERSION', '6.2');
+define('CMS_VERSION', '7.0');
 
 
 // PHP 5.0.0 is needed for: __construct(), public, private, protected, microtime($get_as_float), Exceptions, object-copying by reference by default
@@ -25,7 +25,8 @@ if( version_compare(PHP_VERSION, '5.1.2', '<') ) die('PHP version too old.');
 
 
 // PHP 7 changes the default characters set to UTF-8; we still prefer ISO-8859-1
-// ini_set('default_charset', 'ISO-8859-1');
+if(substr(PHP_VERSION, 0, 1) > 6)
+    @ini_set('default_charset', 'ISO-8859-1'); // ISO-8859-15 possible?
 
 
 // set an absolute path that should be prefixed to all includes.

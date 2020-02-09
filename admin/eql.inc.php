@@ -219,7 +219,7 @@ function g_eql_normalize_natsort($str)
 	$str = strtr($str,	array('ä'=>'ae', 'ö'=>'oe', 'ü'=>'ue', 'ß'=>'ss'));
 
 	// convert numbers to a 'natural' sorting order
-	$str = preg_replace_callback('/[0-9]+/', 'g_eql_normalize_natsort_callback', $str);
+	// $str = preg_replace_callback('/[0-9]+/', 'g_eql_normalize_natsort_callback', $str); // ???
 
 	// strip special characters
 	$str = strtr($str,	'\'\\!°"§$%&/(){}[]=?+*~#,;.:-_<>|@€©®£¥  ',

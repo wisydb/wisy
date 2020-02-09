@@ -258,7 +258,7 @@ class EDIT_RENDERER_CLASS
 		if( $this->sth_hidden ) {
 			$tooltip = $this->sth_hidden_tooltip;
 			if( $this->sth_hidden_has_content ) {
-				$tooltip .= ' (enth�lt Daten)';
+				$tooltip .= ' (enth&auml;lt Daten)';
 			}
 			
 			$line = '<a href="#" class="e_defhide_more" data-defhide-id="'.$this->defhide_id.'" title="'.$tooltip.' ein-/ausblenden">';		
@@ -609,7 +609,7 @@ class EDIT_RENDERER_CLASS
 			else {
 				$this->no_paging = $_REQUEST['paging'];
 
-				$GLOBALS['site']->msgAdd("Keine weiteren Datens�tze.", 'w');
+				$GLOBALS['site']->msgAdd("Keine weiteren Datens&auml;tze.", 'w');
 				$load_from_db = true;
 			}
 			
