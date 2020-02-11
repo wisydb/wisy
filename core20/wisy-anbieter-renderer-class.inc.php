@@ -398,7 +398,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 						}
 		
 						/* stichwoerter */
-						if( sizeof($stichwoerter) ) {
+						if( sizeof((array) $stichwoerter) ) {
 							echo $this->framework->writeStichwoerter($db, 'anbieter', $stichwoerter);
 						}
 	

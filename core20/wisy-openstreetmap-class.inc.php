@@ -330,7 +330,7 @@ class WISY_OPENSTREETMAP_CLASS
 	*/
 		
 	// strict private, may not be overwritten or used in modules
-	private function geocode2__($adr, $addto, $call_external)
+	protected function geocode2__($adr, $addto, $call_external)
 	{
 		if( !is_array($adr) ) { die('the query must be given as an array!'); }
 

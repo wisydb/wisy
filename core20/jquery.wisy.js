@@ -89,7 +89,7 @@ function fav_update_bar()
 		{
 			str += '<a href="' + mailto + '" title="Favoriten per E-Mail versenden" class="fav_send">&#9993;</a> '; // Unicode #9993 = Letter
 		}
-		str += '<small> <a href="javascript:fav_delete_all()" title="Alle Favoriten lï¿½schen">&times;</a></small>';
+		str += '<small> <a href="javascript:fav_delete_all()" title="Alle Favoriten l&ouml;schen">&times;</a></small>';
 		
 		$('.wisy_searchhints').html(str + ' | ' + g_fav_bar_orig);
 		
@@ -125,7 +125,7 @@ function fav_click(jsObj, id)
 }
 function fav_delete_all()
 {
-	if( !confirm('Alle gespeicherten Favoriten lï¿½schen?') )
+	if( !confirm('Alle gespeicherten Favoriten l&ouml;schen?') )
 		return false;
 	
 	g_all_fav = {};
@@ -457,7 +457,7 @@ if (jQuery.ui)
 
 	function ac_selectcallback(event, ui) {
 	
-		// Standardverhalten (Value ins Eingabefeld schreiben) bei ï¿½berschrift und Mehrlink der Ergebnisliste ausschalten
+		// Standardverhalten (Value ins Eingabefeld schreiben) bei Ueberschrift und Mehrlink der Ergebnisliste ausschalten
 		// Ebenso bei Klick auf "wisy_help"
 		var $span = $(ui.item.label);
 		var $to = $(event.toElement);
@@ -469,7 +469,7 @@ if (jQuery.ui)
 		else
 		{
 	
-			// Neuen Autocomplete-Wert nach evtl. bereits vorhandenen einfï¿½gen
+			// Neuen Autocomplete-Wert nach evtl. bereits vorhandenen einfuegen
 			var terms = split( this.value );
 			// remove the current input
 			terms.pop();
@@ -526,7 +526,7 @@ if (jQuery.ui)
 
 /******************************************************************************
 jQuery UI Autocomplete HTML Extension 
-Copyright 2010, Scott Gonzï¿½lez (http://scottgonzalez.com)
+Copyright 2010, Scott González (http://scottgonzalez.com)
 Dual licensed under the MIT or GPL Version 2 licenses. 
 http://github.com/scottgonzalez/jquery-ui-extensions
 ******************************************************************************/
@@ -723,10 +723,10 @@ function editDurchfLoeschen(jqObj)
 {
 	if( $('.editDurchfRow').size() == 1 )
 	{
-		alert("Diese Durchfï¿½hrung kann nicht gelï¿½scht werden, da ein Kurs mindestens eine Durchfï¿½hrung haben muss.\n\nWenn Sie den Kurs komplett lï¿½schen mï¿½chten, verwenden Sie die Option \"Kurs lï¿½schen\" ganz unten auf dieser Seite.");
+		alert("Diese Durchführung kann nicht gelöscht werden, da ein Kurs mindestens eine Durchführung haben muss.\n\nWenn Sie den Kurs komplett löschen möchten, verwenden Sie die Option \"Kurs löschen\" ganz unten auf dieser Seite.");
 		return;
 	}
-	else if( confirm("Diese Durchfï¿½hrung lï¿½schen?") )
+	else if( confirm("Diese Durchführung löschen?") )
 	{
 		editFindDurchfRow(jqObj).remove();
 	}
@@ -743,7 +743,7 @@ function editDurchfKopieren(jqObj)
 
 function editKursLoeschen(jqObj)
 {
-	if( confirm("Wenn Sie einen Kurs lï¿½schen mï¿½chten, wird zunï¿½chst ein Sperrvermerk gesetzt; beim nï¿½chsten Index-Update wird der Kurs dann inkl. aller Durchfï¿½hrungen komplett gelï¿½scht. Dieser Vorgang kann nicht rï¿½ckgï¿½ngig gemacht werden!\n\nDen kompletten Kurs inkl. ALLER Durchfï¿½hrungen lï¿½schen?") )
+	if( confirm("Wenn Sie einen Kurs löschen möchten, wird zunächst ein Sperrvermerk gesetzt; beim nächsten Index-Update wird der Kurs dann inkl. aller Durchführungen komplett gelöscht. Dieser Vorgang kann nicht rückgängig gemacht werden!\n\nDen kompletten Kurs inkl. ALLER Durchführungen löschen?") )
 	{
 		return true;
 	}
@@ -816,7 +816,7 @@ function sendFeedback(rating)
 	{
 		$('#wisy_feedback_line1').after(
 				'<p id="wisy_feedback_line2">'
-			+		'Bitte schildern Sie uns noch kurz, warum diese Information nicht hilfreich war und was wir besser machen kï¿½nnen:<br />'
+			+		'Bitte schildern Sie uns noch kurz, warum diese Information nicht hilfreich war und was wir besser machen k&ouml;nnen:<br />'
 				+	'<textarea id="wisy_feedback_descr" name="wisy_feedback_descr" rows="2" cols="20" style="width: 400px;"></textarea><br />'
 				+	'<br><b>Wenn Sie eine Antwort w&uuml;nschen</b>, geben Sie bitte auch Ihre E-Mail-Adresse an (optional).<br />Wir verwenden Ihre E-Mailadresse und ggf. Name nur, um Ihr Anliegen zu bearbeiten und l&ouml;schen diese personenbezogenen Daten alle 12 Monate.<br><br>'
 				+	'<label for="fname">Name (optional): </label><input type="text" id="wisy_feedback_name" name="wisy_feedback_name">&nbsp; <label for="femail">E-Mailadresse (optional): </label><input type="text" id="wisy_feedback_email" name="wisy_feedback_email"><br><br>'
