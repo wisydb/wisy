@@ -90,7 +90,7 @@ class WISY_KEYWORDTABLE_CLASS
 		
 		if( $tag_descr )
 		{
-		    $tag_descr = PHP7 ? $tag_descr : utf8_encode($tag_descr);
+		    $tag_descr = cs8($tag_descr);
 		    $row_postfix = htmlentities(html_entity_decode($tag_descr)) . ', ' . htmlentities(html_entity_decode(strip_tags($row_postfix)));
 		}
 		
@@ -101,8 +101,8 @@ class WISY_KEYWORDTABLE_CLASS
 
 		/*col1*/
 		$ret .= '<span class="' .$row_class. '">';
-		$ret .= ' <a href="' . $this->framework->getUrl('search', array('q'=>utf8_encode($tag_name))). '">' . htmlentities(utf8_encode($tag_name)). '</a> ';
-			$ret .= $row_postfix;
+		$ret .= ' <a href="' . $this->framework->getUrl('search', array('q'=>cs8($tag_name))). '">' . htmlentities(cs8($tag_name)). '</a> ';
+		$ret .= $row_postfix;
 		$ret .= '</span>';
 		
 		/*col2*/
@@ -133,7 +133,7 @@ class WISY_KEYWORDTABLE_CLASS
 		$tag_id = 0;
 		$this->db->query("SELECT tag_id, tag_type FROM x_tags WHERE tag_name=".$this->db->quote($title));
 		if( $this->db->next_record() ) {
-			$tag_id = $this->db->f8('tag_id');
+		    $tag_id = $this->db->fcs8('tag_id');
 		} 
 		
 		// get row type, class etc.
@@ -184,7 +184,7 @@ class WISY_KEYWORDTABLE_CLASS
 		$child_ids = array();
 		$this->db->query("SELECT attr_id FROM stichwoerter_verweis2 WHERE primary_id=$keywordId ORDER BY structure_pos;");
 		while( $this->db->next_record() ) {
-			$child_ids[] = $this->db->f8('attr_id');
+		    $child_ids[] = $this->db->fcs8('attr_id');
 		}
 
 		$showempty = $this->showempty;
@@ -239,7 +239,7 @@ class WISY_KEYWORDTABLE_CLASS
 		
 		// ... pass 2: render all rows for each keyword ID		
 		$ret_items = array();
-		for( $k = 0; $k < sizeof($keywordIds); $k++ ) 
+		for( $k = 0; $k < sizeof((array) $keywordIds); $k++ ) 
 		{
 			$expand = 0;
 			$keywordId = $keywordIds[$k];

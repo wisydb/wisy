@@ -133,7 +133,7 @@ class WISY_DURCHF_CLASS
 			return '';
 		}
 		else if( $codes_beginnoptionen_array[$opt] ) {
-			return utf8_encode($codes_beginnoptionen_array[$opt]); // UTF-8 encode because the source file (admin/config/codes.inc.php) is still ISO-encoded
+		    return cs8($codes_beginnoptionen_array[$opt]); // UTF-8 encode because the source file (admin/config/codes.inc.php) is still ISO-encoded
 		}
 		else {
 			return '';
@@ -161,7 +161,7 @@ class WISY_DURCHF_CLASS
 	
 		$c = 0;
 		reset($codes_kurstage_array);
-		while( list($value, $descr) = each($codes_kurstage_array) ) {
+		foreach($codes_kurstage_array as $value => $descr) {
 			if( $kurstage & $value ) {
 				$c++;
 			}
@@ -169,7 +169,7 @@ class WISY_DURCHF_CLASS
 	
 		$ret = '';
 		reset($codes_kurstage_array);
-		while( list($value, $descr) = each($codes_kurstage_array) ) {
+		foreach($codes_kurstage_array as $value => $descr) {
 			if( $kurstage & $value ) {
 				$ret .= $ret? ($c==1? ' und ' : ', ') : '';
 				$ret .= $descr;
@@ -177,7 +177,7 @@ class WISY_DURCHF_CLASS
 			}
 		}
 		
-		return utf8_encode($ret); // UTF-8 encode because the source file (admin/config/codes.inc.php) is still ISO-encoded
+		return cs8($ret);
 	}
 
 	function formatDauer($dauer, $stunden, $mask2 = '%1 (%2)') // return as HTML
@@ -227,7 +227,7 @@ class WISY_DURCHF_CLASS
 		else {
 			$ret = 'k. A.';
 		}
-		return utf8_encode($ret); // UTF-8 encode because the source file (admin/config/codes.inc.php) is still ISO-encoded
+		return cs8($ret); // UTF-8 encode because the source file (admin/config/codes.inc.php) is still ISO-encoded
 	}
 
 	function formatPreis($preis, $sonderpreis, $sonderpreistage, $beginn, $preishinweise_str, $html = 1, $addParam = 0)
@@ -272,19 +272,19 @@ class WISY_DURCHF_CLASS
 			
 			foreach( $addParam['stichwoerter'] as $stichwort ) {
 			    switch( $stichwort['id'] ) {
-			        case 3207:  $preishinweise_arr[] = PHP7 ? 'kostenlos per Bildungsgutschein' : utf8_decode('kostenlos per Bildungsgutschein'); break;
-			        case 6013:  $preishinweise_arr[] = PHP7 ? 'kostenlos durch Umschulung' : utf8_decode('kostenlos durch Umschulung');			break;
-			        case 16311: $preishinweise_arr[] = PHP7 ? 'kostenlos als Aktivierungsma√ünahme' : utf8_decode('kostenlos als Aktivierungsma√ünahme');	break;
-			        case 849451: $preishinweise_arr[] = PHP7 ? 'Preisstruktur komplex. GGf. beim Anbieter einholen.' : utf8_decode('Preisstruktur komplex. GGf. beim Anbieter einholen.');	break;
+			        case 3207:  $preishinweise_arr[] = cs8('kostenlos per Bildungsgutschein'); break;
+			        case 6013:  $preishinweise_arr[] = cs8('kostenlos durch Umschulung');			break;
+			        case 16311: $preishinweise_arr[] = cs8('kostenlos als Aktivierungsma&szlig;nahme');	break;
+			        case 849451: $preishinweise_arr[] = cs8('Preisstruktur komplex. GGf. beim Anbieter einholen.');	break;
 			    }
 			}
 			
-			if( sizeof($preishinweise_arr) )
+			if( sizeof((array) $preishinweise_arr) )
 			{
 			    $preishinweise_out = implode(', ', $preishinweise_arr);
 			    $ret = str_replace(array("k. A.", "k.A."), "", $ret);
 			    if( $html ) {
-			        $preishinweise_out = PHP7 ? $preishinweise_out : utf8_encode(str_replace(chr(128), "&euro;", $preishinweise_out));
+			        $preishinweise_out = cs8(str_replace(chr(128), "&euro;", $preishinweise_out));
 			        $ret .= '<div class="wisyr_preis_hinweise">' .  htmlentities(html_entity_decode($preishinweise_out)) . '</div>'; // str_replace(chr(0xE2).chr(0x82).chr(0xAC), "&euro;",
 			    }
 			    else {
@@ -425,7 +425,7 @@ class WISY_DURCHF_CLASS
 		$beginnsql		= $record['beginn'];
 		$beginn			= $this->framework->formatDatum($beginnsql);
 		$beginnoptionen = $this->formatBeginnoptionen($record['beginnoptionen']);
-		$beginnoptionen = PHP7 ? utf8_decode($beginnoptionen) : $beginnoptionen;
+		$beginnoptionen = cs8($beginnoptionen);
 		$endesql		= $record['ende'];
 		$ende			= $details? $this->framework->formatDatum($endesql) : '';
 		$zeit_von		= $details? $record['zeit_von'] : ''; if( $zeit_von=='00:00' ) $zeit_von = '';
@@ -579,11 +579,11 @@ class WISY_DURCHF_CLASS
 		    echo '    <td class="wisyr_ort '.$multiple_orte.'" data-title="Ort">';
 			
 			// get ort
-			$strasse	= PHP7 ? htmlentities($record['strasse']) : htmlentities(utf8_encode($record['strasse']));
+		    $strasse	= cs8($record['strasse']);
 			$plz		= $record['plz'];
-			$ort		= PHP7 ? htmlentities($record['ort']) : htmlentities(utf8_encode($record['ort'])); // hier wird noch der Stadtteil angehaengt
+			$ort		= htmlentities(cs8($record['ort'])); // hier wird noch der Stadtteil angehaengt
 			$stadt		= $ort;
-			$stadtteil	= PHP7 ? htmlentities($record['stadtteil']) : htmlentities(utf8_encode($record['stadtteil']));
+			$stadtteil	= cs8($record['stadtteil']);
 			
 			$exclude_ort = trim($this->framework->iniRead('search.hide.ort', ''));
 			if($stadtteil && $exclude_ort && stripos($ort, $exclude_ort) !== FALSE && $this->framework->getPageType() == "suche") {
@@ -591,7 +591,7 @@ class WISY_DURCHF_CLASS
 			    $stadt = str_replace($exclude_ort, "", $stadt);
 			}
 			
-			$land		= PHP7 ? htmlentities($record['land']) : htmlentities(utf8_encode($record['land']));
+			$land		= cs8($record['land']);
 			if( $ort && $stadtteil ) {
 				if( strpos($ort, $stadtteil)===false ) {
 				    $ort = $ort . ' - ' . $stadtteil;
@@ -623,12 +623,12 @@ class WISY_DURCHF_CLASS
 			        $db->next_record();
 			        $record = $db->Record;
 			        
-			        $strasse_a[$i]	= (PHP7 ? $record['strasse'] : utf8_encode($record['strasse']));
+			        $strasse_a[$i]	= cs8($record['strasse']);
 			        $plz_a[$i]		= $record['plz'];
-			        $ort_a[$i]		= (PHP7 ? $record['ort'] : utf8_encode($record['ort'])); // hier wird noch der Stadtteil angehaengt
+			        $ort_a[$i]		= cs8($record['ort']); // hier wird noch der Stadtteil angehaengt
 			        
 			        $stadt_a[$i]	= $ort_a[$i];
-			        $stadtteil_a[$i]	= PHP7 ? $record['stadtteil'] : utf8_encode($record['stadtteil']);
+			        $stadtteil_a[$i]	= cs8($record['stadtteil']);
 			        
 			        $exclude_ort = trim($this->framework->iniRead('search.hide.ort', ''));
 			        if($stadtteil_a[$i] && $exclude_ort && stripos($ort_a[$i], $exclude_ort) !== FALSE && $this->framework->getPageType() == "suche") {
@@ -636,7 +636,7 @@ class WISY_DURCHF_CLASS
 			            $stadt_a[$i] = str_replace($exclude_ort, "", $stadt_a[$i]);
 			        }
 			        
-			        $land_a[$i]		= PHP7 ? $record['land'] : utf8_encode($record['land']);
+			        $land_a[$i]		= cs8($record['land']);
 			        if( $ort_a[$i] && $stadtteil_a[$i] ) {
 			            if( strpos($ort_a[$i], $stadtteil_a[$i])===false ) {
 			                $ort_a[$i] = $ort_a[$i] . ' - ' . $stadtteil_a[$i];
@@ -678,7 +678,8 @@ class WISY_DURCHF_CLASS
 				$this->framework->map->addPoint2($record, $durchfuehrungId);
 			}
 			
-			$map_URL = 'https://maps.google.com/?q=' . urlencode($strasse . ', ' . $plz . ' ' . $ort . ', ' . $land);					
+			
+			$map_URL = 'https://maps.google.com/?q=' . urlencode((PHP7 ? utf8_encode($strasse) : $strasse) . ', ' . $plz . ' ' . $ort . ', ' . $land);
 			
 			if( $details )
 			{
@@ -724,7 +725,7 @@ class WISY_DURCHF_CLASS
 			// nr
 			echo '    <td class="wisyr_nr" data-title="Nr">';
 			$nr = $record['nr'];
-			$nr = PHP7 ? $nr : utf8_encode($nr);
+			$nr = cs8($nr);
 			echo $nr? htmlentities($nr) : 'k. A.';
 			echo ' </td>' . "\n";
 		}
@@ -739,7 +740,7 @@ class WISY_DURCHF_CLASS
 		        $wiki2html =& createWisyObject('WISY_WIKI2HTML_CLASS', $this->framework);
 		        $bemerkungen = $record['bemerkungen'];
 		        $bemerkungen = str_replace(chr(128), "&euro;", $bemerkungen); // str_replace(chr(0xE2).chr(0x82).chr(0xAC), "&euro;",
-		        echo PHP7 ? $wiki2html->run($bemerkungen) : utf8_encode($wiki2html->run($bemerkungen));
+		        echo cs8($wiki2html->run($bemerkungen));
 		        echo ' </td>' . "\n";
 		    } 
 		}

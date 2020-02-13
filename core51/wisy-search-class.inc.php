@@ -122,10 +122,16 @@ class WISY_SEARCH_CLASS
 	function prepare($queryString)
 	{
 	    
+	    if(isset($_GET['typ']))
+	        echo "Prepare Vorher: ".$queryString."<br><br>";
+	        
 	    // Convert utf-8 input back to ISO-8859-15 because the DB ist still encoded with ISO
-	    $queryString = iconv("UTF-8", "ISO-8859-15//IGNORE", $queryString);
-		
-		// first, apply the stdkursfilter
+	    $queryString = PHP7 ? $queryString : iconv("UTF-8", "ISO-8859-15//IGNORE", $queryString);
+	        
+	    if(isset($_GET['typ']))
+	       echo "Prepare Nachher: ".$queryString."<br><br>";
+	            
+	            // first, apply the stdkursfilter
 		global $wisyPortalFilter;
 		global $wisyPortalId;
 		if( $wisyPortalFilter['stdkursfilter'] != '' )
@@ -147,12 +153,15 @@ class WISY_SEARCH_CLASS
 		$this->last_lng = 0;
 		$has_bei = false;
 		$max_km = 500;
-		$default_km = $this->framework->iniRead('radiussearch.defaultkm', 2);		
+		$default_km = $this->framework->iniRead('radiussearch.defaultkm', 2);
 		$km = floatval($default_km);
-		for( $i = 0; $i < sizeof($this->tokens['cond']); $i++ )
+		for( $i = 0; $i < sizeof((array) $this->tokens['cond']); $i++ )
 		{
-			$value = $this->tokens['cond'][$i]['value'];
-			switch( $this->tokens['cond'][$i]['field'] )
+		    $value = $this->tokens['cond'][$i]['value']; // PHP7 ? utf8_decode()
+		    if(isset($_GET['typ']))
+		        echo ">>".$value."<br><br>";
+		        
+		        switch( $this->tokens['cond'][$i]['field'] )
 			{
 				case 'bei':
 					$has_bei = true;
@@ -172,11 +181,16 @@ class WISY_SEARCH_CLASS
 		$tag_heap = array();
 		$this->double_tags = array();
 		
-		for( $i = 0; $i < sizeof($this->tokens['cond']); $i++ )
+		for( $i = 0; $i < sizeof((array) $this->tokens['cond']); $i++ )
 		{
-			// build SQL statements for this part
-			$value = $this->tokens['cond'][$i]['value'];
-			switch( $this->tokens['cond'][$i]['field'] )
+		    
+		    // build SQL statements for this part
+		    $value = $this->tokens['cond'][$i]['value']; // PHP7 ? utf8_decode()
+		    
+		    if(isset($_GET['typ']))
+		        echo ">>2>".$value."<br><br>";
+		        
+		        switch( $this->tokens['cond'][$i]['field'] )
 			{
 				case 'tag':
 					$tagNotFound = false;
@@ -186,7 +200,7 @@ class WISY_SEARCH_CLASS
 					    // ODER-Suche
 					    $subval = explode(' ODER ', strtoupper($value));
 					    $rawOr = '';
-					    for( $s = 0; $s < sizeof($subval); $s++ )
+					    for( $s = 0; $s < sizeof((array) $subval); $s++ )
 					    {
 					        // check after explode "ODER"
 					        if($this->isRedundantSearchTag($subval[$s], $tag_heap) === true)
@@ -227,7 +241,7 @@ class WISY_SEARCH_CLASS
 					    else
 					    {
 					        if($this->isRedundantSearchTag($value, $tag_heap) === true)
-					            continue;
+					            continue 2;
 					            
 					            array_push($tag_heap, $value);
 					            
@@ -769,7 +783,7 @@ class WISY_SEARCH_CLASS
 			}
 			
 			// create complete SQL query
-			$sql =  "SELECT id, date_created, date_modified, suchname, strasse, plz, bezirk, ort, homepage, anspr_email, anspr_tel, typ FROM anbieter WHERE anbieter.id IN($this->anbieterIds)";
+			$sql =  "SELECT id, date_created, date_modified, suchname, strasse, plz, bezirk, ort, homepage, firmenportraet, anspr_email, anspr_tel, typ FROM anbieter WHERE anbieter.id IN($this->anbieterIds)";
 			$sql .= " ORDER BY $orderBy, anbieter.id ";
 			if($rows != 0) $sql .= " LIMIT $offset, $rows ";
 
@@ -864,8 +878,8 @@ class WISY_SEARCH_CLASS
 	        if($_GET['typ'] > 0 && strpos($tag_name, 'portal') === FALSE) {
 	            $eigenschaften = $_GET['typ'];
 	            $sql .= "AND tag_eigenschaften = ".$_GET['typ'];
-	            echo $sql."<br>";
-	        }
+	            // echo "<b>Loopkup Tag:</b><br>".$sql."<br><br>";
+	        } 
 	        
 	        $this->db->query($sql);
 	        if( $this->db->next_record() )

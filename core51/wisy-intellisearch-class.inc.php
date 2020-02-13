@@ -38,9 +38,9 @@ class WISY_INTELLISEARCH_CLASS
 		// ... dies geschieht allerdings nur bei _genau_ _einem_ token - andernfalls ist ein leeres Ergebnis sehr wahrscheinlich und
 		// teilweise auch gewollt.
 		$sizeOkay = false;
-		if(  sizeof($this->searcher->tokens['cond']) == 1 
-		 || (sizeof($this->searcher->tokens['cond']) == 2 && $this->searcher->tokens['cond'][1]['field']) )
-			$sizeOkay = true;
+		if(  sizeof((array) $this->searcher->tokens['cond']) == 1
+		    || (sizeof((array) $this->searcher->tokens['cond']) == 2 && $this->searcher->tokens['cond'][1]['field']) )
+		    $sizeOkay = true;
 		
 		if( !$sizeOkay
 		 || $this->searcher->tokens['cond'][0]['field'] != 'tag' )
@@ -53,7 +53,7 @@ class WISY_INTELLISEARCH_CLASS
 		{
 			$nrSearcher = createWisyObject('WISY_SEARCH_NR_CLASS', $this->framework);
 			$ids = $nrSearcher->nr2id($this->searcher->tokens['cond'][0]['value']);
-			if( sizeof($ids) )
+			if( sizeof((array) $ids) )
 			{
 				$changed_query = 'nr:' . $this->searcher->tokens['cond'][0]['value'];
 				$this->searcher->prepare($changed_query);
@@ -69,7 +69,7 @@ class WISY_INTELLISEARCH_CLASS
 
 		// try to perform a fulltext search
 		$fulltextSetting = intval($this->framework->iniRead('intellisearch.fulltext', 0));
-		if( ($fulltextSetting == 1 && sizeof($this->suggestions) == 0)
+		if( ($fulltextSetting == 1 && sizeof((array) $this->suggestions) == 0)
 		 || ($fulltextSetting == 2) )
 		{
 			$changed_query = 'volltext:' . $this->searcher->tokens['cond'][0]['value'];
@@ -143,7 +143,7 @@ class WISY_INTELLISEARCH_CLASS
 				$tagsuggestor =& createWisyObject('WISY_TAGSUGGESTOR_CLASS', $this->framework);
                 
 				$qsuggestions = $tagsuggestor->suggestTags($this->searcher->tokens['cond'][ $this->searcher->error['first_bad_tag'] ]['value'],array('max'=>10, 'q_tag_type_not'=>array(256,512)));
-				for( $i = 0; $i < sizeof($qsuggestions); $i++ )
+				for( $i = 0; $i < sizeof((array) $qsuggestions); $i++ )
 				{
 					//if( ($qsuggestions[$i]['tag_type']&64) == 0 )
 					{
@@ -157,9 +157,9 @@ class WISY_INTELLISEARCH_CLASS
 			
 			default:
 				// most common reason for this: an empty result, suggest easier searches
-				if( $this->searcher->ok() && sizeof($this->searcher->tokens['cond'])>=2 )
+			    if( $this->searcher->ok() && sizeof((array) $this->searcher->tokens['cond'])>=2 )
 				{
-					for( $i = 0; $i < sizeof($this->searcher->tokens['cond']); $i++ )
+				    for( $i = 0; $i < sizeof((array) $this->searcher->tokens['cond']); $i++ )
 					{
 						if( $this->searcher->tokens['cond'][$i]['field'] == 'tag' )
 						{

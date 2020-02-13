@@ -57,7 +57,7 @@ class WISY_AUTOSUGGESTPLZORT_RENDERER_CLASS
 			
 		if(count($plzorte) == 0 && count($orte) == 0)
 		{
-			echo 'Keine Ortsvorschläge möglich| ' . "\n";
+		    echo 'Keine Ortsvorschl&auml;ge m&ouml;glich| ' . "\n";
 		}
 		else
 		{

@@ -32,7 +32,7 @@ class WISY_FILTER_CLASS
 		$this->presets['q'] = array
 			(
 				'type'			=> 'text',
-				'descr'			=> '<strong>Suchwörter:</strong>',
+			    'descr'			=> '<strong>Suchw&ouml;rter:</strong>',
 				'autocomplete'	=>	'ac_keyword',
 			);
 		$this->presets['datum'] = array
@@ -41,15 +41,15 @@ class WISY_FILTER_CLASS
 				'function'	=> 'datum:',
 				'descr'		=> '<strong>Beginndatum:</strong>',
 				'options' 	=> array(
-					'Alles' 				=> 'auch abgelaufene Angebote berücksichtigen',
-					$dates['vorgestern']	=> 'ab vorgestern',
-					$dates['gestern']		=> 'ab gestern',
-					''						=> 'ab heute',
-					$dates['morgen']		=> 'ab morgen',
-					$dates['uebermorgen']	=> 'ab übermorgen',
-					$dates['montag1']		=> 'nächste Woche &ndash; ab Montag, ' . $dates['montag1'],
-					$dates['montag2']		=> 'übernächste Woche &ndash; ab Montag, ' . $dates['montag2'],
-					$dates['montag3']		=> 'in 3 Wochen &ndash; ab Montag, ' . $dates['montag3'],
+				    'Alles' 				=> 'auch abgelaufene Angebote ber&uuml;cksichtigen',
+				    $dates['vorgestern']	=> 'ab vorgestern',
+				    $dates['gestern']		=> 'ab gestern',
+				    ''						=> 'ab heute',
+				    $dates['morgen']		=> 'ab morgen',
+				    $dates['uebermorgen']	=> 'ab &uuml;bermorgen',
+				    $dates['montag1']		=> 'n&auml;chste Woche &ndash; ab Montag, ' . $dates['montag1'],
+				    $dates['montag2']		=> '&uuml;bern&auml;chste Woche &ndash; ab Montag, ' . $dates['montag2'],
+				    $dates['montag3']       => 'in 3 Wochen &ndash; ab Montag, ' . $dates['montag3'],
 					$dates['montag4']		=> 'in 4 Wochen &ndash; ab Montag, ' . $dates['montag4'],
 					$dates['montag5']		=> 'in 5 Wochen &ndash; ab Montag, ' . $dates['montag5'],
 					$dates['montag6']		=> 'in 6 Wochen &ndash; ab Montag, ' . $dates['montag6'],
@@ -205,19 +205,19 @@ class WISY_FILTER_CLASS
 			$decoration = array();
 			
 		$foerderungen = $this->getSpezielleStichw(2);
-		if( sizeof($foerderungen) > 1 )
+		if( sizeof((array) $foerderungen) > 1 )
 		{
 			$this->presets['foerderung'] = array
 				(
 					'type'		=> 'taglist',
-					'descr'		=> 'Förderung:',
+				    'descr'		=> 'F&ouml;rderung:',
 					'function'	=> 'foerderung:',
 					'options'	=>	$foerderungen
 				);
 		}
 		
 		$zielgruppen = $this->getSpezielleStichw(8);
-		if( sizeof($zielgruppen) > 1 )
+		if( sizeof((array) $zielgruppen) > 1 )
 		{
 			$this->presets['zielgruppe'] = array
 				(
@@ -229,12 +229,12 @@ class WISY_FILTER_CLASS
 		}
 
 		$qualitaetszertifikate = $this->getSpezielleStichw(4);
-		if( sizeof($qualitaetszertifikate) > 1 )
+		if( sizeof((array) $qualitaetszertifikate) > 1 )
 		{
 			$this->presets['qualitaetszertifikat'] = array
 				(
 					'type'		=> 'taglist',
-					'descr'		=> 'Qualitätszertifikat:',
+				    'descr'		=> 'Qualit&auml;tszertifikat:',
 					'function'	=> 'qualitaetszertifikat:',
 					'options'	=>	$qualitaetszertifikate
 				);
@@ -253,7 +253,7 @@ class WISY_FILTER_CLASS
 		}
 		
 		$sonstigemerkmale = $this->getSpezielleStichw(1024);
-		if( sizeof($sonstigemerkmale) > 1 )
+		if( sizeof((array) $sonstigemerkmale) > 1 )
 		{
 		    $this->presets['sonstigesmerkmal'] = array
 		    (
@@ -265,7 +265,7 @@ class WISY_FILTER_CLASS
 		}
 		
 		$abschluesse = $this->getSpezielleStichw(1);
-		if( sizeof($abschluesse) > 1 )
+		if( sizeof((array) $abschluesse) > 1 )
 		{
 		    $this->presets['abschluesse'] = array
 		    (
@@ -277,7 +277,7 @@ class WISY_FILTER_CLASS
 		}
 		
 		$abschlussarten = $this->getSpezielleStichw(16);
-		if( sizeof($abschlussarten) > 1 )
+		if( sizeof((array) $unterrichtsarten) > 1 )
 		{
 		    $this->presets['abschlussarten'] = array
 		    (
@@ -350,12 +350,12 @@ class WISY_FILTER_CLASS
 		$this->presets['preis']['decoration']['headline_left'] = 'Weitere Optionen';
 		$this->presets['preis']['descr'] = 'Preis';
 		$this->presets['preis']['classes'] = 'wisyr_c1_3';
-		$this->presets['foerderung']['descr'] = 'Förderung';
+		$this->presets['foerderung']['descr'] = 'F&ouml;rderung';
 		$this->presets['foerderung']['classes'] = 'wisyr_c2_3';
 		
 		$this->presets['zielgruppe']['descr'] = 'Zielgruppe';
 		$this->presets['zielgruppe']['classes'] = 'wisyr_c1_3';
-		$this->presets['qualitaetszertifikat']['descr'] = 'Qualitätszertifikat';
+		$this->presets['qualitaetszertifikat']['descr'] = 'Qualit&auml;tszertifikat';
 		$this->presets['qualitaetszertifikat']['classes'] = 'wisyr_c2_3';
 		
 		$this->presets['zertifikat']['descr'] = 'Zertifikat';
@@ -447,7 +447,7 @@ class WISY_FILTER_CLASS
 		$db->query("SELECT stichwort FROM stichwoerter WHERE id IN ($ids_str) ORDER BY stichwort_sorted;");
 		while( $db->next_record() )
 		{
-			$stichw = htmlspecialchars($db->f8('stichwort'));
+		    $stichw = htmlspecialchars($db->fcs8('stichwort'));
 			$stichw = trim(strtr($stichw, array(': '=>' ', ':'=>' ', ', '=>' ', ','=>' ')));
 			
 			$ret[ $stichw ] = $stichw;
@@ -470,7 +470,7 @@ class WISY_FILTER_CLASS
 		if($this->DEBUG) echo 'parseFilterForm()';
 		
 		
-		while( list($field_name, $preset) = each($this->presets) )
+		foreach($this->presets as $field_name => $preset)
 		{
 			$field_name = mb_strtolower($field_name);
 			if($this->DEBUG) echo $field_name;
@@ -640,7 +640,7 @@ class WISY_FILTER_CLASS
 	
 	function constructTokens() {
 	    
-	    // $q =  htmlspecialchars(trim(utf8_encode($this->framework->getParam('q',  '')), ', ')); // ! utf8_encode
+	    // $q =  htmlspecialchars(trim(cs8($this->framework->getParam('q',  '')), ', ')); // ! utf8_encode
 	    $q =  htmlspecialchars(trim($this->framework->getParam('q',  ''), ', ')); // ! utf8_encode
 	    if(preg_match("/fav:$/i", $q)) $q = str_replace("fav:", "", $q);
 	    
@@ -656,7 +656,7 @@ class WISY_FILTER_CLASS
 	    if($this->DEBUG) echo 'qf: ' . $qf . "<br />\n";
 	    if($this->DEBUG) echo "<br />\n<br />\n";
 	    
-	    if(strlen($q) && !strlen($qs) && !strlen($qf) && !count($this->framework->QF)) {
+	    if(strlen($q) && !strlen($qs) && !strlen($qf) && (is_array($this->framework->QF) && !count($this->framework->QF) || !is_array($this->framework->QF && $this->framework->QF == "")) ) { // #php7
 	        // Case 4: Only q is filled, qs and qf are empty
 	        
 	        // Q
@@ -754,7 +754,7 @@ class WISY_FILTER_CLASS
 		$ret = array();
 
 		$queryArr = $this->stringToArray($string);
-		for( $i = 0; $i < sizeof($queryArr); $i++ )
+		for( $i = 0; $i < sizeof((array) $queryArr); $i++ )
 		{
 			// get initial value to search tags for, remove multiple spaces
 			$field = '';
@@ -863,7 +863,7 @@ class WISY_FILTER_CLASS
 	
 	function getUrlRemoveFilterByValue($tokenconditions, $removevalue) {
 		$query = array();
-		for( $i = 0; $i < sizeof($tokenconditions); $i++ ) {
+		for( $i = 0; $i < sizeof((array) $tokenconditions); $i++ ) {
             if($tokenconditions[$i]['field'] == 'tag') 
             {
 				if($tokenconditions[$i]['value'] != $removevalue)
@@ -881,7 +881,7 @@ class WISY_FILTER_CLASS
 	}
 	function getUrlAddFilter($tokenconditions, $addfilter) {
 		$query = array();
-		for( $i = 0; $i < sizeof($tokenconditions); $i++ ) {
+		for( $i = 0; $i < sizeof((array) $tokenconditions); $i++ ) {
             if($tokenconditions[$i]['field'] == 'tag') 
             {
                 $query[] = $tokenconditions[$i]['value'];
@@ -993,7 +993,7 @@ class WISY_FILTER_CLASS
 			$sql =  "SELECT thema FROM themen WHERE id IN(" . implode(',', $idList) . ")";
 			$this->db->query($sql);
 			while( $this->db->next_record() )
-				$ret['records'][] = utf8_encode($this->db->Record['thema']);
+			    $ret['records'][] = cs8($this->db->Record['thema']);
 			$this->db->free();
 	
 		}
@@ -1013,7 +1013,7 @@ class WISY_FILTER_CLASS
 		foreach($themen as $thema)
 		{
 			$remove = false;
-			for( $i = 0; $i < sizeof($tokenconditions); $i++ ) {
+			for( $i = 0; $i < sizeof((array) $tokenconditions); $i++ ) {
 	            if($tokenconditions[$i]['field'] == 'tag' && $tokenconditions[$i]['value'] == g_sync_removeSpecialChars($thema)) 
 	            {
 					$remove = true;
@@ -1051,7 +1051,7 @@ class WISY_FILTER_CLASS
 			$sql =  "SELECT suchname FROM anbieter WHERE id IN(" . implode(',', $idList) . ")";
 			$this->db->query($sql);
 			while( $this->db->next_record() )
-				$ret['records'][] = utf8_encode($this->db->Record['suchname']);
+			    $ret['records'][] = cs8($this->db->Record['suchname']);
 			$this->db->free();
 	
 		}

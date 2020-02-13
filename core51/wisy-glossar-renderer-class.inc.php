@@ -86,12 +86,12 @@ class WISY_GLOSSAR_RENDERER_CLASS
         if( !$this->db->next_record() )
             $this->framework->error404();
             
-            $glossareintrag = array('begriff' => cs8($this->db->fs('begriff')),
-                'erklaerung' => cs8($this->db->fs('erklaerung')),
-                'wikipedia' => cs8($this->db->fs('wikipedia')),
-                'date_created' => cs8($this->db->fs('date_created')),
-                'date_modified' => cs8($this->db->fs('date_modified')),
-                'user_grp' => $this->db->f('user_grp'));
+            $glossareintrag = array('begriff' => $this->db->fcs8('begriff'),
+                'erklaerung' => $this->db->fcs8('erklaerung'),
+                'wikipedia' => $this->db->fcs8('wikipedia'),
+                'date_created' => $this->db->fcs8('date_created'),
+                'date_modified' => $this->db->fcs8('date_modified'),
+                'user_grp' => $this->db->fcs8('user_grp')); 
             
             $this->db->free();
             return $glossareintrag;
@@ -118,7 +118,7 @@ class WISY_GLOSSAR_RENDERER_CLASS
         if( $glossar['erklaerung'] != '' )
         {
             $wiki2html =& createWisyObject('WISY_WIKI2HTML_CLASS', $this->framework, array('selfGlossarId'=>$glossar_id));
-            echo utf8_encode($wiki2html->run($this->framework->encode_windows_chars($glossar['erklaerung'])));
+            echo cs8($wiki2html->run($this->framework->encode_windows_chars($glossar['erklaerung'])));
         }
         
         // render wikipedia link

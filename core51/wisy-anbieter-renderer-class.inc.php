@@ -34,8 +34,8 @@ class WISY_ANBIETER_RENDERER_CLASS
 	    $db_kurs->query("SELECT org_titel, titel FROM kurse WHERE id =".$kursId);
 	    
 	    if($db_kurs->next_record()) {
-	        $k_orgtitle = $db_kurs->f8('org_titel');
-	        $k_title = $db_kurs->f8('titel');
+	        $k_orgtitle = $db_kurs->fcs8('org_titel');
+	        $k_title = $db_kurs->fcs8('titel');
 	    }
 	    
 	    if(!$k_orgtitle)
@@ -99,24 +99,24 @@ class WISY_ANBIETER_RENDERER_CLASS
 		}
 		
 		$kursId			= intval($kursId);
-		$suchname		= PHP7 ? $db->f('suchname'): $db->f8('suchname');
-		$postname		= PHP7 ? htmlentities($db->f('postname')) : htmlentities($db->f8('postname'));
-		$strasse		= PHP7 ? htmlentities($db->f('strasse')) : htmlentities($db->f8('strasse'));
-		$plz			= PHP7 ? htmlentities($db->f('plz')) : htmlentities($db->f8('plz'));
-		$ort			= PHP7 ? htmlentities($db->f('ort')) : htmlentities($db->f8('ort'));
-		$stadtteil		= PHP7 ? htmlentities($db->f('stadtteil')) : htmlentities($db->f8('stadtteil'));
-		$land			= PHP7 ? htmlentities($db->f('land')) : htmlentities($db->f8('land'));
-		$anspr_tel		= PHP7 ? htmlentities($db->f('anspr_tel')) : htmlentities($db->f8('anspr_tel'));
-		$anspr_fax		= PHP7 ? htmlentities($db->f('anspr_fax')) : htmlentities($db->f8('anspr_fax'));
-		$anspr_name		= PHP7 ? htmlentities($db->f('anspr_name')) : htmlentities($db->f8('anspr_name'));
-		$anspr_email	= PHP7 ? htmlentities($db->f('anspr_email')) : htmlentities($db->f8('anspr_email'));
-		$anspr_zeit		= PHP7 ? htmlentities($db->f('anspr_zeit')) : htmlentities($db->f8('anspr_zeit'));
-		$homepage		= PHP7 ? htmlentities($db->f('homepage')) : htmlentities($db->f8('homepage'));
-		$din_nr			= PHP7 ? htmlentities($db->f('din_nr')) : htmlentities($db->f8('din_nr'));
-		$leitung_name   = PHP7 ? htmlentities($db->f('leitung_name')) : htmlentities($db->f8('leitung_name'));
-		$gruendungsjahr = PHP7 ? intval($db->f('gruendungsjahr')) : intval($db->f8('gruendungsjahr'));
-		$rechtsform     = PHP7 ? intval($db->f('rechtsform')) : intval($db->f8('rechtsform'));
-		$pruefsiegel_seit = PHP7 ? $db->f('pruefsiegel_seit') : $db->f8('pruefsiegel_seit');
+		$suchname		= $db->fcs8('suchname');
+		$postname		= htmlentities($db->fcs8('postname'));
+		$strasse		= htmlentities($db->fcs8('strasse'));
+		$plz			= htmlentities($db->fcs8('plz'));
+		$ort			= htmlentities($db->fcs8('ort'));
+		$stadtteil		= htmlentities($db->fcs8('stadtteil'));
+		$land			= htmlentities($db->fcs8('land'));
+		$anspr_tel		= htmlentities($db->fcs8('anspr_tel'));  // Achtung, Bindestrich muss gueltig sein, sonst wird nichts angezeigt
+		$anspr_fax		= htmlentities($db->fcs8('anspr_fax'));
+		$anspr_name		= htmlentities($db->fcs8('anspr_name'));
+		$anspr_email	= htmlentities($db->fcs8('anspr_email'));
+		$anspr_zeit		= htmlentities($db->fcs8('anspr_zeit'));
+		$homepage		= htmlentities($db->fcs8('homepage'));
+		$din_nr			= htmlentities($db->fcs8('din_nr'));
+		$leitung_name   = htmlentities($db->fcs8('leitung_name'));
+		$gruendungsjahr = intval($db->f('gruendungsjahr'));
+		$rechtsform     = intval($db->f('rechtsform'));
+		$pruefsiegel_seit = $db->fcs8('pruefsiegel_seit');
 		
 		$ob = PHP7 ? new G_BLOB_CLASS($db->f('logo')) : new G_BLOB_CLASS($db->f8('logo'));
 		$logo_name		= $ob->name;
@@ -137,16 +137,19 @@ class WISY_ANBIETER_RENDERER_CLASS
 			'Link'					=> '',
 			'Leitung'				=> '',
 			'Rechtsform'			=> '',
-			'Gegründet'				=> '',
-			'Alle Angebote'			=> '',
-			'Qualitätszertifikate'	=> ''
+		    'Gegr&uuml;ndet'		=> '',
+		    'Alle Angebote'			=> '',
+		    'Qualit&auml;tszertifikate'	=> ''
 		);		
 		
 		// Name und Adresse
 		$vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_name" itemprop="name">'. ($postname? $postname : htmlentities($suchname)) . '</div>';
 		$vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_adresse" itemprop="address" itemscope itemtype="https://schema.org/PostalAddress">';
 
-		$map_URL = 'https://maps.google.com/?q=' . urlencode($strasse . ', ' . $plz . ' ' . $ort . ', ' . $land);
+		if(PHP7)
+		  $map_URL = 'https://maps.google.com/?q=' . urlencode(utf8_encode(html_entity_decode($strasse)) . ', ' . $plz . ' ' . $ort . ', ' . $land);
+		else
+		  $map_URL = 'https://maps.google.com/?q=' . urlencode($strasse . ', ' . $plz . ' ' . $ort . ', ' . $land);
 
 		if( $strasse )
 		{
@@ -268,7 +271,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		/* Gruendungsjahr */
 		if( $gruendungsjahr > 0 )
 		{
-			$vc['Gegründet'] = intval($gruendungsjahr);
+		    $vc['Gegr&uuml;ndet'] = intval($gruendungsjahr);
 		}
 		
 		/* Alle Angebote */
@@ -283,7 +286,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		$seals = $this->renderSealsOverview($anbieterId, $pruefsiegel_seit, true);			
 		if( $seals )
 		{
-			$vc['Qualitätszertifikate'] .= $seals;
+		    $vc['Qualit&auml;tszertifikate'] .= $seals;
 		}
 		
 		$ret = '';
@@ -304,20 +307,20 @@ class WISY_ANBIETER_RENDERER_CLASS
 			}
 			$ret .= '</dl>';
 		} else {
-			foreach($vc as $key => $value) {
-				if(trim($value) != '' && 
-							$key != 'Anbieternummer' &&
-							$key != 'Qualitätszertifikate' &&
-							$key != 'Fax' &&
-							$key != 'Leitung' &&
-							$key != 'Rechtsform' &&
-							$key != 'Gegründet' &&
-							$key != 'Qualitätszertifikate' &&
-							// $key != 'Website' &&
-							$key != 'Logo') {
-					$ret .= $value;
-				}
-			}
+		    foreach($vc as $key => $value) {
+		        if(trim($value) != '' &&
+		            $key != 'Anbieternummer' &&
+		            $key != 'Qualit&auml;tszertifikate' &&
+		            $key != 'Fax' &&
+		            $key != 'Leitung' &&
+		            $key != 'Rechtsform' &&
+		            $key != 'Gegr&uuml;ndet' &&
+		            $key != 'Qualit&auml;tszertifikate' &&
+		            // $key != 'Website' &&
+		            $key != 'Logo') {
+		                $ret .= $value;
+		            }
+		    }
 		}
 		
 		return $ret;
@@ -330,7 +333,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		$db->query(str_replace('__BITS__', $tag_type_bits, $sql));
 		while( $db->next_record() )
 		{
-			$tag_id = $db->f8('tag_id');
+		    $tag_id = $db->fcs8('tag_id');
 			if( is_array($addparam['filter_tag_ids']) && !in_array($tag_id, $addparam['filter_tag_ids']) ) {
 				continue;
 			}
@@ -399,7 +402,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		$db->query("SELECT stichwort FROM stichwoerter WHERE id IN (16311,2827,2826,16851,3207,1,6013,7721,7720,810701,810691,810681,810671,810661,810611,810641,810651,806441,5469,1472)");
 		$temp = ''; while( $db->next_record() ) { $temp .= ($temp==''?'':', ') . $db->quote(PHP7 ? $db->f('stichwort') : $db->f8('stichwort')); }
 		$filter_tag_ids = array();
-		if( sizeof($temp) ) {
+		if( sizeof((array) $temp) ) {
 			$db->query("SELECT tag_id FROM x_tags WHERE tag_name IN(".$temp.")");
 			while( $db->next_record() ) { $filter_tag_ids[] = $db->f('tag_id'); }
 		}
@@ -457,7 +460,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 			$sealId = $db->f('sealId');
 			$glossarId = $db->f('glossarId');
 			$glossarLink = $glossarId>0? (' <a href="' . $this->framework->getHelpUrl($glossarId) . '" class="wisy_help" title="Hilfe">i</a>') : '';
-			$title = PHP7 ? $db->f('title') : $db->f8('title');
+			$title = cs8($db->fs('title'));
 
 			$img = "files/seals/$sealId-large.gif";
 			if( @file_exists($img) )
@@ -538,13 +541,13 @@ class WISY_ANBIETER_RENDERER_CLASS
 
 		// load anbieter
 		$db->query("SELECT * FROM anbieter WHERE id=$anbieter_id");
-		if( !$db->next_record() || $db->f8('freigeschaltet')!=1 ) {
+		if( !$db->next_record() || $db->fcs8('freigeschaltet')!=1 ) {
 			$this->framework->error404(); // record does not exist/is not active, report a normal 404 error, not a "Soft 404", see  http://goo.gl/IKMnm -- fuer nicht-freigeschaltete Datensaetze, s. [here]
 		}
 		$din_nr			= htmlentities($db->f8('din_nr'));
-		$suchname		= $db->f8('suchname');
-		$typ            = intval($db->f8('typ'));
-		$firmenportraet	= trim($db->f8('firmenportraet'));
+		$suchname		= $db->fcs8('suchname');
+		$typ            = intval($db->f('typ'));
+		$firmenportraet	= trim($db->fcs8('firmenportraet'));
 		$date_created	= $db->f8('date_created');
 		$date_modified	= $db->f8('date_modified');
 		//$stichwoerter	= $this->framework->loadStichwoerter($db, 'anbieter', $anbieter_id);

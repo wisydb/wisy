@@ -83,24 +83,24 @@ class G_GEOCODE
 	    if( $GLOBALS['geocode_called'] >= 5500 ) { return array('error'=>'err_geocode_toomanycalls ('.$GLOBALS['geocode_called'].')', 'url'=>'not called'); }
 	    $GLOBALS['geocode_called']++;
 		
-		// build query parameters string
-		$param = '';
-		if( $q_arr['street']!='' || $q_arr['postalcode']!='' || $q_arr['city']!='' || $q_arr['country']!='' ) {
-			if( $q_arr['street']    !='' ) { $param .= '&street='     . urlencode(utf8_encode($q_arr['street']    )); }
-			if( $q_arr['postalcode']!='' ) { $param .= '&postalcode=' . urlencode(utf8_encode($q_arr['postalcode'])); }
-			if( $q_arr['city']      !='' ) { $param .= '&city='       . urlencode(utf8_encode($q_arr['city']      )); }
-			if( $q_arr['country']   !='' ) { $param .= '&country='    . urlencode(utf8_encode($q_arr['country']   )); }
-		}
-		else if( $q_arr['free']!='' ) {
-		    $place_search = urlencode(utf8_encode($q_arr['free']));
-		    if($this->nominatim_explicit_city && stripos($place_search, $this->nominatim_explicit_city) === FALSE && stripos($place_search, ",") === FALSE)
-		        $place_search = $place_search.",+".$this->nominatim_explicit_city;
-		        
-		    $param .= '&q=' . $place_search;
-		}
-		else {
-		  return array('error'=>'err_geocode_param', 'url'=>'none');
-		}
+	    // build query parameters string
+	    $param = '';
+	    if( $q_arr['street']!='' || $q_arr['postalcode']!='' || $q_arr['city']!='' || $q_arr['country']!='' ) {
+	        if( $q_arr['street']    !='' ) { $param .= '&street='     . urlencode(cs8($q_arr['street']    )); }
+	        if( $q_arr['postalcode']!='' ) { $param .= '&postalcode=' . urlencode(cs8($q_arr['postalcode'])); }
+	        if( $q_arr['city']      !='' ) { $param .= '&city='       . urlencode(cs8($q_arr['city']      )); }
+	        if( $q_arr['country']   !='' ) { $param .= '&country='    . urlencode(cs8($q_arr['country']   )); }
+	    }
+	    else if( $q_arr['free']!='' ) {
+	        $place_search = urlencode(cs8($q_arr['free']));
+	        if($this->nominatim_explicit_city && stripos($place_search, $this->nominatim_explicit_city) === FALSE && stripos($place_search, ",") === FALSE)
+	            $place_search = $place_search.",+".$this->nominatim_explicit_city;
+	            
+	            $param .= '&q=' . $place_search;
+	    }
+	    else {
+	        return array('error'=>'err_geocode_param', 'url'=>'none');
+	    }
 	
 		// read data - Usage Policy: https://wiki.openstreetmap.org/wiki/Nominatim_usage_policy
 		//	"Usage triggered by searches of the users are okay, 
@@ -209,7 +209,7 @@ class WISY_OPENSTREETMAP_CLASS
 			);
 			$temp = $g_countryTransl;
 			reset($temp);
-			while( list($n, $v) = each($temp) )
+			foreach($temp as $n => $v)
 			{
 				$g_countryTransl[ strtolower($v) ] = $v; // also add the english names in lower-case to the table
 			}
@@ -236,7 +236,7 @@ class WISY_OPENSTREETMAP_CLASS
 
 	function hasPoints()
 	{
-		return sizeof($this->points)>0;
+	    return sizeof((array) $this->points)>0;
 	}
 	
 	function render()
@@ -296,7 +296,7 @@ class WISY_OPENSTREETMAP_CLASS
 			}
 		}
 
-		if( $this->framework->iniRead('map.disable', '') || sizeof($markers) == 0 ) {
+		if( $this->framework->iniRead('map.disable', '') || sizeof((array) $markers) == 0 ) {
 			return '';
 		}
 		

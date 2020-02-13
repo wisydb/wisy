@@ -40,14 +40,14 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 	{
 	    $renderformData = array();
 	    
-	    if(count($records))
+	    if(count((array) $records))
 	    {
     		$renderformData['records_simple'] = $records;
 		
     		$renderformData['records_ids'] = array();
     		$renderformData['records_themen'] = array();
     		$renderformData['records_anbieter'] = array();
-    		while( list($i, $record) = each($renderformData['records_simple']['records']) )
+    		foreach($renderformData['records_simple']['records'] as $i => $record)
     		{
     			$renderformData['records_ids'][] = $record['id'];
     			$renderformData['records_themen'][] = $record['thema'];
@@ -71,17 +71,17 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
     		$this->db->query("SELECT preis, beginn, plz, ort, dauer FROM kurse_durchfuehrung, durchfuehrung WHERE primary_id IN($kursids) AND id=secondary_id AND (beginn>='".strftime("%Y-%m-%d 00:00:00")."' OR (beginn='0000-00-00 00:00:00' AND beginnoptionen>0))");
     		while( $this->db->next_record() )
     		{
-    			$renderformData['preis'] = intval($this->db->f8('preis'));
-    			if($renderformData['preis'] !== '' && $renderformData['preis'] >= 0 && $renderformData['preis'] < $renderformData['records_preis_min']) $renderformData['records_preis_min'] = $renderformData['preis'];
-
-    			$renderformData['beginn'] = strtotime($this->db->f8('beginn'));
-    			if($renderformData['beginn'] !== false && $renderformData['beginn'] > $renderformData['records_beginn_max']) $renderformData['records_beginn_max'] = $renderformData['beginn'];
-			
-    			$renderformData['records_beginn'][] = $this->db->f8('beginn');
-    			$renderformData['records_plz'][] = $this->db->f8('plz');
-    			$renderformData['records_ort'][] = $this->db->f8('ort');
-				
-				$renderformData['records_dauer'][] = $this->db->f8('dauer');
+    		    $renderformData['preis'] = intval($this->db->fcs8('preis'));
+    		    if($renderformData['preis'] !== '' && $renderformData['preis'] >= 0 && $renderformData['preis'] < $renderformData['records_preis_min']) $renderformData['records_preis_min'] = $renderformData['preis'];
+    		    
+    		    $renderformData['beginn'] = strtotime($this->db->fcs8('beginn'));
+    		    if($renderformData['beginn'] !== false && $renderformData['beginn'] > $renderformData['records_beginn_max']) $renderformData['records_beginn_max'] = $renderformData['beginn'];
+    		    
+    		    $renderformData['records_beginn'][] = $this->db->fcs8('beginn');
+    		    $renderformData['records_plz'][] = $this->db->fcs8('plz');
+    		    $renderformData['records_ort'][] = $this->db->fcs8('ort');
+    		    
+    		    $renderformData['records_dauer'][] = $this->db->fcs8('dauer');
     		}
 			$this->db->free();
     		$renderformData['records_plz'] = array_unique($renderformData['records_plz']);
@@ -98,7 +98,7 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
     		$this->db->query("SELECT DISTINCT t.tag_name as tagname FROM x_kurse_tags k LEFT JOIN x_tags t ON k.tag_id=t.tag_id WHERE k.kurs_id IN($kursids)");
     		while( $this->db->next_record() )
     		{
-				$renderformData['records_taglist'][] = $this->db->f8('tagname');
+    		    $renderformData['records_taglist'][] = $this->db->fcs8('tagname');
 			}
 			$this->db->free();
         }
@@ -245,7 +245,7 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 		return $renderformData;
 	}
 	
-	function renderForm($q, $records, $hlevel=1, $number_of_results_string='')
+	function renderForm($q = null, $records = null, $hlevel=1, $number_of_results_string='')
 	{
 	    
 	    echo '<div id="wisyr_filterform" class="wisyr_filterform">';
@@ -302,6 +302,7 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 	    {
 	        echo '		<option value="' . $key . '"';
 	        if($key == $renderformData['order']) echo ' selected="selected"';
+	        echo ' class="order_'.$key.'"';
 	        echo '>' . $value . '</option>';
 	    }
 	    echo '	</select>';
@@ -455,7 +456,7 @@ class WISY_FILTERMENU_ITEM
                 if(isset($input['suffix'])) $fieldsuffix = $input['suffix'];
                 if(isset($input['clearbutton']) && $input['clearbutton'] == 1) $clearbutton = true;
         
-                if(isset($input['options']) && count($input['options'])) {
+                if(isset($input['options']) && count((array) $input['options'])) { // array must be cast(!), bc. values with '.' reduces no. of elements
                     $filtervalues = $input['options'];
                 } else if(isset($input['stichwort'])) {
                     $filtervalues = $this->getStichwort($input['stichwort'], $fieldlabel);
@@ -477,7 +478,6 @@ class WISY_FILTERMENU_ITEM
                     case 'radiolinklist':
                         
                         foreach($filtervalues as $value => $label) {
-                            $value = mb_detect_encoding($value, 'UTF-8', true) ? $value : utf8_encode($value);
                             
                             // Funktioniert auch fuer Anbieter?!
                             $processed_value = $this->getProcessedValue($function, $value, $label);
@@ -509,7 +509,6 @@ class WISY_FILTERMENU_ITEM
                     case 'radiobuttons':
                         
                         foreach($filtervalues as $value => $label) {
-                            $value = mb_detect_encoding($value, 'UTF-8', true) ? $value : utf8_encode($value);
                             
                             $processed_value = $this->getProcessedValue($function, $value, $label);
                             $checked = $this->getCheckedValue($function, $value, $label, $processed_value, $fieldvalue, $fieldname);
@@ -541,7 +540,6 @@ class WISY_FILTERMENU_ITEM
                         
                         $ret .= '<select name="filter_' . $fieldname . '[]" class="wisyr_selectmenu">';
                         foreach($filtervalues as $value => $label) {
-                            $value = mb_detect_encoding($value, 'UTF-8', true) ? $value : utf8_encode($value);
                             
                             
                             $processed_value = $this->getProcessedValue($function, $value, $label);
@@ -568,7 +566,7 @@ class WISY_FILTERMENU_ITEM
                             $processed_value = $this->getProcessedValue($function, $value, $label);
                             $checked = $this->getCheckedValue($function, $value, $label, $processed_value, $fieldvalue, $fieldname);
                             
-                            // echo "<script>console.log('Function: ".$function.", Value: ".$value.", Label: ".$label.", Processed Value: ".$processed_value.", Fieldvalue: ".mysql_real_escape_string(print_r($this->renderformData, true)).", Fieldname: ".$fieldname."');</script>";
+                            // echo "<script>console.log('Function: ".$function.", Value: ".$value.", Label: ".$label.", Processed Value: ".$processed_value.", Fieldvalue: ".$this->framework->mysql_escape_mimic(print_r($this->renderformData, true)).", Fieldname: ".$fieldname."');</script>";
                             // echo "<script>console.log('checked: ".$checked."');</script>";
                             
                             $disabled = $this->getDisabledValue($function, $value, $label, $processed_value, $fieldvalue, $fieldname);
@@ -806,7 +804,7 @@ class WISY_FILTERMENU_ITEM
 	        }
 	        while( $db->next_record() )
 	        {
-	            $stichw = htmlspecialchars($db->f8('stichwort'));
+	            $stichw = htmlspecialchars($db->fcs8('stichwort'));
 	            $stichw = trim(strtr($stichw, array(': '=>' ', ':'=>' ', ', '=>' ', ','=>' ')));
 	            
 	            $ret[ $stichw ] = $stichw;
@@ -824,7 +822,7 @@ class WISY_FILTERMENU_ITEM
 	        $db->query("SELECT stichwort FROM stichwoerter WHERE id='$stichwort' LIMIT 1");
 	        while( $db->next_record() )
 	        {
-	            $stichw = htmlspecialchars($db->f8('stichwort'));
+	            $stichw = htmlspecialchars($db->fcs8('stichwort'));
 	            $stichw = trim(strtr($stichw, array(': '=>' ', ':'=>' ', ', '=>' ', ','=>' ')));
 	            
 	            $ret[ $stichw ] = strlen($label) ? $label : $stichw;
@@ -859,7 +857,7 @@ class WISY_FILTERMENU_CLASS
 	    
 	    $allPrefix = $this->prefix . '.';
 	    $allPrefixLen = strlen($allPrefix);
-	    while( list($key, $value) = each($wisyPortalEinstellungen) )
+	    foreach($wisyPortalEinstellungen as $key => $value)
 	    {
 	        
 	        if( substr($key, 0, $allPrefixLen)==$allPrefix )
@@ -877,6 +875,20 @@ class WISY_FILTERMENU_CLASS
 	            $elements = explode(".", $levels);
 	            if(count($elements) > 1) {
 	                $last = &$newStructure[ $elements[0] ];
+	                
+	                // merge values that where separated falsely for containing '.'
+	                if( ($optionskey = array_search ("options", $elements)) !== FALSE) {
+	                    for($k = 0; $k < count($elements); $k++) {
+	                        if($k > ($optionskey+1)) {
+	                            $elements[($optionskey+1)] .= '.'.$elements[$k]; // merge elements (values) after option, bc. = one value separated by original '.'
+	                            $elements[$k] = ""; // don't unset while in loop
+	                        }
+	                    }
+	                }
+	                
+	                // removing empty elements causes counting mismatch at other places
+	                $elements = array_filter($elements); // remove empty elements
+	                
 	                $wasNumeric = false;
 	                $wasOption = false;
 	                foreach($elements as $k => $el) {
@@ -895,12 +907,12 @@ class WISY_FILTERMENU_CLASS
 	                }
 	                if($isNumeric && !$wasOption) {
 	                    // Add title if parent was not "options"
-	                    $last['title'] = utf8_encode($value);
+	                    $last['title'] = cs8($value);
 	                } else {
-	                    $last = utf8_encode($value);
+	                    $last = cs8($value);
 	                }
 	            } else {
-	                $newStructure[$levels]['title'] = utf8_encode($value);
+	                $newStructure[$levels]['title'] = cs8($value);
 	            }
 	            if($newStructure) {
 	                $filterStructure = array_replace_recursive($filterStructure, $newStructure);

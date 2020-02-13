@@ -34,33 +34,33 @@ class WISY_KURS_RENDERER_CLASS
 		if( !$db->next_record() )
 			$this->framework->error404();
 		
-		$title 				= PHP7 ? $db->f('titel') : $db->f8('titel');
-		$originaltitel		= PHP7 ? $db->f('org_titel') : $db->f8('org_titel');;
-		$freigeschaltet 	= intval($db->f('freigeschaltet'));
-		$beschreibung		= PHP7 ? $db->f('beschreibung') : $db->f8('beschreibung');
+		$title 				= $db->fcs8('titel');
+		$originaltitel		= $db->fcs8('org_titel');;
+		$freigeschaltet 	= intval($db->fcs8('freigeschaltet'));
+		$beschreibung		= $db->fcs8('beschreibung');
 		$anbieterId			= intval($db->f('anbieter'));
 		$date_created		= $db->f('date_created');
 		$date_modified		= $db->f('date_modified');
-		$bu_nummer 			= PHP7 ? $db->f('bu_nummer') : $db->f8('bu_nummer');
-		$pflege_pweinst		= PHP7 ? intval($db->f('pflege_pweinst')) : intval($db->f8('pflege_pweinst'));
-		
+		$bu_nummer 			= $db->fcs8('bu_nummer');
+		$pflege_pweinst		= intval($db->fcs8('pflege_pweinst'));
+			
 		$this->filter_foreign_k($db, $wisyPortalId, $kursId, $date_created);
-		
-		$anbieter_name = PHP7 ? $db->f('suchname') : $db->f8('suchname');
+			
+		$anbieter_name = $db->fcs8('suchname');
 		$anbieterdetails['suchname'] = $anbieter_name;
-		$anbieterdetails['postname'] = PHP7 ? $db->f('postname') : $db->f8('postname');
-		$anbieterdetails['strasse'] = PHP7 ? $db->f('strasse') : $db->f8('strasse');
-		$anbieterdetails['plz'] = PHP7 ? $db->f('plz') : $db->f8('plz');
-		$anbieterdetails['ort'] = PHP7 ? $db->f('ort') : $db->f8('ort');
-		$anbieterdetails['stadtteil'] = PHP7 ? $db->f('stadtteil') : $db->f8('stadtteil');
-		$anbieterdetails['land'] = PHP7 ? $db->f('land') : $db->f8('land');
-		$anbieterdetails['anspr_name'] = PHP7 ? $db->f('anspr_name') : $db->f8('anspr_name');
-		$anbieterdetails['anspr_zeit'] = PHP7 ? $db->f('anspr_zeit') : $db->f8('anspr_zeit');
-		$anbieterdetails['anspr_tel'] = PHP7 ? $db->f('anspr_tel') : $db->f8('anspr_tel');
-		$anbieterdetails['anspr_fax'] = PHP7 ? $db->f('anspr_fax') : $db->f8('anspr_fax');
-		$anbieterdetails['anspr_email'] = PHP7 ? $db->f('anspr_email') : $db->f8('anspr_email');
+		$anbieterdetails['postname'] = $db->fcs8('postname');
+		$anbieterdetails['strasse'] = $db->fcs8('strasse');
+		$anbieterdetails['plz'] = $db->fcs8('plz');
+		$anbieterdetails['ort'] = $db->fcs8('ort');
+		$anbieterdetails['stadtteil'] = $db->fcs8('stadtteil');
+		$anbieterdetails['land'] = $db->fcs8('land');
+		$anbieterdetails['anspr_name'] = $db->fcs8('anspr_name');
+		$anbieterdetails['anspr_zeit'] = $db->fcs8('anspr_zeit');
+		$anbieterdetails['anspr_tel'] = $db->fcs8('anspr_tel');
+		$anbieterdetails['anspr_fax'] = $db->fcs8('anspr_fax');
+		$anbieterdetails['anspr_email'] = $db->fcs8('anspr_email');
 		$anbieterdetails['typ'] = $db->f('typ');
-		    
+			
 		$record				= $db->Record;
 		
 		// #enrichtitles
@@ -73,7 +73,7 @@ class WISY_KURS_RENDERER_CLASS
 		$durchfClass =& createWisyObject('WISY_DURCHF_CLASS', $this->framework);
 		$durchfuehrungenIds = $durchfClass->getDurchfuehrungIds($db, $kursId, $showAllDurchf);	// bereits PLZ-ueberprueft
 		
-		if(sizeof($durchfuehrungenIds) == 0)
+		if(sizeof((array) $durchfuehrungenIds) == 0)
 		    $richtext = false;	// In dem fall kann der Richtext (EducationEvent) nicht vollstaendig sein und kann/sollte so nicht beworben werden.
 		    
 		if(intval(trim($this->framework->iniRead('seo.enrich_titles'))) == 1) {
@@ -83,8 +83,8 @@ class WISY_KURS_RENDERER_CLASS
     		      if( $db->next_record() ) {
     		          $df = $db->Record;
     		          if(trim($df['ort']) != "") {
-    		              $ort = PHP7 ? $df['ort'] : utf8_encode($df['ort']);	// $df['plz'], $df['strasse'], $df['land'], $df['stadtteil'], $df['beginn'],
-        		      }
+    		              $ort = $db->fcs8($df['ort']);	// $df['plz'], $df['strasse'], $df['land'], $df['stadtteil'], $df['beginn'],
+    		          }
     		      }
 		  }
 		}
@@ -181,7 +181,7 @@ class WISY_KURS_RENDERER_CLASS
 			
 				// ... Stichwoerter
 				$tags = $this->framework->loadStichwoerter($db, 'kurse', $kursId);
-				if( sizeof($tags) )
+				if( sizeof((array) $tags) )
 				{
 					$rows .= $this->framework->writeStichwoerter($db, 'kurse', $tags);
 				}
@@ -224,14 +224,14 @@ class WISY_KURS_RENDERER_CLASS
 				$durchfClass =& createWisyObject('WISY_DURCHF_CLASS', $this->framework);
 				$durchfuehrungenIds = $durchfClass->getDurchfuehrungIds($db, $kursId, $showAllDurchf);
 				echo '<p>';
-					if( sizeof($durchfuehrungenIds)==0 ) {
+				    if( sizeof((array) $durchfuehrungenIds)==0 ) {
 						echo $this->framework->iniRead('durchf.msg.keinedf', 'F&uuml;r dieses Angebot ist momentan keine Zeit und kein Ort bekannt.');
 					}
-					else if( sizeof($durchfuehrungenIds) == 1 ) {
+					else if( sizeof((array) $durchfuehrungenIds) == 1 ) {
 						echo 'F&uuml;r dieses Angebot ist momentan eine Zeit bzw. Ort bekannt:';
 					}
 					else {
-						echo 'F&uuml;r dieses Angebot sind momentan ' .sizeof($durchfuehrungenIds). ' Zeiten bzw. Orte bekannt:';
+					    echo 'F&uuml;r dieses Angebot sind momentan ' .sizeof((array) $durchfuehrungenIds). ' Zeiten bzw. Orte bekannt:';
 					}
 				echo '</p>';
 		
@@ -239,7 +239,7 @@ class WISY_KURS_RENDERER_CLASS
 				$this->framework->map =& createWisyObject('WISY_OPENSTREETMAP_CLASS', $this->framework);
 		
 				// Durchfuehrungen ausgeben
-				if( sizeof($durchfuehrungenIds) )
+				if( sizeof((array) $durchfuehrungenIds) )
 				{
                     
 					echo '<table class="wisy_list wisyr_durchfuehrungen"><thead>';
@@ -260,7 +260,7 @@ class WISY_KURS_RENDERER_CLASS
 						*/
 					
 						$renderedDurchf = 0;
-						for( $d = 0; $d < sizeof($durchfuehrungenIds); $d++ )
+						for( $d = 0; $d < sizeof((array) $durchfuehrungenIds); $d++ )
 						{
 							$class = ($d%2)==1? ' class="wisy_even"' : '';
 							echo "  <tr$class>\n";
@@ -285,7 +285,7 @@ class WISY_KURS_RENDERER_CLASS
 						}
 					echo '</table>';
 				
-					$allAvailDurchfCnt = sizeof($durchfClass->getDurchfuehrungIds($db, $kursId, true));
+					$allAvailDurchfCnt = sizeof((array) $durchfClass->getDurchfuehrungIds($db, $kursId, true));
 					if( $allAvailDurchfCnt > $renderedDurchf )
 					{
 						$missinglDurchfCnt = $allAvailDurchfCnt-$renderedDurchf;
@@ -308,7 +308,7 @@ class WISY_KURS_RENDERER_CLASS
 			    $cacheKey = "sw_cloud_p".$wisyPortalId."_k".$kursId;
 			    $this->dbCache =& createWisyObject('WISY_CACHE_CLASS', $this->framework, array('table'=>'x_cache_tagcloud', 'itemLifetimeSeconds'=>60*60*24));
 			    
-			    if( ($temp=$this->dbCache->lookup($cacheKey))!='' )
+			    if( ($temp=utf8_decode($this->dbCache->lookup($cacheKey)))!='' )
 			    {
 			        $tag_cloud = (PHP7 ? html_entity_decode($temp) : html_entity_decode($temp))." <!-- tag cloud from cache -->";
 			    }
@@ -322,7 +322,7 @@ class WISY_KURS_RENDERER_CLASS
 			        
 			        for($i = 0; $i < count($tags); $i++)
 			        {
-			            $tag = PHP7 ? $tags[$i] : array_map("utf8_encode", $tags[$i]);
+			            $tag = $tags[$i];
 			            
 			            if($this->framework->iniRead('sw_cloud.kurs_gewichten', 0)) {
 			                $tag_freq = $this->framework->getTagFreq($db, $tag['stichwort']);
@@ -331,24 +331,18 @@ class WISY_KURS_RENDERER_CLASS
 			            
 			            if($tag['eigenschaften'] != $filtersw && $tag_freq > 0); {
 			                if($this->framework->iniRead('sw_cloud.kurs_stichwoerter', 1)) {
-			                    $tag_stichwort = $tag['stichwort'];
-			                    $tag_cloud .= '<span class="sw_raw typ_'.$tag['eigenschaften'].'" data-weight="'.$weight.'"><a href="/?q='.urlencode($tag_stichwort).'">'.$tag_stichwort.'</a></span>, ';
+			                    $tag_stichwort = cs8($tag['stichwort']);
+			                    $tag_cloud .= '<span class="sw_raw typ_'.$tag['eigenschaften'].'" data-weight="'.$weight.'"><a href="/search?q='.urlencode($tag_stichwort).'">'.$tag_stichwort.'</a></span>, ';
 			                }
 			                
-			                if($this->framework->iniRead('sw_cloud.kurs_synonyme', 0)) {
-			                    $tags = $this->framework->writeDerivedTags($this->framework->loadDerivedTags($db, $tag['id'], $distinct_tags, "Synonyme"), $filtersw, "Synonym", $tag['stichwort']);
-			                    $tag_cloud .= $tags;
-			                }
-			                
-			                if($this->framework->iniRead('sw_cloud.kurs_oberbegriffe', 1)) {
-			                    $tags = $this->framework->writeDerivedTags($this->framework->loadDerivedTags($db, $tag['id'], $distinct_tags, "Oberbegriffe"), $filtersw, "Oberbegriff", $tag['stichwort']);
-			                    $tag_cloud .= $tags;
-			                }
-			                
-			                if($this->framework->iniRead('sw_cloud.kurs_unterbegriffe', 0)) {
-			                    $tags .= $this->framework->writeDerivedTags($this->framework->loadDerivedTags($db, $tag['id'], $distinct_tags, "Unterbegriffe"), $filtersw, "Unterbegriff", $tag['stichwort']);
-			                    $tag_cloud .= $tags;
-			                }
+			                if($this->framework->iniRead('sw_cloud.kurs_synonyme', 0))
+			                    $tag_cloud .= $this->framework->writeDerivedTags($this->framework->loadDerivedTags($db, $tag['id'], $distinct_tags, "Synonyme"), $filtersw, "Synonym", cs8($tag['stichwort']));
+			                    
+			                if($this->framework->iniRead('sw_cloud.kurs_oberbegriffe', 1))
+			                    $tag_cloud .= $this->framework->writeDerivedTags($this->framework->loadDerivedTags($db, $tag['id'], $distinct_tags, "Oberbegriffe"), $filtersw, "Oberbegriff", cs8($tag['stichwort']));
+			                        
+			                if($this->framework->iniRead('sw_cloud.kurs_unterbegriffe', 0))
+			                    $tag_cloud .= $this->framework->writeDerivedTags($this->framework->loadDerivedTags($db, $tag['id'], $distinct_tags, "Unterbegriffe"), $filtersw, "Unterbegriff", cs8($tag['stichwort']));
 			            }
 			            
 			        } // end: for
@@ -356,7 +350,7 @@ class WISY_KURS_RENDERER_CLASS
 			        $tag_cloud = trim($tag_cloud, ", ");
 			        $tag_cloud .= '</div>';
 			        
-			        $this->dbCache->insert($cacheKey, htmlentities($tag_cloud));
+			        $this->dbCache->insert($cacheKey, $tag_cloud);
 			    }
 			    
 			    echo $tag_cloud;
