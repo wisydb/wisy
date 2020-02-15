@@ -32,25 +32,26 @@ class WISY_MENU_ITEM
 	    $liClass = '';
 	    if( sizeof((array) $this->children) ) $liClass = ' class="dir '.($this->title == "OhneName" ? "ohneName" : "").'"';
 	    elseif($this->title == "OhneName") $liClass = ' class="ohneName"';
-		
+	    
 	    $ret = "<li$liClass>";
 	    if( cs8($this->url) ) $ret .= '<a href="'.htmlspecialchars( cs8($this->url) ). /*convert "&" in URLs to "&amp;" in HTML*/ // ! y
-	    '"'.$this->aparam.'>'; 
-			$ret .= $this->title;
-			if( $this->url ) $ret .= '</a>';
-
-			if( sizeof((array) $this->children) )
-			{
-			    $ret .= '<ul>';
-			    for( $i = 0; $i < sizeof((array) $this->children); $i++ )
-			    {
-			        $ret .= $this->children[$i]->getHtml();
-			    }
-			    
-			
-		$ret .= '</li>';
-		
-		return $ret;
+	    '"'.$this->aparam.'>';
+	    $ret .= $this->title;
+	    if( $this->url ) $ret .= '</a>';
+	    
+	    if( sizeof((array) $this->children) )
+	    {
+	        $ret .= '<ul>';
+	        for( $i = 0; $i < sizeof((array) $this->children); $i++ )
+	        {
+	            $ret .= $this->children[$i]->getHtml();
+	        }
+	        $ret .= '</ul>';
+	    }
+	    
+	    $ret .= '</li>';
+	    
+	    return $ret;
 	}
 };
 

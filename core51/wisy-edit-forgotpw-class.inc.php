@@ -84,7 +84,7 @@ Nur WENN Sie ein neues Passwort beantragt haben, klicken Sie bitte auf den folge
 Mit freundlichen Grüßen,
 __NAME__";
 						
-						$f_subject  = $this->replaceForgotPwPlaceholders($f_subject);
+						$f_subject  = $this->replaceForgotPwPlaceholders(PHP7 ? $f_subject : utf8_decode($f_subject));
 						$f_mailbody = $this->replaceForgotPwPlaceholders($f_mailbody);
 						
 						$logwriter->addData('email', $f_email);

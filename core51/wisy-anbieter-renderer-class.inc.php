@@ -118,7 +118,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		$rechtsform     = intval($db->f('rechtsform'));
 		$pruefsiegel_seit = $db->fcs8('pruefsiegel_seit');
 		
-		$ob = PHP7 ? new G_BLOB_CLASS($db->f('logo')) : new G_BLOB_CLASS($db->f8('logo'));
+		$ob = new G_BLOB_CLASS(cs8($db->fs('logo')));
 		$logo_name		= $ob->name;
 		$logo_w			= $ob->w;
 		$logo_h			= $ob->h;
@@ -178,7 +178,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 			$vc['Adresse'] .= ' <span class="wisyr_anbieter_ort" itemprop="addressLocality">' . $ort . '</span>';
 
 		if( $stadtteil ) {
-			$vc['Adresse'] .= ($plz||$ort)? '-' : '';
+			$vc['Adresse'] .= ($plz||$ort)? ' - ' : '';
 			$vc['Adresse'] .= ' <span class="wisyr_anbieter_stadtteil">' . $stadtteil . '</span>';
 		}
 
@@ -262,7 +262,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 			$codes_array = explode('###', $GLOBALS['codes_rechtsform']);
 			for( $c = 0; $c < sizeof($codes_array); $c += 2 ) {
 				if( $codes_array[$c] == $rechtsform ) {
-				    $vc['Rechtsform'] = PHP7 ? $codes_array[$c+1] : utf8_encode($codes_array[$c+1]);
+				    $vc['Rechtsform'] = cs8($codes_array[$c+1]);
 					break;
 				}
 			}
@@ -339,9 +339,9 @@ class WISY_ANBIETER_RENDERER_CLASS
 			}
 			
 			$tag_name = $db->f('tag_name');
-			$tag_type = PHP7 ? $db->f('tag_type') : $db->f8('tag_type');
-			$tag_descr = PHP7 ? $db->f('tag_descr') : $db->f8('tag_descr');
-			$tag_help = PHP7 ? $db->f('tag_help') : $db->f8('tag_help');
+			$tag_type = cs8($db->fs('tag_type'));
+			$tag_descr = cs8($db->fs('tag_descr'));
+			$tag_help = cs8($db->fs('tag_help'));
 			
 			$freq = $this->tagsuggestorObj->getTagFreq(array($this->tag_suchname_id, $tag_id));
 			
@@ -400,7 +400,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 
 		$db = new DB_Admin;
 		$db->query("SELECT stichwort FROM stichwoerter WHERE id IN (16311,2827,2826,16851,3207,1,6013,7721,7720,810701,810691,810681,810671,810661,810611,810641,810651,806441,5469,1472)");
-		$temp = ''; while( $db->next_record() ) { $temp .= ($temp==''?'':', ') . $db->quote(PHP7 ? $db->f('stichwort') : $db->f8('stichwort')); }
+		$temp = ''; while( $db->next_record() ) { $temp .= ($temp==''?'':', ') . $db->quote(cs8($db->fs('stichwort'))); }
 		$filter_tag_ids = array();
 		if( sizeof((array) $temp) ) {
 			$db->query("SELECT tag_id FROM x_tags WHERE tag_name IN(".$temp.")");
@@ -542,19 +542,19 @@ class WISY_ANBIETER_RENDERER_CLASS
 		// load anbieter
 		$db->query("SELECT * FROM anbieter WHERE id=$anbieter_id");
 		if( !$db->next_record() || $db->fcs8('freigeschaltet')!=1 ) {
-			$this->framework->error404(); // record does not exist/is not active, report a normal 404 error, not a "Soft 404", see  http://goo.gl/IKMnm -- fuer nicht-freigeschaltete Datensaetze, s. [here]
+		    $this->framework->error404(); // record does not exist/is not active, report a normal 404 error, not a "Soft 404", see  http://goo.gl/IKMnm -- fuer nicht-freigeschaltete Datensaetze, s. [here]
 		}
-		$din_nr			= htmlentities($db->f8('din_nr'));
+		$din_nr			= htmlentities(cs8($db->fs('din_nr')));
 		$suchname		= $db->fcs8('suchname');
 		$typ            = intval($db->f('typ'));
 		$firmenportraet	= trim($db->fcs8('firmenportraet'));
-		$date_created	= $db->f8('date_created');
-		$date_modified	= $db->f8('date_modified');
+		$date_created	= cs8($db->fs('date_created'));
+		$date_modified	= cs8($db->fs('date_modified'));
 		//$stichwoerter	= $this->framework->loadStichwoerter($db, 'anbieter', $anbieter_id);
-		$vollst			= $db->f8('vollstaendigkeit');
-		$anbieter_settings = explodeSettings($db->f8('settings'));
+		$vollst			= cs8($db->fs('vollstaendigkeit'));
+		$anbieter_settings = explodeSettings(cs8($db->fs('settings')));
 		
-		$ob = new G_BLOB_CLASS($db->f8('logo'));
+		$logo = cs8($db->fs('logo'));
 		$logo_name		= $ob->name;
 		$logo_w			= $ob->w;
 		$logo_h			= $ob->h;
@@ -567,9 +567,10 @@ class WISY_ANBIETER_RENDERER_CLASS
 		if( !$db->next_record() || in_array($db->f('freigeschaltet'), $freigeschaltet404) ) {
 		    $this->framework->error404(); // record does not exist, reporta normal 404 error, not a "Soft 404", see  http://goo.gl/IKMnm -- für nicht-freigeschaltete Datensätze, s. [here]
 		}
-		$anbieter_suchname = PHP7 ? $db->f('suchname') : $db->f8('suchname');
-		$anbieter_ort = PHP7 ? $db->f('ort') : $db->f8('ort');
-		$anbieter_portraet = PHP7 ? $db->f('firmenportraet') : $db->f8('firmenportraet');
+		$anbieter_suchname = cs8($db->fs('suchname'), "UTF-8");
+		
+		$anbieter_ort = cs8($db->fs('ort'), "UTF-8");
+		$anbieter_portraet = cs8($db->fs('firmenportraet'), "UTF-8");
 		
 		// promoted?
 		if( intval($_GET['promoted']) > 0 )

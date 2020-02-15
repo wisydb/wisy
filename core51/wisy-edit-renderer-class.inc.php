@@ -2494,6 +2494,28 @@ class WISY_EDIT_RENDERER_CLASS
 		return $hash; // AGB-hash to confirm
 	}
 	
+	private function _dataprotection_get_hash()
+	{
+	    $dataprotection_glossar_entry = intval($this->framework->iniRead('useredit.datenschutz', 0));
+	    if( $dataprotection_glossar_entry <= 0 )
+	        return '';
+	        
+	        $db = new DB_Admin;
+	        $db->query("SELECT erklaerung FROM glossar WHERE id=".$dataprotection_glossar_entry);
+	        if( !$db->next_record() )
+	            return ''; // DP record does not exist
+	            
+	            $temp = $db->f8('erklaerung');
+	            if( $temp == '' )
+	                return ''; // DP are empty
+	                
+	                $temp = strtr($temp, "\n\r\t", "   "); $temp = str_replace(' ', '', $temp);
+	                $hash = md5($temp);
+	                
+	                // $db->close();
+	                return $hash;
+	}
+	
 	private function _agb_reading_required()
 	{
 		if( $_SESSION['_agb_ok_for_this_session'] )
@@ -2543,14 +2565,35 @@ class WISY_EDIT_RENDERER_CLASS
 		$db->next_record();
 		$begriff = $db->fcs8('begriff');
 		$erklaerung = $db->fcs8('erklaerung');
+		
+		$dataprotection_glossar_entry = intval($this->framework->iniRead('useredit.datenschutz', 0));
+		if($dataprotection_glossar_entry > 0) {
+		    $db = new DB_Admin;
+		    $db->query("SELECT begriff, erklaerung FROM glossar WHERE id=".$dataprotection_glossar_entry);
+		    $db->next_record();
+		    $begriff_dataprotection = $db->f8('begriff');
+		    $erklaerung_dataprotection = $db->f8('erklaerung');
+		}
 
 		echo $this->framework->getPrologue(array('title'=>$begriff, 'bodyClass'=>'wisyp_edit'));
+		
+    		echo '<h1>Zur Bearbeitung Ihrer Daten ist Ihre Zustimmung zu den AGB'.($erklaerung_dataprotection ? ' und der Datenschutzerkl&auml;rung' : '').' n&ouml;tig.</h1>';
+    		echo '<h2>Grund: &Auml;nderung seit Ihrem letzten Login oder Ihr erster Login.</h2>';
+    		echo '<br><br><br>';
 			
 			echo '<a name="top"></a>'; // make [[toplinks()]] work
 			echo '<h1>' . htmlspecialchars($begriff) . '</h1>';
 			$wiki2html =& createWisyObject('WISY_WIKI2HTML_CLASS', $this->framework);
 			$wiki2html->forceBlankTarget = true;
 			echo $wiki2html->run($erklaerung);
+			
+			if($dataprotection_glossar_entry > 0 && $erklaerung_dataprotection) {
+			    echo '<hr><hr>';
+			    echo '<h1>' . htmlspecialchars($begriff_dataprotection) . '</h1><br><br>';
+			    $wiki2html =& createWisyObject('WISY_WIKI2HTML_CLASS', $this->framework);
+			    $wiki2html->forceBlankTarget = true;
+			    echo $wiki2html->run($erklaerung_dataprotection);
+			}
 			
 			$fwd = 'search';
 			if( $_REQUEST['action'] == 'ek' ) {
@@ -2560,13 +2603,14 @@ class WISY_EDIT_RENDERER_CLASS
 				$fwd = $_REQUEST['fwd'];
 			}
 			
-			echo '<form action="edit" method="post">';
-				echo '<input type="hidden" name="fwd" value="'.htmlspecialchars($fwd).'" />';
-				echo '<input type="hidden" name="agb_hash" value="'.htmlspecialchars($this->_agb_get_hash()).'" />';
-				echo '<input type="submit" name="agb_accepted" value="OK - Ich stimme allen Bedingungen ZU" />';
-				echo ' &nbsp; ';
-				echo '<input type="submit" name="agb_not_accepted" value="Abbruch - Ich stimme einigen Bedingungen NICHT ZU" />';
-			echo '</form>';
+			echo '<br><br><form action="edit" method="post">';
+    			echo '<input type="hidden" name="fwd" value="'.htmlspecialchars($fwd).'" />';
+    			echo '<input type="hidden" name="agb_hash" value="'.htmlspecialchars($this->_agb_get_hash()).htmlspecialchars($this->_dataprotection_get_hash()).'" />';
+    			echo 'Ich habe die AGB '.($erklaerung_dataprotection ? 'und die Datenschutzerkl&auml;rung ' : '').'gelesen:<br>';
+    			echo '<input type="submit" name="agb_accepted" value="OK - Ich stimme den AGB'.($erklaerung_dataprotection ? 'und der Datenschutzerkl&auml;rung ZU' : '').'" style="font-weight: bold; font-size: 1em;"/>';
+    			echo ' &nbsp; &nbsp; ';
+    			echo '<input type="submit" name="agb_not_accepted" value="Abbruch - Ich stimme einigen Bedingungen NICHT ZU"  style="font-weight: bold; font-size: 1em;"/>';
+			echo '</form><br><br>';
 			
 			if( $_SESSION['_login_as'] ) {
 			    echo '<p style="background:red; color:white; padding:1em; "><b>Achtung:</b> Sie haben sich als Redakteur im Namen eines Anbieters,

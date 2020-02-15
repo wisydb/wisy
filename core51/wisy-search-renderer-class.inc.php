@@ -1041,8 +1041,8 @@ class WISY_SEARCH_RENDERER_CLASS
 			    if($sqlCount == 1 && $this->framework->iniRead('anbietersuche.redirect', false)  && strpos($_GET['q'], 'volltext') === FALSE  && strpos($_GET['qs'], 'volltext') === FALSE) {
 			    ?>
 					<script>
-						/* redirect to Anbieter if only 1 in search result */
-						window.location.href = '/a<?php echo $record['id']."?qs=".$_GET['qs']."&q=".$_GET['q']."&qf=".$_GET['qf']."&anbieterRedirect=1". (isset($_GET['qtrigger']) ? '&qtrigger='.$_GET['qtrigger'] : '') . (isset($_GET['force']) ? '&force='.$_GET['force'] : ''); ?>';
+							/* redirect to Anbieter if only 1 in search result */
+							window.location.href = '/a<?php echo $record['id']."?qs=".urlencode($_GET['qs'])."&q=".urlencode($_GET['q'])."&qf=".urlencode($_GET['qf'])."&anbieterRedirect=1". (isset($_GET['qtrigger']) ? '&qtrigger='.$_GET['qtrigger'] : '') . (isset($_GET['force']) ? '&force='.$_GET['force'] : ''); ?>';
 					</script>
 				<?php
 				exit;
@@ -1125,7 +1125,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		
 		if($info['changed_query']) echo '<b>Hinweis:</b> Der Suchauftrag wurde abge&auml;ndert in <i><a href="'.$this->framework->getUrl('search', array('q'=>$info['changed_query'])).'">'.htmlspecialchars(cs8($info['changed_query'])).'</a></i>';
 		
-		// Hinweis anpassen je nachdem ob Filter ausgew√§hlt sind
+		// output different msgs. depending on wether filters have been selected
 		if(count($this->framework->tokensQF) == 0)
 		{
 		    // Leere Suche ohne gesetzte Filter
@@ -1238,7 +1238,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		}
 		
 		// We need original chars for searches. Check Filter-class constructTokens function for details. Also: https://www.php.net/manual/de/function.htmlspecialchars.php
-		$queryString = str_replace(array("&amp;", "&quot;", "&#039;", "&apos;", "&lt;", "&gt;"), array("&", '"', "'", "'", "<", ">"), $queryString); 
+		// $queryString = str_replace(array("&amp;", "&quot;", "&#039;", "&apos;", "&lt;", "&gt;"), array("&", '"', "'", "'", "<", ">"), $queryString); 
 		
 		$redirect = false;
 	

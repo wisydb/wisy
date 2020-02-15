@@ -277,7 +277,7 @@ class WISY_FILTER_CLASS
 		}
 		
 		$abschlussarten = $this->getSpezielleStichw(16);
-		if( sizeof((array) $unterrichtsarten) > 1 )
+		if( sizeof((array) $abschlussarten) > 1 )
 		{
 		    $this->presets['abschlussarten'] = array
 		    (
@@ -287,9 +287,9 @@ class WISY_FILTER_CLASS
 		        'options'	=>	$abschlussarten
 		    );
 		}
-
+		
 		$unterrichtsarten = $this->getSpezielleStichw(32768);
-		if( sizeof($unterrichtsarten) > 1 )
+		if( sizeof((array) $unterrichtsarten) > 1 )
 		{
 			$this->presets['unterrichtsart'] = array
 				(

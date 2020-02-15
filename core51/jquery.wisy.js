@@ -184,6 +184,12 @@ function fav_click(jsObj, id)
 {
 	if (window.cookiebanner && window.cookiebanner.optedOut) {
 		alert(window.cookiebanner.favOptoutMessage);
+		window.cookieconsent.popup.open();
+			return false;
+		} else if($.cookie('cconsent_merkliste') != "allow") {
+		  alert("Um diese Funktion nutzen zu k"+oe+"nnen, m"+ue+"ssen Sie dem Speichern von Cookies f"+ue+"r diese Funktion zustimmen (im Cookie-Hinweisfenster).");
+		  hightlightCookieConsentOption('merkliste');
+		  window.cookieconsent.popup.open();
 		return false;
 	}
 	jqObj = $(jsObj);
@@ -301,7 +307,7 @@ function formatItem(row)
 	{
 		/* add the "more" link */
 		row_class = 'ac_more';
-		tag_name = '<a href="" onclick="return clickAutocompleteMore(&#39;' + encodeURIComponent(tag_name).replace('/&/', '%26') + '&#39;)">' + tag_descr + '</a>';
+		tag_name = '<a href="" onclick="return clickAutocompleteMore(&#39;' + encodeURIComponent(tag_name) + '&#39;)">' + tag_descr + '</a>';
 	}
 	else
 	{
@@ -443,7 +449,7 @@ if (jQuery.ui)
 			/* add the "more" link */
 			row_class = 'ac_more';
 			row_type = '';
-			tag_name = '<a href="" onclick="return clickAutocompleteMore(&#39;' + encodeURIComponent(tag_name) + '&#39;)">' + tag_descr + '</a>';
+			tag_name = '<a href="" onclick="return clickAutocompleteMore(&#39;' + encodeURIComponent(tag_name).replace('/&/', '%26') + '&#39;)">' + tag_descr + '</a>';
 		}
 		else
 		{
@@ -990,7 +996,7 @@ function sendFeedback(rating)
 	{
 		$('#wisy_feedback').append(
 				'<div id="wisy_feedback_line2">'
-			+		'<p>Bitte schildern Sie uns noch kurz, warum diese Seite nicht hilfreich war und was wir besser machen können:</p>'
+			+		'<p>Bitte schildern Sie uns noch kurz, warum diese Seite nicht hilfreich war und was wir besser machen k&ouml;nnen:</p>'
 				+	'<textarea id="wisy_feedback_descr" name="wisy_feedback_descr" rows="2" cols="20"></textarea><br />'
 				+	'<br><b>Wenn Sie eine Antwort w&uuml;nschen</b>, geben Sie bitte auch Ihre E-Mail-Adresse an (optional).<br />Wir verwenden Ihre E-Mailadresse und ggf. Name nur, um Ihr Anliegen zu bearbeiten und l&ouml;schen diese personenbezogenen Daten alle 12 Monate.<br><br>'
 				+	'<label for="wisy_feedback_name">Name (optional): </label><input type="text" id="wisy_feedback_name" name="wisy_feedback_name">&nbsp; <label for="wisy_feedback_email">E-Mailadresse (optional): </label><input type="text" id="wisy_feedback_email" name="wisy_feedback_email"><br><br>'
@@ -1221,3 +1227,67 @@ $().ready(function()
 	  $("form[name='filterform']").prepend("<input type=hidden name='force' value="+window.force+">");
 	
 });
+
+function initializeTranslate() { 
+
+	 if($.cookie('cconsent_translate') == "allow") { 
+	  $.getScript( "//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit", function( data, textStatus, jqxhr ) {
+	  if(jqxhr.status == 200)
+	   return true;
+	 });
+	  
+	 } else {
+	  /* Interaction not disirable */
+	  /*
+	  hightlightCookieConsentOption('translate');
+	  window.cookieconsent.popup.open();
+	  return false; */
+	 }
+};
+
+function googleTranslateElementInit() {
+ new google.translate.TranslateElement({pageLanguage: 'de', layout: google.translate.TranslateElement.InlineLayout.SIMPLE}, 'google_translate_element');
+}
+
+$(document).ready(function(){
+ // $('#filter_datum_von').after('<a href="#filter_datum_von" onclick="alleDatenAnzeigen()" id="abgelaufeneAnzeigen">Abgelaufene Angebote anzeigen...</a>'); // noch framework
+ preventEmptySearch(window.homepage); // noch framework
+ consentCookieBeforePageFunction();
+});
+
+
+function hightlightCookieConsentOption(name) {
+ $('.cc-consent-details .'+name+' .consent_option_infos').addClass('highlight');
+}
+
+// check for consent of specific cookie, if page dependant on it being given
+function consentCookieBeforePageFunction() {
+  // Edit page
+ if($(".wisyp_edit").length) {
+	   
+   // only if no other submit event is attached to search submit button:
+   if( typeof $._data( $(".wisyp_edit form[action=edit]"), "events" ) == 'undefined' ) {
+    $('.wisyp_edit form[action=edit]').on('submit', function(e) {
+     e.preventDefault();
+
+     if($.cookie('cconsent_onlinepflege') != "allow") {
+      alert("Um die Onlinepflege nutzen zu k‚Äö√†√∂‚Äö√†√ánnen, m‚Äö√†√∂¬¨‚à´ssen Sie dem Speichern von Cookies f‚Äö√†√∂¬¨‚à´r diese Funktion zustimmen (im Cookie-Hinweisfenster).");
+      hightlightCookieConsentOption('onlinepflege');
+      window.cookieconsent.popup.open();
+      return false;
+     } else {
+      // default: normal search on other than homepage
+      this.submit();
+     }
+    });
+   }
+ } // end: edit page
+}
+
+/* Called every time change Cookie consent window initialized or updated */
+function callCookieDependantFunctions() {
+ initializeTranslate();
+}
+
+var ue = unescape("%FC");
+var oe = unescape("%F6");

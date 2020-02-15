@@ -6,6 +6,7 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 {
 	var $framework;
     var $tokens;
+    var $checked_values_combStr = array();
 
 	function __construct(&$framework)
 	{
@@ -279,6 +280,7 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 	    
 	    $orders = array(
 	        'b'  => 'Datum: aufsteigend',
+	        'bd'  => 'Datum: absteigend',
 	        'd'  => 'Dauer: aufsteigend',
 	        'dd'  => 'Dauer: absteigend',
 	        'p'  => 'Preis: aufsteigend',
@@ -290,6 +292,18 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 	        't'  => 'Angebot: Titel',
 	        'rand'  => 'Zuf&auml;llig sortiert'
 	    );
+	    
+	    $portal_order_options = trim($this->framework->iniRead('kurse.sortierung.optionen', false). ",");
+	    if($portal_order_options)
+	        $portal_order_options = array_map("trim", explode(",", $portal_order_options));
+	        
+	    if(is_array($portal_order_options) && count($portal_order_options)) {
+	        $orders_custom = array();
+	        foreach($portal_order_options AS $poo) {
+	          $orders_custom[$poo] = $orders[$poo];
+	        }
+	        $orders = $orders_custom;
+	    }
 	    
 	    $portal_order = $this->framework->iniRead('kurse.sortierung', false);
 	    if($portal_order && $renderformData['order'] == '') $renderformData['order'] = $portal_order;
@@ -355,7 +369,8 @@ class WISY_FILTERMENU_ITEM
         if(isset($data['sections']) && count($data['sections'])) {
             $ret .= $this->getSections($data['sections']);
         } else {
-            $ret .= $this->getFormfields($data);
+            $this->getFormfields($data, false);
+            $ret .= $this->getFormfields($data, true);
         }
         
         if($subsection || (isset($data['no_autosubmit']) && $data['no_autosubmit'] == 1) ) {
@@ -385,7 +400,8 @@ class WISY_FILTERMENU_ITEM
             $ret .= '<fieldset class="' . $filterclasses . '">';
             $ret .= '<legend data-filtervalue="' . $legendvalue . '">' . $title . '</legend>';
             
-            $ret .= $this->getFormfields($data);
+            $this->getFormfields($data, false);
+            $ret .= $this->getFormfields($data, true);
             
             $ret .= '</fieldset>';
             if( (isset($data['no_autosubmit_mobile']) && $data['no_autosubmit_mobile'] == 1) || (isset($data['no_autosubmit']) && $data['no_autosubmit'] == 1) ) {
@@ -422,7 +438,7 @@ class WISY_FILTERMENU_ITEM
         return implode(' ', $fsc);
     }
     
-    function getFormfields($data) {
+    function getFormfields($data, $returnFields = true) {	
         
         $ret = '';
         
@@ -557,14 +573,25 @@ class WISY_FILTERMENU_ITEM
                         
                     case 'checkbuttons':
                         
-                        foreach($filtervalues as $value => $label) {
-                            $value = mb_detect_encoding($value, 'UTF-8', true) ? $value : utf8_encode($value);
+                        // combine all values already checked in String $this->checked_values_combStr, comma separated => checkbox!
+                        foreach((array) $filtervalues as $value => $label) {
+                            if($value === '') continue;
                             
+                            $processed_value = $this->getProcessedValue($function, $value, $label);
+                            $checked = $this->getCheckedValue($function, $value, $label, $processed_value, $fieldvalue, $fieldname);
+                            
+                            if($checked && !$returnFields)
+                                $this->checked_values_combStr[$fieldname] .= $processed_value.",";
+                        }
+                        
+                        foreach((array) $filtervalues as $value => $label) {  // array must be cast(!), bc. values with '.' reduces no. of elements
                             // Don't show empty value ("Alle") button:
                             if($value === '') continue;
                             
                             $processed_value = $this->getProcessedValue($function, $value, $label);
                             $checked = $this->getCheckedValue($function, $value, $label, $processed_value, $fieldvalue, $fieldname);
+                            
+                            
                             
                             // echo "<script>console.log('Function: ".$function.", Value: ".$value.", Label: ".$label.", Processed Value: ".$processed_value.", Fieldvalue: ".$this->framework->mysql_escape_mimic(print_r($this->renderformData, true)).", Fieldname: ".$fieldname."');</script>";
                             // echo "<script>console.log('checked: ".$checked."');</script>";
@@ -573,7 +600,13 @@ class WISY_FILTERMENU_ITEM
                             
                             $ret .= '<div class="wisyr_checkboxwrapper wisyr_checkbutton">';
                             
-                            $ret .= '	<input type="checkbox" name="filter_' . $fieldname . '[]" id="filter_' . $fieldname . '_' . $this->framework->cleanClassname($value, true) . '" value="' . $processed_value . '"';
+                            // save all checked values other than the current boxes input to be added to current box input value
+                            $other_values = trim(str_replace($processed_value.',', '', $this->checked_values_combStr[$fieldname]), ',');
+                            
+                            
+                            $for = 'filter_' . $fieldname . '_' . $this->framework->cleanClassname($value, true);
+                            $ret .= '	<input type="checkbox" name="filter_' . $fieldname . '[]" id="'.$for.'" value="' . $processed_value . '" ';
+                            
                             if(strlen($autofilltarget)) {
                                 $ret .= ' data-autofilltarget="#filter_' . $autofilltarget . '" data-autofillvalue="' . $processed_value . '"';
                             }
@@ -582,7 +615,9 @@ class WISY_FILTERMENU_ITEM
                             if($disabled) $ret .= ' disabled="disabled"';
                             
                             $ret .= ' />';
-                            $ret .= '	<label for="filter_' . $fieldname . '_' . $this->framework->cleanClassname($value, true) . '">' . $label . '</label>';
+                            
+                            $ret .= '	<label for="'.$for.'" onclick="$(\'#'.$for.'\').attr(\'value\', $(\'#'.$for.'\').attr(\'value\')+\''. (strlen($other_values) ? ','.$other_values : '') .'\' );">' . $label . '</label>';
+                            // $ret .= '	<label for="filter_' . $fieldname . '_' . $this->framework->cleanClassname($value, true) . '">' . $label . '</label>';
                             $ret .= '</div>';
                         }
                         

@@ -41,13 +41,13 @@ class WISY_KEYWORDTABLE_CLASS
 			WISY_KEYWORDTABLE_CLASS::$keywords = array();
 			$this->db->query("SELECT id, stichwort, eigenschaften, zusatzinfo, glossar FROM stichwoerter;");
 			while( $this->db->next_record() ) {
-				WISY_KEYWORDTABLE_CLASS::$keywords[ $this->db->f8('id') ] = $this->db->Record;
+			    WISY_KEYWORDTABLE_CLASS::$keywords[ $this->db->fcs8('id') ] = $this->db->Record;
 			}
 
 			WISY_KEYWORDTABLE_CLASS::$sw_modified = '0000-00-00 00:00:00';
 			$this->db->query("SELECT MAX(date_modified) d FROM stichwoerter;");
 			if( $this->db->next_record() ) {
-				WISY_KEYWORDTABLE_CLASS::$sw_modified = $this->db->f8('d');
+			    WISY_KEYWORDTABLE_CLASS::$sw_modified = $this->db->fcs8('d');
 			}			
 		}		
 	}
@@ -123,9 +123,9 @@ class WISY_KEYWORDTABLE_CLASS
 		$icon_arr_right = '&nbsp;&#9654;';
 		$icon_empty = '&nbsp;&bull;&nbsp;';
 				
-		$title = utf8_encode(WISY_KEYWORDTABLE_CLASS::$keywords[ $keywordId ]['stichwort']);
+		$title = cs8(WISY_KEYWORDTABLE_CLASS::$keywords[ $keywordId ]['stichwort']);
 		$url = 'search?q=' . urlencode(g_sync_removeSpecialChars($title));
-		$zusatzinfo = utf8_encode(WISY_KEYWORDTABLE_CLASS::$keywords[ $keywordId ]['zusatzinfo']);
+		$zusatzinfo = cs8(WISY_KEYWORDTABLE_CLASS::$keywords[ $keywordId ]['zusatzinfo']);
 		$tag_type = WISY_KEYWORDTABLE_CLASS::$keywords[ $keywordId ]['eigenschaften'];
 		$glossarId = WISY_KEYWORDTABLE_CLASS::$keywords[ $keywordId ]['glossar'];
 				

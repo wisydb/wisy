@@ -764,6 +764,42 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
  display: none;	
 }
 
+/* Cookiebanner */
+.cc-window ul li {
+	list-style: none;
+	padding-left: .2em;
+	margin-top: .5em;
+	font-weight: 600;
+	font-size: .8em;
+}
+
+.cc-window ul li div.consent_option_infos {
+	vertical-align: top;
+	display: inline-block;
+	max-width: 90%;
+}
+
+.cc-window ul li .importance {
+	font-weight: 100;
+	font-size: .8em;
+}
+
+.cc-window .hinweis_abwahl {
+	padding-left: .2em;
+	font-weight: 500;
+	font-size: .7em;
+	/* color: #666; */
+}
+
+/* don't display, if detailed consent necessary anyway */
+.cc-btn.cc-deny {
+	display: none;
+}
+
+.cc-window ul li div.consent_option_infos.highlight {
+	color: darkred;
+}
+
 /* *************** */ 
 
 @media screen and (min-width: 761px) {

@@ -671,6 +671,7 @@ class WISY_FRAMEWORK_CLASS
 		
 		if(strpos($ret, 'offset=') === FALSE) {
 		    // human trigger of page
+		    // code not beautiful:
 		    if($i > 0)
 		        $ret .= (isset($_GET['qtrigger']) ? '&qtrigger='.$_GET['qtrigger'] : '').(isset($_GET['force']) ? '&force='.$_GET['force'] : '');
 		        else
@@ -680,6 +681,8 @@ class WISY_FRAMEWORK_CLASS
 		        $ret = str_replace('offset=', 'qtrigger='.$_GET['qtrigger'].'&offset=', $ret);
 		    if(isset($_GET['force']))
 		        $ret = str_replace('offset=', 'force='.$_GET['force'].'&offset=', $ret);
+		    if(isset($_GET['showcol']))
+		        $ret = str_replace('offset=', 'showcol='.$_GET['showcol'].'&offset=', $ret);
 		}
 		
 		if($rel)
@@ -1518,13 +1521,26 @@ class WISY_FRAMEWORK_CLASS
 	    return $ret;
 	}
 	
+	function addCConsentOption($name, $cookieOptions) {
+	    return "<li class='{$name}'>
+    				<input type='checkbox' name='cconsent_{$name}' "
+    				.($this->iniRead("cookiebanner.zustimmung.{$name}.essentiell", 1) ? "checked='checked'" : "")
+    				."> "
+    			    ."<div class='consent_option_infos'>"
+    				.$cookieOptions["content"]["zustimmung_{$name}"]
+    				    ."<span class='importance'>"
+    				    .($this->iniRead("cookiebanner.zustimmung.{$name}.essentiell", 1) ? '<br>(essentiell)' : '<br>(optional)').'</span>'
+    				.'</div>'
+				."</li>";
+	}
+	
 	function getJSHeadTags()
 	{
 	    // JavaScript tags to include to the header (if any)
 	    $ret = '';
 	    
 	    $js = $this->getJSFiles();
-	    for( $i = 0; $i < sizeof($js); $i++ )
+	    for( $i = 0; $i < sizeof((array) $js); $i++ )
 	    {
 	        $ret .= '<script src="'.$js[$i].'"></script>' . "\n";
 	    }
@@ -1572,8 +1588,54 @@ class WISY_FRAMEWORK_CLASS
 			$cookieOptions['cookie']['expiryDays'] = intval($this->iniRead('cookiebanner.cookiegueltigkeit', 7));
 			
 			$cookieOptions['content'] = array();
-			$cookieOptions['content']['message'] = $this->iniRead('cookiebanner.hinweis.text', 'Wir verwenden Cookies, um Ihnen eine Merkliste sowie eine Seitenübersetzung anzubieten und um Kursanbietern die Pflege ihrer Kurse zu erm&ouml;glichen. Indem Sie unsere Webseite nutzen, erkl&auml;ren Sie sich mit der Verwendung der Cookies einverstanden. Weitere Details finden Sie in unserer Datenschutzerkl&auml;rung.');
-			$cookieOptions['content']['allow'] = $this->iniRead('cookiebanner.erlauben.text', 'Akzeptieren', 1);
+			$cookieOptions['content']['message'] = $this->iniRead('cookiebanner.hinweis.text', 'Wir verwenden Cookies, um Ihnen eine Merkliste sowie eine Seiten&uuml;bersetzung anzubieten und um Kursanbietern die Pflege ihrer Kurse zu erm&ouml;glichen. Indem Sie unsere Webseite nutzen, erkl&auml;ren Sie sich mit der Verwendung der Cookies einverstanden. Weitere Details finden Sie in unserer Datenschutzerkl&auml;rung.');
+			
+			$this->detailed_cookie_settings_merkliste = boolval(strlen(trim($this->iniRead('cookiebanner.zustimmung.merkliste', ''))) > 3); // legacy compatibility
+			$cookieOptions['content']['zustimmung_merkliste'] = $this->iniRead('cookiebanner.zustimmung.merkliste', false);
+			
+			$this->detailed_cookie_settings_onlinepflege = boolval(strlen(trim($this->iniRead('cookiebanner.zustimmung.onlinepflege', ''))) > 3); // legacy compatibility
+			$cookieOptions['content']['zustimmung_onlinepflege'] = $this->iniRead('cookiebanner.zustimmung.onlinepflege', false);
+			
+			$this->detailed_cookie_settings_translate = boolval(strlen(trim($this->iniRead('cookiebanner.zustimmung.translate', ''))) > 3); // legacy compatibility
+			$cookieOptions['content']['zustimmung_translate'] = $this->iniRead('cookiebanner.zustimmung.translate', false);
+			
+			$this->detailed_cookie_settings_analytics = boolval(strlen(trim($this->iniRead('cookiebanner.zustimmung.analytics', ''))) > 3); // legacy compatibility
+			$cookieOptions['content']['zustimmung_analytics'] = $this->iniRead('cookiebanner.zustimmung.analytics', false);
+			
+			$cookieOptions['content']['message'] = str_ireplace('__ZUSTIMMUNGEN__',
+			    '<ul class="cc-consent-details">'
+			    .($cookieOptions['content']['zustimmung_merkliste'] ? $this->addCConsentOption("merkliste", $cookieOptions) : '')
+			    .($cookieOptions['content']['zustimmung_onlinepflege'] ? $this->addCConsentOption("onlinepflege", $cookieOptions) : '')
+			    .($cookieOptions['content']['zustimmung_translate'] ? $this->addCConsentOption("translate", $cookieOptions) : '')
+			    .($cookieOptions['content']['zustimmung_analytics'] ? $this->addCConsentOption("analytics", $cookieOptions) : '')
+			    .'__ZUSTIMMUNGEN_SONST__'
+			    .'</ul>',
+			    $cookieOptions['content']['message']
+			    );
+			
+			global $wisyPortalEinstellungen;
+			reset($wisyPortalEinstellungen);
+			$allPrefix = 'cookiebanner.zustimmung.sonst';
+			$allPrefixLen = strlen($allPrefix);
+			foreach($wisyPortalEinstellungen as $key => $value)
+			{
+			    if( substr($key, 0, $allPrefixLen)==$allPrefix )
+			    {
+			        $cookieOptions['content']['message'] = str_replace('__ZUSTIMMUNGEN_SONST__',
+			            $this->addCConsentOption("analytics", $key).'__ZUSTIMMUNGEN_SONST__',
+			            $cookieOptions['content']['message']);
+			    }
+			}
+			$cookieOptions['content']['message'] = str_replace('__ZUSTIMMUNGEN_SONST__', '', $cookieOptions['content']['message']);
+			
+			
+			$cookieOptions['content']['message'] = str_ireplace('__HINWEIS_ABWAHL__',
+			    '<span class="hinweis_abwahl">'
+			    .$this->iniRead('cookiebanner.hinweis.abwahl', '(Option abw&auml;hlen, wenn nicht einverstanden)')
+			    .'</span>',
+			    $cookieOptions['content']['message']);
+			
+			$cookieOptions['content']['allow'] = $this->iniRead('cookiebanner.erlauben.text', 'OK', 1);
 			$cookieOptions['content']['deny'] = $this->iniRead('cookiebanner.ablehnen.text', 'Ablehnen', 1);
 			$cookieOptions['content']['link'] = $this->iniRead('cookiebanner.datenschutz.text', 'Mehr erfahren', 1);
 			$cookieOptions['content']['href'] = $this->iniRead('cookiebanner.datenschutz.link', '');
@@ -1599,6 +1661,7 @@ class WISY_FRAMEWORK_CLASS
 							window.cookiebanner.optedOut = true;
 							updateCookieSettings();
 						}
+                        callCookieDependantFunctions();
 					},
 					onStatusChange: function(status) {
 						var didConsent = this.hasConsented();
@@ -1606,6 +1669,7 @@ class WISY_FRAMEWORK_CLASS
 							window.cookiebanner.optedOut = true;
 							updateCookieSettings();
 						}
+                        callCookieDependantFunctions();
 					}';
 					
 			// Hide Revoke Button and enable custom revoke function in e.g. "Datenschutzhinweise"
@@ -1622,15 +1686,36 @@ class WISY_FRAMEWORK_CLASS
 						});
 					}';
 			
-			$ret .= ')});</script>'."\n";
+			$ret .= ');
+			    
+			/* save detailed cookie consent status */
+				$(".cc-btn.cc-allow").click(function(){
+					$(".cc-consent-details input[type=checkbox]").each(function(){
+						var cname = $(this).attr("name");
+						$.removeCookie(cname, { path: "/" });
+						if($(this).is(":checked")) {
+							setCookieSafely(cname, "allow", { expires:7});
+						}
+					});
+				});
+			    
+			});
+			    
+			'.($this->detailed_cookie_settings_merkliste ? "" : "window.cookiebanner_zustimmung_merkliste_legacy = 1;").'
+			'.($this->detailed_cookie_settings_onlinepflege ? "" : "window.cookiebanner_zustimmung_onlinepflege_legacy = 1;").'
+			'.($this->detailed_cookie_settings_translate ? "" : "window.cookiebanner_zustimmung_translate_legacy = 1;").'
+			    
+			</script>'."\n"; // end initialization of cookie consent window
 		}
+		
 		
 		// Don't allow for empty searches
 		$homepage = trim($this->iniRead('homepage', ''), '/');
 		$homepage = ($homepage == "") ? '/' : '/'.$homepage;
 		
 		$ret .= "<script>\n";
-		$ret .= "window.onload = function(){ preventEmptySearch('".$homepage."'); }\n";
+		$ret .= "var homepage = '".$homepage."'"; // neu: jQueryWisy
+		// $ret .= "jQuery(document).ready(function() { preventEmptySearch('".$homepage."'); });"; // <-> onload maybe in use already
 		$ret .= "</script>";
 		
 		return $ret;
@@ -1805,7 +1890,7 @@ class WISY_FRAMEWORK_CLASS
 		
 		// replace ALL placeholders
 		$bodyStart = str_replace('__HEADTAGS__', $this->getTitleTags($param['title'], $param['ort'], $param['anbieter_name']) . $this->getFaviconTags() . $this->getOpensearchTags() . $this->getRSSTags() . $this->getCSSTags() . $this->getCanonicalTag($param['canonical']) . $this->getMobileAlternateTag($param['canonical']) . $this->getJSHeadTags() . $this->getMetaDescription($param['title'], $param['beschreibung']) . $this->getHreflangTags() . $this->getSocialMediaTags($param['title'], $param['ort'], $param['anbieter_name'], $param['anbieter_id'], $param['beschreibung'], $param['canonical']), $bodyStart);
-		$bodyStart = str_replace('__BODYATTR__', ' ' . $this->getJSOnload(). ' class="' . $this->getBodyClasses($param['bodyClass']) . '" ', $bodyStart);
+		$bodyStart = str_replace('__BODYATTR__', ' ' . $this->getJSOnload(). ' class="' . $this->getBodyClasses($param['bodyClass']) . ( $this->editSessionStarted ? ' wisyp_edit' : '') . '" ', $bodyStart);
 		$bodyStart = $this->replacePlaceholders($bodyStart);
 		$i1 = strpos($bodyStart, "<!-- include ");
 		if( $i1!==false && ($i2=strpos($bodyStart, "-->", $i1))!==false )
@@ -1877,7 +1962,8 @@ class WISY_FRAMEWORK_CLASS
 		{
 			$ret .= '
 				<script>
-				var optedOut = document.cookie.indexOf("cookieconsent_status=deny") > -1;
+				'.($this->detailed_cookie_settings_analytics ? 'var optedOut = ($.cookie("cconsent_analytics") != "allow");' : ' var optedOut = (document.cookie.indexOf("cookieconsent_status=deny") > -1);').'
+				
 				if (!optedOut) {					
 					(function(i,s,o,g,r,a,m){i["GoogleAnalyticsObject"]=r;i[r]=i[r]||function(){ 
 						(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o), 
@@ -1886,11 +1972,13 @@ class WISY_FRAMEWORK_CLASS
 					ga("create", "' . $uacct . '", "none"); 
 					ga("set", "anonymizeIp", true); 
 					ga("send", "pageview"); 
+				} else {
+					console.log("No Analytics: opted out");
 				}
 				</script>';
 		}
 		
-		$piwik = $this->iniRead('analytics.piwik', '');
+		$piwik = ($this->detailed_cookie_settings_analytics ? $_COOKIE['cconsent_analytics'] == 'allow' : $this->iniRead('analytics.piwik', ''));
 		if( $piwik != '' )
 		{
 			if( strpos($piwik, ',')!==false ) {

@@ -183,6 +183,12 @@ function fav_click(jsObj, id)
 {
 	if (window.cookiebanner && window.cookiebanner.optedOut) {
 		alert(window.cookiebanner.favOptoutMessage);
+		window.cookieconsent.popup.open();
+		return false;
+	} else if($.cookie('cconsent_merkliste') != "allow" && !window.cookiebanner_zustimmung_merkliste_legacy) {
+		alert("Um diese Funktion nutzen zu k"+oe+"nnen, m"+ue+"ssen Sie dem Speichern von Cookies f"+ue+"r diese Funktion zustimmen (im Cookie-Hinweisfenster).");
+		hightlightCookieConsentOption('merkliste');
+		window.cookieconsent.popup.open();
 		return false;
 	}
 	jqObj = $(jsObj);
@@ -266,7 +272,7 @@ function clickAutocompleteHelp(tag_help, tag_name_encoded)
 
 function clickAutocompleteMore(tag_name_encoded)
 {
-	location.href = 'search?ie=UTF-8&show=tags&q=' + tag_name_encoded;
+	location.href = 'search?show=tags&q=' + tag_name_encoded; // ie=UTF-8& 
 }
 
 function htmlspecialchars(text)
@@ -1568,3 +1574,67 @@ $().ready(function()
 	
 });
 
+function initializeTranslate() { 
+
+	 if($.cookie('cconsent_translate') == "allow") { 
+	  $.getScript( "//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit", function( data, textStatus, jqxhr ) {
+	  if(jqxhr.status == 200)
+	   return true;
+	 });
+	  
+	 } else {
+	  /* Interaction not disirable */
+	  /*
+	  hightlightCookieConsentOption('translate');
+	  window.cookieconsent.popup.open();
+	  return false; */
+	 }
+	};
+
+function googleTranslateElementInit() {
+  new google.translate.TranslateElement({pageLanguage: 'de', layout: google.translate.TranslateElement.InlineLayout.SIMPLE}, 'google_translate_element');
+}
+
+$(document).ready(function(){
+ // $('#filter_datum_von').after('<a href="#filter_datum_von" onclick="alleDatenAnzeigen()" id="abgelaufeneAnzeigen">Abgelaufene Angebote anzeigen...</a>'); // noch framework
+ preventEmptySearch(window.homepage); // noch framework
+ consentCookieBeforePageFunction();
+});
+
+
+function hightlightCookieConsentOption(name) {
+ $('.cc-consent-details .'+name+' .consent_option_infos').addClass('highlight');
+}
+
+	// check for consent of specific cookie, if page dependant on it being given
+function consentCookieBeforePageFunction() {
+	 
+  // Edit page
+  if($(".wisyp_edit").length) {
+	   
+   // only if no other submit event is attached to search submit button:
+   if( typeof $._data( $(".wisyp_edit form[action=edit]"), "events" ) == 'undefined' ) {
+    $('.wisyp_edit form[action=edit]').on('submit', function(e) {
+     e.preventDefault();
+
+     if($.cookie('cconsent_onlinepflege') != "allow" && !window.cookiebanner_zustimmung_onlinepflege_legacy) {
+      alert("Um die Onlinepflege nutzen zu k"+oe+"nnen, m"+ue+"ssen Sie dem Speichern von Cookies f"+ue+"r diese Funktion zustimmen (im Cookie-Hinweisfenster).");
+      hightlightCookieConsentOption('onlinepflege');
+      window.cookieconsent.popup.open();
+      return false;
+     } else {
+      // default: normal search on other than homepage
+      this.submit();
+     }
+    });
+   }
+  } // end: edit page
+}
+
+/* Called every time change Cookie consent window initialized or updated */
+function callCookieDependantFunctions() {
+ initializeTranslate();
+}
+
+var ue = unescape("%FC");
+var oe = unescape("%F6");
