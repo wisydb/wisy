@@ -181,7 +181,7 @@ wisy_paginate etc.
 
 a.wisy_rss_link {
 	padding-left: 17px;
-	background: white url('feed-icon-12x12.png') 3px center no-repeat !important;
+	background: white url('/core51/img/feed-icon-12x12.png') 3px center no-repeat !important;
 }
 
 
@@ -432,7 +432,7 @@ autocomplete styles v1
 }
 
 .ac_loading {
-  background: white url('ajax-indicator-2-16x16.gif') right center no-repeat !important;
+  background: white url('/core51/img/ajax-indicator-2-16x16.gif') right center no-repeat !important;
 }
 
 .ac_odd {
@@ -541,6 +541,10 @@ portalmenu styles
 *******************************************************************************/
 
 /* functionality - do not subclass this if you're not absolutely sure what you're doing ... */
+
+#themenmenue ul {
+	z-index: 1200;
+}
 
 ul.dropdown,
 ul.dropdown li,

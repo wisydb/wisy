@@ -99,7 +99,7 @@ body { padding: 0; margin: 0; }
 	right: 1.5em;
 	width: 1em;
 	height: 1em;
-	background: #fff url(close-red.png) no-repeat center center/1em;
+	background: #fff url(/core51/img/close-red.png) no-repeat center center/1em;
 	cursor: pointer;
 }
 
