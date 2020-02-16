@@ -1267,7 +1267,7 @@ class Table_Inst_Class
 		}
 
 		// go through all rows
-		$r = 0; $r < sizeof((array) $table_def->rows); $r++ )
+		for( $r = 0; $r < sizeof((array) $table_def->rows); $r++ )
 		{
 			$this->value_errors_addparam[$r] = '';
 			$error = '';

@@ -20,7 +20,7 @@ Read Records:
 		{ "field1": "value1", "field2": "value2", ... }
 
 Modify Records:
-	POST|PUT|DELETE /api/v1/?scope=<table>[.<id>[.<secondaryId]]
+	POST|UPDATE (PUT)|DELETE /api/v1/?scope=<table>[.<id>[.<secondaryId]]
 	JSON return on success:
 		{ "id": 123 }
 
@@ -36,7 +36,7 @@ Errors:
 Additional Parameters:
 	&apikey=<apikey>
 	&client=<clientname and -version>
-	&method=GET|POST|PUT|DELETE (alternatively, you can set the HTTP request method directly)
+	&method=GET|POST|DELETE|UPDATE (PUT) (alternatively, you can set the HTTP request method directly)
 ===============================================================================
 Mit (***) markierte Felder sind an das Portal gebunden!
 D.h. wenn sich die Implementation von core20 aendert, muss auch hier Hand angelegt werden!
@@ -74,9 +74,10 @@ define('REST_SECONDARY', 			0x0008);
 define('REST_SPECIAL', 				0x0010);
 
 
-define('APIKEY_ACTIVE',		0x01);
-define('APIKEY_SECUREONLY',	0x02);
-define('APIKEY_WRITE',		0x04);
+define('APIKEY_ACTIVE',         0x01);
+define('APIKEY_SECUREONLY',     0x02);
+define('APIKEY_WRITE',		    0x04);
+define('APIKEY_READJOURNAL',    0x08);
 
 function htmlconstant($a) { return $a;}
 
@@ -109,6 +110,7 @@ class REST_API_CLASS
 			'foerder_knr'		=>	array('flags'=>REST_STRING,				),
 			'azwv_knr'			=>	array('flags'=>REST_STRING,				),
 			'notizen'			=>	array('flags'=>REST_STRING_PREPENDONLY,	),
+		    'notizen_fix'		=>	array('flags'=>REST_STRING_PREPENDONLY,	),
 		),
 		'durchfuehrung'	=> array
 		(
@@ -137,6 +139,8 @@ class REST_API_CLASS
 			'bemerkungen'		=>	array('flags'=>REST_STRING,				),
 			'herkunft'			=>	array('flags'=>REST_INT,				),
 			'herkunftsID'		=>	array('flags'=>REST_STRING,				),
+		    'notizen'			=>	array('flags'=>REST_STRING_PREPENDONLY,	),
+		    'notizen_fix'		=>	array('flags'=>REST_STRING_PREPENDONLY,	),
 		),
 		'anbieter' => array
 		(
@@ -371,6 +375,15 @@ class REST_API_CLASS
 		
 		if( ($this->apikeyflags&APIKEY_SECUREONLY) && $_SERVER['HTTPS']!='on' ) $this->halt(403, 'apikey requires a secure connection');
 	
+		if($this->apikeyflags&APIKEY_READJOURNAL) {
+		    foreach(array_keys($this->fields) AS $table_key) {
+		        if(in_array('notizen', array_keys($this->fields[$table_key])))
+		            $this->fields[$table_key]['notizen'] = array('flags'=>REST_STRING,				);
+		        if(in_array('notizen_fix', array_keys($this->fields[$table_key])))
+		            $this->fields[$table_key]['notizen_fix'] = array('flags'=>REST_STRING,				);
+		    }
+		}
+		
 		// loads groups the apikey is restricted to
 		$this->apikeygrps = array();
 		$db->query("SELECT attr_id FROM apikeys_usergrp WHERE primary_id=".intval($apikeyid));
@@ -394,7 +407,7 @@ class REST_API_CLASS
 		
 		if($_GET['scope'] == '' && $method == 'PUT') {
 		    parse_str(file_get_contents("php://input"), $put_vars); // für PUT-Variablen, die nicht als URL-Parameter übergeben werden
-		    $scope = explode('.', $put_vars['scope'], 3); 
+		    $scope = explode('.', $put_vars['scope'], 3); // altern. via request headers
 		} elseif($_GET['scope'] == '' && strlen($_SERVER['HTTP_SCOPE']) > 2) {
 		    $scope = explode('.', $_SERVER['HTTP_SCOPE'], 3); // altern. via request headers
 		}
@@ -455,11 +468,11 @@ class REST_API_CLASS
 			else if( $scope[0] == 'kurse' && sizeof($scope)==2 )
 			{
 				$this->haltOnBadRecord('kurse', $scope[1], true);
-				echo $this->update('kurse', $scope[1]);				// PUT kurse.<kursId>
+				echo $this->update('kurse', $scope[1]);			    // UPDATE kurse.<kursId>
 			}
 			else
 			{
-				$this->halt(400, "bad scope for $method");
+			    $this->halt(400, "bad scope for $method".' ('.$scope[0].')');
 			}
 		}
 		else if( $method == 'DELETE' )
@@ -657,7 +670,7 @@ class REST_API_CLASS
 	}
 
 	/* ========================================================================
-	POST/PUT (Update) records
+	POST/PUT (UPDATE) records
 	======================================================================== */
 	
 	function post($table, &$insert_id)
