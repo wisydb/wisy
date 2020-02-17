@@ -211,7 +211,7 @@ function fav_click(jsObj, id)
 }
 function fav_delete_all()
 {
-	if( !confirm('Gesamte Merkliste löschen?') )
+	if( !confirm('Gesamte Merkliste l'+oe'schen?') )
 		return false;
 	
 	g_all_fav = {};
@@ -544,7 +544,7 @@ if (jQuery.ui)
 
 	function ac_selectcallback(event, ui) {
 	
-		// Standardverhalten (Value ins Eingabefeld schreiben) bei Überschrift und Mehrlink der Ergebnisliste ausschalten
+		// Standardverhalten (Value ins Eingabefeld schreiben) bei Ueberschrift und Mehrlink der Ergebnisliste ausschalten
 		// Ebenso bei Klick auf "wisy_help"
 		var $span = $(ui.item.label);
 		var $to = $(event.toElement);
@@ -556,7 +556,7 @@ if (jQuery.ui)
 		else
 		{
 	
-			// Neuen Autocomplete-Wert nach evtl. bereits vorhandenen einfügen
+			// Neuen Autocomplete-Wert nach evtl. bereits vorhandenen einfuegen
 			var terms = split( this.value );
 			// remove the current input
 			terms.pop();
@@ -903,10 +903,10 @@ function editDurchfLoeschen(jqObj)
 {
 	if( $('.editDurchfRow').size() == 1 )
 	{
-		alert("Diese Durchführung kann nicht gelöscht werden, da ein Kurs mindestens eine Durchführung haben muss.\n\nWenn Sie den Kurs komplett löschen möchten, verwenden Sie die Option \"Kurs löschen\" ganz unten auf dieser Seite.");
+		alert("Diese Durchf"+ue+"hrung kann nicht gel"+oe+"scht werden, da ein Kurs mindestens eine Durchf"+ue+"hrung haben muss.\n\nWenn Sie den Kurs komplett l"+oe+"schen m"+oe+"chten, verwenden Sie die Option \"Kurs l"+oe+"schen\" ganz unten auf dieser Seite.");
 		return;
 	}
-	else if( confirm("Diese Durchführung löschen?") )
+	else if( confirm("Diese Durchf"+ue+"hrung l"+oe+"schen?") )
 	{
 		editFindDurchfRow(jqObj).remove();
 	}
@@ -923,7 +923,7 @@ function editDurchfKopieren(jqObj)
 
 function editKursLoeschen(jqObj)
 {
-	if( confirm("Wenn Sie einen Kurs löschen möchten, wird zunächst ein Sperrvermerk gesetzt; beim nächsten Index-Update wird der Kurs dann inkl. aller Durchführungen komplett gelöscht. Dieser Vorgang kann nicht rückgängig gemacht werden!\n\nDen kompletten Kurs inkl. ALLER Durchführungen löschen?") )
+	if( confirm("Wenn Sie einen Kurs l"+oe+"schen m"+oe+"chten, wird zun"+ae+"chst ein Sperrvermerk gesetzt; beim n"+ae+"chsten Index-Update wird der Kurs dann inkl. aller Durchf"+ue+"hrungen komplett gel"+oe+"scht. Dieser Vorgang kann nicht r"+ue+"ckg"+ae+"ngig gemacht werden!\n\nDen kompletten Kurs inkl. ALLER Durchf"+ue+"hrungen l"+oe+"schen?") )
 	{
 		return true;
 	}
@@ -932,7 +932,7 @@ function editKursLoeschen(jqObj)
 
 function editWeekdays(jqObj)
 {
-	// jqObj ist der Text; ein click hierauf soll das nebenliegende <input type=hidden> ändern
+	// jqObj ist der Text; ein click hierauf soll das nebenliegende <input type=hidden> aendern
 	var hiddenObj = jqObj.parent().find('input');
 	if( hiddenObj.val() == '1' )
 	{
@@ -984,7 +984,7 @@ function describeFeedback()
 	else
 	{
 		$('#wisy_feedback_line2').html('<strong style="color: green;">Vielen Dank f&uuml;r Ihren Kommentar!</strong>');
-		ajaxFeedback(0, descr, name, email); // Kommentar zur Bewertung hinzufügen; die Bewertung selbst (erster Parameter) wird an dieser Stelle ignoriert!
+		ajaxFeedback(0, descr, name, email); // Kommentar zur Bewertung hinzufuegen; die Bewertung selbst (erster Parameter) wird an dieser Stelle ignoriert!
 	}
 }
 
@@ -1120,7 +1120,7 @@ function initResponsive()
 		$('body').toggleClass('navshowing');
 	});
 
-	// Navigation Unterpunkte öffnen und schließen mobil
+	// Navigation Unterpunkte oeffnen und schliessen mobil
 	$('#themenmenue a').on('click', function() {
 		$firstUl = $(this).siblings('ul').first();
 		if($firstUl.length) {
@@ -1163,7 +1163,7 @@ $().ready(function()
 	// check for forwarding
 	var askfwd = $('body').attr('data-askfwd');
 	if( typeof askfwd != 'undefined' ) {
-		if( confirm('Von dieser Webseite gibt es auch eine Mobilversion unter ' + askfwd + '. Möchten Sie jetzt dorthin wechseln?') ) {
+		if( confirm('Von dieser Webseite gibt es auch eine Mobilversion unter ' + askfwd + '. M'+oe+'chten Sie jetzt dorthin wechseln?') ) {
 			window.location = askfwd;
 			return;
 		}
@@ -1271,7 +1271,7 @@ function consentCookieBeforePageFunction() {
      e.preventDefault();
 
      if($.cookie('cconsent_onlinepflege') != "allow") {
-      alert("Um die Onlinepflege nutzen zu k‚Äö√†√∂‚Äö√†√ánnen, m‚Äö√†√∂¬¨‚à´ssen Sie dem Speichern von Cookies f‚Äö√†√∂¬¨‚à´r diese Funktion zustimmen (im Cookie-Hinweisfenster).");
+      alert("Um die Onlinepflege nutzen zu k"+oe+"nnen, m"+ue+"ssen Sie dem Speichern von Cookies für diese Funktion zustimmen (im Cookie-Hinweisfenster).");
       hightlightCookieConsentOption('onlinepflege');
       window.cookieconsent.popup.open();
       return false;
@@ -1284,10 +1284,16 @@ function consentCookieBeforePageFunction() {
  } // end: edit page
 }
 
+function openCookieSettings() {
+	 window.cookieconsent.popup.open();
+}
+
 /* Called every time change Cookie consent window initialized or updated */
 function callCookieDependantFunctions() {
  initializeTranslate();
 }
 
+var ae = unescape("%E4");
 var ue = unescape("%FC");
 var oe = unescape("%F6");
+var ss = unescape("%DF");

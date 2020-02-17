@@ -1973,7 +1973,7 @@ class WISY_FRAMEWORK_CLASS
 					ga("set", "anonymizeIp", true); 
 					ga("send", "pageview"); 
 				} else {
-					console.log("No Analytics: opted out");
+					/* console.log("No Analytics: opted out"); */
 				}
 				</script>';
 		}

@@ -51,7 +51,7 @@ function updateCookieSettings() {
 		if (window.cookiebanner.optedOut) {
 			
 			// Disable Google Analytics
-			// Tut das überhaupt irgendwas? -- https://developers.google.com/analytics/devguides/collection/analyticsjs/user-opt-out
+			// Tut das ueberhaupt irgendwas? -- https://developers.google.com/analytics/devguides/collection/analyticsjs/user-opt-out
 			if(window.cookiebanner.uacct) window['ga-disable-' + window.cookiebanner.uacct] = true;
 			
 			// Remove unwanted cookies
@@ -210,7 +210,7 @@ function fav_click(jsObj, id)
 }
 function fav_delete_all()
 {
-	if( !confirm('Gesamte Merkliste löschen?') )
+	if( !confirm('Gesamte Merkliste l'+oe+'schen?') )
 		return false;
 	
 	g_all_fav = {};
@@ -439,7 +439,7 @@ if (jQuery.ui)
 		{
 			/* add volltext */
 			row_class = 'ac_fulltext';
-			tag_name = 'Volltextsuche nach "' + request_term + '" ausführen?';
+			tag_name = 'Volltextsuche nach "' + request_term + '" ausf&uuml;hren?';
 		}
 		else if( tag_help == -2 )
 		{
@@ -575,7 +575,7 @@ if (jQuery.ui)
 						var row = data[i].split("|");
 						if(row[0] == 'headline')
 						{
-							// Zwischenüberschrift
+							// Zwischenueberschrift
 							response_data.push({ label: '<strong class="headline">' + row[1] + '</strong>', value: '' });
 						} else
 						{
@@ -620,7 +620,7 @@ if (jQuery.ui)
 			that = this;
 		}
 	
-		// Standardverhalten (Value ins Eingabefeld schreiben) bei Überschrift und Mehrlink der Ergebnisliste ausschalten
+		// Standardverhalten (Value ins Eingabefeld schreiben) bei Ueberschrift und Mehrlink der Ergebnisliste ausschalten
 		// Ebenso bei Klick auf "wisy_help"
 		var $span = $(ui.item.label);
 		var $to = $(event.toElement);
@@ -635,7 +635,7 @@ if (jQuery.ui)
 		else
 		{
 	
-			// Neuen Autocomplete-Wert nach evtl. bereits vorhandenen einfügen
+			// Neuen Autocomplete-Wert nach evtl. bereits vorhandenen einfuegen
 			var terms = split( that.value );
 			// remove the current input
 			terms.pop();
@@ -1014,10 +1014,10 @@ function editDurchfLoeschen(jqObj)
 {
 	if( $('.editDurchfRow').size() == 1 )
 	{
-		alert("Diese Durchführung kann nicht gelöscht werden, da ein Kurs mindestens eine Durchführung haben muss.\n\nWenn Sie den Kurs komplett löschen möchten, verwenden Sie die Option \"Kurs löschen\" ganz unten auf dieser Seite.");
+		alert("Diese Durchf"+ue+"hrung kann nicht gel"+oe+"scht werden, da ein Kurs mindestens eine Durchf"+ue+"hrung haben muss.\n\nWenn Sie den Kurs komplett l"+oe+"schen m"+oe"chten, verwenden Sie die Option \"Kurs l"+oe+"schen\" ganz unten auf dieser Seite.");
 		return;
 	}
-	else if( confirm("Diese Durchführung löschen?") )
+	else if( confirm("Diese Durchf"+ue+"hrung l"+oe+"schen?") )
 	{
 		editFindDurchfRow(jqObj).remove();
 	}
@@ -1034,7 +1034,7 @@ function editDurchfKopieren(jqObj)
 
 function editKursLoeschen(jqObj)
 {
-	if( confirm("Wenn Sie einen Kurs löschen möchten, wird zunächst ein Sperrvermerk gesetzt; beim nächsten Index-Update wird der Kurs dann inkl. aller Durchführungen komplett gelöscht. Dieser Vorgang kann nicht rückgängig gemacht werden!\n\nDen kompletten Kurs inkl. ALLER Durchführungen löschen?") )
+	if( confirm("Wenn Sie einen Kurs l"+oe+"schen m"+oe+"chten, wird zun"+ae+"chst ein Sperrvermerk gesetzt; beim n"+ae+"chsten Index-Update wird der Kurs dann inkl. aller Durchf"+ue+"hrungen komplett gel"+oe+"scht. Dieser Vorgang kann nicht r"+ue+"ckg"+ae+"ngig gemacht werden!\n\nDen kompletten Kurs inkl. ALLER Durchf"+ue+"hrungen l"+oe+"schen?") )
 	{
 		return true;
 	}
@@ -1043,7 +1043,7 @@ function editKursLoeschen(jqObj)
 
 function editWeekdays(jqObj)
 {
-	// jqObj ist der Text; ein click hierauf soll das nebenliegende <input type=hidden> ändern
+	// jqObj ist der Text; ein click hierauf soll das nebenliegende <input type=hidden> aendern
 	var hiddenObj = jqObj.parent().find('input');
 	if( hiddenObj.val() == '1' )
 	{
@@ -1094,14 +1094,14 @@ function describeFeedback()
 	}
 	else
 	{
-		$('#wisy_feedback_line2').html('<strong style="color: green;">Vielen Dank für Ihren Kommentar!</strong>');
-		ajaxFeedback(0, descr, name, email); // Kommentar zur Bewertung hinzufügen; die Bewertung selbst (erster Parameter) wird an dieser Stelle ignoriert!
+		$('#wisy_feedback_line2').html('<strong style="color: green;">Vielen Dank f&uuml;r Ihren Kommentar!</strong>');
+		ajaxFeedback(0, descr, name, email); // Kommentar zur Bewertung hinzufuegen; die Bewertung selbst (erster Parameter) wird an dieser Stelle ignoriert!
 	}
 }
 
 function sendFeedback(rating)
 {
-	$('#wisy_feedback_yesno').html('<strong class="wisy_feedback_thanks">Vielen Dank für Ihr Feedback!</strong>');
+	$('#wisy_feedback_yesno').html('<strong class="wisy_feedback_thanks">Vielen Dank f&uuml;r Ihr Feedback!</strong>');
 	
 	if( rating == 0 )
 	{
@@ -1231,7 +1231,7 @@ function initResponsive()
 		$('body').toggleClass('navshowing');
 	});
 
-	// Navigation Unterpunkte öffnen und schließen mobil
+	// Navigation Unterpunkte oeffnen und schliessen mobil
 	$('#themenmenue a').on('click', function() {
 		$firstUl = $(this).siblings('ul').first();
 		if($firstUl.length) {
@@ -1253,7 +1253,7 @@ function initResponsive()
  *****************************************************************************/
 
 function initFilters() {
-	// Filter an Kursliste öffnen und schließen
+	// Filter an Kursliste oeffnen und schliessen
 	$('.wisyr_filtergroup, .wisyr_filtergroup > legend').on('click', function(e) {
 		if(e.target !== e.currentTarget && !$(e.target).hasClass('ui-selectmenu-text') && !$(e.target).hasClass('ui-selectmenu-button')) return;
 
@@ -1276,7 +1276,7 @@ function initFilters() {
 			$group.addClass('active');
 			$('.wisyr_filterform').addClass('subActive');
 		
-			// Filter an Kursliste schließen wenn außerhalb geklickt wird
+			// Filter an Kursliste schliessen wenn ausserhalb geklickt wird
 			$(document).on('click.filtergroup', function(event) {
 				$target = $(event.target);
 			
@@ -1305,7 +1305,7 @@ function initFilters() {
 		return false;
 	});
 
-	// Filtervorschläge befüllen automatisch Inputs
+	// Filtervorschlaege befuellen automatisch Inputs
 	$('.wisyr_filter_autofill input[type="radio"]').on('change', function() {
 		$this = $(this);
 		$target = $($this.data('autofilltarget'));
@@ -1337,7 +1337,7 @@ function initFilters() {
 	$('.wisyr_filter_autosubmit .filter_submit').hide();
 	$('.wisyr_filter_autosubmit input, .wisyr_filter_autosubmit select').on('change', function() {
 	
-		// Freie Eingaben zurücksetzen bei autosubmit
+		// Freie Eingaben zuruecksetzen bei autosubmit
 		$(this).parents('.wisyr_filter_autosubmit')
 			.siblings('.wisyr_filter_autoclear')
 			.find('input:not([type=submit]), select')
@@ -1358,7 +1358,7 @@ function initFilters() {
 	});
 	updateClearInput($('#wisy_searchinput'), $('.wisyr_searchinput'));
 
-	// Generischer "clear input button" für Filter
+	// Generischer "clear input button" fuer Filter
 	$('.filter_clearbutton_wrapper').each(function(i, el) {
 		$wrapper = $(this);
 		$input = $wrapper.children('input');
@@ -1375,7 +1375,7 @@ function initFilters() {
 		if($el) {
 			if($el.val() && $el.val().length) {
 				if($wrapper.children('.clear_btn').length == 0) {
-					$wrapper.append('<div class="clear_btn" aria-label="Eingabe löschen"></div>');
+					$wrapper.append('<div class="clear_btn" aria-label="Eingabe l&ouml;schen"></div>');
 					$wrapper.children('.clear_btn').one('click', function() {
 						// Wert von qs leeren und auch aus q entfernen
 						var oldVal = $el.val();
@@ -1426,7 +1426,7 @@ function initFilters() {
 	});
 
 	if($(".wisyr_datepicker").length) {
-		// Zebra Datepicker für Datum in Filtern
+		// Zebra Datepicker fuer Datum in Filtern
 		$(".wisyr_datepicker").Zebra_DatePicker(
 			{
 				format: 'd.m.Y',
@@ -1458,7 +1458,7 @@ function initFiltersMobile() {
 
 	// Zweite Filterebene wird mobil wie erste Filterebene behandelt
 	$('.wisyr_filtergroup.filter_weiterekriterien > .filter_inner > fieldset, .wisyr_filterform form fieldset.filter_weiterekriterien > .wisyr_filtergroup > .filter_inner > fieldset, .wisyr_filtergroup.filter_weiterekriterien > .filter_inner > fieldset > legend, .wisyr_filterform form fieldset.filter_weiterekriterien > .wisyr_filtergroup > .filter_inner > fieldset > legend').on('click', function(e) {
-		// Workaround für "Alle".
+		// Workaround fuer "Alle".
 		// Mobil in zweiter Filterebene passiert nichts wenn dieser Filter nicht gesetzt ist und "Alle" geklickt wird.
 		var isMobile = $(window).width() < 761;
 		if (isMobile && $(e.target).text() == 'Alle' && $(e.target).closest('fieldset').children('.wisyr_selectmenu').children('option:selected').text() == 'Alle') {
@@ -1631,10 +1631,17 @@ function consentCookieBeforePageFunction() {
   } // end: edit page
 }
 
+function openCookieSettings() {
+	 window.cookieconsent.popup.open();
+	}
+
+
 /* Called every time change Cookie consent window initialized or updated */
 function callCookieDependantFunctions() {
  initializeTranslate();
 }
 
+var ae = unescape("%E4");
 var ue = unescape("%FC");
 var oe = unescape("%F6");
+var ss = unescape("%DF");
