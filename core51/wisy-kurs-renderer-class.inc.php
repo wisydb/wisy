@@ -119,7 +119,7 @@ class WISY_KURS_RENDERER_CLASS
 			$bodyClass .= ' wisyp_kurs_abschluss';	
 		}	
 		
-		echo $this->framework->getPrologue(array('title'=>$title, 'ort'=>$ort, 'anbieter_name'=>$anbieter_name, 'anbieter_id'=>$anbieterId, 'beschreibung'=>$beschreibung, 'canonical'=>$this->framework->getUrl('k', array('id'=>$kursId)), 'bodyClass'=>$bodyClass));
+		echo $this->framework->getPrologue(array('id'=>$kursId, 'title'=>$title, 'ort'=>$ort, 'anbieter_name'=>$anbieter_name, 'anbieter_id'=>$anbieterId, 'beschreibung'=>$beschreibung, 'canonical'=>$this->framework->getUrl('k', array('id'=>$kursId)), 'bodyClass'=>$bodyClass));
 		echo $this->framework->getSearchField();
 		
 		// start the result area

@@ -590,6 +590,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		
 		// #socialmedia
 		echo $this->framework->getPrologue(array(
+		    'id'        =>  $anbieter_id, 
 		    'title'		=>	$anbieter_suchname,
 		    'ort'		=>	$anbieter_ort,
 		    'beschreibung' => $anbieter_portraet,

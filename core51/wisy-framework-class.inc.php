@@ -1776,6 +1776,13 @@ class WISY_FRAMEWORK_CLASS
 		return $this->iniRead('head.additionalTags', '');
 	}
 	
+	function getBodyId($relevantID = 0) {
+	    if($relevantID > 0)
+	        return 'id'.$relevantID;
+	    else
+	        return '';
+	}
+	
 	function getBodyClasses($bodyClass)
 	{
 		// we assign one or more classes to the body tag;
@@ -1890,7 +1897,7 @@ class WISY_FRAMEWORK_CLASS
 		
 		// replace ALL placeholders
 		$bodyStart = str_replace('__HEADTAGS__', $this->getTitleTags($param['title'], $param['ort'], $param['anbieter_name']) . $this->getFaviconTags() . $this->getOpensearchTags() . $this->getRSSTags() . $this->getCSSTags() . $this->getCanonicalTag($param['canonical']) . $this->getMobileAlternateTag($param['canonical']) . $this->getJSHeadTags() . $this->getMetaDescription($param['title'], $param['beschreibung']) . $this->getHreflangTags() . $this->getSocialMediaTags($param['title'], $param['ort'], $param['anbieter_name'], $param['anbieter_id'], $param['beschreibung'], $param['canonical']), $bodyStart);
-		$bodyStart = str_replace('__BODYATTR__', ' ' . $this->getJSOnload(). ' class="' . $this->getBodyClasses($param['bodyClass']) . ( $this->editSessionStarted ? ' wisyp_edit' : '') . '" ', $bodyStart);
+		$bodyStart = str_replace('__BODYATTR__', ' ' . $this->getJSOnload() . (isset($param['id']) ? ' id="' . $this->getBodyID($param['id']) .'"' : '') . ' class="' . $this->getBodyClasses($param['bodyClass']) . ( $this->editSessionStarted ? ' wisyp_edit' : '') . '" ', $bodyStart);
 		$bodyStart = $this->replacePlaceholders($bodyStart);
 		$i1 = strpos($bodyStart, "<!-- include ");
 		if( $i1!==false && ($i2=strpos($bodyStart, "-->", $i1))!==false )

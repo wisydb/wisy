@@ -65,8 +65,9 @@ class WISY_GLOSSAR_RENDERER_CLASS
         // prologue
         headerDoCache();
         echo $this->framework->getPrologue(array(
-            'title'                =>        $glossar['begriff'],
-            'beschreibung' => $glossar['erklaerung'],        // #socialmedia, #richtext
+            'id'               => $glossar_id,
+            'title'            =>        $glossar['begriff'],
+            'beschreibung'     => $glossar['erklaerung'],        // #socialmedia, #richtext
             'canonical'        =>        $this->framework->getUrl('g', array('id'=>$glossar_id)),
             'bodyClass'        =>        'wisyp_glossar',
         ));
