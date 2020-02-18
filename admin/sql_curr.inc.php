@@ -82,7 +82,10 @@ if( !@function_exists('mysql_connect') )
 
 	function mysql_errno($link_obj=null)
 	{
-		return $link_obj? mysqli_errno($link_obj) : mysqli_connect_errno();
+	    if(function_exists("mysqli_connect_errno"))
+	        return $link_obj? mysqli_errno($link_obj) : mysqli_connect_errno();
+	    else
+	        return $link_obj? $link_obj->connect_error : '<unknown error no>';
 	}
 }
 
