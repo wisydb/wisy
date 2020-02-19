@@ -1574,22 +1574,22 @@ $().ready(function()
 	
 });
 
-function initializeTranslate() { 
-
-	 if($.cookie('cconsent_translate') == "allow") { 
-	  $.getScript( "//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit", function( data, textStatus, jqxhr ) {
-	  if(jqxhr.status == 200)
-	   return true;
+function initializeTranslate() {
+	 if($.cookie('cconsent_translate') == "allow") {
+	  console.log("consented");
+	  $.loadScript('//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit', function(){
+	     /* console.log('Loaded Google Translate'); */
 	 });
 	  
 	 } else {
+	  console.log("not consented");
 	  /* Interaction not disirable */
 	  /*
 	  hightlightCookieConsentOption('translate');
 	  window.cookieconsent.popup.open();
 	  return false; */
 	 }
-	};
+};
 
 function googleTranslateElementInit() {
   new google.translate.TranslateElement({pageLanguage: 'de', layout: google.translate.TranslateElement.InlineLayout.SIMPLE}, 'google_translate_element');
@@ -1640,6 +1640,16 @@ function openCookieSettings() {
 function callCookieDependantFunctions() {
  initializeTranslate();
 }
+
+jQuery.loadScript = function (url, callback) {
+    jQuery.ajax({
+        url: url,
+        dataType: 'script',
+        success: callback,
+        async: true
+    });
+}
+
 
 var ae = unescape("%E4");
 var ue = unescape("%FC");

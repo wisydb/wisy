@@ -128,6 +128,11 @@ body { padding: 0; margin: 0; }
 
 /* Tabellen */
 
+/* --- Anbieter - Detail --- */
+.wisyr_anbieter_firmenportraet {
+	min-height: 300px;
+}
+	 
 /* --- Kursliste / Anbieterliste --- */
 
 .wisyr_anbieter_switch,
