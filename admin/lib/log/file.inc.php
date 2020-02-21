@@ -88,7 +88,7 @@ class LOG_FILE_CLASS
 		
 			$skip = array();
 			$l = 0;
-			while( $l < sizeof($this->lines) )
+			while( $l < sizeof((array) $this->lines) )
 			{
 				// create record from $lines
 				$record    	= explode("\t", $this->lines[ $l ]);
@@ -140,7 +140,7 @@ class LOG_FILE_CLASS
 		$this->time2 = microtime(true) - $this->time2;
 		
 		// prepare for next_record()
-		$this->currLineNum = sizeof($this->lines);
+		$this->currLineNum = sizeof((array) $this->lines);
 	}
 	
 	function next_record()

@@ -220,7 +220,7 @@ function edit_fields_in($currTable)
 	global $numText;
 	
 	$currTableDef = Table_Find_Def($currTable);
-	for( $r = 0; $r < sizeof($currTableDef->rows); $r++ )
+	for( $r = 0; $r < sizeof((array) $currTableDef->rows); $r++ )
 	{
 		$rowflags= intval($currTableDef->rows[$r]->flags);
 		$rowtype = $rowflags & TABLE_ROW;
@@ -286,7 +286,7 @@ function edit_fields_out($currTable)
 	global $hasAttr;
 	
 	$currTableDef = Table_Find_Def($currTable);
-	for( $r = 0; $r < sizeof($currTableDef->rows); $r++ )
+	for( $r = 0; $r < sizeof((array) $currTableDef->rows); $r++ )
 	{
 		$rowflags= intval($currTableDef->rows[$r]->flags);
 		$rowtype = $rowflags & TABLE_ROW;
@@ -390,7 +390,7 @@ function addvalues_fields_out($currTable)
 	global $namesUsed;
 	
 	$currTableDef = Table_Find_Def($currTable);
-	for( $r = 0; $r < sizeof($currTableDef->rows); $r++ )
+	for( $r = 0; $r < sizeof((array) $currTableDef->rows); $r++ )
 	{
 		$rowtype = intval($currTableDef->rows[$r]->flags) & TABLE_ROW;
 		switch( $rowtype )
@@ -668,7 +668,7 @@ if( isset($settings_ok) || isset($settings_apply) )
 		
 		// ...store settings from $g_addsettings_names
 		global $g_addsettings_names;
-		for( $i = 0; $i < sizeof($g_addsettings_names); $i += 2 )
+		for( $i = 0; $i < sizeof((array) $g_addsettings_names); $i += 2 )
 			regSet($g_addsettings_names[$i+1],  $_REQUEST["addsettings$i"], '');
 	
 		// store settings: save settings to db
@@ -1035,7 +1035,7 @@ if( regGet('toolbar.bin', 1) )
 			$currIds	= $_SESSION['g_session_bin']->getRecords($jobtable, $jobname);
 			
 			reset($currIds);
-			while( list($currId) = each($currIds) ) {
+			foreach(array_keys($currIds) as $currId) {
 				$db->query("SELECT id FROM $jobtable WHERE id=$currId");
 				if( !$db->next_record() ) {
 					$_SESSION['g_session_bin']->recordDelete($jobtable, $currId, $jobname);
@@ -1054,9 +1054,9 @@ if( regGet('toolbar.bin', 1) )
 			$recordsAdded	= 0;
 
 			$source = $_SESSION['g_session_bin']->getRecords('', $_REQUEST['jobadd']);
-			while( list($currTable, $currIds) = each($source) ) {
-				reset($currIds);
-				while( list($currId) = each($currIds) ) {
+			foreach($source as $currTable => $currIds) {
+			    reset($currIds);
+			    foreach(array_keys($currIds) as $currId) {
 					if( !$_SESSION['g_session_bin']->recordExists($currTable, $currId, $jobname) ) {
 						$_SESSION['g_session_bin']->recordAdd($currTable, $currId, $jobname);
 						$recordsAdded ++;
@@ -1146,7 +1146,7 @@ if( regGet('toolbar.bin', 1) )
 
 		// dump all bins
 		table_start();
-		for( $i = 0; $i < sizeof($bins); $i++ )
+		for( $i = 0; $i < sizeof((array) $bins); $i++ )
 		{
 			$currName = $bins[$i];
 			$currEntries = $_SESSION['g_session_bin']->getRecords('', $currName);
@@ -1173,7 +1173,7 @@ if( regGet('toolbar.bin', 1) )
 					echo ' ' . htmlconstant('_SETTINGS_BINREADONLY');
 				}
 				
-				if( sizeof($bins) > 1 ) {
+				if( sizeof((array) $bins) > 1 ) {
 					if( $currName==$_SESSION['g_session_bin']->activeBin ) {
 						echo " <img src=\"{$site->skin->imgFolder}/bin1.gif\" width=\"15\" height=\"13\" border=\"0\" alt=\"[X]\" title=\"\" />";
 						echo ' ' . htmlconstant('_SETTINGS_BINISACTIVEBIN');
@@ -1195,9 +1195,9 @@ if( regGet('toolbar.bin', 1) )
 					// render list content overview
 					reset($currEntries);
 					$currTotalCount = 0;
-					while( list($currTable, $currIds) = each($currEntries) ) 
+					foreach($currEntries as $currTable => $currIds)
 					{
-						$currIdsCount = sizeof($currIds);
+					    $currIdsCount = sizeof((array) $currIds);
 						if( $currIdsCount )
 						{
 							$tempTableDef = Table_Find_Def($currTable);
@@ -1227,7 +1227,7 @@ if( regGet('toolbar.bin', 1) )
 									
 										$hasNonExistantRecords = 0;
 										reset($currIds);
-										while( list($currId, $active) = each($currIds) ) {
+										foreach($currIds as $currId => $active) {
 											table_item();
 												$db->query("SELECT id FROM $tempTableDef->name WHERE id=$currId");
 												if( $db->next_record() ) {
@@ -1326,13 +1326,13 @@ if( regGet('toolbar.bin', 1) )
 	
 							// add records from
 							$nonEmptyLists = '###';
-							for( $j = 0; $j < sizeof($bins); $j++ )
+							for( $j = 0; $j < sizeof((array) $bins); $j++ )
 							{
 								$tempName = $bins[$j];
 								$tempEntries = $_SESSION['g_session_bin']->getRecords('', $tempName);
 								if( $tempName != $currName ) {
 									$tempTotal = 0;
-									while( list($tempTable, $tempIds) = each($tempEntries) ) {
+									foreach($tempEntries as $tempTable => $tempIds) {
 										$tempTotal += sizeof($tempIds);
 									}
 									
@@ -1456,7 +1456,7 @@ $site->skin->sectionStart();
 		if( $debug ) {
 			acl_get_grp_filter($filteredgroups, $filterpositive);
 			echo $filterpositive? '<hr /><b>groups to <i>show:</i></b> ' : '<b>groups to <i>hide:</i></b> '; 
-			for( $i = 0; $i < sizeof($filteredgroups); $i++ ) echo ($i? ', ' : '') . $filteredgroups[$i];
+			for( $i = 0; $i < sizeof((array) $filteredgroups); $i++ ) echo ($i? ', ' : '') . $filteredgroups[$i];
 			echo '<hr />';
 		}
 
@@ -1576,7 +1576,7 @@ $site->skin->sectionStart();
 		
 		// show settings from $g_addsettings_names
 		global $g_addsettings_names;
-		for( $i = 0; $i < sizeof($g_addsettings_names); $i += 2 )
+		for( $i = 0; $i < sizeof((array) $g_addsettings_names); $i += 2 )
 		{
 			form_control_start(htmlconstant($g_addsettings_names[$i]));
 				form_control_text("addsettings$i", regGet($g_addsettings_names[$i+1], ''));

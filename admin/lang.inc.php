@@ -124,7 +124,10 @@ function check_wanted_lang($availLang, $wantedLang)
 			}
 			else {
 				reset($availLang);
-				list($wantedLang, $dummy) = each($availLang);
+				$wantedLang = array_keys($availLang);
+				$wantedLang = $wantedLang[0]; // array_key_first() only > php7
+				$dummy = array_values($availLang);
+				$dummy = $dummy[0];
 			}
 		}
 	}
@@ -188,7 +191,7 @@ function htmlconstant($constant)
 	}
 	
 	$args = func_get_args();
-	for( $i = 1; $i < sizeof($args); $i++ ) {
+	for( $i = 1; $i < sizeof((array) $args); $i++ ) {
 		$ret = str_replace('$'.$i, $args[$i], $ret);
 	}
 

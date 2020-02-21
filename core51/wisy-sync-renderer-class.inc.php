@@ -202,7 +202,7 @@ class TAGTABLE_CLASS
 		// in fact, the returned list ist used to delete old records from the database)
 		$ret = '0';
 		reset( $this->tags );
-		while( list($tag_name, $tag_param) = each($this->tags) )
+		foreach($this->tags as $tag_name => $tag_param)
 			$ret .= ', ' . $tag_param[ 0 ];
 		
 		// add all synonyms and all portal tags; they should be preserved as the function is used to delete tags
@@ -322,7 +322,7 @@ class ATTR2TAG_CLASS
 	{
 		$names = array();
 		$this->lookupNames($attr_id, $names);
-		for( $i = 0; $i < sizeof($names); $i++ )
+		for( $i = 0; $i < sizeof((array) $names); $i++ )
 		{
 			$id = $this->tagtable->lookupOrInsert($names[$i][0], $names[$i][1], $names[$i][2], $names[$i][3]);
 			if( $id != 0 )
@@ -578,14 +578,14 @@ class WISY_SYNC_RENDERER_CLASS
 																				$this->statetable->updateUpdatestick();
 		// write all synonyms
 		$db->query("DELETE FROM x_tags WHERE tag_type & 64;");
-		for( $i = 0; $i < sizeof($insertValues); $i++ ) {
+		for( $i = 0; $i < sizeof((array) $insertValues); $i++ ) {
 			$this->tagtable->lookupOrInsert($insertValues[$i][0], $insertValues[$i][1]);
 		}
 																				$this->statetable->updateUpdatestick();
 		// create table to show where the synonyms link to
 		$db->query("DELETE FROM x_tags_syn;");
 		$values = '';
-		for( $t = 0; $t < sizeof($tableValues); $t++ ) 
+		for( $t = 0; $t < sizeof((array) $tableValues); $t++ ) 
 		{
 			$syn_id = $this->tagtable->lookup($tableValues[$t][0]);
 			if( $syn_id )
@@ -605,7 +605,7 @@ class WISY_SYNC_RENDERER_CLASS
 			$db->query($sql);
 		}
 		
-		$this->log(sprintf("%s synonyms checked.", sizeof($insertValues)));
+		$this->log(sprintf("%s synonyms checked.", sizeof((array) $insertValues)));
 	}	
 	
 
@@ -900,7 +900,7 @@ class WISY_SYNC_RENDERER_CLASS
 			}
 			
 			reset($k_tagescodes);
-			while( list($code) = each($k_tagescodes) )
+			foreach($k_tagescodes as $code)
 			{
 				if( $this->tagescodes[$code] != '' )
 				{
@@ -910,10 +910,10 @@ class WISY_SYNC_RENDERER_CLASS
 			}
 			
 			// fruehestmoeglichstes beginndatum setzen
-			if( sizeof($d_beginn) )
+			if( sizeof((array) $d_beginn) )
 			{
 				sort($d_beginn);
-				for( $i = 0; $i < sizeof($d_beginn); $i++ )
+				for( $i = 0; $i < sizeof((array) $d_beginn); $i++ )
 				{
 					$k_beginn = $d_beginn[$i];
 					if( $k_beginn >= $this->today_datenotime )
@@ -921,7 +921,7 @@ class WISY_SYNC_RENDERER_CLASS
 				}
 				
 				// spaetestmoegliches beginndatum setzen
-				for( $i = 0; $i < sizeof($d_beginn); $i++ )
+				for( $i = 0; $i < sizeof((array) $d_beginn); $i++ )
 				{
 					if( $d_beginn[$i] >= $this->today_datenotime && $d_beginn[$i] >= $k_beginn_last)
 						$k_beginn_last = $d_beginn[$i];
@@ -967,7 +967,7 @@ class WISY_SYNC_RENDERER_CLASS
 
 			// "Beginnaenderungsdatum" aktualisieren
 			$begmod_hash = explode(',', $begmod_hash);
-			for( $i = 0; $i < sizeof($d_beginn); $i++ )
+			for( $i = 0; $i < sizeof((array) $d_beginn); $i++ )
 			{
 				if( !in_array($d_beginn[$i], $begmod_hash) )
 				{
@@ -993,7 +993,7 @@ class WISY_SYNC_RENDERER_CLASS
 			// UPDATE tag table for this record
 			$sql = '';
 			$added = array();
-			for( $t = 0; $t < sizeof($tag_ids); $t++ )
+			for( $t = 0; $t < sizeof((array) $tag_ids); $t++ )
 			{
 				$tag_id = $tag_ids[$t];
 				if( !$added[ $tag_id ] )
@@ -1013,7 +1013,7 @@ class WISY_SYNC_RENDERER_CLASS
 			// UPDATE plz table for this record
 			$sql = '';
 			reset($d_plz);
-			while( list($plz) = each($d_plz) )
+			foreach($d_plz as $plz)
 			{
 				$sql .= $sql==""? "INSERT INTO x_kurse_plz (kurs_id, plz) VALUES " : ", ";
 				$sql .= "($kurs_id, '".addslashes($plz)."')";
@@ -1032,7 +1032,7 @@ class WISY_SYNC_RENDERER_CLASS
 			{
 				$sql = '';
 				reset($d_latlng);
-				while( list($latlng) = each($d_latlng) )
+				foreach($d_latlng as $latlng)
 				{
 					$sql .= $sql==""? "INSERT INTO x_kurse_latlng (kurs_id, lat, lng) VALUES " : ", ";
 					$sql .= "($kurs_id, ".addslashes($latlng).")";
@@ -1054,7 +1054,7 @@ class WISY_SYNC_RENDERER_CLASS
 		$this->log(sprintf("%d addresses were *not* geocoded through external service because of daily limit!", $non_geocoded_addresses_limit));
 		$this->log(sprintf("%d records updated.", $kurs_cnt));
 		
-		if($is_geocode_day && is_array($nongeocoded_addresses) && count($nongeocoded_addresses) > 1)
+		if($is_geocode_day && is_array($nongeocoded_addresses) && count((array) $nongeocoded_addresses) > 1)
 		    file_put_contents($geo_protocol_file, serialize($nongeocoded_addresses));
 		
 		// some specials for deepupdates
@@ -1078,7 +1078,7 @@ class WISY_SYNC_RENDERER_CLASS
 			// TAG_FREQ: get the hash portal_tag_id => portal_id
 			$portal_tag_ids = array(0=>1);
 			reset($kurs2portaltag->all_portals);
-			while( list($portalId, $values) = each($kurs2portaltag->all_portals) )
+			foreach($kurs2portaltag->all_portals as $portalId => $values)
 				$portal_tag_ids[ $values['portal_tag'] ] = 1; // $portalTagId may be 0
 																				$this->statetable->updateUpdatestick();
 			// TAG_FREQ: alle Tagfilter synchronisieren
@@ -1111,9 +1111,9 @@ class WISY_SYNC_RENDERER_CLASS
 				if( $last_kurs_id != $db->Record['kurs_id'] )
 				{
 					// flush tags ...
-					for( $p = sizeof($curr_portals)-1; $p >= 0; $p-- )
+					for( $p = sizeof((array) $curr_portals)-1; $p >= 0; $p-- )
 					{
-						for( $t = sizeof($curr_tags)-1; $t >= 0; $t-- )
+						for( $t = sizeof((array) $curr_tags)-1; $t >= 0; $t-- )
 						{
 							$result[ $curr_portals[$p] ][ $curr_tags[$t] ] ++;
 						}
@@ -1145,7 +1145,7 @@ class WISY_SYNC_RENDERER_CLASS
 			$db->query("DELETE FROM x_tags_freq;");
 			$portalIdFor0Out = false;
 			reset($kurs2portaltag->all_portals);
-			while( list($portalId, $values) = each($kurs2portaltag->all_portals) )
+			foreach($kurs2portaltag->all_portals as $portalId => $values)
 			{
 				if( $values['einstellungen']['core'] == '20' )
 				{
@@ -1169,7 +1169,7 @@ class WISY_SYNC_RENDERER_CLASS
 						if( is_array($result[$portalTagId]) )
 						{
 							reset( $result[$portalTagId] );
-							while( list($currTagId, $currFreq) = each($result[$portalTagId]) )
+							foreach($result[$portalTagId] as $currTagId => $currFreq)
 							{
 								$v .= $v===''? '' : ', ';
 								$v .= "($currTagId, $portalIdFor, $currFreq)";

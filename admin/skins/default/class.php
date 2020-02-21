@@ -466,7 +466,7 @@ class SKIN_DEFAULT_CLASS
 			if( $this->sectionCount == -1 ) 
 			{
 				$this->mainmenuStart();
-					$numSections = sizeof($this->sections);
+				    $numSections = sizeof((array) $this->sections);
 					for( $s = 0; $s < $numSections; $s++ ) 
 					{
 						$ahref = '';

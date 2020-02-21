@@ -32,7 +32,7 @@ class WISY_DURCHF_CLASS
 				"Nach-mittags",
 			);
 			$g_tr = array();
-			for( $i = 0; $i < sizeof($tr); $i++ )
+			for( $i = 0; $i < sizeof((array) $tr); $i++ )
 				$g_tr[ str_replace('-', '', $tr[$i]) ] = str_replace('-', '&shy;', $tr[$i]);
 		}
 				
@@ -123,7 +123,7 @@ class WISY_DURCHF_CLASS
 			global $codes_beginnoptionen;
 			$codes_beginnoptionen_array = array();
 			$temp = explode('###', $codes_beginnoptionen);
-			for( $i = 0; $i < sizeof($temp); $i+=2 ) {
+			for( $i = 0; $i < sizeof((array) $temp); $i+=2 ) {
 				$codes_beginnoptionen_array[$temp[$i]] = $temp[$i+1];
 			}
 		}
@@ -153,14 +153,14 @@ class WISY_DURCHF_CLASS
 			
 			$codes_kurstage_array = array();
 			$temp = explode('###', $codes_kurstage);
-			for( $i = 0; $i < sizeof($temp); $i+=2 ) {
+			for( $i = 0; $i < sizeof((array) $temp); $i+=2 ) {
 				$codes_kurstage_array[intval($temp[$i])] = trim($temp[$i+1]);
 			}
 		}
 	
 		$c = 0;
 		reset($codes_kurstage_array);
-		while( list($value, $descr) = each($codes_kurstage_array) ) {
+		foreach($codes_kurstage_array as $value => $descr) {
 			if( $kurstage & $value ) {
 				$c++;
 			}
@@ -168,7 +168,7 @@ class WISY_DURCHF_CLASS
 	
 		$ret = '';
 		reset($codes_kurstage_array);
-		while( list($value, $descr) = each($codes_kurstage_array) ) {
+		foreach($codes_kurstage_array as $value => $descr) {
 			if( $kurstage & $value ) {
 				$ret .= $ret? ($c==1? ' und ' : ', ') : '';
 				$ret .= $descr;
@@ -189,7 +189,7 @@ class WISY_DURCHF_CLASS
 			global $codes_dauer;
 			$codes_dauer_array = array();
 			$temp = explode('###', $codes_dauer);
-			for( $i = 0; $i < sizeof($temp); $i+=2 ) {
+			for( $i = 0; $i < sizeof((array) $temp); $i+=2 ) {
 				$codes_dauer_array[$temp[$i]] = $temp[$i+1];
 			}
 		}
@@ -271,17 +271,19 @@ class WISY_DURCHF_CLASS
 			
 			foreach( $addParam['stichwoerter'] as $stichwort ) {
 				switch( $stichwort['id'] ) {
-					case 3207:  $preishinweise_arr[] = 'kostenlos per Bildungsgutschein'; 		break;
-					case 6013:  $preishinweise_arr[] = 'kostenlos durch Umschulung';			break;
-					case 16311: $preishinweise_arr[] = 'kostenlos als Aktivierungsmaßnahme';	break;				
+					case 3207:  $preishinweise_arr[] = cs8('kostenlos per Bildungsgutschein'); break;
+					case 6013:  $preishinweise_arr[] = cs8('kostenlos durch Umschulung');			break;
+					case 16311: $preishinweise_arr[] = cs8('kostenlos als Aktivierungsma&szlig;nahme');	break;
+					case 849451: $preishinweise_arr[] = cs8('Preisstruktur komplex. GGf. beim Anbieter einholen.');	break;
 				}
 			}
 			
-			if( sizeof($preishinweise_arr) )
+			if( sizeof((array) $preishinweise_arr) )
 			{	
 				$preishinweise_out = implode(', ', $preishinweise_arr);
 				if( $html ) {
-					$ret .= '<div class="wisyr_preis_hinweise">' . htmlentities(utf8_encode($preishinweise_out)) . '</div>';
+					$preishinweise_out = cs8(str_replace(chr(128), "&euro;", $preishinweise_out));
+					$ret .= '<div class="wisyr_preis_hinweise">' . htmlentities(str_replace(chr(0xE2).chr(0x82).chr(0xAC), "&euro;", str_replace(chr(128), "&euro;", html_entity_decode($preishinweise_out)))) . '</div>';
 				}
 				else {
 					$ret .= " ($preishinweise_out)";
@@ -332,12 +334,12 @@ class WISY_DURCHF_CLASS
 						 ORDER BY beginn='0000-00-00 00:00:00', beginn, beginnoptionen, structure_pos");
 			while( $db->next_record() )
 			{
-				if( $this->plzfilterObj->is_valid_plz($db->f8('plz')) ) {
-					$durchfuehrungenIds[] = $db->f8('secondary_id');
+				if( $this->plzfilterObj->is_valid_plz($db->f('plz')) ) {
+					$durchfuehrungenIds[] = $db->f('secondary_id');
 				}
 			}
 			
-			if( sizeof($durchfuehrungenIds) )
+			if( sizeof((array) $durchfuehrungenIds) )
 				break;
 		}
 		
@@ -402,13 +404,14 @@ class WISY_DURCHF_CLASS
 		// termin
 		$beginnsql		= $record['beginn'];
 		$beginn			= $this->framework->formatDatum($beginnsql);
-		$beginnoptionen = $this->formatBeginnoptionen($record['beginnoptionen']);
+		$beginnoptionen = cs8($beginnoptionen);
+		// TODO was ist mit formatbeginnoptionen?
 		$endesql		= $record['ende'];
 		$ende			= $details? $this->framework->formatDatum($endesql) : '';
 		$zeit_von		= $details? $record['zeit_von'] : ''; if( $zeit_von=='00:00' ) $zeit_von = '';
 		$zeit_bis		= $details? $record['zeit_bis'] : ''; if( $zeit_bis=='00:00' ) $zeit_bis = '';
-		$bg_nummer = $db->f8('bg_nummer');
-		$bg_nummer_count = $db->f8('bg_nummer_count');
+		$bg_nummer 		= $db->fcs8('bg_nummer');
+		$bg_nummer_count = $db->fcs8('bg_nummer_count');
 		
 		// termin abgelaufen?
 		$termin_abgelaufen = false;
@@ -537,15 +540,22 @@ class WISY_DURCHF_CLASS
 			echo '    <td class="wisyr_ort" data-title="Ort">';
 			
 			// get ort
-			$strasse	= htmlentities(utf8_encode($record['strasse']));
+			$strasse	= cs8($record['strasse']);
 			$plz		= $record['plz'];
-			$ort		= htmlentities(utf8_encode($record['ort'])); // hier wird noch der Stadtteil angehängt
+			$ort		= htmlentities(cs8($record['ort'])); // hier wird noch der Stadtteil angehaengt
 			$stadt		= $ort;
-			$stadtteil	= htmlentities(utf8_encode($record['stadtteil']));
-			$land		= htmlentities(utf8_encode($record['land']));
+			$stadtteil	= cs8($record['stadtteil']);
+			
+			$exclude_ort = trim($this->framework->iniRead('search.hide.ort', ''));
+			if($stadtteil && $exclude_ort && stripos($ort, $exclude_ort) !== FALSE && $this->framework->getPageType() == "suche") {
+				$ort = str_replace($exclude_ort, "", $ort);
+				$stadt = str_replace($exclude_ort, "", $stadt);
+			}
+			
+			$land		= cs8($record['land']);
 			if( $ort && $stadtteil ) {
 				if( strpos($ort, $stadtteil)===false ) {
-					$ort = $ort . '-' . $stadtteil;
+					$ort = $ort . ' - ' . $stadtteil;
 				}
 				else {
 					$ort = $ort;
@@ -610,9 +620,9 @@ class WISY_DURCHF_CLASS
 			if($details)
 			{
 				echo '    <td class="wisyr_bemerkungen" data-title="Bemerkungen">';
-                    if( $record['teilnehmer'] ) echo '<p class="wisyr_art_teilnehmer">max. ' . intval($record['teilnehmer']) . ' Teilnehmer</p>';
+					if( $record['teilnehmer'] ) echo '<p class="wisyr_art_teilnehmer">max. ' . intval($record['teilnehmer']) . ' Teilnehmer</p>';
 					$wiki2html =& createWisyObject('WISY_WIKI2HTML_CLASS', $this->framework);
-					echo $wiki2html->run(utf8_encode($record['bemerkungen']));
+					echo cs8($wiki2html->run($bemerkungen));
 				echo ' </td>' . "\n";
 			}
 		}
@@ -623,7 +633,8 @@ class WISY_DURCHF_CLASS
 			// nr
 			echo '    <td class="wisyr_nr" data-title="Nr">';
 			$nr = $record['nr'];
-			echo $nr? htmlentities(utf8_encode($nr)) : 'k. A.';
+			$nr = cs8($nr);
+			echo $nr? htmlentities($nr) : 'k. A.';
 			echo ' </td>' . "\n";
 		}
 	}

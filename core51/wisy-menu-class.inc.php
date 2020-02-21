@@ -39,8 +39,8 @@ class WISY_MENU_ITEM
 		$submenuId = uniqid('submenu-'.$this->prefix.'-'.$this->level.'-');
 		
 		$ret = $liTag;
-			if( utf8_encode($this->url) ) {
-				$ret .= '<a href="'.htmlspecialchars(utf8_encode($this->url)).'"';
+			if( cs8($this->url) ) {
+				$ret .= '<a href="'.htmlspecialchars(cs8($this->url)).'"';
 				$ret .= $this->aparam.($toplevel ? ' tabindex="-1"' : '');
 				$ret .= sizeof($this->children) ? ' data-submenu-id="'.$submenuId.'"' : '';
 				$ret .= ($this->a11Type == 'complex') ? ' role="menuitem">' : '>';
@@ -110,7 +110,7 @@ class WISY_MENU_CLASS
 
 		// add all children
 		
-		$thema = utf8_encode($g_themen[$startIndex]['thema']);
+		$thema = cs8($g_themen[$startIndex]['thema']);
 		
 		$title = htmlspecialchars($thema);
 		
@@ -120,7 +120,7 @@ class WISY_MENU_CLASS
 		
 		$startKuerzel = $g_themen[$startIndex]['kuerzel_sorted'];
 		$startKuerzelLen = strlen($startKuerzel);
-		for( $i = 0; $i < sizeof($g_themen); $i++ )
+		for( $i = 0; $i < sizeof((array) $g_themen); $i++ )
 		{
 			if( substr($g_themen[$i]['kuerzel_sorted'], 0, $startKuerzelLen) == $startKuerzel 
 			 && strlen($g_themen[$i]['kuerzel_sorted']) == $startKuerzelLen+10 )
@@ -140,7 +140,7 @@ class WISY_MENU_CLASS
 		$startIdOrKuerzel = trim($startIdOrKuerzel);
 		$startIdOrKuerzel_natsort = $this->framework->normalizeNatsort($startIdOrKuerzel);
 		$hasPoint = strpos($startIdOrKuerzel, '.')!==false;
-		for( $i = 0; $i < sizeof($g_themen); $i++ )
+		for( $i = 0; $i < sizeof((array) $g_themen); $i++ )
 		{
 			if( ( $hasPoint && $g_themen[$i]['kuerzel_sorted'] == $startIdOrKuerzel_natsort) 
 			 || (!$hasPoint && $g_themen[$i]['id'] == $startIdOrKuerzel) )
@@ -193,8 +193,8 @@ class WISY_MENU_CLASS
 			{
 				$ret[] = $this->handleLevel($i, $level, $aparam);
 				
-	 			if( $title != '' ) { $ret[sizeof($ret)-1]->title = $title; $title = ''; }
-				$ret[sizeof($ret)-1]->level = $level;
+	 			if( $title != '' ) { $ret[sizeof((array) $ret)-1]->title = $title; $title = ''; }
+				$ret[sizeof((array) $ret)-1]->level = $level;
 			}
 		}
 		
@@ -220,11 +220,11 @@ class WISY_MENU_CLASS
 			$autoTitle = '';
 			$url = '';
 			$temp = explode('&', $keywordId);
-			for( $i = 0; $i < sizeof($temp); $i++ ) {
+			for( $i = 0; $i < sizeof((array) $temp); $i++ ) {
 				$currKeywordId = intval($temp[$i]);
 				if( $currKeywordId > 0 ) {
 					$autoTitle .= $autoTitle==''? '' : ' ';
-					$autoTitle .= $g_keywords[ $currKeywordId ];
+					$autoTitle = cs8($g_keywords[ $keywordId ]);
 					$url .= $url==''? '' : urlencode(', ');
 					$url .= urlencode(g_sync_removeSpecialChars($g_keywords[ $currKeywordId ]));
 				}
@@ -235,7 +235,7 @@ class WISY_MENU_CLASS
 		else
 		{
 			$keywordId = intval($keywordId);
-			$autoTitle = $g_keywords[ $keywordId ];
+			$autoTitle = cs8($g_keywords[ $currKeywordId ]);
 			$url = 'search?q=' . urlencode(g_sync_removeSpecialChars($g_keywords[ $keywordId ]));
 		}
 		
@@ -250,7 +250,7 @@ class WISY_MENU_CLASS
 				$attr_ids[] = $this->db->f8('attr_id');
 			}
 		
-			for( $a = 0; $a < sizeof($attr_ids); $a++ ) {
+			for( $a = 0; $a < sizeof((array) $attr_ids); $a++ ) {
 				$item->children[] =& $this->addKeywordsRecursive('', $attr_ids[$a], $level+1, $addChildren-1);
 			}
 		}		
@@ -264,7 +264,7 @@ class WISY_MENU_CLASS
 		if( ($p=strpos($keywordIds, ';'))!==false ) { $keywordIds = substr($keywordIds, 0, $p); } // allow comments after a `;` (this is undocumented stuff!)
 		$keywordIds = explode(',', $keywordIds);
 		$ret_items = array();
-		for( $k = 0; $k < sizeof($keywordIds); $k++ ) 
+		for( $k = 0; $k < sizeof((array) $keywordIds); $k++ ) 
 		{
 			$addChildren = 0;
 			$keywordId = $keywordIds[$k];
@@ -287,17 +287,17 @@ class WISY_MENU_CLASS
 		$url = '';
 		$aparam = '';
 		$param = explode('|', $param);
-		if( sizeof($param) == 3 )
+		if( sizeof((array) $param) == 3 )
 		{
 			// parameters are in the format "title | url | target='_blank'",  "title | url | onclick='...'" etc.
-			$title = utf8_encode(trim($param[0]));
+			$title = cs8(trim($param[0]));
 			$url = trim($param[1]);
 			$aparam = ' ' . $param[2] . ' ';
 		}
-		else if( sizeof($param) == 2 )
+		else if( sizeof((array) $param) == 2 )
 		{
 			// parameters are in the format "title | url"
-			$title = utf8_encode(trim($param[0]));
+			$title = cs8(trim($param[0]));
 			$url = trim($param[1]);
 		}
 		else
@@ -311,7 +311,7 @@ class WISY_MENU_CLASS
 			else
 			{
 				// parameters are in the format "title"
-				$title = utf8_encode($param[0]);
+				$title = cs8(trim($param[0]));
 			}
 		}
 	}
@@ -375,7 +375,7 @@ class WISY_MENU_CLASS
 			$allPrefix = $this->prefix . '.';
 			$allPrefixLen = strlen($allPrefix);
 			
-			while( list($key, $value) = each($wisyPortalEinstellungen) )
+			foreach($wisyPortalEinstellungen as $key => $value)
 			{
 				if( substr($key, 0, $allPrefixLen)==$allPrefix )
 				{
@@ -384,14 +384,14 @@ class WISY_MENU_CLASS
 					// Read optional setting for accessibility type this menu should use
 					//	simple -> tab-navigation
 					//	complex -> arrow-navigation
-					if(count($levels) && $levels[0] == 'type' && $value != '') {
+					if(count((array) $levels) && $levels[0] == 'type' && $value != '') {
 						$this->a11Type = $value;
 						continue;
 					}
 					
 					// find the correct parent ...
 					$parent =& $root;
-					for( $l = 0; $l < sizeof($levels)-1; $l++ )
+					for( $l = 0; $l < sizeof((array) $levels)-1; $l++ )
 					{
 						$level = intval($levels[$l]);
 						$levelFound = false;
@@ -409,8 +409,8 @@ class WISY_MENU_CLASS
 					}
 					
 					// add item to parent
-					$addChildren =& $this->createItems($value, intval($levels[sizeof($levels)-1]));
-					for( $a = 0; $a < sizeof($addChildren); $a++ )
+					$addChildren =& $this->createItems($value, intval($levels[sizeof((array) $levels)-1]));
+					for( $a = 0; $a < sizeof((array) $addChildren); $a++ )
 						$parent->children[] =& $addChildren[$a];
 				}
 			}

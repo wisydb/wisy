@@ -148,7 +148,7 @@ class WISY_LANDINGPAGE_RENDERER_CLASS
 		$this->renderDetailtitle($title);
 	
 		$searcher =& createWisyObject('WISY_SEARCH_CLASS', $this->framework);
-		$searcher->prepare(mysql_real_escape_string($querystring));
+		$searcher->prepare($this->framework->mysql_escape_mimic($querystring));
 	
 		$searchRenderer = createWisyObject('WISY_SEARCH_RENDERER_CLASS', $this->framework);
 		$searchRenderer->renderKursliste($searcher, $querystring, $offset, false, $baseurl, 2);
@@ -178,7 +178,7 @@ class WISY_LANDINGPAGE_RENDERER_CLASS
 		$plz_deny = str_replace(',empty', '', $this->framework->iniRead('durchf.plz.deny', ''));
 				
 		// Nach Themen filtern?
-		if(count($stichworte)) {
+		if(count((array) $stichworte)) {
 			$select_fields = 'stichwoerter.stichwort, stichwoerter.stichwort_sorted, durchfuehrung.ort';
 			$select_fields_outer = 'df.stichwort, df.stichwort_sorted, df.ort';
 		} else {
@@ -202,7 +202,7 @@ class WISY_LANDINGPAGE_RENDERER_CLASS
 		if(strlen(trim($portal_tag_id))) {
 			$select .= " LEFT JOIN x_kurse_tags ON kurse.id=x_kurse_tags.kurs_id";
 		}
-		if(count($stichworte)) {
+		if(count((array) $stichworte)) {
 			$select .= " LEFT JOIN kurse_stichwort ON kurse_stichwort.primary_id=kurse.id";
 			$select .= " LEFT JOIN stichwoerter ON stichwoerter.id=kurse_stichwort.attr_id";
 		}
@@ -212,7 +212,7 @@ class WISY_LANDINGPAGE_RENDERER_CLASS
 		if(strlen(trim($plz_allow))) $select .= " AND durchfuehrung.plz IN (" . $plz_allow . ")";
 		if(strlen(trim($plz_deny))) $select .= " AND durchfuehrung.plz NOT IN (" . $plz_deny . ")";
 		if(strlen(trim($portal_tag_id))) $select .= " WHERE x_kurse_tags.tag_id=$portal_tag_id";
-		if(count($stichworte)) $select .= " AND stichwoerter.id IN(" . implode(',', $stichworte) . ")";
+		if(count((array) $stichworte)) $select .= " AND stichwoerter.id IN(" . implode(',', $stichworte) . ")";
 		$select .= " GROUP BY $select_fields";
 		
 		// Filtere Orte anhand plz_ortscron
@@ -240,7 +240,7 @@ class WISY_LANDINGPAGE_RENDERER_CLASS
 			$ortsname = '';
 			if($thema_und_ortsname != '') {
 				$parts = explode('-in-', $thema_und_ortsname);
-				if(count($parts) == 2) {
+				if(count((array) $parts) == 2) {
 					$thema = $parts[0];
 					$ortsname = $parts[1];
 				}
@@ -292,7 +292,7 @@ class WISY_LANDINGPAGE_RENDERER_CLASS
 				echo '<div id="wisy_resultarea" class="wisy_landingpage" role="main">';
 			
 				$stichworte = $this->quotedArrayFromList(trim($this->framework->iniRead('seo.themen.stichworte')));
-				if(count($stichworte)) {
+				if(count((array) $stichworte)) {
 					$sql = $this->getOrtslisteSql($stichworte);
 					$this->renderThemenliste($sql);
 				}
@@ -361,7 +361,7 @@ class WISY_LANDINGPAGE_RENDERER_CLASS
 		$this->renderDetailtitle($title);
 	
 		$searcher =& createWisyObject('WISY_SEARCH_CLASS', $this->framework);
-		$searcher->prepare(mysql_real_escape_string($querystring));
+		$searcher->prepare($this->framework->mysql_escape_mimic($querystring));
 	
 		$searchRenderer = createWisyObject('WISY_SEARCH_RENDERER_CLASS', $this->framework);
 		$searchRenderer->renderKursliste($searcher, $querystring, $offset, false, $baseurl, 2);
@@ -454,7 +454,7 @@ class WISY_LANDINGPAGE_RENDERER_CLASS
 		$baseurl = $_SERVER['REQUEST_URI'];
 	
 		$searcher =& createWisyObject('WISY_SEARCH_CLASS', $this->framework);
-		$searcher->prepare(mysql_real_escape_string($querystring));
+		$searcher->prepare($this->framework->mysql_escape_mimic($querystring));
 	
 		$searchRenderer = createWisyObject('WISY_SEARCH_RENDERER_CLASS', $this->framework);
 		$searchRenderer->renderKursliste($searcher, $querystring, $offset, true, $baseurl, 2);
@@ -563,7 +563,7 @@ class WISY_LANDINGPAGE_RENDERER_CLASS
 		if(trim($this->framework->iniRead('seo.themen.stichworte')) != '')
 		{
 			$stichworte = $this->quotedArrayFromList(trim($this->framework->iniRead('seo.themen.stichworte')));
-			if(count($stichworte)) {
+			if(count((array) $stichworte)) {
 			
 				$sitemap .= "<!-- Themen -->\n";
 				$sitemap .= $this->addUrl('themen/', time(), 'daily');

@@ -39,14 +39,14 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 	{
 		$renderformData = array();
 		
-		if(count($records))
+		if(count((array) $records))
 		{
 			$renderformData['records_simple'] = $records;
 			
 			$renderformData['records_ids'] = array();
 			$renderformData['records_themen'] = array();
 			$renderformData['records_anbieter'] = array();
-			while( list($i, $record) = each($renderformData['records_simple']['records']) )
+			foreach($renderformData['records_simple']['records'] as $i => $record)
 			{
 				$renderformData['records_ids'][] = $record['id'];
 				$renderformData['records_themen'][] = $record['thema'];
@@ -206,7 +206,7 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 		return $renderformData;
 	}
 	
-	function renderForm($q, $records, $hlevel=1, $number_of_results_string='')
+	function renderForm($q=NULL, $records=NULL, $hlevel=1, $number_of_results_string='')
 	{
 		
 		echo '<div id="wisyr_filterform" class="wisyr_filterform">';
@@ -337,8 +337,9 @@ class WISY_FILTERMENU_ITEM
 			}
 			
 			$ret .= '<fieldset class="' . $filterclasses . '">';
-			if(trim($data['title']) != '') {
-				$ret .= '<legend data-filtervalue="' . $legendvalue . '">' . $data['title'] . '</legend>';
+			$title = cs8($data['title']);
+			if(trim($title) != '') {
+				$ret .= '<legend data-filtervalue="' . $legendvalue . '">' . $title . '</legend>';
 			}
 			
 			$ret .= $this->getFormfields($data);
@@ -791,7 +792,7 @@ class WISY_FILTERMENU_CLASS
 		
 		$allPrefix = $this->prefix . '.';
 		$allPrefixLen = strlen($allPrefix);
-		while( list($key, $value) = each($wisyPortalEinstellungen) )
+		foreach($wisyPortalEinstellungen as $key => $value)
 		{
 			
 			if( substr($key, 0, $allPrefixLen)==$allPrefix )
@@ -807,7 +808,7 @@ class WISY_FILTERMENU_CLASS
 				$levels = substr($key, $allPrefixLen);
 				$newStructure = false;
 				$elements = explode(".", $levels);
-				if(count($elements) > 1) {
+				if(count((array) $elements) > 1) {
 					$last = &$newStructure[ $elements[0] ];
 					$wasNumeric = false;
 					$wasOption = false;
@@ -827,12 +828,12 @@ class WISY_FILTERMENU_CLASS
 					}
 					if($isNumeric && !$wasOption) {
 						// Add title if parent was not "options"
-						$last['title'] = utf8_encode($value);
+						$last['title'] = cs8($value);
 					} else {
-						$last = utf8_encode($value);
+						$last = cs8($value);
 					}
 				} else {
-					$newStructure[$levels]['title'] = utf8_encode($value);
+					$newStructure[$levels]['title'] = cs8($value);
 				}
 				if($newStructure) {
 					$filterStructure = array_replace_recursive($filterStructure, $newStructure);

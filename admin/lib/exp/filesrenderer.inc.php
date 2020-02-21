@@ -53,7 +53,7 @@ class EXP_FILESRENDERER_CLASS extends EXP_FUNCTIONS_CLASS
 				
 				reset($files);
 				$filesCnt = 0;
-				while( list($key, $currFile) = each($files) )
+				foreach($files as $key => $currFile)
 				{
 					$site->skin->rowStart();
 						$site->skin->cellStart('nowrap');
@@ -120,7 +120,7 @@ class EXP_FILESRENDERER_CLASS extends EXP_FUNCTIONS_CLASS
 		// read all files, delete marked
 		$files = $this->scanner->scan('exp');
 		if( $delete ) {
-			for( $i = 0; $i < sizeof($files); $i++ ) {
+		    for( $i = 0; $i < sizeof((array) $files); $i++ ) {
 				if( $delete == $files[$i]->file_name || $delete == 'all' ) {
 					unlink( $files[$i]->full_path );
 				}

@@ -91,7 +91,7 @@ function acl_get_access(	$object_path,
 	$object_path = strtr($object_path, "\n\r\t,;:", '      ');
 	$object_path = str_replace(' ', '', $object_path);
 	$object_path = explode('.', $object_path);
-	if( sizeof($object_path) != 2 ) {
+	if( sizeof((array) $object_path) != 2 ) {
 		$g_acl_get_rights = 0;
 		return 0; // no access
 	}
@@ -133,7 +133,7 @@ function acl_get_access(	$object_path,
 		$tempi = strtr($tempi, array("\n"=>";", "\r"=>"", "\t"=>"", " "=>""));
 		
 		$tempi = explode(";", $tempi);
-		for( $i = 0; $i < sizeof($tempi); $i++ ) {
+		for( $i = 0; $i < sizeof((array) $tempi); $i++ ) {
 			if( $tempi[$i] ) {
 				list($tempp, $tempr) = explode(':', $tempi[$i]);
 				
@@ -190,7 +190,7 @@ function acl_get_access(	$object_path,
 		}
 
 		reset($g_acl_user_access);
-		while( list($k, $v) = each($g_acl_user_access) ) 
+		foreach($g_acl_user_access as $k => $v)
 		{
 			$k = explode('.', $k);
 			if( $object_path[0] == $k[0] ) {
@@ -462,7 +462,7 @@ function acl_get_default_grp($table = '', $user = 0)
 {
 	global $g_acl_user_groups;
 	acl_get_access("SYSTEM.COMMON", -1, $user); // just check anything, so $g_acl_user_groups is set
-	return sizeof($g_acl_user_groups)? $g_acl_user_groups[0] : 0;
+	return (is_array($g_acl_user_groups) && sizeof((array) $g_acl_user_groups)) ? $g_acl_user_groups[0] : 0;
 }
 
 
@@ -491,7 +491,7 @@ function acl_get_all_groups($user = 0)
 
 	// get all groups the user has access to
 	$groups = array();
-	for( $i = 0; $i < sizeof($ids); $i++ ) 
+	for( $i = 0; $i < sizeof((array) $ids); $i++ )
 	{
 		$g_acl_db->query("SELECT attr_id FROM user_attr_grp WHERE primary_id=$user AND attr_id={$ids[$i][0]}");
 		if( $g_acl_db->next_record() 
@@ -552,7 +552,7 @@ function acl_get_grp_filter(&$filteredgroups, &$filterpositive, $user = 0)
 		$positivegroups = array();
 		$allgroups = acl_get_all_groups($user);
 		$allgroups[] = array(0, '');
-		for( $i = 0; $i < sizeof($allgroups); $i++ ) {
+		for( $i = 0; $i < sizeof((array) $allgroups); $i++ ) {
 			if( !in_array($allgroups[$i][0], $filteredgroups) ) {
 				$positivegroups[] = $allgroups[$i][0];
 			}
@@ -627,7 +627,7 @@ function acl_get_sql(	$test = ACL_READ,
 		$filterpositive = 0;
 	}
 	
-	for( $i = 0; $i < sizeof($filteredgroups); $i++ ) {
+	for( $i = 0; $i < sizeof((array) $filteredgroups); $i++ ) {
 		$filter .= $filter? ', ' : '';
 		$filter .= $filteredgroups[$i];
 	}
@@ -672,7 +672,7 @@ function acl_get_sql(	$test = ACL_READ,
 			$ids[] = $g_acl_db->f('id');
 		}
 	
-		for( $i = 0; $i < sizeof($ids); $i++ ) 
+		for( $i = 0; $i < sizeof((array) $ids); $i++ ) 
 		{
 			if( ($filterpositive? in_array($ids[$i], $filteredgroups) : !in_array($ids[$i], $filteredgroups))
 			 && acl_get_access("SUPERVISOR.{$ids[$i]}") )

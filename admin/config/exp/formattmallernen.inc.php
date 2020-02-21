@@ -115,7 +115,7 @@ class RTF_WRITER_CLASS
 		}
 		
 		// search color
-		for( $i = 0; $i < sizeof($this->colors); $i++ ) {
+		for( $i = 0; $i < sizeof((array) $this->colors); $i++ ) {
 			if( $this->colors[$i] == $rtfcolor ) {
 				return $i; // success
 			}
@@ -364,13 +364,13 @@ class RTF_WRITER_CLASS
 			$this->w("{\\comment File creation date is " . strftime("%Y-%m-%d %H:%M:%S") . " }\n");
 			
 			// fonttable
-			if( sizeof($this->fonts) == 0 ) {	
+			if( sizeof((array) $this->fonts) == 0 ) {
 				$this->defineFont('Arial');
 			}
 			
 			if( $this->write_style_format ) {
 				$this->w("{\\fonttbl\n");
-					for( $i = 0; $i < sizeof($this->fonts); $i++ ) {
+				for( $i = 0; $i < sizeof((array) $this->fonts); $i++ ) {
 						$this->w('{\f' . $i . '\f' . $this->fonts[$i] . ";}\n");
 					}
 				$this->w("}\n");
@@ -378,7 +378,7 @@ class RTF_WRITER_CLASS
 			
 			// color table
 			$this->w("{\colortbl\n");
-				for( $i = 0; $i < sizeof($this->colors); $i++ ) {
+			    for( $i = 0; $i < sizeof((array) $this->colors); $i++ ) {
 					$this->w($this->colors[$i] . ";\n");
 				}
 			$this->w("}\n");
@@ -393,7 +393,7 @@ class RTF_WRITER_CLASS
 			$this->w(" Normal;}\n");
 				
 				reset($this->styles);
-				while( list($name, $style) = each($this->styles) ) {
+				foreach($this->styles as $name => $style) {
 					$index = $this->styles_index[$name];
 					if( $index > 0 ) {
 						if( $this->styles_type[$name] == 'para' ) {
@@ -425,10 +425,10 @@ class RTF_WRITER_CLASS
 			// tabs
 			global $debug_count;
 			if( $this->write_style_format || $debug_count ) {
-				for( $i = 0; $i < sizeof($this->global_tabs); $i++ ) {
+			    for( $i = 0; $i < sizeof((array) $this->global_tabs); $i++ ) {
 					$this->w('\tx' . $this->global_tabs[$i]);
 				}
-				if( sizeof($this->global_tabs) ) {
+				if( sizeof((array) $this->global_tabs) ) {
 					$this->w("\n");
 				}
 			}
@@ -512,7 +512,7 @@ class EXP_FORMATTMALLERNEN_CLASS extends EXP_PLUGIN_CLASS
 		}
 
 		$allgroups = acl_get_all_groups();
-		for( $i = 0; $i < sizeof($allgroups); $i++ )
+		for( $i = 0; $i < sizeof((array) $allgroups); $i++ )
 		{
 			$this->options["group{$allgroups[$i][0]}"] = array('check', 
 				"{$allgroups[$i][1]} ", /*trailing space->no wrap*/
@@ -780,7 +780,7 @@ class EXP_FORMATTMALLERNEN_CLASS extends EXP_PLUGIN_CLASS
 		$KURS_TH = explode("\n", $KURS_TH);
 
 		reset($durchf);
-		while( list($dummy, $param) = each($durchf) ) 
+		foreach($durchf as $dummy => $param)
 		{
 			$this->fp->wSect();
 				$this->fp->wStyle('Kurs');
@@ -908,7 +908,7 @@ class EXP_FORMATTMALLERNEN_CLASS extends EXP_PLUGIN_CLASS
 				if( $refdate ) 
 				{
 					$termine = array();
-					for( $i = 0; $i < sizeof($param['beginn']); $i++ ) {
+					for( $i = 0; $i < sizeof((array) $param['beginn']); $i++ ) {
 						if( $param['beginn'][$i]
 						 && $param['beginn'][$i] != '0000-00-00 00:00:00' 
 						 && $param['beginn'][$i] >= $refdate ) {
@@ -916,15 +916,15 @@ class EXP_FORMATTMALLERNEN_CLASS extends EXP_PLUGIN_CLASS
 						}
 					}
 					
-					if( sizeof($termine) )
+					if( sizeof((array) $termine) )
 					{
-						$this->fp->wTab();
-						$this->fp->wText(sizeof($termine)==1? 'Termin: ' : 'Termine: ');
-						
-						ksort($termine);
-						reset($termine);
-						$i = 0;
-						while( list($termin) = each($termine) )
+					    $this->fp->wTab();
+					    $this->fp->wText(sizeof((array) $termine)==1? 'Termin: ' : 'Termine: ');
+					    
+					    ksort($termine);
+					    reset($termine);
+					    $i = 0;
+					    foreach(array_keys($termine) as $termin)
 						{
 							if( $i ) { $this->fp->wText(', '); }
 						
@@ -946,7 +946,7 @@ class EXP_FORMATTMALLERNEN_CLASS extends EXP_PLUGIN_CLASS
 		// Stichwoerter / Abschluesse
 		//
 	
-		for( $i = 0; $i < sizeof($stichwIds); $i++ ) {
+		for( $i = 0; $i < sizeof((array) $stichwIds); $i++ ) {
 			if( is_array($this->stichw[$stichwIds[$i]]) ) {
 				$this->fp->wSect();
 					$this->fp->wCmd($this->stichw[$stichwIds[$i]][1]&1? '\xe\v\b' : '\xe\v');
@@ -1292,7 +1292,7 @@ class EXP_FORMATTMALLERNEN_CLASS extends EXP_PLUGIN_CLASS
 		// erstelle die ZIP-Datei
 		//
 		$zipfile = new EXP_ZIPWRITER_CLASS($this->allocateFileName('1001-mal-lernen.zip'));
-		for( $i = 0; $i < sizeof($this->names); $i++ ) 
+		for( $i = 0; $i < sizeof((array) $this->names); $i++ )
 		{
 			if( !$zipfile->add_data($this->dumps[$i], $this->names[$i]) )
 				$this->progress_abort('cannot write zip');

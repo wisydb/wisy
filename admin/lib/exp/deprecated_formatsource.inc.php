@@ -6,7 +6,7 @@ class EXP_FORMATSOURCE_CLASS extends EXP_PLUGIN_CLASS
 	{	
 		$this->remark	= '_EXP_SOURCEREMARK';
 		
-		$this->rootdirsToExport	= array('admin', 'api', 'core20');
+		$this->rootdirsToExport	= array('admin', 'api', 'core20', 'core51');
 		$this->filesToSkip		= array(
 			'@eaDir',			// written by some daemon eg. on synology servers
 			'config.inc.php'	// this file contains the passwords, do not export

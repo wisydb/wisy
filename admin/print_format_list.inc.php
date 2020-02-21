@@ -42,7 +42,7 @@ class print_list_class extends print_plugin_class
 		}
 		
 		// go through all rows		
-		for( $r = 0; $r < sizeof($tableDef->rows); $r++ ) 
+		for( $r = 0; $r < sizeof((array) $tableDef->rows); $r++ ) 
 		{
 			$rowflags		= intval($tableDef->rows[$r]->flags);
 			$rowtype		= $rowflags&TABLE_ROW;
@@ -78,8 +78,8 @@ class print_list_class extends print_plugin_class
 			}
 			else
 			{
-				if( ($this->columns[$prefix.$tableDef->rows[$r]->name])
-				 || (sizeof($this->columns)==0 && $rowflags&TABLE_LIST) )
+			    if( ($this->columns[$prefix.$tableDef->rows[$r]->name])
+			     || (sizeof((array) $this->columns)==0 && $rowflags&TABLE_LIST) )
 				{
 					$heads[] = $tableDef->rows[$r]->descr;
 					$cells[] = preview_field($tableDef, $r, $db1, 0);

@@ -28,7 +28,7 @@ class AUTOCOMPLETE_DETAILS_CLASS
 		$db = new DB_Admin;
 		$eql = "";
 		$sql = "SELECT id FROM $table WHERE ";
-		for( $f = 0; $f < sizeof($fields); $f++ ) 
+		for( $f = 0; $f < sizeof((array) $fields); $f++ )
 		{
 			$value = $_REQUEST['v'.$f];
 			

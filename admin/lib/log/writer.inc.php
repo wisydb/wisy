@@ -37,7 +37,7 @@ class LOG_WRITER_CLASS
 		$line = strftime("%Y-%m-%d %H:%M:%S") . "\t" . $table . "\t" . $recordIds . "\t" . $userId . "\t" . $action . "\t";
 
 		reset($this->data);
-		while( list($key, $v) = each($this->data) )
+		foreach($this->data as $key => $v)
 		{
 			if( is_array($v) ) {
 				if( $v[0] != $v[1] ) {
@@ -92,7 +92,7 @@ class LOG_WRITER_CLASS
 		$db->query("SELECT * FROM $table WHERE id=$id;");
 		if( $db->next_record() )
 		{
-			for( $r = 0; $r < sizeof($table_def->rows); $r++ )
+		    for( $r = 0; $r < sizeof((array) $table_def->rows); $r++ )
 			{
 				$rowname  = $table_def->rows[$r]->name;
 				$rowflags = $table_def->rows[$r]->flags;
@@ -176,7 +176,7 @@ class LOG_WRITER_CLASS
 								if( $what == 'creatediff' ) {
 									$do_recurse = false; 	// if the secondary table (durchfuehrung) does /not/ exist in the old values, a dump is not needed
 									reset($this->data);			
-									while( list($n) = each($this->data) ) {
+									foreach(array_keys($this->data) as $n) {
 										if( substr($n, 0, strlen($secondary_prefix)) == $secondary_prefix ) { $do_recurse = true; break; }
 									}
 								}

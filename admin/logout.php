@@ -31,7 +31,7 @@ regSave();
 // set 'errors' for the user to null
 if( regGet('settings.editable', 1) ) {
 	$db = new DB_Admin;
-	$db->query("UPDATE user SET num_login_errors=0 WHERE id=" . $_SESSION['g_session_userid']);
+	$db->query("UPDATE user SET last_login_id='', num_login_errors=0 WHERE id=" . $_SESSION['g_session_userid']);
 }
 
 // destroy session

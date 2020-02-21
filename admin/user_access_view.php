@@ -111,7 +111,7 @@ function check_table($table, $id /*may be -1*/, $user)
 		check_access($table_def->name.'.COMMON', $id, $user, $table_def->descr.'.COMMON');
 		
 		// field access
-		for( $r = 0; $r < sizeof($table_def->rows); $r++ ) {
+		for( $r = 0; $r < sizeof((array) $table_def->rows); $r++ ) {
 			check_access($table_def->name.'.'.$table_def->rows[$r]->name, $id, $user, $table_def->descr.'.'.$table_def->rows[$r]->descr);
 		}
 		
@@ -228,7 +228,7 @@ if( !$user_found ) {
 // get table enum, correct table
 $table_found = 0;
 $tables_enum = '';
-for( $t = 0; $t < sizeof($Table_Def); $t++ ) {
+for( $t = 0; $t < sizeof((array) $Table_Def); $t++ ) {
 	$tables_enum .= $Table_Def[$t]->name . '###' . $Table_Def[$t]->descr . '###';
 	if( $Table_Def[$t]->name == $table ) {
 		$table_found = 1;

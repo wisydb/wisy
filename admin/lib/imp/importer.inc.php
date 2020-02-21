@@ -161,7 +161,7 @@ class IMP_IMPORTER_CLASS
 		// update the basics values
 		$sql = "UPDATE $table SET sync_src=$sync_src, user_modified=$user_modified, user_grp=$user_grp, user_access=$user_access, date_modified='$date_modified'";
 		$rows  = $table_def->rows;
-		for( $r = 0; $r < sizeof($rows); $r++ )
+		for( $r = 0; $r < sizeof((array) $rows); $r++ )
 		{
 			$row = $rows[$r];
 			switch( $row->flags&TABLE_ROW ) 
@@ -190,7 +190,7 @@ class IMP_IMPORTER_CLASS
 		$mysqlDb->query($sql);
 		
 		// update attribute and secondary tables
-		for( $r = 0; $r < sizeof($rows); $r++ ) 
+		for( $r = 0; $r < sizeof((array) $rows); $r++ ) 
 		{
 			$row = $rows[$r];
 			switch( $row->flags&TABLE_ROW ) 
@@ -230,7 +230,7 @@ class IMP_IMPORTER_CLASS
 					
 					// delete additional IDs from the attribute/secondary link table
 					reset($old_ids);
-					while( list($attr_id, $del_do) = each($old_ids) ) {
+					foreach($old_ids as $attr_id => $del_do) {
 						if( $del_do ) {
 							if( $attr_id_name == 'secondary_id' || !$this->_is_id_protected($table, $row->name, $attr_id) ) {
 								$mysqlDb->query("DELETE FROM {$table}_{$row->name} WHERE primary_id=$id AND $attr_id_name=$attr_id;");
@@ -244,7 +244,7 @@ class IMP_IMPORTER_CLASS
 						
 					// update the secondary table
 					if( $attr_id_name == 'secondary_id' ) {
-						for( $i = 0; $i < sizeof($new_ids); $i++ ) {
+					    for( $i = 0; $i < sizeof((array) $new_ids); $i++ ) {
 							$this->_import_record($row->addparam->name, $new_ids[$i]); // errors may be logged ... no abort ...
 						}
 					}
@@ -288,7 +288,7 @@ class IMP_IMPORTER_CLASS
 				if( $system_sync_src == 0 )  { $this->_log_full('"protect" kann nur zusammen mit einer eigenen Datenbankkennung verwendet werden.'); return false; }
 				if( !is_object($table_def) ) { $this->_log_full("$table - ungültige Tabellenangabe."); return false; }
 				$linked_table = '';
-				for( $r = 0; $r < sizeof($table_def->rows); $r++ ) {
+				for( $r = 0; $r < sizeof((array) $table_def->rows); $r++ ) {
 					if( $table_def->rows[$r]->name == $field ) {
 						$linked_table = $table_def->rows[$r]->addparam->name;
 						break;
@@ -320,12 +320,12 @@ class IMP_IMPORTER_CLASS
 		// INSERT / UPDATE - go through all records
 		$totalCnt = 0;
 		$tables = $this->mixfile->get_tables();
-		for( $t = 0; $t < sizeof($tables); $t++ )
+		for( $t = 0; $t < sizeof((array) $tables); $t++ )
 		{
 			$table   = $tables[$t];
 			$records = $this->mixfile->get_records($table, GET_UPDATES|GET_DELETE);
 			reset($records);
-			while( list($id, $currRecord) = each($records) )
+			foreach($records as $id => $currRecord)
 			{	
 				// import / delete this record?
 				$import   = false;
@@ -359,9 +359,9 @@ class IMP_IMPORTER_CLASS
 				}
 				
 				if( $import || $deleteit ) {
-					if( sizeof($imported_ids[$table])==0 && sizeof($todel_ids[$table])==0 ) {
-						$this->_log_full('Import gestarted.', $table);
-					}
+				    if( sizeof((array) $imported_ids[$table])==0 && sizeof((array) $todel_ids[$table])==0 ) {
+				        $this->_log_full('Import gestarted.', $table);
+				    }
 				}
 				
 				// do the import
@@ -382,19 +382,19 @@ class IMP_IMPORTER_CLASS
 			}
 		}
 		
-		if( sizeof($imported_ids)==0 && sizeof($todel_ids)==0 ) {
-			$this->_log_full('Import gestarted, keine zu importierenden oder zu löschenden Datensätze gefunden.');
+		if( sizeof((array) $imported_ids)==0 && sizeof((array) $todel_ids)==0 ) {
+		    $this->_log_full('Import gestarted, keine zu importierenden oder zu läschenden Datensätze gefunden.');
 		}
 
 		// DELETE - go through all records--
 		$totalCnt = 0;
 		reset($todel_ids);
-		while( list($table, $ids) = each($todel_ids) )
+		foreach($todel_ids as $table => $ids)
 		{
 			$table_def = Table_Find_Def($table, 0 /*no access check*/ );
 			if( is_object($table_def) ) {
 				reset($ids);
-				while( list($id, $dummy) = each($ids) )
+				foreach($ids as $id => $dummy)
 				{
 					// delete the record, if possible
 					$id_ref_cnt = $table_def->num_references($id, $id_references);
@@ -415,19 +415,19 @@ class IMP_IMPORTER_CLASS
 			}
 		}
 		reset($deleted_ids);
-		while( list($table, $ids) = each($deleted_ids) ) {
+		foreach($deleted_ids as $table => $ids) {
 			$this->_log('Datensätze gelöscht.', $table, implode(',', $ids));
 		}
 		
 		// FINAL log
-		for( $t = 0; $t < sizeof($tables); $t++ ) {
-			$table = $tables[$t];
-			if( sizeof($imported_ids[$table]) || sizeof($todel_ids[$table]) ) {
-				$this->_log('Import beendet.', $table, sizeof($imported_ids[$table])? implode(',', $imported_ids[$table]) : '');
-			}
+		for( $t = 0; $t < sizeof((array) $tables); $t++ ) {
+		    $table = $tables[$t];
+		    if( is_array($imported_ids) && sizeof((array) $imported_ids[$table]) || is_array($todel_ids) && sizeof((array) $todel_ids[$table]) ) {
+		        $this->_log('Import beendet.', $table, sizeof((array) $imported_ids[$table])? implode(',', $imported_ids[$table]) : '');
+		    }
 		}
-		if( sizeof($imported_ids)==0 && sizeof($todel_ids)==0 ) {
-			$this->_log('Import beendet.');
+		if( sizeof((array) $imported_ids)==0 && sizeof((array) $todel_ids)==0 ) {
+		    $this->_log('Import beendet.');
 		} 
 
 		// success

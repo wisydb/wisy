@@ -35,7 +35,7 @@ class SYNC_OVERVIEWRENDERER_CLASS extends SYNC_FUNCTIONS_CLASS
 			
 			$ids = SYNC_JOB_CLASS::s_get_all_ids();
 			
-			for( $j = 0; $j < sizeof($ids); $j++ )
+			for( $j = 0; $j < sizeof((array) $ids); $j++ )
 			{
 				$currJob = new SYNC_JOB_CLASS($ids[$j]);
 				

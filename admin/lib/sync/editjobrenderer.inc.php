@@ -14,7 +14,7 @@ class SYNC_EDITJOBRENDERER_CLASS extends SYNC_FUNCTIONS_CLASS
 		global $Table_Def;
 		
 		$temp2 = '';
-		for( $t = 0; $t < sizeof($Table_Def); $t++ ) {
+		for( $t = 0; $t < sizeof((array) $Table_Def); $t++ ) {
 			if( !$Table_Def[$t]->is_only_secondary($temp, $temp) ) {
 				if( $temp2 ) $temp2 .= '###';
 				$temp2 .= $Table_Def[$t]->name . '###' . $Table_Def[$t]->descr;

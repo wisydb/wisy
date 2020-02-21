@@ -51,7 +51,7 @@ class WISY_INTELLISEARCH_CLASS
 		{
 			$nrSearcher = createWisyObject('WISY_SEARCH_NR_CLASS', $this->framework);
 			$ids = $nrSearcher->nr2id($this->searcher->tokens['cond'][0]['value']);
-			if( sizeof($ids) )
+			if( sizeof((array) $ids) )
 			{
 				$changed_query = 'nr:' . $this->searcher->tokens['cond'][0]['value'];
 				$this->searcher->prepare($changed_query);
@@ -137,7 +137,7 @@ class WISY_INTELLISEARCH_CLASS
 				$tagsuggestor =& createWisyObject('WISY_TAGSUGGESTOR_CLASS', $this->framework);
                 
 				$qsuggestions = $tagsuggestor->suggestTags($this->searcher->tokens['cond'][ $this->searcher->error['first_bad_tag'] ]['value'],array('max'=>10, 'q_tag_type_not'=>array(256,512)));
-				for( $i = 0; $i < sizeof($qsuggestions); $i++ )
+				for( $i = 0; $i < sizeof((array) $qsuggestions); $i++ )
 				{
 					//if( ($qsuggestions[$i]['tag_type']&64) == 0 )
 					{

@@ -59,7 +59,7 @@ function createColumnsHash($table, $prefix = '')
 	
 	// "direct" columns
 	$tableDef = Table_Find_Def($table);
-	for( $r = 0; $r < sizeof($tableDef->rows); $r++ ) 
+	for( $r = 0; $r < sizeof((array) $tableDef->rows); $r++ ) 
 	{
 		$rowflags		= intval($tableDef->rows[$r]->flags);
 		$rowtype		= $rowflags&TABLE_ROW;
@@ -104,7 +104,7 @@ function createColumnsHash($table, $prefix = '')
 			 || ( $columnsToShow && in_array('SUMMARY', $columnsToShow)) )
 			{
 				$columnsCount++;
-				$columnsHash[sizeof($columnsHash)-1] = 1;
+				$columnsHash[sizeof((array) $columnsHash)-1] = 1;
 				$show_summary = 1;
 			}
 		}
@@ -247,7 +247,7 @@ function renderTableHeadCell($curr_field, $descr, $def_desc = 0, $sum_field = 0)
 
 function getSortField($tableDef)
 {
-	for( $r = 0; $r < sizeof($tableDef->rows); $r++ )
+    for( $r = 0; $r < sizeof((array) $tableDef->rows); $r++ )
 	{
 		$rowflags	= intval($tableDef->rows[$r]->flags);
 		$rowtype	= $rowflags&TABLE_ROW;
@@ -284,7 +284,7 @@ function renderTableHead(&$hi, $table, $prefix = '')
 	
 	// "direct" columns
 	$tableDef = Table_Find_Def($table);
-	for( $r = 0; $r < sizeof($tableDef->rows); $r++ ) 
+	for( $r = 0; $r < sizeof((array) $tableDef->rows); $r++ ) 
 	{
 		$rowflags	= intval($tableDef->rows[$r]->flags);
 		$rowtype	= $rowflags&TABLE_ROW;
@@ -860,7 +860,7 @@ if( $select_numrows )
 					if( $curr_access & ACL_REF ) 
 					{
 						$attr_checked = 'check0';
-						for( $a = 0; $a < sizeof($attr_values); $a++ ) {
+						for( $a = 0; $a < sizeof((array) $attr_values); $a++ ) {
 							if( $attr_values[$a] == $id ) {
 								$attr_checked = 'check2';
 								break;
@@ -916,7 +916,7 @@ if( $select_numrows )
 			
 			// "direct" columns
 			$summary = '';
-			for( $r = 0; $r < sizeof($tableDef->rows); $r++ ) 
+			for( $r = 0; $r < sizeof((array) $tableDef->rows); $r++ ) 
 			{
 				$rowflags		= intval($tableDef->rows[$r]->flags);
 				$rowtype		= $rowflags&TABLE_ROW;
@@ -948,11 +948,11 @@ if( $select_numrows )
 						// go through all secondary rows and collect the HTML contents
 						$hiBak = $hi;
 						$secondaryHash = array();
-						for( $s = 0; $s < sizeof($secondaryIds); $s++ ) {
+						for( $s = 0; $s < sizeof((array) $secondaryIds); $s++ ) {
 							$dbs->query("SELECT * FROM $sTableDef->name WHERE id=" . $secondaryIds[$s]);
 							if( $dbs->next_record() ) {
 								$hi = $hiBak;
-								for( $sr = 0; $sr < sizeof($sTableDef->rows); $sr++ )
+								for( $sr = 0; $sr < sizeof((array) $sTableDef->rows); $sr++ )
 								{
 									if( $columnsHash[$hi++] )
 									{
@@ -965,7 +965,7 @@ if( $select_numrows )
 						
 						// go through all secondary rows and render 
 						$hi = $hiBak;
-						for( $sr = 0; $sr < sizeof($sTableDef->rows); $sr++ )
+						for( $sr = 0; $sr < sizeof((array) $sTableDef->rows); $sr++ )
 						{
 							$rowflags	= $sTableDef->rows[$sr]->flags;
 							$rowtype	= $rowflags&TABLE_ROW;
@@ -980,7 +980,7 @@ if( $select_numrows )
 										if( is_array($secondaryHash[$sTableDef->rows[$sr]->name]) )
 										{
 											reset($secondaryHash[$sTableDef->rows[$sr]->name]);
-											while( list($value) = each($secondaryHash[$sTableDef->rows[$sr]->name]) ) {
+											foreach(array_keys($secondaryHash[$sTableDef->rows[$sr]->name]) as $value) {
 												$value = strval($value);
 												if( $value != '' && $value != '&nbsp;' ) {
 													echo $valuesOut? ', ' : '';
@@ -1000,7 +1000,7 @@ if( $select_numrows )
 					}
 					else
 					{
-						$hi += sizeof($sTableDef->rows);
+					    $hi += sizeof((array) $sTableDef->rows);
 					}
 				}
 				else

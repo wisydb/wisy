@@ -47,7 +47,7 @@ class WISY_PLZFILTER_CLASS
 	{
 		$ret = array();
 			$temp = explode(',', $plz_list_as_string);
-			for( $i = 0; $i < sizeof($temp); $i++ ) {
+			for( $i = 0; $i < sizeof((array) $temp); $i++ ) {
 				$plz = trim($temp[$i]);
 				if( $plz != '' ) {
 					$ret[ $plz ] = 1;

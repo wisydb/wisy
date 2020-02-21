@@ -78,7 +78,7 @@ function render_options($tableDefName, $scope /* '' for fields or 'columns' */)
 		// get all settings into an associative array
 		$allDefaults = 1;
 		$settings = array();
-		for( $i = 0; $i < sizeof($fieldNames); $i++ )
+		for( $i = 0; $i < sizeof((array) $fieldNames); $i++ )
 		{
 			if( $_REQUEST["c$i"] && $fieldNames[$i]!='adummyfield' ) {
 				$settings[$fieldNames[$i]] = 1;
@@ -92,7 +92,7 @@ function render_options($tableDefName, $scope /* '' for fields or 'columns' */)
 		// make sure, parent functions are also selected
 		$temp = $settings;
 		reset($temp);
-		while( list($name, $value) = each($temp) ) {
+		foreach($temp as $name => $value) {
 			while( $p=strrpos($name, '.') ) {
 				$name = substr($name, 0, $p);
 				$settings[$name] = 1;
@@ -107,7 +107,7 @@ function render_options($tableDefName, $scope /* '' for fields or 'columns' */)
 		// create string from array
 		$settingsString = '';
 		reset($settings);
-		while( list($name, $value) = each($settings) ) {
+		foreach($settings as $name => $value) {
 			$settingsString .= $settingsString? ', ' : '';
 			$settingsString .= $name;
 		}
@@ -169,7 +169,7 @@ function render_options($tableDefName, $scope /* '' for fields or 'columns' */)
 
 			// prepare data
 			$startEnd = array();
-			for( $i = 0; $i < sizeof($fieldNames); $i++ )
+			for( $i = 0; $i < sizeof((array) $fieldNames); $i++ )
 			{
 				if( $fieldIndent[$i] < $fieldIndent[$i+1] ) {
 					$startEnd[$i] = -1;
@@ -183,7 +183,7 @@ function render_options($tableDefName, $scope /* '' for fields or 'columns' */)
 			}
 
 			// render
-			for( $i = 0; $i < sizeof($fieldNames); $i++ )
+			for( $i = 0; $i < sizeof((array) $fieldNames); $i++ )
 			{
 				// indent and expand/collapse tree
 				$checkbox = '';

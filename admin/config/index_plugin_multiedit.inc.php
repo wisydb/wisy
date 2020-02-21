@@ -42,11 +42,12 @@ class MULTIEDIT_PLUGIN_CLASS
 		global $site;
 		$ret = '';
 		$table_def = Table_Find_Def($table);
-		for( $r = 0; $r < sizeof($table_def->rows); $r++ )
+		for( $r = 0; $r < sizeof((array) $table_def->rows); $r++ )
 		{
 			$rowflags = $table_def->rows[$r]->flags;
 			$rowname = $table_def->rows[$r]->name;
-			$rowdescr = $site->htmldeentities(trim($table_def->rows[$r]->descr)); if( strlen($rowdescr) > 16) $rowdescr = substr($rowdescr, 0, 14).'..'; 
+			$rowdescr = $site->htmldeentities(trim($table_def->rows[$r]->descr));
+			/* if( strlen($rowdescr) > 16) $rowdescr = substr($rowdescr, 0, 14).'..'; */
 			if( !($rowflags & TABLE_READONLY) )
 			{
 				switch( $rowflags & TABLE_ROW )
@@ -156,7 +157,7 @@ class MULTIEDIT_PLUGIN_CLASS
 						$options .= "del_old_durchf###Abgelaufene Durchführungen LÖSCHEN###";
 					}
 					
-					$options .= "field__user_grp__settext###Benutzergruppe: setze auf 'Parameter2' (nur ID)###";
+					$options .= "field__user_grp__settext###Benutzergruppe: setze auf 'Parameter2' (nur ID) ###";
 					$options .= "field__user_access__settext###Rechte: setze auf 'Parameter2'###";
 					
 					$options .= "nop2######";
@@ -263,7 +264,7 @@ class MULTIEDIT_PLUGIN_CLASS
 		global $site;
 		$all = explode('###', $rowdef->addparam);
 		$allowed = '';
-		for( $i = 0; $i < sizeof($all); $i+=2 )
+		for( $i = 0; $i < sizeof((array) $all); $i+=2 )
 		{
 			if( strtolower(trim($value)) == strtolower(trim($site->htmldeentities($all[$i+1]))) )
 				return $all[$i];
@@ -298,7 +299,7 @@ class MULTIEDIT_PLUGIN_CLASS
 		$sql_descr = "{$linked_table_def->descr}.ID";
 
 		// additionally, search for the value in the first summary column
-		for( $r = 0; $r < sizeof($linked_table_def->rows); $r++ )
+		for( $r = 0; $r < sizeof((array) $linked_table_def->rows); $r++ )
 		{
 			if( $linked_table_def->rows[$r]->flags & TABLE_SUMMARY )
 			{
@@ -319,7 +320,7 @@ class MULTIEDIT_PLUGIN_CLASS
 		$seperator = regGet("edit.seperator.{$this->tableName}", ';'); if( $seperator == '' ) $seperator = ';';
 		$sep_arr = explode($seperator, $value);
 		$ret = array(); $error = '';
-		for( $a = 0; $a < sizeof($sep_arr); $a++ ) 
+		for( $a = 0; $a < sizeof((array) $sep_arr); $a++ )
 		{
 			$curr_attr = trim($sep_arr[$a]);
 			if( $curr_attr !== '' )
@@ -381,7 +382,7 @@ class MULTIEDIT_PLUGIN_CLASS
 		if( $field == 'user_access' ) {
 			$rowdescr = 'Rechte';
 		}
-		else for( $r = 0; $r < sizeof($table_def->rows); $r++ ) {
+		else for( $r = 0; $r < sizeof((array) $table_def->rows); $r++ ) {
 			if( $table_def->rows[$r]->name == $field ) { $rowdescr = trim($table_def->rows[$r]->descr); break; }
 		}
 		
@@ -473,7 +474,7 @@ class MULTIEDIT_PLUGIN_CLASS
 				$all_changes = 0;
 				for( $a = 0; $a < sizeof($allIdsArr); $a++ )
 				{
-					for( $param2_i = 0; $param2_i < sizeof($param2); $param2_i++ )
+				    for( $param2_i = 0; $param2_i < sizeof((array) $param2); $param2_i++ )
 					{
 						$db->query("SELECT attr_id FROM {$localTableName}_{$table_def->rows[$r]->name} WHERE primary_id=$allIdsArr[$a] AND attr_id=".$param2[$param2_i]);
 						if( !$db->next_record() )

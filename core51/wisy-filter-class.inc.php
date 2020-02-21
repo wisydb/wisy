@@ -168,7 +168,7 @@ class WISY_FILTER_CLASS
 			$decoration = array();
 			
 		$foerderungen = $this->getSpezielleStichw(2);
-		if( sizeof($foerderungen) > 1 )
+		if( sizeof((array) $foerderungen) > 1 )
 		{
 			$this->presets['foerderung'] = array
 				(
@@ -180,7 +180,7 @@ class WISY_FILTER_CLASS
 		}
 		
 		$zielgruppen = $this->getSpezielleStichw(8);
-		if( sizeof($zielgruppen) > 1 )
+		if( sizeof((array) $zielgruppen) > 1 )
 		{
 			$this->presets['zielgruppe'] = array
 				(
@@ -192,7 +192,7 @@ class WISY_FILTER_CLASS
 		}
 
 		$qualitaetszertifikate = $this->getSpezielleStichw(4);
-		if( sizeof($qualitaetszertifikate) > 1 )
+		if( sizeof((array) $qualitaetszertifikate) > 1 )
 		{
 			$this->presets['qualitaetszertifikat'] = array
 				(
@@ -204,7 +204,7 @@ class WISY_FILTER_CLASS
 		}
 
 		$unterrichtsarten = $this->getSpezielleStichw(32768);
-		if( sizeof($unterrichtsarten) > 1 )
+		if( sizeof((array) $unterrichtsarten) > 1 )
 		{
 			$this->presets['unterrichtsart'] = array
 				(
@@ -216,7 +216,7 @@ class WISY_FILTER_CLASS
 		}
 		
 		$sonstigemerkmale = $this->getSpezielleStichw(1024);
-		if( sizeof($sonstigemerkmale) > 1 )
+		if( sizeof((array) $sonstigemerkmale) > 1 )
 		{
 			$this->presets['sonstigesmerkmal'] = array
 				(
@@ -370,7 +370,7 @@ class WISY_FILTER_CLASS
 		
 		if($this->DEBUG) echo "parseFilterForm()<br />\n";
 		
-		while( list($field_name, $preset) = each($this->presets) )
+		foreach($this->presets as $field_name => $prese)
 		{
 			$field_name = mb_strtolower($field_name);
 			if($this->DEBUG) echo $field_name . "<br />\n";
@@ -515,7 +515,7 @@ class WISY_FILTER_CLASS
 		$this->framework->order = trim($_GET['order']);
 		if( isset($_GET['filter_order']) && trim($_GET['filter_order']) != '') $this->framework->order = trim($_GET['filter_order']);
 		
-		if($this->DEBUG) echo 'count(queryfilters): ' . count($queryfilters) . "<br />\n";
+		if($this->DEBUG) echo 'count(queryfilters): ' . count((array) $queryfilters) . "<br />\n";
 		
 		$this->framework->tokensQF = $queryfilters;
 	}
@@ -639,7 +639,7 @@ class WISY_FILTER_CLASS
 		$ret = array();
 
 		$queryArr = $this->stringToArray($string);
-		for( $i = 0; $i < sizeof($queryArr); $i++ )
+		for( $i = 0; $i < sizeof((array) $queryArr); $i++ )
 		{
 			// get initial value to search tags for, remove multiple spaces
 			$field = '';
@@ -721,7 +721,7 @@ class WISY_FILTER_CLASS
 							$filteredValue[] = $val;
 						}
 					}
-					if(count($filteredValue)) {
+					if(count((array) $filteredValue)) {
 						$extraTokens[] = array(
 							'field' => $filter['field'],
 							'value' => implode($this->framework->filterValueSeparator, $filteredValue)
@@ -748,7 +748,7 @@ class WISY_FILTER_CLASS
 	
 	function getUrlRemoveFilterByValue($tokenconditions, $removevalue) {
 		$query = array();
-		for( $i = 0; $i < sizeof($tokenconditions); $i++ ) {
+		for( $i = 0; $i < sizeof((array) $tokenconditions); $i++ ) {
 			if($tokenconditions[$i]['field'] == 'tag') 
 			{
 				if($tokenconditions[$i]['value'] != $removevalue)
@@ -767,7 +767,7 @@ class WISY_FILTER_CLASS
 	
 	function getUrlAddFilter($tokenconditions, $addfilter) {
 		$query = array();
-		for( $i = 0; $i < sizeof($tokenconditions); $i++ ) {
+		for( $i = 0; $i < sizeof((array) $tokenconditions); $i++ ) {
 			if($tokenconditions[$i]['field'] == 'tag') 
 			{
 				$query[] = $tokenconditions[$i]['value'];
@@ -864,12 +864,12 @@ class WISY_FILTER_CLASS
 
 		// create complete SQL query
 		// TODO db: caching?
-		if(count($idList))
+		if(count((array) $idList))
 		{
 			$sql =  "SELECT thema FROM themen WHERE id IN(" . implode(',', $idList) . ")";
 			$this->db->query($sql);
 			while( $this->db->next_record() )
-				$ret['records'][] = utf8_encode($this->db->Record['thema']);
+				$ret['records'][] = cs8($this->db->Record['thema']);
 			$this->db->free();
 	
 		}
@@ -889,7 +889,7 @@ class WISY_FILTER_CLASS
 		foreach($themen as $thema)
 		{
 			$remove = false;
-			for( $i = 0; $i < sizeof($tokenconditions); $i++ ) {
+			for( $i = 0; $i < sizeof((array) $tokenconditions); $i++ ) {
 				if($tokenconditions[$i]['field'] == 'tag' && $tokenconditions[$i]['value'] == g_sync_removeSpecialChars($thema)) 
 				{
 					$remove = true;
@@ -922,12 +922,12 @@ class WISY_FILTER_CLASS
 
 		// create complete SQL query
 		// TODO db: caching?
-		if(count($idList))
+		if(count((array) $idList))
 		{
 			$sql =  "SELECT suchname FROM anbieter WHERE id IN(" . implode(',', $idList) . ")";
 			$this->db->query($sql);
 			while( $this->db->next_record() )
-				$ret['records'][] = utf8_encode($this->db->Record['suchname']);
+				$ret['records'][] = cs8($this->db->Record['suchname']);
 			$this->db->free();
 	
 		}
@@ -939,7 +939,7 @@ class WISY_FILTER_CLASS
 	function getAnbieterFilters($tokenconditions, $idList) {
 		$anbieterliste = $this->getAnbieterByIdList($idList);
         $anbieters = $anbieterliste['records'];
-		if(count($anbieters))
+		if(count((array) $anbieters))
 		{
 			natcasesort($anbieters);
 		}

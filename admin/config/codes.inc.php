@@ -1,5 +1,6 @@
 <?php
 
+define('TAG_EINRICHTUNGSORT', 806392);
 
 global $codes_tagescode;
 $codes_tagescode =
@@ -46,7 +47,7 @@ $codes_rechtsform =
 	.'5###Einzelunternehmen###'
 	.'6###GbR###'
 	.'7###Stiftung###'
-	.'8###Anstalt öff. Rechts###'
+	.'8###Staatlicher Träger###' // ehem. Anstalt oeff. Rechts
 	.'9###Körperschaft öff. Rechts###'
 	.'10###Aktiengesellschaft###'
 	.'11###Sonstige';
@@ -65,14 +66,18 @@ $codes_stichwort_eigenschaften =
 	.'64###Synonym###'
 	.'128###Veranstaltungsort###'			// wird von der Redaktion/von Juergen verwendet - aber: wozu soll das sein? (bp) ACHTUNG: Wird in tag_type anders verwendet!
 	//.'256###Termin###'					// wird nicht verwendet - wozu soll das sein? (bp)
-	.'256###Volltext Titel###'				// ACHTUNG: Wird in tag_type anders verwendet!
-	.'512###Volltext Beschreibung###'		// ACHTUNG: Wird in tag_type anders verwendet!
-	.'1024###Sonstiges Merkmal###'
-	.'2048###Verwaltungsstichwort###'
-	.'4096###Thema###'
-	.'8192###Schlagwort nicht verwenden###'	// 8192 war mal "Hierarchie", "Schlagwort nicht verwenden" war mal bit 32 -- in beiden Fällen: wozu soll das sein? (bp)
-	.'16384###Anbieterstichwort';			// sollte mal exklusiv die Kurse infizieren, wenn bei einem Anbieter verwendet, aktuell (12/2014) nicht verwendet, alle nicht-versteckten Stichwoerter infizieren die Kurse, wenn einem Anbieter zugeordnet
-											// ACHTUNG: Werte ab 0x10000 werden in tag_type anders verwendet!
+    //.'256###Volltext Titel###'				// ACHTUNG: Wird in tag_type anders verwendet!
+    //.'512###Volltext Beschreibung###'		// ACHTUNG: Wird in tag_type anders verwendet!
+    .'1024###Sonstiges Merkmal###'
+    .'2048###Verwaltungsstichwort###'
+    .'4096###Thema###'
+    .'8192###Schlagwort nicht verwenden###'	// 8192 war mal "Hierarchie", "Schlagwort nicht verwenden" war mal bit 32 -- in beiden Fällen: wozu soll das sein? (bp)
+    .'16384###Anbieterstichwort';			// sollte mal exklusiv die Kurse infizieren, wenn bei einem Anbieter verwendet, aktuell (12/2014) nicht verwendet, alle nicht-versteckten Stichwoerter infizieren die Kurse, wenn einem Anbieter zugeordnet
+    // ACHTUNG: Werte ab 0x10000 werden in tag_type anders verwendet!
+    // 131072 versteckte Anbieter-Namensverweisung
+    // 262144 = neue Namensverweisung, damit von SW-Synonym (64) unterscheidbar
+    // -> s. db.inc.php f¸r Anbieter-Typ-Codes
+            
 										
 global $hidden_stichwort_eigenschaften;
 $hidden_stichwort_eigenschaften = 32 + 128 + 256 + 512 + 2048 + 8192; // EDIT 5/2017: Stichworttyp "Thema" (4096) wird nicht mehr gefiltern (warum war dies in der Vergangenheit so?) (bp)
@@ -262,6 +267,8 @@ function berechne_wochentage($beginn, $ende)
 
 function berechne_dauer($start, $ende)
 {
+    date_default_timezone_set('UTC'); // otherwise mktime asumes dst (UTC) wrong => too short duration for DF in March/Oct.
+    
 	// anzahl tage berechnen
 	$d = strtr($start, ' :', '--');
 	$d = explode('-', $d);
@@ -306,5 +313,11 @@ function berechne_dauer($start, $ende)
 	{
 		return $days;
 	}
+	
+	date_default_timezone_get("Europe/Berlin");
 }
 
+// not for security relavant features
+function berechne_loginid() {
+    return md5($_SERVER['REMOTE_ADDR'].$_SERVER['HTTP_USER_AGENT'].date("d.m.Y")); // $_SERVER['SERVER_SIGNATURE']
+}

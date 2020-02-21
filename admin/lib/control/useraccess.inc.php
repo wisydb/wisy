@@ -78,11 +78,11 @@ class CONTROL_USERACCESS_CLASS extends CONTROL_BASE_CLASS
 		.		"euat=\"";
 
 		global $Table_Def;
-		for( $t = 0; $t < sizeof($Table_Def); $t++ )
+		for( $t = 0; $t < sizeof((array) $Table_Def); $t++ )
 		{
 			$code .= $t? ';' : '';
 			$code .= $Table_Def[$t]->name . ';';
-			for( $r = 0; $r < sizeof($Table_Def[$t]->rows); $r++ ) {
+			for( $r = 0; $r < sizeof((array) $Table_Def[$t]->rows); $r++ ) {
 				$code .= $Table_Def[$t]->rows[$r]->name . ',';
 
 				$transl[$Table_Def[$t]->rows[$r]->name] = $Table_Def[$t]->rows[$r]->descr;
@@ -101,7 +101,7 @@ class CONTROL_USERACCESS_CLASS extends CONTROL_BASE_CLASS
 		$ent = get_html_translation_table(HTML_ENTITIES, ENT_COMPAT | ENT_HTML401, 'ISO-8859-1');
 		$ent = array_flip($ent);
 		reset($transl);
-		while( list($k, $v) = each($transl) ) {
+		foreach($transl as $k => $v) {
 			$v = strtr($v, $ent);
 			$v = strtr($v, ";\"\',:", "     ");
 			$code .= ($i?';':'') . "$k;$v";

@@ -258,7 +258,7 @@ class EDIT_RENDERER_CLASS
 		if( $this->sth_hidden ) {
 			$tooltip = $this->sth_hidden_tooltip;
 			if( $this->sth_hidden_has_content ) {
-				$tooltip .= ' (enthält Daten)';
+				$tooltip .= ' (enth&auml;lt Daten)';
 			}
 			
 			$line = '<a href="#" class="e_defhide_more" data-defhide-id="'.$this->defhide_id.'" title="'.$tooltip.' ein-/ausblenden">';		
@@ -345,7 +345,7 @@ class EDIT_RENDERER_CLASS
 		
 		$this->data->connect_to_db_();
 		$this->defhide_id = 1; // note: the ID is only guaranteed to be unique inside the same object! if objects are duplicated, they will have the same IDs!
-		for( $f = 0; $f < sizeof($this->data->controls); $f++ )
+		for( $f = 0; $f < sizeof((array) $this->data->controls); $f++ )
 		{
 			$control = $this->data->controls[$f];
 			
@@ -483,7 +483,7 @@ class EDIT_RENDERER_CLASS
 			$html .= '</td></tr>';
 			
 			$html .= '<tr><td class="e_cll">Referenzen:</td><td>&nbsp;';
-				$html .= '<span id="e_refcontainer" data-table="'.$this->data->table_def->name.'" data-id="'.$this->data->id.'">zähle...</span>';
+				$html .= '<span id="e_refcontainer" data-table="'.$this->data->table_def->name.'" data-id="'.$this->data->id.'">zï¿½hle...</span>';
 			$html .= '</td></tr>';
 			
 			/*
@@ -505,15 +505,17 @@ class EDIT_RENDERER_CLASS
 	
 	private function add_errors_n_warnings_from_data_()
 	{
-		for( $i = 0; $i < sizeof($this->data->errors); $i++ ) {
-			$GLOBALS['site']->msgAdd($this->data->errors[$i], 'e');
-		}
-		$this->data->errors = array();
-		
-		for( $i = 0; $i < sizeof($this->data->warnings); $i++ ) {
-			$GLOBALS['site']->msgAdd($this->data->warnings[$i], 'w');
-		}
-		$this->data->warnings = array();
+	    for( $i = 0; $i < sizeof((array) $this->data->errors); $i++ ) {
+	        $GLOBALS['site']->msgAdd($this->data->errors[$i], 'e');
+	    }
+	    $this->data->errors = array();
+	    
+	    if(is_array($this->data->warnings)) {
+	        for( $i = 0; $i < sizeof((array) $this->data->warnings); $i++ ) {
+	            $GLOBALS['site']->msgAdd($this->data->warnings[$i], 'w');
+	        }
+	    }
+	    $this->data->warnings = array();
 	}
 	
 	public function handle_request()
@@ -569,7 +571,7 @@ class EDIT_RENDERER_CLASS
 				// ... subsequent all but ok/apply not set - this should not happen, check against max_input_vars, see also [1]
 				$used_input_vars = 0;
 				foreach( $_REQUEST as $reqName=>$reqVal ) {
-					$used_input_vars += is_array($reqVal)? sizeof($reqVal) : 1;
+				    $used_input_vars += is_array($reqVal) ? sizeof($reqVal) : 1;
 				}
 				
 				$GLOBALS['site']->msgAdd("Fatal error: Corrupted or too many POST data, this should not happen. 
@@ -607,7 +609,7 @@ class EDIT_RENDERER_CLASS
 			else {
 				$this->no_paging = $_REQUEST['paging'];
 
-				$GLOBALS['site']->msgAdd("Keine weiteren Datensätze.", 'w');
+				$GLOBALS['site']->msgAdd("Keine weiteren Datens&auml;tze.", 'w');
 				$load_from_db = true;
 			}
 			

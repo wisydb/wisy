@@ -82,13 +82,17 @@ if( !@function_exists('mysql_connect') )
 
 	function mysql_errno($link_obj=null)
 	{
-		return $link_obj? mysqli_errno($link_obj) : mysqli_connect_errno();
+	    if(function_exists("mysqli_connect_errno"))
+	        return $link_obj? mysqli_errno($link_obj) : mysqli_connect_errno();
+	    else
+	        return $link_obj? $link_obj->connect_error : '<unknown error no>';
 	}
 }
 
 
 // PHP 7 changes the default characters set to UTF-8; we still prefer ISO-8859-1
-// @ini_set('default_charset', 'ISO-8859-1');
+if(substr(PHP_VERSION, 0, 1) > 6)
+    @ini_set('default_charset', 'ISO-8859-1');
 
 
 class DB_Sql
@@ -257,6 +261,32 @@ class DB_Sql
 		}
 	}
 	
+	function prev_record()
+	{
+	    // correct?
+	    if( $this->use_phys_connection )
+	    {
+	        $this->Record = @mysql_fetch_assoc($this->phys_query_id);
+	        if( is_array($this->Record) ) {
+	            return true;
+	        }
+	        else {
+	            @mysql_free_result($this->phys_query_id);
+	            $this->phys_query_id = 0;
+	            return false;
+	        }
+	    }
+	    else
+	    {
+	        if( $this->ResultI < 1 ) {
+	            return 0;  // no more records - this is no error
+	        }
+	        $this->Record =& $this->Result[ $this->ResultI ];
+	        $this->ResultI--;
+	        return 1; // prev record
+	    }
+	}
+	
 	function quote($str)
 	{
 		return "'" . addslashes($str) . "'";		// you should prefer quote() instead of calling addslashes() directly - this makes stuff compatible to SQLite
@@ -275,6 +305,11 @@ class DB_Sql
 	function f8($Name)
 	{
 		return utf8_encode($this->Record[$Name]);	// UTF-8 encode because the DB is still ISO-encoded. Used in core50
+	}
+	
+	function fcs8($Name)
+	{
+	    return (substr(PHP_VERSION_ID, 0, 1) > 6) ? $this->Record[$Name] : utf8_encode($this->Record[$Name]);	// UTF-8 only if not > PHP7
 	}
 
 	function affected_rows() 
@@ -303,24 +338,47 @@ class DB_Sql
 			$this->phys_query_id = 0;
 		}
 	}
+	
+	function close() {
+	    $this->free();
+	    
+	    if($this->Link_ID)
+	        return true; // mysql_close($this->Link_ID); // @mysql... #PHP7
+	        else
+	            return false;
+	}
 
-	private function halt($msg) 
+	private function halt($msg)
 	{
-		if( $this->Link_ID ) {
-			$this->Error = @mysql_error($this->Link_ID);
-			$this->Errno = @mysql_errno($this->Link_ID);
-		}
-		else {
-			$this->Error = @mysql_error();
-			$this->Errno = @mysql_errno();
-		}
-		if( $this->Halt_On_Error == 'no' )
-			return;
-
-		printf('<p style="border: 2px solid black;"><b>DB_Sql error:</b> %s<br>MySQL says: Errno %s - %s</p>', $msg, $this->Errno, $this->Error);
-		
-		if ($this->Halt_On_Error != "report")
-			die("Session halted.");
+	    if( $this->Link_ID ) {
+	        $this->Error = "* ".@mysql_error($this->Link_ID);
+	        $this->Errno = "* ".@mysql_errno($this->Link_ID);
+	    }
+	    else {
+	        $this->Error = "** ".@mysql_error();
+	        $this->Errno = "** ".@mysql_errno();
+	    }
+	    if( $this->Halt_On_Error == 'no' )
+	        return;
+	        
+	        // !
+	        // printf('<p style="border: 2px solid black;"><b>DB_Sql error// :</b> %s<br>MySQL says: Errno %s - %s</p>', $msg, $this->Errno, $this->Error);
+	        
+	        
+	        $error_info = "";
+	        if( strpos($this->Errno, "1203") !== FALSE )
+	            $error_info = "Die Datenbank ist aktuell leider durch zu viele Verbindungen &uuml;berlastet!<br><br>";
+	            elseif( strpos($this->Errno, "1153") !== FALSE )
+	            $error_info = "Diese Datenbank-Abfrage f&uuml;hrte zu einem zu gro&szlig;en Ergebnis - abgebrochen!<br><br>";
+	            elseif( strpos($this->Errno, "1062") !== FALSE )
+	            $error_info = "Diese Datenbank-Abfrage f&uuml;hrte zu einem unzul&auml;ssigen, uneindeutigen Ergebnis! Evtl. hat sich der Suchindex gleichzeitig ver&auml;ndert und muss aktualisiert werden. Bitte versuchen Sie gleich oder etwas sp&auml;ter nochmals.<br><br>";
+	            else
+	            $error_info = "Aus Sicherheitsgr&uuml;nden hier keine detaillierte Fehlermeldung.";
+	                	                	                
+	            printf('<p style="border: 2px solid black;"><b>DB_Sql errorb> %s<br>MySQL says: Errno %s - %s</p>', "", $this->Errno, "<div style='margin-top: 20px; color:darkred;'>".$error_info."</div>");
+	                
+	            if ($this->Halt_On_Error != "report")
+	               die("Session halted.");
 	}
 
 	/**************************************************************************

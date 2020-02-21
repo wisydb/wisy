@@ -37,11 +37,11 @@ class EXP_EXPORTRENDERER_CLASS extends EXP_FUNCTIONS_CLASS
 
 			$site->skin->dialogStart();
 			
-				if( sizeof($this->ob->options) ) 
+			if( sizeof((array) $this->ob->options) )
 				{
 					$checkDelayed = 0;
 					reset($this->ob->options);
-					while( list($name, $options) = each($this->ob->options) )
+					foreach($this->ob->options as $name => $options)
 					{
 						switch( $options[0] ) 
 						{
@@ -50,7 +50,7 @@ class EXP_EXPORTRENDERER_CLASS extends EXP_FUNCTIONS_CLASS
 								form_control_start(htmlconstant($options[1]));
 									$temp2 = '';
 									if( $options[3] == 'tables' ) {
-										for( $t = 0; $t < sizeof($Table_Def); $t++ ) {
+									    for( $t = 0; $t < sizeof((array) $Table_Def); $t++ ) {
 											if( !$Table_Def[$t]->is_only_secondary($temp, $temp) ) {
 												if( $temp2 ) $temp2 .= '###';
 												$temp2 .= $Table_Def[$t]->name . '###' . $Table_Def[$t]->descr;
@@ -120,7 +120,7 @@ class EXP_EXPORTRENDERER_CLASS extends EXP_FUNCTIONS_CLASS
 
 			$site->skin->buttonsStart();
 			
-				if( sizeof($this->ob->options) ) {
+			    if( sizeof((array) $this->ob->options) ) {
 					form_button('apply_only', htmlconstant('_APPLY'));
 				}
 				
@@ -236,7 +236,7 @@ class EXP_EXPORTRENDERER_CLASS extends EXP_FUNCTIONS_CLASS
 		$param = array();
 
 		reset($this->ob->options);
-		while( list($name, $options) = each($this->ob->options) )  {
+		foreach($this->ob->options as $name => $options) {
 			switch( $options[0] ) {
 				case 'check':
 					$param[$name] = $_REQUEST[$name]? 1 : 0;
@@ -251,7 +251,7 @@ class EXP_EXPORTRENDERER_CLASS extends EXP_FUNCTIONS_CLASS
 		if( $also_save )
 		{
 			reset($this->ob->options);
-			while( list($name, $options) = each($this->ob->options) ) {
+			foreach($this->ob->options as $name => $options) {
 				$temp = strtr($param[$name], array("\r"=>"", "\n"=>"<br>"));
 				regSet("export.$this->expFormat.$name", $temp, $options[2]);
 			}
@@ -277,7 +277,7 @@ class EXP_EXPORTRENDERER_CLASS extends EXP_FUNCTIONS_CLASS
 		$logwriter = new LOG_WRITER_CLASS;
 		$logwriter->addData('format', $this->expFormat);
 		reset($param);
-		while( list($name, $value) = each($param) ) {
+		foreach($param as $name => $value) {
 			if( $value != '' && $name!='table' )
 				$logwriter->addData($name, $value);
 		}

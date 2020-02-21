@@ -39,7 +39,7 @@ class WISY_CONTACTFORM_RENDERER_CLASS
 		
 		if($_POST['kontaktformular'] == 'true') {
 			$errors = $this->validateContactform();
-			if(count($errors) == 0) {
+			if(count((array) $errors) == 0) {
 				if($this->sendMail() == true) {
 					echo $this->thankyouText();
 				} else {

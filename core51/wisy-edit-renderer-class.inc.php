@@ -77,7 +77,7 @@ class WISY_EDIT_RENDERER_CLASS
 			$data = '';
 			ksort($this->_anbieter_ini_settings);
 			reset($this->_anbieter_ini_settings);
-			while( list($regKey, $regValue) = each($this->_anbieter_ini_settings) ) 
+			foreach($this->_anbieter_ini_settings as $regKey => $regValue)
 			{
 				$regKey		= strval($regKey);
 				$regValue	= strval($regValue);
@@ -265,7 +265,7 @@ class WISY_EDIT_RENDERER_CLASS
 		// kuerzlich geloeschte stichworte hinzufuegen (falls z.B. der letzte Kurse mit einem best. Abschluss geloescht wurde - dieser Abschluss darf dann dennoch wieder vergeben werden)
 		if( is_array($_SESSION['stockStichw']) ) {
 			reset($_SESSION['stockStichw']); 
-			while( list($id) = each($_SESSION['stockStichw']) ) {
+			foreach($_SESSION['stockStichw'] as $id) {
 				$alleStichw .= ($alleStichw==''? '' : ', ') .  $id; 
 			}
 		}
@@ -313,7 +313,7 @@ class WISY_EDIT_RENDERER_CLASS
 		$values = explode('###', $values);
 				
 		echo "<select name=\"$name\" size=\"1\">";
-			for( $v = 0; $v < sizeof($values); $v+=2 ) {
+			for( $v = 0; $v < sizeof((array) $values); $v+=2 ) {
 				echo '<option value="' .$values[$v]. '"';
 				if( $values[$v] == $value ) {
 					echo ' selected="selected"';
@@ -644,7 +644,7 @@ class WISY_EDIT_RENDERER_CLASS
 				echo '</form>';
 		
 				// additional login message
-				$temp = utf8_encode($this->framework->iniRead('useredit.loginmsg', ''));
+				$temp = cs8($this->framework->iniRead('useredit.loginmsg', ''));
 				if( $temp != '' )
 				{
 					echo '<p class="loginmsg">' . $temp . '</p>';
@@ -898,7 +898,7 @@ class WISY_EDIT_RENDERER_CLASS
 			$kurs['durchf'][$i]['kurstage'] = intval(0);
 			global $codes_kurstage;
 			$bits = explode('###', $codes_kurstage);
-			for( $j = 0; $j < sizeof($bits); $j += 2 )
+			for( $j = 0; $j < sizeof((array) $bits); $j += 2 )
 			{
 				if( intval($_POST["kurstage$j"][$i]) == 1 ) 
 				{
@@ -1035,7 +1035,7 @@ class WISY_EDIT_RENDERER_CLASS
 		foreach( $kurs['durchf'] as $durchf )
 		{
 			$durchf_urls = $this->tools->getUrls($durchf['preishinweise']);
-			if( sizeof($durchf_urls) ) {
+			if( sizeof((array) $durchf_urls) ) {
 				$kurs['error'][] = 'Fehler: Im Feld <i>Preishinweise</i> sind keine URLs erlaubt.';
 			}
 			if( strlen($durchf['preishinweise']) > $maxlen_preishinweise ) {
@@ -1044,9 +1044,9 @@ class WISY_EDIT_RENDERER_CLASS
 			
 			$check_maxlen_bemerkungen = 0;
 			$durchf_urls = $this->tools->getUrls($durchf['bemerkungen']);
-			if( sizeof($durchf_urls) ) {
+			if( sizeof((array) $durchf_urls) ) {
 				$has_durchf_urls = true;
-				if( sizeof($durchf_urls) > 1 ) {
+				if( sizeof((array) $durchf_urls) > 1 ) {
 					$kurs['error'][] = 'Fehler: Pro Feld <i>Bemerkungen</i> ist nur eine URL erlaubt. Gefundene URLs: '.implode(', ', $durchf_urls);
 				}
 				else if( $this->tools->isAnbieterUrl($durchf_urls) ) {
@@ -1072,11 +1072,11 @@ class WISY_EDIT_RENDERER_CLASS
 		}
 		
 		$kurs_urls = $this->tools->getUrls($kurs['beschreibung']);
-		if( sizeof($kurs_urls) ) {
+		if( sizeof((array) $kurs_urls) ) {
 			if( $has_durchf_urls ) {
 				$kurs['error'][] = 'Fehler: URLs k&ouml;nnen nicht gleichzeitig im Feld <i>Kursbeschreibung</i> und im Feld <i>Bemerkungen</i> angegeben werden.';
 			}
-			if( sizeof($kurs_urls) > 1 ) {
+			if( sizeof((array) $kurs_urls) > 1 ) {
 				$kurs['error'][] = 'Fehler: Im Feld <i>Kursbeschreibung</i> ist nur eine URL erlaubt. Gefundene URLs: '.implode(', ', $kurs_urls);
 			}			
 			else if( $this->tools->isAnbieterUrl($kurs_urls) ) {
@@ -1137,7 +1137,7 @@ class WISY_EDIT_RENDERER_CLASS
 
 		// nach Änderungen im Kurs suchen
 		reset($newData);
-		while( list($name, $newValue) = each($newData) ) {
+		foreach($newData as $name => $newValue) {
 			if( $newValue != $oldData[$name] ) {
 				if( !in_array($name, $allowed_kfields) ) {
 					$this->keine_bagatelle_why = "$name";
@@ -1156,7 +1156,7 @@ class WISY_EDIT_RENDERER_CLASS
 			{
 				$o_is_fine = true;
 				reset($newData['durchf'][$n]);
-				while( list($name, $newValue) = each($newData['durchf'][$n]) ) 	
+				foreach($newData['durchf'][$n] as $name => $newValue)
 				{
 					if( $newValue != $oldData['durchf'][$o][$name] 
 					 && !in_array($name, $allowed_dfields) )
@@ -1316,7 +1316,7 @@ class WISY_EDIT_RENDERER_CLASS
 			// änderungen überprüfen
 			$sqlExpr = '';
 			reset( $newDurchf );
-			while( list($name, $value) = each($newDurchf) )
+			foreach($newDurchf as $name => $value)
 			{
 				$value = utf8_decode($value);
 				if( strval($value) != strval($oldDurchf[$name]) || !isset($oldDurchf[$name]) )
@@ -1423,7 +1423,7 @@ class WISY_EDIT_RENDERER_CLASS
 			}
 
 			$fields = array('titel', 'bu_nummer', 'fu_knr', 'azwv_knrd', 'foerderung', 'abschluss', 'msgtooperator');
-			while( list($key, $value) = each($fields) )
+			foreach($fields as $key => $value)
 			{
 				if( $oldData[$value] != $newData[$value] ) 
 					{ $protocol = true; }
@@ -1511,7 +1511,7 @@ class WISY_EDIT_RENDERER_CLASS
 		{
 			$vollst = $this->framework->getVollstaendigkeitMsg($db, $id, 'quality.edit');
 			$msg .= '<b>Informationen zu Vollständigkeit:</b> ' . $vollst['msg'];
-			$msg .= utf8_encode($temp['vmsg']);
+			$msg .= cs8($temp['vmsg']);
 		}
 		else if ( $always )
 		{
@@ -1582,26 +1582,26 @@ class WISY_EDIT_RENDERER_CLASS
 			$kurs = $this->loadKursFromDb($kursId__);
 			
 			// UTF8-Encoding after loading from DB
-			$kurs['titel'] 			= utf8_encode($kurs['titel']);
-			$kurs['org_titel']		= utf8_encode($kurs['org_titel']);
-			$kurs['bu_nummer']		= utf8_encode($kurs['bu_nummer']);
-			$kurs['azwv_knr']		= utf8_encode($kurs['azwv_knr']);
-			$kurs['foerderung']		= utf8_encode($kurs['foerderung']);
-			$kurs['fu_knr']			= utf8_encode($kurs['fu_knr']);
-			$kurs['promote_mode']	= utf8_encode($kurs['promote_mode']);
-			$kurs['promote_param']	= utf8_encode($kurs['promote_param']);
-			$kurs['promote_active']	= utf8_encode($kurs['promote_active']);
-			$kurs['abschluss']		= utf8_encode($kurs['abschluss']);
-			$kurs['msgtooperator']	= utf8_encode($kurs['msgtooperator']);
-			$kurs['beschreibung']	= utf8_encode($kurs['beschreibung']);
+			$kurs['titel'] 			= cs8($kurs['titel']);
+			$kurs['org_titel']		= cs8($kurs['org_titel']);
+			$kurs['bu_nummer']		= cs8($kurs['bu_nummer']);
+			$kurs['azwv_knr']		= cs8($kurs['azwv_knr']);
+			$kurs['foerderung']		= cs8($kurs['foerderung']);
+			$kurs['fu_knr']			= cs8($kurs['fu_knr']);
+			$kurs['promote_mode']	= cs8($kurs['promote_mode']);
+			$kurs['promote_param']	= cs8($kurs['promote_param']);
+			$kurs['promote_active']	= cs8($kurs['promote_active']);
+			$kurs['abschluss']		= cs8($kurs['abschluss']);
+			$kurs['msgtooperator']	= cs8($kurs['msgtooperator']);
+			$kurs['beschreibung']	= cs8($kurs['beschreibung']);
 			for( $d = 0; $d < sizeof($kurs['durchf']); $d++ )
 			{
-				$kurs['durchf'][$d]['nr'] 				= utf8_encode($kurs['durchf'][$d]['nr']);
-				$kurs['durchf'][$d]['ort'] 				= utf8_encode($kurs['durchf'][$d]['ort']);
-				$kurs['durchf'][$d]['stadtteil'] 		= utf8_encode($kurs['durchf'][$d]['stadtteil']);
-				$kurs['durchf'][$d]['strasse'] 			= utf8_encode($kurs['durchf'][$d]['strasse']);
-				$kurs['durchf'][$d]['preishinweise'] 	= utf8_encode($kurs['durchf'][$d]['preishinweise']);
-				$kurs['durchf'][$d]['bemerkungen'] 		= utf8_encode($kurs['durchf'][$d]['bemerkungen']);
+				$kurs['durchf'][$d]['nr'] 				= cs8($kurs['durchf'][$d]['nr']);
+				$kurs['durchf'][$d]['ort'] 				= cs8($kurs['durchf'][$d]['ort']);
+				$kurs['durchf'][$d]['stadtteil'] 		= cs8($kurs['durchf'][$d]['stadtteil']);
+				$kurs['durchf'][$d]['strasse'] 			= cs8($kurs['durchf'][$d]['strasse']);
+				$kurs['durchf'][$d]['preishinweise'] 	= cs8($kurs['durchf'][$d]['preishinweise']);
+				$kurs['durchf'][$d]['bemerkungen'] 		= cs8($kurs['durchf'][$d]['bemerkungen']);
 			}
 			
 			if( sizeof($kurs['error']) )
@@ -1633,7 +1633,7 @@ class WISY_EDIT_RENDERER_CLASS
 		
 		echo "\n\n<h1>$pageTitle</h1>\n";
 		
-		if( sizeof($topnotes) )
+		if( sizeof((array) $topnotes) )
 		{
 			echo "<p class=\"wisy_topnote\">" .implode('<br />', $topnotes). "</p>";
 		}
@@ -1860,7 +1860,7 @@ class WISY_EDIT_RENDERER_CLASS
 												echo '<label title="W&auml;hlen Sie hier - sofern bekannt und eindeutig - die Wochentage aus, an denen die Durchf&uuml;hrung stattfindet">';
 													global $codes_kurstage;
 													$bits = explode('###', $codes_kurstage);
-													for( $i = 0; $i < sizeof($bits); $i+=2 ) 
+													for( $i = 0; $i < sizeof((array) $bits); $i+=2 ) 
 													{
 														// normally, we would use the normal <input type="checkbox" /> - however this does
 														// not work with our array'ed durchführungen as a checkbox value is not appended to an array it it is not checked ...
@@ -1895,14 +1895,14 @@ class WISY_EDIT_RENDERER_CLASS
 												echo "<div class=\"editBeginnoptionenDiv\" $styleBeginnoptionen>";
 													echo '<label title="'.$titleBeginnoptionen.'">';
 														echo "Terminoptionen: ";
-														$this->controlSelect('beginnoptionen[]', $durchf['beginnoptionen'], utf8_encode($GLOBALS['codes_beginnoptionen']));
+														$this->controlSelect('beginnoptionen[]', $durchf['beginnoptionen'], cs8($GLOBALS['codes_beginnoptionen']));
 														
 														echo "<br />Dauer: ";
-														$this->controlSelect('dauer[]', $durchf['dauer'], utf8_encode($GLOBALS['codes_dauer']));			
+														$this->controlSelect('dauer[]', $durchf['dauer'], cs8($GLOBALS['codes_dauer']));			
 														echo '<small> (wird, wenn möglich, aus Beginn-/Endedatum automatisch berechnet)</small>';
 														
 														echo "<br />Tagescode: ";
-														$this->controlSelect('tagescode[]', $durchf['tagescode'], utf8_encode($GLOBALS['codes_tagescode']));		
+														$this->controlSelect('tagescode[]', $durchf['tagescode'], cs8($GLOBALS['codes_tagescode']));		
 														echo '<small>  (wird, wenn möglich, aus Wochentag/Uhrzeit automatisch berechnet)</small>';
 													echo '</label>';
 											echo '</div>';

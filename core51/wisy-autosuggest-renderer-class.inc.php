@@ -63,7 +63,7 @@ class WISY_AUTOSUGGEST_RENDERER_CLASS
 				header('Content-type: application/json');
 				
 				echo '["' .$this->utf8_to_json(utf8_encode($querystring)). '",[';
-					for( $i = 0; $i < sizeof($tags); $i++ )
+					for( $i = 0; $i < sizeof((array) $tags); $i++ )
 					{
 						echo $i? ',' : '';
 						echo '"' .$this->utf8_to_json(utf8_encode($tags[$i]['tag'])). '"';
@@ -88,7 +88,7 @@ class WISY_AUTOSUGGEST_RENDERER_CLASS
                 
                 // Filter out suggestions with tag_freq == 0
                 $filtered_tags = array();
-				for( $i = 0; $i < sizeof($tags); $i++ )
+				for( $i = 0; $i < sizeof((array) $tags); $i++ )
 				{
 					if(intval($tags[$i]['tag_help']) == 0 && intval($tags[$i]['tag_freq']) == 0) continue;
                     $filtered_tags[] = $tags[$i];
@@ -98,7 +98,7 @@ class WISY_AUTOSUGGEST_RENDERER_CLASS
 				// No results
 				if(!isset($_GET['type']) ||  $_GET['type'] != 'ort')
 				{
-					if(count($filtered_tags) == 0) {
+					if(count((array) $filtered_tags) == 0) {
 						$filtered_tags[] = array(
 							'tag'	=>	$querystring,
 							'tag_descr' => 'Keine Suchvorschläge möglich',
@@ -106,7 +106,7 @@ class WISY_AUTOSUGGEST_RENDERER_CLASS
 							'tag_help'	=> -2 // indicates "no results"
 						);
                         // addMoreLink at the end when more than 10 entries have been found
-					} else if(count($filtered_tags) > 9) {
+					} else if(count((array) $filtered_tags) > 9) {
                             
 						$filtered_tags[] = array(
 							'tag'	=>	$querystring,
@@ -120,7 +120,7 @@ class WISY_AUTOSUGGEST_RENDERER_CLASS
 				if( SEARCH_CACHE_ITEM_LIFETIME_SECONDS > 0 )
 					headerDoCache(SEARCH_CACHE_ITEM_LIFETIME_SECONDS);
 					
-				for( $i = 0; $i < sizeof($filtered_tags); $i++ )
+				for( $i = 0; $i < sizeof((array) $filtered_tags); $i++ )
 				{
 					
 					echo		$filtered_tags[$i]['tag'] . 

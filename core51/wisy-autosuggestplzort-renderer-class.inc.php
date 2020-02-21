@@ -55,7 +55,7 @@ class WISY_AUTOSUGGESTPLZORT_RENDERER_CLASS
 		if( SEARCH_CACHE_ITEM_LIFETIME_SECONDS > 0 )
 			headerDoCache(SEARCH_CACHE_ITEM_LIFETIME_SECONDS);
 			
-		if(count($plzorte) == 0 && count($orte) == 0)
+		if(count((array) $plzorte) == 0 && count((array) $orte) == 0)
 		{
 			echo 'Keine Ortsvorschläge möglich| ' . "\n";
 		}
@@ -66,7 +66,7 @@ class WISY_AUTOSUGGESTPLZORT_RENDERER_CLASS
 			{
 				echo $value . "|" . $value . "\n";
 			}
-			if(count($orte) && count($plzorte))
+			if(count((array) $orte) && count((array) $plzorte))
 			{
 				echo "headline|PLZ\n";
 			}

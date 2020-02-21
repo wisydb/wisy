@@ -84,6 +84,8 @@ class WISY_FRAMEWORK_CLASS
 
 	function __construct($baseObject, $addParam)
 	{
+		ini_set("default_charset", "UTF-8");
+		
 		global $wisyCore;
 		$this->coreRelPath = '/' . $wisyCore;
 		
@@ -145,14 +147,18 @@ class WISY_FRAMEWORK_CLASS
 	 Read/Write Settings, Cache & Co.
 	 ******************************************************************************/
 
-	function iniRead($key, $default='')
+	function iniRead($key, $default='', $html = false)
 	{
 		global $wisyPortalEinstellungen;
 		$value = $default;
 		if( isset( $wisyPortalEinstellungen[ $key ] ) )
 		{
-			$value = utf8_encode($wisyPortalEinstellungen[ $key ]);
+			$value = cs8($wisyPortalEinstellungen[ $key ]);
 		}
+		
+		if($html)
+			$value = htmlentities(html_entity_decode($value));
+		
 		return $value;
 	}
 
@@ -195,7 +201,7 @@ class WISY_FRAMEWORK_CLASS
 		$ret = '';
 		ksort($values);
 		reset($values);
-		while( list($regKey, $regValue) = each($values) )
+		foreach($values as $regKey => $regValue)
 		{
 			$regKey		= strval($regKey);
 			$regValue	= strval($regValue);
@@ -221,39 +227,41 @@ class WISY_FRAMEWORK_CLASS
 	* Outputs and enriches description as useful per page type
 	* otherwise default portal description
 	**/
-    function getMetaDescription($title = "", $description = "") {
+	function getMetaDescription($title = "", $description = "") {
 		$ret = '';
 		
 		if(intval(trim($this->iniRead('meta.description'))) != 1)
 				return $ret;
 		
-        $description_parsed = "";
+		$description_parsed = "";
 		$skip_contentdescription = false;
 
 		switch($this->getPageType()) {
-				case 'kurs':
-						$description_parsed = $this->shorten_description($description, 160);
-						break;
-				case 'anbieter':
-                        $description_parsed = $this->shorten_description($description, 160);
-						break;
-				case 'suche':
-						$skip_contentdescription = true;
-						break;
-				case 'glossar':
-                        $description_parsed = $this->shorten_description($description, 160);
-						break;
-				case 'startseite':
-					$description_parsed = utf8_encode(trim($this->iniRead('meta.description_default', "")));
-					break;
-                default:
-                    $description_parsed = utf8_encode(trim($this->iniRead('meta.description_default', "")));
-        }
+			case 'kurs':
+				$description_parsed = $this->shorten_description($description, 160);
+				break;
+			case 'anbieter':
+				$description_parsed = $this->shorten_description($description, 160);
+				break;
+			case 'suche':
+				$skip_contentdescription = true;
+				break;
+			case 'glossar':
+				$description_parsed = $this->shorten_description($description, 160);
+				break;
+			case 'startseite':
+				$description_parsed = cs8(trim($this->iniRead('meta.description_default', "")));
+				break;
+			default:
+				$description_parsed = cs8(trim($this->iniRead('meta.description_default', "")));
+		}
 		
 		if($skip_contentdescription) {
 			;
-		} else {		
-			$ret .= ($description_parsed == "") ? "\n".'<meta name="description" content="'.utf8_encode(trim($this->iniRead('meta.description_default', ""))).'">'."\n" : "\n".'<meta name="description" content="'.$description_parsed.'">'."\n";
+		} else {
+			// leer lassen, wenn leer, sonst haben zu viele Seiten die Default Description und Google ignoriert sie auf der Startseite.
+			$metadesct_default = cs8(trim($this->iniRead('meta.description_default', "")));
+			$ret .= ($description_parsed == "") ? "\n".''."\n" : "\n".'<meta name="description" content="'.$description_parsed.'">'."\n";
 		}
 		
 		return $ret;
@@ -328,7 +336,7 @@ class WISY_FRAMEWORK_CLASS
 		
 		$next_record = $db->next_record(); // Zeiger auf ersten Eintrag...
 		
-		$logo = $db->f8('logo');
+		$logo = $db->fcs8('logo');
 				
 		if($anbieterId < 0 || $anbieterId == "" || !$next_record || $db->f('freigeschaltet') != 1 || !$logo) {
 			if($default_symbol_q)
@@ -361,86 +369,86 @@ class WISY_FRAMEWORK_CLASS
 	
 	// #socialmedia
 	function getSocialMediaTags($pageTitleNoHtml, $ort = "", $anbieter_name = "", $anbieter_ID = -1, $beschreibung = "", $canonicalurl = "") {
-        $ret = '';
+		$ret = '';
 		
 		if(intval(trim($this->iniRead('meta.socialmedia'))) != 1)
 				return $ret;
 		
-        // Facebook
+		// Facebook
 		$ret .= "\n".'<meta property="og:title" content="'.$this->getTitleString($pageTitleNoHtml, $ort, $anbieter_name).'">'."\n";
 		
 		switch($this->getPageType()) {
-				case 'kurs':
-					$ret .= '<meta property="og:type" content="product">'."\n";
-					break;
-				case 'anbieter':
-				    $ret .= '<!-- Anbieter -->';
-                    $ret .= '<meta property="og:type" content="profile">'."\n";
-					break;
-				case 'glossar':
-                    $ret .= '<meta property="og:type" content="article">'."\n";
-					break;
-				case 'suche':
-                    $ret .= '<meta property="og:type" content="product.group">'."\n";
-					$canonicalurl = "search?".$_SERVER['QUERY_STRING']; // explizit angeben, hat aber keine canonical URL
-					break;
-				case 'startseite':
-					$beschreibung = utf8_encode(trim($this->iniRead('meta.description_default', "")));
-					$ret .= '<meta property="og:type" content="article">'."\n";
-					$canonicalurl = ""; // no canonical URL in > 5.0
-					break;
-                default:
-					$beschreibung = utf8_encode(trim($this->iniRead('meta.description_default', "")));
-                    $ret .= '<meta property="og:type" content="article">'."\n";
-                    $canonicalurl = ""; // no canonical URL in > 5.0
-        }
+			case 'kurs':
+				$ret .= '<meta property="og:type" content="product">'."\n";
+				break;
+			case 'anbieter':
+				$ret .= '<!-- Anbieter -->';
+				$ret .= '<meta property="og:type" content="profile">'."\n";
+				break;
+			case 'glossar':
+				$ret .= '<meta property="og:type" content="article">'."\n";
+				break;
+			case 'suche':
+				$ret .= '<meta property="og:type" content="product.group">'."\n";
+				$canonicalurl = "search?".$_SERVER['QUERY_STRING']; // explizit angeben, hat aber keine canonical URL
+				break;
+			case 'startseite':
+				$beschreibung = cs8(trim($this->iniRead('meta.description_default', "")));
+				$ret .= '<meta property="og:type" content="article">'."\n";
+				$canonicalurl = ""; // no canonical URL in > 5.0
+				break;
+			default:
+				$beschreibung = cs8(trim($this->iniRead('meta.description_default', "")));
+				$ret .= '<meta property="og:type" content="article">'."\n";
+				$canonicalurl = ""; // no canonical URL in > 5.0
+		}
 		
 		if($beschreibung == "")
-			$beschreibung = utf8_encode(trim($this->iniRead('meta.description_default', "")));
+			$beschreibung = cs8(trim($this->iniRead('meta.description_default', "")));
 		
 		$protocol = $this->iniRead('portal.https', '') ? "https" : "http";
 		
 		 $logo = ""; $logo_src = ""; 
 		 $logo = $this->getAnbieterLogo($anbieter_ID, true, false);	// quadrat = true, 4:3 = false
-         if($logo != "") {
-		      if(!is_object($logo)) {
-		          $logo_src = $logo;
-				    $ret .= '<meta property="og:image" content="'.$this->pUrl($logo_src).'">'."\n";
-				    $ret .= '<meta property="og:image:secure_url" content="'.$this->pUrl($logo_src).'">'."\n";
-				    $ret .= '<meta property="og:image:width" content="200">'."\n";
-			        $ret .= '<meta property="og:image:height" content="200">'."\n";
-				} else {
-				    $logo_src = $protocol."://".$_SERVER['SERVER_NAME']."/admin/media.php/logo/anbieter/".$anbieter_ID."/".$logo->name;
-				    $ret .= '<meta property="og:image" content="'.$this->pUrl($logo_src).'">'."\n";
-			        $ret .= '<meta property="og:image:secure_url" content="'.$this->pUrl($logo_src).'">'."\n";
-				    $ret .= '<meta property="og:image:type" content="'.$logo->mime.'">'."\n";
-					$ret .= '<meta property="og:image:width" content="'.$logo->w.'">'."\n";
-					$ret .= '<meta property="og:image:height" content="'.$logo->h.'">'."\n";
-				}
+		 if($logo != "") {
+			if(!is_object($logo)) {
+				$logo_src = $logo;
+				$ret .= '<meta property="og:image" content="'.$this->pUrl($logo_src).'">'."\n";
+				$ret .= '<meta property="og:image:secure_url" content="'.$this->pUrl($logo_src).'">'."\n";
+				$ret .= '<meta property="og:image:width" content="200">'."\n";
+				$ret .= '<meta property="og:image:height" content="200">'."\n";
+			} else {
+				$logo_src = $protocol."://".$_SERVER['SERVER_NAME']."/admin/media.php/logo/anbieter/".$anbieter_ID."/".$logo->name;
+				$ret .= '<meta property="og:image" content="'.$this->pUrl($logo_src).'">'."\n";
+				$ret .= '<meta property="og:image:secure_url" content="'.$this->pUrl($logo_src).'">'."\n";
+				$ret .= '<meta property="og:image:type" content="'.$logo->mime.'">'."\n";
+				$ret .= '<meta property="og:image:width" content="'.$logo->w.'">'."\n";
+				$ret .= '<meta property="og:image:height" content="'.$logo->h.'">'."\n";
+			}
 		}
 			
-		// GGf. in Bitly änder, weil Query String ignoriert wird
+		// GGf. in Bitly aendern, weil Query String ignoriert wird
 		$url = $protocol."://".$_SERVER['SERVER_NAME'].'/'.$canonicalurl;
 		$url_fb = $url; // sonst muss canonical url übereinstimmen, um nicht ignoriert zu werden!
 		// $url_fb .= (strpos($url, '?') === FALSE) ? $url.'?pk_campaign=Facebook' : $url.'&pk_campaign=Facebook';
 		$ret .= '<meta property="og:url" content="'.$url_fb.'">'."\n";
-								
+		
 		if($beschreibung != "") {
-		  $beschreibung = $this->shorten_description($beschreibung, 300);
-		  $beschreibung = (strlen($beschreibung) > 297) ? $beschreibung."..." : $beschreibung;
-		  $ret .= '<meta property="og:description" content="'.$beschreibung.'">'."\n";
+			$beschreibung = $this->shorten_description($beschreibung, 300);
+			$beschreibung = (strlen($beschreibung) > 297) ? $beschreibung."..." : $beschreibung;
+			$ret .= '<meta property="og:description" content="'.$beschreibung.'">'."\n";
 		} else {
-		  $ret .= '<meta property="og:description" content="...">'."\n";
+			$ret .= '<meta property="og:description" content="...">'."\n";
 		}
 			
-        $ret .= '<meta property="og:locale" content="de_DE">'."\n";
+		$ret .= '<meta property="og:locale" content="de_DE">'."\n";
 		$ret .= '<meta property="fb:app_id" content="100940970255996">'."\n";
 				
 		// Twitter
 		$ret .= '<meta name="twitter:card" content="summary">'."\n";
 		$ret .= '<meta name="twitter:site" content="@weiterbrlp">'."\n"; // $ret .= '<meta name="twitter:creator" content="weiterbrlp">'."\n";
 			
-		// GGf. in Bitly änder, weil Query String ignoriert wird
+		// GGf. in Bitly aendern, weil Query String ignoriert wird
 		$url_twitter = $url; // sonst muss canonical url übereinstimmen, um nicht ignoriert zu werden!
 		// $url_twitter .= (strpos($url, '?') === FALSE) ? $url.'?pk_campaign=Twitter' : $url.'&pk_campaign=Twitter';
 		$ret .= '<meta name="twitter:url" content="'.$url_twitter.'">'."\n";
@@ -448,36 +456,37 @@ class WISY_FRAMEWORK_CLASS
 		$ret .= '<meta name="twitter:title" content="'.$this->getTitleString($pageTitleNoHtml, $ort, $anbieter_name).'">'."\n";
 			
 		if($beschreibung != "") {
-		  $beschreibung = $this->shorten_description($beschreibung, 200);
-		  $beschreibung = (strlen($beschreibung) > 197) ? $beschreibung."..." : $beschreibung;
+			$beschreibung = $this->shorten_description($beschreibung, 200);
+			$beschreibung = (strlen($beschreibung) > 197) ? $beschreibung."..." : $beschreibung;
 		}
 			
 		$ret .= '<meta name="twitter:description" content="'.$beschreibung.'">'."\n";
 			
 		$logo = ""; $logo_src = ""; 
 		$logo = $this->getAnbieterLogo($anbieter_ID, false, true);	// quadrat = false, 4:3 = true
-   
-        if($logo != "") {
-		  if(!is_object($logo)) {
-		      $logo_src = $logo;
-		      // Default Logo Symbol
-			     $ret .= '<meta name="twitter:image" content="'.utf8_encode($this->pUrl($logo_src)).'">'."\n";
-			     $ret .= '<meta name="twitter:image:width" content="120">'."\n";
-			     $ret .= '<meta name="twitter:image:height" content="90">'."\n";
-		  } else {
-			     $logo_src = $this->purl("https://".$_SERVER['SERVER_NAME']."/admin/media.php/logo/anbieter/".$anbieter_ID."/".$logo->name);
-				 $ret .= '<meta name="twitter:image" content="'.utf8_encode($this->pUrl($logo_src)).'">'."\n";
-				 $ret .= '<meta name="twitter:image:width" content="'.$logo->w.'">'."\n";
-				 $ret .= '<meta name="twitter:image:height" content="'.$logo->h.'">'."\n";
-		  }
-	    }
-			
+		
+		if($logo != "") {
+			if(!is_object($logo)) {
+				$logo_src = $logo;
+				$ret .= '<meta property="og:image" content="'.$this->pUrl($logo_src).'">'."\n";
+				$ret .= '<meta property="og:image:secure_url" content="'.$this->pUrl($logo_src).'">'."\n";
+				$ret .= '<meta property="og:image:width" content="200">'."\n";
+				$ret .= '<meta property="og:image:height" content="200">'."\n";
+			} else {
+				$logo_src = $protocol."://".$_SERVER['SERVER_NAME']."/admin/media.php/logo/anbieter/".$anbieter_ID."/".$logo->name;
+				$ret .= '<meta property="og:image" content="'.$this->pUrl($logo_src).'">'."\n";
+				$ret .= '<meta property="og:image:secure_url" content="'.$this->pUrl($logo_src).'">'."\n";
+				$ret .= '<meta property="og:image:type" content="'.$logo->mime.'">'."\n";
+				$ret .= '<meta property="og:image:width" content="'.$logo->w.'">'."\n";
+				$ret .= '<meta property="og:image:height" content="'.$logo->h.'">'."\n";
+			}
+		}
 		
 		return $ret;
 	}
 	
 	// #languagedefintion
-    function getHreflangTags() {
+	function getHreflangTags() {
 		$ret = '';
 				
 		if(intval(trim($this->iniRead('seo.enablelanguagedefinition'))) != 1)
@@ -517,7 +526,7 @@ class WISY_FRAMEWORK_CLASS
 			echo '
 						<div class="wisy_topnote">
 							<p><b>Fehler 404 - Seite nicht gefunden</b></p>
-							<p>Entschuldigung, aber die von Ihnen gewünschte Seite konnte leider nicht gefunden werden. Sie können jedoch ...
+							<p>Entschuldigung, aber die von Ihnen gew&uuml;nschte Seite konnte leider nicht gefunden werden. Sie k&ouml;nnen jedoch ...
 							<ul>
 								<li><a href="//'.$_SERVER['HTTP_HOST'].'">Die Startseite von '.$_SERVER['HTTP_HOST'].' aufrufen ...</a></li>
 								<li><a href="javascript:history.back();">Zur&uuml;ck zur zuletzt besuchten Seite wechseln ...</a></li>
@@ -637,7 +646,7 @@ class WISY_FRAMEWORK_CLASS
 		// append all additional parameters, for the parameter q= we remove trailing spaces and commas 
 		$i = 0;
 		reset($param);
-		while( list($key, $value) = each($param) )
+		foreach($param as $key => $value)
 		{
 			if( $key == 'q' )
 			{	
@@ -678,11 +687,11 @@ class WISY_FRAMEWORK_CLASS
 		$placeholder = $matches[0];
 		if( $placeholder == '__NAME__' )
 		{
-		    return utf8_encode($wisyPortalName);
+			return cs8($wisyPortalName);
 		}
 		else if( $placeholder == '__KURZNAME__' )
 		{
-		    return utf8_encode($wisyPortalKurzname);
+			return cs8($wisyPortalKurzname);
 		}
 		else if( $placeholder == '__ANZAHL_KURSE__' || $placeholder == '__ANZAHL_KURSE_G__' )
 		{
@@ -747,7 +756,7 @@ class WISY_FRAMEWORK_CLASS
 		}
 		else if( $placeholder == '__MOBILNAVLINK__')
 		{
-			return '<div id="nav-link"><span>Menü öffnen</span></div>';
+			return '<div id="nav-link"><span>Men&uuml; &oumml;ffnen</span></div>';
 		}
 		
 		return "Unbekannt: $placeholder";
@@ -827,10 +836,10 @@ class WISY_FRAMEWORK_CLASS
 		$seals = array();
 		$db->query("SELECT a.attr_id AS sealId, s.glossar AS glossarId, g.begriff AS sealTitle FROM anbieter_stichwort a, stichwoerter s, glossar g WHERE a.primary_id=" . intval($vars['anbieterId']) . " AND a.attr_id=s.id AND s.eigenschaften=" .DEF_STICHWORTTYP_QZERTIFIKAT. " AND g.id=s.glossar ORDER BY a.structure_pos;");
 		while( $db->next_record() )
-			$seals[] = array($db->f8('sealId'), $db->f8('glossarId'), $db->f8('sealTitle'));
+			$seals[] = array($db->f('sealId'), $db->f('glossarId'), $db->f('sealTitle'));
 	
 		// no seals? -> done.
-		if( sizeof($seals) == 0 )
+		if( sizeof((array) $seals) == 0 )
 			return '';
 	
 		// get common seal information
@@ -839,7 +848,7 @@ class WISY_FRAMEWORK_CLASS
 		{
 			$db->query("SELECT pruefsiegel_seit FROM anbieter WHERE id=" . intval($vars['anbieterId']));
 			$db->next_record();
-			$seit = intval(substr($db->f8('pruefsiegel_seit'), 0, 4));
+			$seit = intval(substr($db->f('pruefsiegel_seit'), 0, 4));
 		}
 		$title = $seit? "Gepr&uuml;fte Weiterbildungseinrichtung seit $seit" : "Gepr&uuml;fte Weiterbildungseinrichtung";
 	
@@ -848,7 +857,7 @@ class WISY_FRAMEWORK_CLASS
 		
 		$ret = '';
 		$sealsOut = 0;
-		for( $i = 0; $i < sizeof($seals); $i++ )
+		for( $i = 0; $i < sizeof((array) $seals); $i++ )
 		{
 			$sealId    = $seals[$i][0];
 			$glossarId = $seals[$i][1];
@@ -910,10 +919,10 @@ class WISY_FRAMEWORK_CLASS
 		$field = $table=='stichwoerter'? 'stichwort' : 'thema';
 		$db->query("SELECT glossar, $field FROM $table WHERE id=$id");
 		if( $db->next_record() ) {
-			if( !($glossarId=$db->f8('glossar')) ) {
-				$db->query("SELECT id FROM glossar WHERE begriff='" .addslashes($db->f8($field)). "'");
+			if( !($glossarId=$db->f('glossar')) ) {
+				$db->query("SELECT id FROM glossar WHERE begriff='" .addslashes($db->fcs8($field)). "'");
 				if( $db->next_record() ) {
-					$glossarId = $db->f8('id');
+					$glossarId = $db->f('id');
 				}
 			}
 		}
@@ -951,7 +960,7 @@ class WISY_FRAMEWORK_CLASS
 		$codes_array = explode('###', $codes_stichwort_eigenschaften);
 		
 		// go through codes and stichwoerter
-		for( $c = 0; $c < sizeof($codes_array); $c += 2 ) 
+		for( $c = 0; $c < sizeof((array) $codes_array); $c += 2 ) 
 		{
 			if( $codes_array[$c] == 0 )
 				continue; // sachstichwoerter nicht darstellen - aenderung vom 30.03.2010 (bp)
@@ -961,7 +970,7 @@ class WISY_FRAMEWORK_CLASS
 				
 			$anythingOfThisCode = 0;
 			
-			for( $s = 0; $s < sizeof($stichwoerter); $s++ )
+			for( $s = 0; $s < sizeof((array) $stichwoerter); $s++ )
 			{
 				$glossarLink = '';
 				$glossarId = $this->glossarDb($db, 'stichwoerter', $stichwoerter[$s]['id']);
@@ -1036,7 +1045,8 @@ class WISY_FRAMEWORK_CLASS
 				WHERE k.user_grp=g.id AND k.id=$recordId";
 		$db->query($sql); if( !$db->next_record() ) return array();
 	
-		$settings			= explodeSettings($db->f8('s'));
+		$settings			= $db->fcs8('s');
+		$settings			= explodeSettings($settings);
 		$vollstaendigkeit	= intval($db->f8('v'));  if( $vollstaendigkeit <= 0 ) return;
 		$ret				= array();
 	
@@ -1203,7 +1213,7 @@ class WISY_FRAMEWORK_CLASS
 	    $fullTitleNoHtml .= $pageTitleNoHtml;
 	    $fullTitleNoHtml .= $title_post;
 	    $fullTitleNoHtml .= $fullTitleNoHtml? ' - ' : '';
-	    $fullTitleNoHtml .= utf8_encode($wisyPortalKurzname); // = default for home page
+	    $fullTitleNoHtml .= cs8($wisyPortalKurzname); // = default for home page
 	    
 	    return $fullTitleNoHtml;
 	}
@@ -1364,7 +1374,7 @@ class WISY_FRAMEWORK_CLASS
 		$ret = '';
 		
 		$css = $this->getCSSFiles();
-		for( $i = 0; $i < sizeof($css); $i++ )
+		for( $i = 0; $i < sizeof((array) $css); $i++ )
 		{	
 			$ret .= '<link rel="stylesheet" type="text/css" href="'.$css[$i].'" />' . "\n";
 		}
@@ -1413,7 +1423,7 @@ class WISY_FRAMEWORK_CLASS
 		$ret = '';
 		
 		$js = $this->getJSFiles();
-		for( $i = 0; $i < sizeof($js); $i++ )
+		for( $i = 0; $i < sizeof((array) $js); $i++ )
 		{	
 			$ret .= '<script type="text/javascript" src="'.$js[$i].'" charset="utf-8"></script>' . "\n";
 		}
@@ -1425,7 +1435,7 @@ class WISY_FRAMEWORK_CLASS
 			$ret .= "window.cookiebanner = {};\n";
 			$ret .= "window.cookiebanner.optoutCookies = \"{$this->iniRead('cookiebanner.cookies.optout', '')},fav,fav_init_hint\";\n";
 			$ret .= "window.cookiebanner.optedOut = false;\n";
-			$ret .= "window.cookiebanner.favOptoutMessage = \"{$this->iniRead('cookiebanner.fav.optouthinweis', 'Ihr Favorit konnte auf diesem Computer nicht gespeichert gewerden da Sie die Speicherung von Cookies abgelehnt haben. Sie können Ihre Cookie-Einstellungen in den Datenschutzhinweisen anpassen.')}\";\n";
+			$ret .= "window.cookiebanner.favOptoutMessage = \"{$this->iniRead('cookiebanner.fav.optouthinweis', 'Ihr Favorit konnte auf diesem Computer nicht gespeichert gewerden da Sie die Speicherung von Cookies abgelehnt haben. Sie k&ouml;nnen Ihre Cookie-Einstellungen in den Datenschutzhinweisen anpassen.')}\";\n";
 			$ret .= "window.cookiebanner.piwik = \"{$this->iniRead('analytics.piwik', '')}\";\n";
 			$ret .= "window.cookiebanner.uacct = \"{$this->iniRead('analytics.uacct', '')}\";\n";
 
@@ -1443,10 +1453,10 @@ class WISY_FRAMEWORK_CLASS
 			$cookieOptions['cookie']['expiryDays'] = intval($this->iniRead('cookiebanner.cookiegueltigkeit', 7));
 			
 			$cookieOptions['content'] = array();
-			$cookieOptions['content']['message'] = $this->iniRead('cookiebanner.hinweis.text', 'Wir verwenden Cookies, um Ihnen eine Merkliste sowie eine Seitenübersetzung anzubieten und um Kursanbietern die Pflege ihrer Kurse zu ermöglichen. Indem Sie unsere Webseite nutzen, erklären Sie sich mit der Verwendung der Cookies einverstanden. Weitere Details finden Sie in unserer Datenschutzerklärung.');
-			$cookieOptions['content']['allow'] = $this->iniRead('cookiebanner.erlauben.text', 'Akzeptieren');
-			$cookieOptions['content']['deny'] = $this->iniRead('cookiebanner.ablehnen.text', 'Ablehnen');
-			$cookieOptions['content']['link'] = $this->iniRead('cookiebanner.datenschutz.text', 'Mehr erfahren');
+			$cookieOptions['content']['message'] = $this->iniRead('cookiebanner.hinweis.text', 'Wir verwenden Cookies, um Ihnen eine Merkliste sowie eine Seiten&uuml;bersetzung anzubieten und um Kursanbietern die Pflege ihrer Kurse zu erm&ouml;glichen. Indem Sie unsere Webseite nutzen, erkl&auml;ren Sie sich mit der Verwendung der Cookies einverstanden. Weitere Details finden Sie in unserer Datenschutzerkl&auml;rung.');
+			$cookieOptions['content']['allow'] = $this->iniRead('cookiebanner.erlauben.text', 'Akzeptieren', 1);
+			$cookieOptions['content']['deny'] = $this->iniRead('cookiebanner.ablehnen.text', 'Ablehnen', 1);
+			$cookieOptions['content']['link'] = $this->iniRead('cookiebanner.datenschutz.text', 'Mehr erfahren', 1);
 			$cookieOptions['content']['href'] = $this->iniRead('cookiebanner.datenschutz.link', '');
 			
 			$cookieOptions['palette'] = array();
@@ -1573,7 +1583,7 @@ class WISY_FRAMEWORK_CLASS
 		$q = strtr($q, array('ä'=>'ae', 'ö'=>'oe', 'ü'=>'ue', 'ß'=>'ss'));
 		$q = preg_replace('/[^a-z,]/', '', $q);
 		$q = explode(',', $q);
-		for( $i = 0; $i < sizeof($q); $i++ )
+		for( $i = 0; $i < sizeof((array) $q); $i++ )
 		{
 			if( $q[$i] != '' && !$added[ $q[$i] ] )
 			{
@@ -1614,7 +1624,7 @@ class WISY_FRAMEWORK_CLASS
 		if( !is_array($param) ) $param = array();
 		
 		// prepare the HTML-Page
-		$bodyStart = utf8_encode($GLOBALS['wisyPortalBodyStart']);
+		$bodyStart = cs8($GLOBALS['wisyPortalBodyStart']);
 		if( strpos($bodyStart, '<html') === false )
 		{
 		    if($this->iniRead('portal.inframe', '') != 1)
@@ -1823,7 +1833,7 @@ class WISY_FRAMEWORK_CLASS
 		$DEFAULT_ADVLINK_HTML	= '<a href="advanced?q=__Q_URLENCODE__" id="wisy_advlink">Erweitern</a>';
 		if( $this->simplified ) $DEFAULT_ADVLINK_HTML = '';
 		$DEFAULT_RIGHT_HTML		= '<a href="javascript:window.print();">Drucken</a>';
-		$DEFAULT_BOTTOM_HINT	= 'bitte <strong>Suchwörter</strong> eingeben - z.B. Englisch, VHS, Bildungsurlaub, ...';
+		$DEFAULT_BOTTOM_HINT	= 'bitte <strong>Suchw&ouml;rter</strong> eingeben - z.B. Englisch, VHS, Bildungsurlaub, ...';
 		
 		// Kurse oder Anbieter?
 		
@@ -1844,7 +1854,8 @@ class WISY_FRAMEWORK_CLASS
 						echo '<label for="qs" id="wisyr_searchinput_label">Suchen nach:</label>';
 						if($this->simplified)
 						{
-							echo '<input type="text" id="wisy_searchinput" class="' . $autocomplete_class . '" name="qs" value="' .$this->QS. '" placeholder="' . $searchinput_placeholder . '" aria-label="Suchen nach Suchbegriff oder Kursthema" role="combobox" aria-controls="wisy_autocomplete" aria-owns="wisy_autocomplete" aria-expanded="false" aria-autocomplete="list" autocomplete="off" />' . "\n";
+							$qs = $this->QS;
+							echo '<input type="text" id="wisy_searchinput" class="' . $autocomplete_class . '" name="qs" value="' .$qs. '" placeholder="' . $searchinput_placeholder . '" aria-label="Suchen nach Suchbegriff oder Kursthema" role="combobox" aria-controls="wisy_autocomplete" aria-owns="wisy_autocomplete" aria-expanded="false" aria-autocomplete="list" autocomplete="off" />' . "\n";
 							echo '<input type="hidden" id="wisy_searchinput_q" name="q" value="' . $this->Q . '" />' . "\n";
 							echo '<input type="hidden" id="wisy_searchinput_qf" name="qf" value="' . $this->QF . '" />' . "\n";
 							if( isset($tokens['show']) && $tokens['show'] == 'anbieter' ) {
@@ -1863,9 +1874,9 @@ class WISY_FRAMEWORK_CLASS
 						}
 					echo '</div>';
 					
-                    if($active_filters != '') {
-                        echo '<ul class="wisyr_activefilters">' . $active_filters . '</ul>'; 
-                    }
+					if($active_filters != '') {
+						echo '<ul class="wisyr_activefilters">' . $active_filters . '</ul>'; 
+					}
 					
 					if( !$this->simplified && $this->iniRead('searcharea.radiussearch', 0) )
 					{
@@ -1874,7 +1885,7 @@ class WISY_FRAMEWORK_CLASS
 							echo '<input type="text" id="wisy_beiinput" class="ac_keyword_ort" name="filter_bei" value="' .$bei. '" placeholder="Ort" />' . "\n";
 							echo '<input type="hidden" name="km" value="' . $km . '" />';
 						echo '</div>';
-                		echo '<div class="formrow wisyr_kmselect">';
+						echo '<div class="formrow wisyr_kmselect">';
 							echo '<label for="km">km</label>';
 							echo '<select id="wisy_kmselect" name="km" >' . "\n";
 								foreach( $km_arr as $value=>$descr ) {
@@ -2090,6 +2101,17 @@ class WISY_FRAMEWORK_CLASS
 		}
 		
 		return false;
+	}
+	
+	function mysql_escape_mimic($inp) {
+		if(is_array($inp))
+			return array_map(__METHOD__, $inp);
+		
+		if(!empty($inp) && is_string($inp)) {
+			return str_replace(array('\\', "\0", "\n", "\r", "'", '"', "\x1a"), array('\\\\', '\\0', '\\n', '\\r', "\\'", '\\"', '\\Z'), $inp);
+		}
+		
+		return $inp;
 	}
 
 	function main()

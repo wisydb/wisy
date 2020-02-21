@@ -52,8 +52,8 @@ while( $db->next_record() ) {
 }
 $total = $db->fs('cnt');
 echo "Unterschiedliche IP-Adressen: $differentIps<br />";
-echo "Unterschiedliche IP-Adressen nach Anonymisierung des ersten Oktets: ".sizeof($anon_ip1_arr)."<br />";
-echo "Unterschiedliche IP-Adressen nach Anonymisierung des letzten Oktets: ".sizeof($anon_ip2_arr)."<br />";
+echo "Unterschiedliche IP-Adressen nach Anonymisierung des ersten Oktets: ".sizeof((array) $anon_ip1_arr)."<br />";
+echo "Unterschiedliche IP-Adressen nach Anonymisierung des letzten Oktets: ".sizeof((array) $anon_ip2_arr)."<br />";
 
 echo 'Done.';
 */

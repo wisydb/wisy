@@ -114,7 +114,7 @@ class WISY_GOOGLEMAPS_CLASS
 			);
 			$temp = $g_countryTransl;
 			reset($temp);
-			while( list($n, $v) = each($temp) )
+			foreach($temp as $n => $v)
 			{
 				$g_countryTransl[ strtolower($v) ] = $v; // also add the english names in lower-case to the table
 			}
@@ -139,10 +139,10 @@ class WISY_GOOGLEMAPS_CLASS
 		{
 			$temp = explode(' ', $str);
 			$str = '';
-			for( $i = 0; $i < sizeof($temp); $i++ )
+			for( $i = 0; $i < sizeof((array) $temp); $i++ )
 			{
 				$str .= $temp[$i] . ' ';
-				if( strlen($str) >= $maxLen && $i!=sizeof($temp)-1 )
+				if( strlen($str) >= $maxLen && $i!=sizeof((array) $temp)-1 )
 				{
 					$str .= '...';
 					break;
@@ -414,7 +414,7 @@ class WISY_GOOGLEMAPS_CLASS
 		xml_set_element_handler($this->xml_obj, 'geocode_startHandler', 'geocode_endHandler');
 		
 		//$q = "scheplerstr. 4, hamburg";
-        $url = 'https://maps.google.com/maps/geo?q='.urlencode(utf8_encode($q)).'&output=xml&key=' . $this->apiKey;
+        $url = 'https://maps.google.com/maps/geo?q='.urlencode(cs8($q)).'&output=xml&key=' . $this->apiKey;
 		if (!($fp = @fopen($url, "r"))) {
 			return false;
 		}

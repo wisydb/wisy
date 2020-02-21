@@ -56,7 +56,7 @@ while( $db1->next_record() )
 		flush();
 		
 		// fehler korrigieren ...
-		for( $i = 1; $i < sizeof($kurs_ids); $i++ ) {
+		for( $i = 1; $i < sizeof((array) $kurs_ids); $i++ ) {
 			$kurs_id = $kurs_ids[$i];
 			echo "- korrigiere Kurs $kurs_id<br />";
 			$neue_df_id = duplicate_df($df_id);

@@ -32,7 +32,7 @@ while( $db->next_record() )
 }
 
 $bcc = "";
-while( list($email) = each($allEmails) )
+foreach(array_keys($allEmails) as $email)
 {
 	$bcc .= $bcc==""? "" : ", ";
 	$bcc .= $email;
@@ -54,16 +54,16 @@ if( $db->next_record() )
 $site->pageStart(array('popfit'=>1));
 
 	$site->skin->submenuStart();
-		echo 'Rundschreiben an alle ausgewählten Anbieter';
+		echo 'Rundschreiben an alle ausgew&auml;hlten Anbieter';
 	$site->skin->submenuBreak();
 		echo "&nbsp;";
 	$site->skin->submenuEnd();
 	
 	$site->skin->workspaceStart();
 
-		echo "Um Ihr Email-Programm zu starten und an alle<br />ausgewählten Anbieter eine Email zu senden, klicken Sie bitte ";
+		echo "Um Ihr Email-Programm zu starten und an alle<br />ausgew&auml;hlten Anbieter eine Email zu senden, klicken Sie bitte ";
 		echo '<a href="mailto:' .$to. '?bcc=' .$bcc /*urlencode is not understood by outlook*/. '"><b>hier</b></a>.<br /><br />';
-		echo "(Einige Versionen von Outlook unterstützen nicht die Übergabe beliebig vieler Email-Adressen; sollte Outlook nicht starten, versuchen Sie eine Auswahl mit weniger Anbietern)";
+		echo "(Einige Versionen von Outlook unterst&uuml;tzen nicht die &uuml;bergabe beliebig vieler Email-Adressen; sollte Outlook nicht starten, versuchen Sie eine Auswahl mit weniger Anbietern)";
 	
 	$site->skin->workspaceEnd();
 	

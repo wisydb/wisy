@@ -18,7 +18,7 @@ class LOG_FIELDFORMATTER_CLASS
 
 	function combineDoubleFields(&$record)
 	{
-		$record_size = sizeof($record);
+	    $record_size = sizeof((array) $record);
 
 		// remove the secondary ID from the field name (convert <table>.<id>.<field> to <table>.<field>)
 		$record_field_names = array();
@@ -77,7 +77,7 @@ class LOG_FIELDFORMATTER_CLASS
 		// for secondary tables, correct $tableDef and $fieldName
 		if( $tableDef && strpos($fieldName, '.') ) {
 			$temp = explode('.', $fieldName); // field name may be "seconday.id.field" or "secondary.field"
-			for( $r = 0; $r < sizeof($tableDef->rows); $r++ ) {
+			for( $r = 0; $r < sizeof((array) $tableDef->rows); $r++ ) {
 				if( $tableDef->rows[$r]->name == $temp[0] 
 				 && ($tableDef->rows[$r]->flags&TABLE_ROW)==TABLE_SECONDARY ) {
 					$tableDef = $tableDef->rows[$r]->addparam;
@@ -91,7 +91,7 @@ class LOG_FIELDFORMATTER_CLASS
 		$fieldDescr = isohtmlspecialchars($fieldName);
 		$fieldFlags = 0;
 		if( $tableDef ) {
-			for( $r = 0; $r < sizeof($tableDef->rows); $r++ ) {
+		    for( $r = 0; $r < sizeof((array) $tableDef->rows); $r++ ) {
 				if( $tableDef->rows[$r]->name == $fieldName ) {
 					$fieldDescr = trim($tableDef->rows[$r]->descr);
 					$fieldFlags = $tableDef->rows[$r]->flags;
@@ -133,47 +133,47 @@ class LOG_FIELDFORMATTER_CLASS
 		
 		switch( $fieldFlags&TABLE_ROW )
 		{
-			case TABLE_SECONDARY:
-				if( $action == 'edit' && $this->getIdListInfo($oldValue, $newValue, $deleted, $created, $orderModified) )
-				{
-					if( sizeof($created) ) { 
-						$value .= ($value?', ':'') . '<span style="color:#0A0;">' . sizeof($created) . ' Stück hinzugefügt</span>'; 
-					}
-					/*no else, both may happen */
-					if( sizeof($deleted) ) { 
-						$value .= ($value?', ':'') . '<span style="color:#A00;">' . sizeof($deleted) . ' Stück gelöscht</span>'; 
-						$value .= ' <a href="log.php?l='.$this->currLineNumber.'&amp;date='.$this->currDay.'" class="log_dt">[...]</a>';
-						for( $i = 0; $i < sizeof($deleted); $i++ )
-							$this->deletedSecondary[ $fieldName . '.' . $deleted[$i] . '.' ] = 1;
-					}
-					if( $orderModified && $value == '' ) { $value = '<i>Reihenfolge geändert</i>'; }
-				} 
-				break;
-			
-			case TABLE_MATTR:
-			case TABLE_SATTR:
-				$attrTableDef = $tableDef->rows[$r]->addparam;
-				if( $this->getIdListInfo($oldValue, $newValue, $deleted, $created, $orderModified) )
-				{
-					if( sizeof($deleted) ) {
-						for( $i = 0; $i < sizeof($deleted); $i++ ) 
-							$value .= ($i?', ':'') . isohtmlspecialchars($attrTableDef->get_summary($deleted[$i])) .	
-								'<a href="edit.php?table='.$attrTableDef->name.'&amp;id='.$deleted[$i].'">&nbsp;&#8599;</a>';
-						$value = '<s>' . $value . '</s> ';
-					}
-					
-					if( sizeof($created) ) {
-						for( $i = 0; $i < sizeof($created); $i++ ) 
-							$value .= ($i?', ':'') . isohtmlspecialchars($attrTableDef->get_summary($created[$i]))	 .
-								'<a href="edit.php?table='.$attrTableDef->name.'&amp;id='.$created[$i].'">&nbsp;&#8599;</a>';
-						if( ($fieldFlags&TABLE_ROW)==TABLE_MATTR && $action == 'edit' /*else this is a dump*/ ) $value .= ' hinzugefügt'; 
-					}
-					
-					if( $orderModified && $value == '' ){ $value = '<i>Reihenfolge geändert</i>'; }
-				}
-				break;
-			
-			default:																					// also used for user_created etc.
+		    case TABLE_SECONDARY:
+		        if( $action == 'edit' && $this->getIdListInfo($oldValue, $newValue, $deleted, $created, $orderModified) )
+		        {
+		            if( sizeof((array) $created) ) {
+		                $value .= ($value?', ':'') . '<span style="color:#0A0;">' . sizeof((array) $created) . ' St&uuml;ck hinzugef&uuml;gt</span>';
+		            }
+		            /*no else, both may happen */
+		            if( sizeof((array) $deleted) ) {
+		                $value .= ($value?', ':'') . '<span style="color:#A00;">' . sizeof((array) $deleted) . ' St&uuml;ck gel&ouml;scht</span>';
+		                $value .= ' <a href="log.php?l='.$this->currLineNumber.'&amp;date='.$this->currDay.'" class="log_dt">[...]</a>';
+		                for( $i = 0; $i < sizeof($deleted); $i++ )
+		                    $this->deletedSecondary[ $fieldName . '.' . $deleted[$i] . '.' ] = 1;
+		            }
+		            if( $orderModified && $value == '' ) { $value = '<i>Reihenfolge ge&auml;ndert</i>'; }
+		        }
+		        break;
+		        
+		    case TABLE_MATTR:
+		    case TABLE_SATTR:
+		        $attrTableDef = $tableDef->rows[$r]->addparam;
+		        if( $this->getIdListInfo($oldValue, $newValue, $deleted, $created, $orderModified) )
+		        {
+		            if( sizeof((array) $deleted) ) {
+		                for( $i = 0; $i < sizeof((array) $deleted); $i++ )
+		                    $value .= ($i?', ':'') . isohtmlspecialchars($attrTableDef->get_summary($deleted[$i])) .
+		                    '<a href="edit.php?table='.$attrTableDef->name.'&amp;id='.$deleted[$i].'">&nbsp;&#8599;</a>';
+		                    $value = '<s>' . $value . '</s> ';
+		            }
+		            
+		            if( sizeof((array) $created) ) {
+		                for( $i = 0; $i < sizeof((array) $created); $i++ )
+		                    $value .= ($i?', ':'') . isohtmlspecialchars($attrTableDef->get_summary($created[$i]))	 .
+		                    '<a href="edit.php?table='.$attrTableDef->name.'&amp;id='.$created[$i].'">&nbsp;&#8599;</a>';
+		                    if( ($fieldFlags&TABLE_ROW)==TABLE_MATTR && $action == 'edit' /*else this is a dump*/ ) $value .= ' hinzugef&uuml;gt';
+		            }
+		            
+		            if( $orderModified && $value == '' ){ $value = '<i>Reihenfolge ge&auml;ndert</i>'; }
+		        }
+		        break;
+		        
+		    default:                                                                                    // also used for user_created etc.
 				if( $oldValue && $tableDef ) $oldValue = $tableDef->formatField($fieldName, $oldValue); // only format non-empty values to avoid getting stuff as "unknown" or "n/a"
 				if( $newValue && $tableDef )$newValue = $tableDef->formatField($fieldName, $newValue);
 				break;

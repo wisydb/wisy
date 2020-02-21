@@ -148,7 +148,7 @@ class WISY_ADVANCED_RENDERER_CLASS
 			$decoration = array();
 			
 		$foerderungen = $this->getSpezielleStichw(2);
-		if( sizeof($foerderungen) > 1 )
+		if( sizeof((array) $foerderungen) > 1 )
 		{
 			$this->presets['foerderung'] = array
 				(
@@ -159,7 +159,7 @@ class WISY_ADVANCED_RENDERER_CLASS
 		}
 		
 		$zielgruppen = $this->getSpezielleStichw(8);
-		if( sizeof($zielgruppen) > 1 )
+		if( sizeof((array) $zielgruppen) > 1 )
 		{
 			$this->presets['zielgruppe'] = array
 				(
@@ -170,7 +170,7 @@ class WISY_ADVANCED_RENDERER_CLASS
 		}
 
 		$qualitaetszertifikate = $this->getSpezielleStichw(4);
-		if( sizeof($qualitaetszertifikate) > 1 )
+		if( sizeof((array) $qualitaetszertifikate) > 1 )
 		{
 			$this->presets['qualitaetszertifikat'] = array
 				(
@@ -181,7 +181,7 @@ class WISY_ADVANCED_RENDERER_CLASS
 		}
 
 		$unterrichtsarten = $this->getSpezielleStichw(32768);
-		if( sizeof($unterrichtsarten) > 1 )
+		if( sizeof((array) $unterrichtsarten) > 1 )
 		{
 			$this->presets['unterrichtsart'] = array
 				(
@@ -266,7 +266,7 @@ class WISY_ADVANCED_RENDERER_CLASS
 	 * render, misc.
 	 **********************************************************************/
 
-	function renderForm()
+	function renderForm($q = null, $records = null)
 	{
 		
 		// explode the query string to its tokens
@@ -305,12 +305,12 @@ class WISY_ADVANCED_RENDERER_CLASS
 					
 				case 'tag':
 					reset($this->presets);
-					while( list($field_name, $preset) = each($this->presets) )
+					foreach($this->presets as $field_name => $preset)
 					{
 						if( $preset['type'] == 'taglist' && !isset($presets_curr[$field_name]) )
 						{
 							reset($preset['options']);
-							while( list($value) = each($preset['options']) )
+							foreach(array_keys($preset['options']) as $value)
 							{
 								if( strval($tokens['cond'][$i]['value']) == strval($value) )
 								{
@@ -349,7 +349,7 @@ class WISY_ADVANCED_RENDERER_CLASS
 							
 							reset($this->presets);
 							$fieldsets_open = 0;
-							while( list($field_name, $preset) = each($this->presets) )
+							foreach($this->presets as $field_name => $preset)
 							{
 								if( isset($preset['decoration']['headline_left']) )
 								{
@@ -377,7 +377,7 @@ class WISY_ADVANCED_RENDERER_CLASS
 										{
 											echo '<select name="adv_' .$field_name. '">';
 												reset($preset['options']);
-												while( list($value, $descr) = each($preset['options']) )
+												foreach($preset['options'] as $value => $descr)
 												{
 													$selected = strval($presets_curr[$field_name])==strval($value)? ' selected="selected"' : '';
 													echo "<option value=\"$value\"$selected>$descr</option>";
@@ -431,7 +431,7 @@ class WISY_ADVANCED_RENDERER_CLASS
 			{
 				$q = '';
 				reset($this->presets);
-				while( list($field_name, $preset) = each($this->presets) )
+				foreach($this->presets as $field_name => $preset)
 				{
 					$item = trim($_GET['adv_' . $field_name]);
 					if( $item != '' )

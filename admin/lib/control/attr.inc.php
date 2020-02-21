@@ -30,7 +30,7 @@ class CONTROL_ATTR_CLASS extends CONTROL_BASE_CLASS
 		if( isset($this->row_def->prop['ctrl.attr.ftitle']) ) {
 			$this->attr_ftitle = $this->row_def->prop['ctrl.attr.ftitle'];
 		}
-		else for( $r = 0; $r < sizeof($this->row_def->addparam->rows); $r++ ) {
+		else for( $r = 0; $r < sizeof((array) $this->row_def->addparam->rows); $r++ ) {
 			if( $this->row_def->addparam->rows[$r]->flags & TABLE_SUMMARY ) {
 				$this->attr_ftitle = $this->row_def->addparam->rows[$r]->name;
 				break;
@@ -222,12 +222,12 @@ class CONTROL_ATTR_CLASS extends CONTROL_BASE_CLASS
 		{
 			$this->attr_references = array();
 			if( $this->table_def->name == $this->attr_table 
-			 && $addparam[id]
+			 && $addparam['id']
 			 && $this->row_def->flags&TABLE_SHOWREF )
 			{
-				$dba = new DB_Admin;
-				$dba->query("SELECT primary_id FROM {$this->table_def->name}_{$this->row_def->name} WHERE attr_id=".intval($addparam[id])." ORDER BY structure_pos");
-				while( $dba->next_record() ) {
+			    $dba = new DB_Admin;
+			    $dba->query("SELECT primary_id FROM {$this->table_def->name}_{$this->row_def->name} WHERE attr_id=".intval($addparam['id'])." ORDER BY structure_pos");
+			    while( $dba->next_record() ) {
 					$temp = $this->table_def->get_summary($dba->f('primary_id'),  '/');
 					$this->attr_references[] = array($dba->f('primary_id'), $temp);
 				}

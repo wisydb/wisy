@@ -56,7 +56,7 @@ class G_STRIPSLASHES_CLASS
     static private function stripslashesArray(&$arr) 
 	{
 		reset($arr);
-		while( list($key, $value) = each($arr) )
+		foreach($arr as $key => $value)
 		{
 			if( is_array($value) )
 			{

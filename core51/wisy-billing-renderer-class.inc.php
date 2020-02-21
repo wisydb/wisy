@@ -17,7 +17,7 @@ class WISY_BILLING_RENDERER_CLASS
 		$allPrices = $this->framework->iniRead('useredit.billing.prices', '1000=29.75;');
 		$allPrices = strtr($allPrices, array('='=>';', ','=>'.', ' '=>''));
 		$allPrices = explode(';', $allPrices);
-		for( $a = 0; $a < sizeof($allPrices); $a+=2 )
+		for( $a = 0; $a < sizeof((array) $allPrices); $a+=2 )
 		{	
 			$amount = intval($allPrices[$a]);
 			$price  = floatval($allPrices[$a+1]);

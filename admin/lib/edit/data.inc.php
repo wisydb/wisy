@@ -111,10 +111,10 @@ class EDIT_DATA_CLASS
 	
 	private function ids_array_equal($a1, $a2) 
 	{
-		if( sizeof($a1)!=sizeof($a2) ) {
+	    if( sizeof((array) $a1)!=sizeof((array) $a2) ) {
 			return false;
 		}
-		for( $i = 0; $i < sizeof($a1); $i++ ) {
+		for( $i = 0; $i < sizeof((array) $a1); $i++ ) {
 			if( $a1[$i] != $a2[$i] ) {
 				return false;
 			}
@@ -148,11 +148,11 @@ class EDIT_DATA_CLASS
 		if( $this->control_user_created->dbval	!= $o->control_user_created->dbval
          ||	$this->control_user_grp->dbval		!= $o->control_user_grp->dbval
 		 || $this->control_user_access->dbval	!= $o->control_user_access->dbval
-		 || sizeof($this->controls) != sizeof($o->controls) ) {
+		 || sizeof((array) $this->controls) != sizeof((array) $o->controls) ) {
 			return 1; // objects are different
 		}
 		
-		for( $i = 0; $i < sizeof($this->controls); $i++ ) {
+		for( $i = 0; $i < sizeof((array) $this->controls); $i++ ) {
 			if( !$this->controls[$i]->is_readonly() )  {
 				if( $this->cmp_prepare_str($this->controls[$i]->dbval) != $this->cmp_prepare_str($o->controls[$i]->dbval) ) {
 					return 1; // objects are different
@@ -209,7 +209,7 @@ class EDIT_DATA_CLASS
 	private function call_trigger_()
 	{
 
-		if( $this->trigger_script && sizeof($this->trigger_param) ) 
+	    if( $this->trigger_script && is_array($this->trigger_param) && sizeof((array) $this->trigger_param) )
 		{
 			call_plugin($this->trigger_script, $this->trigger_param);
 			if( $this->trigger_param['returnmsg'] )
@@ -265,17 +265,19 @@ class EDIT_DATA_CLASS
 		$control->dbval = -1;
 		$this->controls[] = $control;
 		
-			for( $r2 = 0; $r2 < sizeof($table_def2->rows); $r2++ ) 
-			{
-				$row2 = $table_def2->rows[$r2];
-				
-				$control = $this->CREATE_CONTROL_("f_{$row->name}_{$row2->name}[]", $row2, $table_def2);
-				$control->dbval = $control->get_default_dbval($use_tracked_defaults);
-				$this->controls[] = $control;
-				
-				if( ($row2->flags&TABLE_ROW) == TABLE_BLOB )
-					$this->can_contain_blobs = true;
-			}
+		if(is_array($table_def2->rows)) {
+		    for( $r2 = 0; $r2 < sizeof((array) $table_def2->rows); $r2++ )
+		    {
+		        $row2 = $table_def2->rows[$r2];
+		        
+		        $control = $this->CREATE_CONTROL_("f_{$row->name}_{$row2->name}[]", $row2, $table_def2);
+		        $control->dbval = $control->get_default_dbval($use_tracked_defaults);
+		        $this->controls[] = $control;
+		        
+		        if( ($row2->flags&TABLE_ROW) == TABLE_BLOB )
+		            $this->can_contain_blobs = true;
+		    }
+		}
 		
 		$this->controls[] = $this->CREATE_CONTROL_("f_{$row->name}_object_end[]", new ROW_DUMMY_CLASS('', array('__META__'=>'object_end')));
 	}
@@ -300,38 +302,40 @@ class EDIT_DATA_CLASS
 		$this->control_user_access->dbval	= $this->control_user_access->get_default_dbval($use_tracked_defaults);
 
 		$this->controls = array();
-		for( $r = 0; $r < sizeof($this->table_def->rows); $r++ )
-		{
-			$row = $this->table_def->rows[$r];
-			switch( $row->flags&TABLE_ROW )
-			{
-				case TABLE_SECONDARY:
-					// secondary list start
-					$this->controls[] = $this->CREATE_CONTROL_("f_{$row->name}_secondary_start", new ROW_DUMMY_CLASS($row->descr, array('__META__'=>'secondary_start')));
-						$table_def2 = Table_Find_Def($this->table_def->rows[$r]->addparam->name, $this->do_access_check);
-						
-						// add secondary items
-						if( $row->default_value )
-						{
-							$this->add_blank_object_to_controls_array_($row, $table_def2, $use_tracked_defaults);
-						}
-						
-						// add secondary template (this is a normal object surrounded by template marks)
-						$this->add_template_to_controls_array_($row, $table_def2, $use_tracked_defaults);
-						
-					// secondary list end
-					$this->controls[] = $this->CREATE_CONTROL_("f_{$row->name}_secondary_end", new ROW_DUMMY_CLASS('', array('__META__'=>'secondary_end')));
-					break;
-				
-				default:	
-					// primary field
-					$control = $this->CREATE_CONTROL_("f_{$row->name}", $row, $this->table_def);
-					$control->dbval = $control->get_default_dbval($use_tracked_defaults);
-					$this->controls[] = $control;
-					if( ($row->flags&TABLE_ROW) == TABLE_BLOB )
-						$this->can_contain_blobs = true;
-					break;
-			}
+		if(is_array($this->table_def->rows)) {
+		    for( $r = 0; $r < sizeof((array) $this->table_def->rows); $r++ )
+		    {
+		        $row = $this->table_def->rows[$r];
+		        switch( $row->flags&TABLE_ROW )
+		        {
+		            case TABLE_SECONDARY:
+		                // secondary list start
+		                $this->controls[] = $this->CREATE_CONTROL_("f_{$row->name}_secondary_start", new ROW_DUMMY_CLASS($row->descr, array('__META__'=>'secondary_start')));
+		                $table_def2 = Table_Find_Def($this->table_def->rows[$r]->addparam->name, $this->do_access_check);
+		                
+		                // add secondary items
+		                if( $row->default_value )
+		                {
+		                    $this->add_blank_object_to_controls_array_($row, $table_def2, $use_tracked_defaults);
+		                }
+		                
+		                // add secondary template (this is a normal object surrounded by template marks)
+		                $this->add_template_to_controls_array_($row, $table_def2, $use_tracked_defaults);
+		                
+		                // secondary list end
+		                $this->controls[] = $this->CREATE_CONTROL_("f_{$row->name}_secondary_end", new ROW_DUMMY_CLASS('', array('__META__'=>'secondary_end')));
+		                break;
+		                
+		            default:
+		                // primary field
+		                $control = $this->CREATE_CONTROL_("f_{$row->name}", $row, $this->table_def);
+		                $control->dbval = $control->get_default_dbval($use_tracked_defaults);
+		                $this->controls[] = $control;
+		                if( ($row->flags&TABLE_ROW) == TABLE_BLOB )
+		                    $this->can_contain_blobs = true;
+		                    break;
+		        }
+		    }
 		}
 		
 		return true;
@@ -397,66 +401,70 @@ class EDIT_DATA_CLASS
 		$this->control_user_access->dbval	= $this->db1->fs('user_access');
 		
 		$this->controls = array();
-		for( $r = 0; $r < sizeof($this->table_def->rows); $r++ )
-		{
-			$row = $this->table_def->rows[$r];
-			switch( $row->flags&TABLE_ROW )
-			{
-				case TABLE_SECONDARY:
-					// secondary list start
-					$this->controls[] = $this->CREATE_CONTROL_("f_{$row->name}_secondary_start", new ROW_DUMMY_CLASS($row->descr, array('__META__'=>'secondary_start')));
-						$table_def2 = Table_Find_Def($this->table_def->rows[$r]->addparam->name, $this->do_access_check);
-					
-						// add secondary items
-						$s_id = array();
-						$this->db2->query("SELECT secondary_id FROM {$this->table_def->name}_{$row->name} WHERE primary_id={$this->id} ORDER BY structure_pos;");
-						while( $this->db2->next_record() ) { $s_id[] = $this->db2->fs('secondary_id'); }
-						
-						for( $s = 0; $s < sizeof($s_id); $s++ ) 
-						{
-							$this->db2->query("SELECT * FROM {$table_def2->name} WHERE id=".$s_id[$s]);
-							if( $this->db2->next_record() )
-							{
-								$control = $this->CREATE_CONTROL_("f_{$row->name}_object_start[]", new ROW_DUMMY_CLASS($row->descr.' '.($s+1), array('__META__'=>'object_start')));
-								$control->dbval = $copy_record? -1 : $s_id[$s];
-								$this->controls[] = $control;
-														
-									for( $r2 = 0; $r2 < sizeof($table_def2->rows); $r2++ ) 
-									{	
-										$row2 = $table_def2->rows[$r2];
-										switch( $row2->flags&TABLE_ROW ) {
-											case TABLE_SECONDARY: die('nested secondary tables are not allowed!'); break;
-											default: 
-												$control = $this->CREATE_CONTROL_("f_{$row->name}_{$row2->name}[]", $row2, $table_def2); 
-												$control->dbval = $this->get_value_from_db_($this->db2, $table_def2, $r2);
-												$this->controls[] = $control;
-												break;
-										}
-									}
-								$this->controls[] = $this->CREATE_CONTROL_("f_{$row->name}_object_end[]", new ROW_DUMMY_CLASS('', array('__META__'=>'object_end')));
-							}
-							else
-							{
-								$this->errors[] = "{$row->descr} ID {$s_id[$s]} existiert nicht oder nicht mehr.";
-							}
-						}
-						
-						// add secondary template (this is a normal object surrounded by template marks)
-						$this->add_template_to_controls_array_($row, $table_def2);
-						
-					// secondary list end
-					$this->controls[] = $this->CREATE_CONTROL_("f_{$row->name}_secondary_end", new ROW_DUMMY_CLASS('', array('__META__'=>'secondary_end')));
-					break;
-				
-				default:	
-					// primary field
-					$control = $this->CREATE_CONTROL_("f_{$row->name}", $row, $this->table_def);
-					$control->dbval = $this->get_value_from_db_($this->db1, $this->table_def, $r);
-					$this->controls[] = $control;
-					if( ($row->flags&TABLE_ROW) == TABLE_BLOB )
-						$this->can_contain_blobs = true;
-					break;
-			}
+		if(is_array($this->table_def->rows)) {
+		    for( $r = 0; $r < sizeof((array) $this->table_def->rows); $r++ )
+		    {
+		        $row = $this->table_def->rows[$r];
+		        switch( $row->flags&TABLE_ROW )
+		        {
+		            case TABLE_SECONDARY:
+		                // secondary list start
+		                $this->controls[] = $this->CREATE_CONTROL_("f_{$row->name}_secondary_start", new ROW_DUMMY_CLASS($row->descr, array('__META__'=>'secondary_start')));
+		                $table_def2 = Table_Find_Def($this->table_def->rows[$r]->addparam->name, $this->do_access_check);
+		                
+		                // add secondary items
+		                $s_id = array();
+		                $this->db2->query("SELECT secondary_id FROM {$this->table_def->name}_{$row->name} WHERE primary_id={$this->id} ORDER BY structure_pos;");
+		                while( $this->db2->next_record() ) { $s_id[] = $this->db2->fs('secondary_id'); }
+		                
+		                if(is_array($s_id)) {
+		                    for( $s = 0; $s < sizeof((array) $s_id); $s++ )
+		                    {
+		                        $this->db2->query("SELECT * FROM {$table_def2->name} WHERE id=".$s_id[$s]);
+		                        if( $this->db2->next_record() )
+		                        {
+		                            $control = $this->CREATE_CONTROL_("f_{$row->name}_object_start[]", new ROW_DUMMY_CLASS($row->descr.' '.($s+1), array('__META__'=>'object_start')));
+		                            $control->dbval = $copy_record? -1 : $s_id[$s];
+		                            $this->controls[] = $control;
+		                            
+		                            for( $r2 = 0; $r2 < sizeof((array) $table_def2->rows); $r2++ )
+		                            {
+		                                $row2 = $table_def2->rows[$r2];
+		                                switch( $row2->flags&TABLE_ROW ) {
+		                                    case TABLE_SECONDARY: die('nested secondary tables are not allowed!'); break;
+		                                    default:
+		                                        $control = $this->CREATE_CONTROL_("f_{$row->name}_{$row2->name}[]", $row2, $table_def2);
+		                                        $control->dbval = $this->get_value_from_db_($this->db2, $table_def2, $r2);
+		                                        $this->controls[] = $control;
+		                                        break;
+		                                }
+		                            }
+		                            $this->controls[] = $this->CREATE_CONTROL_("f_{$row->name}_object_end[]", new ROW_DUMMY_CLASS('', array('__META__'=>'object_end')));
+		                        }
+		                        else
+		                        {
+		                            $this->errors[] = "{$row->descr} ID {$s_id[$s]} existiert nicht oder nicht mehr.";
+		                        }
+		                    }
+		                }
+		                
+		                // add secondary template (this is a normal object surrounded by template marks)
+		                $this->add_template_to_controls_array_($row, $table_def2);
+		                
+		                // secondary list end
+		                $this->controls[] = $this->CREATE_CONTROL_("f_{$row->name}_secondary_end", new ROW_DUMMY_CLASS('', array('__META__'=>'secondary_end')));
+		                break;
+		                
+		            default:
+		                // primary field
+		                $control = $this->CREATE_CONTROL_("f_{$row->name}", $row, $this->table_def);
+		                $control->dbval = $this->get_value_from_db_($this->db1, $this->table_def, $r);
+		                $this->controls[] = $control;
+		                if( ($row->flags&TABLE_ROW) == TABLE_BLOB )
+		                    $this->can_contain_blobs = true;
+		                    break;
+		        }
+		    }
 		}
 		
 		if( $copy_record ) {
@@ -474,12 +482,12 @@ class EDIT_DATA_CLASS
 	
 	private function add_errors_n_warnings_($field, $field_errors, $field_warnings)
 	{
-		for( $i = 0; $i < sizeof($field_errors); $i++ ) {
-			$this->errors[] = htmlconstant(trim($field)) . ': ' . $field_errors[$i];
-		}
-		for( $i = 0; $i < sizeof($field_warnings); $i++ ) {
-			$this->warnings[] = htmlconstant(trim($field)) . ': ' . $field_warnings[$i];
-		}
+	    for( $i = 0; $i < sizeof((array) $field_errors); $i++ ) {
+	        $this->errors[] = htmlconstant(trim($field)) . ': ' . $field_errors[$i];
+	    }
+	    for( $i = 0; $i < sizeof((array) $field_warnings); $i++ ) {
+	        $this->warnings[] = htmlconstant(trim($field)) . ': ' . $field_warnings[$i];
+	    }
 	}
 	
 	public function load_from_post()
@@ -499,7 +507,7 @@ class EDIT_DATA_CLASS
 		$this->add_errors_n_warnings_('_RIGHTS', $field_errors, $field_warnings);
 
 		$this->controls = array();
-		for( $r = 0; $r < sizeof($this->table_def->rows); $r++ )
+		for( $r = 0; $r < sizeof((array) $this->table_def->rows); $r++ )
 		{
 			$row = $this->table_def->rows[$r];
 			switch( $row->flags&TABLE_ROW )
@@ -511,7 +519,7 @@ class EDIT_DATA_CLASS
 					
 						// add secondary items
 						$used_s_ids = array();
-						for( $s = 0; $s < sizeof($_REQUEST["f_{$row->name}_object_start"]) - 1 /*last is template, skip*/; $s++ )
+						for( $s = 0; $s < sizeof((array) $_REQUEST["f_{$row->name}_object_start"]) - 1 /*last is template, skip*/; $s++ )
 						{
 							$s_id = $_REQUEST["f_{$row->name}_object_start"][$s]; 
 							if( $s_id!=-1 && $used_s_ids[$s_id] ) { die('duplicated secondary id in post. please verify the JavaScript part.'); } $used_s_ids[$s_id] = true;
@@ -519,7 +527,7 @@ class EDIT_DATA_CLASS
 							$control = $this->CREATE_CONTROL_("f_{$row->name}_object_start[]", new ROW_DUMMY_CLASS($row->descr.' '.($s+1), array('__META__'=>'object_start')));
 							$control->dbval = $s_id;
 							$this->controls[] = $control;
-								for( $r2 = 0; $r2 < sizeof($table_def2->rows); $r2++ ) 
+							    for( $r2 = 0; $r2 < sizeof((array) $table_def2->rows); $r2++ ) 
 								{
 									$row2 = $table_def2->rows[$r2];
 									switch( $row2->flags&TABLE_ROW ) {
@@ -597,7 +605,7 @@ class EDIT_DATA_CLASS
 		$field_prefix  = 'f_'.$secondary_field_name.($secondary_field_name? '_' : '');
 		$field_postfix = $secondary_field_name? '[]' : '';
 		
-		for( $r = 0; $r < sizeof($table_def->rows); $r++ )
+		for( $r = 0; $r < sizeof((array) $table_def->rows); $r++ )
 		{
 			$row = $table_def->rows[$r];
 			
@@ -618,13 +626,13 @@ class EDIT_DATA_CLASS
 							if( !$this->ids_array_equal($old_ids, $new_ids) ) {
 							
 								$this->db1->query("DELETE FROM {$table_def->name}_{$row->name} WHERE primary_id=$id;");
-								if( sizeof($new_ids) ) {
-									$sqlattr = "INSERT INTO {$table_def->name}_{$row->name} (primary_id,attr_id,structure_pos) VALUES ";
-									for( $i = 0; $i < sizeof($new_ids); $i++ ) {
-										$sqlattr .= $i? ', ' : '';
-										$sqlattr .= "($id,".intval($new_ids[$i]).",$i)";
-									}
-									$this->db1->query($sqlattr);
+								if( sizeof((array) $new_ids) ) {
+								    $sqlattr = "INSERT INTO {$table_def->name}_{$row->name} (primary_id,attr_id,structure_pos) VALUES ";
+								    for( $i = 0; $i < sizeof((array) $new_ids); $i++ ) {
+								        $sqlattr .= $i? ', ' : '';
+								        $sqlattr .= "($id,".intval($new_ids[$i]).",$i)";
+								    }
+								    $this->db1->query($sqlattr);
 								}
 							}
 						}
@@ -633,7 +641,7 @@ class EDIT_DATA_CLASS
 					case TABLE_SECONDARY:
 						// forward to secondary_end, regard the increment following at [*]
 						if( $field->row_def->prop['__META__'] != 'secondary_start' ) { die('secondary out of sync.'); }
-						for( ; $field_index < sizeof($this->controls); $field_index++ ) {
+						for( ; $field_index < sizeof((array) $this->controls); $field_index++ ) {
 							if( $this->controls[$field_index]->row_def->prop['__META__'] == 'secondary_end' )
 								break;
 						}
@@ -711,7 +719,7 @@ class EDIT_DATA_CLASS
 				return false; // may happen if the record was deleted in another window
 			}
 			
-			if( sizeof($cmp_ob->errors)==0 && $this->cmp($cmp_ob) == 0 ) {
+			if( sizeof((array) $cmp_ob->errors)==0 && $this->cmp($cmp_ob) == 0 ) {
 				$this->already_up_to_date = true;
 				return true; 
 			}
@@ -728,7 +736,7 @@ class EDIT_DATA_CLASS
 		$this->save_record_($this->table_def, $this->id, 0, '');
 		
 		// save secondary records
-		for( $r = 0; $r < sizeof($this->table_def->rows); $r++ )
+		for( $r = 0; $r < sizeof((array) $this->table_def->rows); $r++ )
 		{
 			$row = $this->table_def->rows[$r];
 			if( ($row->flags&TABLE_ROW) == TABLE_SECONDARY )
@@ -739,7 +747,7 @@ class EDIT_DATA_CLASS
 				// update/create the secondary records
 				$table_def2 = Table_Find_Def($this->table_def->rows[$r]->addparam->name, $this->do_access_check);
 				$new_ids = array();
-				for( $field_index = 0; $field_index < sizeof($this->controls); $field_index++ )
+				for( $field_index = 0; $field_index < sizeof((array) $this->controls); $field_index++ )
 				{
 					$field = $this->controls[$field_index];
 					if( $field->name == "f_{$row->name}_object_start[]" )
@@ -761,9 +769,9 @@ class EDIT_DATA_CLASS
 				if( !$this->ids_array_equal($old_ids, $new_ids) )
 				{
 					$this->db1->query("DELETE FROM {$this->table_def->name}_{$row->name} WHERE primary_id=$this->id");
-					if( sizeof($new_ids) ) {
+					if( sizeof((array) $new_ids) ) {
 						$sql = "INSERT INTO {$this->table_def->name}_{$row->name} (primary_id,secondary_id,structure_pos) VALUES ";
-						for( $i = 0; $i < sizeof($new_ids); $i++ ) {
+						for( $i = 0; $i < sizeof((array) $new_ids); $i++ ) {
 							$sql .= $i? ', ' : '';
 							$sql .= "($this->id,{$new_ids[$i]},$i)";
 						}
@@ -820,7 +828,7 @@ class EDIT_DATA_CLASS
 	{
 		$html = '';
 	
-		for( $i = 0; $i < sizeof($references); $i++ )
+		for( $i = 0; $i < sizeof((array) $references); $i++ )
 		{
 			$cnt = $references[$i][4];
 			if( $cnt ) {
@@ -835,7 +843,7 @@ class EDIT_DATA_CLASS
 				
 				$html .= $html? ', ' : '';
 				$html .= '<a href="'.$href.'" target="_blank">';
-					$html .= $references[$i][1] . '.' . $references[$i][3] . ': ' . $cnt;
+				$html .= htmlentities($references[$i][1]) . '.' . htmlentities($references[$i][3]) . ': ' . $cnt;
 				$html .= '</a>';
 			}
 		}

@@ -14,7 +14,7 @@ function explode_settings($in)
 	$out = array();
 	$in = strtr($in, "\r\t", "\n ");
 	$in = explode("\n", $in);
-	for( $i = 0; $i < sizeof($in); $i++ )
+	for( $i = 0; $i < sizeof((array) $in); $i++ )
 	{
 		$equalPos = strpos($in[$i], '=');
 		if( $equalPos )
@@ -159,7 +159,7 @@ function update_kurs_state($kurs_id, $param)
 	{
 		$durchf_ids[] = $db->f('secondary_id');
 	}
-	$anz_durchf = sizeof($durchf_ids);
+	$anz_durchf = sizeof((array) $durchf_ids);
 
 	// stichw. holen
 	$anz_stichw = 0;
@@ -192,7 +192,7 @@ function update_kurs_state($kurs_id, $param)
 	/*$neuer_status_gueltig	= true;*/
 	for( $i = 0; $i < $anz_durchf; $i++ )
 	{
-		$db->query("SELECT beginn, beginnoptionen, ende, kurstage, preis, strasse, plz, ort, stadtteil, bemerkungen, dauer, tagescode, nr, stunden, teilnehmer, zeit_von, zeit_bis FROM durchfuehrung WHERE id={$durchf_ids[$i]};");
+		$db->query("SELECT beginn, beginnoptionen, ende, kurstage, preis, strasse, plz, ort, stadtteil, bemerkungen, dauer, dauer_fix, tagescode, nr, stunden, teilnehmer, zeit_von, zeit_bis FROM durchfuehrung WHERE id={$durchf_ids[$i]};");
 		if( $db->next_record() )
 		{
 			$beginn			= $db->f('beginn');
@@ -206,6 +206,7 @@ function update_kurs_state($kurs_id, $param)
 			$stadtteil		= $db->fs('stadtteil');
 			$bemerkungen 	= $db->fs('bemerkungen');
 			$alte_dauer 	= intval($db->f('dauer'));
+			$dauer_fix 	= intval($db->f('dauer_fix'));
 			$alter_tagescode= intval($db->f('tagescode'));
 			$nr 			= $db->fs('nr');
 			$stunden		= intval($db->f('stunden'));
@@ -272,8 +273,8 @@ function update_kurs_state($kurs_id, $param)
 			}
 
 			// dauer überprüfen (06.12.2012: wenn kein Wert berechnet werden konnte, alten (evtl. manuell gesetzten) Wert lassen)
-			$neue_dauer = berechne_dauer($beginn, $ende);
-			if( $neue_dauer != 0 && $neue_dauer != $alte_dauer )
+			$neue_dauer = berechne_dauer(str_replace("00:00:00", $zeit_von.":00", $beginn), str_replace("00:00:00", $zeit_bis.":00", $ende));
+			if( $neue_dauer != 0 && $neue_dauer != $alte_dauer && !$dauer_fix)
 			{
 				$update .= ($update==''? '' : ', ') . " dauer=$neue_dauer ";
 				//if( $alte_dauer != 0 ) 20:32 30.01.2014: die entsprechende Nachricht wird immer ausgegeben, s. [**]
@@ -467,9 +468,20 @@ function trigger_kurse(&$param)
 			
 			$param['returnmsg'] .= ($param['returnmsg']? '<br />' : '') . 'Alle Freischaltungen &uuml;berpr&uuml;ft.';
 		}
+		
+		update_titel_sorted($param['id']);
 	}
 	
 	return 1;
 }
 
 
+function update_titel_sorted($kurs_id, $titel = "") {
+    $db = new DB_Admin;
+    if($titel == "") {
+        $db->query("SELECT titel FROM kurse WHERE id=".$kurs_id);
+        $db->next_record();
+        $titel = $db->fs('titel');
+    }
+    $db->query("UPDATE kurse SET titel_sorted = '".g_eql_normalize_natsort($titel)."' WHERE id=".$kurs_id);
+}

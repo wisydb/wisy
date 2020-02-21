@@ -46,7 +46,8 @@ if( !$use_neweditor ) {
 }
 $ratgeber->add_row(TABLE_TEXTAREA|TABLE_WIKI|TABLE_NEWSECTION,'erklaerung',		'Erklärung', '', '', '', array('ctrl.rows'=>20));
 $ratgeber->add_row(TABLE_TEXT,								'wikipedia',		'Stichw. Wikipedia', '', '', '', array('ctrl.size'=>'10-20-60'));
-$ratgeber->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,			'notizen',			'Journal', '', '', '', array('layout.section'=>1));
+$ratgeber->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,			'notizen_fix',			'Anmerkungen', '', '', '',  array('layout.section'=>1));
+$ratgeber->add_row(TABLE_TEXTAREA,			                'notizen',			'Journal', '', '', '');
 
 
 
@@ -74,9 +75,11 @@ $stichwoerter->add_row(TABLE_SATTR,											'thema',			'Thema', 0, $themen);
 $stichwoerter->add_row(TABLE_SATTR,											'glossar',			'Ratgeberseite', 0, $ratgeber);
 $stichwoerter->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,						'scope_note',		'Scope note');
 $stichwoerter->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,						'algorithmus',		'Algorithmus');
-$stichwoerter->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,						'notizen',			'Journal', '', '', '', array('layout.section'=>1));
+$stichwoerter->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,			            'notizen_fix',			'Anmerkungen', '', '', '',  array('layout.section'=>1));
+$stichwoerter->add_row(TABLE_TEXTAREA,						                'notizen',			'Journal', '', '', '');
 $stichwoerter->rows[2]->addparam = $stichwoerter;
 $stichwoerter->rows[3]->addparam = $stichwoerter;
+
 
 
 
@@ -98,21 +101,25 @@ if( $use_neweditor ) {
 $anbieter->add_row(TABLE_TEXT|TABLE_SUMMARY|TABLE_LIST|TABLE_MUST|TABLE_UNIQUE,
 															'suchname',			($use_neweditor?'Suchname':'Suchname '), '', '', '', array('ctrl.size'=>'20-80', 'layout.descr.class'=>'e_bolder', 'layout.bg.class'=>'e_bglite', 'ctrl.class'=>'e_bolder'));
 if( !$use_neweditor ) {
-	$anbieter->add_row(TABLE_ENUM,							'freigeschaltet',	'Status', 1, '1###Freigegeben###2###Gesperrt');
-	$anbieter->add_row(TABLE_MATTR|TABLE_SHOWREF,			'verweis',			'Namensverweisung', 0, 0 /*set below*/, '', array('layout.join'=>1, 'layout.defhide'=>1));
+    $anbieter->add_row(TABLE_ENUM,							'freigeschaltet',	'Status', 1, '1###Freigegeben###2###Gesperrt');
+    $anbieter->add_row(TABLE_MATTR|TABLE_SHOWREF,			'verweis',			'Namensverweisung', 0, 0 /*set below*/, '', array('layout.join'=>1, 'layout.defhide'=>1));
 }
 $anbieter->add_row(TABLE_ENUM|TABLE_SUMMARY|TABLE_LIST|TABLE_NEWSECTION,
-															'typ',				 'Typ', 0,
-																				 '0###Anbieter###'
-																				/*.'1###Trainer###' - entfernt, s. WISY_2014_TODO, 4-14*/
-																				.'2###Beratungsstelle###'
-																				.'64###Namensverweisung', 'Allgemein');
+    'typ',				 'Typ', 0,
+    '0###Anbieter###'
+    /*.'1###Trainer###' - entfernt, s. WISY_2014_TODO, 4-14*/
+    .'2###Beratungsstelle###'
+    // .'64###Namensverweisung (ALT)###'
+    .'65###Versteckte Namensverweisung###'
+    .'262144###Namensverweisung###', 'Allgemein');
+
 if( $use_neweditor ) {
-	$anbieter->add_row(TABLE_MATTR|TABLE_SHOWREF,			'verweis',			'Namensverweisung', 0, 0 /*set below*/, '', array('layout.join'=>1, 'layout.defhide'=>1));
+    $anbieter->add_row(TABLE_MATTR|TABLE_SHOWREF,			'verweis',			'Namensverweisung', 0, 0 /*set below*/, '', array('layout.join'=>1, 'layout.defhide'=>1));
 }
-$anbieter->add_row(TABLE_TEXT,								'postname',			'Originalname',  '', '', '', array('ctrl.size'=>'20-80'));
+$anbieter->add_row(TABLE_TEXTAREA,								'postname',			'Originalname',  '', '', '', array('ctrl.rows'=>'2'));
 $anbieter->add_row(TABLE_TEXT|TABLE_ACNESTSTART,			'strasse',			'Straße ', '', '', '', array('layout.descr'=>'Ort','ctrl.size'=>'8-16-48', 'ctrl.placeholder'=>1));
 $anbieter->add_row(TABLE_TEXT|TABLE_ACNESTSTART|TABLE_ACNEST,'plz',				'PLZ ', '', 5, '', array('layout.after'=>' ', 'layout.descr.hide'=>1, 'ctrl.placeholder'=>1));
+$anbieter->add_row(TABLE_TEXT|TABLE_ACNEST,					'bezirk',			'Bezirk ', '', '', '', array('layout.descr.hide'=>1, 'ctrl.placeholder'=>1, 'ctrl.class'=>'anbieter_bezirk', 'ctrl.size'=>'8-16-48', 'layout.defhide'=>1));
 $anbieter->add_row(TABLE_TEXT|TABLE_ACNEST,					'ort',				'Ort ', '', '', '', array('layout.descr.hide'=>1, 'ctrl.placeholder'=>1, 'ctrl.size'=>'8-16-48'));
 $anbieter->add_row(TABLE_TEXT|TABLE_ACNEST,					'stadtteil',		'Stadtteil ', '', '', '', array('ctrl.size'=>'8-16-48', 'layout.defhide'=>1, 'layout.defhide.tooltip'=>'weitere Ortsangaben'));
 $anbieter->add_row(TABLE_TEXT|TABLE_ACNEST,					'land',				'Land ', '', 3, '', array('layout.defhide'=>1));
@@ -180,7 +187,8 @@ $anbieter->add_row(TABLE_BITFIELD|TABLE_NEWSECTION,			'pflege_pweinst',	$use_new
 																				.'4###nur Bagatelländerungen zulassen',
 																				 'Onlinepflege', array('layout.section'=>'Onlinepflege', 'ctrl.checkboxes'=>1));
 $anbieter->add_row(TABLE_PASSWORD,							'pflege_passwort',	'Passwort', 0, '');
-$anbieter->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,			'notizen',			'Journal', '', '', '',  array('layout.section'=>1));
+$anbieter->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,			'notizen_fix',			'Anmerkungen', '', '', '',  array('layout.section'=>1));
+$anbieter->add_row(TABLE_TEXTAREA,			'notizen',			'Journal', '', '', '');
 $anbieter->add_row(TABLE_TEXTAREA|TABLE_WIKI,				'pflege_msg',		'Nachricht an den Anbieter', 0, 0, '', array('ctrl.rows'=>3, 'help.tooltip'=>'die Nachricht wird dem Anbieter immer angezeigt, wenn er sich in der Onlinepflege einloggt'));
 $anbieter->add_row(TABLE_DATE|TABLE_DAYMONTHOPT,			'in_wisy_seit',		'in WISY seit ');
 $anbieter->add_row(TABLE_ENUM,								'aufnahme_durch',	'Aufnahme durch', 0,
@@ -232,6 +240,7 @@ $durchfuehrung->add_row(TABLE_ENUM,							'tagescode',		'Tagescode', 0, $codes_t
 if( $use_neweditor )
 {
 	$durchfuehrung->add_row(TABLE_ENUM,						'dauer',			'Dauer', 0, $codes_dauer, '', array('layout.defhide'=>1, 'layout.descr.hide'=>1, 'layout.join'=>1, 'help.tooltip'=>'Die Dauer wird aus Beginn- und Endedatum automatisch berechnet; nur wenn dort keine Angaben gemacht werden, gilt der direkt eingestellte Wert'));
+	$durchfuehrung->add_row(TABLE_BITFIELD|TABLE_LIST,		'dauer_fix',		'Dauer Fix', 0, '1###', '', array('layout.defhide'=>1, 'layout.join'=>1, 'ctrl.checkboxes'=>1, 'layout.descr.class'=>'dauer_fix_label', 'ctrl.class'=>'dauer_fix'));
 	$durchfuehrung->add_row(TABLE_ENUM|TABLE_SUMMARY,		'beginnoptionen',	'Terminoption', 0, $codes_beginnoptionen, '', array('layout.join'=>1, 'layout.defhide'=>1, 'layout.descr.hide'=>1)); // nur ca. 10% der Kurse haben eine Terminoption, kann man also verstecken ...
 }
 $durchfuehrung->add_row(TABLE_TEXT|TABLE_NEWSECTION|TABLE_ACNESTSTART,
@@ -239,6 +248,7 @@ $durchfuehrung->add_row(TABLE_TEXT|TABLE_NEWSECTION|TABLE_ACNESTSTART,
 $durchfuehrung->add_row(TABLE_TEXT|TABLE_ACNESTSTART|TABLE_ACNEST,				'plz',				'PLZ ', '', 5, '', array('layout.after'=>' ', 'layout.descr.hide'=>1, 'ctrl.placeholder'=>1));
 $durchfuehrung->add_row(TABLE_TEXT|TABLE_ACNEST,			'ort',				'Ort ', '', '', '', array('ctrl.size'=>'8-16-48', 'layout.descr.hide'=>1, 'ctrl.placeholder'=>1));
 $durchfuehrung->add_row(TABLE_TEXT|TABLE_ACNEST,			'stadtteil',		'Stadtteil ', '', '', '', array('ctrl.size'=>'8-16-48', 'layout.defhide'=>1, 'layout.defhide.tooltip'=>'weitere Ortsangaben'));
+$durchfuehrung->add_row(TABLE_TEXT|TABLE_ACNEST,			'bezirk',			'Bezirk ', '', '', '', array('layout.descr.hide'=>1, 'ctrl.placeholder'=>1, 'ctrl.class'=>'df_bezirk', 'layout.defhide'=>1));
 $durchfuehrung->add_row(TABLE_TEXT|TABLE_ACNEST,			'land',				'Land ', '', 3, '', array('layout.defhide'=>1));
 $durchfuehrung->add_row(TABLE_FLAG,							'rollstuhlgerecht',	'Rollstuhlgerecht', '', '', '', array('layout.defhide'=>1));
 $durchfuehrung->add_row(TABLE_TEXTAREA|TABLE_WIKI,			'bemerkungen',		'Bemerkungen', '', '', '', array('layout.defhide'=>1, 'ctrl.rows'=>2));
@@ -266,7 +276,8 @@ $portale->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION, 					'bodystart',		'HTML', 0,
 $portale->add_row(TABLE_TEXTAREA, 									'css',				'CSS', 0, 0, 'Layout', array('help.url'=>'https://b2b.kursportal.info/index.php?title=Portallayout', 'ctrl.rows'=>3));
 $portale->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION, 					'filter',			'Filter', 0, 0, 'Filter', array('help.url'=>'https://b2b.kursportal.info/index.php?title=Portaleinstellungen#Filtereinstellungen', 'ctrl.rows'=>3, 'layout.section'=>'Filter'));
 $portale->add_row(TABLE_TEXTAREA|TABLE_READONLY,					'einstcache',		'Cache', 0, 0, '', array('layout.defhide'=>2, 'layout.descr.hide'=>1, 'layout.join'=>1));
-$portale->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,					'notizen',			'Journal', '', '', '', array('layout.section'=>1));
+$portale->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,			'notizen_fix',			'Anmerkungen', '', '', '',  array('layout.section'=>1));
+$portale->add_row(TABLE_TEXTAREA,					'notizen',			'Journal', '', '', '');
 /*** /HINWEIS: Einstellungen gehören als INI-Wert in das Feld portale.einstellungen - sonst haben wir hier ganz schnell Chaos! (bp) ***/
 /*** Verworfene Werte: skindir, iwwb, iwwb_filter, iwwb_style, logo_1, logo_1_href, logo_2, logo_2_href, menuswitch, print_img, spalten, themen_erlauben, themen_verbieten, qual_logo, qual_logo_gloss, qual_logo_stich, horizont, horizontende, betreiberID (bp) ***/
 
@@ -286,6 +297,7 @@ if($use_neweditor) {
 $kurse->add_row(TABLE_TEXT|TABLE_SUMMARY|TABLE_LIST|TABLE_MUST,	'titel',			'Titel ', '', '', 0, array('ctrl.size'=>'10-30-100', 'ctrl.class'=>'e_bolder', 'layout.descr.class'=>'e_bolder', 'layout.bg.class'=>'e_bglite'));
 if($use_neweditor) {
 	$kurse->add_row(TABLE_TEXT, 									'org_titel', 		'Originaltitel', 0, 0, '', array('layout.join'=>1, 'ctrl.size'=>'10-80', 'layout.defhide'=>2));
+	$kurse->add_row(TABLE_TEXT|TABLE_READONLY, 						'titel_sorted', 		'Sortier-Titel', 0, 0, '', array('layout.join'=>1, 'ctrl.size'=>'10-80', 'layout.defhide'=>2));
 }
 if(!$use_neweditor) {
 	$kurse->add_row(TABLE_ENUM,										'freigeschaltet',	'Status ', 1, '0###In Vorbereitung###1###Freigegeben###3###Abgelaufen###4###Dauerhaft###2###Gesperrt', '', array('layout.join'=>1));
@@ -309,7 +321,8 @@ if(!$use_neweditor) {
 	$kurse->add_row(TABLE_TEXT, 									'foerder_knr', 		'Förder-Kursnummer', '','', '', array('layout.join'=>1));
 	$kurse->add_row(TABLE_TEXT, 									'azwv_knr', 		'AZAV-Kursnummer', '','', '', array('layout.join'=>1));
 }
-$kurse->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,				'notizen',			'Journal', '', '', '', array('layout.section'=>1));
+$kurse->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,			'notizen_fix',			'Anmerkungen', '', '', '',  array('layout.section'=>1));
+$kurse->add_row(TABLE_TEXTAREA,				'notizen',			'Journal', '', '', '');
 $kurse->set_trigger('config/trigger_kurse.inc.php');
 
 
@@ -323,6 +336,25 @@ $feedback->add_row(TABLE_TEXTAREA|TABLE_LIST|TABLE_READONLY,				'descr',			'Komm
 $feedback->add_row(TABLE_TEXT|TABLE_LIST|TABLE_READONLY,					'name',			'Name');
 $feedback->add_row(TABLE_TEXT|TABLE_LIST|TABLE_READONLY,					'email',			'Email');
 $feedback->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION, 						'notizen', 			'Journal', '', '', '', array('layout.section'=>1));
+
+/*** Ticketing-System ***/
+$tickets = new Table_Def_Class(0,											'tickets',			'Tickets (Kunden-Anfragen)');
+$tickets->add_row(TABLE_ENUM,								'status',	        'Status ', 1, '0###Neu###1###In Bearbeitung###3###Erledigt###4###Archiviert', '', array('layout.join'=>1));
+
+$tickets->add_row(TABLE_TEXT|TABLE_LIST|TABLE_READONLY,					'von_name',			'Von', 	'', '', '', array('layout.section'=>'Absender'));
+$tickets->add_row(TABLE_TEXT|TABLE_LIST|TABLE_READONLY,					'von_email',			'E-Mail', 	'', '', '',	array('ctrl.size'=>'10-200', 'layout.join'=>1));
+$tickets->add_row(TABLE_TEXT|TABLE_LIST|TABLE_READONLY,					'antwortan_name',			'Antwort an', 	'', '', '');
+$tickets->add_row(TABLE_TEXT|TABLE_LIST|TABLE_READONLY,					'antwortan_email',			'E-mail', 	'', '', '',	array('ctrl.size'=>'10-200', 'layout.join'=>1));
+$tickets->add_row(TABLE_TEXT|TABLE_SUMMARY|TABLE_LIST|TABLE_READONLY,
+    'betreff',			'Betreff', '', '', '', array('layout.section'=>'Nachricht', 'layout.bg.class'=>'betreff', 'layout.descr.class'=>'e_bolder', 'ctrl.class'=>'e_bolder'));
+$tickets->add_row(TABLE_TEXTAREA|TABLE_LIST|TABLE_READONLY,		'nachricht_txt',			'Nachricht');
+$tickets->add_row(TABLE_DATETIME|TABLE_LIST|TABLE_READONLY,
+    'date_created',			'Eingang', '', '', '', array('layout.descr'=>'Eingang'));
+// $tickets->add_row(TABLE_TEXTAREA|TABLE_LIST|TABLE_READONLY,		'nachricht_html',			'Nachricht');
+$tickets->add_row(TABLE_TEXT|TABLE_LIST|TABLE_READONLY,					'groesse',			'Größe');
+$tickets->add_row(TABLE_TEXT|TABLE_LIST|TABLE_MUST|TABLE_READONLY,			'msgid',				'Nachrichten-ID');
+$tickets->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION, 						'notizen', 			'Journal', '', '', '', array('layout.section'=>1));
+
 
 
 /*** anbieter_promote etc. (fuer die Werbung) ***/
@@ -356,7 +388,7 @@ $anbieter_billing->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,			'notizen',				'Jou
 $apikeys = new Table_Def_Class(0,								'apikeys',			'API-Keys');
 $apikeys->add_row(TABLE_TEXT|TABLE_LIST|TABLE_MUST,				'name',				'Name', '', '', '', array('ctrl.size'=>'10-80', 'layout.bg.class'=>'e_bglite', 'layout.descr.class'=>'e_bolder', 'ctrl.class'=>'e_bolder'));
 $apikeys->add_row(TABLE_TEXT|TABLE_LIST|TABLE_UNIQUE,			'apikey',			'persönlicher API-Key', 'wird automatisch erzeugt', '', '', array('ctrl.size'=>'25-80'));
-$apikeys->add_row(TABLE_BITFIELD|TABLE_LIST,					'flags',			'Optionen', 1+2, '1###Freigeschaltet###2###Verschlüsselte Verbindung###4###Schreibzugriff erlauben', '', array('ctrl.checkboxes'=>1));
+$apikeys->add_row(TABLE_BITFIELD|TABLE_LIST,					'flags',			'Optionen', 1+2, '1###Freigeschaltet###2###Verschl¸sselte Verbindung###4###Schreibzugriff erlauben###8###Journal Lesezugriff', '', array('ctrl.checkboxes'=>1));
 $apikeys->add_row(TABLE_MATTR,			                        'usergrp',  		'Zugriffsbeschränkung', 0, 'user_grp', '', array('layout.after'=>'<br>Wenn hier Gruppen eingetragen werden, können neue Datensätze nur mit diesen Gruppen erstellt werden und bestehende können nur bearbeitet/gelöscht werden, wenn sie einer der Gruppen angehören.'));
 $apikeys->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION, 				'notizen', 			'Journal', '', '', '', array('layout.section'=>1));
 $apikeys->set_trigger('config/trigger_apikeys.inc.php'); 
@@ -364,6 +396,8 @@ $apikeys->set_trigger('config/trigger_apikeys.inc.php');
 
 
 
+$Table_Def[] = $tickets;
+$Table_Def[] = $feedback;
 $Table_Def[] = $kurse; // the order may be changed and is only important for layout reasons
 $Table_Def[] = $durchfuehrung;
 $Table_Def[] = $anbieter;
@@ -374,7 +408,6 @@ $Table_Def[] = $ratgeber;
 $Table_Def[] = $stichwoerter;
 $Table_Def[] = $themen;
 $Table_Def[] = $portale;
-$Table_Def[] = $feedback;
 $Table_Def[] = $apikeys;
 
 

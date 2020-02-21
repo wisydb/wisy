@@ -92,7 +92,7 @@ function smart_truncate($text, $l = 80)
 			$p2 = strrpos($text, $sep);
 			if( $p2 ) {
 				$file = substr($text, $p2);
-				$path = substr($text, 0, $l-(strlen($protocol)+strlen(file)+3)) . '...';
+				$path = substr($text, 0, $l-(strlen($protocol)+strlen($file)+3)) . '...';
 
 				$text = $protocol . $path . $file;
 			}
@@ -187,9 +187,9 @@ class Table_Def_Class
 		
 		// search for a attribute reference
 		$is_secondary = 0;
-		for( $t = 0; $t < sizeof($Table_Def); $t++ )
+		for( $t = 0; $t < sizeof((array) $Table_Def); $t++ )
 		{
-			for( $r = 0; $r < sizeof($Table_Def[$t]->rows); $r++ )
+		    for( $r = 0; $r < sizeof((array) $Table_Def[$t]->rows); $r++ )
 			{
 				$row_type = $Table_Def[$t]->rows[$r]->flags & TABLE_ROW;
 				
@@ -213,7 +213,7 @@ class Table_Def_Class
 	// function checks if the table uses TABLE_TRACKDEFAULTS for any row
 	function uses_track_defaults()
 	{
-		for( $r = 0; $r < sizeof($this->rows); $r++ ) {
+	    for( $r = 0; $r < sizeof((array) $this->rows); $r++ ) {
 			if( intval($this->rows[$r]->flags) & TABLE_TRACKDEFAULTS ) {
 				return 1;
 			}
@@ -228,7 +228,7 @@ class Table_Def_Class
 		$db  = new DB_Admin;
 		$dba = new DB_Admin;
 		
-		for( $r = 0; $r < sizeof($this->rows); $r++ )
+		for( $r = 0; $r < sizeof((array) $this->rows); $r++ )
 		{
 			$row_type = $this->rows[$r]->flags & TABLE_ROW;
 			if( $row_type == TABLE_MATTR )
@@ -261,7 +261,7 @@ class Table_Def_Class
 		if( !is_array($addparam) ) $addparam = array();
 		$id = intval($id);
 		
-		for( $r = 0; $r < sizeof($this->rows); $r++ )
+		for( $r = 0; $r < sizeof((array) $this->rows); $r++ )
 		{
 			$row_type = $this->rows[$r]->flags & TABLE_ROW;
 			if( $row_type == TABLE_MATTR )
@@ -305,9 +305,9 @@ class Table_Def_Class
 		$db = new DB_Admin;
 		$references = array();
 		
-		for( $t = 0; $t < sizeof($Table_Def); $t++ )
+		for( $t = 0; $t < sizeof((array) $Table_Def); $t++ )
 		{
-			for( $r = 0; $r < sizeof($Table_Def[$t]->rows); $r++ )
+		    for( $r = 0; $r < sizeof((array) $Table_Def[$t]->rows); $r++ )
 			{
 				$row_type		= $Table_Def[$t]->rows[$r]->flags&TABLE_ROW;
 				$row_addparam	= $Table_Def[$t]->rows[$r]->addparam->name;
@@ -436,7 +436,7 @@ class Table_Def_Class
 
 		$list_or_summary = TABLE_LIST; // if no summary rows are specified, TABLE_LIST is used
 		if( !$force_TABLE_LIST ) {
-			for( $r = 0; $r < sizeof($this->rows); $r++ )
+		    for( $r = 0; $r < sizeof((array) $this->rows); $r++ )
 			{
 				if( $this->rows[$r]->flags & TABLE_SUMMARY ) {
 					$list_or_summary = TABLE_SUMMARY;
@@ -445,7 +445,7 @@ class Table_Def_Class
 			}
 		}
 
-		for( $r = 0; $r < sizeof($this->rows); $r++ )
+		for( $r = 0; $r < sizeof((array) $this->rows); $r++ )
 		{
 			if( $this->rows[$r]->flags & $list_or_summary )
 			{
@@ -597,7 +597,7 @@ class Table_Def_Class
 		}
 		else
 		{
-			for( $r = 0; $r < sizeof($this->rows); $r++ )
+		    for( $r = 0; $r < sizeof((array) $this->rows); $r++ )
 			{
 				if( $this->rows[$r]->flags & TABLE_LIST )
 				{
@@ -636,7 +636,7 @@ class Table_Def_Class
 		{
 			return user_ascii_name($value);
 		}
-		else for( $r = 0; $r < sizeof($this->rows); $r++ )
+		else for( $r = 0; $r < sizeof((array) $this->rows); $r++ )
 		{
 			if( $this->rows[$r]->name == $fieldName )
 			{
@@ -685,7 +685,7 @@ function Table_Find_Def($name, $accessCheck = 1)
 {
 	global $Table_Def;
 
-	for( $t = 0; $t < sizeof($Table_Def); $t++ ) 
+	for( $t = 0; $t < sizeof((array) $Table_Def); $t++ ) 
 	{
 		if( $Table_Def[$t]->name == $name ) 
 		{
@@ -716,7 +716,7 @@ function Table_Find_Def($name, $accessCheck = 1)
 			/*
 			$delayedSection = '';
 			*/
-			$rows = sizeof($Table_Def[$t]->rows);
+			$rows = sizeof((array) $Table_Def[$t]->rows);
 			for( $r = 0; $r < $rows; $r++ ) 
 			{
 				$rowflags	= $Table_Def[$t]->rows[$r]->flags;
@@ -854,9 +854,9 @@ function Table_Def_Finish($prop=0)
 	}
 	
 	// convert linked table names to objects
-	for( $t = 0; $t < sizeof($Table_Def); $t++ )
+	for( $t = 0; $t < sizeof((array) $Table_Def); $t++ )
 	{
-		for( $r = 0; $r < sizeof($Table_Def[$t]->rows); $r++ )
+	    for( $r = 0; $r < sizeof((array) $Table_Def[$t]->rows); $r++ )
 		{
 			$row_type = $Table_Def[$t]->rows[$r]->flags & TABLE_ROW;
 			

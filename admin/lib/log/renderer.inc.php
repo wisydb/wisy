@@ -97,7 +97,7 @@ class LOG_RENDERER_CLASS
 						.		$name
 						.	'</b></a>';
 				}
-				if( sizeof($record[2])==1 )
+				if( sizeof((array) $record[2])==1 )
 				{
 					if( $record[2][0] )
 					{	
@@ -118,7 +118,7 @@ class LOG_RENDERER_CLASS
 				else
 				{
 					$cell .= $cell==''?'':': ';
-					$cell .= htmlconstant('_LOG_N_RECORDS', sizeof($record[2]));
+					$cell .= htmlconstant('_LOG_N_RECORDS', sizeof((array) $record[2]));
 				}
 				
 				if( $cell == $this->lastRecordCell ) {
@@ -147,7 +147,7 @@ class LOG_RENDERER_CLASS
 						// details out
 						if( !$this->showAll )
 							$fieldFormatter->combineDoubleFields($record);
-						for( $i = 5, $cnt = 0; $i < sizeof($record); $i += 3 )
+						for( $i = 5, $cnt = 0; $i < sizeof((array) $record); $i += 3 )
 						{
 							$prefix = substr($record[$i], 0, strrpos($record[$i], '.')) . '.';
 							if( $record[$i] && !$fieldFormatter->deletedSecondary[$prefix] ) {
@@ -175,7 +175,7 @@ class LOG_RENDERER_CLASS
 						$moreAfter = -1;
 						if( $action == 'login' || $action == 'loginfailed' || $action == 'confirmed' || $action == 'delete' || $action == 'export' || $action == 'exportfailed' || $action == 'requestpw' || $action == 'resetpw' ) { $moreAfter = 0;  }
 						if( $action == 'import' ) $moreAfter = 1;
-						for( $i = 5, $cnt = 0; $i < sizeof($record); $i += 3 )
+						for( $i = 5, $cnt = 0; $i < sizeof((array) $record); $i += 3 )
 						{
 							if( $record[$i] ) {
 								if( $moreAfter == $cnt ) {																			
@@ -302,7 +302,7 @@ class LOG_RENDERER_CLASS
 		if( !isset($param['id']) )		$param['id']	 	= $this->filterId;
 		if( !isset($param['user']) )	$param['user']  	= $this->filterUser;
 		reset($param);
-		while( list($n, $v) = each($param) ) {
+		foreach($param as $n => $v) {
 			if( $v ) {
 				$ret .= ($cnt? '&' : '?') . $n . '=' . urlencode($v);
 				$cnt++;
@@ -362,7 +362,7 @@ class LOG_RENDERER_CLASS
 		if( $action == 'import' ) $moreAfter = 1;
 		
 		$tableDef = Table_Find_Def($record[1], 0 /*no access check*/);
-		for( $i = 5 + $moreAfter*3, $cnt = 0; $i < sizeof($record); $i += 3 )
+		for( $i = 5 + $moreAfter*3, $cnt = 0; $i < sizeof((array) $record); $i += 3 )
 		{
 			$prefix = substr($record[$i], 0, strrpos($record[$i], '.')) . '.';		
 			

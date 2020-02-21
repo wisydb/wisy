@@ -796,3 +796,110 @@ function sectd(id, display /*0=off, 1=on, 2=toggle*/)
 	return false;
 }
 
+/* SERER-SPECIFIC ! To be resolved !*/
+/* Leitung ausblenden, wenn Benutzergruppe HH oder HA enthält */
+jQuery(document).ready(function() {
+	jQuery(".e_cll").each(function(){
+		if(jQuery(this).text().match(/Benutzergruppe:/)){ 
+			if(jQuery(this).next().text().match(/HH /) || jQuery(this).next().text().match(/HA /)  || jQuery(this).next().text().match(/Fernunterricht /)) {
+				jQuery("input[name=f_leitung_name]").parent().hide();
+				jQuery("input[name=f_leitung_name]").parent().prev().hide();
+			}
+		} 
+	});
+});
+
+/* Ticketing-System 
+jQuery(document).ready(function() {
+	if(typeof jQuery(".mms[href$=tickets]") != "undefined") {
+		if(jQuery("input[name=f_date_created]")) {
+			meingang = jQuery("input[name=f_date_created]").val();
+			mvon_name = jQuery("input[name=f_von_name]").val();
+			mantwortemail = jQuery("input[name=f_antwortan_email]").val();
+			mbetreff = jQuery("input[name=f_betreff]").val();
+			mnachricht = "Am "+meingang.replace(/,/, ' um')+" schrieb "+mvon_name+":%0A>%0A>"+jQuery("textarea[name=f_nachricht_txt]").text().replace(/\n/g, '%0A>');
+			jQuery(".mms[href$=tickets]").closest("body").find("input[name=f_betreff]").after('<input style="border-color: lightblue;" type="button" value="Antworten &rarr;" onclick="window.location.href = \'mailto:\'+mantwortemail+\'?subject=\'+mbetreff+\'&body=\'+mnachricht;">');
+		}
+	}
+}); */
+
+/* - Bei Benutzung von Klammern auf Anf.Striche hinweisen */
+/* - Uneindeutige Felder bei NICHT-Suche markieren! */
+$(document).ready(function(){
+	
+if($(".msgt").text().match(/Unbekannte Funktion/i) || $(".msgt").text().match(/Keine Ihren Suchkriterien/i)) {
+	$(".ui-autocomplete-input").each(function() { 
+		if($(this).val().match(/\(/) && !$(this).val().match(/"/) && !$(this).val().match(/'/)) {
+			alert('Hinweis:\n\nWert evtl. mit Anführungszeichen versehen (Grund: Klammern haben eine Sonderfunktion):\n"'+$(this).val()+'"');
+		}
+		else if($(this).val().match(/ /) && !$(this).val().match(/"/) && !$(this).val().match(/'/)) {
+			alert('Hinweis:\n\nWert evtl. mit Anführungszeichen versehen (Grund: Leerzeichen):\n"'+$(this).val()+'"');
+		}
+	});
+}
+
+if($("form[name=dbsearch]") && ($("#fheader .mml .mms").text() == "Angebote" || $("#fheader .mml .mms").text() == "Anbieter")) {
+	
+	var uneindeutig = ["anbieter.verweis", "anbieter.stichwort", "anbieter.stichwort.stichwort", "anbieter.stichwort.zusatzinfo", "anbieter.stichwort.verweis", "anbieter.stichwort.verweis2", "anbieter.stichwort.eigenschaften", "anbieter.stichwort.thema", "anbieter.stichwort.glossar", "anbieter.stichwort.scopenote", "anbieter.stichwort.algorithmus", "anbieter.stichwort.notizen", "anbieter.stichwort.notizen_fix", "anbieter.thema", "anbieter.thema.thema", "anbieter.thema.kuerzel", "anbieter.thema.glossar", "anbieter.thema.scopenote", "anbieter.thema.algorithmus", "anbieter.thema.notizen", "anbieter.thema.notizen_fix", "thema", "thema.thema", "thema.kuerzel", "thema.glossar", "thema.glossar.status", "thema.glossar.freigeschaltet", "thema.glossar.begriff", "thema.glossar.erklaerung", "thema.glossar.wikipedia", "thema.glossar.notizen", "thema.glossar.notizen_fix", "thema.scopenote", "thema.algorithmus", "thema.notizen", "thema.notizen_fix", "stichwort", "stichwort.stichwort",  "stichwort.zusatzinfo", "stichwort.verweis", "stichwort.verweis2", "stichwort.eigenschaften", "stichwort.thema", "stichwort.thema.thema",  "stichwort.thema.kuerzel", "stichwort.thema.glossar", "stichwort.thema.scopenote",  "stichwort.thema.algorithmus", "stichwort.thema.notizen", "stichwort.thema.notizen_fix", "stichwort.glossar",  "stichwort.glossar.status", "stichwort.glossar.freigeschaltet",  "stichwort.glossar.begriff", "stichwort.glossar.erklaerung",  "stichwort.glossar.wikipedia", "stichwort.glossar.notizen", "stichwort.glossar.notizen_fix", "stichwort.scopenote", "stichwort.algorithmus", "stichwort.notizen", "stichwort.notizen_fix", "durchfuehrung", "durchfuehrung.nr",  "durchfuehrung.bgnummer", "durchfuehrung.budnummer", "durchfuehrung.wisydnr",  "durchfuehrung.fudnr", "durchfuehrung.foerderdnr", "durchfuehrung.azwvdnr",  "durchfuehrung.stunden", "durchfuehrung.teilnehmer", "durchfuehrung.preis",  "durchfuehrung.preishinweise", "durchfuehrung.sonderpreis",  "durchfuehrung.sonderpreistage", "durchfuehrung.beginn", "durchfuehrung.ende", "durchfuehrung.zeitvon", "durchfuehrung.zeitbis", "durchfuehrung.kurstage", 
+	"durchfuehrung.tagescode", "durchfuehrung.dauer", "durchfuehrung.beginnoptionen", 
+	"durchfuehrung.strasse", "durchfuehrung.plz", "durchfuehrung.ort",  "durchfuehrung.stadtteil", "durchfuehrung.land", "durchfuehrung.rollstuhlgerecht",  "durchfuehrung.bemerkungen", "rights"
+	];
+
+	$("form[name=dbsearch] select.acselect").each(function() {
+		
+			$(this).on('change', function() {
+				
+				var nr = $(this).attr('name').replace(/f/, '');
+				var s_feld = this.value; 
+				var s_op_select = $("form[name=dbsearch] select[name=o"+nr+"]");
+				var s_op = $("form[name=dbsearch] select[name=o"+nr+"] option:selected");
+	
+				if(s_op.text() == "<>" && uneindeutig.includes(s_feld)) {
+					$("form[name=dbsearch] select.acselect").css("color", "black");
+					$(this).css("color", "darkred");
+					s_op_select.css("color", "darkred");
+						
+					alert('Achtung: Das Feld "'+s_feld+'" führt zusammen mit der NICHT-Suche (< >) i.d.R. zu falschen Ergebnissen!\n\nSolches ist immer dann der Fall, wenn einem Kurs mehrere der gesuchten Werte werden können - wie etwa SW oder DF-Parameter.');
+					
+				} else {
+				 $("form[name=dbsearch] select.acselect").css("color", "black");
+				 $("form[name=dbsearch] select[name^=o]").css("color", "black");
+				}
+			});
+	});
+
+	$("form[name=dbsearch] select[name^=o]").each(function() {
+		$(this).on('change', function() {
+		 var nr = $(this).attr('name').replace(/o/, '');
+		var s_op = this.value; 
+		var s_feld_select = $("form[name=dbsearch] select[name=f"+nr+"]");
+		var s_feld = $("form[name=dbsearch] select[name=f"+nr+"] option:selected");
+	 
+	 if(s_op == "ne" && uneindeutig.includes(s_feld.val())) {
+				 $("form[name=dbsearch] select.acselect").css("color", "black");
+				 $(this).css("color", "darkred");
+				 s_feld_select.css("color", "darkred");
+					 
+				 alert('Achtung: Das Feld "'+s_feld.val()+'" führt zusammen mit der NICHT-Suche (< >) i.d.R. zu falschen Ergebnissen!\n\nSolches ist immer dann der Fall, wenn einem Kurs mehrere der gesuchten Werte werden können - wie etwa SW oder DF-Parameter.');
+				 
+			 } else {
+				$("form[name=dbsearch] select.acselect").css("color", "black");
+				$("form[name=dbsearch] select[name^=o]").css("color", "black");
+			 }
+		 });
+ });
+	
+}
+
+// make archived entries css-designable
+$('td:contains("Archiv")').parent().attr("class", "archiv");
+$('td:contains("Gesperrt")').parent().attr("class", "gesperrt");
+
+$("input[name^='f_durchfuehrung_beginn'],input[name^='f_durchfuehrung_ende']").change(function(){
+ /* $(".dauer_fix_label").parent().find("input.e_bitfield_item").prop( "checked", false ); */
+ $(".dauer_fix_label").css("color", "darkgreen");
+ if(!$(".dauer_fix_label:visible").length)
+ $(".e_object .e_clr .e_defhide_more:last-child").trigger("click");
+});
+
+});

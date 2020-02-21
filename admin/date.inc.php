@@ -79,7 +79,7 @@ function get_sql_date($year, $month, $day, $hour, $minute, $second)
 	$second= trim($second);	if( !$second) $second= '0';
 	
 	if( strlen($year)==2 ) {
-		$year = lzerotrim($year) + ($year < 20 ? 2000 : 1900);
+		$year = lzerotrim($year) + ($year < 60 ? 2000 : 1900);
 	}
 	else if( strlen($year)==4 ) {
 		$year = lzerotrim($year);
@@ -295,7 +295,7 @@ function sql_date_from_human_correctyear($y)
 		$y = date('Y');
 	}
 	else if( strlen($y)==2 ) {
-		$y = lzerotrim($y) + ($y < 20 ? 2000 : 1900);
+	    $y = lzerotrim($y) + ($y < 60 ? 2000 : 1900);
 	}
 	else  {
 		$y = lzerotrim($y);
@@ -421,7 +421,7 @@ function sql_date_from_human_1sttry($s, $type = 'date' /*or datetime or dateopt*
 		$s = str_replace(' ',  '/', $s);
 		$s = explode('/', $s);
 		
-		if( sizeof($s)!=3 ) {
+		if( sizeof((array) $s)!=3 ) {
 			return 0; // error
 		}
 		
@@ -471,7 +471,7 @@ function sql_date_from_human_2ndtry($s, &$ret2)
 	// explode by spaces
 	$monthGiven = 0;
 	$s = explode(' ', $s);
-	if( sizeof($s) == 2 ) {
+	if( sizeof((array) $s) == 2 ) {
 		$month = sql_date_from_human_correctmonth($s[0]);
 		if( $month < 1 || $month > 12 ) {
 			return 0; // error

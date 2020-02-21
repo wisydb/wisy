@@ -79,15 +79,17 @@ class WISY_KEYWORDTABLE_CLASS
 		{
 			$row_postfix = ($tag_freq==1? '1 Kurs' : "$tag_freq Kurse") . $row_preposition . $row_postfix;
 		}
+		$row_postfix = cs8($row_postfix);
 
 		if( $tag_descr )
 		{
-			$row_postfix = $tag_descr . ', ' . $row_postfix;
+			$tag_descr = cs8($tag_descr);
+			$row_postfix = htmlentities(html_entity_decode($tag_descr)) . ', ' . htmlentities(html_entity_decode($row_postfix));
 		}
 
 		if( $row_postfix != '' )
 		{
-			$row_postfix = ' <span class="ac_tag_type">(' . $row_postfix . ')</span> ';
+			$row_postfix = ' <span class="ac_tag_type">(' . htmlentities(html_entity_decode($row_postfix)) . ')</span> ';
 		}
 
 		/*col1*/
@@ -114,9 +116,9 @@ class WISY_KEYWORDTABLE_CLASS
 		$icon_arr_right = '&nbsp;&#9654;';
 		$icon_empty = '&nbsp;&bull;&nbsp;';
 				
-		$title = utf8_encode(WISY_KEYWORDTABLE_CLASS::$keywords[ $keywordId ]['stichwort']);
+		$title = cs8(WISY_KEYWORDTABLE_CLASS::$keywords[ $keywordId ]['stichwort']);
 		$url = 'search?q=' . urlencode(g_sync_removeSpecialChars($title));
-		$zusatzinfo = utf8_encode(WISY_KEYWORDTABLE_CLASS::$keywords[ $keywordId ]['zusatzinfo']);
+		$zusatzinfo = cs8(WISY_KEYWORDTABLE_CLASS::$keywords[ $keywordId ]['zusatzinfo']);
 		$tag_type = WISY_KEYWORDTABLE_CLASS::$keywords[ $keywordId ]['eigenschaften'];
 		$glossarId = WISY_KEYWORDTABLE_CLASS::$keywords[ $keywordId ]['glossar'];
 				
@@ -179,14 +181,14 @@ class WISY_KEYWORDTABLE_CLASS
 		}
 
 		$showempty = $this->showempty;
-		if( $level == 0 || (sizeof($child_ids)!=0 && $expand > 0) ) {
+		if( $level == 0 || (sizeof((array) $child_ids)!=0 && $expand > 0) ) {
 			$showempty = true;
 		}
 
 
 		// get HTML code for the children
 		$childrenHTML = '';
-		for( $a = 0; $a < sizeof($child_ids); $a++ ) {
+		for( $a = 0; $a < sizeof((array) $child_ids); $a++ ) {
 			$childrenHTML .= $this->getKeywordsDivRecursive($child_ids[$a], $level+1, $expand-1, $expand > 0? false : true);
 		}
 		
@@ -217,7 +219,7 @@ class WISY_KEYWORDTABLE_CLASS
 
 		// ... pass 1: check for special parameters
 		$this->showempty = false;
-		for( $k = 0; $k < sizeof($temp); $k++ ) 
+		for( $k = 0; $k < sizeof((array) $temp); $k++ ) 
 		{
 			if( $temp[$k] == 'showempty' ) {
 				$this->showempty = true;
@@ -230,7 +232,7 @@ class WISY_KEYWORDTABLE_CLASS
 		
 		// ... pass 2: render all rows for each keyword ID		
 		$ret_items = array();
-		for( $k = 0; $k < sizeof($keywordIds); $k++ ) 
+		for( $k = 0; $k < sizeof((array) $keywordIds); $k++ ) 
 		{
 			$expand = 0;
 			$keywordId = $keywordIds[$k];

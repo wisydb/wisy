@@ -102,7 +102,7 @@ class G_TEMPDIR_CLASS
 
 		usort($ret, 'G_TEMPFILE_CLASS_compare');
 		
-		for( $i = 0; $i < sizeof($filesToDelete); $i++ ) {
+		for( $i = 0; $i < sizeof((array) $filesToDelete); $i++ ) {
 			unlink($filesToDelete[$i]);
 		}
 		

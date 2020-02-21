@@ -88,7 +88,7 @@ function tipsntricks_get_next()
 	$tipNum = 0;
 	$nextTip = '';
 	reset($g_tipsntricks);
-	while( list($key, $value) = each($g_tipsntricks) ) {
+	foreach($g_tipsntricks as $key => $value) {
 		if( $key > $settings[ $_SESSION['g_session_language'] ] ) {
 			$nextTip = $value;
 			$settings[ $_SESSION['g_session_language'] ] = $key;
@@ -98,16 +98,19 @@ function tipsntricks_get_next()
 	}
 	
 	if( !$nextTip ) {
-		reset($g_tipsntricks);
-		list($key, $nextTip) = each($g_tipsntricks);
-		$settings[ $_SESSION['g_session_language'] ] = $key;
-		$tipNum = 0;
+	    reset($g_tipsntricks);
+	    $key = array_keys($g_tipsntricks);
+	    $key = $key[0]; // array_key_first() only > php7
+	    $nextTip = array_values($g_tipsntricks);
+	    $nextTip = $nextTip[0];
+	    $settings[ $_SESSION['g_session_language'] ] = $key;
+	    $tipNum = 0;
 	}
 	
 	// save settings
 	reset($settings);
 	$settings_ = '';
-	while( list($key, $value) = each($settings) ) {
+	foreach($settings as $key => $value) {
 		if( $settings_ ) $settings_ .= ', ';
 		$settings_ .= "$key, $value";
 	}
@@ -137,7 +140,7 @@ if( isset($_REQUEST['showtip']) )
 
 		reset($g_tipsntricks);
 		$tipNum = 0;
-		while( list($key, $value) = each($g_tipsntricks) ) 
+		foreach($g_tipsntricks as $key => $value)
 		{
 			if( $tipNum == $_REQUEST['showtip'] 
 			 || ($_REQUEST['showtip']>=100000 && $_REQUEST['showtip']-100000==intval($key)) ) 

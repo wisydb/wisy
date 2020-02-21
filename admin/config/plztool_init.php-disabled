@@ -136,7 +136,7 @@ class PLZTOOL_INIT_CLASS
 			}
 		
 			fclose($fh);
-			echo sizeof($this->g_plzinfo) . " Strassen, davon<br />";
+			echo sizeof((array) $this->g_plzinfo) . " Strassen, davon<br />";
 			echo $this->g_plzinfo_mehrdeutigkeiten['plz'] . " Strassen, deren Postleitzahl nicht eindeutig zugewiesen werden kann<br />";
 			echo $this->g_plzinfo_mehrdeutigkeiten['stadtteil'] . " Strassen, deren Stadtteil nicht eindeutig zugewiesen werden kann<br />";
 			// print_r($g_plzinfo);
@@ -148,7 +148,7 @@ class PLZTOOL_INIT_CLASS
 	
 		// daten in tabelle einfügen
 		reset($this->g_plzinfo);
-		while( list($hash, $v) = each($this->g_plzinfo) )
+		foreach($this->g_plzinfo as $hash => $v)
 		{
 			$ort_norm = addslashes($v['ort_norm']);
 			$strasse_norm = addslashes($v['strasse_norm']);
@@ -214,7 +214,7 @@ class PLZTOOL_INIT_CLASS
 			}
 		
 			fclose($fh);
-			echo sizeof($plz_added) . " Postleitzahlen hinzugefuegt<br />";
+			echo sizeof((array) $plz_added) . " Postleitzahlen hinzugefuegt<br />";
 		}
 		else 
 		{

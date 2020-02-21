@@ -145,7 +145,7 @@ function imgbuttonFinish()
 	global $imgbuttonShouldFinish;
 	
 	$ret = '<input type="hidden" name="imgbutton" value="';
-		for( $i = 0; $i < sizeof($imgbuttonShouldFinish); $i += 2 ) {
+	for( $i = 0; $i < sizeof((array) $imgbuttonShouldFinish); $i += 2 ) {
 			if( $i ) { $ret .= '|'; }
 			$ret .= $imgbuttonShouldFinish[$i] . '|' . urlencode($imgbuttonShouldFinish[$i+1]);
 		}
@@ -190,7 +190,7 @@ class Table_Inst_Class
 	//
 	// create a new table instance
 	//
-	function Table_Inst_Class(	$object_name, 
+	function __construct(	$object_name,
 								$table_def_name, 
 								$id, 
 								$table_usedefaults = 1,
@@ -233,7 +233,7 @@ class Table_Inst_Class
 				$this->user_access	= $db->fs('user_access');
 				$this->sync_src		= intval($db->fs('sync_src'));
 
-				for( $r = 0; $r < sizeof($table_def->rows); $r++ )
+				for( $r = 0; $r < sizeof((array) $table_def->rows); $r++ )
 				{
 					if( $table_def->rows[$r]->flags & TABLE_USERDEF )
 					{
@@ -321,7 +321,7 @@ class Table_Inst_Class
 			$this->user_grp		= intval(acl_get_default_grp());
 			$this->user_access	= acl_get_default_access();
 
-			for( $r = 0; $r < sizeof($table_def->rows); $r++ )
+			for( $r = 0; $r < sizeof((array) $table_def->rows); $r++ )
 			{
 				if( $table_def->rows[$r]->flags & TABLE_USERDEF )
 				{
@@ -386,7 +386,7 @@ class Table_Inst_Class
 							$defaults = $_SESSION['g_session_track_defaults'][$table_def->rows[$r]->addparam->name];
 							if( $defaults && is_array($defaults) )
 							{
-								for( $a = 0; $a < sizeof($defaults); $a++ ) {
+							    for( $a = 0; $a < sizeof((array) $defaults); $a++ ) {
 									$this->values[$r][] = intval($defaults[$a]);
 								}
 							}
@@ -446,12 +446,12 @@ class Table_Inst_Class
 		$this->user_grp		= intval(acl_get_default_grp());
 		$this->user_access	= acl_get_default_access();
 
-		for( $r = 0; $r < sizeof($table_def->rows); $r++ )
+		for( $r = 0; $r < sizeof((array) $table_def->rows); $r++ )
 		{
 			switch( $table_def->rows[$r]->flags & TABLE_ROW )
 			{
 				case TABLE_SECONDARY:
-					for( $s = 0; $s < sizeof($this->values[$r]); $s++ ) {
+				    for( $s = 0; $s < sizeof((array) $this->values[$r]); $s++ ) {
 						$this->values[$r][$s]->copy_record();
 					}
 					break;
@@ -484,7 +484,7 @@ class Table_Inst_Class
 		$db = new DB_Admin;
 
 		$query = '';
-		for( $r = 0; $r < sizeof($table_def->rows); $r++ )
+		for( $r = 0; $r < sizeof((array) $table_def->rows); $r++ )
 		{
 			if( $table_def->rows[$r]->acl&ACL_EDIT )
 			{
@@ -524,7 +524,7 @@ class Table_Inst_Class
 					case TABLE_MATTR:
 						$defaults = array();
 	
-						for( $a = 0; $a < sizeof($this->values[$r]); $a++ ) {
+						for( $a = 0; $a < sizeof((array) $this->values[$r]); $a++ ) {
 							$db->query("INSERT INTO " . $table_def->name . '_' . $table_def->rows[$r]->name . " (primary_id,attr_id,structure_pos) VALUES ($this->id," .$this->values[$r][$a]. ",$a)");
 							$defaults[] = $this->values[$r][$a];
 						}
@@ -554,7 +554,7 @@ class Table_Inst_Class
 						{
 							// find out the currently used secondary IDs
 							$curr_secondary_ids = array();
-							for( $i = 0; $i < sizeof($this->values[$r]); $i++ ) 
+							for( $i = 0; $i < sizeof((array) $this->values[$r]); $i++ )
 							{
 								$curr_secondary_ids[] = intval($this->values[$r][$i]->id);
 							}
@@ -573,7 +573,7 @@ class Table_Inst_Class
 						}
 						
 						// create and/or update the currrent secondary IDs
-						for( $i = 0; $i < sizeof($this->values[$r]); $i++ ) 
+						for( $i = 0; $i < sizeof((array) $this->values[$r]); $i++ )
 						{
 							if( $this->values[$r][$i]->id == -1 ) 
 							{
@@ -586,9 +586,9 @@ class Table_Inst_Class
 						}
 	
 						// store defaults
-						if( $table_def->rows[$r]->flags & TABLE_TRACKDEFAULTS ) 
+						if( $table_def->rows[$r]->flags & TABLE_TRACKDEFAULTS )
 						{
-							$_SESSION['g_session_track_defaults'][$table_def->rows[$r]->addparam->name] = sizeof($this->values[$r])? 1 : 0;
+						    $_SESSION['g_session_track_defaults'][$table_def->rows[$r]->addparam->name] = sizeof((array) $this->values[$r])? 1 : 0;
 						}
 						break;
 				}
@@ -631,7 +631,7 @@ class Table_Inst_Class
 		$curr_control_index++;
 
 		// search for attribute control
-		for( $r = 0; $r < sizeof($table_def->rows); $r++ )
+		for( $r = 0; $r < sizeof((array) $table_def->rows); $r++ )
 		{
 			$rowflags	= $table_def->rows[$r]->flags;
 			$rowtype	= $rowflags&TABLE_ROW;
@@ -659,7 +659,7 @@ class Table_Inst_Class
 						$attr_flags			= $rowflags;
 						$attr_name			= $table_def->rows[$r]->descr;
 						if( $set ) {
-							if( sizeof($attr_values) ) {
+						    if( sizeof((array) $attr_values) ) {
 								$this->values[$r] = intval($attr_values[sizeof($attr_values)-1]);
 							}
 							else {
@@ -678,7 +678,7 @@ class Table_Inst_Class
 			
 			if( $rowtype == TABLE_SECONDARY )
 			{
-					for( $s = 0; $s < sizeof($this->values[$r]); $s++ ) 
+			    for( $s = 0; $s < sizeof((array) $this->values[$r]); $s++ ) 
 					{
 						if( $curr_control_index == $edit_control_index ) { // may be used for insertfrom
 							$attr_table_def_name= $this->table_def_name;
@@ -724,7 +724,7 @@ class Table_Inst_Class
 		$curr_control_index++;
 
 		// search for attribute control
-		for( $r = 0; $r < sizeof($table_def->rows); $r++ )
+		for( $r = 0; $r < sizeof((array) $table_def->rows); $r++ )
 		{
 			if( $edit_control_index == $curr_control_index ) {
 				$ret = "{$table_def->descr}.{$table_def->rows[$r]->descr}";
@@ -733,7 +733,7 @@ class Table_Inst_Class
 			
 			if( ($table_def->rows[$r]->flags&TABLE_ROW) == TABLE_SECONDARY )
 			{
-				for( $s = 0; $s < sizeof($this->values[$r]); $s++ )
+			    for( $s = 0; $s < sizeof((array) $this->values[$r]); $s++ )
 				{
 					if( $edit_control_index == $curr_control_index ) {
 						$ret = "{$table_def->descr}.{$table_def->rows[$r]->descr}";
@@ -771,7 +771,7 @@ class Table_Inst_Class
 		// change attributes
 		$ret = 0;
 		$tg_id = intval($tg_id);
-		for( $a = 0; $a < sizeof($attr_values); $a++ ) 
+		for( $a = 0; $a < sizeof((array) $attr_values); $a++ )
 		{
 			if( $attr_values[$a] == $tg_id ) {
 				if( $set ) {
@@ -828,7 +828,7 @@ class Table_Inst_Class
 				break;
 
 			default: // add secondary table
-				for( $r = 0; $r < sizeof($table_def->rows); $r++ )
+			    for( $r = 0; $r < sizeof((array) $table_def->rows); $r++ )
 				{
 					if( ($table_def->rows[$r]->flags & TABLE_ROW) == TABLE_SECONDARY
 					 && $r == $_REQUEST['control'][$curr_control_index] )
@@ -841,7 +841,7 @@ class Table_Inst_Class
 							$table_def->name.'.'.$table_def->rows[$r]->name);	// parent_field
 
 						$this->section = 10000; // get section to select by "justAdded"
-						$this->values[$r][sizeof($this->values[$r])-1]->justAdded = 1;
+						$this->values[$r][sizeof((array) $this->values[$r])-1]->justAdded = 1;
 						return -1; // done
 					}
 				}
@@ -850,11 +850,11 @@ class Table_Inst_Class
 		$curr_control_index++;
 
 		// delete child controls if needed, skip all other controls
-		for( $r = 0; $r < sizeof($table_def->rows); $r++ )
+		for( $r = 0; $r < sizeof((array) $table_def->rows); $r++ )
 		{
 			if( ($table_def->rows[$r]->flags & TABLE_ROW) == TABLE_SECONDARY )
 			{
-				for( $s = 0; $s < sizeof($this->values[$r]); $s++ )
+			    for( $s = 0; $s < sizeof((array) $this->values[$r]); $s++ )
 				{
 					$curr_control_index = $this->values[$r][$s]->modify_secondarytable($curr_control_index);
 
@@ -866,7 +866,7 @@ class Table_Inst_Class
 					if( $curr_control_index==-2 ) // remove this area?
 					{
 						$new_secondary = array();
-						for( $s2 = 0; $s2 < sizeof($this->values[$r]); $s2++ )
+						for( $s2 = 0; $s2 < sizeof((array) $this->values[$r]); $s2++ )
 						{
 							if( $s2 != $s ) {
 								$new_secondary[] = $this->values[$r][$s2];
@@ -880,7 +880,7 @@ class Table_Inst_Class
 					if( $curr_control_index==-3 ) // area up?
 					{
 						$new_secondary = array();
-						for( $s2 = 0; $s2 < sizeof($this->values[$r]); $s2++ )
+						for( $s2 = 0; $s2 < sizeof((array) $this->values[$r]); $s2++ )
 						{
 							if( $s2 == $s-1 )
 								$new_secondary[] = $this->values[$r][$s];
@@ -895,7 +895,7 @@ class Table_Inst_Class
 					if( $curr_control_index==-4 ) // area down?
 					{
 						$new_secondary = array();
-						for( $s2 = 0; $s2 < sizeof($this->values[$r]); $s2++ )
+						for( $s2 = 0; $s2 < sizeof((array) $this->values[$r]); $s2++ )
 						{
 							if( $s2 != $s )
 								$new_secondary[] = $this->values[$r][$s2];
@@ -912,8 +912,8 @@ class Table_Inst_Class
 						$this->verify_data(0 /*show alert*/, 1 /*load all blob*/);
 						$this->values[$r][] = clone( $this->values[$r][$s] ); // EDIT 18.02.2010: "clone" is needed for php 5.x
 						$this->section = 10000; // get section to select by "justAdded"
-						$this->values[$r][sizeof($this->values[$r])-1]->id = -1;
-						$this->values[$r][sizeof($this->values[$r])-1]->justAdded = 1;
+						$this->values[$r][sizeof((array) $this->values[$r])-1]->id = -1;
+						$this->values[$r][sizeof((array) $this->values[$r])-1]->justAdded = 1
 						return -1; // done
 					}
 				}
@@ -933,11 +933,11 @@ class Table_Inst_Class
 
 		$curr_control_index++;
 		
-		for( $r = 0; $r < sizeof($table_def->rows); $r++ )
+		for( $r = 0; $r < sizeof((array) $table_def->rows); $r++ )
 		{
 			if( ($table_def->rows[$r]->flags & TABLE_ROW) == TABLE_SECONDARY )
 			{
-				for( $s = 0; $s < sizeof($this->values[$r]); $s++ )
+			    for( $s = 0; $s < sizeof((array) $this->values[$r]); $s++ )
 				{
 					if( $curr_control_index == $edit_control_index )
 					{
@@ -946,7 +946,7 @@ class Table_Inst_Class
 						// ...collect all secondary-IDs
 						$db = new DB_Admin;
 						$durchfIds = array();
-						for( $i = 0; $i < sizeof($idsToAdd); $i++ )
+						for( $i = 0; $i < sizeof((array) $idsToAdd); $i++ )
 						{
 							$db->query("SELECT secondary_id FROM {$table_def->name}_{$table_def->rows[$r]->name} WHERE primary_id={$idsToAdd[$i]} ORDER BY structure_pos;");
 							while( $db->next_record() )
@@ -956,7 +956,7 @@ class Table_Inst_Class
 						}
 						
 						// ...create objects for the secondary records to add 
-						for( $i = 0; $i < sizeof($durchfIds); $i++ )
+						for( $i = 0; $i < sizeof((array) $durchfIds); $i++ )
 						{
 							$this->values[$r][] = new Table_Inst_Class(
 										$this->object_name, 								// object_name
@@ -965,16 +965,16 @@ class Table_Inst_Class
 										1,													// use_defaults
 										$table_def->name.'.'.$table_def->rows[$r]->name);	// parent_field
 							
-							$this->values[$r][sizeof($this->values[$r])-1]->id = -1;
+							$this->values[$r][sizeof((array) $this->values[$r])-1]->id = -1;
 							
 							if( $i == 0 )
 							{
 								$this->section = 10000; // get section to select by "justAdded"
-								$this->values[$r][sizeof($this->values[$r])-1]->justAdded = 1;
+								$this->values[$r][sizeof((array) $this->values[$r])-1]->justAdded = 1;
 							}
 						}
 
-						$count = sizeof($durchfIds);
+						$count = sizeof((array) $durchfIds);
 						$title = $count==1? 'Datensatz' : 'Datens&auml;tze';
 						$site->msgAdd("{$count} $title von {$table_def->descr}.{$table_def->rows[$r]->descr} eingef&uuml;gt.", 'i');
 						
@@ -1066,7 +1066,7 @@ class Table_Inst_Class
 		$curr_control_index++;
 
 		// go through all other controls
-		for( $r = 0; $r < sizeof($table_def->rows); $r++ )
+		for( $r = 0; $r < sizeof((array) $table_def->rows); $r++ )
 		{
 			$rowflags = $table_def->rows[$r]->flags;
 			
@@ -1215,7 +1215,7 @@ class Table_Inst_Class
 							if( $curr_id )
 							{
 								$do_insert = 1; // avoid double values
-								for( $a2 = 0; $a2 < sizeof($this->values[$r]); $a2++ ) {
+								for( $a2 = 0; $a2 < sizeof((array) $this->values[$r]); $a2++ ) {
 									if( $this->values[$r][$a2] == $curr_id )
 										$do_insert = 0;
 								}
@@ -1232,7 +1232,7 @@ class Table_Inst_Class
 					break;
 
 				case TABLE_SECONDARY:
-					for( $s = 0; $s < sizeof($this->values[$r]); $s++ ) {
+				    for( $s = 0; $s < sizeof((array) $this->values[$r]); $s++ ) {
 						$curr_control_index = $this->values[$r][$s]->modify_controls(
 							$do_modify_secondarytable, 
 							$base_table_name,
@@ -1267,7 +1267,7 @@ class Table_Inst_Class
 		}
 
 		// go through all rows
-		for( $r = 0; $r < sizeof($table_def->rows); $r++ )
+		for( $r = 0; $r < sizeof((array) $table_def->rows); $r++ )
 		{
 			$this->value_errors_addparam[$r] = '';
 			$error = '';
@@ -1415,7 +1415,7 @@ class Table_Inst_Class
 					break;
 
 				case TABLE_MATTR:
-					for( $a = 0; $a < sizeof($this->values[$r]); $a++ )
+				    for( $a = 0; $a < sizeof((array) $this->values[$r]); $a++ )
 					{
 						if( is_string($this->values[$r][$a]) )
 						{
@@ -1439,7 +1439,7 @@ class Table_Inst_Class
 						}
 					}
 
-					if( ($rowflags & TABLE_MUST) && sizeof($this->values[$r]) == 0 ) {
+					if( ($rowflags & TABLE_MUST) && sizeof((array) $this->values[$r]) == 0 ) {
 						$error .= htmlconstant('_EDIT_ERREMPTYATTRFIELD');
 					}
 					break;
@@ -1455,7 +1455,7 @@ class Table_Inst_Class
 					break;
 
 				case TABLE_SECONDARY:
-					for( $s = 0; $s < sizeof($this->values[$r]); $s++ ) {
+				    for( $s = 0; $s < sizeof((array) $this->values[$r]); $s++ ) {
 						$this->values[$r][$s]->verify_data($show_alert, $load_all_blob+1, $root_table_def_name);
 					}
 					break;
@@ -1869,7 +1869,7 @@ class Table_Inst_Class
 					echo '&nbsp;';
 				$site->skin->submenuEnd();
 				$site->skin->dialogStart();
-					for( $i = 0; $i < sizeof($references); $i++ )
+				    for( $i = 0; $i < sizeof((array) $references); $i++ )
 					{
 						$href = '';
 						$cnt  = $references[$i][4];
@@ -1941,7 +1941,7 @@ class Table_Inst_Class
 			$structuremenu = '';
 			$sectionCount = 0;
 			$nextIsNewSection = 0;
-			for( $r = 0; $r < sizeof($table_def->rows); $r++ ) 
+			for( $r = 0; $r < sizeof((array) $table_def->rows); $r++ )
 			{
 				$rowflags	= $table_def->rows[$r]->flags;
 				$rowtype	= $rowflags&TABLE_ROW;
@@ -1954,10 +1954,10 @@ class Table_Inst_Class
 						$structuremenu .= $r . '###' . $table_def->rows[$r]->descr . '###';
 					}
 					
-					for( $s = 0; $s < sizeof($this->values[$r]); $s++ ) 
+					for( $s = 0; $s < sizeof((array) $this->values[$r]); $s++ )
 					{
 						$sectionTitle = trim($table_def->rows[$r]->descr);
-						if( sizeof($this->values[$r]) > 1 ) {
+						if( sizeof((array) $this->values[$r]) > 1 ) {
 							$sectionTitle = $s==0? ("$sectionTitle ".($s+1)) : ($s+1);
 						}
 						
@@ -2006,7 +2006,7 @@ class Table_Inst_Class
 				"<a href=\"index.php?table=$table_def->name\">");
 
 			// start page: menu link to prev/next
-			for( $i = 0;  $i < sizeof($_SESSION['g_session_list_results'][$table_def->name]); $i++ ) {
+			for( $i = 0;  $i < sizeof((array) $_SESSION['g_session_list_results'][$table_def->name]); $i++ ) {
 				if( $_SESSION['g_session_list_results'][$table_def->name][$i] == $this->id ) {
 					if( $_SESSION['g_session_list_results'][$table_def->name][$i-1] ) {
 						$prev_url = "edit.php?table={$this->table_def_name}&amp;id=".$_SESSION['g_session_list_results'][$table_def->name][$i-1]."&amp;free_object={$this->object_name}";
@@ -2239,7 +2239,7 @@ class Table_Inst_Class
 		// controls out
 		$control_started = 0;
 		$nextIsNewSection = 0;
-		for( $r = 0; $r < sizeof($table_def->rows); $r++ )
+		for( $r = 0; $r < sizeof((array) $table_def->rows); $r++ )
 		{
 			$rowflags	= $table_def->rows[$r]->flags;
 			$rowtype	= $rowflags & TABLE_ROW;
@@ -2252,7 +2252,7 @@ class Table_Inst_Class
 					exit();
 				}
 				
-				if( sizeof($this->values[$r]) )
+				if( sizeof((array) $this->values[$r]) )
 				{
 					if( $inDialog ) {
 						$site->skin->dialogEnd();
@@ -2264,17 +2264,17 @@ class Table_Inst_Class
 						$inSection = 0;
 					}
 					
-					for( $s = 0; $s < sizeof($this->values[$r]); $s++ )
+					for( $s = 0; $s < sizeof((array) $this->values[$r]); $s++ )
 					{
 						$site->skin->sectionStart();
 						
-							$curr_control_index = $this->values[$r][$s]->render(
-								sizeof($this->values[$r])==1? $rowdescr : ("$rowdescr ".($s+1)),
-								($s!=0)? 1 : 0, /* showUp */
-								($s!=sizeof($this->values[$r])-1)? 1 : 0, /* showDown */
-								$curr_control_index,
-								$this->id,
-								$base_table_name);
+						$curr_control_index = $this->values[$r][$s]->render(
+						    sizeof((array) $this->values[$r])==1? $rowdescr : ("$rowdescr ".($s+1)),
+						    ($s!=0)? 1 : 0, /* showUp */
+						    ($s!=sizeof((array) $this->values[$r])-1)? 1 : 0, /* showDown */
+						    $curr_control_index,
+						    $this->id,
+						    $base_table_name);
 							
 						$site->skin->sectionEnd();
 					}
@@ -2432,7 +2432,7 @@ class Table_Inst_Class
 							$nr = $this->values[$r];
 							$nr = strtr($nr, array('('=>'', ')'=>'', '-'=>'', '/'=>'', ' '=>''));	// Trennzeichen aus der Telefonnummer entfernen
 							preg_match_all('/\d{6,}/', $nr, $matches);
-							for( $i = 0; $i < sizeof($matches[0]); $i++ )
+							for( $i = 0; $i < sizeof((array) $matches[0]); $i++ )
 							{
 								$lnr = $matches[0][$i];
 								echo ' <a href="tel:'.urlencode($lnr).'" title="'.htmlconstant('_EDIT_CALL_PHONE', isohtmlspecialchars($lnr)).'">&#9742;</a>';
@@ -2627,7 +2627,7 @@ class Table_Inst_Class
 						$attr_readable		= acl_get_access($attr_table.'.COMMON')? 1 : 0;
 						$attr_editable		= $table_def->rows[$r]->acl&ACL_EDIT? $attr_readable : 0;
 						$attr_break			= ' &nbsp;&nbsp;';
-						$attr_addvaluessize	= sizeof($this->values[$r])? 10 : 40;
+						$attr_addvaluessize	= sizeof((array) $this->values[$r])? 10 : 40;
 
 						// get plugin (if any)
 						$attr_plugin = "config/attr_plugin_{$table_def->name}_{$table_def->rows[$r]->name}.inc.php";
@@ -2636,7 +2636,7 @@ class Table_Inst_Class
 						}
 						// get all summaries
 						$attr_summaries = array();
-						for( $a = 0; $a < sizeof($this->values[$r]); $a++ ) {
+						for( $a = 0; $a < sizeof((array) $this->values[$r]); $a++ ) {
 							$attr_summaries[$a] = $table_def->rows[$r]->addparam->get_summary($this->values[$r][$a],  ' / '/*value seperator*/);
 							if( $attr_summaries[$a]=='' ) {
 								$attr_summaries[$a] = $this->values[$r][$a];
@@ -2666,7 +2666,7 @@ class Table_Inst_Class
 
 						// create attribute list
 						echo '<a name="c' .$curr_control_index. '"></a>';
-						for( $a = 0; $a < sizeof($this->values[$r]); $a++ )
+						for( $a = 0; $a < sizeof((array) $this->values[$r]); $a++ )
 						{
 							if( $attr_editable ) {
 								echo "<a href=\"deprecated_edit_tgattr.php?object=$this->object_name&tg_control=$curr_control_index&tg_id=" .$this->values[$r][$a]. "\" target=\"tg$curr_control_index"."_".$this->values[$r][$a]."\" onclick=\"return editTgAttr(this,0);\">";
@@ -2694,14 +2694,14 @@ class Table_Inst_Class
 								call_plugin($attr_plugin, $param);
 							}
 							
-							if( $a != sizeof($this->values[$r])-1 ) {
+							if( $a != sizeof((array) $this->values[$r])-1 ) {
 								echo $attr_break;
 							}
 						}
 
 						// edit / new
 
-						if( sizeof($this->values[$r])
+						if( sizeof((array) $this->values[$r])
 						 && ($attr_editable) ) {
 							echo $attr_break;
 						}
@@ -2721,7 +2721,7 @@ class Table_Inst_Class
 							}
 
 							if( !($rowflags & TABLE_HIDESORT)
-							 && sizeof($this->values[$r])>1 ) {
+							&& sizeof((array) $this->values[$r])>1 ) {
 							 	$temp = "deprecated_edit_sort.php?object={$this->object_name}&edit_control={$curr_control_index}";
 								echo imgbuttonRender("goto", $temp, "{$site->skin->imgFolder}/sort.gif", "{$site->skin->imgFolder}/sortroll.gif", '', '[^v]', htmlconstant('_EDIT_EDITORDER')) . ' ';
 							}
@@ -2729,7 +2729,7 @@ class Table_Inst_Class
 
 						
 						// create references list
-						if( sizeof($attr_references) )
+						if( sizeof((array) $attr_references) )
 						{
 							$title = $table_def->rows[$r]->prop['ref.name']; if( $title == '' ) $title = '_REF';
 							form_control_end();
@@ -2740,7 +2740,7 @@ class Table_Inst_Class
 								echo '<a href="edit.php?table=' . $attr_table . '&id=' . $attr_references[$a][0] . '" target="_blank">';
 									echo isohtmlentities($attr_references[$a][1]);
 								echo '</a>';
-								if( $a != sizeof($attr_references)-1 ) {
+								if( $a != sizeof((array) $attr_references)-1 ) {
 									echo $attr_break;
 								}
 							}

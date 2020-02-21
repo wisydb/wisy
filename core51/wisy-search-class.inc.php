@@ -132,7 +132,7 @@ class WISY_SEARCH_CLASS
 						// ODER-Suche
 						$subval = explode(' ODER ', $value);
 						$rawOr = '';
-						for( $s = 0; $s < sizeof($subval); $s++ )
+						for( $s = 0; $s < sizeof((array) $subval); $s++ )
 						{	
 							$tag_id = $this->lookupTag(trim($subval[$s]));
 							if( $tag_id == 0 )
@@ -229,13 +229,13 @@ class WISY_SEARCH_CLASS
 					$ids = array();
 					$temp = $this->tokens['cond'][$i]['field']=='fav'? $_COOKIE['fav'] : $value;
 					$temp = explode(',', strtr($temp, ' /',',,'));
-					for( $j = 0; $j < sizeof($temp); $j++ ) {
+					for( $j = 0; $j < sizeof((array) $temp); $j++ ) {
 						$ids[] = intval($temp[$j]); // safely get the IDs - do not use the Cookie/Request-String directly!
 					}
 					
 					$this->rawCanCache = false;
 					$this->rawWhere .= $this->rawWhere? ' AND ' : ' WHERE ';
-					if( sizeof($ids) >= 1 ) {
+					if( sizeof((array) $ids) >= 1 ) {
 						$this->rawWhere .= "(x_kurse.kurs_id IN (".implode(',', $ids)."))";
 						$abgelaufeneKurseAnzeigen = 'void';
 					}
@@ -250,7 +250,7 @@ class WISY_SEARCH_CLASS
 					$ids = $nrSearcher->nr2id($value);
 					$this->rawCanCache = false; // no caching as we have different results for login/no login
 					$this->rawWhere .= $this->rawWhere? ' AND ' : ' WHERE ';
-					if( sizeof($ids) >= 1 ) {
+					if( sizeof((array) $ids) >= 1 ) {
 						$this->rawWhere .= "(x_kurse.kurs_id IN (".implode(',', $ids)."))";
 						$abgelaufeneKurseAnzeigen = 'void'; // implicitly show expired results if a number was searched
 					}
@@ -484,7 +484,7 @@ class WISY_SEARCH_CLASS
 					$this->db->query("SET SQL_BIG_SELECTS=1"); // optional
 					$this->db->query($sql);
 					if( $this->db->next_record() )
-						$ret = intval($this->db->f8('cnt'));
+						$ret = intval($this->db->f('cnt'));
 					$this->db->free();
 					
 					// add to cache
@@ -603,7 +603,7 @@ class WISY_SEARCH_CLASS
 				while( $this->db->next_record() )
 				{
 					$this->anbieterIds .= $this->anbieterIds==''? '' :', ';
-					$this->anbieterIds .= intval($this->db->f8('anbieter'));
+					$this->anbieterIds .= intval($this->db->f('anbieter'));
 					$ret++;
 				}
 				$this->db->free();
@@ -703,7 +703,7 @@ class WISY_SEARCH_CLASS
 		);
 
 		$queryArr = explode(',', $queryString);
-		for( $i = 0; $i < sizeof($queryArr); $i++ )
+		for( $i = 0; $i < sizeof((array) $queryArr); $i++ )
 		{
 			// get initial value to search tags for, remove multiple spaces
 			$field = '';
@@ -747,19 +747,19 @@ class WISY_SEARCH_CLASS
 			$this->db->query("SELECT tag_id, tag_type FROM x_tags WHERE tag_name='".addslashes($tag_name)."';");
 			if( $this->db->next_record() )
 			{
-				$tag_type = $this->db->f8('tag_type');
+				$tag_type = $this->db->fcs8('tag_type');
 				if( $tag_type & 64 )
 				{
 					// synonym - ein lookup klappt nur, wenn es nur _genau_ ein synonym gibt
-					$temp_id   = $this->db->f8('tag_id');
+					$temp_id   = $this->db->f('tag_id');
 					$syn_ids = array();
 					$this->db->query("SELECT t.tag_id FROM x_tags t LEFT JOIN x_tags_syn s ON s.lemma_id=t.tag_id WHERE s.tag_id=$temp_id");
 					while( $this->db->next_record() )
 					{
-						$syn_ids[] = $this->db->f8('tag_id');
+						$syn_ids[] = $this->db->f('tag_id');
 					}
 					
-					if( sizeof( $syn_ids ) == 1 )
+					if( sizeof((array) $syn_ids ) == 1 )
 					{
 						$tag_id = $syn_ids[0]; /*directly follow 1-dest-only-synonyms*/
 					}
@@ -767,7 +767,7 @@ class WISY_SEARCH_CLASS
 				else
 				{
 					// normales lemma
-					$tag_id   = $this->db->f8('tag_id');
+					$tag_id   = $this->db->f('tag_id');
 				}
 			}
 		}

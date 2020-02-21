@@ -30,7 +30,7 @@ usage:
 function get_first_accecssible_table()
 {
 	global $Table_Def;
-	for( $t = 0; $t < sizeof($Table_Def); $t++ ) {
+	for( $t = 0; $t < sizeof((array) $Table_Def); $t++ ) {
 		if( ($Table_Def[$t]->flags & TABLE_PRIMARY)
 		 && acl_get_access($Table_Def[$t]->name.'.COMMON') ) {
 			return $Table_Def[$t]->name;
@@ -170,21 +170,22 @@ function login_screen()
 			//
 			$langs = get_avail_lang_from_folder(regGet('login.lang', ''));
 			reset($langs);
-			if( sizeof($langs)==1 )
+			if( sizeof((array) $langs)==1 )
 			{
-				list($abbr) = each($langs);
-				form_hidden('g_do_session_language_change', $abbr);
+			    $abbr = array_keys($langs);
+			    $abbr = $abbr[0]; // array_key_first() only > php7
+			    form_hidden('g_do_session_language_change', $abbr);
 			}
 			else
 			{
-				$opts = '';
-				while( list($abbr,$name) = each($langs) ) {
-					if( $opts ) { $opts .= '###'; }
-					$opts .= "$abbr###$name ($abbr)";
-				}
-				form_control_start(htmlconstant('_LANGUAGE'));
-					form_control_enum('g_do_session_language_change', $_SESSION['g_session_language'], $opts);
-				form_control_end();
+			    $opts = '';
+			    foreach($langs as $abbr => $name) {
+			        if( $opts ) { $opts .= '###'; }
+			        $opts .= "$abbr###$name ($abbr)";
+			    }
+			    form_control_start(htmlconstant('_LANGUAGE'));
+			    form_control_enum('g_do_session_language_change', $_SESSION['g_session_language'], $opts);
+			    form_control_end();
 			}
 			
 			//
@@ -399,7 +400,9 @@ function login_check()
 		
 		// set last login time, reset login error counter
 		$new_login_errors = $enter_as? 0 : 1;
-		$db->query("UPDATE user SET last_login='" .strftime("%Y-%m-%d %H:%M:%S"). "', num_login_errors=$new_login_errors WHERE id=$db_id");
+		// last_login_id NOT (to be used) for security purposes!
+		$db->query("UPDATE user SET last_login_id='" .berechne_loginid(). "', last_login='" .strftime("%Y-%m-%d %H:%M:%S"). "', num_login_errors=$new_login_errors WHERE id=$db_id");
+		// setcookie("editor", "yes");
 	}
 	else
 	{
