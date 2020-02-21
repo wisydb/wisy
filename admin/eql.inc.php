@@ -1659,7 +1659,7 @@ class EQL_PARSER_CLASS
 			 && count($retJoins)==0 // EDIT, jm, 2017: to allow search for courses without keywords
 			 && $tableDefName1=="stichwoerter" // EDIT, jm, 2017: to allow search for courses without keywords
 			 && $row->name=="stichwort" // EDIT, jm, 2017: to allow search for courses without keywords
-			 && $tableDefName=="kurse") // EDIT, jm, 2017: to allow search for courses without keywords
+			 && ($tableDefName=="kurse" || $tableDefName=="anbieter")) // EDIT, jm, 2017: to allow search for courses without keywords
 			{
 				// this variation works, but is slower
 				g_addRelation($retJoins, $tableDefName1, $row->name, $tableDefName, $rowType);

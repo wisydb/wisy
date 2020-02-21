@@ -5,8 +5,10 @@
 
 class WISY_KURS_RENDERER_CLASS
 {
-	var $framework;
-	var $unsecureOnly = false;
+    var $framework;
+    var $unsecureOnly = false;
+    var $h_before_coursefilter = 27; // we want to ignore GMT time zone + daylight saving time complications + usually not in Google index yet
+    var $h_before_dontshowteditorforeign_k = 27; // we want to ignore GMT time zone + daylight saving time complications + usually not in Google index yet
 
 	function __construct(&$framework)
 	{
@@ -42,6 +44,8 @@ class WISY_KURS_RENDERER_CLASS
 		$pflege_pweinst		= intval($db->f('pflege_pweinst'));
 		$anbieter_typ		= intval($db->f('typ'));
 		$record				= $db->Record;
+				
+		$this->filter_foreign_k($db, $wisyPortalId, $kursId, $date_created);
 		
 		// promoted?
 		if( intval($_GET['promoted']) == $kursId )
@@ -386,32 +390,80 @@ class WISY_KURS_RENDERER_CLASS
 		echo $this->framework->getEpilogue();
 	}
 	
-	function checkKursFilter($wisyPortalId, $kursId) {
-		
-		// If no filter, display course
-		if(!$GLOBALS['wisyPortalFilter']['stdkursfilter'] || trim($GLOBALS['wisyPortalFilter']['stdkursfilter']) == '')
-			return true;
-		
-		$portaltag = ".portal".$wisyPortalId;
-		
-		$db = new DB_Admin();
-		$tagsql = 'SELECT tag_id FROM x_tags WHERE tag_name="'.$portaltag.'"';
-		$db->query($tagsql);
-		
-		if( !$db->next_record() )
-			$this->framework->error404();
-			
-		$tagId_portal = $db->f8('tag_id');
-			
-		if( !$tagId_portal )
-			$this->framework->error404();
-				
-		$kurssql = "SELECT DISTINCT kurse.id FROM kurse LEFT JOIN x_kurse ON x_kurse.kurs_id=kurse.id LEFT JOIN x_kurse_tags j0 ON x_kurse.kurs_id=j0.kurs_id "
-				  ."LEFT JOIN x_kurse_tags j1 ON x_kurse.kurs_id=j1.kurs_id  WHERE kurse.id = $kursId AND j1.tag_id=$tagId_portal";
-						
-		$db->query($kurssql);
-						
-		if( trim($this->framework->iniRead('seo.set404_fremdkurse', "")) == 1 && (!$db->next_record() || !$db->f8('id'))) // && ini.read(fremdekurseausschliessen)
-			$this->framework->error404();
+	function filter_foreign_k(&$db, $wisyPortalId, $kursId, $date_created) {
+	    $info = array();
+	    
+	    // if portal has no filter, display course
+	    // if(!$GLOBALS['wisyPortalFilter']['stdkursfilter'] || trim($GLOBALS['wisyPortalFilter']['stdkursfilter']) == '')
+	    //	return true;
+	    
+	    
+	    if( trim($this->framework->iniRead('disable.kurse', false)) && !$this->framework->is_editor_active($db, $this->h_before_dontshowteditorforeign_k) && !$this->framework->is_frondendeditor_active() ) {
+	        $info[0] = array("Einstellung: disble.kurse", "ein", array("Login-Status: Redakteur/in", "abgemeldet", array("Login-Status: Anbieter-Onlinepflege", "abgemeldet")));
+	        $add_msg = "";
+	        $relevant_portals = $this->framework->matchingportalby_k($db, $kursId);
+	        
+	        if(count($relevant_portals) > 0) {
+	            $add_msg .= "<h4>Dieser Kurs steht nur <b>in folgenden Portalen</b> zur Verf&uuml;gung:</br></h4>";
+	            
+	            foreach($relevant_portals AS $portal) {
+	                $show_portallink = true;
+	                
+	                $domains = explode(",", $portal['domains']);
+	                $main_domain = $domains[0];
+	                
+	                $show_portallink = !preg_match("/\nauth.use.*=.*1.*/i", $portal['einstellungen'])
+	                && !preg_match("/\nseo.portal_blockieren.*=.*1.*/i", $portal['einstellungen'])
+	                && !preg_match("/\ndisable.kurse.*=.*1.*/i", $portal['einstellungen'])
+	                && trim($main_domain) != ""
+	                    && stripos($main_domain, "m.") === FALSE
+	                    && stripos($main_domain, "m.") === FALSE
+	                    && stripos($main_domain, "frame") === FALSE
+	                    && stripos($main_domain, "glossar") === FALSE
+	                    && stripos($main_domain, "ratgeber") === FALSE
+	                    && stripos($main_domain, "test") === FALSE;
+	                    
+	                    if($show_portallink) {
+	                        $url = 'http://'.$main_domain.'/k'.$kursId;
+	                        $add_msg .= '<a href="'.$url.'">'.$url.'</a>'.'<br>';
+	                    }
+	            }
+	            
+	        } // end: if relevant p > 0
+	        
+	        // '.$this->framework->decision_tree_simple($info).'
+	        $this->framework->error404("Fehler 404 - Seite <i>in diesem Portal</i> nicht gefunden", "<div class='portal_index'>".$add_msg.'</div>'
+	            .'<div class="decision_tree_simple" style="margin-top: 20px;"><a href="#" onclick="$(\'.details\').toggle()">Technische Details anzeigen...</a><div class="details" style="display: none; margin-top: 20px;">Warum wird diese Seite nicht angezeigt:<ul><li>Einstellung "disable.kurse": ein</li><li>Login-Status Redaktionssystem: abgemeldet</li><li>Login-Status Anbieter-Onlinepflege: abgemeldet</li></div></div>'
+	            .'</li></ul>', true);
+	    }
+	    
+	    // check if course in search index (=allowed by portal filter)
+	    $searcher2 =& createWisyObject('WISY_SEARCH_CLASS', $this->framework);
+	    $searcher2->prepare('kid:' . $kursId);
+	    $anzahlKurse = $searcher2->getKurseCount();
+	    
+	    if($_GET['debug'] == 10 && $anzahlKurse == 1) {
+	        echo "<br>Seite portaleigen!<br>";
+	    }
+	    
+	    if($anzahlKurse == 1)
+	        return false;
+	        
+	        // throw 404 error if filter active & visitor not logged in & course ceated one day ago or earlier
+	        $k_created = strtotime($date_created);
+	        $k_min_lifespan = strtotime(date("Y-m-d H:i:s"))-(60*60*$this->h_before_coursefilter); // now - 27 hours (we want to ignore GMT time zone + daylight saving time)
+	        $k_oldenough = $k_created < $k_min_lifespan;
+	        
+	        $exclude_foreign_k = trim($this->framework->iniRead('seo.set404_fremdkurse', true));
+	        $filter_active = $exclude_foreign_k && $k_oldenough;
+	        
+	        if($_GET['debug'] == 10) {
+	            echo "Anzahl Kurse: ".$anzahlKurse."<br>Exclude foreign Kurse:".$exclude_foreign_k."<br>Alt genug: ".$k_oldenough." <small><br>[created: ".date("d.m.Y H:i", $k_created)."<br>sp&auml;testens: ".date("d.m.Y H:i", $k_min_lifespan)."]</small><br>Editor active ".$this->framework->is_editor_active($db, $this->h_before_dontshowteditorforeign_k)."<br>Online-Pflege: ".intval($this->framework->is_frondendeditor_active())."<br>";
+	        }
+	        
+	        
+	        if($filter_active && !$this->framework->is_editor_active($db, $this->h_before_dontshowteditorforeign_k) && !$this->framework->is_frondendeditor_active()) // now - 27 hours (we want to ignore GMT time zone + daylight saving time)
+	            $this->framework->error404("Fehler 404 - Seite <i>in diesem Portal</i> nicht gefunden", "<ul><li><a href='/edit?action=ek&id=0'>Zur Seite wechseln: \"Onlinepflege-Login f&uuml;r Anbieter\" ...</a></li></ul>");
+	            
 	}
 };

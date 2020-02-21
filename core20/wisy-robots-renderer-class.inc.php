@@ -76,8 +76,8 @@ class WISY_ROBOTS_RENDERER_CLASS
 		header("Content-type: text/plain");
 		headerDoCache();
 		
-		if( $_SERVER['HTTPS']=='on' 
-		    || strpos($_SERVER['HTTP_HOST'], 'sandbox')!==false || strpos($_SERVER['HTTP_HOST'], 'backup')!==false || $this->framework->iniRead('seo.portal_blockieren', false) )
+		// $_SERVER['HTTPS']=='on' || 
+		if( strpos($_SERVER['HTTP_HOST'], 'sandbox')!==false || strpos($_SERVER['HTTP_HOST'], 'backup')!==false || $this->framework->iniRead('seo.portal_blockieren', false) )
 		{
 			echo "User-agent: *\n";
 			echo "Disallow: /\n";
@@ -94,6 +94,8 @@ class WISY_ROBOTS_RENDERER_CLASS
 			// allow the adsense spider to crawl everything
 			echo "User-agent: Mediapartners-Google*\n";
 			echo "Disallow: /terrapin\n";
+			
+			echo "\n";
 			
 			// for all other spiders
 			echo "User-agent: *\n";
@@ -219,25 +221,25 @@ class WISY_ROBOTS_RENDERER_CLASS
 	
 	function renderSitemapXmlGz()
 	{
-		header('content-type: application/x-gzip');
-		header('Content-Disposition: attachment; filename="sitemap.xml.gz"');
-		headerDoCache();
-
-		$cacheKey = "sitemap.xml.gz." . $this->absPath;
-		if( ($temp=$this->sitemapCache->lookup($cacheKey))!='' )
-		{
-			$sitemap_gz = $temp;
-		}
-		else
-		{
-			$this->createSitemapXml($temp);
-			$sitemap_gz = gzencode($temp, 9);
-			$temp = ''; // free *lots* of data
-			
-			$this->sitemapCache->insert($cacheKey, $sitemap_gz);
-		}
-
-		echo $sitemap_gz;
+	    header('content-type: application/x-gzip');
+	    header('Content-disposition: attachment; filename="sitemap.xml.gz"');
+	    headerDoCache();
+	    
+	    $cacheKey = "sitemap.xml.gz." . $this->absPath;
+	    /*	if( ($temp=$this->sitemapCache->lookup($cacheKey))!='' )
+	     {
+	     $sitemap_gz = $temp;
+	     }
+	     else
+	     { */
+	    $this->createSitemapXml($temp);
+	    $sitemap_gz = gzencode($temp, 9);
+	    $temp = ''; // free *lots* of data
+	    
+	    $this->sitemapCache->insert($cacheKey, $sitemap_gz);
+	    /* } */
+	    
+	    echo $sitemap_gz;
 	}
 }
 

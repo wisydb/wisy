@@ -1236,7 +1236,6 @@ function initializeTranslate() {
 	 });
 	  
 	 } else {
-	  console.log("not consented");
 	  /* Interaction not disirable */
 	  /*
 	  hightlightCookieConsentOption('translate');

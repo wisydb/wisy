@@ -9,8 +9,10 @@ require_once('admin/classes.inc.php');
 
 class WISY_ANBIETER_RENDERER_CLASS
 {
-	var $framework;
-	var $unsecureOnly = false;
+    var $framework;
+    var $unsecureOnly = false;
+    var $h_before_coursefilter = 27; // we want to ignore GMT time zone + daylight saving time complications + usually not in Google index yet
+    var $h_before_dontshowteditorforeign_k = 27; // we want to ignore GMT time zone + daylight saving time complications + usually not in Google index yet
 
 	function __construct(&$framework)
 	{
@@ -435,6 +437,11 @@ class WISY_ANBIETER_RENDERER_CLASS
 		$anbieter_id = intval($_GET['id']);
 
 		$db = new DB_Admin();
+		
+		if(trim($this->framework->iniRead('disable.anbieter', false)) && !$this->framework->is_editor_active($db, $this->h_before_dontshowteditorforeign_k) && !$this->framework->is_frondendeditor_active())
+		         $this->framework->error404("Fehler 404 - Seite <i>in diesem Portal</i> nicht gefunden",
+		        "<p style='font-weight: bold; background-color: #c2eac2; border: 2px solid lightgray; padding: 5px; margin-top: 20px;'>Zur Onlinepflege dieses Anbieter-Profils bitte hier einloggen:<br><a href='/edit?action=ek&id=".$anbieter_id."'>\"Onlinepflege-Login f&uuml;r Anbieter\" ...</a></p>"
+		        
 
 		// link to another anbieter?
 		$db->query("SELECT attr_id FROM anbieter_verweis WHERE primary_id=$anbieter_id ORDER BY structure_pos");

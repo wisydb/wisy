@@ -225,11 +225,11 @@ class WISY_KEYWORDTABLE_CLASS
 			// help link
 
 			$ret .= '<td width="1%" nowrap="nowrap" align="center">';
-				if( $tag_help != 0 )
-				{
-					$ret .=
-					 "<a class=\"wisy_help\" href=\"" . $this->framework->getUrl('g', array('id'=>$tag_help, 'q'=>$title)) . "\" title=\"Ratgeber\">&nbsp;i&nbsp;</a>";
-				}
+			if( $tag_help != 0 )
+			{
+			    /* $ret .=
+			     "<a class=\"wisy_help\" href=\"" . $this->framework->getUrl('g', array('id'=>$tag_help, 'q'=>$title)) . "\" title=\"Ratgeber\">&nbsp;i&nbsp;</a>"; */
+			}
 			$ret .= '</td>';
 
 		$ret .= '</tr>';

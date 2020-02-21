@@ -125,7 +125,7 @@ function fav_click(jsObj, id)
 }
 function fav_delete_all()
 {
-	if( !confirm('Alle gespeicherten Favoriten l&ouml;schen?') )
+	if( !confirm('Alle gespeicherten Favoriten l'+oe+'schen?') )
 		return false;
 	
 	g_all_fav = {};
@@ -752,7 +752,7 @@ function editKursLoeschen(jqObj)
 
 function editWeekdays(jqObj)
 {
-	// jqObj ist der Text; ein click hierauf soll das nebenliegende <input type=hidden> �ndern
+	// jqObj ist der Text; ein click hierauf soll das nebenliegende <input type=hidden> aendern
 	var hiddenObj = jqObj.parent().find('input');
 	if( hiddenObj.val() == '1' )
 	{
@@ -938,19 +938,6 @@ $(document).ready(function() {
 });
 
 /*****************************************************************************
- * SEO, alternative means for search
- *****************************************************************************/
-
-// calculate weighted size (by sw usage within portal)
-$(document).ready(function() {
- $("#sw_cloud span").each( function(){ 
-  weight = $(this).attr("data-weight"); 
-  fontsize = Math.floor($(this).find("a").css("font-size").replace('px', ''));
-  $(this).find("a").css("font-size", parseInt(fontsize)+parseInt(weight)); 
- });
-});
-
-/*****************************************************************************
  * main entry point
  *****************************************************************************/
 
@@ -963,7 +950,7 @@ $().ready(function()
 	// check for forwarding
 	var askfwd = $('body').attr('data-askfwd');
 	if( typeof askfwd != 'undefined' ) {
-		if( confirm('Von dieser Webseite gibt es auch eine Mobilversion unter ' + askfwd + '. M�chten Sie jetzt dorthin wechseln?') ) {
+		if( confirm('Von dieser Webseite gibt es auch eine Mobilversion unter ' + askfwd + '. M'+oe+'chten Sie jetzt dorthin wechseln?') ) {
 			window.location = askfwd;
 			return;
 		}
@@ -999,5 +986,20 @@ $().ready(function()
 	
 	// init ratgeber stuff
 	initRatgeber();
+	
+	// Suchauswertung #popsearch
+	// Suchfeld: je nach ausloeser menschl. Ursprung vor Absenden kennzeichnen.
+	if($("#wisy_searchbtn")) {
+	 $("#wisy_searchbtn").click(function(event){
+	  if (event.originalEvent === undefined) {
+	   /* robot: console.log(event); */
+	  } else {
+		event.preventDefault();
+		$(this).before("<input type=hidden id=qsrc name=qsrc value=s>");
+		$(this).before("<input type=hidden id=qtrigger name=qtrigger value=h>");
+		$(this).closest("form").submit();
+	  }
+	 });
+	}
 });
 

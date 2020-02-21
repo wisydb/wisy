@@ -658,7 +658,7 @@ function sysloc_overview($f)
 	$site->skin->tableEnd();
 
 	$site->skin->submenuStart();
-	    echo htmlconstant('_SYSLOC_NUMREC', sizeof($info->strings), sizeof((array) $info->languages));
+	echo htmlconstant('_SYSLOC_NUMREC', sizeof((array) $info->strings), sizeof((array) $info->languages));
 	$site->skin->submenuBreak();
 		echo htmlconstant('_OVERVIEW_ROWS') . ' ' . rows_per_page_sel("sysloc.php?f=".urlencode($f)."&offset=0&rows=", $_SESSION['g_session_sysloc_rows']);
 	$site->skin->submenuEnd();
@@ -1022,7 +1022,7 @@ function sysloc_new($f, $scope, $op)
 		if( $scope == 'lang' ) {
 			form_control_start(htmlconstant('_SYSLOC_INITNEWLANG'));
 				$values = '###';
-				for( $lc = 0; $lc < sizeof(array) ($info->languages); $lc++ ) {
+				for( $lc = 0; $lc < sizeof((array) $info->languages); $lc++ ) {
 					$values .= '###' . $info->languages[$lc] . '###' . $info->languages[$lc];
 				}
 				form_control_enum('init', $init, $values);

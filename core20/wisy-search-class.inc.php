@@ -221,6 +221,9 @@ class WISY_SEARCH_CLASS
 					break;
 				
 				case 'id';
+				case 'kid':
+				    $this->rawWhere .= $this->rawWhere? ' AND ' : ' WHERE ';
+				    $this->rawWhere .= "x_kurse.kurs_id =$value";
 				case 'fav':
 				case 'favprint': // favprint is deprecated
 					$ids = array();

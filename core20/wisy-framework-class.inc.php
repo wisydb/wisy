@@ -263,43 +263,46 @@ class WISY_FRAMEWORK_CLASS
 	 Various Tools
 	 ******************************************************************************/
 
-	function error404()
+	function error404($custom_title = "", $add_info = "", $skip_standardmsg = false)
 	{
-		/* show an error page. For simple errors, eg. a bad or expired ID, we use an error message in the layout of the portal.
-		However, these messages only work in the root directory (remember, we use relative paths, so whn requesting /abc/def/ghi.html all images, css etc. won't work).
-		So, for errors outside the root directory, we use the global error404() function declared in /index.php */
-		$uri = $_SERVER['REQUEST_URI']; // 
-		if( substr_count($uri, '/') == 1 )
-		{
-			global $wisyCore;
-			header("HTTP/1.1 404 Not Found");
-
-			$title = 'Fehler 404 - Seite nicht gefunden';
-
-			echo $this->getPrologue(array('title'=>$title, 'bodyClass'=>'wisyp_error'));
-			echo $this->getSearchField();
-
-			echo '
+	    /* show an error page. For simple errors, eg. a bad or expired ID, we use an error message in the layout of the portal.
+	     However, these messages only work in the root directory (remember, we use relative paths, so whn requesting /abc/def/ghi.html all images, css etc. won't work).
+	     So, for errors outside the root directory, we use the global error404() function declared in /index.php */
+	    $uri = $_SERVER['REQUEST_URI']; //
+	    if( substr_count($uri, '/') == 1 )
+	    {
+	        global $wisyCore;
+	        header("HTTP/1.1 404 Not Found");
+	        
+	        $title = $custom_title ? $custom_title : 'Fehler 404 - Seite nicht gefunden';
+	        
+	        echo $this->getPrologue(array('title'=>$title, 'bodyClass'=>'wisyp_error'));
+	        echo $this->getSearchField();
+	        
+	        echo '
 						<div class="wisy_topnote">
-							<p><b>Fehler 404 - Seite nicht gefunden</b></p>
-							<p>Entschuldigung, aber die von Ihnen gewünschte Seite konnte leider nicht gefunden werden. Sie können jedoch ...
+							<p><b>'.$title.'</b></p>';
+	        
+	        if(!$skip_standardmsg)		{
+	            echo '<p>Entschuldigung, aber die von Ihnen gewünschte Seite konnte leider nicht gefunden werden. Sie können jedoch ...
 							<ul>
 								<li><a href="http://'.$_SERVER['HTTP_HOST'].'">Die Startseite von '.$_SERVER['HTTP_HOST'].' aufrufen ...</a></li>
 								<li><a href="javascript:history.back();">Zur&uuml;ck zur zuletzt besuchten Seite wechseln ...</a></li>
-							</ul>
-						</div>
-						<p>
-							(die angeforderte Seite war <i>'.isohtmlspecialchars($uri).'</i> in <i>/'.isohtmlspecialchars($wisyCore).'</i> auf <i>' .$_SERVER['HTTP_HOST']. '</i>)
-						</p>
-				';
-			
-			echo $this->getEpilogue();
-			exit();
-		}
-		else
-		{
-			error404();
-		}
+							</ul>';
+	        }
+	        
+	        echo $add_info.'
+							</p>
+							<p><br><br><small>(Technischer Hinweis: die angeforderte Seite war <i>'.htmlspecialchars($uri).'</i> in <i>/'.htmlspecialchars($wisyCore).'</i> auf <i>' .$_SERVER['HTTP_HOST']. '</i>)</small></p>
+						</div>';
+	        
+	        echo $this->getEpilogue();
+	        exit();
+	    }
+	    else
+	    {
+	        error404();
+	    }
 	}
 
 	function log($file, $msg)
@@ -382,40 +385,53 @@ class WISY_FRAMEWORK_CLASS
 
 	function getUrl($page, $param = 0)
 	{
-		// create any url; addparam is an array of additional parameters 
-		// parameters are encoded using urlencode, however, the whole URL is _not_ HTML-save, you need to call htmlentities() to convert & to &amp;
-		
-		// if $param is no array, create an empty one
-		if( !is_array($param) )
-		{
-			$param = array();
-		}
-
-		// base base page; page names with only one character are followed directly by the ID (true for k12345, a123, g456 etc.)
-		$ret = $page;
-		if( strlen($page) == 1 && isset($param['id']) )
-		{
-			$ret .= intval($param['id']);
-			unset($param['id']);
-		}
-		
-		// append all additional parameters, for the parameter q= we remove trailing spaces and commas 
-		$i = 0;
-		reset($param);
-		foreach($param as $key => $value)
-		{
-			if( $key == 'q' )
-			{	
-				if( $value == '' )
-					continue;
-				$value = rtrim($value, ', '); // remove trailing ", "
-			}
-			
-			$ret .= ($i? '&' : '?') . $key . '=' . urlencode($value);
-			$i++;
-		}
-		
-		return $ret;
+	    // create any url; addparam is an array of additional parameters
+	    // parameters are encoded using urlencode, however, the whole URL is _not_ HTML-save, you need to call htmlentities() to convert & to &amp;
+	    
+	    // if $param is no array, create an empty one
+	    if( !is_array($param) )
+	    {
+	        $param = array();
+	    }
+	    
+	    // base base page; page names with only one character are followed directly by the ID (true for k12345, a123, g456 etc.)
+	    $ret = $page;
+	    if( strlen($page) == 1 && isset($param['id']) )
+	    {
+	        $ret .= intval($param['id']);
+	        unset($param['id']);
+	    }
+	    
+	    // append all additional parameters, for the parameter q= we remove trailing spaces and commas
+	    $i = 0;
+	    reset($param);
+	    foreach($param as $key => $value)
+	    {
+	        if( $key == 'q' )
+	        {
+	            if( $value == '' )
+	                continue;
+	                $value = rtrim($value, ', '); // remove trailing ", "
+	        }
+	        
+	        $ret .= ($i? '&' : '?') . $key . '=' . urlencode($value);
+	        $i++;
+	    }
+	    
+	    if(strpos($ret, 'offset=') === FALSE) {
+	        // human trigger of page
+	        if($i > 0)
+	            $ret .= (isset($_GET['qtrigger']) ? '&qtrigger='.$_GET['qtrigger'] : '').(isset($_GET['force']) ? '&force='.$_GET['force'] : '');
+	        else
+	            $ret .= (isset($_GET['qtrigger']) ? '?qtrigger='.$_GET['qtrigger'] : '').(isset($_GET['force']) && !isset($_GET['qtrigger']) ? '?force='.$_GET['force'] : '');
+	    } else {
+	        if(isset($_GET['qtrigger']))
+	            $ret = str_replace('offset=', 'qtrigger='.$_GET['qtrigger'].'&offset=', $ret);
+	        if(isset($_GET['force']))
+	            $ret = str_replace('offset=', 'force='.$_GET['force'].'&offset=', $ret);
+	    }
+	    
+	    return $ret;
 	}
 
 	function getHelpUrl($id)
@@ -1053,6 +1069,66 @@ class WISY_FRAMEWORK_CLASS
 		return '';
 	}
 	
+	/* function extract_tree_simple($info) {
+	 foreach($info AS $line) {
+	 echo
+	 }
+	 
+	 return $this->extract_tree_simple($info);
+	 } */
+	
+	/* function decision_tree_simple($info) {
+	
+	return $tree;
+	} */
+	
+	function matchingportalby_k(&$db, $k_ID) {
+	    
+	    // select all tags that represent portals
+	    $db->query("SELECT tag_id, tag_name FROM x_tags WHERE tag_name LIKE \".portal%\"");
+	    $portal_tag_ids = array();
+	    $portal_name_ids = array();
+	    while( $db->next_record() ) {
+	        $portal_tag_ids[] = $db->f('tag_id');
+	        $portal_name_ids[$db->f('tag_id')] = str_replace(".portal", "", $db->f('tag_name'));
+	    }
+	    
+	    // select all portal tags of portals that contain the course requestet
+	    $db->query("SELECT tag_id FROM x_kurse_tags WHERE tag_id IN (".implode(",", $portal_tag_ids).") AND kurs_id = ".$k_ID);
+	    $relevant_portal_tag_ids = array();
+	    while( $db->next_record() )
+	        $relevant_portal_tag_ids[] = $db->f('tag_id');
+	        
+	        $relevant_portal_ids = array();
+	        foreach($relevant_portal_tag_ids AS $relevant_portal_tag_id) {
+	            $relevant_portal_ids[] = $portal_name_ids[$relevant_portal_tag_id];
+	        }
+	        
+	        // select all portals that contain the course requestet
+	        $db->query("SELECT id, name, domains, einstellungen FROM portale WHERE id IN (".implode(",", $relevant_portal_ids).") AND status = 1");
+	        $relevant_portals = array();
+	        
+	        while( $db->next_record() )
+	            $relevant_portals[] = array('id' => $db->f('id'), 'name' => $db->f('name'), 'domains' => $db->f('domains'), 'einstellungen' => $db->f('einstellungen'));
+	            
+	            return $relevant_portals;
+	}
+	
+	function match_loginid(&$db, $hoursago) {
+	    $visitor_login_id = berechne_loginid();
+	    $add_cond = $hoursago > 0 ? "AND last_login >= now() - INTERVAL $hoursago HOUR" : "";
+	    $db->query("SELECT id FROM user WHERE last_login_id='$visitor_login_id' ".$add_cond);
+	    return $db->num_rows();
+	}
+	
+	function is_editor_active(&$db, $hoursago = 0) {
+	    return $this->match_loginid($db, $hoursago); // default: false = normal visitor
+	}
+	
+	function is_frondendeditor_active() {
+	    return isset($_COOKIE['wisyEdit20']); // default: false = normal visitor
+	}
+	
 	function getJSOnload()
 	{
 		// stuff to add to <body onload=...> - if possible, please prefer jQuery's onload functionality instead of <body onload=...>
@@ -1296,6 +1372,9 @@ class WISY_FRAMEWORK_CLASS
 	
 	function getSearchField()
 	{
+	    if(trim($this->iniRead('disable.suche', false)))
+	        return false;
+	        
 		// get the query
 		$q = $this->getParam('q', '');
 		$q_orig = $q;

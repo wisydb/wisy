@@ -708,6 +708,24 @@ Datenschutz
 }
 
 /*******************************************************************************
+Error pages, 404 etc.
+*******************************************************************************/
+.wisyp_error .portal_index {
+	margin-top: 2em;
+	background-color: #bffcbf;
+	border: 2px solid white;
+	padding: 1em;
+}
+
+.wisyp_error .portal_index h4 {
+	margin-top: 0;
+}
+
+.wisyp_error .portal_index a {
+	color: darkblue;
+}
+
+/*******************************************************************************
 SEO
 *******************************************************************************/
 

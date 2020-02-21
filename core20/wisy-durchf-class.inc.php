@@ -118,12 +118,13 @@ class WISY_DURCHF_CLASS
 					'tc3'	=>	array('&#9681;', 	'Nachmittags'),
 					'tc4'	=>	array('&#9682;', 	'Abends'),
 					'tc5'	=>	array('<i style="font-family: serif;">WE</i>',		'Wochenende'),
-					1		=>	array('<b>BU</b>',	'Bildungsurlaub'),
-			        7430	=>	array('<b>BL</b>',	'Blended Learning'),
-					7721	=>	array('<big>&#9993;</big>',	'Fernunterricht'),
-					7639	=>	array('WWW', 'Webinar'),
-					17261	=>  array('<b>P</b>',	'Präsenzunterricht'),
-					806441	=>	array('WWW', 'Webinar') // eigentl. Teleteaching = Webinar
+    			    1		=>	array('<b>BU</b>',	'Bildungsurlaub'),
+    			    7430	=>	array('<b>BL</b>',	'Blended Learning'),
+    			    7721	=>	array('<big>&#9993;</big>',	'Fernunterricht'),
+    			    7639	=>	array('WWW', 'Webinar'),
+    			    17261	=>  array('<b>P</b>',	'Präsenzunterricht'),
+    			    806441	=>	array('WWW', 'Webinar'), // eigentl. Teleteaching = Webinar
+    			    832301 => array('<b>BZ</b>',	'Bildungszeit') // Bremen
 			);
 			
 			// deprecated (2014-11-02 17:46)
@@ -142,6 +143,7 @@ class WISY_DURCHF_CLASS
 				$this->imgTagArr[7430]	= array("{$icons}/tc8.gif",	'Blended Learning');
 				$this->imgTagArr[7639]	= array("{$icons}/www.gif",	'Webinar');
 				$this->imgTagArr[17261]	= array("{$icons}/P.gif",	'Präsenzunterricht');
+				// $this->imgTagArr[832301]	= array("{$icons}/B.gif",	'Bildungszeit'); // Bremen
 				$this->imgTagArr[806311]	= array("{$icons}/tc9.gif",	'E-Learning');
 				$this->imgTagArr[806441]	= array("{$icons}/www.gif",	'Webinar');
 			}
@@ -373,6 +375,7 @@ class WISY_DURCHF_CLASS
 			if( sizeof((array) $preishinweise_arr) )
 			{	
 				$preishinweise_out = implode(', ', $preishinweise_arr);
+				$ret = str_replace(array("k. A.", "k.A."), "", $ret); // can only replaced here, because of autom. preisihinw.
 				if( $html ) {
 					$ret .= '<br /><small>' . isohtmlentities($preishinweise_out) . '</small>';
 				}
@@ -617,20 +620,33 @@ class WISY_DURCHF_CLASS
 		
 		if (($wisyPortalSpalten & 16) > 0)
 		{
-			// preis
-			$preisAttr = '';//($details && $record['preishinweise']!='')? ' align=\"right\"' : ' nowrap="nowrap"';
-			echo "    <td$preisAttr>";
-				$temp = $this->formatPreis($record['preis'],
-					$record['sonderpreis'], $record['sonderpreistage'], 
-					$record['beginn'], $details? $record['preishinweise'] : '',
-					true, /*format as HTML*/
-					array(
-						'showDetails'=>$details,
-						'stichwoerter'=>$addParam['stichwoerter']
-						)
-					);
-				echo $this->shy($temp);
-			echo '</td>' . "\n";
+		    // preis
+		    $preisAttr = '';//($details && $record['preishinweise']!='')? ' align=\"right\"' : ' nowrap="nowrap"';
+		    echo "    <td$preisAttr>";
+		    $temp = $this->formatPreis($record['preis'],
+		        $record['sonderpreis'], $record['sonderpreistage'],
+		        $record['beginn'], $details? $record['preishinweise'] : '',
+		        true, /*format as HTML*/
+		        array(
+		            'showDetails'=>$details,
+		            'stichwoerter'=>$addParam['stichwoerter']
+		        )
+		        );
+		    
+		    if( ($temp == "" || $temp == "k.A." || $temp == "k. A.")
+		        && (strlen($record['preishinweise']) > 3 ||
+		            $this->stichw_in_array($addParam['stichwoerter'], 849451) ||
+		            $this->stichw_in_array($addParam['stichwoerter'], 3207) ||
+		            $this->stichw_in_array($addParam['stichwoerter'], 6013) ||
+		            $this->stichw_in_array($addParam['stichwoerter'], 16311)
+		            )
+		        )
+		        
+		        echo "<small>s.&nbsp;Preishinw.</small>";
+		        else
+		            echo $this->shy($temp);
+		            
+		            echo '</td>' . "\n";
 		}
 		
 		if (($wisyPortalSpalten & 32) > 0)
@@ -722,11 +738,11 @@ class WISY_DURCHF_CLASS
 		{
 		    
 		    // maxTN, bemerkungen
-		    echo " <td>";
+		    echo " <td class=' spalte_maxTN_bemerkungen'>";
 		    
 		    if( $details ) {
 		        if( $record['teilnehmer'] ) {
-		            echo '<small>max. ' . intval($record['teilnehmer']) . ' Teiln.</small>'; // "Teilnehmende" ist etwas zu lang für die schmale Spalte (zuvor waren die Teilnehmer unter den Bemerkungen, wo die Breite egal war)
+		            echo '<small>max. ' . intval($record['teilnehmer']) . ' Teiln.</small>'; // "Teilnehmende" ist etwas zu lang f¸r die schmale Spalte (zuvor waren die Teilnehmer unter den Bemerkungen, wo die Breite egal war)
 		        }
 		    }
 		    

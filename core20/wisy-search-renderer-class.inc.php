@@ -75,6 +75,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		if( $sollOrder == 't' ) {
 			$th_class = 'wisy_anbieter'; // needed to add "white-space: normal" to the parent of the fav icon; see core.css
 		}
+		$th_class .= ' spalte_'.strtolower(str_replace('"', '', strip_tags($title)));
 		$th_class = $th_class? " class=\"$th_class\"" : '';
 	
 		echo "    <th$th_class ".$headattribs.">"; // #richtext
@@ -433,13 +434,12 @@ class WISY_SEARCH_RENDERER_CLASS
 		/* help link */
 		if( $tag_help != 0 )
 		{
-			$row_postfix .=
-			 " <a class=\"wisy_help\" href=\"" . $this->framework->getUrl('g', array('id'=>$tag_help, 'q'=>$tag_name)) . "\" title=\"Ratgeber\">&nbsp;i&nbsp;</a>";
+			// $row_postfix .= " <a class=\"wisy_help\" href=\"" . $this->framework->getUrl('g', array('id'=>$tag_help, 'q'=>$tag_name)) . "\" title=\"Ratgeber\">&nbsp;i&nbsp;</a>";
 		}
 		
 		return '<span class="' .$row_class. '">' .
-				$row_prefix . ' <a href="' . $this->framework->getUrl('search', array('q'=>$addparam['qprefix'].$tag_name)) . '">' . isohtmlspecialchars($tag_name) . '</a> ' . $row_postfix .
-			   '</span>';
+		  		$row_prefix . ' <a href="' . $this->framework->getUrl('search', array('q'=>$addparam['qprefix'].$tag_name)) . (isset($_GET['qtrigger']) ? '&qtrigger='.$_GET['qtrigger'] : '').(isset($_GET['force']) ? '&force='.$_GET['force'] : '') . '">' . isohtmlspecialchars($tag_name) . '</a> ' . $row_postfix .
+		  		'</span>';
 	}
 	
 	function formatItem_v2($tag_name, $tag_descr, $tag_type, $tag_help, $tag_freq, $tag_anbieter_id=false, $tag_groups='', $tr_class='', $queryString='')
@@ -755,11 +755,11 @@ class WISY_SEARCH_RENDERER_CLASS
 					$secneeded = sprintf("%1.3f", $info['secneeded']); $secneeded = str_replace('.', ',', $secneeded);
 					echo "<span class=\"noprint\"> in $secneeded $addTimeInfo Sekunden</span> ";
 
-					$temp = $this->framework->getRSSLink();
-					if( $temp )
-					{
-						echo ' <span class="noprint">&ndash;</span> ' . $temp;
-					}
+					/* $temp = $this->framework->getRSSLink();
+					 if( $temp )
+					 {
+					 echo ' <span class="noprint">&ndash;</span> ' . $temp;
+					 } */
 				}				
 						
 				
@@ -987,11 +987,11 @@ class WISY_SEARCH_RENDERER_CLASS
 				$secneeded = sprintf("%1.3f", $info['secneeded']); $secneeded = str_replace('.', ',', $secneeded);
 				echo "<span class=\"noprint\"> in $secneeded Sekunden</span> ";
 				
-				$temp = $this->framework->getRSSLink();
-				if( $temp )
-				{
-					echo ' <span class="noprint">&ndash;</span> ' . $temp;
-				}
+				/* $temp = $this->framework->getRSSLink();
+				 if( $temp )
+				 {
+				 echo ' <span class="noprint">&ndash;</span> ' . $temp;
+				 } */
 
 				if( $pagesel )
 				{
@@ -1007,6 +1007,12 @@ class WISY_SEARCH_RENDERER_CLASS
 	
 	function render()
 	{
+	    $db = new DB_Admin;
+	    if(trim($this->framework->iniRead('disable.suche', false))  && !$this->framework->is_editor_active($db, $this->h_before_dontshowteditorforeign_k) && !$this->framework->is_frondendeditor_active())
+	        $this->framework->error404();
+	        
+	    $db->free();
+	        
 		// get parameters
 		// --------------------------------------------------------------------
 		
