@@ -1,5 +1,6 @@
 <?php
 
+define('TAG_EINRICHTUNGSORT', 806392);
 
 global $codes_tagescode;
 $codes_tagescode =

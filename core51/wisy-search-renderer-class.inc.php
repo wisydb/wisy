@@ -297,7 +297,10 @@ class WISY_SEARCH_RENDERER_CLASS
 						$aclass = ' class="fav_add" data-favid="'.$currKursId.'"';
 					}
 					
-					echo '<a href="' .$this->framework->getUrl('k', $aparam). "\"{$aclass}>";
+					if( count($kursAnalyzer->hasKeyword($db, 'kurse', $currKursId, TAG_EINRICHTUNGSORT)) )
+					    echo '<a href="/a'.$currAnbieterId.'">';
+					else
+					    echo '<a href="' .$this->framework->getUrl('k', $aparam). "\"{$aclass}>";
 						
 							if( $currKursFreigeschaltet == 0 ) { echo '<em>Kurs in Vorbereitung:</em><br />'; }
 							if( $currKursFreigeschaltet == 2 ) { echo '<em>Gesperrt:</em><br />'; }
