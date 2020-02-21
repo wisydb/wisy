@@ -935,7 +935,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		if($info['changed_query']) echo '<b>Hinweis:</b> Der Suchauftrag wurde abge&auml;ndert in <i><a href="'.$this->framework->getUrl('search', array('q'=>$info['changed_query'])).'">'.htmlspecialchars(cs8($info['changed_query'])).'</a></i>';
 			
 		// Hinweis anpassen je nachdem ob Filter ausgewählt sind
-		if(count($this->framework->tokensQF) == 0)
+		if(count((array) $this->framework->tokensQF) == 0)
 		{	
 			// Leere Suche ohne gesetzte Filter
 			if( sizeof($info['suggestions']) ) 

@@ -236,7 +236,7 @@ class WISY_OPENSTREETMAP_CLASS
 
 	function hasPoints()
 	{
-		return sizeof($this->points)>0;
+		return sizeof((array) $this->points)>0;
 	}
 	
 	function render()

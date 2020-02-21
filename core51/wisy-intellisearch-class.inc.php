@@ -67,7 +67,7 @@ class WISY_INTELLISEARCH_CLASS
 
 		// try to perform a fulltext search
 		$fulltextSetting = intval($this->framework->iniRead('intellisearch.fulltext', 0));
-		if( ($fulltextSetting == 1 && sizeof($this->suggestions) == 0)
+		if( ($fulltextSetting == 1 && sizeof((array) $this->suggestions) == 0)
 		 || ($fulltextSetting == 2) )
 		{
 			$changed_query = 'volltext:' . $this->searcher->tokens['cond'][0]['value'];

@@ -541,7 +541,7 @@ class WISY_FILTER_CLASS
 		if($this->DEBUG) echo 'qf: ' . $qf . "<br />\n";
 		if($this->DEBUG) echo "<br />\n<br />\n";
 		
-		if(strlen($q) && !strlen($qs) && !strlen($qf) && !count($this->framework->QF)) {
+		if(strlen($q) && !strlen($qs) && !strlen($qf) && !count((array) $this->framework->QF)) {
 			// Case 4: Only q is filled, qs and qf are empty
 			
 			// Q
@@ -562,7 +562,7 @@ class WISY_FILTER_CLASS
 			
 			if($this->filtered) {
 				// Use tokens to generate string if tokens were found
-				if(count($this->framework->tokensQF)) {
+				if(count((array) $this->framework->tokensQF)) {
 					$this->framework->QF = $this->stringFromTokens($this->framework->tokensQF);
 				}	
 			} else {
@@ -854,7 +854,7 @@ class WISY_FILTER_CLASS
 	
 	function getActiveFiltersCount()
 	{
-		return count($this->framework->tokensQF);
+		return count((array) $this->framework->tokensQF);
 	}
 	
 	function getThemenByIdList($idList)

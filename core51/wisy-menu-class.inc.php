@@ -32,7 +32,7 @@ class WISY_MENU_ITEM
 	function getHtml($toplevel=false)
 	{
 		$liTag = '<li';
-		if( sizeof($this->children) ) $liTag .= ' class="dir has-subnav'.($this->title == "OhneName" ? " ohneName" : "").'" aria-haspopup="true"';
+		if( sizeof((array) $this->children) ) $liTag .= ' class="dir has-subnav'.($this->title == "OhneName" ? " ohneName" : "").'" aria-haspopup="true"';
 		elseif($this->title == "OhneName") $liTag .= ' class="ohneName"';
 		$liTag .= ($this->a11Type == 'complex') ? ' role="presentation">' : '>';
 		
@@ -42,19 +42,19 @@ class WISY_MENU_ITEM
 			if( cs8($this->url) ) {
 				$ret .= '<a href="'.htmlspecialchars(cs8($this->url)).'"';
 				$ret .= $this->aparam.($toplevel ? ' tabindex="-1"' : '');
-				$ret .= sizeof($this->children) ? ' data-submenu-id="'.$submenuId.'"' : '';
+				$ret .= sizeof((array) $this->children) ? ' data-submenu-id="'.$submenuId.'"' : '';
 				$ret .= ($this->a11Type == 'complex') ? ' role="menuitem">' : '>';
 				$ret .= $this->title;
 				$ret .= '</a>';
 			} else {
 				$ret .= '<span class="nav_no_link"';
-				$ret .= sizeof($this->children) ? ' data-submenu-id="'.$submenuId.'"' : '';
+				$ret .= sizeof((array) $this->children) ? ' data-submenu-id="'.$submenuId.'"' : '';
 				$ret .= ($this->a11Type == 'complex') ? ' role="menuitem">' : '>';
 				$ret .= $this->title;
 				$ret .= '</span>';
 			}
 
-			if( sizeof($this->children) )
+			if( sizeof((array) $this->children) )
 			{
 				$ret .= '<ul id="'.$submenuId.'"';
 				if($this->a11Type == 'complex') {
@@ -63,7 +63,7 @@ class WISY_MENU_ITEM
 					$ret .= ' data-test="true" aria-hidden="true"';
 				}
 				$ret .= '>';
-				for( $i = 0; $i < sizeof($this->children); $i++ )
+				for( $i = 0; $i < sizeof((array) $this->children); $i++ )
 				{
 					$ret .= $this->children[$i]->getHtml(true);
 				}
