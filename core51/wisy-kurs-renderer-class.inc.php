@@ -66,6 +66,12 @@ class WISY_KURS_RENDERER_CLASS
 		// #enrichtitles
 		$ort = "";
 		
+		$kursAnalyzer =& createWisyObject('WISY_KURS_ANALYZER_CLASS', $this->framework);
+		if( count($kursAnalyzer->hasKeyword($db, 'kurse', $kursId, TAG_EINRICHTUNGSORT)) ) {
+		    header("Location: /a".$anbieterId);
+		    exit;
+		}
+		
 		// #enrichtitles
 		// #richtext
 		// #socialmedia
