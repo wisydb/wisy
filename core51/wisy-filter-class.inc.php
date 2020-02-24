@@ -624,7 +624,7 @@ class WISY_FILTER_CLASS
 		$this->framework->order = trim($_GET['order']);
 		if( isset($_GET['filter_order']) && trim($_GET['filter_order']) != '') $this->framework->order = trim($_GET['filter_order']);
 		
-		if($this->DEBUG) echo 'count(queryfilters): ' . count($queryfilters);
+		if($this->DEBUG) echo 'count(queryfilters): ' . count((array) $queryfilters);
 		
 		$this->framework->tokensQF = $queryfilters;
 	}
@@ -988,7 +988,7 @@ class WISY_FILTER_CLASS
 
 		// create complete SQL query
 		// TODO db: caching?
-		if(count($idList))
+		if(count((array) $idList))
 		{
 			$sql =  "SELECT thema FROM themen WHERE id IN(" . implode(',', $idList) . ")";
 			$this->db->query($sql);
@@ -1046,7 +1046,7 @@ class WISY_FILTER_CLASS
 
 		// create complete SQL query
 		// TODO db: caching?
-		if(count($idList))
+		if(count((array) $idList))
 		{
 			$sql =  "SELECT suchname FROM anbieter WHERE id IN(" . implode(',', $idList) . ")";
 			$this->db->query($sql);
@@ -1063,7 +1063,7 @@ class WISY_FILTER_CLASS
 	function getAnbieterFilters($tokenconditions, $idList) {
 		$anbieterliste = $this->getAnbieterByIdList($idList);
         $anbieters = $anbieterliste['records'];
-		if(count($anbieters))
+        if(count((array) $anbieters))
 		{
 			natcasesort($anbieters);
 		}
