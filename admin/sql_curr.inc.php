@@ -342,10 +342,12 @@ class DB_Sql
 	function close() {
 	    $this->free();
 	    
-	    if($this->Link_ID)
-	        return true; // mysql_close($this->Link_ID); // @mysql... #PHP7
-	        else
-	            return false;
+	    if($this->Link_ID && function_exists("mysql_close"))
+	       return mysql_close($this->Link_ID); // @mysql...
+	    elseif($this->Link_ID && function_exists("mysqli_close"))
+	       return mysqli_close($this->Link_ID); // @mysql...
+	    else
+	       return false;
 	}
 
 	private function halt($msg)
