@@ -374,7 +374,7 @@ class WISY_FILTERMENU_ITEM
         }
         
         if($subsection || (isset($data['no_autosubmit']) && $data['no_autosubmit'] == 1) ) {
-            $ret .= '<input class="filter_submit" type="submit" value="übernehmen" />';
+            $ret .= '<input class="filter_submit" type="submit" value="&Uuml;bernehmen" />';
         }
         $ret .= '</div>';
         
@@ -405,7 +405,7 @@ class WISY_FILTERMENU_ITEM
             
             $ret .= '</fieldset>';
             if( (isset($data['no_autosubmit_mobile']) && $data['no_autosubmit_mobile'] == 1) || (isset($data['no_autosubmit']) && $data['no_autosubmit'] == 1) ) {
-                $ret .= '<input class="filter_submit filter_filtersection_submit" type="submit" value="übernehmen" />';
+                $ret .= '<input class="filter_submit filter_filtersection_submit" type="submit" value="&Uuml;bernehmen" />';
             }
         }
         
