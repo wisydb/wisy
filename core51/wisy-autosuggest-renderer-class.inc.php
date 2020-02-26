@@ -63,7 +63,7 @@ class WISY_AUTOSUGGEST_RENDERER_CLASS
 				header('Content-type: application/json');
 				
 				echo '["' .$this->utf8_to_json(utf8_encode($querystring)). '",[';
-					for( $i = 0; $i < sizeof((array) $tags); $i++ )
+					for( $i = 0; $i < count((array) $tags); $i++ )
 					{
 						echo $i? ',' : '';
 						echo '"' .$this->utf8_to_json(utf8_encode($tags[$i]['tag'])). '"';
@@ -88,7 +88,7 @@ class WISY_AUTOSUGGEST_RENDERER_CLASS
                 
                 // Filter out suggestions with tag_freq == 0
                 $filtered_tags = array();
-				for( $i = 0; $i < sizeof((array) $tags); $i++ )
+				for( $i = 0; $i < count((array) $tags); $i++ )
 				{
 					if(intval($tags[$i]['tag_help']) == 0 && intval($tags[$i]['tag_freq']) == 0) continue;
                     $filtered_tags[] = $tags[$i];
@@ -120,7 +120,7 @@ class WISY_AUTOSUGGEST_RENDERER_CLASS
 				if( SEARCH_CACHE_ITEM_LIFETIME_SECONDS > 0 )
 					headerDoCache(SEARCH_CACHE_ITEM_LIFETIME_SECONDS);
 					
-				for( $i = 0; $i < sizeof((array) $filtered_tags); $i++ )
+				for( $i = 0; $i < count((array) $filtered_tags); $i++ )
 				{
 					
 					echo		$filtered_tags[$i]['tag'] . 

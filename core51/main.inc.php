@@ -106,7 +106,7 @@ function &createWisyObject($className, &$anyobject, $anyparam = 0)
 		if( $wisyPortalEinstellungen['module'] != '' )
 		{
 			$module = explode(',', $wisyPortalEinstellungen['module']);
-			for( $m = 0; $m < sizeof((array) $module); $m++ )
+			for( $m = 0; $m < count((array) $module); $m++ )
 			{
 				$file = trim($module[$m]);
 				if( $file != '' )

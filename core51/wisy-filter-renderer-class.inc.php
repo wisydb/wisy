@@ -87,9 +87,9 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 			$renderformData['records_ort'] = array_unique($renderformData['records_ort']);
 			$renderformData['records_dauer'] = array_unique($renderformData['records_dauer']);
 			sort($renderformData['records_dauer']);
-			if(count($renderformData['records_dauer'])) {
+			if(count((array) $renderformData['records_dauer'])) {
 				$renderformData['records_dauer_min'] = $renderformData['records_dauer'][0];
-				$renderformData['records_dauer_max'] = $renderformData['records_dauer'][count($renderformData['records_dauer'])-1];
+				$renderformData['records_dauer_max'] = $renderformData['records_dauer'][count((array) $renderformData['records_dauer'])-1];
 			}
 			
 			// Anfrage anhand der Liste der $records['id']s die alle Durchführungs-Tags findet um enthaltene Tageszeit, Förderungen, Zielgruppe, Zertifikate, Unterrichtsart zu finden.
@@ -308,7 +308,7 @@ class WISY_FILTERMENU_ITEM
 		}
 		$ret .= '<div class="filter_inner clearfix">';
 		
-		if(isset($data['sections']) && count($data['sections'])) {
+		if(isset($data['sections']) && count((array) $data['sections'])) {
 			$ret .= $this->getSections($data['sections']);
 		} else {
 			$ret .= $this->getFormfields($data);
@@ -412,7 +412,7 @@ class WISY_FILTERMENU_ITEM
 				if(isset($input['suffix'])) $fieldsuffix = $input['suffix'];
 				if(isset($input['clearbutton']) && $input['clearbutton'] == 1) $clearbutton = true;
 				
-				if(isset($input['options']) && count($input['options'])) {
+				if(isset($input['options']) && count((array) $input['options'])) {
 					$filtervalues = $input['options'];
 				} else if(isset($input['stichwort'])) {
 					$filtervalues = $this->getStichwort($input['stichwort'], $fieldlabel);
@@ -532,7 +532,7 @@ class WISY_FILTERMENU_ITEM
 						break;
 				}
 			}
-		} else if(isset($data['sections']) && count($data['sections'])) {
+		} else if(isset($data['sections']) && count((array) $data['sections'])) {
 			$ret .= $this->getHtml($data, true);
 		}
 		

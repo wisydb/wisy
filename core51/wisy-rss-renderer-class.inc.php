@@ -48,7 +48,7 @@ class WISY_RSS_RENDERER_CLASS
 		global $wisyPortalSpalten;
 
 		$durchfuehrungenIds = $durchfClass->getDurchfuehrungIds($db, $addParam['record']['id']); // $durchfuehrungenIds enthalten bereits nur die relevanten durchfuehrungen
-		if( sizeof((array) $durchfuehrungenIds) == 0 )
+		if( count((array) $durchfuehrungenIds) == 0 )
 			return '';
 		
 		// collect data
@@ -56,7 +56,7 @@ class WISY_RSS_RENDERER_CLASS
 		$all_beginnoptionen = array();
 		$dauer = '';
 		$preis = '';
-		for( $d = 0; $d < sizeof((array) $durchfuehrungenIds); $d++ )
+		for( $d = 0; $d < count((array) $durchfuehrungenIds); $d++ )
 		{	
 			$durchfuehrungId = $durchfuehrungenIds[$d];
 			$db->query("SELECT beginn, beginnoptionen, dauer, stunden, preis, sonderpreis, sonderpreistage, ort, stadtteil FROM durchfuehrung WHERE id=$durchfuehrungId");
@@ -115,7 +115,7 @@ class WISY_RSS_RENDERER_CLASS
 		if (($wisyPortalSpalten & 2) > 0)
 		{
 			$temp  = implode(', ', $all_beginn);
-			$temp .= ($temp==''||sizeof((array) $all_beginnoptionen)==0? '' : ', ') . implode(', ', $all_beginnoptionen);
+			$temp .= ($temp==''||count((array) $all_beginnoptionen)==0? '' : ', ') . implode(', ', $all_beginnoptionen);
 			
 			$ret .= 'Beginn: ' . ($temp==''? 'k.A.' : $temp);
 		}

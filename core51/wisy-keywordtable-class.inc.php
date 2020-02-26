@@ -181,14 +181,14 @@ class WISY_KEYWORDTABLE_CLASS
 		}
 
 		$showempty = $this->showempty;
-		if( $level == 0 || (sizeof((array) $child_ids)!=0 && $expand > 0) ) {
+		if( $level == 0 || (count((array) $child_ids)!=0 && $expand > 0) ) {
 			$showempty = true;
 		}
 
 
 		// get HTML code for the children
 		$childrenHTML = '';
-		for( $a = 0; $a < sizeof((array) $child_ids); $a++ ) {
+		for( $a = 0; $a < count((array) $child_ids); $a++ ) {
 			$childrenHTML .= $this->getKeywordsDivRecursive($child_ids[$a], $level+1, $expand-1, $expand > 0? false : true);
 		}
 		
@@ -219,7 +219,7 @@ class WISY_KEYWORDTABLE_CLASS
 
 		// ... pass 1: check for special parameters
 		$this->showempty = false;
-		for( $k = 0; $k < sizeof((array) $temp); $k++ ) 
+		for( $k = 0; $k < count((array) $temp); $k++ ) 
 		{
 			if( $temp[$k] == 'showempty' ) {
 				$this->showempty = true;
@@ -232,7 +232,7 @@ class WISY_KEYWORDTABLE_CLASS
 		
 		// ... pass 2: render all rows for each keyword ID		
 		$ret_items = array();
-		for( $k = 0; $k < sizeof((array) $keywordIds); $k++ ) 
+		for( $k = 0; $k < count((array) $keywordIds); $k++ ) 
 		{
 			$expand = 0;
 			$keywordId = $keywordIds[$k];

@@ -99,7 +99,7 @@ class WISY_SEARCH_CLASS
 		$max_km = 500;
 		$default_km = $this->framework->iniRead('radiussearch.defaultkm', 2);		
 		$km = floatval($default_km);
-		for( $i = 0; $i < sizeof($this->tokens['cond']); $i++ )
+		for( $i = 0; $i < count((array) $this->tokens['cond']); $i++ )
 		{
 			$value = $this->tokens['cond'][$i]['value'];
 			switch( $this->tokens['cond'][$i]['field'] )
@@ -119,7 +119,7 @@ class WISY_SEARCH_CLASS
 				
 		// pass 2: create SQL
 		$abgelaufeneKurseAnzeigen = 'no';
-		for( $i = 0; $i < sizeof($this->tokens['cond']); $i++ )
+		for( $i = 0; $i < count((array) $this->tokens['cond']); $i++ )
 		{
 			// build SQL statements for this part
 			$value = $this->tokens['cond'][$i]['value'];
@@ -132,7 +132,7 @@ class WISY_SEARCH_CLASS
 						// ODER-Suche
 						$subval = explode(' ODER ', $value);
 						$rawOr = '';
-						for( $s = 0; $s < sizeof((array) $subval); $s++ )
+						for( $s = 0; $s < count((array) $subval); $s++ )
 						{	
 							$tag_id = $this->lookupTag(trim($subval[$s]));
 							if( $tag_id == 0 )
@@ -229,13 +229,13 @@ class WISY_SEARCH_CLASS
 					$ids = array();
 					$temp = $this->tokens['cond'][$i]['field']=='fav'? $_COOKIE['fav'] : $value;
 					$temp = explode(',', strtr($temp, ' /',',,'));
-					for( $j = 0; $j < sizeof((array) $temp); $j++ ) {
+					for( $j = 0; $j < count((array) $temp); $j++ ) {
 						$ids[] = intval($temp[$j]); // safely get the IDs - do not use the Cookie/Request-String directly!
 					}
 					
 					$this->rawCanCache = false;
 					$this->rawWhere .= $this->rawWhere? ' AND ' : ' WHERE ';
-					if( sizeof((array) $ids) >= 1 ) {
+					if( count((array) $ids) >= 1 ) {
 						$this->rawWhere .= "(x_kurse.kurs_id IN (".implode(',', $ids)."))";
 						$abgelaufeneKurseAnzeigen = 'void';
 					}
@@ -250,7 +250,7 @@ class WISY_SEARCH_CLASS
 					$ids = $nrSearcher->nr2id($value);
 					$this->rawCanCache = false; // no caching as we have different results for login/no login
 					$this->rawWhere .= $this->rawWhere? ' AND ' : ' WHERE ';
-					if( sizeof((array) $ids) >= 1 ) {
+					if( count((array) $ids) >= 1 ) {
 						$this->rawWhere .= "(x_kurse.kurs_id IN (".implode(',', $ids)."))";
 						$abgelaufeneKurseAnzeigen = 'void'; // implicitly show expired results if a number was searched
 					}
@@ -703,7 +703,7 @@ class WISY_SEARCH_CLASS
 		);
 
 		$queryArr = explode(',', $queryString);
-		for( $i = 0; $i < sizeof((array) $queryArr); $i++ )
+		for( $i = 0; $i < count((array) $queryArr); $i++ )
 		{
 			// get initial value to search tags for, remove multiple spaces
 			$field = '';
@@ -759,7 +759,7 @@ class WISY_SEARCH_CLASS
 						$syn_ids[] = $this->db->f('tag_id');
 					}
 					
-					if( sizeof((array) $syn_ids ) == 1 )
+					if( count((array) $syn_ids ) == 1 )
 					{
 						$tag_id = $syn_ids[0]; /*directly follow 1-dest-only-synonyms*/
 					}

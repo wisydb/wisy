@@ -315,10 +315,10 @@ class WISY_SEARCH_RENDERER_CLASS
 				
 				// SPALTEN: durchfuehrung
 				$addText = '';
-				if( sizeof((array) $durchfuehrungenIds) > 1 )
+				if( count((array) $durchfuehrungenIds) > 1 )
 				{
 					$addText = ' <span class="wisyr_termin_weitere"><a href="' .$this->framework->getUrl('k', $aparam). '">';
-						$temp = sizeof((array) $durchfuehrungenIds) - 1;
+						$temp = count((array) $durchfuehrungenIds) - 1;
 						$addText .= $temp==1? "$temp<span> weiterer...</span>" : "$temp<span> weitere...</span>";
 					$addText .= '</a></span>';
 				}
@@ -530,7 +530,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		$tagsuggestor =& createWisyObject('WISY_TAGSUGGESTOR_CLASS', $this->framework);
 		$suggestions = $tagsuggestor->suggestTags($queryString);
 
-		if( sizeof((array) $suggestions) ) 
+		if( count((array) $suggestions) ) 
 		{
 			if($this->framework->iniRead('search.suggest.v2') == 1)
 			{
@@ -545,7 +545,7 @@ class WISY_SEARCH_RENDERER_CLASS
 							'</tr>';
 				echo '	</thead>';
 				echo '	<tbody>';
-				for( $i = 0; $i < sizeof((array) $suggestions); $i++ )
+				for( $i = 0; $i < count((array) $suggestions); $i++ )
 				{
 					$tr_class = ($i%2) ? 'ac_even' : 'ac_odd';
 					echo $this->formatItem_v2($suggestions[$i]['tag'], $suggestions[$i]['tag_descr'], $suggestions[$i]['tag_type'], intval($suggestions[$i]['tag_help']), intval($suggestions[$i]['tag_freq']), $suggestions[$i]['tag_anbieter_id'], $suggestions[$i]['tag_groups'], $tr_class, $queryString);
@@ -557,7 +557,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			{
 				echo '<h1 class="wisyr_rechercheziele">Ihre Suche nach &quot;' . htmlspecialchars(trim($this->framework->QS)) . '&quot; ergab keine Treffer</h1>';
 				echo '<ul>';
-					for( $i = 0; $i < sizeof((array) $suggestions); $i++ )
+					for( $i = 0; $i < count((array) $suggestions); $i++ )
 					{
 						echo '<li>' . $this->formatItem($suggestions[$i]['tag'], $suggestions[$i]['tag_descr'], $suggestions[$i]['tag_type'], intval($suggestions[$i]['tag_help']), intval($suggestions[$i]['tag_freq'])) . '</li>';
 					}
@@ -578,7 +578,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		$orderBy = $this->framework->order; if( !in_array($orderBy, $validOrders) ) $orderBy = 'b';
 
 		$info = $searcher->getInfo();
-		if( $info['changed_query'] || sizeof($info['suggestions']) )
+		if( $info['changed_query'] || count((array) $info['suggestions']) )
 		{
             $this->render_emptysearchresult_message($info, $false, $hlevel);
 		}
@@ -736,7 +736,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		else 
 		{
 			
-			if( sizeof($info['suggestions']) == 0 )
+			if( count((array) $info['suggestions']) == 0 )
 			{
 				$this->render_emptysearchresult_message($info, false, $hlevel);
 			}
@@ -938,11 +938,11 @@ class WISY_SEARCH_RENDERER_CLASS
 		if(count((array) $this->framework->tokensQF) == 0)
 		{	
 			// Leere Suche ohne gesetzte Filter
-			if( sizeof($info['suggestions']) ) 
+			if( count((array) $info['suggestions']) ) 
 			{
 				echo '<h' . ($hlevel + 1) . '>Suchvorschl&auml;ge</h' . ($hlevel + 1) . '>';
 				echo '<ul>';
-				for( $i = 0; $i < sizeof($info['suggestions']); $i++ )
+				for( $i = 0; $i < count((array) $info['suggestions']); $i++ )
 				{
 					echo '<li>' . $this->formatItem($info['suggestions'][$i]['tag'], $info['suggestions'][$i]['tag_descr'], $info['suggestions'][$i]['tag_type'], intval($info['suggestions'][$i]['tag_help']), intval($suggestions[$i]['tag_freq'])) . '</li>';
 				}

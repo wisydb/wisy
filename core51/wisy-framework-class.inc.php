@@ -839,7 +839,7 @@ class WISY_FRAMEWORK_CLASS
 			$seals[] = array($db->f('sealId'), $db->f('glossarId'), $db->f('sealTitle'));
 	
 		// no seals? -> done.
-		if( sizeof((array) $seals) == 0 )
+		if( count((array) $seals) == 0 )
 			return '';
 	
 		// get common seal information
@@ -857,7 +857,7 @@ class WISY_FRAMEWORK_CLASS
 		
 		$ret = '';
 		$sealsOut = 0;
-		for( $i = 0; $i < sizeof((array) $seals); $i++ )
+		for( $i = 0; $i < count((array) $seals); $i++ )
 		{
 			$sealId    = $seals[$i][0];
 			$glossarId = $seals[$i][1];
@@ -960,7 +960,7 @@ class WISY_FRAMEWORK_CLASS
 		$codes_array = explode('###', $codes_stichwort_eigenschaften);
 		
 		// go through codes and stichwoerter
-		for( $c = 0; $c < sizeof((array) $codes_array); $c += 2 ) 
+		for( $c = 0; $c < count((array) $codes_array); $c += 2 ) 
 		{
 			if( $codes_array[$c] == 0 )
 				continue; // sachstichwoerter nicht darstellen - aenderung vom 30.03.2010 (bp)
@@ -970,7 +970,7 @@ class WISY_FRAMEWORK_CLASS
 				
 			$anythingOfThisCode = 0;
 			
-			for( $s = 0; $s < sizeof((array) $stichwoerter); $s++ )
+			for( $s = 0; $s < count((array) $stichwoerter); $s++ )
 			{
 				$glossarLink = '';
 				$glossarId = $this->glossarDb($db, 'stichwoerter', $stichwoerter[$s]['id']);
@@ -1374,7 +1374,7 @@ class WISY_FRAMEWORK_CLASS
 		$ret = '';
 		
 		$css = $this->getCSSFiles();
-		for( $i = 0; $i < sizeof((array) $css); $i++ )
+		for( $i = 0; $i < count((array) $css); $i++ )
 		{	
 			$ret .= '<link rel="stylesheet" type="text/css" href="'.$css[$i].'" />' . "\n";
 		}
@@ -1423,7 +1423,7 @@ class WISY_FRAMEWORK_CLASS
 		$ret = '';
 		
 		$js = $this->getJSFiles();
-		for( $i = 0; $i < sizeof((array) $js); $i++ )
+		for( $i = 0; $i < count((array) $js); $i++ )
 		{	
 			$ret .= '<script type="text/javascript" src="'.$js[$i].'" charset="utf-8"></script>' . "\n";
 		}
@@ -1583,7 +1583,7 @@ class WISY_FRAMEWORK_CLASS
 		$q = strtr($q, array('ä'=>'ae', 'ö'=>'oe', 'ü'=>'ue', 'ß'=>'ss'));
 		$q = preg_replace('/[^a-z,]/', '', $q);
 		$q = explode(',', $q);
-		for( $i = 0; $i < sizeof((array) $q); $i++ )
+		for( $i = 0; $i < count((array) $q); $i++ )
 		{
 			if( $q[$i] != '' && !$added[ $q[$i] ] )
 			{
@@ -1794,7 +1794,7 @@ class WISY_FRAMEWORK_CLASS
 			$q = '';
 			$bei = '';
 			$km = '';			
-			for( $i = 0; $i < sizeof($tokens['cond']); $i++ ) {
+			for( $i = 0; $i < count((array) $tokens['cond']); $i++ ) {
 				switch( $tokens['cond'][$i]['field'] ) {
 					case 'bei':	
 						$bei = $tokens['cond'][$i]['value']; 

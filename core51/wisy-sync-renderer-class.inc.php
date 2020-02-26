@@ -322,7 +322,7 @@ class ATTR2TAG_CLASS
 	{
 		$names = array();
 		$this->lookupNames($attr_id, $names);
-		for( $i = 0; $i < sizeof((array) $names); $i++ )
+		for( $i = 0; $i < count((array) $names); $i++ )
 		{
 			$id = $this->tagtable->lookupOrInsert($names[$i][0], $names[$i][1], $names[$i][2], $names[$i][3]);
 			if( $id != 0 )
@@ -396,7 +396,7 @@ class KURS2PORTALTAG_CLASS
 	
 	function getPortalTagsAndIncCounts($kurs_id, &$tag_ids, $anbieter_id, $anz_durchf, $d_plz, $d_has_unset_plz)
 	{
-		for( $i = sizeof($this->portaltags[ $kurs_id ])-1; $i >= 0; $i-- )
+		for( $i = count((array) $this->portaltags[ $kurs_id ])-1; $i >= 0; $i-- )
 		{
 			// der kurs ist in diesem portal ...
 			$portal_tag_id = $this->portaltags[ $kurs_id ][ $i ];
@@ -436,7 +436,7 @@ class KURS2PORTALTAG_CLASS
 	function getPortalTagsCounts($portal_tag_id)
 	{
 		return array(
-			'anz_anbieter'	=>	sizeof($this->portal_tags_anz_anbieter[ $portal_tag_id ]),
+			'anz_anbieter'	=>	count($this->portal_tags_anz_anbieter[ $portal_tag_id ]),
 			'anz_kurse'		=>	intval($this->portal_tags_anz_kurse   [ $portal_tag_id ]),
 			'anz_durchf'	=>	intval($this->portal_tags_anz_durchf  [ $portal_tag_id ]),
 		);
@@ -502,7 +502,7 @@ class WISY_SYNC_RENDERER_CLASS
 			if( is_array($ids[$super_id]) ) 
 			{
 				$this->flatenArray__($ids, $super_id);
-				for( $k = 0; $k < sizeof($ids[$super_id]); $k++ )
+				for( $k = 0; $k < count((array) $ids[$super_id]); $k++ )
 				{
 					$to_add = $ids[$super_id][$k];
 					if( !in_array($to_add, $ids[$id]) )
@@ -578,14 +578,14 @@ class WISY_SYNC_RENDERER_CLASS
 																				$this->statetable->updateUpdatestick();
 		// write all synonyms
 		$db->query("DELETE FROM x_tags WHERE tag_type & 64;");
-		for( $i = 0; $i < sizeof((array) $insertValues); $i++ ) {
+		for( $i = 0; $i < count((array) $insertValues); $i++ ) {
 			$this->tagtable->lookupOrInsert($insertValues[$i][0], $insertValues[$i][1]);
 		}
 																				$this->statetable->updateUpdatestick();
 		// create table to show where the synonyms link to
 		$db->query("DELETE FROM x_tags_syn;");
 		$values = '';
-		for( $t = 0; $t < sizeof((array) $tableValues); $t++ ) 
+		for( $t = 0; $t < count((array) $tableValues); $t++ ) 
 		{
 			$syn_id = $this->tagtable->lookup($tableValues[$t][0]);
 			if( $syn_id )
@@ -605,7 +605,7 @@ class WISY_SYNC_RENDERER_CLASS
 			$db->query($sql);
 		}
 		
-		$this->log(sprintf("%s synonyms checked.", sizeof((array) $insertValues)));
+		$this->log(sprintf("%s synonyms checked.", count((array) $insertValues)));
 	}	
 	
 
@@ -910,10 +910,10 @@ class WISY_SYNC_RENDERER_CLASS
 			}
 			
 			// fruehestmoeglichstes beginndatum setzen
-			if( sizeof((array) $d_beginn) )
+			if( count((array) $d_beginn) )
 			{
 				sort($d_beginn);
-				for( $i = 0; $i < sizeof((array) $d_beginn); $i++ )
+				for( $i = 0; $i < count((array) $d_beginn); $i++ )
 				{
 					$k_beginn = $d_beginn[$i];
 					if( $k_beginn >= $this->today_datenotime )
@@ -921,7 +921,7 @@ class WISY_SYNC_RENDERER_CLASS
 				}
 				
 				// spaetestmoegliches beginndatum setzen
-				for( $i = 0; $i < sizeof((array) $d_beginn); $i++ )
+				for( $i = 0; $i < count((array) $d_beginn); $i++ )
 				{
 					if( $d_beginn[$i] >= $this->today_datenotime && $d_beginn[$i] >= $k_beginn_last)
 						$k_beginn_last = $d_beginn[$i];
@@ -967,7 +967,7 @@ class WISY_SYNC_RENDERER_CLASS
 
 			// "Beginnaenderungsdatum" aktualisieren
 			$begmod_hash = explode(',', $begmod_hash);
-			for( $i = 0; $i < sizeof((array) $d_beginn); $i++ )
+			for( $i = 0; $i < count((array) $d_beginn); $i++ )
 			{
 				if( !in_array($d_beginn[$i], $begmod_hash) )
 				{
@@ -993,7 +993,7 @@ class WISY_SYNC_RENDERER_CLASS
 			// UPDATE tag table for this record
 			$sql = '';
 			$added = array();
-			for( $t = 0; $t < sizeof((array) $tag_ids); $t++ )
+			for( $t = 0; $t < count((array) $tag_ids); $t++ )
 			{
 				$tag_id = $tag_ids[$t];
 				if( !$added[ $tag_id ] )
@@ -1111,9 +1111,9 @@ class WISY_SYNC_RENDERER_CLASS
 				if( $last_kurs_id != $db->Record['kurs_id'] )
 				{
 					// flush tags ...
-					for( $p = sizeof((array) $curr_portals)-1; $p >= 0; $p-- )
+					for( $p = count((array) $curr_portals)-1; $p >= 0; $p-- )
 					{
-						for( $t = sizeof((array) $curr_tags)-1; $t >= 0; $t-- )
+						for( $t = count((array) $curr_tags)-1; $t >= 0; $t-- )
 						{
 							$result[ $curr_portals[$p] ][ $curr_tags[$t] ] ++;
 						}
@@ -1151,7 +1151,7 @@ class WISY_SYNC_RENDERER_CLASS
 				{
 					// calculate the stats for the portal
 					$portalTagId = $values['portal_tag'];
-					if( $portalTagId && sizeof($result[$portalTagId]) )
+					if( $portalTagId && count((array) $result[$portalTagId]) )
 					{
 						$portalIdFor = $portalId;
 					}
@@ -1176,7 +1176,7 @@ class WISY_SYNC_RENDERER_CLASS
 								
 								if( is_array($rev_syn[$currTagId]) )
 								{
-									for( $s = sizeof($rev_syn[$currTagId])-1; $s >= 0; $s-- )
+									for( $s = count((array) $rev_syn[$currTagId])-1; $s >= 0; $s-- )
 									{
 										$v .= $v===''? '' : ', ';										// these two lines will add the synonymes
 										$v .= "({$rev_syn[$currTagId][$s]}, $portalIdFor, $currFreq)";	// to x_tags_freq - hiding, if needed, may happen in the viewing classes.
