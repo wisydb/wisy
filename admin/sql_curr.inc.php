@@ -202,7 +202,7 @@ class DB_Sql
 			}
 
 			$this->phys_query_id = @mysql_query($query_string, $this->Link_ID);			// do the query
-			if( !$this->phys_query_id )  { $this->halt("Invalid SQL: " . $query_string); return 0; }
+			if( !$this->phys_query_id )  { $this->halt("Invalid SQL OR connection closed before Query: " . $query_string); return 0; }
 			
 			$this->ResultAffectedRows	= @mysql_affected_rows($this->Link_ID); 		// fetch some result information
 			$this->ResultInsertId		= @mysql_insert_id($this->Link_ID);
@@ -211,13 +211,22 @@ class DB_Sql
 		}
 		else
 		{
-			$this->Link_ID = $this->lazy_connect();										// connect
-			if( !$this->Link_ID ) return 0; 
-			
-			$lazy_query_id = @mysql_query($query_string, $this->Link_ID);				// do the query
-			if( !$lazy_query_id )  { $this->halt("Invalid SQL: " . $query_string); return 0; }
-			
-			$this->ResultAffectedRows	= @mysql_affected_rows($this->Link_ID); 		// fetch some result information
+		    
+		    $this->Link_ID = $this->lazy_connect();										// connect
+		    $mysqli = is_object($this->Link_ID);
+		    
+		    if( !$this->Link_ID )
+		      return 0;
+		        
+		    if(!$mysqli)
+		      $lazy_query_id = mysql_query($query_string, $this->Link_ID);				// do the query
+		    else
+		      $lazy_query_id = mysql_query($query_string, $this->Link_ID);				// do the query
+		                
+		                
+		    if( !$lazy_query_id )  { $this->halt("Invalid SQL OR connection closed before Query: " . $query_string); return 0; }
+		                
+		    $this->ResultAffectedRows	= @mysql_affected_rows($this->Link_ID); 		// fetch some result information
 			$this->ResultInsertId		= @mysql_insert_id($this->Link_ID);
 			$this->ResultNumRows		= 0;
 			$this->ResultI 				= 0;

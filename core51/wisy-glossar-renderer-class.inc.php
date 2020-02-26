@@ -78,7 +78,7 @@ class WISY_GLOSSAR_RENDERER_CLASS
         
         echo $this->framework->getEpilogue();
         
-        $this->db->close();
+        // $this->db->close(); // closes db connection too early - eventhough query should be done
     }
     
     function getGlossareintrag($glossar_id) {
