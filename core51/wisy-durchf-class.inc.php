@@ -480,15 +480,10 @@ class WISY_DURCHF_CLASS
 			}
 			
 			if( $zeit_von && $zeit_bis ) {
-			    $cell .= " <span class=\"wisyr_termin_zeit\" data-title=\"Zeit\">$zeit_von - $zeit_bis Uhr</span>";
+			    $cell .= " <span class=\"wisyr_termin_zeit\" data-title=\"Zeit\">{$zeit_von}&nbsp;-&nbsp;{$zeit_bis}&nbsp;Uhr</span>";
 			}
 			else if( $zeit_von ) {
-			    $cell .= " <span class=\"wisyr_termin_zeit\">$zeit_von Uhr</span>";
-			}
-			
-			if( $addParam['record']['freigeschaltet'] == 4 )
-			{
-			    $cell .= ' <span class="wisyr_termin_dauerhaft">dauerhaftes Angebot</span>';
+			    $cell .= " <span class=\"wisyr_termin_zeit\">{$zeit_von}&nbsp;Uhr</span>";
 			}
 			
 			if( $addText ) // z.B. für "2 weitere Durchführungen ..."
@@ -579,7 +574,7 @@ class WISY_DURCHF_CLASS
 		    echo '    <td class="wisyr_ort '.$multiple_orte.'" data-title="Ort">';
 			
 			// get ort
-		    $strasse	= cs8($record['strasse']);
+		    $strasse	= str_replace(" ", "&nbsp;", cs8($record['strasse']));
 			$plz		= $record['plz'];
 			$ort		= htmlentities(cs8($record['ort'])); // hier wird noch der Stadtteil angehaengt
 			$stadt		= $ort;
