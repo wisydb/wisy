@@ -293,7 +293,7 @@ class WISY_DURCHF_CLASS
 			}
 			
 			// Auto link URLs in Preishinweis
-			$replaceURL = (strpos($ret, 'http') === FALSE && strpos($ret, 'https') === FALSE) ? '<a href="http://$0" target="_blank" title="$0">$0</a>' : '<a href="$0" target="_blank" title="$0">$0</a>';
+			$replaceURL = (strpos($ret, 'http') === FALSE && strpos($ret, 'https') === FALSE) ? '<a href="http://$0" target="_blank" title="$0">'.$this->framework->iniRead("preishinweis.linktext", "$0").'</a>' : '<a href="$0" target="_blank" title="$0">'.$this->framework->iniRead("preishinweis.linktext", "$0").'</a>';
 			$ret = preg_replace('~(?:(https?)://([^\s<]+)|(www\.[^\s<]+?\.[^\s<]+))(?<![\.,:])~i', $replaceURL, $ret);
 		}
 	
