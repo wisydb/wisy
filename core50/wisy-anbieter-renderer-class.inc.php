@@ -381,7 +381,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		$db->query("SELECT stichwort FROM stichwoerter WHERE id IN (16311,2827,2826,16851,3207,1,6013,7721,7720,810701,810691,810681,810671,810661,810611,810641,810651,806441,5469,1472)");
 		$temp = ''; while( $db->next_record() ) { $temp .= ($temp==''?'':', ') . $db->quote(PHP7 ? $db->f('stichwort') : $db->f8('stichwort')); }
 		$filter_tag_ids = array();
-		if( sizeof($temp) ) {
+		if( strlen(trim($temp)) ) {
 			$db->query("SELECT tag_id FROM x_tags WHERE tag_name IN(".$temp.")");
 			while( $db->next_record() ) { $filter_tag_ids[] = $db->f('tag_id'); }
 		}
