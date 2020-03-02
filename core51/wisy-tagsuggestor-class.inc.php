@@ -264,8 +264,11 @@ class WISY_TAGSUGGESTOR_CLASS
 								$tag_anbieter_id = $this->db3->fcs8('id');
 							}
 					
-							// "Unterbegriff von" ermitteln
+							// Find Ancestor(s)
 							{
+							    // 32 = verstecktes Synonym, 256 = Volltext Titel, 512 = Volltext Beschreibung, 2048 = Verwaltungsstichwort, 8192 = Schlagwort nicht verwenden
+							    $dontdisplay = array(32, 256, 512, 2048, 8192);
+							    
 								// 1. Anhand $tag_name in stichwoerter die stichwort-ID ermitteln
 								$this->db4->query("SELECT id FROM stichwoerter WHERE stichwort=". $this->db4->quote($tag_name));
 								if( $this->db4->next_record() )
@@ -273,14 +276,17 @@ class WISY_TAGSUGGESTOR_CLASS
 								    $stichwort_id = $this->db4->fcs8('id');
 						
 									// 2. in stichwoerter_verweis2 Oberbegriffe finden
-									$this->db4->query("SELECT id, stichwort, primary_id 
+									$this->db4->query("SELECT id, stichwort, primary_id, eigenschaften 
 														FROM stichwoerter_verweis2 
 														LEFT JOIN stichwoerter ON id=primary_id
 														WHERE attr_id = " . intval($stichwort_id) );
 											
 									while( $this->db4->next_record() )
 									{
-									    $tag_groups[] = $this->db4->fcs8('stichwort');
+									    $tag_type = $this->db4->fcs8('eigenschaften');
+									    
+									    if(!in_array($tag_type, $dontdisplay))
+									       $tag_groups[] = $this->db4->fcs8('stichwort');
 									}
 								}
 							}
