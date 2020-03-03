@@ -132,7 +132,7 @@ class WISY_DURCHF_CLASS
 			return '';
 		}
 		else if( $codes_beginnoptionen_array[$opt] ) {
-			return utf8_encode($codes_beginnoptionen_array[$opt]); // UTF-8 encode because the source file (admin/config/codes.inc.php) is still ISO-encoded
+			return cs8($codes_beginnoptionen_array[$opt]); // UTF-8 encode because the source file (admin/config/codes.inc.php) is still ISO-encoded
 		}
 		else {
 			return '';
@@ -176,7 +176,7 @@ class WISY_DURCHF_CLASS
 			}
 		}
 		
-		return utf8_encode($ret); // UTF-8 encode because the source file (admin/config/codes.inc.php) is still ISO-encoded
+		return cs8($ret); // UTF-8 encode because the source file (admin/config/codes.inc.php) is still ISO-encoded
 	}
 
 	function formatDauer($dauer, $stunden, $mask2 = '%1 (%2)') // return as HTML
@@ -226,7 +226,7 @@ class WISY_DURCHF_CLASS
 		else {
 			$ret = 'k. A.';
 		}
-		return utf8_encode($ret); // UTF-8 encode because the source file (admin/config/codes.inc.php) is still ISO-encoded
+		return cs8($ret); // UTF-8 encode because the source file (admin/config/codes.inc.php) is still ISO-encoded
 	}
 
 	function formatPreis($preis, $sonderpreis, $sonderpreistage, $beginn, $preishinweise_str, $html = 1, $addParam = 0)
@@ -285,7 +285,7 @@ class WISY_DURCHF_CLASS
 			{
 			    $preishinweise_out = implode(', ', $preishinweise_arr);
 			    if( $html ) {
-			        $preishinweise_out = PHP7 ? $preishinweise_out : utf8_encode($preishinweise_out);
+			        $preishinweise_out = cs8($preishinweise_out);
 			        $ret .= '<div class="wisyr_preis_hinweise">' . htmlentities(str_replace(chr(0xE2).chr(0x82).chr(0xAC), "&euro;", str_replace(chr(128), "&euro;", html_entity_decode($preishinweise_out)))) . '</div>';
 			    }
 			    else {
@@ -404,13 +404,13 @@ class WISY_DURCHF_CLASS
 		$beginnsql		= $record['beginn'];
 		$beginn			= $this->framework->formatDatum($beginnsql);
 		$beginnoptionen = $this->formatBeginnoptionen($record['beginnoptionen']);
-		$beginnoptionen = PHP7 ? utf8_decode($beginnoptionen) : $beginnoptionen;
+		$beginnoptionen = cs8($beginnoptionen);
 		$endesql		= $record['ende'];
 		$ende			= $details? $this->framework->formatDatum($endesql) : '';
 		$zeit_von		= $details? $record['zeit_von'] : ''; if( $zeit_von=='00:00' ) $zeit_von = '';
 		$zeit_bis		= $details? $record['zeit_bis'] : ''; if( $zeit_bis=='00:00' ) $zeit_bis = '';
-		$bg_nummer = PHP7 ? $db->f('bg_nummer') : $db->f8('bg_nummer');
-		$bg_nummer_count = PHP7 ? $db->f('bg_nummer_count') : $db->f8('bg_nummer_count');
+		$bg_nummer = $db->fcs8('bg_nummer');
+		$bg_nummer_count = $db->fcs8('bg_nummer_count');
 		
 		// termin abgelaufen?
 		$termin_abgelaufen = false;
@@ -539,15 +539,15 @@ class WISY_DURCHF_CLASS
 			echo '    <td class="wisyr_ort" data-title="Ort">';
 			
 			// get ort
-			$strasse	= PHP7 ? htmlentities($record['strasse']) : htmlentities(utf8_encode($record['strasse']));
+			$strasse	= htmlentities(cs8($record['strasse']));
 			$plz		= $record['plz'];
-			$ort		= PHP7 ? htmlentities($record['ort']) : htmlentities(utf8_encode($record['ort'])); // hier wird noch der Stadtteil angehaengt
+			$ort		= htmlentities(cs8($record['ort'])); // hier wird noch der Stadtteil angehaengt
 			$stadt		= $ort;
-			$stadtteil	= PHP7 ? htmlentities($record['stadtteil']) : htmlentities(utf8_encode($record['stadtteil']));
-			$land		= PHP7 ? htmlentities($record['land']) : htmlentities(utf8_encode($record['land']));
+			$stadtteil	= htmlentities(cs8($record['stadtteil']));
+			$land		= htmlentities(cs8($record['land']));
 			if( $ort && $stadtteil ) {
-				if( strpos($ort, $stadtteil)===false ) {
-					$ort = $ort . '-' . $stadtteil;
+			    if( strpos($ort, $stadtteil)===false ) {
+			        $ort = $ort . ' - ' . $stadtteil;
 				}
 				else {
 					$ort = $ort;
@@ -614,7 +614,7 @@ class WISY_DURCHF_CLASS
 			// nr
 			echo '    <td class="wisyr_nr" data-title="Nr">';
 			$nr = $record['nr'];
-			$nr = PHP7 ? $nr : utf8_encode($nr);
+			$nr = cs8($nr);
 			echo $nr? htmlentities($nr) : 'k. A.';
 			echo ' </td>' . "\n";
 		}
@@ -629,7 +629,7 @@ class WISY_DURCHF_CLASS
 		        $wiki2html =& createWisyObject('WISY_WIKI2HTML_CLASS', $this->framework);
 		        $bemerkungen = $record['bemerkungen'];
 		        $bemerkungen = str_replace(chr(0xE2).chr(0x82).chr(0xAC), "&euro;", str_replace(chr(128), "&euro;", $bemerkungen));
-		        echo PHP7 ? $wiki2html->run($bemerkungen) : utf8_encode($wiki2html->run($bemerkungen));
+		        echo cs8($wiki2html->run($bemerkungen));
 		        echo ' </td>' . "\n";
 		    }
 		}

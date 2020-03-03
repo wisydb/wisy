@@ -29,7 +29,7 @@ class WISY_EDIT_TOOLS_CLASS
 		$db			= new DB_Admin;
 		$db->query("SELECT homepage FROM anbieter WHERE id=$anbieter;");
 		$db->next_record();
-		$homepage = $this->normalizeUrl($db->f8('homepage'));
+		$homepage = $this->normalizeUrl($db->fcs8('homepage'));
 		
 		foreach( $url_arr as $url )
 		{

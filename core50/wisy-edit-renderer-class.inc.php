@@ -259,7 +259,7 @@ class WISY_EDIT_RENDERER_CLASS
 		$db = new DB_Admin;
 		$db->query("SELECT DISTINCT attr_id FROM kurse_stichwort LEFT JOIN kurse ON id=primary_id WHERE anbieter=$anbieter_id;");
 		while($db->next_record() ) {
-			$alleStichw .= ($alleStichw==''? '' : ', ') .  $db->f8('attr_id'); 
+			$alleStichw .= ($alleStichw==''? '' : ', ') .  $db->fcs8('attr_id'); 
 		}
 		
 		// kuerzlich geloeschte stichworte hinzufuegen (falls z.B. der letzte Kurse mit einem best. Abschluss geloescht wurde - dieser Abschluss darf dann dennoch wieder vergeben werden)
@@ -299,7 +299,7 @@ class WISY_EDIT_RENDERER_CLASS
 	function controlText($name, $value, $size = 8, $maxlen = 255, $tooltip = '', $valuehint = '')
 	{
 		$em = intval($size*.6 + .5);
-		echo "<input style=\"width: {$em}em\" type=\"text\" name=\"$name\" value=\"" . htmlentities($value!=''? $value : $valuehint) . "\" size=\"$size\" maxlength=\"$maxlen\" title=\"{$tooltip}\"";
+		echo "<input style=\"width: {$em}em\" type=\"text\" name=\"$name\" value=\"" . htmlentities($value!=''? cs8($value) : $valuehint) . "\" size=\"$size\" maxlength=\"$maxlen\" title=\"{$tooltip}\"";
 		if( $valuehint ) {
 			echo " onfocus=\"if(this.value=='$valuehint'){this.value='';this.className='normal';}return true;\"";
 			echo " onblur=\"if(this.value==''){this.value='$valuehint';this.className='wisy_hinted';}return true;\"";
@@ -448,6 +448,7 @@ class WISY_EDIT_RENDERER_CLASS
 			// "OK" wurde angeklickt - loginversuch starten
 			$fwd 				= $_REQUEST['fwd'];
 			$anbieterSuchname	= $_REQUEST['as'];
+			$anbieterSuchname_utf8dec = (PHP7 ? $anbieterSuchname : utf8_decode($anbieterSuchname));
 
 			$logwriter = new LOG_WRITER_CLASS;
 			$logwriter->addData('ip', $_SERVER['REMOTE_ADDR']);
@@ -461,7 +462,8 @@ class WISY_EDIT_RENDERER_CLASS
 			// Anbieter ID in name konvertieren
 			$db->query("SELECT suchname FROM anbieter WHERE id=".intval($anbieterSuchname_utf8dec)." AND freigeschaltet = 1");
 			if( $db->next_record() ) {
-				$anbieterSuchname = $db->f8('suchname');
+			    $anbieterSuchname = $db->fcs8('suchname');
+			    $anbieterSuchname_utf8dec = (PHP7 ? $anbieterSuchname : utf8_decode($anbieterSuchname));
 			}
 			
 			$login_as = false;
@@ -496,11 +498,11 @@ class WISY_EDIT_RENDERER_CLASS
 			
 			if( $loggedInAnbieterId == 0 )
 			{
-				// ...Login als normaler Anbieter in der Form "<passwort>"
-				$logwriter->addData('loginname', $anbieterSuchname);
-				$db->query("SELECT pflege_email, pflege_passwort, pflege_pweinst, id FROM anbieter WHERE suchname='".addslashes($anbieterSuchname_utf8dec)."' AND freigeschaltet = 1");
-				if( $db->next_record() )
-				{
+			    // ...Login als normaler Anbieter in der Form "<passwort>"
+			    $logwriter->addData('loginname', $anbieterSuchname);
+			    $db->query("SELECT pflege_email, pflege_passwort, pflege_pweinst, id FROM anbieter WHERE suchname='".addslashes($anbieterSuchname_utf8dec)."' AND freigeschaltet = 1");
+			    if( $db->next_record() )
+			    {
 					$dbPw = $db->f8('pflege_passwort');
 					$dbPwEinst = intval($db->f8('pflege_pweinst'));
 					if( crypt($_REQUEST['wepw'], $dbPw) == $dbPw 
@@ -984,7 +986,7 @@ class WISY_EDIT_RENDERER_CLASS
 					$andere_kurs_id = $db->f8('id');
 					if( $this->isEditable($andere_kurs_id)=='yes' )
 					{
-						// meine knappe Variante wäre gewesen: "Ein Kurse mit dem Titel <i><titel><i> <b>ist bereits vorhanden.</b> Bitte ändern Sie den bestehenden Kurs und fügen dort ggf. Durchführungen hinzu. <a>bestehenden Kurs bearbeiten</a>"
+						// meine knappe Variante waere gewesen: "Ein Kurse mit dem Titel <i><titel><i> <b>ist bereits vorhanden.</b> Bitte ändern Sie den bestehenden Kurs und fügen dort ggf. Durchführungen hinzu. <a>bestehenden Kurs bearbeiten</a>"
 						$otherUrl = $this->framework->getUrl('edit', array('action'=>'ek', 'id'=>$andere_kurs_id));
 						$kurs['error'][] = 
 							'
@@ -1017,7 +1019,7 @@ class WISY_EDIT_RENDERER_CLASS
 		
 		if( sizeof($kurs['durchf']) < 1 )
 		{
-			$kurs['error'][] = 'Fehler: Der Kurs muss mindestens eine Durchführung haben.';
+			$kurs['error'][] = 'Fehler: Der Kurs muss mindestens eine Durchf&uuml;hrung haben.';
 		}
 		
 		$max_df = $this->framework->iniRead('useredit.durchf.max', 25);
@@ -1261,8 +1263,8 @@ class WISY_EDIT_RENDERER_CLASS
 			$anbieter = intval($_SESSION['loggedInAnbieterId']);
 			$db->query("SELECT user_grp, user_access FROM anbieter WHERE id=$anbieter AND freigeschaltet = 1;");
 			$db->next_record();
-			$user_grp = intval($db->f8('user_grp'));
-			$user_access =  intval($db->f8('user_access'));
+			$user_grp = intval($db->fcs8('user_grp'));
+			$user_access =  intval($db->fcs8('user_access'));
 			$db->query("INSERT INTO kurse  (user_created, date_created, user_modified, date_modified, user_grp,  user_access,  anbieter,  freigeschaltet) 
 									VALUES ($user, 		  '$today',     $user,         '$today',      $user_grp, $user_access, $anbieter, 0)
 									;");
@@ -1299,8 +1301,8 @@ class WISY_EDIT_RENDERER_CLASS
 				// neue Durchführung!				
 				$db->query("SELECT user_grp, user_access FROM kurse WHERE id=$kursId;");
 				$db->next_record();
-				$user_grp = intval($db->f8('user_grp'));
-				$user_access =  intval($db->f8('user_access'));
+				$user_grp = intval($db->fcs8('user_grp'));
+				$user_access =  intval($db->fcs8('user_access'));
 
 				$db->query("INSERT INTO durchfuehrung (user_created, date_created, user_modified, date_modified, user_grp, user_access) VALUES ($user, '$today', $user, '$today', $user_grp, $user_access)");
 				$newDurchf['id'] = $db->insert_id();
@@ -1310,7 +1312,7 @@ class WISY_EDIT_RENDERER_CLASS
 				$db->query("SELECT MAX(structure_pos) AS temp FROM kurse_durchfuehrung WHERE primary_id=$kursId");
 				$db->next_record();
 				
-				$db->query("INSERT INTO kurse_durchfuehrung (primary_id, secondary_id, structure_pos) VALUES ($kursId, ".$newDurchf['id'].", ".($db->f8('temp')+1).")");
+				$db->query("INSERT INTO kurse_durchfuehrung (primary_id, secondary_id, structure_pos) VALUES ($kursId, ".$newDurchf['id'].", ".($db->fcs8('temp')+1).")");
 				
 				$isNew = true;
 				
@@ -1515,7 +1517,7 @@ class WISY_EDIT_RENDERER_CLASS
 		{
 			$vollst = $this->framework->getVollstaendigkeitMsg($db, $id, 'quality.edit');
 			$msg .= '<b>Informationen zu Vollständigkeit:</b> ' . $vollst['msg'];
-			$msg .= utf8_encode($temp['vmsg']);
+			$msg .= cs8($temp['vmsg']);
 		}
 		else if ( $always )
 		{
@@ -1555,17 +1557,17 @@ class WISY_EDIT_RENDERER_CLASS
 		{
 			// ... a subsequent call: "OK" hit
 			$kurs = $this->loadKursFromPOST($kursId__);
-			if( sizeof($kurs['error']) == 0 )
+			if( sizeof((array) $kurs['error']) == 0 )
 			{
 				$this->saveKursToDb($kurs);
 			} /* no else: saveKursToDb() may also add errors */
 			
-			if( sizeof($kurs['error']) > 0 )
+			if( sizeof((array) $kurs['error']) > 0 )
 			{
 				$kurs['error'][] = 'Der Kurs wurde aufgrund der angegebenen Fehler <b>nicht gespeichert.</b>';
 			}
 
-			if( sizeof($kurs['error']) )
+			if( sizeof((array) $kurs['error']) )
 			{
 				$topnotes = $kurs['error'];
 			}
@@ -1635,18 +1637,18 @@ class WISY_EDIT_RENDERER_CLASS
 				echo '<table cellspacing="2" cellpadding="0" width="100%">';
 				
 				// UTF8-Encoding
-				$kurs['titel'] 			= utf8_encode($kurs['titel']);
-				$kurs['org_titel']		= utf8_encode($kurs['org_titel']);
-				$kurs['bu_nummer']		= utf8_encode($kurs['bu_nummer']);
-				$kurs['azwv_knr']		= utf8_encode($kurs['azwv_knr']);
-				$kurs['foerderung']		= utf8_encode($kurs['foerderung']);
-				$kurs['fu_knr']			= utf8_encode($kurs['fu_knr']);
-				$kurs['promote_mode']	= utf8_encode($kurs['promote_mode']);
-				$kurs['promote_param']	= utf8_encode($kurs['promote_param']);
-				$kurs['promote_active']	= utf8_encode($kurs['promote_active']);
-				$kurs['abschluss']		= utf8_encode($kurs['abschluss']);
-				$kurs['msgtooperator']	= utf8_encode($kurs['msgtooperator']);
-				$kurs['beschreibung']	= utf8_encode($kurs['beschreibung']);
+				$kurs['titel'] 			= cs8($kurs['titel']);
+				$kurs['org_titel']		= cs8($kurs['org_titel']);
+				$kurs['bu_nummer']		= cs8($kurs['bu_nummer']);
+				$kurs['azwv_knr']		= cs8($kurs['azwv_knr']);
+				$kurs['foerderung']		= cs8($kurs['foerderung']);
+				$kurs['fu_knr']			= cs8($kurs['fu_knr']);
+				$kurs['promote_mode']	= cs8($kurs['promote_mode']);
+				$kurs['promote_param']	= cs8($kurs['promote_param']);
+				$kurs['promote_active']	= cs8($kurs['promote_active']);
+				$kurs['abschluss']		= cs8($kurs['abschluss']);
+				$kurs['msgtooperator']	= cs8($kurs['msgtooperator']);
+				$kurs['beschreibung']	= cs8($kurs['beschreibung']);
 				
 					// TITEL 
 					echo '<tr>';
@@ -2051,7 +2053,7 @@ class WISY_EDIT_RENDERER_CLASS
 		if( !$db->next_record() )
 			return ''; // AGB record does not exist
 
-		$temp = $db->f8('erklaerung');
+		$temp = $db->fcs8('erklaerung');
 		if( $temp == '' )
 			return ''; // AGB are empty
 			
@@ -2106,8 +2108,8 @@ class WISY_EDIT_RENDERER_CLASS
 		$db = new DB_Admin;
 		$db->query("SELECT begriff, erklaerung FROM glossar WHERE id=".$agb_glossar_entry);
 		$db->next_record();
-		$begriff = $db->f8('begriff');
-		$erklaerung = $db->f8('erklaerung');
+		$begriff = $db->fcs8('begriff');
+		$erklaerung = $db->fcs8('erklaerung');
 
 		echo $this->framework->getPrologue(array('title'=>$begriff, 'bodyClass'=>'wisyp_edit'));
 			

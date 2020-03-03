@@ -73,7 +73,7 @@ class WISY_SEARCH_CLASS
 	function prepare($queryString)
 	{
 		// Convert utf-8 input back to ISO-8859-1 because the DB ist still encoded with ISO
-		$queryString = iconv("UTF-8", "ISO-8859-1//IGNORE", $queryString);
+	    $queryString = PHP7 ? $queryString : $queryString = iconv("UTF-8", "ISO-8859-1//IGNORE", $queryString);
 		
 		// first, apply the stdkursfilter
 		global $wisyPortalFilter;
@@ -99,7 +99,7 @@ class WISY_SEARCH_CLASS
 		$max_km = 500;
 		$default_km = $this->framework->iniRead('radiussearch.defaultkm', 2);
 		$km = floatval($default_km);
-		for( $i = 0; $i < sizeof($this->tokens['cond']); $i++ )
+		for( $i = 0; $i < sizeof((array) $this->tokens['cond']); $i++ )
 		{
 			$value = $this->tokens['cond'][$i]['value'];
 			switch( $this->tokens['cond'][$i]['field'] )
@@ -119,7 +119,7 @@ class WISY_SEARCH_CLASS
 				
 		// pass 2: create SQL
 		$abgelaufeneKurseAnzeigen = 'no';
-		for( $i = 0; $i < sizeof($this->tokens['cond']); $i++ )
+		for( $i = 0; $i < sizeof((array) $this->tokens['cond']); $i++ )
 		{
 			// build SQL statements for this part
 			$value = $this->tokens['cond'][$i]['value'];
@@ -235,7 +235,7 @@ class WISY_SEARCH_CLASS
 					
 					$this->rawCanCache = false;
 					$this->rawWhere .= $this->rawWhere? ' AND ' : ' WHERE ';
-					if( sizeof($ids) >= 1 ) {
+					if( sizeof((array) $ids) >= 1 ) {
 						$this->rawWhere .= "(x_kurse.kurs_id IN (".implode(',', $ids)."))";
 						$abgelaufeneKurseAnzeigen = 'void';
 					}
@@ -250,7 +250,7 @@ class WISY_SEARCH_CLASS
 					$ids = $nrSearcher->nr2id($value);
 					$this->rawCanCache = false; // no caching as we have different results for login/no login
 					$this->rawWhere .= $this->rawWhere? ' AND ' : ' WHERE ';
-					if( sizeof($ids) >= 1 ) {
+					if( sizeof((array) $ids) >= 1 ) {
 						$this->rawWhere .= "(x_kurse.kurs_id IN (".implode(',', $ids)."))";
 						$abgelaufeneKurseAnzeigen = 'void'; // implicitly show expired results if a number was searched
 					}
@@ -747,7 +747,7 @@ class WISY_SEARCH_CLASS
 			$this->db->query("SELECT tag_id, tag_type FROM x_tags WHERE tag_name='".addslashes($tag_name)."';");
 			if( $this->db->next_record() )
 			{
-				$tag_type = PHP7 ? $this->db->f('tag_type') : $this->db->f8('tag_type');
+				$tag_type = $this->db->fcs8('tag_type');
 				if( $tag_type & 64 )
 				{
 					// synonym - ein lookup klappt nur, wenn es nur _genau_ ein synonym gibt
@@ -759,7 +759,7 @@ class WISY_SEARCH_CLASS
 						$syn_ids[] = $this->db->f('tag_id');
 					}
 					
-					if( sizeof( $syn_ids ) == 1 )
+					if( sizeof((array)  $syn_ids ) == 1 )
 					{
 						$tag_id = $syn_ids[0]; /*directly follow 1-dest-only-synonyms*/
 					}

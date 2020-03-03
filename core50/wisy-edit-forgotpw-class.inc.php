@@ -48,8 +48,8 @@ class WISY_EDIT_FORGOTPW_CLASS
 			$db->query($sql);
 			if( $db->next_record() )
 			{
-				$f_id = $db->f8('id');
-				$f_email = $db->f8('pflege_email');
+			    $f_id = $db->fcs8('id');
+			    $f_email = $db->fcs8('pflege_email');
 				if( !$db->next_record() ) 
 				{
 					if( $f_email != '' )
@@ -83,8 +83,8 @@ Nur WENN Sie ein neues Passwort beantragt haben, klicken Sie bitte auf den folge
 Mit freundlichen Grüßen,
 __NAME__";
 						
-						$f_subject  = utf8_decode($this->replaceForgotPwPlaceholders($f_subject));
-						$f_mailbody = utf8_decode($this->replaceForgotPwPlaceholders($f_mailbody));
+						$f_subject  = $this->replaceForgotPwPlaceholders($f_subject);
+						$f_mailbody = $this->replaceForgotPwPlaceholders($f_mailbody);
 						
 						$logwriter->addData('email', $f_email);
 						if( $this->sendMail($f_email, $f_subject, $f_mailbody) )
@@ -131,9 +131,9 @@ __NAME__";
 			$db->query("SELECT id, suchname, notizen FROM anbieter WHERE id=$anbieterId AND pflege_pweinst&1;");
 			if( $db->next_record() )
 			{
-				$anbieterSuchname = $db->f8('suchname');
+			    $anbieterSuchname = $db->fcs8('suchname');
 				$newpassword = genpassword();
-				$notizen = strftime('%d.%m.%y') . ": Neues Passwort mit Passwort-Vergessen-Funktion generiert\n" . $db->f8('notizen');
+				$notizen = strftime('%d.%m.%y') . ": Neues Passwort mit Passwort-Vergessen-Funktion generiert\n" . $db->fcs8('notizen');
 				
 				$db->query("UPDATE anbieter SET pflege_passwort=".$db->quote(crypt($newpassword)).", notizen=".$db->quote($notizen)." WHERE id=$anbieterId;");
 				

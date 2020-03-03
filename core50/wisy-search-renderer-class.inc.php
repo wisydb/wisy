@@ -216,9 +216,9 @@ class WISY_SEARCH_RENDERER_CLASS
 				$db->query($sql);
 				while( $db->next_record() )
 				{
-					$kurs_id = intval($db->f8('kurs_id'));
-					$x2 = (floatval($db->f8('lng')) / 1000000) *  71460.0;
-					$y2 = (floatval($db->f8('lat')) / 1000000) * 111320.0;
+					$kurs_id = intval($db->fcs8('kurs_id'));
+					$x2 = (floatval($db->fcs8('lng')) / 1000000) *  71460.0;
+					$y2 = (floatval($db->fcs8('lat')) / 1000000) * 111320.0;
 
 					// calculate the distance between the points ($x1/$y1) and ($x2/$y2)
 					// d = sqrt( (x1-x2)^2 + (y1-y2)^2 )
@@ -760,7 +760,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			if( $pagesel )
 			{
 				echo '<div class="wisyr_list_footer clearfix">';
-					echo '<div class="wisyr_rss_link_wrapper">' . $this->framework->getRSSLink() . '</div>';
+					// echo '<div class="wisyr_rss_link_wrapper">' . $this->framework->getRSSLink() . '</div>';
 					$this->renderPagination($prevurl, $nexturl, $pagesel, $this->rows, $offset, $sqlCount, 'wisyr_paginate_bottom');
 				echo '</div>';
 			}
@@ -839,7 +839,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			}
 			
 			echo '<div class="wisyr_list_footer clearfix">';
-				echo '<div class="wisyr_rss_link_wrapper">' . $this->framework->getRSSLink() . '</div>';
+				// echo '<div class="wisyr_rss_link_wrapper">' . $this->framework->getRSSLink() . '</div>';
 			echo '</div>';
 		}
 
@@ -1004,7 +1004,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			if( $pagesel )
 			{
 				echo '<div class="wisyr_list_footer clearfix">';
-					echo '<div class="wisyr_rss_link_wrapper">' . $this->framework->getRSSLink() . '</div>';
+					// echo '<div class="wisyr_rss_link_wrapper">' . $this->framework->getRSSLink() . '</div>';
 					$this->renderPagination($prevurl, $nexturl, $pagesel, $this->rows, $offset, $sqlCount, 'wisyr_paginate_bottom');
 				echo '</div>';
 			}
@@ -1154,7 +1154,7 @@ class WISY_SEARCH_RENDERER_CLASS
 				$db->query("SELECT id, titel FROM kurse WHERE anbieter=$loggedInAnbieterId AND user_created IN (".implode(',',$adminAnbieterUserIds).") AND freigeschaltet!=2;");
 				while( $db->next_record() )
 				{ 
-					$currId = intval($db->f8('id')); $titles[ $currId ] = $db->f8('titel'); $temp .= ', ' . $currId;
+					$currId = intval($db->fcs8('id')); $titles[ $currId ] = $db->fcs8('titel'); $temp .= ', ' . $currId;
 				}
 				
 				// compare the 'offers that are not "gesperrt"' against the ones that are in the search index
@@ -1162,7 +1162,7 @@ class WISY_SEARCH_RENDERER_CLASS
 				$db->query("SELECT kurs_id FROM x_kurse WHERE kurs_id IN($temp)");
 				while( $db->next_record() )
 				{
-					$liveIds[ $db->f8('kurs_id') ] = 1;
+					$liveIds[ $db->fcs8('kurs_id') ] = 1;
 				}
 				
 				// show 'offers that are not "gesperrt"' which are _not_ in the search index (eg. just created offers) below the normal search result
