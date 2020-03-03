@@ -158,7 +158,7 @@ class WISY_SEARCH_RENDERER_CLASS
 						if( $record['typ'] == 2 ) echo '<span class="wisy_icon_beratungsstelle">Beratungsstelle<span class="dp">:</span></span> ';
 					}
 					
-					echo htmlspecialchars($this->framework->encode_windows_chars(utf8_encode($anbieterName)));
+					echo htmlspecialchars($this->framework->encode_windows_chars(cs8($anbieterName)));
 					
 				if( $param['clickableName'] ) echo '</a>';
 
@@ -166,7 +166,7 @@ class WISY_SEARCH_RENDERER_CLASS
 				{
 					// $anspr_tel = str_replace(' ', '', $anspr_tel); // macht Aerger, da in den Telefonnummern teilw. Erklaerungen/Preise mitstehen. Auskommentiert am 5.9.2008 (bp)
 					$anspr_tel = str_replace('/', ' / ', $anspr_tel);
-					echo '<br><span class="wisyr_anbieter_telefon"> ' . htmlspecialchars(utf8_encode($anspr_tel)) . '</span>';
+					echo '<br><span class="wisyr_anbieter_telefon"> ' . htmlspecialchars(cs8($anspr_tel)) . '</span>';
 				}
 				
 				if( !$param['clickableName'] )  echo '<span class="wisyr_anbieter_profil"> - <a href="'.$this->framework->getUrl('a', $aparam).'">Anbieterprofil...</a></span>';
@@ -298,7 +298,7 @@ class WISY_SEARCH_RENDERER_CLASS
 							if($this->framework->iniRead('label.abschluss', 0) && count($kursAnalyzer->loadKeywordsAbschluss($db, 'kurse', $currKursId))) echo '<span class="wisy_icon_abschluss">Abschluss<span class="dp">:</span></span> ';
 							if($this->framework->iniRead('label.zertifikat', 0) && count($kursAnalyzer->loadKeywordsZertifikat($db, 'kurse', $currKursId))) echo '<span class="wisy_icon_zertifikat">Zertifikat<span class="dp">:</span></span> ';
 						
-							echo PHP7 ? htmlspecialchars($this->framework->encode_windows_chars($record['titel'])) : htmlspecialchars($this->framework->encode_windows_chars(utf8_encode($record['titel'])));
+							echo PHP7 ? htmlspecialchars($this->framework->encode_windows_chars($record['titel'])) : htmlspecialchars($this->framework->encode_windows_chars(cs8($record['titel'])));
 						
 					echo '</a>';
 					if( $loggedInAnbieterId == $currAnbieterId )
@@ -593,7 +593,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			echo '<div class="wisy_suggestions">';
 				if( $info['changed_query'] )
 				{
-					echo '<b>Hinweis:</b> Der Suchauftrag wurde abge&auml;ndert in <i><a href="'.$this->framework->getUrl('search', array('q'=>$info['changed_query'])).'">'.htmlspecialchars(utf8_encode($info['changed_query'])).'</a></i>';
+					echo '<b>Hinweis:</b> Der Suchauftrag wurde abge&auml;ndert in <i><a href="'.$this->framework->getUrl('search', array('q'=>$info['changed_query'])).'">'.htmlspecialchars(cs8($info['changed_query'])).'</a></i>';
 					if( sizeof($info['suggestions']) ) 
 						echo ' &ndash; ';
 				}
@@ -698,7 +698,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			{
 				global $wisyPortalId;
 				$searcher2 =& createWisyObject('WISY_SEARCH_CLASS', $this->framework);
-				$searcher2->prepare($queryString . ', schaufenster:' . $wisyPortalId);
+				$searcher2->prepare(mysql_escape_mimic($queryString) . ', schaufenster:' . $wisyPortalId);
 				if( $searcher2->ok() )
 				{
 					$promoteCnt = $searcher2->getKurseCount();
@@ -833,7 +833,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			{
 				$temp = trim($queryString, ', ');
 				echo '<p class="wisy_topnote">';
-					echo 'Keine aktuellen Datens&auml;tze f&uuml;r <em>&quot;'  . htmlspecialchars(utf8_encode($temp)) . '&quot;</em> gefunden.<br /><br />';
+					echo 'Keine aktuellen Datens&auml;tze f&uuml;r <em>&quot;'  . htmlspecialchars(cs8($temp)) . '&quot;</em> gefunden.<br /><br />';
 					echo '<a href="' . $this->framework->getUrl('search', array('q'=>"$temp, Datum:Alles")) . '">Suche wiederholen und dabei <b>auch abgelaufene Kurse ber&uuml;cksichtigen</b> ...</a>';
 				echo "</p>\n";
 			}
@@ -968,13 +968,13 @@ class WISY_SEARCH_RENDERER_CLASS
 				echo "  <tr$class>\n";
 					$this->renderAnbieterCell2($db2, $record, array('q'=>$queryString, 'addPhone'=>false, 'clickableName'=>true, 'addIcon'=>true));
 					echo '<td class="wisyr_strasse" data-title="Straße">';
-						echo htmlspecialchars(utf8_encode($record['strasse']));
+						echo htmlspecialchars(cs8($record['strasse']));
 					echo ' </td>';
 					echo '<td class="wisyr_plz" data-title="PLZ">';
-						echo htmlspecialchars(utf8_encode($record['plz']));
+						echo htmlspecialchars(cs8($record['plz']));
 					echo ' </td>';
 					echo '<td class="wisyr_ort" data-title="Ort">';
-						echo htmlspecialchars(utf8_encode($record['ort']));
+						echo htmlspecialchars(cs8($record['ort']));
 					echo ' </td>';
 					echo '<td class="wisyr_homepage" data-title="Homepage">';
 						$link = $record['homepage'];
@@ -991,7 +991,7 @@ class WISY_SEARCH_RENDERER_CLASS
 							echo '<a href="' . $anbieterRenderer->createMailtoLink($link) . '" target="_blank">E-Mail</a>';
 					echo ' </td>';
 					echo '<td class="wisyr_telefon" data-title="Telefon">';
-						echo '<a href="tel:' . urlencode(utf8_encode($record['anspr_tel'])) . '">' . htmlspecialchars(utf8_encode($record['anspr_tel'])) . '</a>';
+						echo '<a href="tel:' . urlencode(cs8($record['anspr_tel'])) . '">' . htmlspecialchars(cs8($record['anspr_tel'])) . '</a>';
 					echo ' </td>';
 				echo '  </tr>' . "\n";
 			}
@@ -1011,7 +1011,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		}
 		else /* if( sqlCount ) */
 		{
-			echo '<p class="wisy_topnote">Keine Datens&auml;tze f&uuml;r <em>&quot;'.htmlspecialchars(utf8_encode(trim($queryString, ', '))).'&quot;</em> gefunden.</p>' . "\n";
+			echo '<p class="wisy_topnote">Keine Datens&auml;tze f&uuml;r <em>&quot;'.htmlspecialchars(cs8(trim($queryString, ', '))).'&quot;</em> gefunden.</p>' . "\n";
 		}
 	}
 	
@@ -1097,11 +1097,11 @@ class WISY_SEARCH_RENDERER_CLASS
 				switch( $error['id'] )
 				{
 					case 'tag_not_found':
-						echo '<p class="wisy_topnote">Ihre Suche nach &quot;' .htmlspecialchars(utf8_encode(trim($queryString, ', '))). '&quot; liefert keine Treffer.</p>' . "\n";
+						echo '<p class="wisy_topnote">Ihre Suche nach &quot;' .htmlspecialchars(cs8(trim($queryString, ', '))). '&quot; liefert keine Treffer.</p>' . "\n";
 						break;
 				
 					case 'field_not_found':
-						echo '<p class="wisy_topnote">Das zu durchsuchende Feld &quot;'.htmlspecialchars(utf8_encode($error['field'])).'&quot; ist unbekannt oder falsch geschrieben.</p>' . "\n";
+						echo '<p class="wisy_topnote">Das zu durchsuchende Feld &quot;'.htmlspecialchars(cs8($error['field'])).'&quot; ist unbekannt oder falsch geschrieben.</p>' . "\n";
 						break;
 				
 					case 'missing_fulltext':
@@ -1110,7 +1110,7 @@ class WISY_SEARCH_RENDERER_CLASS
 				
 					case 'bad_location':
 						echo 	'<p class="wisy_topnote">'
-							.		' Die Ortsangabe <em>bei:'.htmlspecialchars(utf8_encode($error['field'])).'</em> konnte nicht lokalisiert werden (Status='.htmlspecialchars(utf8_encode($error['status'])).').'
+							.		' Die Ortsangabe <em>bei:'.htmlspecialchars(cs8($error['field'])).'</em> konnte nicht lokalisiert werden (Status='.htmlspecialchars(cs8($error['status'])).').'
 							.	'</p>' . "\n";
 						break;
 						
@@ -1120,7 +1120,7 @@ class WISY_SEARCH_RENDERER_CLASS
 						$ist_accuracy = intval($error['ist_accuracy']);
 						$soll_accuracy = intval($error['soll_accuracy']);
 						echo 	'<p class="wisy_topnote">'
-							.		' Die Ortsangabe <em>bei:'.htmlspecialchars(utf8_encode($error['field'])).'</em> wurde als '
+							.		' Die Ortsangabe <em>bei:'.htmlspecialchars(cs8($error['field'])).'</em> wurde als '
 							.		' wurde als <em>'.$accuracies[$ist_accuracy].' ('.$ist_accuracy.')</em> klassifiziert und ist damit zu ungenau. '
 							.		' Erforderlich ist mindestens die Genauigkeit <em>'.$accuracies[$soll_accuracy].'</em>. '
 							.	'</p>' . "\n";
