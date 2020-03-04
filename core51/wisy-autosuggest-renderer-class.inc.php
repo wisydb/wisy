@@ -123,7 +123,7 @@ class WISY_AUTOSUGGEST_RENDERER_CLASS
 					if(count($filtered_tags) == 0) {
 						$filtered_tags[] = array(
 							'tag'	=>	$querystring,
-							'tag_descr' => 'Keine Suchvorschl&auml;ge m&ouml;glich',
+						    'tag_descr' => 'Keine Suchvorschl'.(PHP7 ? utf8_decode("ä") : 'ä').'ge m'.(PHP7 ? utf8_decode("ö") : 'ö').'glich', // HTML entities not possible b/c 1:1 output by js
 							'tag_type'	=> 0,
 							'tag_help'	=> -2 // indicates "no results"
 						);
@@ -132,7 +132,7 @@ class WISY_AUTOSUGGEST_RENDERER_CLASS
                             
 						$filtered_tags[] = array(
 							'tag'	=>	$querystring,
-							'tag_descr' => 'Alle Suchvorschl&auml;ge anzeigen',
+							'tag_descr' => 'Alle Suchvorschl'.(PHP7 ? utf8_decode("ä") : 'ä').'ge anzeigen',
 							'tag_type'	=> 0,
 							'tag_help'	=> 1 // indicates "more"
 						);
