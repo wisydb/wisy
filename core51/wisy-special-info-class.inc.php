@@ -29,7 +29,7 @@ class WISY_SPECIAL_INFO_CLASS
 		while( $db->next_record() )
 		{
 			$stichw = $db->f8('stichwort');
-			$stichw = trim(strtr($stichw, array(': '=>' '	,	
+			$stichw = trim(strtr((PHP7 ? utf8_decode($stichw) : $stichw), array(': '=>' '	,	
 												':'	=>' '	,
 												', '=>' '	,
 												','	=>' '		)));

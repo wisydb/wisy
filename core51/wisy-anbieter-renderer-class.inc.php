@@ -146,10 +146,12 @@ class WISY_ANBIETER_RENDERER_CLASS
 		$vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_name" itemprop="name">'. ($postname? $postname : htmlentities($suchname)) . '</div>';
 		$vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_adresse" itemprop="address" itemscope itemtype="https://schema.org/PostalAddress">';
 
-		if(PHP7)
-		  $map_URL = 'https://maps.google.com/?q=' . urlencode(utf8_encode(html_entity_decode($strasse)) . ', ' . $plz . ' ' . $ort . ', ' . $land);
-		else
-		  $map_URL = 'https://maps.google.com/?q=' . urlencode($strasse . ', ' . $plz . ' ' . $ort . ', ' . $land);
+		$map_strasse = urlencode(PHP7 ? utf8_encode(html_entity_decode($strasse)) : html_entity_decode($strasse));
+		$map_plz = urlencode(PHP7 ? utf8_encode(html_entity_decode($plz)) : html_entity_decode($plz));
+		$map_ort = urlencode(PHP7 ? utf8_encode(html_entity_decode($ort)) : html_entity_decode($ort));
+		$map_land = urlencode(PHP7 ? utf8_encode(html_entity_decode($land)) : html_entity_decode($land));
+		
+		$map_URL = 'https://maps.google.com/?q=' . $map_strasse . ', ' . $map_plz . ' ' . $map_ort . ($map_land ? ', ' . $map_land : '');
 
 		if( $strasse )
 		{

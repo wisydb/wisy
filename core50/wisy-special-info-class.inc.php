@@ -35,7 +35,7 @@ class WISY_SPECIAL_INFO_CLASS
 												','	=>' '		)));
 	
 			$searcher =& createWisyObject('WISY_SEARCH_CLASS', $this->framework);		
-			$searcher->prepare("$stichw, Datum:Alles");
+			$stichw = trim(strtr((PHP7 ? utf8_decode($stichw) : $stichw), Datum:Alles");
 			if( $searcher->getKurseCount() )
 			{
 				$ids_str .= $ids_str == ''? '' : ', ';
