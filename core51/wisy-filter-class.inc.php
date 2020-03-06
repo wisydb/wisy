@@ -370,7 +370,7 @@ class WISY_FILTER_CLASS
 		
 		if($this->DEBUG) echo "parseFilterForm()<br />\n";
 		
-		foreach($this->presets as $field_name => $prese)
+		foreach($this->presets as $field_name => $preset)
 		{
 			$field_name = mb_strtolower($field_name);
 			if($this->DEBUG) echo $field_name . "<br />\n";
