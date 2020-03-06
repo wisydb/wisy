@@ -1257,12 +1257,14 @@ function initFilters() {
 		$('[name="' + $this.attr('name') + '"] [value="' + $this.val() + '"]').val(newVal);
 		
 		// Inputs etc.
-		$('input:not([type="checkbox"])[name="' + $this.attr('name') + '"]').val(newVal);
+		$('input:not([type="checkbox"]):not([type="radio"])[name="' + $this.attr('name') + '"]').val(newVal);
 		
-		// Checkboxes
+		// Checkboxes and radios
 		$('input[type="checkbox"][name="' + $this.attr('name') + '"]').prop('checked', false);
+		$('input[type="radio"][name="' + $this.attr('name') + '"]').prop('checked', false);
 		if(newVal != '') {
 			$('input[type="checkbox"][name="' + $this.attr('name') + '"][value="' + $this.val() + '"]').prop('checked', true);
+			$('input[type="radio"][name="' + $this.attr('name') + '"][value="' + $this.val() + '"]').prop('checked', true);
 		}
 	});
 
