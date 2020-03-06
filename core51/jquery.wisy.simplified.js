@@ -1266,6 +1266,12 @@ function initFilters() {
 			$('input[type="checkbox"][name="' + $this.attr('name') + '"][value="' + $this.val() + '"]').prop('checked', true);
 			$('input[type="radio"][name="' + $this.attr('name') + '"][value="' + $this.val() + '"]').prop('checked', true);
 		}
+		
+		// Sonderfalls Preis von bis
+		if($this.attr('name') == 'filter_preis[]' && newVal == '') {
+			$('input[name="filter_preis_von[]"]').val(newVal);
+			$('input[name="filter_preis_bis[]"]').val(newVal);
+		}
 	});
 
 	// Filter automatisch abschicken
@@ -1277,7 +1283,7 @@ function initFilters() {
 			.siblings('.wisyr_filter_autoclear')
 			.find('input:not([type=submit]), select')
 			.val('');
-	
+		
 		$('.wisyr_filterform form').submit();
 	});
 
