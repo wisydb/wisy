@@ -363,6 +363,7 @@ class WISY_FILTER_CLASS
 		reset($this->presets);
 		
 		$this->filtered = false;
+		if(isset($_GET['filter_filtered']) && $_GET['filter_filtered'] == '1') $this->filtered = true;
 		
 		$preis = false;
 		$datum = false;
