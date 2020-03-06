@@ -314,8 +314,7 @@ class WISY_FILTERMENU_ITEM
 		} else {
 			$ret .= $this->getFormfields($data);
 		}
-		
-		if($subsection) {
+		if(!$data['metagroup']) {
 			$ret .= '<input class="filter_submit" type="submit" value="Übernehmen" />';
 		}
 		$ret .= '</div>';
