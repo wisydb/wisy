@@ -82,13 +82,13 @@ class WISY_AUTOSUGGEST_RENDERER_CLASS
 					// add Headline and MoreLink at the beginning
 					array_unshift($tags, array(
 						'tag' => $querystring,
-						'tag_descr' => 'Suchvorschl&auml;ge:',
+						'tag_descr' => 'Suchvorschl'.(PHP7 ? utf8_decode("ä") : 'ä').'ge:',
 						'tag_type'	=> 0,
 						'tag_help'	=> -1 // indicates "headline"
 					),
 					array(
 						'tag'	=>	$querystring,
-						'tag_descr' => sizeof($tags)? 'Alle Vorschl&auml;ge im Hauptfenster anzeigen ...' : 'Keine Treffer',
+						'tag_descr' => sizeof($tags)? 'Alle Vorschl'.(PHP7 ? utf8_decode("ä") : 'ä').'ge im Hauptfenster anzeigen ...' : 'Keine Treffer',
 						'tag_type'	=> 0,
 						'tag_help'	=> 1 // indicates "more"
 					));	
@@ -97,7 +97,7 @@ class WISY_AUTOSUGGEST_RENDERER_CLASS
 				// addMoreLink at the end
 				$tags[] = array(
 					'tag'	=>	$querystring,
-					'tag_descr' => sizeof($tags)? 'Alle Vorschl&auml;ge im Hauptfenster anzeigen ...' : 'Keine Treffer',
+					'tag_descr' => sizeof($tags)? 'Alle Vorschl'.(PHP7 ? utf8_decode("ä") : 'ä').'ge im Hauptfenster anzeigen ...' : 'Keine Treffer',
 					'tag_type'	=> 0,
 					'tag_help'	=> 1 // indicates "more"
 				);			
