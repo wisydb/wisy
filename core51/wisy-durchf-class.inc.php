@@ -268,7 +268,6 @@ class WISY_DURCHF_CLASS
 		if( $addParam['showDetails'] )
 		{
 			$preishinweise_arr = array();
-			if( $preishinweise_str ) $preishinweise_arr[] = $preishinweise_str;
 			
 			foreach( $addParam['stichwoerter'] as $stichwort ) {
 			    switch( $stichwort['id'] ) {
@@ -278,6 +277,8 @@ class WISY_DURCHF_CLASS
 			        case 849451: $preishinweise_arr[] = cs8('Preisstruktur komplex. GGf. beim Anbieter einholen.');	break;
 			    }
 			}
+			
+			if( $preishinweise_str ) $preishinweise_arr[] = $preishinweise_str;
 			
 			if( sizeof((array) $preishinweise_arr) )
 			{
