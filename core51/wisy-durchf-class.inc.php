@@ -547,24 +547,19 @@ class WISY_DURCHF_CLASS
 		        )
 		        );
 		    
+		    $freeFinancialAid = ( $this->stichw_in_array($addParam['stichwoerter'], 3207) || $this->stichw_in_array($addParam['stichwoerter'], 6013) || $this->stichw_in_array($addParam['stichwoerter'], 16311) );
+		    
 		    // Preis komplex: $this->stichw_in_array($addParam['stichwoerter'], 849451)
-		    if( ($temp == "" || $temp == "k.A." || $temp == "k. A.")
-		        && (strlen($record['preishinweise']) > 3)
-		        ) {
-		            echo "<small>s.&nbsp;Preishinw.</small>";
-		        }
-		        elseif(($temp == "" || $temp == "k.A." || $temp == "k. A.")
-		            && ($this->stichw_in_array($addParam['stichwoerter'], 3207) ||
-		                $this->stichw_in_array($addParam['stichwoerter'], 6013) ||
-		                $this->stichw_in_array($addParam['stichwoerter'], 16311)
-		                )
-		            ) {
-		                echo "<small>kostenlos&nbsp;b.&nbsp;F&ouml;rderung</small>";
-		        }
-		        else
-		            echo $this->shy($temp);
-		            
-		            echo ' </td>' . "\n";
+		    if( ($temp == "" || $temp == "k.A." || $temp == "k. A.") && (strlen($record['preishinweise']) > 3 && !$freeFinancialAid) ) {
+		        echo "<small>s.&nbsp;Preishinw.</small>";
+		    }
+		    elseif( ($temp == "" || $temp == "k.A." || $temp == "k. A.") && $freeFinancialAid ) {
+		        echo "<small>kostenlos&nbsp;b.&nbsp;F&ouml;rderung</small>";
+		    }
+		    else
+		        echo $this->shy($temp);
+		        
+		    echo ' </td>' . "\n";
 		}
 		
 		if (($spalten & 32) > 0)
