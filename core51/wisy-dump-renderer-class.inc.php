@@ -29,7 +29,7 @@ class WISY_DUMP_RENDERER_CLASS
 	        $db->query($sql);
 	        if( $db->next_record() )
 	        {
-	            $css = $db->f8('css');
+	            $css = $db->fcs8('css');
 	            $css_gz = $db->f('css_gz');
 	            $date_modified = $db->f('date_modified');
 	            
@@ -58,7 +58,7 @@ class WISY_DUMP_RENDERER_CLASS
 	        $db->query($sql);
 	        if( $db->next_record() )
 	        {
-	            $css = $db->f8('css');
+	            $css = $db->fcs8('css');
 	            $css_gz = $db->f('css_gz');
 	            $date_modified = $db->f('date_modified');
 	            

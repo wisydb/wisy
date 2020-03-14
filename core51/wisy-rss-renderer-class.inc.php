@@ -64,31 +64,31 @@ class WISY_RSS_RENDERER_CLASS
 			if( $db->next_record() )
 			{
 				// beginn				
-				$beginn = $this->framework->formatDatum($db->f8('beginn'));
+				$beginn = $this->framework->formatDatum($db->fcs8('beginn'));
 				if( $beginn && !in_array($beginn, $all_beginn) )
 					$all_beginn[] = $beginn;
 				
-				$beginnoptionen = $durchfClass->formatBeginnoptionen($db->f8('beginnoptionen'));
+				$beginnoptionen = $durchfClass->formatBeginnoptionen($db->fcs8('beginnoptionen'));
 				if( $beginnoptionen && !in_array($beginnoptionen, $all_beginnoptionen) )
 					$all_beginnoptionen[] = $beginnoptionen;
 				
 				// dauer
 				if( $dauer == '' )
-					$dauer = $durchfClass->formatDauer($db->f8('dauer'), $db->f8('stunden'));
+					$dauer = $durchfClass->formatDauer($db->fcs8('dauer'), $db->fcs8('stunden'));
 				
 			    // bemerkungen
 			    if( $bemerkungen == '' )
-					$bemerkungen = $db->f8('bemerkungen');
+					$bemerkungen = $db->fcs8('bemerkungen');
 				
 				// preis
 				if( $preis == '' )
-					$preis = $durchfClass->formatPreis($db->f8('preis'), $db->f8('sonderpreis'), $db->f8('sonderpreistage'), $db->f8('beginn'), '', 0);
+					$preis = $durchfClass->formatPreis($db->fcs8('preis'), $db->fcs8('sonderpreis'), $db->fcs8('sonderpreistage'), $db->fcs8('beginn'), '', 0);
 				
 				// ort
 				if( $ort == '' )
 				{
-					$ort            = $db->f8('ort'); // hier wird noch der Stadtteil angehaegt
-					$stadtteil      = $db->f8('stadtteil');
+					$ort            = $db->fcs8('ort'); // hier wird noch der Stadtteil angehaegt
+					$stadtteil      = $db->fcs8('stadtteil');
 					if( $ort!='' && $stadtteil!='' ) {
 						if( strpos($ort, $stadtteil)===false ) {
 							$ort = htmlentities($ort) . '-' . htmlentities($stadtteil);

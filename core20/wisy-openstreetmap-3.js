@@ -69,7 +69,7 @@ function osm_initialize()
 	// create map layer
 	// http://otile3.mqcdn.com/tiles/1.0.0/map/{z}/{x}/{y}.png?key=...
 	L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-		attribution: '&copy; <a href="g7091">OpenStreetMap-Mitwirkende</a>'
+		attribution: '&copy; <a href="https://www.openstreetmap.org/copyright/de">OpenStreetMap-Mitwirkende</a>'
 	}).addTo(osm_map);	
 	
 	// create a fine icon

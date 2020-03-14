@@ -194,10 +194,10 @@ class WISY_ROBOTS_RENDERER_CLASS
 			$searcher->db->query($sql);
 			while( $searcher->db->next_record() )
 			{
-				$freigeschaltet = intval($searcher->db->f8('freigeschaltet'));
+				$freigeschaltet = intval($searcher->db->fcs8('freigeschaltet'));
 				
 				if(!in_array($freigeschaltet, $freigeschaltet404))
-					$sitemap .= $this->addUrl('k'.$searcher->db->f8('id'), strtotime($searcher->db->f8('date_modified')), 'monthly');
+					$sitemap .= $this->addUrl('k'.$searcher->db->fcs8('id'), strtotime($searcher->db->fcs8('date_modified')), 'monthly');
 				
 				if( $this->urlsAdded >= $maxUrls )
 				{

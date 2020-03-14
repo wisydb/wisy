@@ -30,8 +30,8 @@ class WISY_TREE_RENDERER_CLASS
 			$db->query($sql);
 			while( $db->next_record() )
 			{
-				$kuerzel_sorted = $db->f8('kuerzel_sorted');
-				$thema = $db->f8('thema');
+				$kuerzel_sorted = $db->fcs8('kuerzel_sorted');
+				$thema = $db->fcs8('thema');
 				
 				$title = htmlspecialchars($thema);
 				

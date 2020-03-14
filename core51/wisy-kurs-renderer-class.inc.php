@@ -314,7 +314,7 @@ class WISY_KURS_RENDERER_CLASS
 			    $cacheKey = "sw_cloud_p".$wisyPortalId."_k".$kursId;
 			    $this->dbCache =& createWisyObject('WISY_CACHE_CLASS', $this->framework, array('table'=>'x_cache_tagcloud', 'itemLifetimeSeconds'=>60*60*24));
 			    
-			    if( ($temp=utf8_decode($this->dbCache->lookup($cacheKey)))!='' )
+			    if( ($temp=$this->dbCache->lookup($cacheKey))!='' )
 			    {
 			        $tag_cloud = (PHP7 ? html_entity_decode($temp) : html_entity_decode($temp))." <!-- tag cloud from cache -->";
 			    }

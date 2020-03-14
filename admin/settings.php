@@ -1154,7 +1154,7 @@ if( regGet('toolbar.bin', 1) )
 			// render list name
 			echo '<tr><td>';
 			
-				$currDescr = $_SESSION['g_session_bin']->getName($currName);
+			$currDescr = html_entity_decode($_SESSION['g_session_bin']->getName($currName));
 			
 				echo '<a href="' . isohtmlentities("$jobBaseUrl&jobname=".urlencode($currName==$jobname? '@0' : $currName)) . '">';
 					echo "<img src=\"skins/default/img/tree" .($jobname==$currName? 'c' : 'e'). "1.gif\" width=\"13\" height=\"13\" border=\"0\" alt=\"[+]\" title=\"\" />";

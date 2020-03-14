@@ -885,7 +885,7 @@ class WISY_SEARCH_CLASS
 	        if( $this->db->next_record() )
 	        {
 	            
-	            $tag_type = PHP7 ? $this->db->f('tag_type') : $this->db->f8('tag_type');
+	            $tag_type = $this->db->fcs8('tag_type');
 	            if( $tag_type & 64 || $tag_type == 65 || $tag_type & 262144) // 131072 = 65 // == 65, weil 64 + 1 den Typ Abschlüsse (=1) mit abdecken würde
 	            {
 	                
