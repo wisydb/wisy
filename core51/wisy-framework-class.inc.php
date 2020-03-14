@@ -1524,12 +1524,12 @@ class WISY_FRAMEWORK_CLASS
 	function addCConsentOption($name, $cookieOptions) {
 	    return "<li class='{$name}'>
     				<input type='checkbox' name='cconsent_{$name}' "
-    				.($this->iniRead("cookiebanner.zustimmung.{$name}.essentiell", 1) ? "checked='checked'" : "")
+    				.(($this->iniRead("cookiebanner.zustimmung.{$name}.essentiell", 1) || $_COOKIE['cconsent_'.$name] == 'allow') ? "checked='checked'" : "")
     				."> "
     			    ."<div class='consent_option_infos'>"
     				.$cookieOptions["content"]["zustimmung_{$name}"]
     				    ."<span class='importance'>"
-    				    .($this->iniRead("cookiebanner.zustimmung.{$name}.essentiell", 1) ? '<br>(essentiell)' : '<br>(optional)').'</span>'
+    				    .($this->iniRead("cookiebanner.zustimmung.{$name}.essentiell", 1) ? '<br>(essentiell)' : '<br>(optional'.($_COOKIE['cconsent_'.$name] == 'allow' ? ' - aktiv zugestimmt' : '').')').'</span>'
     				.'</div>'
 				."</li>";
 	}
