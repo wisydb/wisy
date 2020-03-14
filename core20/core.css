@@ -749,6 +749,68 @@ SEO
     display: none;
 }
 
+/* Cookiebanner */
+.cc-window ul li {
+	list-style: none;
+	padding-left: .2em;
+	margin-top: .5em;
+	font-weight: 600;
+	font-size: 1em;
+}
+
+.cc-window ul li div.consent_option_infos {
+	vertical-align: top;
+	display: inline-block;
+	max-width: 90%;
+}
+
+.cc-window ul li .importance {
+	font-weight: 100;
+	font-size: .8em;
+}
+
+.cc-window .hinweis_abwahl {
+	padding-left: .2em;
+	font-weight: 500;
+	font-size: .7em;
+}
+
+
+.cc-btn.cc-deny {
+	display: none;
+}
+
+.cc-window ul li div.consent_option_infos.highlight {
+	color: darkred;
+}
+
+.cc-window, .cc-window.cc-floating {
+  max-width: initial !important;
+}
+
+.cc-window {
+	padding: 1em;
+	width: 30vW;
+	font-size: 1.6em;
+	border: 2px solid white;
+	position: fixed;
+	z-index: 2000;
+  /* display: none !important; */
+}
+
+.cc-message {
+		font-size: 1em !important;
+}
+
+.cc-btn {
+	padding: .2em;
+  cursor: pointer;
+}
+
+.cc-compliance {
+	margin-top: 1em;
+}
+
 
 /*******************************************************************************
 print 

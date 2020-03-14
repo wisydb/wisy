@@ -106,6 +106,17 @@ function fav_update_bar()
 
 function fav_click(jsObj, id)
 {
+	if (window.cookiebanner && window.cookiebanner.optedOut) {
+		alert(window.cookiebanner.favOptoutMessage);
+		window.cookieconsent.popup.open();
+		return false;
+	} else if($.cookie('cconsent_merkliste') != "allow") {
+		alert("Um diese Funktion nutzen zu k"+oe+"nnen, m"+ue+"ssen Sie dem Speichern von Cookies f"+ue+"r diese Funktion zustimmen (im Cookie-Hinweisfenster).");
+		hightlightCookieConsentOption('merkliste');
+		window.cookieconsent.popup.open();
+		return false;
+	}
+	
 	jqObj = $(jsObj);
 	if( jqObj.hasClass('fav_selected') ) {
 		jqObj.removeClass('fav_selected');
@@ -1003,3 +1014,189 @@ $().ready(function()
 	}
 });
 
+/*****************************************************************************
+ * DSGVO stuff
+ *****************************************************************************/
+
+/* Cookie optout wrapper for $.cookie function
+ *
+ * Passes cookies through to $.cookie function, but only if user has not opted out 
+ * or if cookie is not blacklisted via cookiebanner.cookies.optout
+ *
+ */
+function setCookieSafely(title, value, options) {
+	if (window.cookiebanner && window.cookiebanner.optedOut && window.cookiebanner.optoutCookies && window.cookiebanner.optoutCookies.length) {
+		var blacklist = window.cookiebanner.optoutCookies.split(',');
+		for (var i = 0; i < blacklist.length; i++) {
+			if (title === $.trim(blacklist[i])) {
+				return false;
+			}
+		}
+	}
+	$.cookie(title, value, options);
+}
+
+/* Update Cookie Settings
+ *
+ * Remove all cookies that are set as optout cookies in portal settings
+ * via cookiebanner.cookies.optout when user opts out of cookies
+ * Dis- / enable Google Analytics and PIWIK
+ */
+function updateCookieSettings() {
+	if (window.cookiebanner) {
+		if (window.cookiebanner.optedOut) {
+			
+			// Disable Google Analytics
+			// Tut das ¸berhaupt irgendwas? -- https://developers.google.com/analytics/devguides/collection/analyticsjs/user-opt-out
+			if(window.cookiebanner.uacct) window['ga-disable-' + window.cookiebanner.uacct] = true;
+			
+			// Remove unwanted cookies
+			if (window.cookiebanner.optoutCookies && window.cookiebanner.optoutCookies.length) {
+				
+				// Portal blacklist
+				var blacklist = window.cookiebanner.optoutCookies.split(',');
+				for (var i = 0; i < blacklist.length; i++) {
+					var cookieName = $.trim(blacklist[i]);
+					if (cookieName !== '') $.removeCookie(cookieName, { path: '/' });
+				}
+				
+				// FAV
+				$.removeCookie('fav', { path: '/' });
+				$.removeCookie('fav_init_hint', { path: '/' });
+				
+				// Piwik
+				if(window.cookiebanner.piwik) {
+					var piwikCookies = document.cookie.match(/\_pk(\_id|\_ses)\.6\..*?=/g);
+					if (piwikCookies !== null) {
+						for(var i=0; i < piwikCookies.length; i++) {
+							$.removeCookie(piwikCookies[i].replace('=', ''), { path: '/' });
+						}
+					}
+				}
+				
+				// Google Analytics
+				if (window.cookiebanner.uacct) {
+					$.removeCookie('_ga', { path: '/' }); 
+					$.removeCookie('_gat', { path: '/' });
+					$.removeCookie('_gid', { path: '/' });
+				}
+			}
+		}
+	}
+}
+
+function initializeTranslate() {
+ if($.cookie('cconsent_translate') == "allow") {
+  console.log("consented");
+  $.loadScript('//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit', function(){
+     /* console.log('Loaded Google Translate'); */
+ });
+  
+ } else {
+  /* Interaction not disirable */
+  /*
+  hightlightCookieConsentOption('translate');
+  window.cookieconsent.popup.open();
+  return false; */
+ }
+};
+
+
+function googleTranslateElementInit() {
+  new google.translate.TranslateElement({pageLanguage: 'de', layout: google.translate.TranslateElement.InlineLayout.SIMPLE}, 'google_translate_element');
+}
+
+$(document).ready(function(){
+ consentCookieBeforePageFunction();
+});
+
+
+function hightlightCookieConsentOption(name) {
+ $('.cc-consent-details .'+name+' .consent_option_infos').addClass('highlight');
+}
+
+// check for consent of specific cookie, if page dependant on it being given
+function consentCookieBeforePageFunction() {
+ 
+  // Edit page
+  if($(".wisyp_edit").length) {
+ 
+   // only if no other submit event is attached to search submit button:
+   if( typeof $._data( $(".wisyp_edit form[action=edit]"), "events" ) == 'undefined' ) {
+    $('.wisyp_edit form[action=edit]').on('submit', function(e) {
+     e.preventDefault();
+     
+     if($.cookie('cconsent_onlinepflege') != "allow" && !window.cookiebanner_zustimmung_onlinepflege_legacy) {
+      alert("Um die Onlinepflege nutzen zu k"+oe+"nnen, m"+ue+"ssen Sie dem Speichern von Cookies f"+ue+"r diese Funktion zustimmen (im Cookie-Hinweisfenster).");
+      hightlightCookieConsentOption('onlinepflege');
+      window.cookieconsent.popup.open();
+      return false;
+     } else {
+	
+      // default: normal search on other than homepage
+      this.submit();
+     }
+    });
+   }
+  } // end: edit page
+}
+
+function openCookieSettings() {
+ window.cookieconsent.popup.open();
+}
+
+/* Called every time change Cookie consent window initialized or updated */
+function callCookieDependantFunctions() {
+ initializeTranslate();
+}
+
+jQuery.loadScript = function (url, callback) {
+    jQuery.ajax({
+        url: url,
+        dataType: 'script',
+        success: callback,
+        async: true
+    });
+}
+
+var ae = unescape("%E4");
+var ue = unescape("%FC");
+var oe = unescape("%F6");
+var ss = unescape("%DF");
+
+
+// ersetzt $.browser
+var matched, browser;
+
+jQuery.uaMatch = function( ua ) {
+    ua = ua.toLowerCase();
+
+    var match = /(chrome)[ \/]([\w.]+)/.exec( ua ) ||
+        /(webkit)[ \/]([\w.]+)/.exec( ua ) ||
+        /(opera)(?:.*version|)[ \/]([\w.]+)/.exec( ua ) ||
+        /(msie) ([\w.]+)/.exec( ua ) ||
+        ua.indexOf("compatible") < 0 && /(mozilla)(?:.*? rv:([\w.]+)|)/.exec( ua ) ||
+        [];
+
+    return {
+        browser: match[ 1 ] || "",
+        version: match[ 2 ] || "0"
+    };
+};
+
+matched = jQuery.uaMatch( navigator.userAgent );
+browser = {};
+
+if ( matched.browser ) {
+    browser[ matched.browser ] = true;
+    browser.version = matched.version;
+}
+
+// Chrome is Webkit, but Webkit is also Safari.
+if ( browser.chrome ) {
+    browser.webkit = true;
+} else if ( browser.webkit ) {
+    browser.safari = true;
+}
+
+jQuery.browser = browser;
