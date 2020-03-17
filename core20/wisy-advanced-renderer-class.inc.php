@@ -334,13 +334,14 @@ class WISY_ADVANCED_RENDERER_CLASS
 		
 		// render the form
 		//////////////////
+		/* <a href="<?php echo $this->framework->getHelpUrl($glossarId); ?>" class="wisy_help">i</a> */
 		
 		$glossarId = $this->framework->iniRead('advanced.help', '3241')
 		?>
 		<div id="adv_all">
 			<div id="adv_title">
 				Erweiterte Suche
-				<a href="<?php echo $this->framework->getHelpUrl($glossarId); ?>" class="wisy_help">i</a>
+				
 			</div>
 			<div id="adv_body">
 				<form action="advanced" method="get">

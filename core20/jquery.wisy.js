@@ -1200,3 +1200,17 @@ if ( browser.chrome ) {
 }
 
 jQuery.browser = browser;
+
+/*****************************************************************************
+ * info text popup
+ *****************************************************************************/
+
+ $(window).load(function () {
+    $('.hover_bkgr_fricc').show();
+    $('.popupCloseButton').click(function(){
+        $('.hover_bkgr_fricc').hide();
+
+        if(window.cookieconsent.popup)
+         window.cookieconsent.popup.open();
+    });
+ });

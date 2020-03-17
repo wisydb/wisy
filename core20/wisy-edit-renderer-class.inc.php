@@ -1092,7 +1092,7 @@ class WISY_EDIT_RENDERER_CLASS
 		$kurs_urls = $this->tools->getUrls($kurs['beschreibung']);
 		if( sizeof((array) $kurs_urls) ) {
 			if( $has_durchf_urls ) {
-				$kurs['error'][] = 'Fehler: URLs können nicht gleichzeitig im Feld <i>Kursbeschreibung</i> und im Feld <i>Bemerkungen</i> angegeben werden.';
+				$kurs['error'][] = 'Fehler: URLs k&ouml;nnen nicht gleichzeitig im Feld <i>Kursbeschreibung</i> und im Feld <i>Bemerkungen</i> angegeben werden.';
 			}
 			if( sizeof((array) $kurs_urls) > 1 ) {
 				$kurs['error'][] = 'Fehler: Im Feld <i>Kursbeschreibung</i> ist nur eine URL erlaubt. Gefundene URLs: '.implode(', ', $kurs_urls);

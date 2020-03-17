@@ -106,7 +106,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			
 			if( $info > 0 )
 			{
-				echo ' <a href="' . isohtmlspecialchars($this->framework->getHelpUrl($info)) . '" title="Hilfe" class="wisy_help">i</a>';
+				// echo ' <a href="' . isohtmlspecialchars($this->framework->getHelpUrl($info)) . '" title="Hilfe" class="wisy_help">i</a>';
 			}
 		echo '</th>' . "\n";
 	}

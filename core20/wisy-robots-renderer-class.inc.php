@@ -222,7 +222,7 @@ class WISY_ROBOTS_RENDERER_CLASS
 	function renderSitemapXmlGz()
 	{
 	    header('content-type: application/x-gzip');
-	    header('Content-disposition: attachment; filename="sitemap.xml.gz"');
+	    header('Content-Disposition: attachment; filename="sitemap.xml.gz"');
 	    headerDoCache();
 	    
 	    $cacheKey = "sitemap.xml.gz." . $this->absPath;

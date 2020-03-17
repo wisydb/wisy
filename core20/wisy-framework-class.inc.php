@@ -6,6 +6,7 @@
  Globale Seite, hiervon existiert genau 1 Objekt
  ******************************************************************************/
 
+require_once('admin/config/codes.inc.php');
 
 
 // Funktionen, die ohne irgendwelche instanzen laufen sollten
@@ -38,7 +39,7 @@ class WISY_FRAMEWORK_CLASS
 		
 		// spalten initialisiern (aus historischen Gruenden so ...)
 		$GLOBALS['wisyPortalSpalten'] = 0;
-		$temp = $this->iniRead('spalten'); if( $temp == '' ) $temp = 'anbieter,termin,dauer,art,preis,ort';
+		$temp = $this->iniRead('spalten'); if( $temp == '' ) $temp = 'anbieter,termin,dauer,art,preis,ort,bemerkungen';
 		$temp = str_replace(' ', '', $temp) . ',';
 		if( strpos($temp, 'anbieter,'			)!==false ) $GLOBALS['wisyPortalSpalten'] += 1;
 		if( strpos($temp, 'termin,'				)!==false ) $GLOBALS['wisyPortalSpalten'] += 2;
@@ -1020,20 +1021,24 @@ class WISY_FRAMEWORK_CLASS
 	
 	function getJSFiles()
 	{
-		// return all JavaScript files as an array
-		$ret = array();
-		
-		if($this->iniRead('search.suggest.v2') == 1)
-		{
-			$ret[] = '/admin/lib/jquery/js/jquery-1.10.2.min.js';
-			$ret[] = '/admin/lib/jquery/js/jquery-ui-1.10.4.custom.min.js';
-		}
-		else
-		{
-			$ret[] = 'jquery-1.4.3.min.js';
-			$ret[] = 'jquery.autocomplete.min.js';
-		}
-		$ret[] = 'jquery.wisy.js' . $this->includeVersion;
+	    // return all JavaScript files as an array
+	    $ret = array();
+	    
+	    if($this->iniRead('search.suggest.v2') == 1)
+	    {
+	        $ret[] = '/admin/lib/jquery/js/jquery-1.10.2.min.js';
+	        $ret[] = '/admin/lib/jquery/js/jquery-ui-1.10.4.custom.min.js';
+	    }
+	    else
+	    {
+	        // $ret[] = 'jquery-1.4.3.min.js';
+	        global $wisyCore;
+	        $ret[] = $wisyCore.'/lib/jquery/jquery-1.12.4.min.js';
+	        //$ret[] = $wisyCore.'/lib/jquery/jquery-ui-1.12.1.custom.min.css';
+	        
+	        $ret[] = 'jquery.autocomplete.min.js';
+	    }
+	    $ret[] = 'jquery.wisy.js' . $this->includeVersion;
 		
 		if( ($tempJS=$this->iniRead('head.js', '')) != '')
 		{
@@ -1212,22 +1217,36 @@ class WISY_FRAMEWORK_CLASS
 						var cname = jQuery(this).attr("name");
 						$.removeCookie(cname, { path: "/" });
 						if(jQuery(this).is(":checked")) {
-							setCookieSafely(cname, "allow", { expires:7});
-	            
-							if(cname == "cconsent_analytics") {
-								$.ajax(window.location.href); // call same page with analytics allowed to count this page view
+							setCookieSafely(cname, "allow", { expires:'.$cookieOptions['cookie']['expiryDays'].'});';
+							
+							if(!$this->iniRead("cookiebanner.zustimmung.analytics.autoload", 0)) {
+								$ret .= '
+										if(cname == "cconsent_analytics") {
+											$.ajax({ url: window.location.href, dataType: \'html\'}); // call same page with analytics allowed, since now allowed to count this page view // dataType html makes sure scripts are loaded
+										}';
 							}
+							
+				$ret .= '
 						}
 					});
 				});
-	            
+				
 			});
 	            
+			'.($this->detailed_cookie_settings_popuptext ? "" : "window.cookiebanner_zustimmung_popuptext_legacy = 1;").'
 			'.($this->detailed_cookie_settings_merkliste ? "" : "window.cookiebanner_zustimmung_merkliste_legacy = 1;").'
 			'.($this->detailed_cookie_settings_onlinepflege ? "" : "window.cookiebanner_zustimmung_onlinepflege_legacy = 1;").'
 			'.($this->detailed_cookie_settings_translate ? "" : "window.cookiebanner_zustimmung_translate_legacy = 1;").'
-			    
+			
 			</script>'."\n"; // end initialization of cookie consent window
+			
+			// count first visit / page view without interaction
+			if( $this->iniRead("cookiebanner.zustimmung.analytics.essentiell", 0) &&  $this->iniRead("cookiebanner.zustimmung.analytics.autoload", 0) && !isset($_COOKIE['cookieconsent_status']) ) {
+					$ret .= '<script>';
+					$ret .= 'setCookieSafely("cconsent_analytics", "allow", { expires:'.$cookieOptions['cookie']['expiryDays'].' });'." \n";
+					$ret .= '$.ajax({ url: window.location.href, dataType: \'html\'});'." \n"; // call same page with analytics allowed to count this page view
+					$ret .= '</script>';
+			}
 	    }
 	    
 	    return $ret;
@@ -1474,6 +1493,8 @@ class WISY_FRAMEWORK_CLASS
 	    // the whole site ...
 	    $ret .= $this->getAnalytics();
 	    
+	    $ret .= $this->getPopup();
+	    
 	    // iwwb specials
 	    if( $this->iniRead('iwwbumfrage', 'unset')!='unset' && $_SERVER['HTTPS']!='on' )
 	    {
@@ -1484,6 +1505,23 @@ class WISY_FRAMEWORK_CLASS
 	    $ret .= '</html>' . "\n";
 	    
 	    return $ret;
+	}
+	
+	function getPopup() {
+	    $ret = "";
+	    
+	    // if cookie popuptext denied or not set (first page view) show text popup if activated and text available
+	    if( $this->iniRead('popup', false) && strlen(trim($this->iniRead('popup.text', ''))) && ( (isset($_COOKIE['cconsent_popuptext']) && $_COOKIE['cconsent_popuptext'] == 'deny') || !isset($_COOKIE['cconsent_popuptext'])) )
+	        $ret = '
+				<div class="hover_bkgr_fricc">
+						<span class="helper"></span>
+							<div>
+        <div class="popupCloseButton">&times;</div>
+        <p>'.trim($this->iniRead('popup.text', '')).'</p>
+							</div>
+				</div>';
+	        
+	        return $ret;
 	}
 	
 	function getAnalytics() {
