@@ -18,75 +18,7 @@ if(typeof a.expires==="number"){var f=a.expires,l=a.expires=new Date;l.setDate(l
 a.expires?"; expires="+a.expires.toUTCString():"",a.path?"; path="+a.path:"",a.domain?"; domain="+a.domain:"",a.secure?"; secure":""].join("")}var c=o.raw?i:s;var h=t.cookie.split("; ");for(var p=0,d=h.length;p<d;p++)
 {var v=h[p].split("=");if(c(v.shift())===r){var m=c(v.join("="));return o.json?JSON.parse(m):m}}return null};o.defaults={};e.removeCookie=function(t,n){if(e.cookie(t)!==null){e.cookie(t,null,n);return true}return false}})(jQuery,document)
 
-/*****************************************************************************
- * DSGVO stuff
- *****************************************************************************/
 
-/* Cookie optout wrapper for $.cookie function
- *
- * Passes cookies through to $.cookie function, but only if user has not opted out 
- * or if cookie is not blacklisted via cookiebanner.cookies.optout
- *
- */
-function setCookieSafely(title, value, options) {
-	if (window.cookiebanner && window.cookiebanner.optedOut && window.cookiebanner.optoutCookies && window.cookiebanner.optoutCookies.length) {
-		var blacklist = window.cookiebanner.optoutCookies.split(',');
-		for (var i = 0; i < blacklist.length; i++) {
-			if (title === $.trim(blacklist[i])) {
-				return false;
-			}
-		}
-	}
-	$.cookie(title, value, options);
-}
-
-/* Update Cookie Settings
- *
- * Remove all cookies that are set as optout cookies in portal settings
- * via cookiebanner.cookies.optout when user opts out of cookies
- * Dis- / enable Google Analytics and PIWIK
- */
-function updateCookieSettings() {
-	if (window.cookiebanner) {
-		if (window.cookiebanner.optedOut) {
-			
-			// Disable Google Analytics -- https://developers.google.com/analytics/devguides/collection/analyticsjs/user-opt-out
-			if(window.cookiebanner.uacct) window['ga-disable-' + window.cookiebanner.uacct] = true;
-			
-			// Remove unwanted cookies
-			if (window.cookiebanner.optoutCookies && window.cookiebanner.optoutCookies.length) {
-				
-				// Portal blacklist
-				var blacklist = window.cookiebanner.optoutCookies.split(',');
-				for (var i = 0; i < blacklist.length; i++) {
-					var cookieName = $.trim(blacklist[i]);
-					if (cookieName !== '') $.removeCookie(cookieName, { path: '/' });
-				}
-				
-				// FAV
-				$.removeCookie('fav', { path: '/' });
-				$.removeCookie('fav_init_hint', { path: '/' });
-				
-				// Piwik
-				if(window.cookiebanner.piwik) {
-					var piwikCookies = document.cookie.match(/\_pk(\_id|\_ses)\.6\..*?=/g);
-					if (piwikCookies !== null) {
-						for(var i=0; i < piwikCookies.length; i++) {
-							$.removeCookie(piwikCookies[i].replace('=', ''), { path: '/' });
-						}
-					}
-				}
-				
-				// Google Analytics
-				if (window.cookiebanner.uacct) {
-					$.removeCookie('_ga', { path: '/' }); 
-					$.removeCookie('_gat', { path: '/' });
-					$.removeCookie('_gid', { path: '/' });
-				}
-			}
-		}
-	}
-}
 
 /*****************************************************************************
  * fav stuff
@@ -122,17 +54,22 @@ function fav_save_cookie()
 			str += key;
 		}
 	}
-	setCookieSafely('fav', str, { expires: 30 }); // expires in 30 days
+	$.cookie('fav', str, { expires: 30 }); // expires in 30 days
 }
 
 
 
-function fav_list_functions()
+var g_fav_bar_orig = 'unset';
+function fav_update_bar()
 {
+	if( g_fav_bar_orig == 'unset' ) {
+		g_fav_bar_orig = $('.wisy_searchhints').html();
+	}
+	
 	var cnt = fav_count();
 	if( cnt > 0 )
 	{
-		var mailto = $('#favlistlink').attr('data-favlink');
+		var mailto = $('.wisy_searchhints').attr('data-favlink');
 		if( mailto != '' )
 		{
 			mailto += 'search?q=favprint%253A';
@@ -143,47 +80,43 @@ function fav_list_functions()
 			}
 		}
 		
-		str = '<span class="wisyr_fav_functions">';
-		str += '<span class="wisyr_fav_anzahl">Ihre Merkliste enthält ' + cnt + (cnt==1? ' Eintrag ' : ' Einträge ') + '</span>';
+		str = '';
+		str += '<a href="search?q=Fav%3A" title="Favoriten anzeigen">';
+			str += '<span class="fav_item fav_selected">&#9733;</span> ';
+			str += cnt + (cnt==1? ' Favorit' : ' Favoriten');
+		str += '</a> ';
 		if( mailto != '' ) 
 		{
-			str += '<a class="fav_functions_mailsend" href="' + mailto + '" title="Merkliste per E-Mail versenden" class="fav_send">Merkliste per E-Mail versenden</a> ';
+			str += '<a href="' + mailto + '" title="Favoriten per E-Mail versenden" class="fav_send">&#9993;</a> '; // Unicode #9993 = Letter
 		}
-		str += ' <a class="fav_functions_deleteall" href="javascript:fav_delete_all()" title="Gesamte Merkliste löschen">Gesamte Merkliste löschen</a>';
-		str += '</span>';
+		str += '<small> <a href="javascript:fav_delete_all()" title="Alle Favoriten l&ouml;schen">&times;</a></small>';
 		
-		$('.wisyr_angebote_zum_suchauftrag').html(str);
-	}
-}
-
-function fav_update_bar()
-{	
-	var cnt = fav_count();
-	if( cnt > 0 )
-	{
-		str = '<a href="search?q=Fav%3A" title="Merkliste anzeigen">';
-			str += '<span class="fav_item fav_selected">&#9733;</span> ';
-			str += '<span class="favlistlink_title">Merkliste (' + cnt + ')</span>';
-		str += '</a> ';
-		
-		$('#favlistlink').html(str);
+		$('.wisy_searchhints').html(str + ' | ' + g_fav_bar_orig);
 		
 		$('.fav_hide').hide();
 	}
 	else
 	{
-		$('#favlistlink').html('');
+		$('.wisy_searchhints').html(g_fav_bar_orig);
 		$('.fav_hide').show();
 	}
 }
+
 
 
 function fav_click(jsObj, id)
 {
 	if (window.cookiebanner && window.cookiebanner.optedOut) {
 		alert(window.cookiebanner.favOptoutMessage);
+		window.cookieconsent.popup.open();
+		return false;
+	} else if($.cookie('cconsent_merkliste') != "allow") {
+		alert("Um diese Funktion nutzen zu k"+oe+"nnen, m"+ue+"ssen Sie dem Speichern von Cookies f"+ue+"r diese Funktion zustimmen (im Cookie-Hinweisfenster).");
+		hightlightCookieConsentOption('merkliste');
+		window.cookieconsent.popup.open();
 		return false;
 	}
+ 
 	jqObj = $(jsObj);
 	if( jqObj.hasClass('fav_selected') ) {
 		jqObj.removeClass('fav_selected');
@@ -196,19 +129,20 @@ function fav_click(jsObj, id)
 		fav_update_bar();
 		
 		if( $.cookie('fav_init_hint') != 1 ) {
-			alert('Ihr Favorit wurde auf diesem Computer gespeichert. Um ihre Merkliste anzuzeigen, klicken Sie auf "Merkliste" oben rechts.');
-			setCookieSafely('fav_init_hint', 1, { expires: 30 }); 
+			alert('Ihr Favorit wurde auf diesem Computer gespeichert. Um alle Favoriten anzuzeigen, klicken Sie auf das entsprechende Symbol beim Suchfeld.');
+			$.cookie('fav_init_hint', 1, { expires: 30 }); 
 		}
 	}
 }
 function fav_delete_all()
 {
-	if( !confirm('Gesamte Merkliste löschen?') )
+	if( !confirm('Alle gespeicherten Favoriten l'+oe+'schen?') )
 		return false;
 	
 	g_all_fav = {};
 	fav_save_cookie();
-	window.location.reload(true);
+	fav_update_bar();
+	$('.fav_selected').removeClass('fav_selected');
 }
 
 
@@ -242,10 +176,6 @@ function fav_init()
 	
 	if( fav_count() ) {
 		fav_update_bar();
-		
-		if( $('body').hasClass('wisyq_fav') ) {
-			fav_list_functions();
-		}
 	}
 }
  
@@ -319,7 +249,8 @@ function formatItem(row)
 		else if( tag_type & 512 ) { row_class = "ac_ort";                  row_preposition = ' zum '; row_postfix = 'Ort'; }
 		else if( tag_type & 1024 ) { row_class = "ac_sonstigesmerkmal";    row_preposition = ' zum '; row_postfix = 'sonstigen Merkmal'; }
 		else if( tag_type & 32768 ) { row_class = "ac_unterrichtsart";     row_preposition = ' zur '; row_postfix = 'Unterrichtsart'; }
-	
+		else if( tag_type & 65536) { row_class = "ac_zertifikat";            row_preposition = ' zum '; row_postfix = '<b>Zertifikat</b>'; }
+		     
 		/* frequency, end base type */
 		if( tag_freq > 0 )
 		{
@@ -460,7 +391,8 @@ if (jQuery.ui)
 			else if( tag_type & 512 ) { row_class = "ac_ort";                  row_type = 'Kursort'; row_count_prefix = (tag_freq == 1) ? ' Kurs am' : ' Kurse am'; }
 			else if( tag_type & 1024) { row_class = "ac_merkmal"; 			   row_type = 'Kursmerkmal'; }
 			else if( tag_type & 32768){ row_class = "ac_unterrichtsart";	   row_type = 'Unterrichtsart'; row_count_prefix = (tag_freq == 1) ? ' Kurs zur' : ' Kurse zur'; }
-	
+			else if( tag_type & 65536){ row_class = "ac_zertifikat";	   row_type = 'Zertifikat'; }
+				 
 			/* frequency, end base type */
 			if( tag_descr != '' ) row_postfix = ' (' + tag_descr + ')';
 		
@@ -536,7 +468,7 @@ if (jQuery.ui)
 
 	function ac_selectcallback(event, ui) {
 	
-		// Standardverhalten (Value ins Eingabefeld schreiben) bei Überschrift und Mehrlink der Ergebnisliste ausschalten
+		// Standardverhalten (Value ins Eingabefeld schreiben) bei Ueberschrift und Mehrlink der Ergebnisliste ausschalten
 		// Ebenso bei Klick auf "wisy_help"
 		var $span = $(ui.item.label);
 		var $to = $(event.toElement);
@@ -548,7 +480,7 @@ if (jQuery.ui)
 		else
 		{
 	
-			// Neuen Autocomplete-Wert nach evtl. bereits vorhandenen einfügen
+			// Neuen Autocomplete-Wert nach evtl. bereits vorhandenen einfuegen
 			var terms = split( this.value );
 			// remove the current input
 			terms.pop();
@@ -703,72 +635,6 @@ function advEmbedViaAjax()
 	return false;
 }
 
-function filterEmbeddingViaAjaxDone()
-{
-	// show filter form
-	$("#filterEmbedded").removeClass('loading');
-	$("#filterEmbedded .inner").slideDown(500);
-	
-	// remove the loading indicator
-	$("#wisy_searchinput").removeClass('filter_loading');
-	
-	// ajaxify the "close" button
-	$("#filter_close").click(function()
-	{
-		// hide filter form
-		$('#wisy_contentarea').removeClass('filter_open');
-		$('#wisy_filterlink').removeClass('active');
-		$("#filterEmbedded").slideUp(300, function(){ $("#filterEmbedded").remove() });
-		
-		// done
-		return false;
-	});
-	
-	// ajaxify the "reset" button
-	$('#filter_reset').click(function()
-	{
-		$('#filterEmbedded form').find('input')
-			.filter(':text, :password, :file').val('').end()
-			.filter(':checkbox, :radio').removeAttr('checked').end().end()
-			.find('textarea').val('').end()
-			.find('select').prop("selectedIndex", -1)
-			.find('option:selected').removeAttr('selected');
-		
-		return false;
-	});
-}
-
-function filterEmbedViaAjax()
-{
-	// Close Filter form if already open
-	if($("#wisy_contentarea").hasClass('filter_open')) {
-		$('#wisy_contentarea').removeClass('filter_open');
-		$('#wisy_filterlink').removeClass('active');
-		$("#filterEmbedded").slideUp(300, function(){ $("#filterEmbedded").remove() });
-		return false;
-	}
-	
-	// add the and active indicator
-	$("#wisy_contentarea").addClass('filter_open');
-	
-	// Update Filterlink Button status
-	$('#wisy_filterlink').addClass('active');
-	
-	// create query string
-	var q = $("#wisy_searchinput").val(); // for some reasons, q is UTF-8 encoded, so we use this charset as ie= below
-	if( $("#wisy_beiinput").length ) {
-		var bei = $("#wisy_beiinput").val(); if( bei != '' ) { q += ', bei:' + bei; }
-		var km  = $("#wisy_kmselect").val(); if( km  != '' ) { q += ', km:'  + km;  }
-	}
-	
-	// create and load the filter options
-	var justnow = new Date();
-	var rnd = justnow.getTime();	
-	$("#wisy_filterlink").after('<div id="filterEmbedded" class="loading"><div class="inner" style="display:none;"></div></div>');
-	$("#filterEmbedded .inner").load('filter?ajax=1&ie=UTF-8&rnd='+rnd+'&q='+encodeURIComponent(q), filterEmbeddingViaAjaxDone);
-	return false;
-}
-
 
 /*****************************************************************************
  * index pagination stuff
@@ -897,7 +763,7 @@ function editKursLoeschen(jqObj)
 
 function editWeekdays(jqObj)
 {
-	// jqObj ist der Text; ein click hierauf soll das nebenliegende <input type=hidden> ändern
+	// jqObj ist der Text; ein click hierauf soll das nebenliegende <input type=hidden> aendern
 	var hiddenObj = jqObj.parent().find('input');
 	if( hiddenObj.val() == '1' )
 	{
@@ -949,37 +815,37 @@ function describeFeedback()
 	else
 	{
 		$('#wisy_feedback_line2').html('<strong style="color: green;">Vielen Dank f&uuml;r Ihren Kommentar!</strong>');
-		ajaxFeedback(0, descr, name, email); // Kommentar zur Bewertung hinzufügen; die Bewertung selbst (erster Parameter) wird an dieser Stelle ignoriert!
+		ajaxFeedback(0, descr, name, email); // Kommentar zur Bewertung hinzufuegen; die Bewertung selbst (erster Parameter) wird an dieser Stelle ignoriert!
 	}
 }
 
 function sendFeedback(rating)
 {
-	$('#wisy_feedback_yesno').html('<strong class="wisy_feedback_thanks">Vielen Dank f&uuml;r Ihr Feedback!</strong>');
+	$('#wisy_feedback_yesno').html('&nbsp; &nbsp;<strong style="color: green;">Vielen Dank f&uuml;r Ihr Feedback!</strong>');
 	
 	if( rating == 0 )
 	{
-		$('#wisy_feedback').append(
-				'<div id="wisy_feedback_line2">'
-			+		'<p>Bitte schildern Sie uns noch kurz, warum diese Information nicht hilfreich war und was wir besser machen können:</p>'
-				+	'<textarea id="wisy_feedback_descr" name="wisy_feedback_descr" rows="2" cols="20"></textarea><br />'
+		$('#wisy_feedback_line1').after(
+				'<p id="wisy_feedback_line2">'
+			+		'Bitte schildern Sie uns noch kurz, warum diese Information nicht hilfreich war und was wir besser machen k&ouml;nnen:<br />'
+				+	'<textarea id="wisy_feedback_descr" name="wisy_feedback_descr" rows="2" cols="20" style="width: 400px;"></textarea><br />'
 				+	'<br><b>Wenn Sie eine Antwort w&uuml;nschen</b>, geben Sie bitte auch Ihre E-Mail-Adresse an (optional).<br />Wir verwenden Ihre E-Mailadresse und ggf. Name nur, um Ihr Anliegen zu bearbeiten und l&ouml;schen diese personenbezogenen Daten alle 12 Monate.<br><br>'
-				+	'<label for="wisy_feedback_name">Name (optional): </label><input type="text" id="wisy_feedback_name" name="wisy_feedback_name">&nbsp; <label for="wisy_feedback_email">E-Mailadresse (optional): </label><input type="text" id="wisy_feedback_email" name="wisy_feedback_email"><br><br>'
-				+	'<input id="wisy_feedback_submit" type="submit" onclick="describeFeedback(); return false;" value="Kommentar senden" />'
-			+	'</div>'
+				+	'<label for="fname">Name (optional): </label><input type="text" id="wisy_feedback_name" name="wisy_feedback_name">&nbsp; <label for="femail">E-Mailadresse (optional): </label><input type="text" id="wisy_feedback_email" name="wisy_feedback_email"><br><br>'
+				+	'<input type="submit" onclick="describeFeedback(); return false;" value="Feedback senden" />'
+			+	'</p>'
 		);
 		$('#wisy_feedback_descr').focus();
 	}
 	else 
 	{
-		$('#wisy_feedback').append(
-				'<div id="wisy_feedback_line2">'
-			+		'<p>Bitte schildern Sie uns kurz, was hilfreich war, damit wir Bew&auml;hrtes bewahren und ausbauen:</p>'
-				+	'<textarea id="wisy_feedback_descr" name="wisy_feedback_descr" rows="2" cols="20"></textarea><br />'
+		$('#wisy_feedback_line1').after(
+				'<p id="wisy_feedback_line2">'
+			+		'Bitte schildern Sie uns kurz, was hilfreich war, damit wir Bew&auml;hrtes bewahren und ausbauen:<br />'
+				+	'<textarea id="wisy_feedback_descr" name="wisy_feedback_descr" rows="2" cols="20" style="width: 400px;"></textarea><br />'
 				+	'<br><b>Wenn Sie eine Antwort w&uuml;nschen</b>, geben Sie bitte auch Ihre E-Mail-Adresse an (optional).<br />Wir verwenden Ihre E-Mailadresse und ggf. Name nur, um Ihr Anliegen zu bearbeiten und l&ouml;schen diese personenbezogenen Daten alle 12 Monate.<br><br>'
-				+	'<label for="wisy_feedback_name">Name (optional): </label><input type="text" id="wisy_feedback_name" name="wisy_feedback_name">&nbsp; <label for="wisy_feedback_email">E-Mailadresse (optional): </label><input type="text" id="wisy_feedback_email" name="wisy_feedback_email"><br><br>'
-				+	'<input id="wisy_feedback_submit" type="submit" onclick="describeFeedback(); return false;" value="Kommentar senden" />'
-			+	'</div>'
+				+	'<label for="fname">Name (optional): </label><input type="text" id="wisy_feedback_name" name="wisy_feedback_name">&nbsp; <label for="femail">E-Mailadresse (optional): </label><input type="text" id="wisy_feedback_email" name="wisy_feedback_email"><br><br>'
+				+	'<input type="submit" onclick="describeFeedback(); return false;" value="Feedback senden" />'
+			+	'</p>'
 		);
 		$('#wisy_feedback_descr').focus();
 	}
@@ -990,10 +856,9 @@ function sendFeedback(rating)
 function initFeedback()
 {
 	$('.wisy_allow_feedback').after(
-			'<div id="wisy_feedback" class="noprint">'
-		+		'<span class="wisy_feedback_question">War diese Information hilfreich?</span> '
-		+		'<span id="wisy_feedback_yesno"><a href="javascript:sendFeedback(1)">Ja</a> <a href="javascript:sendFeedback(0)">Nein</a></span>'
-		+	'</div>'
+			'<p id="wisy_feedback_line1" class="noprint"><b>War diese Information hilfreich?</b> '
+		+		'<span id="wisy_feedback_yesno"><a href="javascript:sendFeedback(1)">Ja</a> - <a href="javascript:sendFeedback(0)">Nein</a></span>'
+		+	'</p>'
 	);
 }
 
@@ -1071,38 +936,6 @@ function initRatgeber()
 }
 
 /*****************************************************************************
- * Responsive functions for core50
- *****************************************************************************/
-
-function initResponsive()
-{
-	// Remove nojs class from body in case the remove function directly after the <body> tag is missing
-	$('body.nojs').removeClass('nojs');
-	
-	// Toggle mobile nav on __MOBILNAVLINK__ click
-	$('#nav-link').on('click', function() {
-		window.scrollTo(0, 0);
-		$('body').toggleClass('navshowing');
-	});
-
-	// Navigation Unterpunkte öffnen und schließen mobil
-	$('#themenmenue a').on('click', function() {
-		$firstUl = $(this).siblings('ul').first();
-		if($firstUl.length) {
-			if($firstUl.hasClass('open')) {
-				$firstUl.removeClass('open').stop(true,true).slideUp();
-				$(this).parent().removeClass('open');
-			} else {
-				$firstUl.children('li').show();
-				$firstUl.addClass('open').stop(true,true).hide().slideDown();
-				$(this).parent().addClass('open');
-			}
-			return false;
-		}
-	});
-}
-
-/*****************************************************************************
  * SEO, alternative means for search
  *****************************************************************************/
 
@@ -1128,7 +961,7 @@ $().ready(function()
 	// check for forwarding
 	var askfwd = $('body').attr('data-askfwd');
 	if( typeof askfwd != 'undefined' ) {
-		if( confirm('Von dieser Webseite gibt es auch eine Mobilversion unter ' + askfwd + '. Möchten Sie jetzt dorthin wechseln?') ) {
+		if( confirm('Von dieser Webseite gibt es auch eine Mobilversion unter ' + askfwd + '. M'+oe+'chten Sie jetzt dorthin wechseln?') ) {
 			window.location = askfwd;
 			return;
 		}
@@ -1153,9 +986,6 @@ $().ready(function()
 	// handle "advanced search" via ajax
 	$("#wisy_advlink").click(advEmbedViaAjax);
 	
-	// handle "filter search" via ajax
-	$("#wisy_filterlink").click(filterEmbedViaAjax);
-	
 	// handle "paginate" via ajax
 	// currently, we NO NOT do so as this fails the "back button" to work correctly. Eg. the order and the page is not set when clicking a result and going back to the list.
 	// we should add the parameter behind the hash "#ordere=" or sth. like that.
@@ -1168,8 +998,235 @@ $().ready(function()
 	// init ratgeber stuff
 	initRatgeber();
 	
-	// init responsive stuff
-	initResponsive();
-	
+	// Suchauswertung #popsearch
+	// Suchfeld: je nach ausloeser menschl. Ursprung vor Absenden kennzeichnen.
+	if($("#wisy_searchbtn")) {
+	 $("#wisy_searchbtn").click(function(event){
+	  if (event.originalEvent === undefined) {
+	   /* robot: console.log(event); */
+	  } else {
+		event.preventDefault();
+		$(this).before("<input type=hidden id=qsrc name=qsrc value=s>");
+		$(this).before("<input type=hidden id=qtrigger name=qtrigger value=h>");
+		$(this).closest("form").submit();
+	  }
+	 });
+	}
 });
 
+
+// cookie - http://archive.plugins.jquery.com/project/Cookie , http://www.electrictoolbox.com/jquery-cookies/
+(function(e,t,n){function i(e){return e}function s(e){return decodeURIComponent(e.replace(r," "))}var r=/\+/g;var o=e.cookie=function(r,u,a){if(u!==n){a=e.extend({},o.defaults,a);if(u===null){a.expires=-1}
+if(typeof a.expires==="number"){var f=a.expires,l=a.expires=new Date;l.setDate(l.getDate()+f)}u=o.json?JSON.stringify(u):String(u);return t.cookie=[encodeURIComponent(r),"=",o.raw?u:encodeURIComponent(u),
+a.expires?"; expires="+a.expires.toUTCString():"",a.path?"; path="+a.path:"",a.domain?"; domain="+a.domain:"",a.secure?"; secure":""].join("")}var c=o.raw?i:s;var h=t.cookie.split("; ");for(var p=0,d=h.length;p<d;p++)
+{var v=h[p].split("=");if(c(v.shift())===r){var m=c(v.join("="));return o.json?JSON.parse(m):m}}return null};o.defaults={};e.removeCookie=function(t,n){if(e.cookie(t)!==null){e.cookie(t,null,n);return true}return false}})(jQuery,document)
+
+/*****************************************************************************
+ * DSGVO stuff
+ *****************************************************************************/
+
+/* Cookie optout wrapper for $.cookie function
+ *
+ * Passes cookies through to $.cookie function, but only if user has not opted out 
+ * or if cookie is not blacklisted via cookiebanner.cookies.optout
+ *
+ */
+function setCookieSafely(title, value, options) {
+	if (window.cookiebanner && window.cookiebanner.optedOut && window.cookiebanner.optoutCookies && window.cookiebanner.optoutCookies.length) {
+		var blacklist = window.cookiebanner.optoutCookies.split(',');
+		for (var i = 0; i < blacklist.length; i++) {
+			if (title === $.trim(blacklist[i])) {
+				return false;
+			}
+		}
+	}
+	$.cookie(title, value, options);
+}
+
+/* Update Cookie Settings
+ *
+ * Remove all cookies that are set as optout cookies in portal settings
+ * via cookiebanner.cookies.optout when user opts out of cookies
+ * Dis- / enable Google Analytics and PIWIK
+ */
+function updateCookieSettings() {
+	if (window.cookiebanner) {
+		if (window.cookiebanner.optedOut) {
+			
+			// Disable Google Analytics
+			// Tut das überhaupt irgendwas? -- https://developers.google.com/analytics/devguides/collection/analyticsjs/user-opt-out
+			if(window.cookiebanner.uacct) window['ga-disable-' + window.cookiebanner.uacct] = true;
+			
+			// Remove unwanted cookies
+			if (window.cookiebanner.optoutCookies && window.cookiebanner.optoutCookies.length) {
+				
+				// Portal blacklist
+				var blacklist = window.cookiebanner.optoutCookies.split(',');
+				for (var i = 0; i < blacklist.length; i++) {
+					var cookieName = $.trim(blacklist[i]);
+					if (cookieName !== '') $.removeCookie(cookieName, { path: '/' });
+				}
+				
+				// FAV
+				$.removeCookie('fav', { path: '/' });
+				$.removeCookie('fav_init_hint', { path: '/' });
+				
+				// Piwik
+				if(window.cookiebanner.piwik) {
+					var piwikCookies = document.cookie.match(/\_pk(\_id|\_ses)\.6\..*?=/g);
+					if (piwikCookies !== null) {
+						for(var i=0; i < piwikCookies.length; i++) {
+							$.removeCookie(piwikCookies[i].replace('=', ''), { path: '/' });
+						}
+					}
+				}
+				
+				// Google Analytics
+				if (window.cookiebanner.uacct) {
+					$.removeCookie('_ga', { path: '/' }); 
+					$.removeCookie('_gat', { path: '/' });
+					$.removeCookie('_gid', { path: '/' });
+				}
+			}
+		}
+	}
+}
+
+function initializeTranslate() {
+ if($.cookie('cconsent_translate') == "allow") {
+  console.log("consented");
+  $.loadScript('//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit', function(){
+     /* console.log('Loaded Google Translate'); */
+ });
+  
+ } else {
+  /* Interaction not disirable */
+  /*
+  hightlightCookieConsentOption('translate');
+  window.cookieconsent.popup.open();
+  return false; */
+ }
+};
+
+
+function googleTranslateElementInit() {
+  new google.translate.TranslateElement({pageLanguage: 'de', layout: google.translate.TranslateElement.InlineLayout.SIMPLE}, 'google_translate_element');
+}
+
+$(document).ready(function(){
+ consentCookieBeforePageFunction();
+});
+
+
+function hightlightCookieConsentOption(name) {
+ $('.cc-consent-details .'+name+' .consent_option_infos').addClass('highlight');
+}
+
+// check for consent of specific cookie, if page dependant on it being given
+function consentCookieBeforePageFunction() {
+ 
+  // Edit page
+  if($(".wisyp_edit").length) {
+ 
+   // only if no other submit event is attached to search submit button:
+   if( typeof $._data( $(".wisyp_edit form[action=edit]"), "events" ) == 'undefined' ) {
+    $('.wisyp_edit form[action=edit]').on('submit', function(e) {
+     e.preventDefault();
+     
+     if($.cookie('cconsent_onlinepflege') != "allow" && !window.cookiebanner_zustimmung_onlinepflege_legacy) {
+      alert("Um die Onlinepflege nutzen zu k"+oe+"nnen, m"+ue+"ssen Sie dem Speichern von Cookies f"+ue+"r diese Funktion zustimmen (im Cookie-Hinweisfenster).");
+      hightlightCookieConsentOption('onlinepflege');
+      window.cookieconsent.popup.open();
+      return false;
+     } else {
+	
+      // default: normal search on other than homepage
+      this.submit();
+     }
+    });
+   }
+  } // end: edit page
+}
+
+function openCookieSettings() {
+ window.cookieconsent.popup.open();
+}
+
+/* Called every time change Cookie consent window initialized or updated */
+function callCookieDependantFunctions() {
+ initializeTranslate();
+}
+
+jQuery.loadScript = function (url, callback) {
+    jQuery.ajax({
+        url: url,
+        dataType: 'script',
+        success: callback,
+        async: true
+    });
+}
+
+var ae = unescape("%E4");
+var ue = unescape("%FC");
+var oe = unescape("%F6");
+var ss = unescape("%DF");
+
+
+// ersetzt $.browser
+var matched, browser;
+
+jQuery.uaMatch = function( ua ) {
+    ua = ua.toLowerCase();
+
+    var match = /(chrome)[ \/]([\w.]+)/.exec( ua ) ||
+        /(webkit)[ \/]([\w.]+)/.exec( ua ) ||
+        /(opera)(?:.*version|)[ \/]([\w.]+)/.exec( ua ) ||
+        /(msie) ([\w.]+)/.exec( ua ) ||
+        ua.indexOf("compatible") < 0 && /(mozilla)(?:.*? rv:([\w.]+)|)/.exec( ua ) ||
+        [];
+
+    return {
+        browser: match[ 1 ] || "",
+        version: match[ 2 ] || "0"
+    };
+};
+
+matched = jQuery.uaMatch( navigator.userAgent );
+browser = {};
+
+if ( matched.browser ) {
+    browser[ matched.browser ] = true;
+    browser.version = matched.version;
+}
+
+// Chrome is Webkit, but Webkit is also Safari.
+if ( browser.chrome ) {
+    browser.webkit = true;
+} else if ( browser.webkit ) {
+    browser.safari = true;
+}
+
+jQuery.browser = browser;
+
+/*****************************************************************************
+ * info text popup
+ *****************************************************************************/
+
+ $(window).load(function () {
+    $('.hover_bkgr_fricc').show();
+    $('.popupCloseButton').click(function(){
+        $('.hover_bkgr_fricc').hide();
+
+        if(window.cookieconsent.popup)
+         window.cookieconsent.popup.open();
+    });
+    
+    // if old cookie banner is aktive: set cookie immediately that msg has been viewed for 3 days
+    if(jQuery(".cc-consent-details li").length > 0 )
+      ;
+    else {
+      jQuery(".hover_bkgr_fricc .popupCloseButton").click(function() {
+       setCookieSafely('cconsent_popuptext', "allow", { expires:3});
+      });                                                 
+    }
+ });

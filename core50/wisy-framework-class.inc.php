@@ -1370,6 +1370,19 @@ class WISY_FRAMEWORK_CLASS
 		return $ret;
 	}
 	
+	function addCConsentOption($name, $cookieOptions) {
+	    return "<li class='{$name}'>
+                <input type='checkbox' name='cconsent_{$name}' "
+				.(($this->iniRead("cookiebanner.zustimmung.{$name}.essentiell", 0) || $_COOKIE['cconsent_'.$name] == 'allow') ? "checked='checked'" : "")
+				."> "
+				."<div class='consent_option_infos'>"
+				.$cookieOptions["content"]["zustimmung_{$name}"]
+				."<span class='importance'>"
+				    .($this->iniRead("cookiebanner.zustimmung.{$name}.essentiell", 0) ? '<br>(essentiell)' : '<br>(optional'.($_COOKIE['cconsent_'.$name] == 'allow' ? ' - aktiv zugestimmt' : '').')').'</span>'
+				    .'</div>'
+				."</li>";
+	}
+	
 	function getJSHeadTags()
 	{
 		// JavaScript tags to include to the header (if any)
@@ -1384,7 +1397,7 @@ class WISY_FRAMEWORK_CLASS
 		// Cookie Banner settings
 		if($this->iniRead('cookiebanner', '') == 1) {
 			
-			$ret .= "<script type=\"text/javascript\">\n";
+			$ret .= "<script>\n";
 			$ret .= "window.cookiebanner = {};\n";
 			$ret .= "window.cookiebanner.optoutCookies = \"{$this->iniRead('cookiebanner.cookies.optout', '')},fav,fav_init_hint\";\n";
 			$ret .= "window.cookiebanner.optedOut = false;\n";
@@ -1407,7 +1420,57 @@ class WISY_FRAMEWORK_CLASS
 			
 			$cookieOptions['content'] = array();
 			$cookieOptions['content']['message'] = $this->iniRead('cookiebanner.hinweis.text', 'Wir verwenden Cookies, um Ihnen eine Merkliste sowie eine Seiten&uuml;bersetzung anzubieten und um Kursanbietern die Pflege ihrer Kurse zu erm&ouml;glichen. Indem Sie unsere Webseite nutzen, erkl&auml;ren Sie sich mit der Verwendung der Cookies einverstanden. Weitere Details finden Sie in unserer Datenschutzerkl&auml;rung.');
-			$cookieOptions['content']['allow'] = $this->iniRead('cookiebanner.erlauben.text', 'Akzeptieren', 1);
+			
+			$this->detailed_cookie_settings_popuptext = boolval(strlen(trim($this->iniRead('cookiebanner.zustimmung.popuptext', ''))) > 3); // legacy compatibility
+			$cookieOptions['content']['zustimmung_popuptext'] = $this->iniRead('cookiebanner.zustimmung.popuptext', false);
+			
+			$this->detailed_cookie_settings_merkliste = boolval(strlen(trim($this->iniRead('cookiebanner.zustimmung.merkliste', ''))) > 3); // legacy compatibility
+			$cookieOptions['content']['zustimmung_merkliste'] = $this->iniRead('cookiebanner.zustimmung.merkliste', false);
+			
+			$this->detailed_cookie_settings_onlinepflege = boolval(strlen(trim($this->iniRead('cookiebanner.zustimmung.onlinepflege', ''))) > 3); // legacy compatibility
+			$cookieOptions['content']['zustimmung_onlinepflege'] = $this->iniRead('cookiebanner.zustimmung.onlinepflege', false);
+			
+			$this->detailed_cookie_settings_translate = boolval(strlen(trim($this->iniRead('cookiebanner.zustimmung.translate', ''))) > 3); // legacy compatibility
+			$cookieOptions['content']['zustimmung_translate'] = $this->iniRead('cookiebanner.zustimmung.translate', false);
+			
+			$this->detailed_cookie_settings_analytics = boolval(strlen(trim($this->iniRead('cookiebanner.zustimmung.analytics', ''))) > 3); // legacy compatibility
+			$cookieOptions['content']['zustimmung_analytics'] = $this->iniRead('cookiebanner.zustimmung.analytics', false);
+			
+			$cookieOptions['content']['message'] = str_ireplace('__ZUSTIMMUNGEN__',
+			    '<ul class="cc-consent-details">'
+			    .($cookieOptions['content']['zustimmung_popuptext'] ? $this->addCConsentOption("popuptext", $cookieOptions) : '')
+			    .($cookieOptions['content']['zustimmung_merkliste'] ? $this->addCConsentOption("merkliste", $cookieOptions) : '')
+			    .($cookieOptions['content']['zustimmung_onlinepflege'] ? $this->addCConsentOption("onlinepflege", $cookieOptions) : '')
+			    .($cookieOptions['content']['zustimmung_translate'] ? $this->addCConsentOption("translate", $cookieOptions) : '')
+			    .($cookieOptions['content']['zustimmung_analytics'] ? $this->addCConsentOption("analytics", $cookieOptions) : '')
+			    .'__ZUSTIMMUNGEN_SONST__'
+			    .'</ul>',
+			    $cookieOptions['content']['message']
+			    );
+			
+			global $wisyPortalEinstellungen;
+			reset($wisyPortalEinstellungen);
+			$allPrefix = 'cookiebanner.zustimmung.sonst';
+			$allPrefixLen = strlen($allPrefix);
+			foreach($wisyPortalEinstellungen as $key => $value)
+			{
+			    if( substr($key, 0, $allPrefixLen)==$allPrefix )
+			    {
+			        $cookieOptions['content']['message'] = str_replace('__ZUSTIMMUNGEN_SONST__',
+			            $this->addCConsentOption("analytics", $key).'__ZUSTIMMUNGEN_SONST__',
+			            $cookieOptions['content']['message']);
+			    }
+			}
+			$cookieOptions['content']['message'] = str_replace('__ZUSTIMMUNGEN_SONST__', '', $cookieOptions['content']['message']);
+			
+			
+			$cookieOptions['content']['message'] = str_ireplace('__HINWEIS_ABWAHL__',
+			    '<span class="hinweis_abwahl">'
+			    .$this->iniRead('cookiebanner.hinweis.abwahl', '(Option abw&auml;hlen, wenn nicht einverstanden)')
+			    .'</span>',
+			    $cookieOptions['content']['message']);
+			
+			$cookieOptions['content']['allow'] = $this->iniRead('cookiebanner.erlauben.text', 'OK', 1);
 			$cookieOptions['content']['deny'] = $this->iniRead('cookiebanner.ablehnen.text', 'Ablehnen', 1);
 			$cookieOptions['content']['link'] = $this->iniRead('cookiebanner.datenschutz.text', 'Mehr erfahren', 1);
 			$cookieOptions['content']['href'] = $this->iniRead('cookiebanner.datenschutz.link', '');
@@ -1433,6 +1496,7 @@ class WISY_FRAMEWORK_CLASS
 							window.cookiebanner.optedOut = true;
 							updateCookieSettings();
 						}
+                        callCookieDependantFunctions();
 					},
 					onStatusChange: function(status) {
 						var didConsent = this.hasConsented();
@@ -1440,6 +1504,7 @@ class WISY_FRAMEWORK_CLASS
 							window.cookiebanner.optedOut = true;
 							updateCookieSettings();
 						}
+                        callCookieDependantFunctions();
 					}';
 					
 			// Hide Revoke Button and enable custom revoke function in e.g. "Datenschutzhinweise"
@@ -1456,8 +1521,57 @@ class WISY_FRAMEWORK_CLASS
 						});
 					}';
 			
-			$ret .= ')});</script>'."\n";
+			$ret .= ');
+			    
+			/* save detailed cookie consent status */
+				jQuery(".cc-btn.cc-allow").click(function(){
+					jQuery(".cc-consent-details input[type=checkbox]").each(function(){
+						var cname = jQuery(this).attr("name");
+						$.removeCookie(cname, { path: "/" });
+						if(jQuery(this).is(":checked")) {
+							setCookieSafely(cname, "allow", { expires:'.$cookieOptions['cookie']['expiryDays'].'});';
+			
+			if(!$this->iniRead("cookiebanner.zustimmung.analytics.autoload", 0)) {
+			    $ret .= '
+										if(cname == "cconsent_analytics") {
+											$.ajax({ url: window.location.href, dataType: \'html\'}); // call same page with analytics allowed, since now allowed to count this page view // dataType html makes sure scripts are loaded
+										}';
+			}
+			
+			$ret .= '
+						}
+					});
+				});
+			    
+			});
+			    
+			'.($this->detailed_cookie_settings_popuptext ? "" : "window.cookiebanner_zustimmung_popuptext_legacy = 1;").'
+			'.($this->detailed_cookie_settings_merkliste ? "" : "window.cookiebanner_zustimmung_merkliste_legacy = 1;").'
+			'.($this->detailed_cookie_settings_onlinepflege ? "" : "window.cookiebanner_zustimmung_onlinepflege_legacy = 1;").'
+			'.($this->detailed_cookie_settings_translate ? "" : "window.cookiebanner_zustimmung_translate_legacy = 1;").'
+			    
+			</script>'."\n"; // end initialization of cookie consent window
+			
+			// count first visit / page view without interaction
+			if( $this->iniRead("cookiebanner.zustimmung.analytics.essentiell", 0) &&  $this->iniRead("cookiebanner.zustimmung.analytics.autoload", 0) && !isset($_COOKIE['cookieconsent_status']) ) {
+			    $ret .= '<script>';
+			    $ret .= 'setCookieSafely("cconsent_analytics", "allow", { expires:'.$cookieOptions['cookie']['expiryDays'].' });'." \n";
+			    $ret .= '$.ajax({ url: window.location.href, dataType: \'html\'});'." \n"; // call same page with analytics allowed to count this page view
+			    $ret .= '</script>';
+			}
+			
 		}
+		
+		
+		// Don't allow for empty searches
+		$homepage = trim($this->iniRead('homepage', ''), '/');
+		$homepage = ($homepage == "") ? '/' : '/'.$homepage;
+		
+		$ret .= "<script>\n";
+		$ret .= "var homepage = '".$homepage."'"; // neu: jQueryWisy
+		// $ret .= "jQuery(document).ready(function() { preventEmptySearch('".$homepage."'); });"; // <-> onload maybe in use already
+		$ret .= "</script>";
+		
 		
 		return $ret;
 	}
@@ -1643,9 +1757,11 @@ class WISY_FRAMEWORK_CLASS
 		$ret .= $this->bodyEnd? ($this->bodyEnd . "\n") : '';
 		$ret .= "<!-- /after content -->\n\n";
 
-		// analytics stuff at bottom to avoid analytics slow down
+		// analytics stuff at bottom to avoid analytics slowing down
 		// the whole site ...
 		$ret .= $this->getAnalytics();
+		
+		$ret .= $this->getPopup();
 		
 		// iwwb specials
 		if( $this->iniRead('iwwbumfrage', 'unset')!='unset' && $_SERVER['HTTPS']!='on')
@@ -1659,29 +1775,49 @@ class WISY_FRAMEWORK_CLASS
 		return $ret;
 	}
 	
+	function getPopup() {
+	    $ret = "";
+	    
+	    // if cookie popuptext denied or not set (first page view) show text popup if activated and text available
+	    if( $this->iniRead('popup', false) && strlen(trim($this->iniRead('popup.text', ''))) && ( (isset($_COOKIE['cconsent_popuptext']) && $_COOKIE['cconsent_popuptext'] == 'deny') || !isset($_COOKIE['cconsent_popuptext'])) )
+	        $ret = '
+				<div class="hover_bkgr_fricc">
+						<span class="helper"></span>
+							<div>
+        <div class="popupCloseButton">&times;</div>
+        <p>'.trim($this->iniRead('popup.text', '')).'</p>
+							</div>
+				</div>';
+	        
+	        return $ret;
+	}
+	
 	function getAnalytics() {
-		$ret = "\n";
-		
-		$uacct = $this->iniRead('analytics.uacct', '');
-		if( $uacct != '' )
-		{
-			$ret .= '
-				<script type="text/javascript">
-				var optedOut = document.cookie.indexOf("cookieconsent_status=deny") > -1;
-				if (!optedOut) {					
-					(function(i,s,o,g,r,a,m){i["GoogleAnalyticsObject"]=r;i[r]=i[r]||function(){ 
-						(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o), 
-						m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m) 
-					})(window,document,"script","https://www.google-analytics.com/analytics.js","ga"); 
-					ga("create", "' . $uacct . '", "none"); 
-					ga("set", "anonymizeIp", true); 
-					ga("send", "pageview"); 
+	    $ret = "\n";
+	    
+	    $uacct = $this->iniRead('analytics.uacct', '');
+	    if( $uacct != '' )
+	    {
+	        $ret .= '
+				<script>
+				'.($this->detailed_cookie_settings_analytics ? 'var optedOut = ($.cookie("cconsent_analytics") != "allow");' : ' var optedOut = (document.cookie.indexOf("cookieconsent_status=deny") > -1);').'
+				    
+				if (!optedOut) {
+					(function(i,s,o,g,r,a,m){i["GoogleAnalyticsObject"]=r;i[r]=i[r]||function(){
+						(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+						m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+					})(window,document,"script","https://www.google-analytics.com/analytics.js","ga");
+					ga("create", "' . $uacct . '", "none");
+					ga("set", "anonymizeIp", true);
+					ga("send", "pageview");
+				} else {
+					/* console.log("No Analytics: opted out"); */
 				}
 				</script>';
-		}
-		
-		$piwik = $this->iniRead('analytics.piwik', '');
-		if( $piwik != '' )
+	    }
+	    
+	    $piwik = ($this->detailed_cookie_settings_analytics ? $_COOKIE['cconsent_analytics'] == 'allow' : $this->iniRead('analytics.piwik', ''));
+	    if( $piwik != '' )
 		{
 			if( strpos($piwik, ',')!==false ) {
 				list($piwik_site, $piwik_id) = explode(',', $piwik);
