@@ -1306,3 +1306,27 @@ var ae = unescape("%E4");
 var ue = unescape("%FC");
 var oe = unescape("%F6");
 var ss = unescape("%DF");
+
+/*****************************************************************************
+ * info text popup
+ *****************************************************************************/
+
+ $(window).load(function () {
+    $('.hover_bkgr_fricc').show();
+    $('.popupCloseButton').click(function(){
+        $('.hover_bkgr_fricc').hide();
+
+        if(window.cookieconsent.popup)
+         window.cookieconsent.popup.open();
+    });
+    
+   // if old cookie banner is active: set cookie immediately that msg has been viewed for 3 days
+   jQuery(".hover_bkgr_fricc .popupCloseButton").click(function() {
+     if(jQuery(".cc-consent-details li").length > 0 )
+       ;
+     else {
+      setCookieSafely('cconsent_popuptext', "allow", { expires:3}); 
+     }
+   });                                                 
+ });
+ 

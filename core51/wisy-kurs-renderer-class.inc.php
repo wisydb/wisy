@@ -111,10 +111,15 @@ class WISY_KURS_RENDERER_CLASS
 		// page start
 		headerDoCache();
 		
+		$elearning = 806311;
+		if( $this->framework->iniRead('label.elearning', 0) && count($kursAnalyzer->hasKeyword($db, 'kurse', $kursId, $elearning)) )
+		    $isElearning = true;
+		
 		$displayAbschluss = $this->framework->iniRead('label.abschluss', 0);
 		if($displayAbschluss) {
 			$kursAnalyzer =& createWisyObject('WISY_KURS_ANALYZER_CLASS', $this->framework);
 			$isAbschluss = count($kursAnalyzer->loadKeywordsAbschluss($db, 'kurse', $kursId));
+			$isBeratung = count($kursAnalyzer->hasKeyword($db, 'kurse', $kursId, TAG_EINRICHTUNGSORT));
 		}
 		
 		$bodyClass = 'wisyp_kurs';
@@ -162,14 +167,15 @@ class WISY_KURS_RENDERER_CLASS
 			}
 			
 			echo '<section class="wisyr_kursinfos clearfix">';
-    			echo '<h1 class="wisyr_kurstitel">';
-    			if( $anbieterdetails['typ'] == 2 ) echo '<span class="wisy_icon_beratungsstelle">Beratung<span class="dp">:</span></span> ';
-    			if( $displayAbschluss && $isAbschluss ) echo '<span class="wisy_icon_abschluss">Abschluss<span class="dp">:</span></span> ';
-    			echo htmlentities($this->framework->encode_windows_chars($title));
-    			if( $this->framework->iniRead('fav.use', 0) ) {
-    			    echo '<span class="fav_add" data-favid="'.$kursId.'"></span>';
-    			}
-    			echo '</h1>';
+			echo '<h1 class="wisyr_kurstitel">';
+			if( $isElearning ) echo '<span class="wisy_icon_elearning">E-Learning<span class="dp">:</span></span> ';
+			if( $anbieterdetails['typ'] == 2 && $isBeratung ) echo '<span class="wisy_icon_beratungsstelle">Beratung<span class="dp">:</span></span> ';
+			if( $displayAbschluss && $isAbschluss ) echo '<span class="wisy_icon_abschluss">Abschluss<span class="dp">:</span></span> ';
+			echo htmlentities($this->framework->encode_windows_chars($title));
+			if( $this->framework->iniRead('fav.use', 0) ) {
+			    echo '<span class="fav_add" data-favid="'.$kursId.'"></span>';
+			}
+			echo '</h1>';
     			
     			if( $originaltitel != '' && $originaltitel != $title )
     			{
@@ -186,10 +192,10 @@ class WISY_KURS_RENDERER_CLASS
 				$rows = '';
 			
 				// ... Stichwoerter
-				$tags = $this->framework->loadStichwoerter($db, 'kurse', $kursId);
-				if( sizeof((array) $tags) )
+				$stichwoerter = $this->framework->loadStichwoerter($db, 'kurse', $kursId);
+				if( sizeof((array) $stichwoerter) )
 				{
-					$rows .= $this->framework->writeStichwoerter($db, 'kurse', $tags);
+				    $rows .= $this->framework->writeStichwoerter($db, 'kurse', $stichwoerter);
 				}
 						
 				/* // ... Bildungsurlaubsnummer 

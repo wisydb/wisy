@@ -70,7 +70,7 @@ class WISY_GLOSSAR_RENDERER_CLASS
             'beschreibung'     => $glossar['erklaerung'],        // #socialmedia, #richtext
             'canonical'        =>        $this->framework->getUrl('g', array('id'=>$glossar_id)),
             'bodyClass'        =>        'wisyp_glossar',
-        ));
+        ), $glossar_id);
         
         echo $this->framework->getSearchField();
         

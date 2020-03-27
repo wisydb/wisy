@@ -12,6 +12,11 @@ class WISY_KURS_ANALYZER_CLASS
 		require_once('admin/config/codes.inc.php'); // fuer hidden_stichwort_eigenschaften
 	}
 	
+	public function hasKeyword(&$db, $table, $kursId, $tagId)
+	{
+	    return $this->loadKeyword($db, $table, $kursId, $tagId);
+	}
+	
 	public function loadKeywordsAbschluss(&$db, $table, $kursId)
 	{
 		return $this->loadKeywordsByType($db, $table, $kursId, 1);
@@ -22,6 +27,11 @@ class WISY_KURS_ANALYZER_CLASS
 		return $this->loadKeywordsByType($db, $table, $kursId, 65536);
 	}
 	
+	public function loadKeywordUnterrichtsart(&$db, $table, $kursId)
+	{
+	    return $this->loadKeywordsByType($db, $table, $kursId, 32768);
+	}
+	
 	public function loadKeywordsVerwaltungsstichwort(&$db, $table, $kursId)
 	{
 		return $this->loadKeywordsByType($db, $table, $kursId, 2048);
@@ -30,6 +40,22 @@ class WISY_KURS_ANALYZER_CLASS
 	public function loadKeywordsSonstigesMerkmal(&$db, $table, $kursId)
 	{
 		return $this->loadKeywordsByType($db, $table, $kursId, 1024);
+	}
+	
+	protected function loadKeyword(&$db, $table, $kursId, $tagId)
+	{
+	    $ret = array();
+	    
+	    $sql = "SELECT primary_id FROM {$table}_stichwort WHERE primary_id = $kursId AND attr_id = $tagId";
+	    
+	    $db->query($sql);
+	    while( $db->next_record() )
+	    {
+	        $ret[] = $db->Record;
+	    }
+	    $db->free();
+	    
+	    return $ret;
 	}
 	
 	/* Sachstichwort: 0, Abschluss: 1, Förderungsart: 2, Qualitätszertifikat: 4, Zielgruppe: 8,

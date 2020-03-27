@@ -445,17 +445,17 @@ class WISY_FRAMEWORK_CLASS
 		if($beschreibung != "") {
 		  $beschreibung = $this->shorten_description($beschreibung, 300);
 		  $beschreibung = (strlen($beschreibung) > 297) ? $beschreibung."..." : $beschreibung;
-		  $ret .= '<meta property="og:description" content="'.$beschreibung.'">'."\n";
+		  $ret .= '<meta property="og:description" content="'.htmlentities($beschreibung).'">'."\n";
 		} else {
 		  $ret .= '<meta property="og:description" content="...">'."\n";
 		}
 			
         $ret .= '<meta property="og:locale" content="de_DE">'."\n";
-		$ret .= '<meta property="fb:app_id" content="100940970255996">'."\n";
+		/* $ret .= '<meta property="fb:app_id" content="100940970255996">'."\n"; */
 				
 		// Twitter
 		$ret .= '<meta name="twitter:card" content="summary">'."\n";
-		$ret .= '<meta name="twitter:site" content="@weiterbrlp">'."\n"; // $ret .= '<meta name="twitter:creator" content="weiterbrlp">'."\n";
+		/* $ret .= '<meta name="twitter:site" content="@weiterbrlp">'."\n"; // $ret .= '<meta name="twitter:creator" content="weiterbrlp">'."\n"; */
 			
 		// GGf. in Bitly aendern, weil Query String ignoriert wird
 		$url_twitter = $url; // sonst muss canonical url übereinstimmen, um nicht ignoriert zu werden!
@@ -469,7 +469,7 @@ class WISY_FRAMEWORK_CLASS
 		  $beschreibung = (strlen($beschreibung) > 197) ? $beschreibung."..." : $beschreibung;
 		}
 			
-		$ret .= '<meta name="twitter:description" content="'.$beschreibung.'">'."\n";
+		$ret .= '<meta name="twitter:description" content="'.htmlentities($beschreibung).'">'."\n";
 			
 		$logo = ""; $logo_src = ""; 
 		$logo = $this->getAnbieterLogo($anbieter_ID, false, true);	// quadrat = false, 4:3 = true
@@ -1699,19 +1699,41 @@ class WISY_FRAMEWORK_CLASS
 			$ret .= ');
 			    
 			/* save detailed cookie consent status */
-				$(".cc-btn.cc-allow").click(function(){
-					$(".cc-consent-details input[type=checkbox]").each(function(){
-						var cname = $(this).attr("name");
-						$.removeCookie(cname, { path: "/" });
-						if($(this).is(":checked")) {
-							setCookieSafely(cname, "allow", { expires:7});
-						}
-					});
+				jQuery(".cc-btn.cc-allow").click(function(){
+					jQuery(".cc-consent-details input[type=checkbox]").each(function(){
+						var cname = jQuery(this).attr("name");
+						$.removeCookie(cname, { path: "/" });';
+						
+						// if einstellungen in use, einstellungen must be checked to save all other settings
+						if(trim($cookieOptions['content']['zustimmung_einstellungen']) != "" && $this->iniRead("cookiebanner.zustimmung.analytics.essentiell", false) !== false)
+							$ret .='if( jQuery(this).is(":checked") && jQuery(".cc-consent-details .einstellungen input[type=checkbox]").is(":checked") ) {
+								setCookieSafely(cname, "allow", { expires:'.$cookieOptions['cookie']['expiryDays'].'});';
+						else // if einstellungen not in use, safe setting as expected
+							$ret .='if( jQuery(this).is(":checked") ) {
+								setCookieSafely(cname, "allow", { expires:'.$cookieOptions['cookie']['expiryDays'].'});';
+							
+							// if not autoload: load homepage, with analytics set in order to count this page view AFTER settings saved. If autoload in use, this page view was already counted
+							if(!$this->iniRead("cookiebanner.zustimmung.analytics.autoload", 0)) {
+								$ret .= '
+										if(cname == "cconsent_analytics") {
+											$.ajax({ url: window.location.href, dataType: \'html\'}); // call same page with analytics allowed, since now allowed to count this page view // dataType html makes sure scripts are loaded
+										}';
+							}
+							
+				$ret .= '
+						}'; // End: is:checked
+						
+				// if einstellungen in use and einstellungen not checked delete the fact, that cookie window was interacted with - in addition to not savong all settings
+				if(trim($cookieOptions['content']['zustimmung_einstellungen']) != "" && $this->iniRead("cookiebanner.zustimmung.analytics.essentiell", false) !== false)
+				$ret .='if( jQuery(".cc-consent-details .einstellungen input[type=checkbox]").is(":checked") == false)
+													setTimeout(function(){ $.cookie("cookieconsent_status", null, { path: "/" }); } , 500);';
+								
+					$ret .= '});
 				});
-			    
+				
 			});
 			
-            '.($this->detailed_cookie_settings_einstellungen ? "" : "window.cookiebanner_zustimmung_einstellungen_legacy = 1;").'
+		    '.($this->detailed_cookie_settings_einstellungen ? "" : "window.cookiebanner_zustimmung_einstellungen_legacy = 1;").'
 			'.($this->detailed_cookie_settings_popuptext ? "" : "window.cookiebanner_zustimmung_popuptext_legacy = 1;").'
 			'.($this->detailed_cookie_settings_merkliste ? "" : "window.cookiebanner_zustimmung_merkliste_legacy = 1;").'
 			'.($this->detailed_cookie_settings_onlinepflege ? "" : "window.cookiebanner_zustimmung_onlinepflege_legacy = 1;").'
@@ -1877,7 +1899,7 @@ class WISY_FRAMEWORK_CLASS
 	    return $value;
 	}
 	
-	function getPrologue($param = 0)
+	function getPrologue($param = 0, $relevantID = 0)
 	{
 		if( !is_array($param) ) $param = array();
 		

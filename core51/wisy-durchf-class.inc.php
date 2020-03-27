@@ -286,7 +286,7 @@ class WISY_DURCHF_CLASS
 			    $ret = str_replace(array("k. A.", "k.A."), "", $ret);
 			    if( $html ) {
 			        $preishinweise_out = cs8(str_replace(chr(128), "&euro;", $preishinweise_out));
-			        $ret .= '<div class="wisyr_preis_hinweise">' .  htmlentities(html_entity_decode($preishinweise_out)) . '</div>'; // str_replace(chr(0xE2).chr(0x82).chr(0xAC), "&euro;",
+			        $ret .= '<div class="wisyr_preis_hinweise">' .  str_replace(chr(128), "&euro;", htmlentities(html_entity_decode($preishinweise_out))) . '</div>'; // str_replace(chr(0xE2).chr(0x82).chr(0xAC), "&euro;",
 			    }
 			    else {
 			        $ret .= " ($preishinweise_out)";
@@ -426,7 +426,7 @@ class WISY_DURCHF_CLASS
 		$beginnsql		= $record['beginn'];
 		$beginn			= $this->framework->formatDatum($beginnsql);
 		$beginnoptionen = $this->formatBeginnoptionen($record['beginnoptionen']);
-		$beginnoptionen = cs8($beginnoptionen);
+		$beginnoptionen = (PHP7 ? cs8($beginnoptionen) : $beginnoptionen);
 		$endesql		= $record['ende'];
 		$ende			= $details? $this->framework->formatDatum($endesql) : '';
 		$zeit_von		= $details? $record['zeit_von'] : ''; if( $zeit_von=='00:00' ) $zeit_von = '';
@@ -485,6 +485,11 @@ class WISY_DURCHF_CLASS
 			}
 			else if( $zeit_von ) {
 			    $cell .= " <span class=\"wisyr_termin_zeit\">{$zeit_von}&nbsp;Uhr</span>";
+			}
+			
+			if( $addParam['record']['freigeschaltet'] == 4 )
+			{
+			    $cell .= ' <span class="wisyr_termin_dauerhaft">dauerhaftes Angebot</span>';
 			}
 			
 			if( $addText ) // z.B. für "2 weitere Durchführungen ..."

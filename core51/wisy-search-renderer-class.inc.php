@@ -164,6 +164,8 @@ class WISY_SEARCH_RENDERER_CLASS
 			
 				if( $param['clickableName'] ) echo '<a href="'.$this->framework->getUrl('a', $aparam).'">';
 					
+				    $kursAnalyzer1 =& createWisyObject('WISY_KURS_ANALYZER_CLASS', $this->framework);
+				
 					if( $param['addIcon'] ) {
 						if( $record['typ'] == 2 ) echo '<span class="wisy_icon_beratungsstelle">Beratungsstelle<span class="dp">:</span></span> ';
 					}
@@ -298,22 +300,27 @@ class WISY_SEARCH_RENDERER_CLASS
 					}
 					
 					if( count($kursAnalyzer->hasKeyword($db, 'kurse', $currKursId, TAG_EINRICHTUNGSORT)) )
-					    echo '<a href="/a'.$currAnbieterId.'">';
+					    echo '<a href="/a'.$currAnbieterId.'" class="'.$this->framework->getUrl('k', $aparam).'">';
 					else
 					    echo '<a href="' .$this->framework->getUrl('k', $aparam). "\"{$aclass}>";
 						
-							if( $currKursFreigeschaltet == 0 ) { echo '<em>Kurs in Vorbereitung:</em><br />'; }
-							if( $currKursFreigeschaltet == 2 ) { echo '<em>Gesperrt:</em><br />'; }
-							if( $currKursFreigeschaltet == 3 ) { echo '<em>Abgelaufen:</em><br />'; }
+					    if( $currKursFreigeschaltet == 0 ) { echo '<em>Kurs in Vorbereitung:</em><br />'; }
+					    if( $currKursFreigeschaltet == 2 ) { echo '<em>Gesperrt:</em><br />'; }
+					    if( $currKursFreigeschaltet == 3 ) { echo '<em>Abgelaufen:</em><br />'; }
+					    
+					    // $anbieter_record['typ'] == 2 = Beratungsstelle + tag Einrichtungsort => show label Beratung
+					    if( $anbieter_record['typ'] == 2 && count($kursAnalyzer->hasKeyword($db, 'kurse', $currKursId, TAG_EINRICHTUNGSORT)) ) echo '<span class="wisy_icon_beratungsstelle">Beratung<span class="dp">:</span></span> ';
+					    
+					    $elearning = 806311;
+					    if( $this->framework->iniRead('label.elearning', 0) && count($kursAnalyzer->hasKeyword($db, 'kurse', $currKursId, $elearning)) )
+					       echo '<span class="wisy_icon_elearning">E-Learning<span class="dp">:</span></span> ';
+					        
+					    if($this->framework->iniRead('label.abschluss', 0) && count($kursAnalyzer->loadKeywordsAbschluss($db, 'kurse', $currKursId))) echo '<span class="wisy_icon_abschluss">Abschluss<span class="dp">:</span></span> ';
+					    if($this->framework->iniRead('label.zertifikat', 0) && count($kursAnalyzer->loadKeywordsZertifikat($db, 'kurse', $currKursId))) echo '<span class="wisy_icon_zertifikat">Zertifikat<span class="dp">:</span></span> ';
+					        
+					    echo htmlspecialchars($this->framework->encode_windows_chars( cs8($record['titel']) ));
 							
-							if( $anbieter_record['typ'] == 2 ) echo '<span class="wisy_icon_beratungsstelle">Beratung<span class="dp">:</span></span> ';
-							
-							if($this->framework->iniRead('label.abschluss', 0) && count($kursAnalyzer->loadKeywordsAbschluss($db, 'kurse', $currKursId))) echo '<span class="wisy_icon_abschluss">Abschluss<span class="dp">:</span></span> ';
-							if($this->framework->iniRead('label.zertifikat', 0) && count($kursAnalyzer->loadKeywordsZertifikat($db, 'kurse', $currKursId))) echo '<span class="wisy_icon_zertifikat">Zertifikat<span class="dp">:</span></span> ';
-						
-							echo htmlspecialchars($this->framework->encode_windows_chars( cs8($record['titel']) ));
-							
-							echo '</a>';
+						echo '</a>';
 					if( $loggedInAnbieterId == $currAnbieterId )
 					{
 						$vollst = $record['vollstaendigkeit'];
