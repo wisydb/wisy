@@ -551,7 +551,7 @@ else {
 }
 
 if( $rows < 1 ) { $rows = 1; }
-if( $rows > 200 ) { $rows = 200; }
+if( $rows > 500 ) { $rows = 500; }
 
 // order
 if( !isset($_REQUEST['orderby']) ) {
