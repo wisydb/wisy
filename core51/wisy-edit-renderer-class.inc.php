@@ -1726,12 +1726,13 @@ class WISY_EDIT_RENDERER_CLASS
 							    $styleFoerderung = ' style="display: none;" ';
 							}
 
-							$styleFernunterricht = '';
+							/* only via import:
+							 * $styleFernunterricht = '';
 							if( $kurs['fu_knr']=='' )
 							{
 							    echo "<span class=\"editFernunterrichtLink\"> <a href=\"#\" onclick=\"editShowHide($(this), '.editFernunterrichtDiv', '.editFernunterrichtLink'); return false;\" title=\"Kursnummer f&uuml;r Fernunterricht hinzuf&uuml;gen\"><small>+Fernunterricht</small></a></span>";
 							    $styleFernunterricht = ' style="display: none;" ';
-							}
+							} */
 
 							$styleBewerben = '';
 							if( $this->canPromote() )
@@ -1766,13 +1767,14 @@ class WISY_EDIT_RENDERER_CLASS
 								echo '&nbsp;';
 							echo '</div>';
 
-							// ... Fernunterricht
+							/* only via import:
+							 * // ... Fernunterricht
 							echo "<div class=\"editFernunterrichtDiv\" $styleFernunterricht>";
 								echo '<table cellpadding="0" cellspacing="2" border="0">';
 									echo '<tr><td>ZFU-Fernunterrichts-Nr.:</td><td><input type="text" name="fu_knr" value="'.htmlspecialchars($kurs['fu_knr']).'" /> <small>(N&ouml;tig zur Anzeige als Fernunterricht)</small></td></tr>';
 								echo '</table>';
 								echo '&nbsp;';
-							echo '</div>';
+							echo '</div>'; */
 	
 							// ... Kurs bewerben?							
 							if( $this->canPromote() )
