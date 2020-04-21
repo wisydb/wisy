@@ -143,7 +143,9 @@ $anbieter->add_row(TABLE_INT|TABLE_EMPTYONNULL|TABLE_NEWSECTION,
 $anbieter->add_row(TABLE_ENUM,								'rechtsform',		'Rechtsform', 0,
 																				 $codes_rechtsform, '', array('layout.join'=>1));
 $anbieter->add_row(TABLE_TEXTAREA|TABLE_WIKI,				'firmenportraet',	'Firmenporträt');
-$anbieter->add_row(TABLE_BLOB,								'logo',				'Logo', '', '', '', array('layout.bg.class'=>'e_bgbottom'));
+$anbieter->add_row(TABLE_BLOB,								'logo',				'Logo / Bild', '', '', '', array('layout.bg.class'=>'e_bgbottom'));
+$anbieter->add_row(TABLE_TEXT|TABLE_URL,					'logo_rechte',			'Bildrechte', '', '', '', array('ctrl.size'=>'10-20-50'));
+$anbieter->add_row(TABLE_FLAG,					            'logo_position',			'Über Inhalt positionieren', '', '', '', array('layout.join'=>1));
 $anbieter->add_row(TABLE_TEXT|TABLE_URL,					'homepage',			'Homepage', '', '', '', array('ctrl.size'=>'10-20-50'));
 $anbieter->add_row(TABLE_DATE|TABLE_DAYMONTHOPT,			'pruefsiegel_seit',	'Prüfsiegel seit');
 $anbieter->add_row(TABLE_TEXT|TABLE_NEWSECTION,				'anspr_name',		'Kundenberater', 0, 0, 'Kundenkontakt', array('ctrl.placeholder'=>'Name', 'layout.section'=>'Kundenkontakt'));

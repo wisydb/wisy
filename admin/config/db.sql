@@ -48,6 +48,8 @@ CREATE TABLE IF NOT EXISTS `anbieter` (
   `rechtsform` int(11) NOT NULL DEFAULT '0',
   `firmenportraet` longtext NOT NULL,
   `logo` longtext NOT NULL,
+  `logo_rechte` text NOT NULL,
+  `logo_position` INT NULL,
   `logo_blob` longblob NOT NULL,
   `logo_name` varchar(200) NOT NULL DEFAULT '',
   `logo_mime` varchar(200) NOT NULL DEFAULT '',

@@ -557,6 +557,9 @@ class WISY_ANBIETER_RENDERER_CLASS
 		$anbieter_settings = explodeSettings(cs8($db->fs('settings')));
 		
 		$logo = cs8($db->fs('logo'));
+		$logo_rights = cs8($db->fs('logo_rechte'));
+		$logo_position = cs8($db->fs('logo_position'));
+		$ob = new G_BLOB_CLASS($logo);
 		$logo_name		= $ob->name;
 		$logo_w			= $ob->w;
 		$logo_h			= $ob->h;
@@ -618,12 +621,15 @@ class WISY_ANBIETER_RENDERER_CLASS
 		echo '</h1>';
 		
 		
-		if( $logo_w && $logo_h && $logo_name != '' )
+		if( $logo_w && $logo_h && $logo_name != '')
 		{
-			echo "\n" . '<div class="wisyr_anbieter_logo">';
-			$this->fit_to_rect($logo_w, $logo_h, 128, 64, $logo_w, $logo_h);
-			echo "<div class=\"logo\"><img src=\"{$wisyPortal}admin/media.php/logo/anbieter/$anbieter_id/".urlencode($logo_name)."\" style=\"width: ".$logo_w."px; height: ".$logo_h."px;\" alt=\"Anbieter Logo\" title=\"\" id=\"anbieterlogo\"/></div>";
-			echo '</div>';
+		    echo "\n" . '<div class="wisyr_anbieter_logo">';
+		    if(!$logo_position) {
+		        $this->fit_to_rect($logo_w, $logo_h, 128, 64, $logo_w, $logo_h);
+		        echo "<div class=\"logo\"><img src=\"{$wisyPortal}admin/media.php/logo/anbieter/$anbieter_id/".urlencode($logo_name)."\" style=\"width: ".$logo_w."px; height: ".$logo_h."px;\" alt=\"Anbieter Logo\" title=\"\" id=\"anbieterlogo\"/></div>";
+		        echo '<div id="logo_bildrechte" style="color: #aaa; font-size:.8em;">'.$logo_rights.'</div>';
+		    }
+		    echo '</div>';
 		}
 		echo '</div><!-- /#wisyr_anbieter_kopf -->';
 		
@@ -632,6 +638,11 @@ class WISY_ANBIETER_RENDERER_CLASS
 		echo "\n\n" . '<section class="wisyr_anbieterinfos clearfix">';
 		echo "\n" . '<article class="wisyr_anbieter_firmenportraet wisy_anbieter_inhalt" data-tabtitle="Über">' . "\n";
 		echo '<h1>&Uuml;ber den Anbieter</h1>';
+		
+		if($logo_position) {
+		    echo "<img src=\"{$wisyPortal}admin/media.php/logo/anbieter/$anbieter_id/".urlencode($logo_name)."\" alt=\"Anbieter Logo: {$anbieter_suchname}\" title=\"{$anbieter_suchname}\" id=\"logo_big\">";
+		    echo '<div id="logo_bildrechte_big">'.$logo_rights.'</div>';
+		}
 
 		// firmenportraet
 		if( $firmenportraet != '' ) {

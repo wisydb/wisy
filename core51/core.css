@@ -107,6 +107,17 @@ h1.wisy_df_headline {
   max-height: 70px;
 }
 
+#logo_big {
+  width: 100%;
+  height: auto;
+}
+
+#logo_bildrechte_big {
+  color: rgb(170, 170, 170);
+  font-size: 0.7em;
+  text-transform: initial;
+}
+
 .pruefsiegel {
   border: none;
 }
