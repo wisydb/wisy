@@ -121,15 +121,8 @@ class WISY_SEARCH_CLASS
 	
 	function prepare($queryString)
 	{
-	    
-	    if(isset($_GET['typ']))
-	        echo "Prepare Vorher: ".$queryString."<br><br>";
-	        
 	    // Convert utf-8 input back to ISO-8859-15 because the DB ist still encoded with ISO
 	    $queryString = PHP7 ? $queryString : iconv("UTF-8", "ISO-8859-15//IGNORE", $queryString);
-	        
-	    if(isset($_GET['typ']))
-	       echo "Prepare Nachher: ".$queryString."<br><br>";
 	            
 	            // first, apply the stdkursfilter
 		global $wisyPortalFilter;
@@ -158,8 +151,6 @@ class WISY_SEARCH_CLASS
 		for( $i = 0; $i < sizeof((array) $this->tokens['cond']); $i++ )
 		{
 		    $value = $this->tokens['cond'][$i]['value']; // PHP7 ? utf8_decode()
-		    if(isset($_GET['typ']))
-		        echo ">>".$value."<br><br>";
 		        
 		        switch( $this->tokens['cond'][$i]['field'] )
 			{
@@ -186,9 +177,6 @@ class WISY_SEARCH_CLASS
 		    
 		    // build SQL statements for this part
 		    $value = $this->tokens['cond'][$i]['value']; // PHP7 ? utf8_decode()
-		    
-		    if(isset($_GET['typ']))
-		        echo ">>2>".$value."<br><br>";
 		        
 		        switch( $this->tokens['cond'][$i]['field'] )
 			{
@@ -294,17 +282,38 @@ class WISY_SEARCH_CLASS
 				    $code_found = false;
 				    
 				    for($i = 0; $i < count($codes_array); $i++) {
-				        if(strtolower($value) == strtolower($codes_array[$i])) {
+				        
+				        // more than one type
+				        if(stripos($value, '#ODER#')) {
+				            
+				            $val_arr = explode('#ODER#', $value);
+				            $cnt_types = 0;
+				            
+				            foreach($val_arr AS $val) {
+				                $cnt_types++;
+				                if(strtolower(trim($val)) == strtolower($codes_array[$i])) {
+				                    $code_found = true;
+				                    $this->rawWhere .= $this->rawWhere? ($cnt_types == 1 ? ' AND ( ' : ' OR ') : ' WHERE ';
+				                    $this->rawWhere .= "x_kurse.kurs_id IN (SELECT x_kurse_tags.kurs_id FROM x_kurse_tags, x_tags WHERE x_kurse_tags.tag_id = x_tags.tag_id AND x_tags.tag_type = ".$codes_array[$i-1].")";
+				                    if($cnt_types == count($val_arr))
+				                        $this->rawWhere .= ")";
+				                        
+				                }
+				            }
+				            
+				        } elseif(strtolower(trim($value)) == strtolower($codes_array[$i])) {
 				            $code_found = true;
 				            $this->rawWhere .= $this->rawWhere? ' AND ' : ' WHERE ';
 				            $this->rawWhere .= "x_kurse.kurs_id IN (SELECT x_kurse_tags.kurs_id FROM x_kurse_tags, x_tags WHERE x_kurse_tags.tag_id = x_tags.tag_id AND x_tags.tag_type = ".$codes_array[$i-1].")";
 				        }
+				        
 				    }
 				    
 				    if( !$code_found )
 				    {
 				        $this->error = array('id'=>'invalid_type', 'field'=>$value) ;
 				    }
+				    
 				    break;
 				    
 				case 'preis':
@@ -893,12 +902,6 @@ class WISY_SEARCH_CLASS
 	        
 	        
 	        $sql = "SELECT tag_id, tag_eigenschaften, tag_type FROM x_tags WHERE tag_name='".addslashes($tag_name)."' ";
-	        
-	        if($_GET['typ'] > 0 && strpos($tag_name, 'portal') === FALSE) {
-	            $eigenschaften = $_GET['typ'];
-	            $sql .= "AND tag_eigenschaften = ".$_GET['typ'];
-	            // echo "<b>Loopkup Tag:</b><br>".$sql."<br><br>";
-	        } 
 	        
 	        $this->db->query($sql);
 	        if( $this->db->next_record() )

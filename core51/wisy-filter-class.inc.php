@@ -969,7 +969,7 @@ class WISY_FILTER_CLASS
 	                }
 	            }
 	            if(!$ignore) {
-	                $active_filters .= '<li class="wisyr_filter"><a href="' . $this->getUrlRemoveFilterByName($token['field'], $value) . '">' . $filterlabel . '</a></li>';
+	                $active_filters .= '<li class="wisyr_filter"><a href="' . $this->getUrlRemoveFilterByName($token['field'], $value) . '">' . str_replace("#", " ", $filterlabel) . '</a></li>';
 	            }
 	        }
 	    }
