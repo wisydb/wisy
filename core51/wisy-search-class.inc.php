@@ -288,6 +288,25 @@ class WISY_SEARCH_CLASS
 					$this->rawWhere .= "(j$i.portal_id=$portalId AND j$i.promote_active=1)";
 					break;
 				
+				case 'typ':
+				    global $codes_stichwort_eigenschaften;
+				    $codes_array = explode('###', $codes_stichwort_eigenschaften);
+				    $code_found = false;
+				    
+				    for($i = 0; $i < count($codes_array); $i++) {
+				        if(strtolower($value) == strtolower($codes_array[$i])) {
+				            $code_found = true;
+				            $this->rawWhere .= $this->rawWhere? ' AND ' : ' WHERE ';
+				            $this->rawWhere .= "x_kurse.kurs_id IN (SELECT x_kurse_tags.kurs_id FROM x_kurse_tags, x_tags WHERE x_kurse_tags.tag_id = x_tags.tag_id AND x_tags.tag_type = ".$codes_array[$i-1].")";
+				        }
+				    }
+				    
+				    if( !$code_found )
+				    {
+				        $this->error = array('id'=>'invalid_type', 'field'=>$value) ;
+				    }
+				    break;
+				    
 				case 'preis':
 					if( preg_match('/^([0-9]{1,9})$/', $value, $matches) )
 					{	
