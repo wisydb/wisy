@@ -315,8 +315,8 @@ class WISY_SEARCH_RENDERER_CLASS
 					    if( $this->framework->iniRead('label.elearning', 0) && count($kursAnalyzer->hasKeyword($db, 'kurse', $currKursId, $elearning)) )
 					       echo '<span class="wisy_icon_elearning">E-Learning<span class="dp">:</span></span> ';
 					        
-					    if($this->framework->iniRead('label.abschluss', 0) && count($kursAnalyzer->loadKeywordsAbschluss($db, 'kurse', $currKursId))) echo '<span class="wisy_icon_abschluss">Abschluss<span class="dp">:</span></span> ';
-					    if($this->framework->iniRead('label.zertifikat', 0) && count($kursAnalyzer->loadKeywordsZertifikat($db, 'kurse', $currKursId))) echo '<span class="wisy_icon_zertifikat">Zertifikat<span class="dp">:</span></span> ';
+					    echo $this->getAbschlussLabel($db, $kursAnalyzer, $currKursId);
+					    echo $this->getZertifikatLabel($db, $kursAnalyzer, $currKursId);
 					        
 					    echo htmlspecialchars($this->framework->encode_windows_chars( cs8($record['titel']) ));
 							
@@ -389,6 +389,64 @@ class WISY_SEARCH_RENDERER_CLASS
 		}
 		
 		return $tag_cloud;
+	}
+	
+	function getAbschlussLabel($db, $kursAnalyzer, $currKursId) {
+	    $abschlussName = "";
+	    $isAbschlussDescendant = false;
+	    $abschlussTags = $kursAnalyzer->loadKeywordsAbschluss($db, 'kurse', $currKursId);
+	    $isAbschluss = count($abschlussTags);
+	    
+	    if(!$isAbschluss) {
+	        $abschlussAncestorTags = $kursAnalyzer->loadSearchableKeywordsAbschluss($db, 'kurse', $currKursId);
+	        
+	        if(count($abschlussAncestorTags)) {
+	            $isAbschluss = true;
+	            $abschlussName = "Abschlussseigenschaft stammt ab von: ";
+	            foreach($abschlussAncestorTags AS $abschlussAncestor) {
+	                $abschlussName .= "'".$abschlussAncestor['tag_name']."',";
+	            }
+	        }
+	    } else {
+	        $abschlussName = "Abschlusseigenschaft durch: ";
+	        foreach($abschlussTags AS $abschlussTag) {
+	            $abschlussName .= "'".$abschlussTag['stichwort']."',";
+	        }
+	    }
+	    
+	    if($this->framework->iniRead('label.abschluss', 0) && $isAbschluss)
+	        return '<span class="wisy_icon_abschluss" title="'.trim($abschlussName, ',').'">Abschluss<span class="dp">:</span></span> ';
+	        else
+	            return '';
+	}
+	
+	function getZertifikatLabel($db, $kursAnalyzer, $currKursId) {
+	    $zertifikatName = "";
+	    $isZertifikatDescendant = false;
+	    $zertifikatTags = $kursAnalyzer->loadKeywordsZertifikat($db, 'kurse', $currKursId);
+	    $isZertifikat = count($zertifikatTags);
+	    
+	    if(!$isZertifikat) {
+	        $zertifikatAncestorTags = $kursAnalyzer->loadSearchableKeywordsZertifikat($db, 'kurse', $currKursId);
+	        
+	        if(count($zertifikatAncestorTags)) {
+	            $isZertifikat = true;
+	            $zertifikatName = "Zertifikatseigenschaft stammt ab von: ";
+	            foreach($zertifikatAncestorTags AS $zertifikatAncestor) {
+	                $zertifikatName .= "'".$zertifikatAncestor['tag_name']."',";
+	            }
+	        }
+	    } else {
+	        $zertifikatName = "Zertifikatseigenschaft durch: ";
+	        foreach($zertifikatTags AS $zertifikatTag) {
+	            $zertifikatName .= "'".$zertifikatTag['stichwort']."',";
+	        }
+	    }
+	    
+	    if($this->framework->iniRead('label.zertifikat', 0) && $isZertifikat)
+	        return '<span class="wisy_icon_zertifikat" title="'.trim($zertifikatName, ',').'">Zertifikat<span class="dp">:</span></span> ';
+	        else
+	            return '';
 	}
 	
 	function formatItem($tag_name, $tag_descr, $tag_type, $tag_help, $tag_freq, $addparam=0)

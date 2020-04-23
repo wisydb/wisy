@@ -116,17 +116,17 @@ class WISY_KURS_RENDERER_CLASS
 		    $isElearning = true;
 		
 		$displayAbschluss = $this->framework->iniRead('label.abschluss', 0);
-		if($displayAbschluss) {
-			$kursAnalyzer =& createWisyObject('WISY_KURS_ANALYZER_CLASS', $this->framework);
-			$isAbschluss = count($kursAnalyzer->loadKeywordsAbschluss($db, 'kurse', $kursId));
-			$isBeratung = count($kursAnalyzer->hasKeyword($db, 'kurse', $kursId, TAG_EINRICHTUNGSORT));
-		}
+		$kursAnalyzer =& createWisyObject('WISY_KURS_ANALYZER_CLASS', $this->framework);
+		$searchRenderer =& createWisyObject('WISY_SEARCH_RENDERER_CLASS', $this->framework);
+		$abschlussLabel = $searchRenderer->getAbschlussLabel($db, $kursAnalyzer, $kursId);
+		    
+		$isBeratung = count($kursAnalyzer->hasKeyword($db, 'kurse', $kursId, TAG_EINRICHTUNGSORT));
 		
 		$bodyClass = 'wisyp_kurs';
 		if( $anbieterdetails['typ'] == 2 )
 		{
 			$bodyClass .= ' wisyp_kurs_beratungsstelle';
-		} elseif($displayAbschluss && $isAbschluss) {
+		} elseif($displayAbschluss && $abschlussLabel) {
 			$bodyClass .= ' wisyp_kurs_abschluss';	
 		}	
 		
@@ -170,7 +170,7 @@ class WISY_KURS_RENDERER_CLASS
 			echo '<h1 class="wisyr_kurstitel">';
 			if( $isElearning ) echo '<span class="wisy_icon_elearning">E-Learning<span class="dp">:</span></span> ';
 			if( $anbieterdetails['typ'] == 2 && $isBeratung ) echo '<span class="wisy_icon_beratungsstelle">Beratung<span class="dp">:</span></span> ';
-			if( $displayAbschluss && $isAbschluss ) echo '<span class="wisy_icon_abschluss">Abschluss<span class="dp">:</span></span> ';
+			if( $displayAbschluss ) echo $abschlussLabel;
 			echo htmlentities($this->framework->encode_windows_chars($title));
 			if( $this->framework->iniRead('fav.use', 0) ) {
 			    echo '<span class="fav_add" data-favid="'.$kursId.'"></span>';
