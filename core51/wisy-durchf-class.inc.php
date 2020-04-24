@@ -267,18 +267,26 @@ class WISY_DURCHF_CLASS
 	
 		if( $addParam['showDetails'] )
 		{
-			$preishinweise_arr = array();
-			
-			foreach( $addParam['stichwoerter'] as $stichwort ) {
-			    switch( $stichwort['id'] ) {
-			        case 3207:  $preishinweise_arr[] = cs8('kostenlos per Bildungsgutschein'); break;
-			        case 6013:  $preishinweise_arr[] = cs8('kostenlos durch Umschulung');			break;
-			        case 16311: $preishinweise_arr[] = cs8('kostenlos als Aktivierungsma&szlig;nahme');	break;
-			        case 849451: $preishinweise_arr[] = cs8('Preisstruktur komplex. GGf. beim Anbieter einholen.');	break;
-			    }
-			}
-			
-			if( $preishinweise_str ) $preishinweise_arr[] = $preishinweise_str;
+		    $preishinweise_arr = array();
+		    
+		    global $controlTags;
+		    
+		    foreach( $addParam['stichwoerter'] as $stichwort ) {
+		        switch( $stichwort['id'] ) {
+		            case $controlTags['Bildungsgutschein']:  $preishinweise_arr[] = cs8('kostenlos per Bildungsgutschein'); break;
+		            case $controlTags['DeuFöV']:  $preishinweise_arr[] = cs8('kostenlos durch Umschulung');			break;
+		            case $controlTags['Integrationskurs']:  $preishinweise_arr[] = cs8('kostenlos&nbsp;b.&nbsp;F&ouml;rderung'); break;
+		            case $controlTags['Integrationskurs (zu speziellem Förderbedarf)']:  $preishinweise_arr[] = cs8('kostenlos&nbsp;b.&nbsp;F&ouml;rderung'); break;
+		            case $controlTags['Integrationskurs (Intensivkurs)']:  $preishinweise_arr[] = cs8('kostenlos&nbsp;b.&nbsp;F&ouml;rderung'); break;
+		            case $controlTags['Integrationskurs (mit Alphabetisierung)']:  $preishinweise_arr[] = cs8('kostenlos&nbsp;b.&nbsp;F&ouml;rderung'); break;
+		            case $controlTags['Integrationskurs für Zweitschriftlernende']:  $preishinweise_arr[] = cs8('kostenlos&nbsp;b.&nbsp;F&ouml;rderung'); break;
+		            case $controlTags['Umschulung']:  $preishinweise_arr[] = cs8('kostenlos durch Umschulung');			break;
+		            case $controlTags['Aktivierungsgutschein']: $preishinweise_arr[] = cs8('kostenlos als Aktivierungsma&szlig;nahme');	break;
+		            case $controlTags['Preis komplex']: $preishinweise_arr[] = cs8('Preisstruktur komplex. GGf. beim Anbieter einholen.');	break;
+		        }
+		    }
+		    
+		    if( $preishinweise_str ) $preishinweise_arr[] = $preishinweise_str;
 			
 			if( sizeof((array) $preishinweise_arr) )
 			{
@@ -418,9 +426,10 @@ class WISY_DURCHF_CLASS
 		//		vll. ist es doch am Einfachsten, diese beim Abspeichern direkt im Redaktionssystem zu hinterlegen,
 		//		auch wenn mal etwas nach core20 folgt ...
 		//		dies müsste allerdings mit Jürgen und Monika besprochen werden (bp)
-		if( $addParam['record']['bu_nummer'] )	{ if(!$this->stichw_in_array($addParam['stichwoerter'], 1   )) { $addParam['stichwoerter'][] = array('id'=>1   ); } }
-		if( $addParam['record']['fu_knr'] )		{ if(!$this->stichw_in_array($addParam['stichwoerter'], 7721)) { $addParam['stichwoerter'][] = array('id'=>7721); } }
-		if( $addParam['record']['azwv_knr'] ) 	{ if(!$this->stichw_in_array($addParam['stichwoerter'], 3207)) { $addParam['stichwoerter'][] = array('id'=>3207); } }
+	    global $controlTags;
+	    if( $addParam['record']['bu_nummer'] )	{ if(!$this->stichw_in_array($addParam['stichwoerter'], $controlTags['Bildungsurlaub']   )) { $addParam['stichwoerter'][] = array('id'=>$controlTags['Bildungsurlaub']   ); } }
+	    if( $addParam['record']['fu_knr'] )		{ if(!$this->stichw_in_array($addParam['stichwoerter'], $controlTags['Fernunterricht'])) { $addParam['stichwoerter'][] = array('id'=>$controlTags['Fernunterricht']); } }
+	    if( $addParam['record']['azwv_knr'] ) 	{ if(!$this->stichw_in_array($addParam['stichwoerter'], $controlTags['Bildungsgutschein'])) { $addParam['stichwoerter'][] = array('id'=>$controlTags['Bildungsgutschein']); } }
 	    
 		// termin
 		$beginnsql		= $record['beginn'];
@@ -553,7 +562,16 @@ class WISY_DURCHF_CLASS
 		        )
 		        );
 		    
-		    $freeFinancialAid = ( $this->stichw_in_array($addParam['stichwoerter'], 3207) || $this->stichw_in_array($addParam['stichwoerter'], 6013) || $this->stichw_in_array($addParam['stichwoerter'], 16311) );
+		    global $controlTags;
+		    $freeFinancialAid = (	 $this->stichw_in_array($addParam['stichwoerter'], $controlTags['Bildungsgutschein'])
+		        || $this->stichw_in_array($addParam['stichwoerter'], $controlTags['Umschulung'])
+		        || $this->stichw_in_array($addParam['stichwoerter'], $controlTags['Aktivierungsgutschein'] )
+		        || $this->stichw_in_array($addParam['stichwoerter'], $controlTags['Integrationskurs'] )
+		        || $this->stichw_in_array($addParam['stichwoerter'], $controlTags['Integrationskurs (zu speziellem Förderbedarf)'] )
+		        || $this->stichw_in_array($addParam['stichwoerter'], $controlTags['Integrationskurs (Intensivkurs)'] )
+		        || $this->stichw_in_array($addParam['stichwoerter'], $controlTags['Integrationskurs (mit Alphabetisierung)'] )
+		        || $this->stichw_in_array($addParam['stichwoerter'], $controlTags['Integrationskurs für Zweitschriftlernende'] )
+		        );
 		    
 		    // Preis komplex: $this->stichw_in_array($addParam['stichwoerter'], 849451)
 		    if( ($temp == "" || $temp == "k.A." || $temp == "k. A.") && (strlen($record['preishinweise']) > 3 && !$freeFinancialAid) ) {
@@ -561,8 +579,9 @@ class WISY_DURCHF_CLASS
 		    }
 		    elseif( ($temp == "" || $temp == "k.A." || $temp == "k. A.") && $freeFinancialAid ) {
 		        echo "<small>kostenlos&nbsp;b.&nbsp;F&ouml;rderung</small>";
-		    }
-		    else
+		    } elseif( !($temp == "" || $temp == "k.A." || $temp == "k. A.") && $freeFinancialAid ) {
+		        echo $this->shy($temp)."<br><small>kostenlos&nbsp;b.&nbsp;F&ouml;rderung</small>";
+		    } else
 		        echo $this->shy($temp);
 		        
 		    echo ' </td>' . "\n";

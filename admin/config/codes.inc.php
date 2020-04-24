@@ -2,6 +2,23 @@
 
 define('TAG_EINRICHTUNGSORT', 806392);
 
+// macht nichts, wenn SW umbenannt wird: nur zur leichteren Lesbarkeit. Muss nur im Code konsistent verwendet werden.
+global $controlTags;
+$controlTags = array(
+    'Bildungsurlaub' => 1,
+    'Bildungsgutschein' => 3207,
+    'Umschulung' => 6013,
+    'Integrationskurs (Intensivkurs)' => 7093,
+    'Integrationskurs (zu speziellem Förderbedarf)' => 7094,
+    'Fernunterricht' => 7721,
+    'Integrationskurs' => 9774,
+    'Aktivierungsgutschein' => 16311,
+    'Integrationskurs (mit Alphabetisierung)' => 20371,
+    'DeuFöV' => 831461,
+    'Integrationskurs für Zweitschriftlernende' => 846831,
+    'Preis komplex' => 849451
+);
+
 global $codes_tagescode;
 $codes_tagescode =
 	 '0######'					// 0=Berechnung noch nicht erfolgt ODER Berechnung ohne Ergebnis
