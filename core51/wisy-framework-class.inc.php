@@ -728,6 +728,10 @@ class WISY_FRAMEWORK_CLASS
 		{
 		    return number_format(intval($this->cacheRead('stats.anzahl_anbieter')), 0, ",", ".");
 		}
+		else if( $placeholder == '__STATISTIK_STAND__')
+		{
+		    return $this->cacheRead('stats.statistik_stand');
+		}
 		else if( $placeholder == '__A_PRINT__' )
 		{
 			return ' href="javascript:window.print();"';
