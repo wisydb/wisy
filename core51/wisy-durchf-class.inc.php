@@ -273,15 +273,41 @@ class WISY_DURCHF_CLASS
 		    
 		    foreach( $addParam['stichwoerter'] as $stichwort ) {
 		        switch( $stichwort['id'] ) {
-		            case $controlTags['Bildungsgutschein']:  $preishinweise_arr[] = cs8('kostenlos per Bildungsgutschein'); break;
-		            case $controlTags['DeuFöV']:  $preishinweise_arr[] = cs8('kostenlos durch Umschulung');			break;
-		            case $controlTags['Integrationskurs']:  $preishinweise_arr[] = cs8('kostenlos&nbsp;b.&nbsp;F&ouml;rderung'); break;
-		            case $controlTags['Integrationskurs (zu speziellem Förderbedarf)']:  $preishinweise_arr[] = cs8('kostenlos&nbsp;b.&nbsp;F&ouml;rderung'); break;
-		            case $controlTags['Integrationskurs (Intensivkurs)']:  $preishinweise_arr[] = cs8('kostenlos&nbsp;b.&nbsp;F&ouml;rderung'); break;
-		            case $controlTags['Integrationskurs (mit Alphabetisierung)']:  $preishinweise_arr[] = cs8('kostenlos&nbsp;b.&nbsp;F&ouml;rderung'); break;
-		            case $controlTags['Integrationskurs für Zweitschriftlernende']:  $preishinweise_arr[] = cs8('kostenlos&nbsp;b.&nbsp;F&ouml;rderung'); break;
-		            case $controlTags['Umschulung']:  $preishinweise_arr[] = cs8('kostenlos durch Umschulung');			break;
-		            case $controlTags['Aktivierungsgutschein']: $preishinweise_arr[] = cs8('kostenlos als Aktivierungsma&szlig;nahme');	break;
+		            
+		            case $controlTags['Bildungsgutschein']:
+		                $matches = array();
+		                $matches = ((array) preg_grep ('/^kostenlos/i', $preishinweise_arr));
+		                if(stripos($ret, 'kostenlos') === FALSE && stripos($preishinweise_str, 'kostenlos') === FALSE && count($matches) < 1)
+		                    $preishinweise_arr[] = cs8('kostenlos&nbsp;per&nbsp;Bildungsgutschein');
+		                    break;
+		                    
+		            case $controlTags['DeuFoeV']:
+		            case $controlTags['Integrationskurs']:
+		            case $controlTags['Integrationskurs (zu speziellem Förderbedarf)']:
+		            case $controlTags['Integrationskurs (Intensivkurs)']:
+		            case $controlTags['Integrationskurs (mit Alphabetisierung)']:
+		            case $controlTags['Integrationskurs für Zweitschriftlernende']:
+		            case $controlTags['Orientierungskurs']:
+		                $matches = array();
+		                $matches = ((array) preg_grep ('/^kostenlos/i', $preishinweise_arr));
+		                if(stripos($ret, 'kostenlos') === FALSE && stripos($preishinweise_str, 'kostenlos') === FALSE && count($matches) < 1)
+		                    $preishinweise_arr[] = cs8('kostenlos&nbsp;bei&nbsp;F&ouml;rderung');
+		                    break;
+		                    
+		            case $controlTags['Umschulung']:
+		                $matches = array();
+		                $matches = ((array) preg_grep ('/^kostenlos/i', $preishinweise_arr));
+		                if(stripos($ret, 'kostenlos') === FALSE && stripos($preishinweise_str, 'kostenlos') === FALSE && count($matches) < 1)
+		                    $preishinweise_arr[] = cs8('kostenlos&nbsp;durch&nbsp;Umschulung');
+		                    break;
+		                    
+		            case $controlTags['Aktivierungsgutschein']:
+		                $matches = array();
+		                $matches = ((array) preg_grep ('/^kostenlos/i', $preishinweise_arr));
+		                if(stripos($ret, 'kostenlos') === FALSE && stripos($preishinweise_str, 'kostenlos') === FALSE && count($matches) < 1)
+		                    $preishinweise_arr[] = cs8('kostenlos&nbsp;als&nbsp;Aktivierungsma&szlig;nahme');
+		                    break;
+		                    
 		            case $controlTags['Preis komplex']: $preishinweise_arr[] = cs8('Preisstruktur komplex. GGf. beim Anbieter einholen.');	break;
 		        }
 		    }

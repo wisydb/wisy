@@ -8,6 +8,7 @@ $controlTags = array(
     'Bildungsurlaub' => 1,
     'Bildungsgutschein' => 3207,
     'Umschulung' => 6013,
+    'Orientierungskurs' => 7074,
     'Integrationskurs (Intensivkurs)' => 7093,
     'Integrationskurs (zu speziellem Förderbedarf)' => 7094,
     'Fernunterricht' => 7721,
