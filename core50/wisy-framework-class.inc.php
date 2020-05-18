@@ -1260,7 +1260,7 @@ class WISY_FRAMEWORK_CLASS
 		// get the RSS tag (if there is no query, "alle Kurse" is returned)
 		$ret = '';
 	
-		if( $this->iniRead('rsslink', 1) )
+		if( $this->iniRead('rsslink', 0) )
 		{
 			global $wisyPortalKurzname;
 			$q = rtrim($this->getParam('q', ''), ', ');
@@ -1275,7 +1275,7 @@ class WISY_FRAMEWORK_CLASS
 	{
 		$ret = '';
 	
-		if( $this->iniRead('rsslink', 1) )
+		if( $this->iniRead('rsslink', 0) )
 		{
 			$ret .= ' <a href="'.$this->getRSSFile().'" class="wisy_rss_link" title="Suchauftrag als RSS-Feed abonnieren">Updates abonnieren</a> ';
 			

@@ -1038,12 +1038,20 @@ class WISY_FRAMEWORK_CLASS
 				        $award2 = ($richtext) ? '</span>' : '';
 				    }
 				    
+				    $strike_tag = array_map("trim", explode(',', $this->iniRead('sw.aussetzen', -1)));
+				    $comment_tag = array_map("trim", explode(',', $this->iniRead('sw.kommentieren', -1)));
+				    
 					if( !$anythingOfThisCode ) {
 						$ret .= '<dt class="wisy_stichwtyp'.$tags[$s]['eigenschaften'].'">' . $codes_array[$c+1] . '</dt><dd>';
 					}
 					else {
 						$ret .= '<br />';
 					}
+					
+					if( in_array($stichwoerter[$s]['id'], $strike_tag) && $this->iniRead('sw.aussetzen.text', '') != '')
+					 $ret .= '<small style="display: block;">'.$this->iniRead('sw.aussetzen.text', '').'</small>';
+					elseif( in_array($stichwoerter[$s]['id'], $comment_tag) && $this->iniRead('sw.kommentieren.text', '') != '')
+					 $ret .= '<small style="display: block;">'.$this->iniRead('sw.kommentieren.text', '').'</small>';
 					
 					$writeAend = false;
 					/* 
@@ -1358,7 +1366,7 @@ class WISY_FRAMEWORK_CLASS
 		// get the RSS tag (if there is no query, "alle Kurse" is returned)
 		$ret = '';
 	
-		if( $this->iniRead('rsslink', 1) )
+		if( $this->iniRead('rsslink', 0) )
 		{
 			global $wisyPortalKurzname;
 			$q = rtrim($this->simplified ? $this->Q : $this->getParam('q', ''), ', ');
@@ -1380,7 +1388,7 @@ class WISY_FRAMEWORK_CLASS
 	    if($this->getRSSFile() == '' || strpos($this->getRSSFile(), 'volltext') !== FALSE) // don't allow rss-feed subscriptions for full text searches
 	        return false;
 	        
-	        if( $this->iniRead('rsslink', 1) )
+	        if( $this->iniRead('rsslink', 0) )
 	        {
 	            $ret .= ' <a href="'.$this->getRSSFile().'" class="wisy_rss_link" title="Suchauftrag als RSS-Feed abonnieren">Updates abonnieren</a> ';
 	            
