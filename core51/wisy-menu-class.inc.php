@@ -303,7 +303,7 @@ class WISY_MENU_CLASS
             $additionalqStr = "";
             foreach($keywordIds AS $addStrComponent) {
                 if(!is_numeric($addStrComponent) && strpos($addStrComponent, '&') === FALSE && strpos($addStrComponent, '#') === FALSE)
-                    $additionalqStr .= ', '.$addStrComponent;
+                    $additionalqStr .= ',%20'.$addStrComponent;
             }
             $keywordId = str_replace(' ', '', $keywordId); // remove all spaces for easier parsing
             
