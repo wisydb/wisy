@@ -32,7 +32,7 @@ class WISY_MENU_ITEM
         elseif($this->title == "OhneName") $liClass = ' class="ohneName"';
         
         $ret = "<li$liClass>";
-        if( cs8($this->url) ) $ret .= '<a href="'.htmlspecialchars( cs8($this->url) ). /*convert "&" in URLs to "&amp;" in HTML*/ // ! y
+        if( cs8($this->url) ) $ret .= '<a href="'.str_replace(' ', '%20', htmlspecialchars( cs8($this->url) )). /*convert "&" in URLs to "&amp;" in HTML*/ // ! y
         '"'.$this->aparam.'>';
         $ret .= $this->title;
         if( $this->url ) $ret .= '</a>';
