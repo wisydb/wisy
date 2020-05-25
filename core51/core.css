@@ -53,6 +53,10 @@ wisy_contentarea - this covers _all_ areas that is not portal-specific
 	float: right;
 }
 
+.zurAngeboteSuche {
+ display: block;
+}
+
 div.wisy_vcard {
 	margin: 1.4em 0 1.4em 0;
 	background-color: #E2E2E2;
@@ -71,6 +75,10 @@ div.wisy_vcardcontent {
 
 .wisy_glossar {
 	border-bottom: 1px solid #AAA;
+}
+
+.wisyp_glossar table {
+	width: 100%;
 }
 
 #wisy_copyright_footer {

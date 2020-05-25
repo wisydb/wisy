@@ -330,7 +330,7 @@ function formatItem(row)
 		/* frequency, end base type */
 		if( tag_freq > 0 )
 		{
-			row_postfix = (tag_freq==1? '1 Kurs' : ('' + tag_freq + ' Kurse')) + row_preposition + row_postfix;
+			row_postfix = (tag_freq==1? '1 Angebot' : ('' + tag_freq + ' Angebote')) + row_preposition + row_postfix;
 		}
 
 		if( tag_descr != '' )
@@ -476,8 +476,8 @@ if (jQuery.ui)
 										else if( tag_type & 0x400000 )	{ row_type = 'Tr&auml;gerverweis'; }
 										else							{ row_type = 'Tr&auml;ger'; }
 									  }
-			else if( tag_type & 512 ) { row_class = "ac_ort";                  row_type = 'Kursort'; }
-			else if( tag_type & 1024) { row_class = "ac_merkmal"; 			   row_type = 'Kursmerkmal'; }
+			else if( tag_type & 512 ) { row_class = "ac_ort";                  row_type = 'Angebotsort'; }
+			else if( tag_type & 1024) { row_class = "ac_merkmal"; 			   row_type = 'Angebotsmerkmal'; }
 			else if( tag_type & 32768){ row_class = "ac_unterrichtsart";	   row_type = 'Unterrichtsart'; }
 	
 			/* frequency, end base type */
@@ -486,7 +486,7 @@ if (jQuery.ui)
 			if( tag_freq > 0)
 			{
 				row_count = '(' + tag_freq;
-				row_count += (tag_freq == 1) ? '&nbsp;Kurs)' : '&nbsp;Kurse)';
+				row_count += (tag_freq == 1) ? '&nbsp;Angebot)' : '&nbsp;Angebote)';
 			}
 		
 			/* additional flags */
@@ -1014,7 +1014,7 @@ function editDurchfLoeschen(jqObj)
 {
 	if( $('.editDurchfRow').size() == 1 )
 	{
-		alert("Diese Durchf"+ue+"hrung kann nicht gel"+oe+"scht werden, da ein Kurs mindestens eine Durchf"+ue+"hrung haben muss.\n\nWenn Sie den Kurs komplett l"+oe+"schen m"+oe"chten, verwenden Sie die Option \"Kurs l"+oe+"schen\" ganz unten auf dieser Seite.");
+		alert("Diese Durchf"+ue+"hrung kann nicht gel"+oe+"scht werden, da ein Angebot mindestens eine Durchf"+ue+"hrung haben muss.\n\nWenn Sie das Angebot komplett l"+oe+"schen m"+oe"chten, verwenden Sie die Option \"Angebot l"+oe+"schen\" ganz unten auf dieser Seite.");
 		return;
 	}
 	else if( confirm("Diese Durchf"+ue+"hrung l"+oe+"schen?") )
@@ -1034,7 +1034,7 @@ function editDurchfKopieren(jqObj)
 
 function editKursLoeschen(jqObj)
 {
-	if( confirm("Wenn Sie einen Kurs l"+oe+"schen m"+oe+"chten, wird zun"+ae+"chst ein Sperrvermerk gesetzt; beim n"+ae+"chsten Index-Update wird der Kurs dann inkl. aller Durchf"+ue+"hrungen komplett gel"+oe+"scht. Dieser Vorgang kann nicht r"+ue+"ckg"+ae+"ngig gemacht werden!\n\nDen kompletten Kurs inkl. ALLER Durchf"+ue+"hrungen l"+oe+"schen?") )
+	if( confirm("Wenn Sie ein Angebot l"+oe+"schen m"+oe+"chten, wird zun"+ae+"chst ein Sperrvermerk gesetzt; beim n"+ae+"chsten Index-Update wird das Angebot dann inkl. aller Durchf"+ue+"hrungen komplett gel"+oe+"scht. Dieser Vorgang kann nicht r"+ue+"ckg"+ae+"ngig gemacht werden!\n\nDas komplette Angebot inkl. ALLER Durchf"+ue+"hrungen l"+oe+"schen?") )
 	{
 		return true;
 	}

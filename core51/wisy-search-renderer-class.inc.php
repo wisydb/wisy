@@ -1058,7 +1058,7 @@ class WISY_SEARCH_RENDERER_CLASS
 	            echo '<span class="active tab_anbieter">Anbieter</span>';
 	            echo '</div>';
 	            echo '<span class="wisyr_anbieter_zum_suchauftrag">';
-	            echo '<div class="zurAngeboteSuche">&larr; Hier geht\'s <a href="/">zur Angebote-Suche</a></div>';
+	            echo '<span class="zurAngeboteSuche">&larr; Hier geht\'s <a href="/">zur Angebote-Suche</a></span>';
 	            echo '<span class="wisyr_anzahl_anbieter">' . $sqlCount . ' Anbieter</span> zum Suchauftrag';
 	            echo '</span>';
 	            

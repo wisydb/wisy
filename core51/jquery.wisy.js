@@ -331,7 +331,7 @@ function formatItem(row)
 		/* frequency, end base type */
 		if( tag_freq > 0 )
 		{
-			row_postfix = (tag_freq==1? '1 Kurs' : ('' + tag_freq + ' Kurse')) + row_preposition + row_postfix;
+			row_postfix = (tag_freq==1? '1 Angebot' : ('' + tag_freq + ' Angebote')) + row_preposition + row_postfix;
 		}
 
 		if( tag_descr != '' )
@@ -432,7 +432,7 @@ if (jQuery.ui)
 		row_class = 'ac_normal';
 		row_type = 'Sachstichwort';
 		row_count = '';
-		row_count_prefix = (tag_freq == 1) ? ' Kurs zum' : ' Kurse zum';
+		row_count_prefix = (tag_freq == 1) ? ' Angebot zum' : ' Angebote zum';
 		row_info = '';
 		row_prefix = '';
 		row_postfix = '';
@@ -455,19 +455,19 @@ if (jQuery.ui)
 		{
 			/* base type */
 				 if( tag_type &   1 ) { row_class = "ac_abschluss";            row_type = 'Abschluss'; }
-			else if( tag_type &   2 ) { row_class = "ac_foerderung";           row_type = 'F&ouml;rderung'; row_count_prefix = (tag_freq == 1) ? ' Kurs zur' : ' Kurse zur';  }
+			else if( tag_type &   2 ) { row_class = "ac_foerderung";           row_type = 'F&ouml;rderung'; row_count_prefix = (tag_freq == 1) ? ' Angebot zur' : ' Angebote zur';  }
 			else if( tag_type &   4 ) { row_class = "ac_qualitaetszertifikat"; row_type = 'Qualit&auml;tsmerkmal'; }
-			else if( tag_type &   8 ) { row_class = "ac_zielgruppe";           row_type = 'Zielgruppe'; row_count_prefix = (tag_freq == 1) ? ' Kurs zur' : ' Kurse zur'; }
-			else if( tag_type &  16 ) { row_class = "ac_abschlussart";         row_type = 'Abschlussart'; row_count_prefix = (tag_freq == 1) ? ' Kurs zur' : ' Kurse zur'; }
+			else if( tag_type &   8 ) { row_class = "ac_zielgruppe";           row_type = 'Zielgruppe'; row_count_prefix = (tag_freq == 1) ? ' Angebot zur' : ' Angebote zur'; }
+			else if( tag_type &  16 ) { row_class = "ac_abschlussart";         row_type = 'Abschlussart'; row_count_prefix = (tag_freq == 1) ? ' Angebot zur' : ' Angebote zur'; }
 			else if( tag_type & 128 ) { row_class = "ac_thema";                row_type = 'Thema'; }
 			else if( tag_type & 256 ) { row_class = "ac_anbieter";
-										     if( tag_type &  0x20000 )	{ row_type = 'Beratungsstelle';  row_count_prefix = (tag_freq == 1) ? ' Kurs von der' : ' Kurse von der';  }
+										     if( tag_type &  0x20000 )	{ row_type = 'Beratungsstelle';  row_count_prefix = (tag_freq == 1) ? ' Angebot von der' : ' Angebote von der';  }
 										else if( tag_type & 0x400000 )	{ row_type = 'Tr&auml;gerverweis'; }
-										else							{ row_type = 'Tr&auml;ger'; row_count_prefix = (tag_freq == 1) ? ' Kurs vom' : ' Kurse vom'; }
+										else							{ row_type = 'Tr&auml;ger'; row_count_prefix = (tag_freq == 1) ? ' Angebot vom' : ' Angebote vom'; }
 									  }
-			else if( tag_type & 512 ) { row_class = "ac_ort";                  row_type = 'Kursort'; row_count_prefix = (tag_freq == 1) ? ' Kurs am' : ' Kurse am'; }
-			else if( tag_type & 1024) { row_class = "ac_merkmal"; 			   row_type = 'Kursmerkmal'; }
-			else if( tag_type & 32768){ row_class = "ac_unterrichtsart";	   row_type = 'Unterrichtsart'; row_count_prefix = (tag_freq == 1) ? ' Kurs zur' : ' Kurse zur'; }
+			else if( tag_type & 512 ) { row_class = "ac_ort";                  row_type = 'Angebotsort'; row_count_prefix = (tag_freq == 1) ? ' Angebot am' : ' Angebote am'; }
+			else if( tag_type & 1024) { row_class = "ac_merkmal"; 			   row_type = 'Angebotsmerkmal'; }
+			else if( tag_type & 32768){ row_class = "ac_unterrichtsart";	   row_type = 'Unterrichtsart'; row_count_prefix = (tag_freq == 1) ? ' Angebot zur' : ' Angebote zur'; }
 	
 			/* frequency, end base type */
 			if( tag_descr != '' ) row_postfix = ' (' + tag_descr + ')';
@@ -477,7 +477,7 @@ if (jQuery.ui)
 				row_count = tag_freq;
 				if(row_count_prefix == '')
 				{
-					row_count += (tag_freq == 1) ? ' Kurs' : ' Kurse';
+					row_count += (tag_freq == 1) ? ' Angebot' : ' Angebote';
 				} 
 				else
 				{
@@ -903,7 +903,7 @@ function editDurchfLoeschen(jqObj)
 {
 	if( $('.editDurchfRow').size() == 1 )
 	{
-		alert("Diese Durchf"+ue+"hrung kann nicht gel"+oe+"scht werden, da ein Kurs mindestens eine Durchf"+ue+"hrung haben muss.\n\nWenn Sie den Kurs komplett l"+oe+"schen m"+oe+"chten, verwenden Sie die Option \"Kurs l"+oe+"schen\" ganz unten auf dieser Seite.");
+		alert("Diese Durchf"+ue+"hrung kann nicht gel"+oe+"scht werden, da ein Angebot mindestens eine Durchf"+ue+"hrung haben muss.\n\nWenn Sie den Angebot komplett l"+oe+"schen m"+oe+"chten, verwenden Sie die Option \"Angebot l"+oe+"schen\" ganz unten auf dieser Seite.");
 		return;
 	}
 	else if( confirm("Diese Durchf"+ue+"hrung l"+oe+"schen?") )
@@ -923,7 +923,7 @@ function editDurchfKopieren(jqObj)
 
 function editKursLoeschen(jqObj)
 {
-	if( confirm("Wenn Sie einen Kurs l"+oe+"schen m"+oe+"chten, wird zun"+ae+"chst ein Sperrvermerk gesetzt; beim n"+ae+"chsten Index-Update wird der Kurs dann inkl. aller Durchf"+ue+"hrungen komplett gel"+oe+"scht. Dieser Vorgang kann nicht r"+ue+"ckg"+ae+"ngig gemacht werden!\n\nDen kompletten Kurs inkl. ALLER Durchf"+ue+"hrungen l"+oe+"schen?") )
+	if( confirm("Wenn Sie einen Angebot l"+oe+"schen m"+oe+"chten, wird zun"+ae+"chst ein Sperrvermerk gesetzt; beim n"+ae+"chsten Index-Update wird der Angebot dann inkl. aller Durchf"+ue+"hrungen komplett gel"+oe+"scht. Dieser Vorgang kann nicht r"+ue+"ckg"+ae+"ngig gemacht werden!\n\nDen kompletten Angebot inkl. ALLER Durchf"+ue+"hrungen l"+oe+"schen?") )
 	{
 		return true;
 	}

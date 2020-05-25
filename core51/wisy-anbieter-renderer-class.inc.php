@@ -109,7 +109,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		$anspr_tel		= htmlentities($db->fcs8('anspr_tel'));  // Achtung, Bindestrich muss gueltig sein, sonst wird nichts angezeigt
 		$anspr_fax		= htmlentities($db->fcs8('anspr_fax'));
 		$anspr_name		= htmlentities($db->fcs8('anspr_name'));
-		$anspr_email	= htmlentities($db->fcs8('anspr_email'));
+		$anspr_email	= trim(htmlentities($db->fcs8('anspr_email')));
 		$anspr_zeit		= htmlentities($db->fcs8('anspr_zeit'));
 		$homepage		= htmlentities($db->fcs8('homepage'));
 		$din_nr			= htmlentities($db->fcs8('din_nr'));
@@ -151,7 +151,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		$map_ort = urlencode(PHP7 ? utf8_encode(html_entity_decode($ort)) : html_entity_decode($ort));
 		$map_land = urlencode(PHP7 ? utf8_encode(html_entity_decode($land)) : html_entity_decode($land));
 		
-		$map_URL = 'https://maps.google.com/?q=' . $map_strasse . ', ' . $map_plz . ' ' . $map_ort . ($map_land ? ', ' . $map_land : '');
+		$map_URL = 'https://maps.google.com/?q=' . $map_strasse . ',%20' . $map_plz . '%20' . $map_ort . ($map_land ? ', ' . $map_land : '');
 
 		if( $strasse )
 		{

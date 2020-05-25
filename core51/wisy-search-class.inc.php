@@ -277,44 +277,45 @@ class WISY_SEARCH_CLASS
 					break;
 				
 				case 'typ':
-				    global $codes_stichwort_eigenschaften;
-				    $codes_array = explode('###', $codes_stichwort_eigenschaften);
-				    $code_found = false;
-				    
-				    for($i = 0; $i < count($codes_array); $i++) {
 				        
-				        // more than one type
-				        if(stripos($value, '#ODER#')) {
+				        global $codes_stichwort_eigenschaften;
+				        $codes_array = explode('###', $codes_stichwort_eigenschaften);
+				        $code_found = false;
+				        $cnt_types = 0;
+				        
+				        for($y = 0; $y < count($codes_array); $y++) {
 				            
-				            $val_arr = explode('#ODER#', $value);
-				            $cnt_types = 0;
-				            
-				            foreach($val_arr AS $val) {
-				                $cnt_types++;
-				                if(strtolower(trim($val)) == strtolower($codes_array[$i])) {
-				                    $code_found = true;
-				                    $this->rawWhere .= $this->rawWhere? ($cnt_types == 1 ? ' AND ( ' : ' OR ') : ' WHERE ';
-				                    $this->rawWhere .= "x_kurse.kurs_id IN (SELECT x_kurse_tags.kurs_id FROM x_kurse_tags, x_tags WHERE x_kurse_tags.tag_id = x_tags.tag_id AND x_tags.tag_type = ".$codes_array[$i-1].")";
-				                    if($cnt_types == count($val_arr))
-				                        $this->rawWhere .= ")";
-				                        
+				            // more than one type
+				            if(stripos(strtoupper($value), '#ODER#')) {
+				                
+				                $val_arr = explode('#ODER#', strtoupper($value));
+				                
+				                foreach($val_arr AS $val) {
+				                    if(strtolower(trim($val)) == strtolower($codes_array[$y])) {
+				                        $cnt_types++;
+				                        $code_found = true;
+				                        $this->rawWhere .= $this->rawWhere? ($cnt_types == 1 ? ' AND ( ' : ' OR ') : ' WHERE ( ';
+				                        $this->rawWhere .= "x_kurse.kurs_id IN (SELECT x_kurse_tags.kurs_id FROM x_kurse_tags, x_tags WHERE x_kurse_tags.tag_id = x_tags.tag_id AND x_tags.tag_type = ".$codes_array[$y-1].")";
+				                        if($cnt_types == count($val_arr))
+				                            $this->rawWhere .= ")";
+				                            
+				                    }
 				                }
+				                
+				            } elseif(strtolower(trim($value)) == strtolower($codes_array[$y])) {
+				                $code_found = true;
+				                $this->rawWhere .= $this->rawWhere? ' AND ' : ' WHERE ';
+				                $this->rawWhere .= "x_kurse.kurs_id IN (SELECT x_kurse_tags.kurs_id FROM x_kurse_tags, x_tags WHERE x_kurse_tags.tag_id = x_tags.tag_id AND x_tags.tag_type = ".$codes_array[$y-1].")";
 				            }
 				            
-				        } elseif(strtolower(trim($value)) == strtolower($codes_array[$i])) {
-				            $code_found = true;
-				            $this->rawWhere .= $this->rawWhere? ' AND ' : ' WHERE ';
-				            $this->rawWhere .= "x_kurse.kurs_id IN (SELECT x_kurse_tags.kurs_id FROM x_kurse_tags, x_tags WHERE x_kurse_tags.tag_id = x_tags.tag_id AND x_tags.tag_type = ".$codes_array[$i-1].")";
 				        }
 				        
-				    }
-				    
-				    if( !$code_found )
-				    {
-				        $this->error = array('id'=>'invalid_type', 'field'=>$value) ;
-				    }
-				    
-				    break;
+				        if( !$code_found )
+				        {
+				            $this->error = array('id'=>'invalid_type', 'field'=>$value) ;
+				        }
+				        
+				        break;
 				    
 				case 'preis':
 					if( preg_match('/^([0-9]{1,9})$/', $value, $matches) )
@@ -401,51 +402,60 @@ class WISY_SEARCH_CLASS
 				    break;
 				
 				case 'bei':
-					if( preg_match('/^\s*(\d+(\.\d+)?)\s*\/\s*(\d+(\.\d+)?)\s*$/', $value, $matches) ) // angabe lat/lng
-					{
-						$lat = floatval($matches[1]);
-						$lng = floatval($matches[3]);
-						$gi = array('direct_lat'=>$lat, 'direct_lng'=>$lng); // just for nicer debug view
-					}
-					else
-					{
-						$obj =& createWisyObject('WISY_OPENSTREETMAP_CLASS', $this->framework);
-						$gi = $obj->geocode2(array('free'=>str_replace('/', ',', $value))); // in Adressen muss der Schraegstrich anstelle des Kommas verwendet werden (das Komma trennt ja schon die verschiedenenn Suchkriterien)
-						if( $gi['error'] ) {
-							$this->error = array('id'=>'bad_location', 'field'=>$value, 'status'=>404);
-						}
-						else {
-							$lat = $gi['lat'];
-							$lng = $gi['lng'];
-						}
-					}
-
-					if( !is_array($this->error) )
-					{
-						$radius_meters = $km * 1000.0;
-						
-						$radius_lat = $radius_meters / 111320.0; // Abstand zwischen zwei Breitengraden: 111,32 km  (weltweit)
-						$radius_lng = $radius_meters /  71460.0; // Abstand zwischen zwei Laengengraden :  71,46 km  (im mittel in Deutschland)
-						
-						$min_lat = intval( ($lat - $radius_lat)*1000000 );
-						$max_lat = intval( ($lat + $radius_lat)*1000000 );
-						$min_lng = intval( ($lng - $radius_lng)*1000000 );
-						$max_lng = intval( ($lng + $radius_lng)*1000000 );
-
-						$this->rawJoin  .= " LEFT JOIN x_kurse_latlng j$i ON x_kurse.kurs_id=j$i.kurs_id";
-						$this->rawWhere .= $this->rawWhere? ' AND ' : ' WHERE ';
-						$this->rawWhere .= "((j$i.lat BETWEEN $min_lat AND $max_lat) AND (j$i.lng BETWEEN $min_lng AND $max_lng))"; // lt. https://dev.mysql.com/doc/refman/4.1/en/mysql-indexes.html wird der B-Tree auch fuer groesser/kleiner oder BETWEEN abfragen verwendet.
-						
-						if( isset($_COOKIE['debug']) )
-						{
-							echo '<p style="background-color: orange;">gi: ' . htmlspecialchars(print_r($gi, true)) . '</p>';
-						}
-
-						// remember some stuff for the getInfo() function (needed eg. for the "distance"-column)
-						$this->last_lat = $lat;
-						$this->last_lng = $lng;
-					}
-					break;
+				    if( preg_match('/^\s*(\d+(\.\d+)?)\s*\/\s*(\d+(\.\d+)?)\s*$/', $value, $matches) ) // angabe lat/lng
+				    {
+				        $lat = floatval($matches[1]);
+				        $lng = floatval($matches[3]);
+				        $gi = array('direct_lat'=>$lat, 'direct_lng'=>$lng); // just for nicer debug view
+				    }
+				    else
+				    {
+				        $obj =& createWisyObject('WISY_OPENSTREETMAP_CLASS', $this->framework);
+				        $value = (mb_detect_encoding($value, 'ISO-8859-1', true) ? utf8_encode($value) : $value);
+				        $gi = $obj->geocode2(array('free'=>str_replace('/', ',', $value))); // in Adressen muss der Schraegstrich anstelle des Kommas verwendet werden (das Komma trennt ja schon die verschiedenenn Suchkriterien)
+				        
+				        if( $gi['error'] ) {
+				            $this->error = array('id'=>'bad_location', 'field'=>$value, 'status'=>404);
+				        }
+				        else {
+				            $lat = $gi['lat'];
+				            $lng = $gi['lng'];
+				        }
+				    }
+				    
+				    if($_GET['debug'] == "ort") {
+				        echo "<br>Gesuchter Ort:<br><b>".(mb_detect_encoding($value, 'UTF-8', true) ? utf8_decode($value): $value)."</b><br><br>"
+				            ."Umlaut-Codierung Deutsch (ISO-8859-1)?:<br><b>".(mb_detect_encoding($value, 'ISO-8859-1', true) ? 'ja' : 'nein')."</b><br><br>"
+				            ."Umlaut-Codierung Deutsch (UTF-8)?:<br><b>".(mb_detect_encoding($value, 'UTF-8', true) ? 'ja' : 'nein')."</b><br><br>"
+				            .(is_array($gi) ? "Error:<br><b>".$gi['error']."</b>,<br><br>Anfrage an Geodkodierungsdienst war:<br><b>".$gi['url']."</b>" : '');
+				    }
+				    
+				    if( !is_array($this->error) )
+				    {
+				        $radius_meters = $km * 1000.0;
+				        
+				        $radius_lat = $radius_meters / 111320.0; // Abstand zwischen zwei Breitengraden: 111,32 km  (weltweit)
+				        $radius_lng = $radius_meters /  71460.0; // Abstand zwischen zwei Laengengraden :  71,46 km  (im mittel in Deutschland)
+				        
+				        $min_lat = intval( ($lat - $radius_lat)*1000000 );
+				        $max_lat = intval( ($lat + $radius_lat)*1000000 );
+				        $min_lng = intval( ($lng - $radius_lng)*1000000 );
+				        $max_lng = intval( ($lng + $radius_lng)*1000000 );
+				        
+				        $this->rawJoin  .= " LEFT JOIN x_kurse_latlng j$i ON x_kurse.kurs_id=j$i.kurs_id";
+				        $this->rawWhere .= $this->rawWhere? ' AND ' : ' WHERE ';
+				        $this->rawWhere .= "((j$i.lat BETWEEN $min_lat AND $max_lat) AND (j$i.lng BETWEEN $min_lng AND $max_lng))"; // lt. https://dev.mysql.com/doc/refman/4.1/en/mysql-indexes.html wird der B-Tree auch fuer groesser/kleiner oder BETWEEN abfragen verwendet.
+				        
+				        if( isset($_COOKIE['debug']) )
+				        {
+				            echo '<p style="background-color: orange;">gi: ' . htmlspecialchars(print_r($gi, true)) . '</p>';
+				        }
+				        
+				        // remember some stuff for the getInfo() function (needed eg. for the "distance"-column)
+				        $this->last_lat = $lat;
+				        $this->last_lng = $lng;
+				    }
+				    break;
 				
 				case 'km':
 					if( !$has_bei )

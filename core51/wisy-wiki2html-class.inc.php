@@ -122,8 +122,8 @@ class WISY_WIKI2HTML_CLASS extends WIKI2HTML_CLASS
 	{
 		switch( $level )
 		{
-			case 1:		return $open? '<table style="margin-bottom:0.8em;" cellpadding="4" cellspacing="0" border="0" width="100%"><tr><td style="border:1px solid #000000;">' : '</td></tr></table>';
-			default:	return $open? '<table style="margin-bottom:0.8em;" cellpadding="4" cellspacing="0" border="0" width="100%"><tr><td class="wikibox">' : '</td></tr></table>';
+		    case 1:		return $open? '<table style="margin-bottom:0.8em;"><tr><td style="border:1px solid #000000;">' : '</td></tr></table>'; //  cellpadding="4" cellspacing="0" border="0" width="100%"
+		    default:	return $open? '<table style="margin-bottom:0.8em;"><tr><td class="wikibox">' : '</td></tr></table>'; //  cellpadding="4" cellspacing="0" border="0" width="100%"
 		}
 	}
 }
