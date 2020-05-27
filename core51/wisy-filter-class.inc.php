@@ -769,6 +769,9 @@ class WISY_FILTER_CLASS
 				$value = trim(substr($value, $p+1));
 			}
 
+			if($field == "fav") // no filter - favourites list
+			    return $ret;
+			
 			// any token?
 			if( $field!='' || $value!='' )
 			{
