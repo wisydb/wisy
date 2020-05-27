@@ -642,13 +642,8 @@ class WISY_FILTER_CLASS
 	    
 	    // $q =  htmlspecialchars(trim(cs8($this->framework->getParam('q',  '')), ', ')); // ! utf8_encode
 	    $q =  htmlspecialchars(trim($this->framework->getParam('q',  ''), ', ')); // ! utf8_encode
-	    if(preg_match("/fav:$/i", $q)) $q = str_replace("fav:", "", $q);
-	    
 	    $qs = htmlspecialchars(trim($this->framework->getParam('qs', ''), ', ')); // ! utf8_encode
-	    if(preg_match("/fav:$/i", $qs)) $qs = str_replace("fav:", "", $qs);
-	    
 	    $qf = htmlspecialchars(trim($this->framework->getParam('qf', ''), ', ')); // ! utf8_encode
-	    if(preg_match("/fav:$/i", $qf)) $qf = str_replace("fav:", "", $qf);
 	    
 	    if($this->DEBUG) echo 'Vorher' . "<br />\n";
 	    if($this->DEBUG) echo 'q: ' .  $q . "<br />\n";
@@ -769,9 +764,6 @@ class WISY_FILTER_CLASS
 				$value = trim(substr($value, $p+1));
 			}
 
-			if($field == "fav") // no filter - favourites list
-			    return $ret;
-			
 			// any token?
 			if( $field!='' || $value!='' )
 			{
@@ -903,9 +895,13 @@ class WISY_FILTER_CLASS
 	    $active_filters = '';
 	    foreach($this->framework->tokensQF as $token) {
 	        foreach(explode($this->framework->filterValueSeparator, $token['value']) as $value) {
-	            if(trim($value) !== '' && $token['field'] != 'tag') {
+	            $value = trim($value);
+	            $token['field'] = trim($token['field']);
+	            
+	            if($value !== '' && $token['field'] != 'tag') {
 	                $ignore = false;
-	                switch($token['field']) {
+	                
+	                switch(strtolower($token['field'])) {
 	                    case 'preis':
 	                        $filterlabel = number_format($value, 0, ',', '.') . ' EUR';
 	                        if($value > 0 && strpos($value, '-') === false) {
@@ -968,6 +964,20 @@ class WISY_FILTER_CLASS
 	                        
 	                    default:
 	                        $filterlabel = $value;
+	                        break;
+	                }
+	            } else { // only label, no value
+	                switch(strtolower($token['field'])) {
+	                    case 'fav':
+	                        $ignore = true;
+	                        break;
+	                        
+	                    case 'favprint':
+	                        $ignore = true;
+	                        break;
+	                        
+	                    default:
+	                        $ignore = false;
 	                        break;
 	                }
 	            }
