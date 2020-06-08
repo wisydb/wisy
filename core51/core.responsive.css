@@ -832,7 +832,7 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 		/* https://materialdesignicons.com: tune */
 		background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23787878' d='M3,17V19H9V17H3M3,5V7H13V5H3M13,21V19H21V17H13V15H11V21H13M7,9V11H3V13H7V15H9V9H7M21,13V11H11V13H21M15,9H17V7H21V5H17V3H15V9Z' /%3E%3C/svg%3E") no-repeat center center/24px;
 	}
-	.wisyr_filternav.wisyr_filters_active #wisy_filterlink {
+	.wisyr_filternav.wisyr_filters_active #wisy_filterlink, body.activefilters #wisy_filterlink {
 		/* https://materialdesignicons.com: tune */
 		background: url("data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill-rule%3D%22evenodd%22%20clip-rule%3D%22evenodd%22%20stroke-linejoin%3D%22round%22%20stroke-miterlimit%3D%222%22%3E%3Cpath%20d%3D%22M3%2017v2h6v-2H3M3%205v2h10V5H3m10%2016v-2h8v-2h-8v-2h-2v6h2M7%209v2H3v2h4v2h2V9H7m14%204v-2H11v2h10m-6-4h2V7h4V5h-4V3h-2v6z%22%20fill-rule%3D%22nonzero%22%2F%3E%3Ccircle%20cx%3D%2217.809%22%20cy%3D%226.108%22%20r%3D%224.163%22%20fill%3D%22%233e7ab8%22%2F%3E%3C%2Fsvg%3E") no-repeat center center/24px;
 	}

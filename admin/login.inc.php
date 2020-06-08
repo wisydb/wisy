@@ -47,6 +47,7 @@ function login_screen()
 
 	$enter_loginname = $_REQUEST['enter_loginname']; 
 	$enter_password = '';  
+	$resetlogin = $_REQUEST['resetlogin'];
 	
 	require_lang('lang/login');
 
@@ -203,6 +204,8 @@ function login_screen()
 
 	$site->skin->buttonsStart();
 		form_button('enter_ok', htmlconstant('_OK'));
+		echo '<label for="resetlogin">Suchanfragen zur&uuml;cksetzen</label>';
+		form_control_check('resetlogin', $resetlogin);
 	$site->skin->buttonsEnd();
 
 	//
@@ -508,6 +511,19 @@ function login_check()
 	//
 	require_lang('lang/overview');
 	$site->msgAdd(htmlconstant('_LOGIN_WELCOME', "<b>$username</b>", sql_date_to_human($db_last_login, 'datetime')) . "\n", 'i');
+	
+	if ($_REQUEST['resetlogin']) {
+	    regSet("index.view.kurse.lastquery", '', '');
+	    regSet("index.view.kurse.rows", '20', '');
+	    regSet("index.view.anbieter.lastquery", '', '');
+	    regSet("index.view.anbieter.rows", '20', '');
+	    regSet("index.view.glossar.lastquery", '', '');
+	    regSet("index.view.glossar.rows", '20', '');
+	    regSet("index.view.portale.lastquery", '', '');
+	    regSet("index.view.portale.rows", '20', '');
+	    regSet("index.view.stichwoerter.lastquery", '', '');
+	    regSet("index.view.stichwoerter.rows", '20', '');
+	}
 	
 	$msg = regGet('msg.afterlogin', '');
 	if( $msg ) {

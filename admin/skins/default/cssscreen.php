@@ -571,3 +571,17 @@ input.anbieter_bezirk,
 input.df_bezirk {
 	display: none;
 }
+
+label[for='resetlogin'], input[name='resetlogin'] {
+	float: right;
+	margin-top: 1px;
+}
+
+label[for='resetlogin'] {
+	padding-right: 5px;
+}
+
+input[name='resetlogin'] {
+	min-width: 0px;
+	margin-top: 3px;
+}
