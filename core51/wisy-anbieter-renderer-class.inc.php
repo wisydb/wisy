@@ -441,7 +441,30 @@ class WISY_ANBIETER_RENDERER_CLASS
 		}
 		
 		// $db->close();
-	} 
+	}
+	
+	protected function checkOffersSameTag($tag_suchname, $kCntTotal, $tagID)
+	{
+	    $this->searchRenderer = createWisyObject('WISY_SEARCH_RENDERER_CLASS', $this->framework);
+	    
+	    // get SQL query to read all current offers
+	    $searcher =& createWisyObject('WISY_SEARCH_CLASS', $this->framework);
+	    $searcher->prepare($tag_suchname);
+	    if( !$searcher->ok() ) { echo 'Fehler: Anbieter nicht gefunden.'; return; } // error - offerer not found
+	    $sql = $searcher->getKurseRecordsSql('kurse.id');
+	    $einrichtungsort = $tagID;
+	    
+	    // direct search b/c Verwaltungs-SW not in x_...tables
+	    $sql = "SELECT kurse_stichwort.primary_id FROM kurse_stichwort WHERE kurse_stichwort.primary_id IN($sql) AND kurse_stichwort.attr_id = $tagID";
+	    
+	    $db = new DB_Admin;
+	    $db->query($sql);
+	    
+	    if($db->num_rows() == $kCntTotal)
+	        return true;
+	        
+	        return false;
+	}
 	
 	
 	protected function renderSealsOverview($anbieter_id, $pruefsiegel_seit, $steckbrief=false)
@@ -666,13 +689,33 @@ class WISY_ANBIETER_RENDERER_CLASS
 		// link "show all offers"
 		$freq = $this->tagsuggestorObj->getTagFreq(array($this->tag_suchname_id)); if( $freq <= 0 ) $freq = '';
 		$searchlink = $this->framework->getUrl('search');
-		echo '<h2>'.$freq.($freq==1? ' aktuelles Angebot' : ' aktuelle Angebote').'</h2>'
-		    .	'<p>'
-		    .		'<a class="wisyr_anbieter_kurselink" href="' . $searchlink . ((strpos($searchlink, '?') === FALSE) ? '?' : '&') .'qs=zeige:kurse&filter_anbieter=' .urlencode(str_replace(',', ' ', $tag_suchname)) . '">'
-		    .			"Alle $freq Angebote des Anbieters"
-		    .		'</a>'
-		    . 	'</p>';	
-
+		
+		$tag_pseudoOffer = $this->framework->iniRead('angebote_einrichtungsort', 806392);
+		
+		if($this->checkOffersSameTag($tag_suchname, $freq, $tag_pseudoOffer)) { // Einrichtungsort only
+		    echo '<h1>&nbsp;</h1>' . "\n";
+		} else {
+		    echo '<h1>Angebot</h1>' . "\n";
+		}
+		
+		
+		if( ($freq == "" && $typ == 2) || ($freq == 1 && $typ == 2) ) {
+		    echo '<h2></h2>'
+		        .	'<p>'
+		            .		'&nbsp;&nbsp;Beratung'
+		                . 	'</p>';
+		} elseif($this->checkOffersSameTag($tag_suchname, $freq, $tag_pseudoOffer)) { // Einrichtungsort only
+		    echo '';
+		}
+		else {
+		    echo '<h2>'.$freq.($freq==1? ' aktuelles Angebot' : ' aktuelle Angebote').'</h2>'
+		        .	'<p>'
+		            .		'<a class="wisyr_anbieter_kurselink" href="' . $searchlink . ((strpos($searchlink, '?') === FALSE) ? '?' : '&') .'qs=zeige:kurse&filter_anbieter=' .urlencode(str_replace(',', ' ', $tag_suchname)) . '">'
+		                .			"Alle $freq Angebote des Anbieters"
+		                .		'</a>'
+		                    . 	'</p>';
+		}
+		
 		// current offers overview
 		if( $this->framework->iniRead('anbieter.angebotsuebersicht', 1) )
 		{
