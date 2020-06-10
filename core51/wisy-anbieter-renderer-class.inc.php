@@ -690,7 +690,8 @@ class WISY_ANBIETER_RENDERER_CLASS
 		$freq = $this->tagsuggestorObj->getTagFreq(array($this->tag_suchname_id)); if( $freq <= 0 ) $freq = '';
 		$searchlink = $this->framework->getUrl('search');
 		
-		$tag_pseudoOffer = $this->framework->iniRead('angebote_einrichtungsort', 806392);
+		require_once('admin/config/codes.inc.php');
+		$tag_pseudoOffer = $this->framework->iniRead('angebote_einrichtungsort', TAG_EINRICHTUNGSORT);
 		
 		if($this->checkOffersSameTag($tag_suchname, $freq, $tag_pseudoOffer)) { // Einrichtungsort only
 		    echo '<h1>&nbsp;</h1>' . "\n";
