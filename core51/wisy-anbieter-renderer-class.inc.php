@@ -279,7 +279,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		/* Alle Angebote */
 		$this->tagsuggestorObj =& createWisyObject('WISY_TAGSUGGESTOR_CLASS', $this->framework); 
 		$tag_suchname = $this->tagsuggestorObj->keyword2tagName($suchname);
-		$this->tag_suchname_id = $this->tagsuggestorObj->getTagId(utf8_decode($tag_suchname));
+		$this->tag_suchname_id = $this->tagsuggestorObj->getTagId($tag_suchname);
 		$freq = $this->tagsuggestorObj->getTagFreq(array($this->tag_suchname_id)); if( $freq <= 0 ) $freq = '';
 		$searchlink = $this->framework->getUrl('search');
 		$vc['Alle Angebote'] = '<a class="wisy_showalloffers" href="' . $searchlink . ((strpos($searchlink, '?') === FALSE) ? '?' : '&') . 'qs=zeige:kurse&filter_anbieter=' . urlencode(htmlspecialchars(str_replace(',', ' ', $suchname))) . '">Alle ' . $freq . ' Angebote des Anbieters</a>';
@@ -631,7 +631,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 
 		$this->tagsuggestorObj =& createWisyObject('WISY_TAGSUGGESTOR_CLASS', $this->framework); 
 		$tag_suchname = $this->tagsuggestorObj->keyword2tagName($suchname);
-		$this->tag_suchname_id = $this->tagsuggestorObj->getTagId(utf8_decode($tag_suchname));
+		$this->tag_suchname_id = $this->tagsuggestorObj->getTagId($tag_suchname);
 		
 		echo "\n\n" . '<div id="wisy_resultarea" class="'.$this->framework->getAllowFeedbackClass().'">';
 		
