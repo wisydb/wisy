@@ -725,7 +725,7 @@ class WISY_SYNC_RENDERER_CLASS
 			$k_kurstage			= 0;
 			$k_tagescodes		= array();
 			$ort_sortonly		= '';
-			$db2->query("SELECT durchfuehrung.id AS did, durchfuehrung.user_grp, durchfuehrung.date_modified, strasse, plz, ort, stadtteil, land, beginn, ende, beginnoptionen, dauer, preis, kurstage, tagescode, zeit_von, zeit_bis, user_grp.shortname FROM durchfuehrung LEFT JOIN user_grp ON user_grp.id=durchfuehrung.user_grp LEFT JOIN kurse_durchfuehrung ON secondary_id=durchfuehrung.id WHERE primary_id=$kurs_id");
+			$db2->query("SELECT durchfuehrung.id AS did, durchfuehrung.user_grp, durchfuehrung.date_modified, strasse, plz, ort, stadtteil, land, beginn, ende, beginnoptionen, dauer, dauer_fix, preis, kurstage, tagescode, zeit_von, zeit_bis, user_grp.shortname FROM durchfuehrung LEFT JOIN user_grp ON user_grp.id=durchfuehrung.user_grp LEFT JOIN kurse_durchfuehrung ON secondary_id=durchfuehrung.id WHERE primary_id=$kurs_id");
 			$anz_durchf = 0;
 			//$at_least_one_durchf = false;
 			while( $db2->next_record() )
@@ -739,6 +739,7 @@ class WISY_SYNC_RENDERER_CLASS
 				$beginn			     = $db2->f8('beginn');
 				$ende			     = $db2->f8('ende');
 				$df_id			     = $db2->f8('did');
+				$dauer_fix 	         = intval($db2->f('dauer_fix'));
 				$user_grp			 = $db2->f8('user_grp');
 				$user_grp_shortname  = $db2->f8('shortname');
 				$date_modified		 = $db2->f8('date_modified');
@@ -855,7 +856,7 @@ class WISY_SYNC_RENDERER_CLASS
 				}
 
 				$d_dauer = berechne_dauer($beginn, $ende);
-				if( $d_dauer != intval($db2->f8('dauer')) )
+				if( $d_dauer != intval($db2->f('dauer')) && !$dauer_fix)
 				{
 					$write_back = " dauer=$d_dauer ";
 				}
