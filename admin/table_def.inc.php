@@ -841,7 +841,7 @@ function Table_Def_Finish($prop=0)
 	$user->add_row(TABLE_TEXTAREA,					'msg_to_user',		'Nachricht an den Benutzer', 0, 0, '', array('ctrl.rows'=>3, 'help.tooltip'=>'die Nachricht wird dem Benutzer immer angezeigt, wenn er sich im Redaktionssystem einloggt'));
 	$user->add_row(TABLE_DATETIME|TABLE_NEWSECTION,	'last_login',		htmlconstant('_LASTLOGIN'), 0, 0, htmlconstant('_STATE'));
 	$user->add_row(TABLE_DATETIME,					'last_login_error',	htmlconstant('_LASTLOGINERROR'), '', '', '', array('layout.join'=>1));
-	$user->add_row(TABLE_INT,						'num_login_errors',	htmlconstant('_STATE'), '', '', '', array('layout.join'=>1));
+	$user->add_row(TABLE_INT,                       'num_login_errors',        htmlconstant('_NUMLOGINERRORS'), '', '', '', array('layout.join'=>1));
 	$user->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,	'settings',			htmlconstant('_SETTINGS'), 0, 0, 0, array('layout.defhide'=>2, 'layout.join'=>1, 'help.url'=>$prop['user.settings.help.url']));
 	//$user->add_row(TABLE_TEXTAREA,					'remembered',		htmlconstant('_JOBLISTS')); -- this field may be several MB in size; do not make it editable, eg. diff is very time consuming completely useless
 	$user->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,	'notizen',			'Journal', '', '', '', array('layout.section'=>1));
