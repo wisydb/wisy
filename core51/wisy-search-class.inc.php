@@ -550,7 +550,7 @@ class WISY_SEARCH_CLASS
 						$this->rawJoinKurse = " LEFT JOIN kurse ON x_kurse.kurs_id=kurse.id";	 // this join is needed only to query COUNT(*)
 						
 						$this->rawWhere    .= $this->rawWhere? ' AND ' : ' WHERE ';				
-						$this->rawWhere    .= "MATCH(kurse.titel, kurse.beschreibung) AGAINST('".addslashes($value)."' IN BOOLEAN MODE)";
+						$this->rawWhere    .= "MATCH(kurse.titel, kurse.beschreibung) AGAINST('\"".addslashes(trim($value))."\"' IN BOOLEAN MODE)"; // '"...'" to match exact phrase:https://dev.mysql.com/doc/refman/8.0/en/fulltext-boolean.html
 					}
 					else
 					{
