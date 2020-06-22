@@ -826,10 +826,10 @@ class WISY_FRAMEWORK_CLASS
 	    $db->query("SELECT glossar, $field FROM $table WHERE id=$id");
 	    if( $db->next_record() ) {
 	        if( !($glossarId=$db->f('glossar')) ) {
-	            $db->query("SELECT id FROM glossar WHERE begriff='" .addslashes(PHP7 ? $db->f($field) : $db->f8($field)). "'");
+	            /* $db->query("SELECT id FROM glossar WHERE begriff='" .addslashes(PHP7 ? $db->f($field) : $db->f8($field)). "'");
 	            if( $db->next_record() ) {
 	                $glossarId = $db->f('id');
-	            }
+	            } */
 	        }
 	    }
 	    

@@ -651,6 +651,7 @@ if (jQuery.ui)
 			
 		}
 		// Auto-submit on select
+		$('#wisy_searcharea form').append('<input type="hidden" name="qtrigger" value="h">');
 		if(autosubmit) $('#wisy_searcharea form').submit();
 	}
 
