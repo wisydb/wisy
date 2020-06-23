@@ -201,15 +201,15 @@ class WISY_KURS_RENDERER_CLASS
 			if( sizeof((array) $durchfuehrungenIds) )
 			{
 				echo '<table class="wisy_list"' . html3(' cellpadding="0" cellspacing="0" border="0"') . '>';
-					echo '<tr>';
-						if (($wisyPortalSpalten & 2) > 0)	{ echo '<th>Zeiten</th>';			}
-						if (($wisyPortalSpalten & 4) > 0)	{ echo '<th>Dauer</th>';			}
-						if (($wisyPortalSpalten & 8) > 0)	{ echo '<th>Art</th>';				}
-						if (($wisyPortalSpalten & 16) > 0)	{ echo '<th>Preis</th>';			}
-						if (($wisyPortalSpalten & 32) > 0)	{ echo '<th>Ort, Bemerkungen</th>';	}
-						if (($wisyPortalSpalten & 64) > 0)	{ echo '<th>Ang.-Nr.</th>';			}
-						if (($wisyPortalSpalten & 128) > 0)	{ echo '<th>Bemerkungen</th>';	    }
-					echo '</tr>';
+    				echo '<tr>';
+    				    if (($wisyPortalSpalten & 2) > 0)	{ echo '<th class="zeiten">Zeiten</th>';			}
+    				    if (($wisyPortalSpalten & 4) > 0)	{ echo '<th class="dauer">Dauer</th>';			}
+    				    if (($wisyPortalSpalten & 8) > 0)	{ echo '<th class="art">Art</th>';				}
+    				    if (($wisyPortalSpalten & 16) > 0)	{ echo '<th class="preis">Preis</th>';			}
+    				    if (($wisyPortalSpalten & 32) > 0)	{ echo '<th class="ort">Ort</th>';	}
+    				    if (($wisyPortalSpalten & 64) > 0)	{ echo '<th class="ang_nr">Ang.-Nr.</th>';			}
+    				    if (($wisyPortalSpalten & 128) > 0)	{ echo '<th class="bemerkungen">Bemerkungen</th>';	}
+    				echo '</tr>';
 					
 					/*
 					$maxDurchf = intval($this->framework->iniRead('details.durchf.max'));

@@ -41,13 +41,13 @@ class WISY_FRAMEWORK_CLASS
 		$GLOBALS['wisyPortalSpalten'] = 0;
 		$temp = $this->iniRead('spalten'); if( $temp == '' ) $temp = 'anbieter,termin,dauer,art,preis,ort,bemerkungen';
 		$temp = str_replace(' ', '', $temp) . ',';
-		if( strpos($temp, 'anbieter,'			)!==false ) $GLOBALS['wisyPortalSpalten'] += 1;
-		if( strpos($temp, 'termin,'				)!==false ) $GLOBALS['wisyPortalSpalten'] += 2;
-		if( strpos($temp, 'dauer,'				)!==false ) $GLOBALS['wisyPortalSpalten'] += 4;
-		if( strpos($temp, 'art,'				)!==false ) $GLOBALS['wisyPortalSpalten'] += 8;
-		if( strpos($temp, 'preis,'				)!==false ) $GLOBALS['wisyPortalSpalten'] += 16;
-		if( strpos($temp, 'ort,'				)!==false ) $GLOBALS['wisyPortalSpalten'] += 32;
-		if( strpos($temp, 'kursnummer,'			)!==false ) $GLOBALS['wisyPortalSpalten'] += 64;
+		if( strpos($temp, 'anbieter'			)!==false ) $GLOBALS['wisyPortalSpalten'] += 1;
+		if( strpos($temp, 'termin'				)!==false ) $GLOBALS['wisyPortalSpalten'] += 2;
+		if( strpos($temp, 'dauer'				)!==false ) $GLOBALS['wisyPortalSpalten'] += 4;
+		if( strpos($temp, 'art'				)!==false ) $GLOBALS['wisyPortalSpalten'] += 8;
+		if( strpos($temp, 'preis'				)!==false ) $GLOBALS['wisyPortalSpalten'] += 16;
+		if( strpos($temp, 'ort'				)!==false ) $GLOBALS['wisyPortalSpalten'] += 32;
+		if( strpos($temp, 'kursnummer'			)!==false ) $GLOBALS['wisyPortalSpalten'] += 64;
 		if( strpos($temp, 'bemerkungen'			)!==false ) $GLOBALS['wisyPortalSpalten'] += 128;
 		// if( strpos($temp, 'bunummer'			)!==false ) $GLOBALS['wisyPortalSpalten'] += 256;
 	}
@@ -240,19 +240,14 @@ class WISY_FRAMEWORK_CLASS
 	        // Dieser sollte beim Überschreiben von Kernfunktionen immer gleich sein:
 	        switch(str_replace(array("CUSTOM_", "DEV_", "ALPHA_", "BETA_"), "", get_class($result))) {
 	            case 'WISY_SEARCH_RENDERER_CLASS':
-	            case 'SEARCH_RENDERER_CLASS':
 	                return "suche";
 	            case 'WISY_ADVANCED_RENDERER_CLASS':
-	            case 'ADVANCED_RENDERER_CLASS':
 	                return "advanced";
 	            case 'WISY_KURS_RENDERER_CLASS':
-	            case 'KURS_RENDERER_CLASS':
 	                return "kurs";
 	            case 'WISY_ANBIETER_RENDERER_CLASS':
-	            case 'ANBIETER_RENDERER_CLASS':
 	                return "anbieter";
 	            case 'WISY_GLOSSAR_RENDERER_CLASS':
-	            case 'GLOSSAR_RENDERER_CLASS':
 	                return "glossar";
 	            default:
 	                return false;
@@ -1224,25 +1219,35 @@ class WISY_FRAMEWORK_CLASS
 				jQuery(".cc-btn.cc-allow").click(function(){
 					jQuery(".cc-consent-details input[type=checkbox]").each(function(){
 						var cname = jQuery(this).attr("name");
-						$.removeCookie(cname, { path: "/" });
-						if(jQuery(this).is(":checked")) {
-							setCookieSafely(cname, "allow", { expires:'.$cookieOptions['cookie']['expiryDays'].'});';
+						jQuery.removeCookie(cname, { path: "/" });';
+						
+						if(trim($cookieOptions['content']['zustimmung_einstellungen']) != "" && $this->iniRead("cookiebanner.zustimmung.analytics.essentiell", false) !== false)
+							$ret .='if( jQuery(this).is(":checked") && jQuery(".cc-consent-details .einstellungen input[type=checkbox]").is(":checked") ) {
+								setCookieSafely(cname, "allow", { expires:'.$cookieOptions['cookie']['expiryDays'].'});';
+						else
+							$ret .='if( jQuery(this).is(":checked") ) {
+								setCookieSafely(cname, "allow", { expires:'.$cookieOptions['cookie']['expiryDays'].'});';
 							
 							if(!$this->iniRead("cookiebanner.zustimmung.analytics.autoload", 0)) {
 								$ret .= '
 										if(cname == "cconsent_analytics") {
-											$.ajax({ url: window.location.href, dataType: \'html\'}); // call same page with analytics allowed, since now allowed to count this page view // dataType html makes sure scripts are loaded
+											jQuery.ajax({ url: window.location.href, dataType: \'html\'}); // call same page with analytics allowed, since now allowed to count this page view // dataType html makes sure scripts are loaded
 										}';
 							}
 							
+							
 				$ret .= '
-						}
-					});
+						}'; // End: is:checked
+						
+				if(trim($cookieOptions['content']['zustimmung_einstellungen']) != "" && $this->iniRead("cookiebanner.zustimmung.analytics.essentiell", false) !== false)
+				$ret .='if( jQuery(".cc-consent-details .einstellungen input[type=checkbox]").is(":checked") == false)
+													setTimeout(function(){ jQuery.cookie("cookieconsent_status", null, { path: "/", sameSite: "Strict" }); } , 500);';
+								
+					$ret .= '});
 				});
 				
 			});
-	            
-            '.($this->detailed_cookie_settings_einstellungen ? "" : "window.cookiebanner_zustimmung_einstellungen_legacy = 1;").'
+			
 			'.($this->detailed_cookie_settings_popuptext ? "" : "window.cookiebanner_zustimmung_popuptext_legacy = 1;").'
 			'.($this->detailed_cookie_settings_merkliste ? "" : "window.cookiebanner_zustimmung_merkliste_legacy = 1;").'
 			'.($this->detailed_cookie_settings_onlinepflege ? "" : "window.cookiebanner_zustimmung_onlinepflege_legacy = 1;").'
@@ -1254,14 +1259,50 @@ class WISY_FRAMEWORK_CLASS
 			if( $this->iniRead("cookiebanner.zustimmung.analytics.essentiell", 0) &&  $this->iniRead("cookiebanner.zustimmung.analytics.autoload", 0) && !isset($_COOKIE['cookieconsent_status']) ) {
 					$ret .= '<script>';
 					$ret .= 'setCookieSafely("cconsent_analytics", "allow", { expires:'.$cookieOptions['cookie']['expiryDays'].' });'." \n";
-					$ret .= '$.ajax({ url: window.location.href, dataType: \'html\'});'." \n"; // call same page with analytics allowed to count this page view
+					$ret .= 'jQuery.ajax({ url: window.location.href, dataType: \'html\'});'." \n"; // call same page with analytics allowed to count this page view
 					$ret .= '</script>';
 			}
-	    }
-	    
-	    return $ret;
-	    
-	    return '';
+			
+			// Set Cookies automatically, if...:
+			if( $this->iniRead("cookiebanner.zustimmung.einstellungen.essentiell", 0) == 2 ) {
+					$ret .= '<script>';
+					$ret .= 'setCookieSafely("cconsent_einstellungen", "allow", { expires:'.$cookieOptions['cookie']['expiryDays'].' });'." \n";
+					$ret .= 'setCookieSafely("cookieconsent_status", "allow", { expires:'.$cookieOptions['cookie']['expiryDays'].' });'." \n";
+					// $ret .= 'cookieconsent.popup.close();';
+					$ret .= '</script>';
+			}
+			
+			if( $this->iniRead("cookiebanner.zustimmung.popuptext.essentiell", 0) == 2 ) {
+					$ret .= '<script>';
+					$ret .= 'setCookieSafely("cconsent_popuptext", "allow", { expires:'.$cookieOptions['cookie']['expiryDays'].' });'." \n";
+					$ret .= '</script>';
+			}
+			
+			if( $this->iniRead("cookiebanner.zustimmung.merkliste.essentiell", 0) == 2 ) {
+					$ret .= '<script>';
+					$ret .= 'setCookieSafely("cconsent_merkliste", "allow", { expires:'.$cookieOptions['cookie']['expiryDays'].' });'." \n";
+					$ret .= '</script>';
+			}
+			
+			if( $this->iniRead("cookiebanner.zustimmung.onlinepflege.essentiell", 0) == 2 ) {
+					$ret .= '<script>';
+					$ret .= 'setCookieSafely("cconsent_onlinepflege", "allow", { expires:'.$cookieOptions['cookie']['expiryDays'].' });'." \n";
+					$ret .= '</script>';
+			}
+			
+			if( $this->iniRead("cookiebanner.zustimmung.translate.essentiell", 0) == 2) {
+					$ret .= '<script>';
+					$ret .= 'setCookieSafely("cconsent_translate", "allow", { expires:'.$cookieOptions['cookie']['expiryDays'].' });'." \n";
+					$ret .= '</script>';
+			}
+			
+			
+			
+		}
+		
+		return $ret;
+		
+		return '';
 	}
 	
 	
@@ -1542,7 +1583,7 @@ class WISY_FRAMEWORK_CLASS
 	    {
 	        $ret .= '
 				<script>
-				'.($this->detailed_cookie_settings_analytics ? 'var optedOut = ($.cookie("cconsent_analytics") != "allow");' : ' var optedOut = (document.cookie.indexOf("cookieconsent_status=deny") > -1);').'
+				'.($this->detailed_cookie_settings_analytics ? 'var optedOut = (jQuery.cookie("cconsent_analytics") != "allow");' : ' var optedOut = (document.cookie.indexOf("cookieconsent_status=deny") > -1);').'
 				    
 				if (!optedOut) {
 					(function(i,s,o,g,r,a,m){i["GoogleAnalyticsObject"]=r;i[r]=i[r]||function(){
@@ -1558,18 +1599,23 @@ class WISY_FRAMEWORK_CLASS
 				</script>';
 	    }
 	    
-	    $piwik = ($this->detailed_cookie_settings_analytics ? $_COOKIE['cconsent_analytics'] == 'allow' : $this->iniRead('analytics.piwik', ''));
-	    if( $piwik != '' )
-	    {
-	        if( strpos($piwik, ',')!==false ) {
-	            list($piwik_site, $piwik_id) = explode(',', $piwik);
-	        }
-	        else {
-	            $piwik_site = 'statistik.kursportal.info';
-	            $piwik_id = $this->iniRead('analytics.piwik', '');
-	        }
-	        
-	        $ret .= "
+	    $piwik = '';
+	    if($this->detailed_cookie_settings_analytics && $_COOKIE['cconsent_analytics'] != 'allow')
+	        $piwik = '';
+	        else
+	            $piwik = $this->iniRead('analytics.piwik', '');
+	            
+	            if( $piwik != '' )
+	            {
+	                if( strpos($piwik, ',')!==false ) {
+	                    list($piwik_site, $piwik_id) = explode(',', $piwik);
+	                }
+	                else {
+	                    $piwik_site = 'statistik.kursportal.info';
+	                    $piwik_id = $this->iniRead('analytics.piwik', '');
+	                }
+	                
+	                $ret .= "
 				<!-- Matomo -->
 				<!-- analytics.piwik -->
 				<script type=\"text/javascript\">
@@ -1587,8 +1633,8 @@ class WISY_FRAMEWORK_CLASS
 				<!-- /analytics.piwik -->
 				<!-- End Matomo Code -->
 				";
-	    }
-	    return $ret;
+	            }
+	            return $ret;
 	}
 	
 	function getSearchField()
@@ -1904,6 +1950,22 @@ class WISY_FRAMEWORK_CLASS
 			$auth =& createWisyObject('WISY_AUTH_CLASS', $this);
 			$auth->check();
 		}
+		
+		/* Don't allow search request parameters to be set, if search isn't valid for page type -> don't let search engines and hackers consume unecessary ressources ! */
+		global $wisyRequestedFile;
+		$valid_searchrequests = array('rss', 'search', 'advanced', 'filter', 'tree', 'geocode', 'autosuggest', 'autosuggestplzort', 'opensearch', 'kurse.php', 'anbieter.php', 'glossar.php');
+		if(
+		    (isset($_GET['q']) || isset($_GET['qs']) || isset($_GET['qf']) || isset($_GET['qsrc']) || isset($_GET['offset']))
+		    && !in_array($wisyRequestedFile, $valid_searchrequests)
+		    && stripos($wisyRequestedFile, 'k') !== 0 && strpos($wisyRequestedFile, 'a') !== 0 && strpos($wisyRequestedFile, 'g') !== 0
+		    )
+		    $this->error404("Anfrage nicht erlaubt: q, qs, wf, qsrc, qtrigger, offset f&uuml;r  ".trim($wisyRequestedFile, '.php')
+		        );
+		    
+		    foreach($_GET AS $get) {
+		        if(strpos($get, 'volltext') !== FALSE && $_GET['qtrigger'] != 'h')
+		            $this->error404("Volltextanfrage per direkter Verlinkung aus Ressourcengr&uuml;nden nicht erlaubt.<br><br>Bitte geben Sie Ihre Volltextanfrage unbedingt manuell in das Suchfeld ein - bzw. klicken Sie noch mal selbst auf 'Kurse finden' !<br><br>");
+		    }
 
 		// see what to do
 		$renderer =& $this->getRenderer();
@@ -1937,16 +1999,18 @@ class WISY_FRAMEWORK_CLASS
 	}
 	
 	function addCConsentOption($name, $cookieOptions) {
-	    return "<li class='{$name}'>
+	    $cookie_essentiell = $this->iniRead("cookiebanner.zustimmung.{$name}.essentiell", 0);
+	    return "<li class='{$name} ".($cookie_essentiell == 2 ? "disabled" : "")."'>
     				<input type='checkbox' name='cconsent_{$name}' "
-    				.(($this->iniRead("cookiebanner.zustimmung.{$name}.essentiell", 1) || $_COOKIE['cconsent_'.$name] == 'allow') ? "checked='checked'" : "")
+    				.(($cookie_essentiell || $_COOKIE['cconsent_'.$name] == 'allow') ? "checked='checked'" : "")
+    				.($cookie_essentiell == 2 ? "disabled" : "")
     				."> "
     				."<div class='consent_option_infos'>"
-    				    .$cookieOptions["content"]["zustimmung_{$name}"]
-    				    ."<span class='importance'>"
-    				    .($this->iniRead("cookiebanner.zustimmung.{$name}.essentiell", 1) ? '<br>(essentiell)' : '<br>(optional'.($_COOKIE['cconsent_'.$name] == 'allow' ? ' - aktiv zugestimmt' : '').')').'</span>'
+    				.$cookieOptions["content"]["zustimmung_{$name}"]
+    				."<span class='importance'>"
+    				.($cookie_essentiell === 1 ? '<br>(essentiell)' : ($cookie_essentiell == 2 ? '<br>(technisch notwendig)' : '<br>(optional'.($_COOKIE['cconsent_'.$name] == 'allow' ? ' - aktiv zugestimmt' : '').')')).'</span>'
     				.'</div>'
-    		    ."</li>";
+    				."</li>";
 	}
 	
 };

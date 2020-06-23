@@ -454,6 +454,7 @@ class WISY_EDIT_RENDERER_CLASS
 			// "OK" wurde angeklickt - loginversuch starten
 			$fwd 				= $_REQUEST['fwd'];
 			$anbieterSuchname	= $_REQUEST['as'];
+			$anbieterSuchname_utf8dec = (PHP7 ? $anbieterSuchname : $anbieterSuchname);
 
 			$logwriter = new LOG_WRITER_CLASS;
 			$logwriter->addData('ip', $_SERVER['REMOTE_ADDR']);
@@ -468,6 +469,7 @@ class WISY_EDIT_RENDERER_CLASS
 			$db->query("SELECT suchname FROM anbieter WHERE id=".intval($anbieterSuchname_utf8dec)." AND freigeschaltet = 1");
 			if( $db->next_record() ) {
 				$anbieterSuchname = $db->fs('suchname');
+				$anbieterSuchname_utf8dec = (PHP7 ? $anbieterSuchname : $anbieterSuchname);
 			}
 			
 			$login_as = false;
@@ -571,6 +573,7 @@ class WISY_EDIT_RENDERER_CLASS
 				if( $db->next_record() )
 				{
 					$anbieterSuchname = $db->fs('suchname');
+					$anbieterSuchname_utf8dec = (PHP7 ? $anbieterSuchname : utf8_decode($anbieterSuchname));
 				}
 				$fwd = "edit?action=ek&id=".intval($_REQUEST['id']);
 				$secureLogin = $fwd;
@@ -581,6 +584,7 @@ class WISY_EDIT_RENDERER_CLASS
 					$fwd 				= $_REQUEST['fwd'];
 				}
 				$anbieterSuchname	= $_REQUEST['as'];
+				$anbieterSuchname_utf8dec = (PHP7 ? $anbieterSuchname : utf8_decode($anbieterSuchname));
 				$secureLogin = "edit?action=login&as=".urlencode($anbieterSuchname);
 			}
 			
@@ -632,7 +636,7 @@ class WISY_EDIT_RENDERER_CLASS
 			    
 			    $editurl = ($secureaction != "") ? $secureaction : "edit";
 			    
-			    echo '<form action="'.$editurl.'" method="post">';
+			    echo '<form action="edit" method="post">'; // '.$editurl.'
 					echo '<table>';
 						echo "<input type=\"hidden\" name=\"action\" value=\"loginSubseq\" />";
 						echo "<script type=\"text/javascript\"><!--\ndocument.write('<input type=\"hidden\" name=\"javascript\" value=\"enabled\" />');\n/"."/--></script>";
@@ -2431,86 +2435,126 @@ class WISY_EDIT_RENDERER_CLASS
 		return $hash; // AGB-hash to confirm
 	}
 	
+	private function _dataprotection_get_hash()
+	{
+	    $dataprotection_glossar_entry = intval($this->framework->iniRead('useredit.datenschutz', 0));
+	    if( $dataprotection_glossar_entry <= 0 )
+	        return '';
+	        
+	        $db = new DB_Admin;
+	        $db->query("SELECT erklaerung FROM glossar WHERE id=".$dataprotection_glossar_entry);
+	        if( !$db->next_record() )
+	            return ''; // DP record does not exist
+	            
+	            $temp = $db->f8('erklaerung');
+	            if( $temp == '' )
+	                return ''; // DP are empty
+	                
+	                $temp = strtr($temp, "\n\r\t", "   "); $temp = str_replace(' ', '', $temp);
+	                $hash = md5($temp);
+	                
+	                // $db->close();
+	                return $hash;
+	}
+	
 	private function _agb_reading_required()
 	{
-		if( $_SESSION['_agb_ok_for_this_session'] )
-			return false; // AGB were okay at the beginning of the session, keep this state to avoid annoying AGB popups during editing
-
-		$soll_hash = $this->_agb_get_hash();
-		if( $soll_hash == '' )
-			return false; // no AGB reading required
-		
-		if( $this->_anbieter_ini_read('useredit.agb.accepted_hash', '') == $soll_hash )
-			return false; // AGB already read
-
-		if( isset($_REQUEST['agb_not_accepted']) ) 
-		{
-			header('Location: '.$this->framework->getUrl('edit', array('action'=>'logout')));
-			exit();
-		}
-		else if( isset($_REQUEST['agb_accepted']) 
-			  && $soll_hash == $_REQUEST['agb_hash'] ) 
-		{
-			if( !$_SESSION['_login_as'] ) {
-				$this->_anbieter_ini_settings['useredit.agb.accepted_hash'] = $soll_hash;
-				$this->_anbieter_ini_write();
-				$logwriter = new LOG_WRITER_CLASS;
-				$logwriter->log('anbieter', intval($_SESSION['loggedInAnbieterId']), $this->getAdminAnbieterUserId20(), 'agbaccepted');
-				
-				$db = new DB_Admin;
-				$today = strftime("%d.%m.%y");
-				$db->query("UPDATE anbieter SET notizen = CONCAT('$today: AGB akzeptiert\n', notizen) WHERE id=".intval($_SESSION['loggedInAnbieterId']));
-			}
-			
-			$_SESSION['_agb_ok_for_this_session'] = true;
-			header("Location: ".$_REQUEST['fwd']);
-			exit();
-		}
-			
-		return true; // AGB reading required!
+	    if( $_SESSION['_agb_ok_for_this_session'] )
+	        return false; // AGB were okay at the beginning of the session, keep this state to avoid annoying AGB popups during editing
+	        
+	        $soll_hash = $this->_agb_get_hash().$this->_dataprotection_get_hash();
+	        if( $soll_hash == '' )
+	            return false; // no AGB reading required
+	            
+	            if( $this->_anbieter_ini_read('useredit.agb.accepted_hash', '') == $soll_hash )
+	                return false; // AGB already read
+	                
+	                $need_to_accept_dataprotection = intval($this->framework->iniRead('useredit.datenschutz', 0));
+	                if( $_REQUEST['agb_accepted'] == "on" && $soll_hash == $_REQUEST['agb_hash'] && ($need_to_accept_dataprotection && $_REQUEST['dataprotection_accepted'] == "on" || !$need_to_accept_dataprotection) )
+	                {
+	                    if( !$_SESSION['_login_as'] ) {
+	                        $this->_anbieter_ini_settings['useredit.agb.accepted_hash'] = $soll_hash;
+	                        $this->_anbieter_ini_write();
+	                        $logwriter = new LOG_WRITER_CLASS;
+	                        $logwriter->log('anbieter', intval($_SESSION['loggedInAnbieterId']), $this->getAdminAnbieterUserId20(), 'agbaccepted');
+	                        
+	                        $db = new DB_Admin;
+	                        $today = strftime("%d.%m.%y");
+	                        $db->query("UPDATE anbieter SET notizen = CONCAT('$today: AGB akzeptiert\n', notizen) WHERE id=".intval($_SESSION['loggedInAnbieterId']));
+	                    }
+	                    
+	                    $_SESSION['_agb_ok_for_this_session'] = true;
+	                    header("Location: ".$_REQUEST['fwd']);
+	                    exit();
+	                }
+	                
+	                return true; // AGB reading required!
 	}
 	
 	private function _render_agb_screen()
 	{
-		$agb_glossar_entry = intval($this->framework->iniRead('useredit.agb', 0));
-		$db = new DB_Admin;
-		$db->query("SELECT begriff, erklaerung FROM glossar WHERE id=".$agb_glossar_entry);
-		$db->next_record();
-		$begriff = $db->fs('begriff');
-		$erklaerung = $db->fs('erklaerung');
-
-		echo $this->framework->getPrologue(array('title'=>$begriff, 'bodyClass'=>'wisyp_edit'));
-			
-			echo '<a name="top"></a>'; // make [[toplinks()]] work
-			echo '<h1>' . isohtmlspecialchars($begriff) . '</h1>';
-			$wiki2html =& createWisyObject('WISY_WIKI2HTML_CLASS', $this->framework);
-			$wiki2html->forceBlankTarget = true;
-			echo $wiki2html->run($erklaerung);
-			
-			$fwd = 'search';
-			if( $_REQUEST['action'] == 'ek' ) {
-				$fwd = "edit?action=ek&id=".intval($_REQUEST['id']);
-			}
-			else if( isset($_REQUEST['fwd']) ) {
-				$fwd = $_REQUEST['fwd'];
-			}
-			
-			echo '<form action="edit" method="post">';
-				echo '<input type="hidden" name="fwd" value="'.isohtmlspecialchars($fwd).'" />';
-				echo '<input type="hidden" name="agb_hash" value="'.isohtmlspecialchars($this->_agb_get_hash()).'" />';
-				echo '<input type="submit" name="agb_accepted" value="OK - Ich stimme allen Bedingungen ZU" />';
-				echo ' &nbsp; ';
-				echo '<input type="submit" name="agb_not_accepted" value="Abbruch - Ich stimme einigen Bedingungen NICHT ZU" />';
-			echo '</form>';
-			
-			if( $_SESSION['_login_as'] ) {
-				echo '<p style="background:red; color:white; padding:1em; "><b>Achtung:</b> Sie haben sich als Redakteur im Namen eines Anbieters, 
-					der die AGB noch nicht bestätigt hat, eingeloggt. Wenn Sie die AGB jetzt bestätigen, gilt dies nur für die aktuelle Sitzung; 
-					der Anbieter wird die AGB sobald er sich selbst einloggt erneut bestätigen müssen. Dieser Hinweis erscheint nur für Redakteure.</p>';
-				
-			}
-			
-		echo $this->framework->getEpilogue();
+	    $agb_glossar_entry = intval($this->framework->iniRead('useredit.agb', 0));
+	    $db = new DB_Admin;
+	    $db->query("SELECT begriff, erklaerung FROM glossar WHERE id=".$agb_glossar_entry);
+	    $db->next_record();
+	    $begriff = $db->fs('begriff');
+	    $erklaerung = $db->fs('erklaerung');
+	    
+	    $dataprotection_glossar_entry = intval($this->framework->iniRead('useredit.datenschutz', 0));
+	    if($dataprotection_glossar_entry > 0) {
+	        $db = new DB_Admin;
+	        $db->query("SELECT begriff, erklaerung FROM glossar WHERE id=".$dataprotection_glossar_entry);
+	        $db->next_record();
+	        $begriff_dataprotection = $db->f('begriff');
+	        $erklaerung_dataprotection = $db->f('erklaerung');
+	    }
+	    
+	    echo $this->framework->getPrologue(array('title'=>$begriff, 'bodyClass'=>'wisyp_edit'));
+	    
+	    echo '<h1>Zur Bearbeitung Ihrer Daten ist Ihre Zustimmung zu den AGB'.($erklaerung_dataprotection ? ' und der Datenschutzerkl&auml;rung' : '').' n&ouml;tig.</h1>';
+	    echo '<h1>Grund: &Auml;nderung seit Ihrem letzten Login oder Ihr erster Login.</h1>';
+	    echo '<br><br><br>';
+	    
+	    echo '<a name="top"></a>'; // make [[toplinks()]] work
+	    echo '<h1>' . isohtmlspecialchars($begriff) . '</h1>';
+	    $wiki2html =& createWisyObject('WISY_WIKI2HTML_CLASS', $this->framework);
+	    $wiki2html->forceBlankTarget = true;
+	    echo $wiki2html->run($erklaerung);
+	    
+	    if($dataprotection_glossar_entry > 0 && $erklaerung_dataprotection) {
+	        echo '<hr><hr>';
+	        echo '<h1>' . htmlspecialchars($begriff_dataprotection) . '</h1><br><br>';
+	        $wiki2html =& createWisyObject('WISY_WIKI2HTML_CLASS', $this->framework);
+	        $wiki2html->forceBlankTarget = true;
+	        echo $wiki2html->run($erklaerung_dataprotection);
+	    }
+	    
+	    $fwd = 'search';
+	    if( $_REQUEST['action'] == 'ek' ) {
+	        $fwd = "edit?action=ek&id=".intval($_REQUEST['id']);
+	    }
+	    else if( isset($_REQUEST['fwd']) ) {
+	        $fwd = $_REQUEST['fwd'];
+	    }
+	    
+	    echo '<hr><br><br><form action="edit" method="post">';
+	    echo '<input type="hidden" name="fwd" value="'.htmlspecialchars($fwd).'" />';
+	    echo '<input type="hidden" name="agb_hash" value="'.htmlspecialchars($this->_agb_get_hash()).htmlspecialchars($this->_dataprotection_get_hash()).'" />';
+	    echo '<input type="checkbox" name="agb_accepted"> <b>Ich habe die AGB gelesen und akzeptiere diese.</b><br>';
+	    if($dataprotection_glossar_entry > 0)
+	        echo '<input type="checkbox" name="dataprotection_accepted"> <b>Ich habe die Datenschutzerkl&auml;rung gelesen und stimme dieser zu.</b><br>';
+	        
+	        echo '<br><input type="submit" value="speichern" style="font-weight: bold; font-size: 1em;" />';
+	        echo '<br><br><a href="'.$this->framework->getUrl('edit', array('action'=>'logout')).'">Abbruch - Ich stimme einigen Bedingungen NICHT ZU</a>';
+	        echo '</form><br><br>';
+	        
+	        if( $_SESSION['_login_as'] ) {
+	            echo '<p style="background:red; color:white; padding:1em; "><b>Achtung:</b> Sie haben sich als Redakteur im Namen eines Anbieters,
+					der die AGB noch nicht best&auml;tigt hat, eingeloggt. Wenn Sie die AGB jetzt best&auml;tigen, gilt dies nur f&uuml;r die aktuelle Sitzung;
+					der Anbieter wird die AGB sobald er sich selbst einloggt erneut best&auml;tigen m&uuml;ssen. Dieser Hinweis erscheint nur f&uuml;r Redakteure.</p>';
+	        }
+	        
+	        echo $this->framework->getEpilogue();
 	}
 	 
 	 /**************************************************************************

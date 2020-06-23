@@ -1031,6 +1031,9 @@ a.expires?"; expires="+a.expires.toUTCString():"",a.path?"; path="+a.path:"",a.d
  * or if cookie is not blacklisted via cookiebanner.cookies.optout
  *
  */
+
+window.sameSiteDefault = "Strict";
+
 function setCookieSafely(title, value, options) {
 	if (window.cookiebanner && window.cookiebanner.optedOut && window.cookiebanner.optoutCookies && window.cookiebanner.optoutCookies.length) {
 		var blacklist = window.cookiebanner.optoutCookies.split(',');
