@@ -57,9 +57,9 @@ class WISY_DURCHF_CLASS
 			    1		=>	array('<span class="wisyr_art_icon wisyr_art_bildungsurlaub">BU</span>',		'Bildungsurlaub'),
 			    7721	=>	array('<span class="wisyr_art_icon wisyr_art_fernunterricht">&#9993;</span>',	'Fernunterricht'),
 			    7430	=>	array('<span class="wisyr_art_icon wisyr_art_fernunterricht">BL</span>',	    'Blended Learning'),
-			    7639    =>	array('<span class="wisyr_art_icon wisyr_art_fernunterricht">WWW</span>',		'Webinar'),
+			    7639    =>	array('<span class="wisyr_art_icon wisyr_art_fernunterricht">WWW</span>',		'Web-Seminar'),
 				17261	=>	array('<span class="wisyr_art_icon wisyr_art_fernunterricht">P</span>',			'Pr&auml;senzunterricht'),
-				806441	=>	array('<span class="wisyr_art_icon wisyr_art_fernunterricht">WWW</span>',		'Webinar'), // eigentl. Teleteaching = Webinar
+			    806441	=>	array('<span class="wisyr_art_icon wisyr_art_fernunterricht">WWW</span>',		'Web-Seminar'), // eigentl. Teleteaching = Web-Seminar
 			    832301	=>	array('<span class="wisyr_art_icon wisyr_art_bildungszeit">BZ</span>',		'Bildungszeit')
 			);
 

@@ -121,9 +121,9 @@ class WISY_DURCHF_CLASS
     			    1		=>	array('<b>BU</b>',	'Bildungsurlaub'),
     			    7430	=>	array('<b>BL</b>',	'Blended Learning'),
     			    7721	=>	array('<big>&#9993;</big>',	'Fernunterricht'),
-    			    7639	=>	array('WWW', 'Webinar'),
+    			    7639	=>	array('WWW', 'Web-Seminar'),
     			    17261	=>  array('<b>P</b>',	'Präsenzunterricht'),
-    			    806441	=>	array('WWW', 'Webinar'), // eigentl. Teleteaching = Webinar
+			    806441	=>	array('WWW', 'Web-Seminar'), // eigentl. Teleteaching = Web-Seminar
     			    832301 => array('<b>BZ</b>',	'Bildungszeit') // Bremen
 			);
 			
@@ -141,11 +141,11 @@ class WISY_DURCHF_CLASS
 				$this->imgTagArr[7721]	= array("{$icons}/tc6.gif",	'Fernunterricht');
 				$this->imgTagArr[7720]	= array("{$icons}/tc7.gif",	'Fernstudium');
 				$this->imgTagArr[7430]	= array("{$icons}/tc8.gif",	'Blended Learning');
-				$this->imgTagArr[7639]	= array("{$icons}/www.gif",	'Webinar');
+				$this->imgTagArr[7639]	= array("{$icons}/www.gif",	'Web-Seminar');
 				$this->imgTagArr[17261]	= array("{$icons}/P.gif",	'Präsenzunterricht');
 				// $this->imgTagArr[832301]	= array("{$icons}/B.gif",	'Bildungszeit'); // Bremen
 				$this->imgTagArr[806311]	= array("{$icons}/tc9.gif",	'E-Learning');
-				$this->imgTagArr[806441]	= array("{$icons}/www.gif",	'Webinar');
+				$this->imgTagArr[806441]	= array("{$icons}/www.gif",	'Web-Seminar');
 			}
 			// /deprecated (2014-11-02 17:46)
 
