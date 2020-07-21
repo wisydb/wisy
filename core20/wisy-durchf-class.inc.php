@@ -412,7 +412,7 @@ class WISY_DURCHF_CLASS
 						$where = " AND (ende>='".strftime("%Y-%m-%d 00:00:00")."')";
 					}
 					else {
-						continue;
+						continue 2;
 					}
 					break;
 				
