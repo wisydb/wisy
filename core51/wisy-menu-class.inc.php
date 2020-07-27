@@ -104,28 +104,42 @@ class WISY_MENU_CLASS
 	// Themengebiet Items erzeugen (deprecated)
 	// --------------------------------------------------------------------
 
-	function handleLevel($startIndex, $level, $aparam)
+	function handleLevel($startIndex, $level, $aparam, $nochildren = false)
 	{
 		global $g_themen;
 
 		// add all children
 		
-		$thema = cs8($g_themen[$startIndex]['thema']);
-		
-		$title = htmlspecialchars($thema);
-		
-		$q = g_sync_removeSpecialChars($thema);
+		// add all children
+		$thema = "";
+		if(is_array($startIndex)) {
+			foreach($startIndex AS $i) {
+				$thema .= cs8($g_themen[$i]['thema'])." ODER ";
+				$q .= cs8($g_themen[$i]['thema'])." ODER "; // g_sync_removeSpecialChars()
+			}
+			$thema = preg_replace('/ ODER $/', '', $thema);
+			$title = htmlspecialchars($thema);
+			$q = $thema;
+		} else {
+			$thema = cs8($g_themen[$startIndex]['thema']);
+			$title = htmlspecialchars($thema);
+			$q = g_sync_removeSpecialChars($thema);
+		}
 		
 		$parent = new WISY_MENU_ITEM($title, 'search?q='.urlencode($q), $aparam, $level, $this->prefix, $this->a11Type);
 		
-		$startKuerzel = $g_themen[$startIndex]['kuerzel_sorted'];
-		$startKuerzelLen = strlen($startKuerzel);
-		for( $i = 0; $i < count((array) $g_themen); $i++ )
-		{
-			if( substr($g_themen[$i]['kuerzel_sorted'], 0, $startKuerzelLen) == $startKuerzel 
-			 && strlen($g_themen[$i]['kuerzel_sorted']) == $startKuerzelLen+10 )
+		if($nochildren)
+			;
+		else {
+			$startKuerzel = $g_themen[$startIndex]['kuerzel_sorted'];
+			$startKuerzelLen = strlen($startKuerzel);
+			for( $i = 0; $i < sizeof((array) $g_themen); $i++ )
 			{
-				$parent->children[] = $this->handleLevel($i, $level, $aparam);
+				if( substr($g_themen[$i]['kuerzel_sorted'], 0, $startKuerzelLen) == $startKuerzel
+					&& strlen($g_themen[$i]['kuerzel_sorted']) == $startKuerzelLen+10 )
+				{
+					$parent->children[] = $this->handleLevel($i, $level, $aparam);
+				}
 			}
 		}
 		
@@ -176,25 +190,48 @@ class WISY_MENU_CLASS
 		}
 		else
 		{
-			$startIndex = $this->idOrKuerzel2Index($startIdOrKuerzel);
+			if(stripos($startIdOrKuerzel, "#ODER#") !== FALSE){
+				$startIdOrKuerzelArr = explode("#ODER#", $startIdOrKuerzel);
+				foreach($startIdOrKuerzelArr AS $kuerzel) {
+					$multiThemaIndices[] = $this->idOrKuerzel2Index($kuerzel);
+				}
+			}
+			else
+				$startIndex = $this->idOrKuerzel2Index($startIdOrKuerzel);
 			$endIndex = -1;
 		}
 		
-		if( $startIndex == -1 ) 
+		if( $startIndex == -1 && count((array) $multiThemaIndices) == 0)
 			return array( new WISY_MENU_ITEM("Thema $startIdOrKuerzel nicht gefunden", '', '', $level, $this->prefix, $this->a11Type) );
 
 		if( $endIndex == -1 )
 			$endIndex = $startIndex;
 		
 		$ret = array();
-		for( $i = $startIndex; $i <= $endIndex; $i++ )
-		{
-			if( strlen($g_themen[$i]['kuerzel_sorted']) == strlen($g_themen[$startIndex]['kuerzel_sorted']) )
+		if(count((array) $multiThemaIndices) && strpos($startIdOrKuerzel, '!') !== FALSE ) {
+			$nochildren = true;
+			$ret[] = $this->handleLevel($multiThemaIndices, $level, $aparam, $nochildren);
+			
+			if( $title != '' ) { $ret[sizeof((array) $ret)-1]->title = $title; $title = ''; }
+			$ret[sizeof((array) $ret)-1]->level = $level;
+			
+		} else {
+			
+			for( $i = $startIndex; $i <= $endIndex; $i++ )
 			{
-				$ret[] = $this->handleLevel($i, $level, $aparam);
-				
-	 			if( $title != '' ) { $ret[count((array) $ret)-1]->title = $title; $title = ''; }
-				$ret[count((array) $ret)-1]->level = $level;
+				if( strlen($g_themen[$i]['kuerzel_sorted']) == strlen($g_themen[$startIndex]['kuerzel_sorted']) )
+				{
+					if(strpos($startIdOrKuerzel, '!') === FALSE) {
+						$ret[] = $this->handleLevel($i, $level, $aparam);
+					}
+					else {
+						$nochildren = true;
+						$ret[] = $this->handleLevel($i, $level, $aparam, $nochildren);
+					}
+					
+					if( $title != '' ) { $ret[sizeof((array) $ret)-1]->title = $title; $title = ''; }
+					$ret[sizeof((array) $ret)-1]->level = $level;
+				}
 			}
 		}
 		
@@ -204,7 +241,7 @@ class WISY_MENU_CLASS
 	// Stichwort Items erzeugen
 	// --------------------------------------------------------------------
 	
-	protected function &addKeywordsRecursive($manualTitle, $keywordId, $level, $addChildren)
+	protected function &addKeywordsRecursive($manualTitle, $keywordId, $level, $addChildren, $additionalqStr = "", $aparam = "")
 	{
 		global $g_keywords;
 		
@@ -223,23 +260,45 @@ class WISY_MENU_CLASS
 			for( $i = 0; $i < count((array) $temp); $i++ ) {
 				$currKeywordId = intval($temp[$i]);
 				if( $currKeywordId > 0 ) {
-					$autoTitle .= $autoTitle==''? '' : ' ';
 					$autoTitle = cs8($g_keywords[ $keywordId ]);
+					$autoTitle .= $g_keywords[ $currKeywordId ];
 					$url .= $url==''? '' : urlencode(', ');
-					$url .= urlencode(g_sync_removeSpecialChars($g_keywords[ $currKeywordId ]));
+					$url .= urlencode( (PHP7 ? utf8_decode(g_sync_removeSpecialChars($g_keywords[ $currKeywordId ])) : g_sync_removeSpecialChars($g_keywords[ $currKeywordId ])) );
 				}
 			}
-			$url = 'search?q=' . $url;
+			$url = 'search?q=' . $url . $additionalqStr;
+			$addChildren = false;
+		}
+		elseif( stripos($keywordId, '#ODER#') !== false )
+		{
+			$autoTitle = '';
+			$url = '';
+			$temp = explode('#ODER#', strtoupper($keywordId));
+			for( $i = 0; $i < sizeof($temp); $i++ ) {
+				$currKeywordId = intval($temp[$i]);
+				if( $currKeywordId > 0 ) {
+					$autoTitle .= $autoTitle==''? '' : ' ';
+					$autoTitle = cs8($g_keywords[ $currKeywordId ]);
+					$url .= $url==''? '' : urlencode(' ODER ');
+					$url .= urlencode( (PHP7 ? utf8_decode(g_sync_removeSpecialChars($g_keywords[ $currKeywordId ])) : g_sync_removeSpecialChars($g_keywords[ $currKeywordId ])) );
+				}
+			}
+			$url = 'search?q=' . $url . $additionalqStr;
 			$addChildren = false;
 		}
 		else
 		{
 			$keywordId = intval($keywordId);
 			$autoTitle = cs8($g_keywords[ $currKeywordId ]);
-			$url = 'search?q=' . urlencode(g_sync_removeSpecialChars($g_keywords[ $keywordId ]));
+			$url = 'search?q=' . urlencode( (PHP7 ? utf8_decode(g_sync_removeSpecialChars($g_keywords[ $keywordId ])) : g_sync_removeSpecialChars($g_keywords[ $keywordId ])) ) . $additionalqStr;
 		}
 		
-		$item = new WISY_MENU_ITEM($manualTitle!=''? $manualTitle : $autoTitle, $url, '', $level, $this->prefix, $this->a11Type);
+		if(strpos($url, "indertages") !== FALSE) {
+			$file = fopen("test.txt", "w+");
+			fwrite($file, $url."\n");
+			fclose($file);
+		}
+		$item = new WISY_MENU_ITEM($manualTitle!=''? $manualTitle : $autoTitle, $url, $aparam, $level);
 		
 		// check, if there are child items
 		if( $addChildren > 0 ) 
@@ -258,9 +317,8 @@ class WISY_MENU_CLASS
 		return $item;
 	}
 	
-	protected function &createKeywordItems($title, $keywordIds, $level) // $title: may be empty, $keywordIds: comma separated list of keywords, a `+` indicates that children should be added, too 
+	protected function &createKeywordItems($title, $keywordIds, $level, $param) // $title: may be empty, $keywordIds: comma separated list of keywords, a `+` indicates that children should be added, too 
 	{
-		$keywordIds = str_replace(' ', '', $keywordIds); // remove all spaces for easier parsing
 		if( ($p=strpos($keywordIds, ';'))!==false ) { $keywordIds = substr($keywordIds, 0, $p); } // allow comments after a `;` (this is undocumented stuff!)
 		$keywordIds = explode(',', $keywordIds);
 		$ret_items = array();
@@ -268,14 +326,22 @@ class WISY_MENU_CLASS
 		{
 			$addChildren = 0;
 			$keywordId = $keywordIds[$k];
+			
+			// Identify additions to keyword entry like zeige:anbieter
+			$additionalqStr = "";
+			foreach($keywordIds AS $addStrComponent) {
+				if(!is_numeric($addStrComponent) && strpos($addStrComponent, '&') === FALSE && strpos($addStrComponent, '#') === FALSE)
+					$additionalqStr .= ',%20'.$addStrComponent;
+			}
+			$keywordId = str_replace(' ', '', $keywordId); // remove all spaces for easier parsing
+			
 			if( ($p=strpos($keywordId, '+')) !== false ) { $addChildren = intval(substr($keywordId, $p+1)); if($addChildren<=0) {$addChildren=5 /*avoid too deep recursions*/;} $keywordId = substr($keywordId, 0, $p); }
 			
-			$ret_items[] =& $this->addKeywordsRecursive($k==0? $title : '', $keywordId, $level, $addChildren);
+			if(is_numeric($keywordId) || strpos($keywordId, '&') !== FALSE || strpos($keywordId, '#') !== FALSE)
+				$ret_items[] =& $this->addKeywordsRecursive($k==0? $title : '', $keywordId, $level, $addChildren, $additionalqStr, $aparam);
 		}
 		
 		return $ret_items;
-	
-		
 	}
 	
 	// Misc.
@@ -343,7 +409,7 @@ class WISY_MENU_CLASS
 			}
 			
 			$keywordIds = substr($url, 8); // comma separated list of keywords, a `+` indicates that children should be added, too 
-			return $this->createKeywordItems($title, $keywordIds, $level);
+			return $this->createKeywordItems($title, $keywordIds, $level, $aparam);
 		}
 
 		if( $title == '' )
@@ -361,7 +427,7 @@ class WISY_MENU_CLASS
 		global $wisyPortalModified;
 		
 		$cacheKey = $wisyPortalModified . ' ' .strftime('%Y-%m-%d %H:00:00'). ' v7'; // the key changes if the portal record is updated or at least every hour (remember __DATE__ etc.)
-		if( $this->framework->cacheRead("menu.{$this->prefix}.key", '')==$cacheKey )
+		if( $this->framework->cacheRead("menu.{$this->prefix}.key", '')==$cacheKey && false)
 		{
 			// read the menu from the cache ...
 			$ret = '<!-- dropdown read from cache -->' . $this->framework->cacheRead("menu.{$this->prefix}.cache");
