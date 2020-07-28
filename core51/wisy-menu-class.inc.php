@@ -248,7 +248,7 @@ class WISY_MENU_CLASS
 		// check for timeout
 		$timeout_after_s = 5.000;
 		if( $this->framework->microtime_float() - $this->start_s > $timeout_after_s ) {
-			return new WISY_MENU_ITEM('Timeout error', '', '', $level);
+			return new WISY_MENU_ITEM('Timeout error', '', '', $level, $this->prefix, $this->a11Type);
 		}		
 		
 		// add the item itself
@@ -298,7 +298,7 @@ class WISY_MENU_CLASS
 			fwrite($file, $url."\n");
 			fclose($file);
 		}
-		$item = new WISY_MENU_ITEM($manualTitle!=''? $manualTitle : $autoTitle, $url, $aparam, $level);
+		$item = new WISY_MENU_ITEM($manualTitle!=''? $manualTitle : $autoTitle, $url, $aparam, $level, $this->prefix, $this->a11Type);
 		
 		// check, if there are child items
 		if( $addChildren > 0 ) 
