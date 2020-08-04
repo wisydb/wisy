@@ -305,6 +305,8 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 	        $orders = $orders_custom;
 	    }
 	    
+	    $portal_order = $this->framework->specialSortOrder ? $this->framework->specialSortOrder : $this->framework->iniRead('kurse.sortierung', false);
+	    
 	    $portal_order = $this->framework->iniRead('kurse.sortierung', false);
 	    if($portal_order && $renderformData['order'] == '') $renderformData['order'] = $portal_order;
 	    if($renderformData['order'] == '') $renderformData['order'] = 'b';

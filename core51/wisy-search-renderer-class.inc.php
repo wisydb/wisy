@@ -656,6 +656,44 @@ class WISY_SEARCH_RENDERER_CLASS
 		}
 	}
 	
+	function getSortOrderByTag($orderBy, $queryString, $validOrders) {
+	    
+	    $searcher_tmp =& createWisyObject('WISY_SEARCH_CLASS', $this->framework);
+	    $tokens = $searcher_tmp->tokenize($queryString)['cond'];
+	    $tokens_arr = array();
+	    foreach($tokens AS $token) {
+	        array_push($tokens_arr, $token['value']);
+	    }
+	    $tokens_lc = array_map("strtolower", $tokens_arr);
+	    $array_specialsort_str = array();
+	    
+	    foreach($validOrders AS $validOder) {
+	        
+	        if( ($specialSort = trim($this->framework->iniRead('kurse.sortierung.'.$validOder, ''))) != "") {
+	            $array_specialsort[$validOder] = explode(',', $specialSort);
+	            $array_specialsort_str[$validOder] = array();
+	            
+	            if(is_array($array_specialsort[$validOder]) && count($array_specialsort[$validOder]) ) {
+	                $db_tmp = new DB_Admin();
+	                $query = "SELECT stichwort FROM stichwoerter WHERE id IN (".implode(",", $array_specialsort[$validOder]).") ";
+	                $db_tmp->query($query);
+	                while( $db_tmp->next_record() ) {
+	                    array_push($array_specialsort_str[$validOder], $db_tmp->fcs8('stichwort'));
+	                }
+	                $array_specialsort_str[$validOder] = array_map("strtolower", $array_specialsort_str[$validOder]);
+	                $common_elements = array_intersect($array_specialsort_str[$validOder], $tokens_lc);
+	                
+	                if(count($common_elements) > 0) {
+	                    $orderBy = $validOder;
+	                    $this->framework->specialSortOrder = $orderBy;
+	                }
+	            }
+	        }
+	    } /* End: foreach valid order */
+	    
+	    return $orderBy;
+	}
+	
 	function renderKursliste(&$searcher, $queryString, $offset, $showFilters=true, $baseurl='search', $hlevel=1)
 	{
 	    global $wisyPortalSpalten;
@@ -665,6 +703,8 @@ class WISY_SEARCH_RENDERER_CLASS
 	    $validOrders = array('a', 'ad', 't', 'td', 'b', 'bd', 'd', 'dd', 'p', 'pd', 'o', 'od', 'creat', 'creatd', 'rand');
 	    $portal_order = $this->framework->iniRead('kurse.sortierung', false);
 	    $orderBy = $this->framework->order;
+	    
+	    $orderBy = $this->getSortOrderByTag($orderBy, $queryString, $validOrders);
 	    
 	    if( in_array($orderBy, $validOrders) )
 	        ;
