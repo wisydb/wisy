@@ -471,28 +471,32 @@ class WISY_EDIT_RENDERER_CLASS
 		}
 		else if( $_REQUEST['action'] == 'loginSubseq' )
 		{
-			// "OK" wurde angeklickt - loginversuch starten
-			$fwd 				= $_REQUEST['fwd'];
-			$anbieterSuchname	= $_REQUEST['as'];
-			$anbieterSuchname_utf8dec = (PHP7 ? $anbieterSuchname : utf8_decode($anbieterSuchname));
-
-			$logwriter = new LOG_WRITER_CLASS;
-			$logwriter->addData('ip', $_SERVER['REMOTE_ADDR']);
-			$logwriter->addData('browser', $_SERVER['HTTP_USER_AGENT']);
-			$logwriter->addData('portal', $GLOBALS['wisyPortalId']);
-			
-			$loggedInAnbieterId = 0;
-			$loggedInAnbieterSuchname = 0;
-			$loggedInAnbieterPflegemail = "";
-
-			// Anbieter ID in name konvertieren 
-			$db->query("SELECT suchname FROM anbieter WHERE id=".intval($anbieterSuchname_utf8dec)." AND freigeschaltet = 1");
-			if( $db->next_record() ) {
-			    $anbieterSuchname = $db->fcs8('suchname');
-			    $anbieterSuchname_utf8dec = (PHP7 ? $anbieterSuchname : utf8_decode($anbieterSuchname));
-			}
-			
-			$login_as = false;
+		    // "OK" wurde angeklickt - loginversuch starten
+		    $fwd 				= $_REQUEST['fwd'];
+		    $anbieterSuchname	= $_REQUEST['as'];
+		    $anbieterSuchname_utf8dec = (PHP7 ? $anbieterSuchname : utf8_decode($anbieterSuchname));
+		    
+		    $logwriter = new LOG_WRITER_CLASS;
+		    $logwriter->addData('ip', $_SERVER['REMOTE_ADDR']);
+		    $logwriter->addData('browser', $_SERVER['HTTP_USER_AGENT']);
+		    $logwriter->addData('portal', $GLOBALS['wisyPortalId']);
+		    
+		    $loggedInAnbieterId = 0;
+		    $loggedInAnbieterSuchname = 0;
+		    $loggedInAnbieterPflegemail = "";
+		    
+		    // Anbieter ID in name konvertieren
+		    if(is_numeric($anbieterSuchname_utf8dec)) {
+		        
+		        $db->query("SELECT suchname FROM anbieter WHERE id=".intval($anbieterSuchname_utf8dec)." AND freigeschaltet = 1"); // intval converts "4 abcdef" into "4" => is_numeric before
+		        if( $db->next_record() ) {
+		            $anbieterSuchname = $db->fcs8('suchname');
+		            $anbieterSuchname_utf8dec = (PHP7 ? $anbieterSuchname : utf8_decode($anbieterSuchname));
+		        }
+		        
+		    } // end: is_numeric
+		    
+		    $login_as = false;
 			if( ($p=strpos($_REQUEST['wepw'], '.')) !== false )
 			{
 				// ...Login als registrierter Admin-Benutzer in der Form "<loginname>.<passwort>"

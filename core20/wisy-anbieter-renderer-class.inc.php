@@ -268,7 +268,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 							if( $logo_w && $logo_h && $logo_name != '' )
 							{
 								$title = "";
-								/* - aufgrund der inneren konsistenz das logo nicht anklickbar gestalten - es ist ansonsten verwirrend, ob es zum portait oder zur homepage führt ...
+								/* - aufgrund der inneren konsistenz das logo nicht anklickbar gestalten - es ist ansonsten verwirrend, ob es zum portait oder zur homepage fï¿½hrt ...
 								if( $homepage ) {
 									echo "<a href=\"$homepage\" target=\"_blank\">";
 									$title = "Der Anbieter im Internet";
@@ -439,9 +439,10 @@ class WISY_ANBIETER_RENDERER_CLASS
 		$db = new DB_Admin();
 		
 		if(trim($this->framework->iniRead('disable.anbieter', false)) && !$this->framework->is_editor_active($db, $this->h_before_dontshowteditorforeign_k) && !$this->framework->is_frondendeditor_active())
-		         $this->framework->error404("Fehler 404 - Seite <i>in diesem Portal</i> nicht gefunden",
+		    $this->framework->error404("Fehler 404 - Seite <i>in diesem Portal</i> nicht gefunden",
 		        "<p style='font-weight: bold; background-color: #c2eac2; border: 2px solid lightgray; padding: 5px; margin-top: 20px;'>Zur Onlinepflege dieses Anbieter-Profils bitte hier einloggen:<br><a href='/edit?action=ek&id=".$anbieter_id."'>\"Onlinepflege-Login f&uuml;r Anbieter\" ...</a></p>"
-		        
+		        .'<div class="decision_tree_simple" style="margin-top: 20px;"><a href="#" onclick="$(\'.details\').toggle()">Technische Details anzeigen...</a><div class="details" style="display: none; margin-top: 20px;">Warum wird diese Seite nicht angezeigt:<ul><li>Einstellung "disable.anbieter": ein</li><li>Login-Status Redaktionssystem: abgemeldet</li><li>Login-Status Anbieter-Onlinepflege: abgemeldet</li></div></div>', true);
+		         
 
 		// link to another anbieter?
 		$db->query("SELECT attr_id FROM anbieter_verweis WHERE primary_id=$anbieter_id ORDER BY structure_pos");
@@ -453,7 +454,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		// check for existance, get title
 		$db->query("SELECT suchname, typ FROM anbieter WHERE id=$anbieter_id");
 		if( !$db->next_record() ) {
-			$this->framework->error404(); // record does not exist, reporta normal 404 error, not a "Soft 404", see  http://goo.gl/IKMnm -- für nicht-freigeschaltete Datensätze, s. [here]
+			$this->framework->error404(); // record does not exist, reporta normal 404 error, not a "Soft 404", see  http://goo.gl/IKMnm -- fï¿½r nicht-freigeschaltete Datensï¿½tze, s. [here]
 		}
 		$anbieter_suchname = $db->fs('suchname');
 		$typ               = intval($db->f('typ'));

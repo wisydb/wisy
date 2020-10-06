@@ -139,8 +139,6 @@ class REST_API_CLASS
 			'bemerkungen'		=>	array('flags'=>REST_STRING,				),
 			'herkunft'			=>	array('flags'=>REST_INT,				),
 			'herkunftsID'		=>	array('flags'=>REST_STRING,				),
-		    'notizen'			=>	array('flags'=>REST_STRING_PREPENDONLY,	),
-		    'notizen_fix'		=>	array('flags'=>REST_STRING_PREPENDONLY,	),
 		),
 		'anbieter' => array
 		(
@@ -180,6 +178,8 @@ class REST_API_CLASS
 			'in_wisy_seit'		=>	array('flags'=>REST_STRING,				),
 			'herkunft'			=>	array('flags'=>REST_INT,				),
 			'herkunftsID'		=>	array('flags'=>REST_STRING,				),
+		    'notizen'			=>	array('flags'=>REST_STRING_PREPENDONLY,	),
+		    'notizen_fix'		=>	array('flags'=>REST_STRING_PREPENDONLY,	),
 		),
 		'themen' => array
 		(

@@ -191,7 +191,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		if( is_array($recordsToSkip['records']) )
 		{
 			reset($recordsToSkip['records']);
-			while( list($i, $record) = each($recordsToSkip['records']) )
+			foreach($recordsToSkip['records'] as $i => $record)
 			{
 				$recordsToSkipHash[ $record['id'] ] = true;
 			}
@@ -203,7 +203,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		{
 			$ids = '';
 			reset($records['records']);
-			while( list($i, $record) = each($records['records']) )
+			foreach($records['records'] as $i => $record)
 			{
 				$ids .= ($ids==''? '' : ', ') . $record['id'];
 			}
@@ -247,7 +247,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		$tag_cloud = array();
 		
 		reset($records['records']);
-		while( list($i, $record) = each($records['records']) )
+		foreach($records['records'] as $i => $record)
 		{	
 			// get kurs basics
 			$currKursId = $record['id'];
@@ -298,7 +298,7 @@ class WISY_SEARCH_RENDERER_CLASS
 							if($this->framework->iniRead('label.abschluss', 0) && count($kursAnalyzer->loadKeywordsAbschluss($db, 'kurse', $currKursId))) echo '<span class="wisy_icon_abschluss">Abschluss<span class="dp">:</span></span> ';
 							if($this->framework->iniRead('label.zertifikat', 0) && count($kursAnalyzer->loadKeywordsZertifikat($db, 'kurse', $currKursId))) echo '<span class="wisy_icon_zertifikat">Zertifikat<span class="dp">:</span></span> ';
 						
-							echo PHP7 ? htmlspecialchars($this->framework->encode_windows_chars($record['titel'])) : htmlspecialchars($this->framework->encode_windows_chars(cs8($record['titel'])));
+							echo htmlspecialchars($this->framework->encode_windows_chars(cs8($record['titel'])));
 						
 					echo '</a>';
 					if( $loggedInAnbieterId == $currAnbieterId )
@@ -320,12 +320,12 @@ class WISY_SEARCH_RENDERER_CLASS
 				
 				// SPALTEN: durchfuehrung
 				$addText = '';
-				if( sizeof($durchfuehrungenIds) > 1 )
+				if( sizeof((array) $durchfuehrungenIds) > 1 )
 				{
-					$addText = ' <span class="wisyr_termin_weitere"><a href="' .$this->framework->getUrl('k', $aparam). '">';
-						$temp = sizeof($durchfuehrungenIds) - 1;
-						$addText .= $temp==1? "1 weiterer..." : "$temp weitere...";
-					$addText .= '</a></span>';
+				    $addText = ' <span class="wisyr_termin_weitere"><a href="' .$this->framework->getUrl('k', $aparam). '">';
+				    $temp = sizeof((array) $durchfuehrungenIds) - 1;
+				    $addText .= $temp==1? "$temp<span> weiterer...</span>" : "$temp<span> weitere...</span>";
+				    $addText .= '</a></span>';
 				}
 				
 				$tags = $this->framework->loadStichwoerter($db, 'kurse', $currKursId);
@@ -538,7 +538,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		$tagsuggestor =& createWisyObject('WISY_TAGSUGGESTOR_CLASS', $this->framework);
 		$suggestions = $tagsuggestor->suggestTags($queryString);
 
-		if( sizeof($suggestions) ) 
+		if( sizeof((array) $suggestions) )
 		{
 			if($this->framework->iniRead('search.suggest.v2') == 1)
 			{
@@ -553,7 +553,7 @@ class WISY_SEARCH_RENDERER_CLASS
 							'</tr>';
 				echo '	</thead>';
 				echo '	<tbody>';
-				for( $i = 0; $i < sizeof($suggestions); $i++ )
+				for( $i = 0; $i < sizeof((array) $suggestions); $i++ )
 				{
 					$tr_class = ($i%2) ? 'ac_even' : 'ac_odd';
 					echo $this->formatItem_v2($suggestions[$i]['tag'], $suggestions[$i]['tag_descr'], $suggestions[$i]['tag_type'], intval($suggestions[$i]['tag_help']), intval($suggestions[$i]['tag_freq']), $suggestions[$i]['tag_anbieter_id'], $suggestions[$i]['tag_groups'], $tr_class, $queryString);
@@ -565,7 +565,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			{
 				echo '<span class="wisyr_rechercheziele">Gefundene Rechercheziele - verfeinern Sie Ihren Suchauftrag:</span>';
 				echo '<ul>';
-					for( $i = 0; $i < sizeof($suggestions); $i++ )
+				    for( $i = 0; $i < sizeof((array) $suggestions); $i++ )
 					{
 						echo '<li>' . $this->formatItem($suggestions[$i]['tag'], $suggestions[$i]['tag_descr'], $suggestions[$i]['tag_type'], intval($suggestions[$i]['tag_help']), intval($suggestions[$i]['tag_freq'])) . '</li>';
 					}
@@ -588,7 +588,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		$orderBy = $_GET['order']; if( !in_array($orderBy, $validOrders) ) $orderBy = 'b';
 
 		$info = $searcher->getInfo();
-		if( $info['changed_query'] || sizeof($info['suggestions']) )
+		if( $info['changed_query'] || sizeof((array) $info['suggestions']) )
 		{
 			echo '<div class="wisy_suggestions">';
 				if( $info['changed_query'] )
@@ -696,10 +696,15 @@ class WISY_SEARCH_RENDERER_CLASS
 			 && $offset == 0 
 			 && $this->framework->iniRead('useredit.promote', 0)!=0 )
 			{
-				global $wisyPortalId;
-				$searcher2 =& createWisyObject('WISY_SEARCH_CLASS', $this->framework);
-				$searcher2->prepare(mysql_escape_mimic($queryString) . ', schaufenster:' . $wisyPortalId);
-				if( $searcher2->ok() )
+			    global $wisyPortalId;
+			    $searcher2 =& createWisyObject('WISY_SEARCH_CLASS', $this->framework);
+			    
+			    $queryString_db = mysql_escape_mimic($queryString);
+			    
+			    if($queryString_db != "")
+			        $searcher2->prepare($queryString_db . ', schaufenster:' . $wisyPortalId);
+			        
+			        if( $searcher2->ok() )
 				{
 					$promoteCnt = $searcher2->getKurseCount();
 					if( $promoteCnt > 0 )
@@ -734,7 +739,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			
 			// render other records
 			$records = $searcher->getKurseRecords($offset, $this->rows, $orderBy);
-			$this->renderKursRecords($db, $records, $records2 /*recordsToSkip*/, array('q'=>$queryString));
+			$tags_heap = $this->renderKursRecords($db, $records, $records2 /*recordsToSkip*/, array('q'=>$queryString));
 		
 			// main table end
 			echo '</table>' . "\n\n";
@@ -746,7 +751,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			 // 	echo '<meta itemprop="highprice" content="'.$this->framework->preisUS($durchfClass->preise[sizeof($durchfClass->preise)-1]).'">';
 			 
 			 echo '<meta itemprop="priceCurrency" content="EUR">';
-			 // 	echo '<meta itemprop="offerCount" content="'.sizeof($durchfClass->preise).'">';
+			 // 	echo '<meta itemprop="offerCount" content="'.sizeof((array) $durchfClass->preise).'">';
 			 echo '<meta itemprop="url" content="http://'.$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI'].'">';
 			 echo '<meta itemprop="eligibleRegion" content="DE-RP">';
 			 echo '<span itemprop="eligibleCustomerType" itemscope itemtype="https://schema.org/BusinessEntityType">';
@@ -802,7 +807,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			                    
 			                    if($tag['eigenschaften'] != $filtersw && $tag_freq > 0); {
 			                        if($this->framework->iniRead('sw_cloud.suche_stichwoerter', 1))
-			                            $tag_cloud .= '<span class="sw_raw typ_'.$tag['eigenschaften'].'" data-weight="'.$weight.'"><a href="/?q='.utf8_encode($tag['stichwort']).'">'.utf8_encode($tag['stichwort']).'</a></span>, ';
+			                            $tag_cloud .= '<span class="sw_raw typ_'.$tag['eigenschaften'].'" data-weight="'.$weight.'"><a href="/search?q='.urlencode(utf8_encode($tag['stichwort'])).'">'.utf8_encode($tag['stichwort']).'</a></span>, ';
 			                            
 			                        if($this->framework->iniRead('sw_cloud.suche_synonyme', 0))
 			                            $tag_cloud .= $this->framework->writeDerivedTags($this->framework->loadDerivedTags($db, $tag['id'], $distinct_tags, "Synonyme"), $filtersw, "Synonym", $tag['stichwort']);
@@ -949,7 +954,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			echo "\n".'<table class="wisy_list wisyr_anbieterliste">' . "\n";
 			echo '  <thead><tr>' . "\n";
 				$this->renderColumnTitle('Anbieter',	'a', 	$orderBy,	311);
-				$this->renderColumnTitle('Straße',		's', 	$orderBy,	0);
+				$this->renderColumnTitle('Stra&szlig;e',		's', 	$orderBy,	0);
 				$this->renderColumnTitle('PLZ',			'p',	$orderBy,	0);
 				$this->renderColumnTitle('Ort',			'o',	$orderBy,	0);
 				$this->renderColumnTitle('Web',			'h',	$orderBy,	0);
@@ -961,7 +966,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			$records = $searcher->getAnbieterRecords($offset, $this->rows, $orderBy);
 			$rows = 0;
 			
-			while( list($i, $record) = each($records['records']) )
+			foreach($records['records'] as $i => $record)
 			{
 				
 				$rows++;
@@ -1172,7 +1177,7 @@ class WISY_SEARCH_RENDERER_CLASS
 				echo '<p><span class="wisy_edittoolbar" title="Um einen neuen Kurs hinzuzuf&uuml;gen, klicken Sie oben auf &quot;Neuer Kurs&quot;">Kurse in Vorbereitung:</span>&nbsp; ';
 					$out = 0;
 					reset( $titles );
-					while( list($currId, $currTitel) = each($titles) )
+					foreach($titles as $currId => $currTitel)
 					{
 						if( !$liveIds[ $currId ] )
 						{

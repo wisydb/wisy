@@ -710,6 +710,14 @@ function ed(theAnchor)
  * new edit stuff
  *****************************************************************************/
 
+jQuery(document).ready(function(){
+ if( typeof jQuery("textarea[name=beschreibung]") != undefined) {
+  jQuery("textarea[name=beschreibung]").keyup(function(){
+	jQuery("#hinweisedit").remove();  
+	if(jQuery("textarea[name=beschreibung]").val().match(/Webinar/)) { jQuery(".editFoerderungDiv").append("<div id='hinweisedit' style='font-weight: bold;'>Hinweis:<br>Beim Wort 'Webinar' k&ouml;nnte es sich um eine gesch&uuml;tzte Wortmarke handeln. Es w&uuml;rde am n&auml;chsten Tag automatisch durch 'Web-Seminar' ersetzt - au&szlig;er in Links.</div>"); }; });
+ }
+});
+
 function editShowHide(jqObj, toShow, toHide)
 {
 	jqObj.parent().parent().find(toShow).show('fast');
@@ -1014,6 +1022,13 @@ $().ready(function()
 	}
 });
 
+// cookie - http://archive.plugins.jquery.com/project/Cookie , http://www.electrictoolbox.com/jquery-cookies/
+(function(e,t,n){function i(e){return e}function s(e){return decodeURIComponent(e.replace(r," "))}var r=/\+/g;var o=e.cookie=function(r,u,a){if(u!==n){a=e.extend({},o.defaults,a);if(u===null){a.expires=-1}
+if(typeof a.expires==="number"){var f=a.expires,l=a.expires=new Date;l.setDate(l.getDate()+f)}u=o.json?JSON.stringify(u):String(u);return t.cookie=[encodeURIComponent(r),"=",o.raw?u:encodeURIComponent(u),
+a.expires?"; expires="+a.expires.toUTCString():"",a.path?"; path="+a.path:"",a.domain?"; domain="+a.domain:"",a.secure?"; secure":"",a.sameSite?"; sameSite="+a.sameSite:"; sameSite=Strict"].join("")}var c=o.raw?i:s;var h=t.cookie.split("; ");for(var p=0,d=h.length;p<d;p++)
+{var v=h[p].split("=");if(c(v.shift())===r){var m=c(v.join("="));return o.json?JSON.parse(m):m}}return null};o.defaults={};e.removeCookie=function(t,n){if(e.cookie(t)!==null){e.cookie(t,null,n);return true}return false}})(jQuery,document)
+
+
 /*****************************************************************************
  * DSGVO stuff
  *****************************************************************************/
@@ -1024,6 +1039,9 @@ $().ready(function()
  * or if cookie is not blacklisted via cookiebanner.cookies.optout
  *
  */
+
+window.sameSiteDefault = "Strict";
+
 function setCookieSafely(title, value, options) {
 	if (window.cookiebanner && window.cookiebanner.optedOut && window.cookiebanner.optoutCookies && window.cookiebanner.optoutCookies.length) {
 		var blacklist = window.cookiebanner.optoutCookies.split(',');

@@ -29,13 +29,13 @@ class WISY_SPECIAL_INFO_CLASS
 		while( $db->next_record() )
 		{
 			$stichw = $db->fcs8('stichwort');
-			$stichw = trim(strtr($stichw, array(': '=>' '	,	
+			$stichw = trim(strtr((PHP7 ? utf8_decode($stichw) : $stichw), array(': '=>' '	,
 												':'	=>' '	,
 												', '=>' '	,
 												','	=>' '		)));
 	
 			$searcher =& createWisyObject('WISY_SEARCH_CLASS', $this->framework);		
-			$stichw = trim(strtr((PHP7 ? utf8_decode($stichw) : $stichw), Datum:Alles");
+			$searcher->prepare("$stichw, Datum:Alles");
 			if( $searcher->getKurseCount() )
 			{
 				$ids_str .= $ids_str == ''? '' : ', ';

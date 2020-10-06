@@ -61,16 +61,16 @@ class WISY_AUTOSUGGEST_RENDERER_CLASS
 				if( SEARCH_CACHE_ITEM_LIFETIME_SECONDS > 0 )
 					headerDoCache(SEARCH_CACHE_ITEM_LIFETIME_SECONDS);
 
-				header('Content-type: application/json');
-				
-				echo '["' .$this->utf8_to_json(utf8_encode($querystring)). '",[';
-					for( $i = 0; $i < sizeof($tags); $i++ )
+					header('Content-type: application/json');
+					
+					echo '["' .$this->utf8_to_json(cs8($querystring)). '",[';
+					for( $i = 0; $i < sizeof((array) $tags); $i++ )
 					{
-						echo $i? ',' : '';
-						echo '"' .$this->utf8_to_json(utf8_encode($tags[$i]['tag'])). '"';
+					    echo $i? ',' : '';
+					    echo '"' .$this->utf8_to_json(cs8($tags[$i]['tag'])). '"';
 					}
-				echo ']]';
-				break;
+					echo ']]';
+					break;
 			
 			default:
 				// return as simple text, one tag per line, used by the site's AutoSuggest
@@ -88,7 +88,7 @@ class WISY_AUTOSUGGEST_RENDERER_CLASS
 					),
 					array(
 						'tag'	=>	$querystring,
-						'tag_descr' => sizeof($tags)? 'Alle Vorschl'.(PHP7 ? utf8_decode("ä") : 'ä').'ge im Hauptfenster anzeigen ...' : 'Keine Treffer',
+					    'tag_descr' => sizeof((array) $tags)? 'Alle Vorschl'.(PHP7 ? utf8_decode("ä") : 'ä').'ge im Hauptfenster anzeigen ...' : 'Keine Treffer',
 						'tag_type'	=> 0,
 						'tag_help'	=> 1 // indicates "more"
 					));	
@@ -97,7 +97,7 @@ class WISY_AUTOSUGGEST_RENDERER_CLASS
 				// addMoreLink at the end
 				$tags[] = array(
 					'tag'	=>	$querystring,
-					'tag_descr' => sizeof($tags)? 'Alle Vorschl'.(PHP7 ? utf8_decode("ä") : 'ä').'ge im Hauptfenster anzeigen ...' : 'Keine Treffer',
+				    'tag_descr' => sizeof((array) $tags)? 'Alle Vorschl'.(PHP7 ? utf8_decode("ä") : 'ä').'ge im Hauptfenster anzeigen ...' : 'Keine Treffer',
 					'tag_type'	=> 0,
 					'tag_help'	=> 1 // indicates "more"
 				);			
@@ -105,7 +105,7 @@ class WISY_AUTOSUGGEST_RENDERER_CLASS
 				if( SEARCH_CACHE_ITEM_LIFETIME_SECONDS > 0 )
 					headerDoCache(SEARCH_CACHE_ITEM_LIFETIME_SECONDS);
 					
-				for( $i = 0; $i < sizeof($tags); $i++ )
+				for( $i = 0; $i < sizeof((array) $tags); $i++ )
 				{
 					echo		$tags[$i]['tag'] . 
 						"|"	.	$tags[$i]['tag_descr'] . 

@@ -36,7 +36,7 @@ class WISY_PROMOTE_CLASS
 
 			// log an array of views
 			reset($records['records']);
-			while( list($i, $record) = each($records['records']) )
+			foreach($records['records'] as $i => $record)
 			{
 				$this->logPromotedRecordView($record['id'], $record['anbieter'], $queryString);
 			}

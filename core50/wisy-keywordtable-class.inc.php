@@ -41,13 +41,13 @@ class WISY_KEYWORDTABLE_CLASS
 			WISY_KEYWORDTABLE_CLASS::$keywords = array();
 			$this->db->query("SELECT id, stichwort, eigenschaften, zusatzinfo, glossar FROM stichwoerter;");
 			while( $this->db->next_record() ) {
-				WISY_KEYWORDTABLE_CLASS::$keywords[ $this->db->f8('id') ] = $this->db->Record;
+			    WISY_KEYWORDTABLE_CLASS::$keywords[ $this->db->fcs8('id') ] = $this->db->Record;
 			}
 
 			WISY_KEYWORDTABLE_CLASS::$sw_modified = '0000-00-00 00:00:00';
 			$this->db->query("SELECT MAX(date_modified) d FROM stichwoerter;");
 			if( $this->db->next_record() ) {
-				WISY_KEYWORDTABLE_CLASS::$sw_modified = $this->db->f8('d');
+			    WISY_KEYWORDTABLE_CLASS::$sw_modified = $this->db->fcs8('d');
 			}			
 		}		
 	}
@@ -84,13 +84,13 @@ class WISY_KEYWORDTABLE_CLASS
 		
 		if( $tag_descr )
 		{
-		    $tag_descr = PHP7 ? $tag_descr : utf8_encode($tag_descr);
-		    $row_postfix = htmlentities(html_entity_decode($tag_descr)) . ', ' . htmlentities(html_entity_decode($row_postfix));
+		    $tag_descr = cs8($tag_descr);
+		    $row_postfix = htmlentities(html_entity_decode($tag_descr)) . ', ' . htmlentities(html_entity_decode(strip_tags($row_postfix)));
 		}
 		
 		if( $row_postfix != '' )
 		{
-		    $row_postfix = ' <span class="ac_tag_type">(' . htmlentities(html_entity_decode($row_postfix)) . ')</span> ';
+		    $row_postfix = ' <span class="ac_tag_type">(' . htmlentities(html_entity_decode(strip_tags($row_postfix))) . ')</span> ';
 		}
 
 		/*col1*/
@@ -117,18 +117,18 @@ class WISY_KEYWORDTABLE_CLASS
 		$icon_arr_right = '&nbsp;&#9654;';
 		$icon_empty = '&nbsp;&bull;&nbsp;';
 				
-		$title = utf8_encode(WISY_KEYWORDTABLE_CLASS::$keywords[ $keywordId ]['stichwort']);
+		$title = cs8(WISY_KEYWORDTABLE_CLASS::$keywords[ $keywordId ]['stichwort']);
 		$url = 'search?q=' . urlencode(g_sync_removeSpecialChars($title));
-		$zusatzinfo = utf8_encode(WISY_KEYWORDTABLE_CLASS::$keywords[ $keywordId ]['zusatzinfo']);
+		$zusatzinfo =cs8( WISY_KEYWORDTABLE_CLASS::$keywords[ $keywordId ]['zusatzinfo']);
 		$tag_type = WISY_KEYWORDTABLE_CLASS::$keywords[ $keywordId ]['eigenschaften'];
 		$glossarId = WISY_KEYWORDTABLE_CLASS::$keywords[ $keywordId ]['glossar'];
-				
+		
 		// get tag ID for the given keyword
 		$tag_id = 0;
 		$this->db->query("SELECT tag_id, tag_type FROM x_tags WHERE tag_name=".$this->db->quote($title));
 		if( $this->db->next_record() ) {
-			$tag_id = $this->db->f8('tag_id');
-		} 
+		    $tag_id = $this->db->fcs8('tag_id');
+		}
 		
 		// get row type, class etc.
 		$tag_freq = $this->tagSuggestor->getTagFreq(array($tag_id));
@@ -178,7 +178,7 @@ class WISY_KEYWORDTABLE_CLASS
 		$child_ids = array();
 		$this->db->query("SELECT attr_id FROM stichwoerter_verweis2 WHERE primary_id=$keywordId ORDER BY structure_pos;");
 		while( $this->db->next_record() ) {
-			$child_ids[] = $this->db->f8('attr_id');
+		    $child_ids[] = $this->db->fcs8('attr_id');
 		}
 
 		$showempty = $this->showempty;
@@ -233,7 +233,7 @@ class WISY_KEYWORDTABLE_CLASS
 		
 		// ... pass 2: render all rows for each keyword ID		
 		$ret_items = array();
-		for( $k = 0; $k < sizeof($keywordIds); $k++ ) 
+		for( $k = 0; $k < sizeof((array) $keywordIds); $k++ ) 
 		{
 			$expand = 0;
 			$keywordId = $keywordIds[$k];

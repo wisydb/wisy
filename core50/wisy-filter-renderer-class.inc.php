@@ -55,7 +55,7 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 	 * render, misc.
 	 **********************************************************************/
 
-	function renderForm()
+	function renderForm($q, $records)
 	{
 		
 		// explode the query string to its tokens
@@ -64,10 +64,10 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 		$presets_curr = array();
 
 		$q = $this->framework->getParam('q');
-		$q = utf8_encode($q);
+		$q = cs8($q); // !
 		$searcher =& createWisyObject('WISY_SEARCH_CLASS', $this->framework);
 		$tokens = $searcher->tokenize($q);
-		for( $i = 0; $i < sizeof($tokens['cond']); $i++ )
+		for( $i = 0; $i < sizeof((array) $tokens['cond']); $i++ )
 		{
 			$do_def = true;
 			
@@ -95,12 +95,12 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 					
 				case 'tag':
 					reset($this->presets);
-					while( list($field_name, $preset) = each($this->presets) )
+					foreach($this->presets as $field_name => $preset)
 					{
 						if( $preset['type'] == 'taglist' && !isset($presets_curr[$field_name]) )
 						{
 							reset($preset['options']);
-							while( list($value) = each($preset['options']) )
+							foreach(array_keys($preset['options']) as $value)
 							{
 								if( strval($tokens['cond'][$i]['value']) == strval($value) )
 								{
@@ -136,7 +136,7 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 							
 							reset($this->presets);
 							$fieldsets_open = 0;
-							while( list($field_name, $preset) = each($this->presets) )
+							foreach($this->presets as $field_name => $preset)
 							{
 								if( isset($preset['decoration']['headline_left']) )
 								{
@@ -167,7 +167,7 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 											{
 												echo '<select name="filter_' .$field_name. '">';
 													reset($preset['options']);
-													while( list($value, $descr) = each($preset['options']) )
+													foreach($preset['options'] as $value => $descr)
 													{
 														$selected = strval($presets_curr[$field_name])==strval($value)? ' selected="selected"' : '';
 														echo "<option value=\"$value\"$selected>$descr</option>";
@@ -222,7 +222,7 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 			{
 				$q = '';
 				reset($this->presets);
-				while( list($field_name, $preset) = each($this->presets) )
+				foreach($this->presets as $field_name => $preset)
 				{
 					$item = trim($_GET['filter_' . $field_name]);
 					if( $item != '' )
@@ -260,12 +260,12 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 		if( intval($_GET['ajax']) )
 		{
 			header('Content-type: text/html; charset=utf-8');
-			$this->renderForm();
+			$this->renderForm(null, null);
 		}
 		else
 		{
 			echo $this->framework->getPrologue(array('title'=>'Filtern', 'canonical'=>$this->framework->getUrl('filter'), 'bodyClass'=>'wisyp_search_filter'));
-			$this->renderForm();
+			$this->renderForm(null, null);
 			echo $this->framework->getEpilogue();
 		}
 	}

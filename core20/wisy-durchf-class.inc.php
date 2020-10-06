@@ -105,10 +105,10 @@ class WISY_DURCHF_CLASS
 
 	protected function formatArtSpalte($stichwoerter_arr, $details)
 	{
-		// Array Stichwörter/Tags => Bilder/Text erzeugen
-		// (wir verwenden hier die Informationen aus der stichworttabelle anstelle von x_tags, da diese einfacher zur Verfügung stehen und
-		// nicht aktualisiert werden müssen, d.h. Änderungen in der Onlinepflege sind sofort sichtbar.
-		// Nachteil ist, dass einige Stichwörter erst rekonstruiert werden müssen (aus bu_nummer, s. wisy-sync-renderer-class.inc.php))
+		// Array Stichwoerter/Tags => Bilder/Text erzeugen
+		// (wir verwenden hier die Informationen aus der stichworttabelle anstelle von x_tags, da diese einfacher zur Verfï¿½gung stehen und
+		// nicht aktualisiert werden muessen, d.h. ï¿½nderungen in der Onlinepflege sind sofort sichtbar.
+		// Nachteil ist, dass einige Stichwï¿½rter erst rekonstruiert werden mï¿½ssen (aus bu_nummer, s. wisy-sync-renderer-class.inc.php))
 		if( !is_array($this->imgTagArr) ) 
 		{
 			// init Array with defaults
@@ -122,7 +122,7 @@ class WISY_DURCHF_CLASS
     			    7430	=>	array('<b>BL</b>',	'Blended Learning'),
     			    7721	=>	array('<big>&#9993;</big>',	'Fernunterricht'),
     			    7639	=>	array('WWW', 'Web-Seminar'),
-    			    17261	=>  array('<b>P</b>',	'Präsenzunterricht'),
+    			    17261	=>  array('<b>P</b>',	'Prï¿½senzunterricht'),
 			    806441	=>	array('WWW', 'Web-Seminar'), // eigentl. Teleteaching = Web-Seminar
     			    832301 => array('<b>BZ</b>',	'Bildungszeit') // Bremen
 			);
@@ -142,7 +142,7 @@ class WISY_DURCHF_CLASS
 				$this->imgTagArr[7720]	= array("{$icons}/tc7.gif",	'Fernstudium');
 				$this->imgTagArr[7430]	= array("{$icons}/tc8.gif",	'Blended Learning');
 				$this->imgTagArr[7639]	= array("{$icons}/www.gif",	'Web-Seminar');
-				$this->imgTagArr[17261]	= array("{$icons}/P.gif",	'Präsenzunterricht');
+				$this->imgTagArr[17261]	= array("{$icons}/P.gif",	'Prï¿½senzunterricht');
 				// $this->imgTagArr[832301]	= array("{$icons}/B.gif",	'Bildungszeit'); // Bremen
 				$this->imgTagArr[806311]	= array("{$icons}/tc9.gif",	'E-Learning');
 				$this->imgTagArr[806441]	= array("{$icons}/www.gif",	'Web-Seminar');
@@ -368,7 +368,7 @@ class WISY_DURCHF_CLASS
 				switch( $stichwort['id'] ) {
 					case 3207:  $preishinweise_arr[] = 'kostenlos per Bildungsgutschein'; 		break;
 					case 6013:  $preishinweise_arr[] = 'kostenlos durch Umschulung';			break;
-					case 16311: $preishinweise_arr[] = 'kostenlos als Aktivierungsmaßnahme';	break;				
+					case 16311: $preishinweise_arr[] = 'kostenlos als Aktivierungsmaï¿½nahme';	break;				
 				}
 			}
 			
@@ -406,7 +406,7 @@ class WISY_DURCHF_CLASS
 					break;
 				
 				case 1:
-					// Stichwort 315/"Einstieg beis kursende Möglich"
+					// Stichwort 315/"Einstieg beis kursende Mï¿½glich"
 					$db->query("SELECT attr_id FROM kurse_stichwort WHERE primary_id=$kursId AND attr_id=315");
 					if( $db->next_record() ) {
 						$where = " AND (ende>='".strftime("%Y-%m-%d 00:00:00")."')";
@@ -476,17 +476,17 @@ class WISY_DURCHF_CLASS
 	    	$record = array('preis' => -1); // alle andere felder sind mit "leer" gut bedient
 	    }
 	    
-		// stichwoerter um im sync-process automatisch vergebene Stichwörter ergänzen
+		// stichwoerter um im sync-process automatisch vergebene Stichwï¿½rter ergï¿½nzen
 		//
 		// 2014-11-01 11:26 Anmerkung [1] (vgl. Anmerkungen [1] in wisy-sync-renderer.inc.php):
-		// 		da dies ungefähr dasselbe ist, wie in wisy-sync-renderer-class.inc.php könnte man dies evtl. in eine Klasse wie "auto-stichwort" auslagern,
-		// 		v.a. da im Grunde an dieser Stelle auch die AutoStichwoerter vergeben werden müssten - und wenn man
-		//		ein System etabliert, Stichwörter aus Volltext zu erzeugen, noch mehr.
+		// 		da dies ungefï¿½hr dasselbe ist, wie in wisy-sync-renderer-class.inc.php kï¿½nnte man dies evtl. in eine Klasse wie "auto-stichwort" auslagern,
+		// 		v.a. da im Grunde an dieser Stelle auch die AutoStichwoerter vergeben werden mï¿½ssten - und wenn man
+		//		ein System etabliert, Stichwï¿½rter aus Volltext zu erzeugen, noch mehr.
 		//
-		//		Es ist also eine Grundsätzliche Frage, wie mit automatisch vergebenen Stichwörtern verfahren werden soll,
+		//		Es ist also eine Grundsï¿½tzliche Frage, wie mit automatisch vergebenen Stichwï¿½rtern verfahren werden soll,
 		//		vll. ist es doch am Einfachsten, diese beim Abspeichern direkt im Redaktionssystem zu hinterlegen,
 		//		auch wenn mal etwas nach core20 folgt ...
-		//		dies müsste allerdings mit Jürgen und Monika besprochen werden (bp)
+		//		dies mï¿½sste allerdings mit Jï¿½rgen und Monika besprochen werden (bp)
 		if( $addParam['record']['bu_nummer'] )	{ if(!$this->stichw_in_array($addParam['stichwoerter'], 1   )) { $addParam['stichwoerter'][] = array('id'=>1   ); } }
 		if( $addParam['record']['fu_knr'] )		{ if(!$this->stichw_in_array($addParam['stichwoerter'], 7721)) { $addParam['stichwoerter'][] = array('id'=>7721); } }
 		if( $addParam['record']['azwv_knr'] ) 	{ if(!$this->stichw_in_array($addParam['stichwoerter'], 3207)) { $addParam['stichwoerter'][] = array('id'=>3207); } }
@@ -506,7 +506,7 @@ class WISY_DURCHF_CLASS
 		// termin abgelaufen?
 		$termin_abgelaufen = false;
 		$heute_datum = strftime("%Y-%m-%d 00:00:00");
-		if( $this->stichw_in_array($addParam['stichwoerter'], 315 /*Einstieg bis Kursende möglich?*/ ) 
+		if( $this->stichw_in_array($addParam['stichwoerter'], 315 /*Einstieg bis Kursende mï¿½glich?*/ ) 
 		 && $endesql > '0000-00-00 00:00:00' )
 		{
 			if( $endesql < $heute_datum ) {
@@ -550,10 +550,7 @@ class WISY_DURCHF_CLASS
 			if( $details && $this->framework->iniRead('details.kurstage', 1)==1 ) {
 			    $temp = $this->formatKurstage(intval($record['kurstage']));
 			    if( $temp ) {
-			        echo '<span class="wotage">'.$temp.'</span>';
-			        
-			        if($zeit_von || $zeit_bis)
-			            echo ':&nbsp;';
+			        $cell .= '<br><span class="wotage">'.$temp.'</span>';
 			    }
 			}
 			
@@ -570,7 +567,15 @@ class WISY_DURCHF_CLASS
 				$cell .= "{$small}$zeit_von Uhr{$smallend}"; 
 			}
 			
-			if( $addText ) // z.B. für "2 weitere Durchführungen ..."
+			if( $addParam['record']['freigeschaltet'] == 4 )
+			{
+			    $small = ''; $smallend = '';
+			    if( $cell != '' ) { $cell .= '<br />'; $small = '<small>'; $smallend = '</small>'; }
+			    
+			    $cell .= "{$small}dauerhaftes Angebot{$smallend}";
+			}
+			
+			if( $addText ) // z.B. fuer "2 weitere Durchfuehrungen ..."
 			{
 				$cell .= $cell!=''? '<br />' : '';
 				$cell .= $addText;
@@ -657,7 +662,7 @@ class WISY_DURCHF_CLASS
 			// get ort
 			$strasse	= $record['strasse'];
 			$plz		= $record['plz'];
-			$ort		= $record['ort']; // hier wird noch der Stadtteil angehängt
+			$ort		= $record['ort']; // hier wird noch der Stadtteil angehï¿½ngt
 			$stadt		= $ort;
 			$stadtteil	= $record['stadtteil'];
 			$land		= $record['land'];
@@ -726,6 +731,7 @@ class WISY_DURCHF_CLASS
 		
 		if (($wisyPortalSpalten & 64) > 0)
 		{
+		    $cell .= "..";
 	
 			// nr
 			echo "    <td>";
@@ -742,7 +748,7 @@ class WISY_DURCHF_CLASS
 		    
 		    if( $details ) {
 		        if( $record['teilnehmer'] ) {
-		            echo '<small>max. ' . intval($record['teilnehmer']) . ' Teiln.</small>'; // "Teilnehmende" ist etwas zu lang f¸r die schmale Spalte (zuvor waren die Teilnehmer unter den Bemerkungen, wo die Breite egal war)
+		            echo '<small>max. ' . intval($record['teilnehmer']) . ' Teiln.</small>'; // "Teilnehmende" ist etwas zu lang fuer die schmale Spalte (zuvor waren die Teilnehmer unter den Bemerkungen, wo die Breite egal war)
 		        }
 		    }
 		    

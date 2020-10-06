@@ -1212,6 +1212,28 @@ class WISY_SYNC_RENDERER_CLASS
 		$this->statetable->writeState('lastsync.kurse.global', $this->today_datetime);
 	}
 	
+	function doDBCleanup() {
+	    $db = new DB_ADMIN;
+	    $file_db_sql_skripte = "db_sql_skripte.inc.php";
+	    require_once($file_db_sql_skripte);
+	    
+	    if( !$db_sql || !is_array($db_sql) ) {
+	        echo "Keine zus&auml;tzlichen DB-Skripte gefunden. (".$file_db_sql_skripte.")"."\n";
+	        return false;
+	    }
+	    
+	    foreach($db_sql AS $query) {
+	        
+	        echo "Ausf&uuml;hren von:\n".$query."\n";
+	        $db->query($query);
+	        echo "\n";
+	    }
+	    
+	    // $db->close();
+	    echo "Zus&auml;tzliche DB-Skripte ausgef&uuml;hrt."."\n\n";
+	    return true;
+	}
+	
 	/* main - see what to do
 	 *************************************************************************/
 	
@@ -1249,6 +1271,8 @@ class WISY_SYNC_RENDERER_CLASS
 		
 		// allocate exclusive access
 		if( !$this->statetable->allocateUpdatestick() ) { $this->log("********** ERROR: $host: cannot sync now, update stick in use, please try again in about 10 minutes."); return; }
+		
+		$this->doDBCleanup();
 		
 					// see what to do ...
 					if( isset($_GET['kurseFast']) )

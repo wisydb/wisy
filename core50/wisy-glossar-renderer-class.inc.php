@@ -36,9 +36,9 @@ class WISY_GLOSSAR_RENDERER_CLASS
 		if( !$db->next_record() )
 			$this->framework->error404();
 
-		$begriff 		= cs8($db->fs('begriff'));
-		$erklaerung 	= cs8($db->fs('erklaerung')); // ?
-		$wikipedia 		= cs8($db->fs('wikipedia'));
+		$begriff 		= $db->fcs8('begriff');
+		$erklaerung 	= $db->fcs8('erklaerung'); // ?
+		$wikipedia 		= $db->fcs8('wikipedia');
 		$date_created	= cs8($db->fs('date_created'));
 		$date_modified	= cs8($db->fs('date_modified'));
 

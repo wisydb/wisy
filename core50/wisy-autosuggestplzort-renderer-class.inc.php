@@ -63,7 +63,7 @@ class WISY_AUTOSUGGESTPLZORT_RENDERER_CLASS
 				$plzStr = $this->combinePlz($plzArr[0], $plzArr[sizeof($plzArr)-1]);
 			}
 			
-			$tags[$plzStr.'/'.$make_unique] = utf8_encode($plzStr) . '|' . utf8_encode($ort); // add a unique string to the plz to allow multiple ORTs with the same PLZs
+			$tags[$plzStr.'/'.$make_unique] = cs8($plzStr) . '|' . cs8($ort); // add a unique string to the plz to allow multiple ORTs with the same PLZs
 			$make_unique++;
 		}
 

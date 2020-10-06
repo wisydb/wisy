@@ -7,7 +7,8 @@
  ******************************************************************************/
 
 // necessary for G_BLOB_CLASS / logo output
-require_once('admin/classes.inc.php'); 
+require_once('admin/classes.inc.php');
+require_once('admin/config/codes.inc.php');
 
 // Funktionen, die ohne irgendwelche instanzen laufen sollten
 function g_sync_removeSpecialChars($str)
@@ -61,7 +62,6 @@ class WISY_FRAMEWORK_CLASS
 
 	function __construct($baseObject, $addParam)
 	{
-	    ini_set("default_charset", "UTF-8");
 	    
 		// constructor
 		$this->includeVersion = '?iv=201'; // change the number on larger changes in included CSS and/or JS files.  May be empty.
@@ -96,7 +96,7 @@ class WISY_FRAMEWORK_CLASS
 	    $value = $default;
 	    if( isset( $wisyPortalEinstellungen[ $key ] ) )
 	    {
-	        $value = PHP7 ? $wisyPortalEinstellungen[ $key ] : utf8_encode($wisyPortalEinstellungen[ $key ]);
+	        $value = cs8($wisyPortalEinstellungen[ $key ]);
 	    }
 	    
 	    if($html)
@@ -144,7 +144,7 @@ class WISY_FRAMEWORK_CLASS
 		$ret = '';
 		ksort($values);
 		reset($values);
-		while( list($regKey, $regValue) = each($values) )
+		foreach($values as $regKey => $regValue)
 		{
 			$regKey		= strval($regKey);
 			$regValue	= strval($regValue);
@@ -193,18 +193,17 @@ class WISY_FRAMEWORK_CLASS
                         $description_parsed = $this->shorten_description($description, 160);
 						break;
 				case 'startseite':
-					$description_parsed = utf8_encode(trim($this->iniRead('meta.description_default', "")));
-					break;
-                default:
-                    $description_parsed = utf8_encode(trim($this->iniRead('meta.description_default', "")));
+				    $description_parsed = cs8(trim($this->iniRead('meta.description_default', "")));
+				    break;
+				default:
+				    $description_parsed = cs8(trim($this->iniRead('meta.description_default', "")));
         }
 		
         if($skip_contentdescription) {
             ;
         } else {
-            // leer lassen, wenn leer, sonst haben zu viele Seiten die Default Description und Google ignoriert sie auf der Startseite.
-            $metadesct_default = PHP7 ? trim($this->iniRead('meta.description_default', "")) : utf8_encode(trim($this->iniRead('meta.description_default', "")));
-            $ret .= ($description_parsed == "") ? "\n".''."\n" : "\n".'<meta name="description" content="'.$description_parsed.'">'."\n";
+            $metadesct_default = cs8(trim($this->iniRead('meta.description_default', "")));
+            $ret .= ($description_parsed == "") ? "\n".'<meta name="description" content="'.$metadesct_default.'">'."\n" : "\n".'<meta name="description" content="'.$description_parsed.'">'."\n";
         }
 		
 		return $ret;
@@ -279,7 +278,7 @@ class WISY_FRAMEWORK_CLASS
 		
 		$next_record = $db->next_record(); // Zeiger auf ersten Eintrag...
 		
-		$logo = PHP7 ? $db->f('logo') : $db->f8('logo');
+		$logo = $db->fcs8('logo');
 				
 		if($anbieterId < 0 || $anbieterId == "" || !$next_record || $db->f('freigeschaltet') != 1 || !$logo) {
 			if($default_symbol_q)
@@ -336,18 +335,18 @@ class WISY_FRAMEWORK_CLASS
 					$canonicalurl = "search?".$_SERVER['QUERY_STRING']; // explizit angeben, hat aber keine canonical URL
 					break;
 				case 'startseite':
-				    $beschreibung = PHP7 ? trim($this->iniRead('meta.description_default', "")) : utf8_encode(trim($this->iniRead('meta.description_default', "")));
-					$ret .= '<meta property="og:type" content="article">'."\n";
-					$canonicalurl = ""; // no canonical URL in > 5.0
-					break;
-                default:
-                    $beschreibung = PHP7 ? trim($this->iniRead('meta.description_default', "")) : utf8_encode(trim($this->iniRead('meta.description_default', "")));
+				    $beschreibung = cs8(trim($this->iniRead('meta.description_default', "")));
+				    $ret .= '<meta property="og:type" content="article">'."\n";
+				    $canonicalurl = ""; // no canonical URL in > 5.0
+				    break;
+				default:
+				    $beschreibung = cs8(trim($this->iniRead('meta.description_default', "")));
                     $ret .= '<meta property="og:type" content="article">'."\n";
                     $canonicalurl = ""; // no canonical URL in > 5.0
         }
 		
 		if($beschreibung == "")
-		    $beschreibung = PHP7 ? trim($this->iniRead('meta.description_default', "")) : utf8_encode(trim($this->iniRead('meta.description_default', "")));
+		    $beschreibung = cs8(trim($this->iniRead('meta.description_default', "")));
 		
 		$protocol = $this->iniRead('portal.https', '') ? "https" : "http";
 		
@@ -389,7 +388,7 @@ class WISY_FRAMEWORK_CLASS
 				
 		// Twitter
 		$ret .= '<meta name="twitter:card" content="summary">'."\n";
-		$ret .= '<meta name="twitter:site" content="@weiterbrlp">'."\n"; // $ret .= '<meta name="twitter:creator" content="weiterbrlp">'."\n";
+		//	$ret .= '<meta name="twitter:site" content="@weiterbrlp">'."\n"; // $ret .= '<meta name="twitter:creator" content="weiterbrlp">'."\n";
 			
 		// GGf. in Bitly aendern, weil Query String ignoriert wird
 		$url_twitter = $url; // sonst muss canonical url uebereinstimmen, um nicht ignoriert zu werden!
@@ -408,23 +407,23 @@ class WISY_FRAMEWORK_CLASS
 		$logo = ""; $logo_src = ""; 
 		$logo = $this->getAnbieterLogo($anbieter_ID, false, true);	// quadrat = false, 4:3 = true
    
-        if($logo != "") {
-		  if(!is_object($logo)) {
-		      $logo_src = $logo;
-		      $url_logosrc = PHP7 ? $this->pUrl($logo_src) : utf8_encode($this->pUrl($logo_src));
-		         // Default Logo Symbol
-		         $ret .= '<meta name="twitter:image" content="'.$url_logosrc.'">'."\n";
-			     $ret .= '<meta name="twitter:image:width" content="120">'."\n";
-			     $ret .= '<meta name="twitter:image:height" content="90">'."\n";
-		  } else {
-		         $logo_src = $this->purl("https://".$_SERVER['SERVER_NAME']."/admin/media.php/logo/anbieter/".$anbieter_ID."/".$logo->name);
-		         $url_logosrc = PHP7 ? $this->pUrl($logo_src) : utf8_encode($this->pUrl($logo_src));
-		         $ret .= '<meta name="twitter:image" content="'.$url_logosrc.'">'."\n";
-				 $ret .= '<meta name="twitter:image:width" content="'.$logo->w.'">'."\n";
-				 $ret .= '<meta name="twitter:image:height" content="'.$logo->h.'">'."\n";
-		  }
-	    }
-			
+		if($logo != "") {
+		    if(!is_object($logo)) {
+		        $logo_src = $logo;
+		        $url_logosrc = cs8($this->pUrl($logo_src));
+		        // Default Logo Symbol
+		        $ret .= '<meta name="twitter:image" content="'.$url_logosrc.'">'."\n";
+		        $ret .= '<meta name="twitter:image:width" content="120">'."\n";
+		        $ret .= '<meta name="twitter:image:height" content="90">'."\n";
+		    } else {
+		        $logo_src = $this->purl("https://".$_SERVER['SERVER_NAME']."/admin/media.php/logo/anbieter/".$anbieter_ID."/".$logo->name);
+		        $url_logosrc = cs8($this->pUrl($logo_src));
+		        $ret .= '<meta name="twitter:image" content="'.$url_logosrc.'">'."\n";
+		        $ret .= '<meta name="twitter:image:width" content="'.$logo->w.'">'."\n";
+		        $ret .= '<meta name="twitter:image:height" content="'.$logo->h.'">'."\n";
+		    }
+		}
+		
 		
 		return $ret;
 	}
@@ -450,44 +449,44 @@ class WISY_FRAMEWORK_CLASS
 	 Various Tools
 	 ******************************************************************************/
 
-	function error404()
+	function error404($custom_title = "", $add_info = "")
 	{
-		/* show an error page. For simple errors, eg. a bad or expired ID, we use an error message in the layout of the portal.
-		However, these messages only work in the root directory (remember, we use relative paths, so whn requesting /abc/def/ghi.html all images, css etc. won't work).
-		So, for errors outside the root directory, we use the global error404() function declared in /index.php */
-		$uri = $_SERVER['REQUEST_URI']; // 
-		if( substr_count($uri, '/') == 1 )
-		{
-			global $wisyCore;
-			header("HTTP/1.1 404 Not Found");
-			header('Content-Type: text/html; charset=utf-8');
-
-			$title = 'Fehler 404 - Seite nicht gefunden';
-
-			echo $this->getPrologue(array('title'=>$title, 'bodyClass'=>'wisyp_error'));
-			echo $this->getSearchField();
-
-			echo '
+	    /* show an error page. For simple errors, eg. a bad or expired ID, we use an error message in the layout of the portal.
+	     However, these messages only work in the root directory (remember, we use relative paths, so whn requesting /abc/def/ghi.html all images, css etc. won't work).
+	     So, for errors outside the root directory, we use the global error404() function declared in /index.php */
+	    $uri = $_SERVER['REQUEST_URI']; //
+	    if( substr_count($uri, '/') == 1 )
+	    {
+	        global $wisyCore;
+	        header("HTTP/1.1 404 Not Found");
+	        if(PHP7) ; else header('Content-Type: text/html; charset=utf-8');
+	        
+	        $title = $custom_title ? $custom_title : 'Fehler 404 - Seite nicht gefunden';
+	        
+	        echo $this->getPrologue(array('title'=>$title, 'bodyClass'=>'wisyp_error'));
+	        echo $this->getSearchField();
+	        
+	        echo '
 						<div class="wisy_topnote">
-							<p><b>Fehler 404 - Seite nicht gefunden</b></p>
-							<p>Entschuldigung, aber die von Ihnen gew&uuml;nschte Seite konnte leider nicht gefunden werden. Sie k&ouml;nnen jedoch ...
-							<ul>
-								<li><a href="//'.$_SERVER['HTTP_HOST'].'">Die Startseite von '.$_SERVER['HTTP_HOST'].' aufrufen ...</a></li>
-								<li><a href="javascript:history.back();">Zur&uuml;ck zur zuletzt besuchten Seite wechseln ...</a></li>
-							</ul>
+							<p><b>'.$title.'</b></p>
+							<p>Entschuldigung, aber die von Ihnen gew&uuml;nschte Seite konnte leider nicht gefunden werden. Sie k&ouml;nnen jedoch:
+								<ul>
+									<li><a href="//'.$_SERVER['HTTP_HOST'].'">Die Startseite von '.$_SERVER['HTTP_HOST'].' aufrufen ...</a></li>
+									<li><a href="javascript:history.back();">Zur&uuml;ck zur zuletzt besuchten Seite wechseln ...</a></li>
+								</ul>
+								'.$add_info.'
+							</p>
+							<p><br><br><small>(Technischer Hinweis: die angeforderte Seite war <i>'.htmlspecialchars($uri).'</i> in <i>/'.htmlspecialchars($wisyCore).'</i> auf <i>' .$_SERVER['HTTP_HOST']. '</i>)</small></p>
 						</div>
-						<p>
-							(die angeforderte Seite war <i>'.htmlspecialchars($uri).'</i> in <i>/'.htmlspecialchars($wisyCore).'</i> auf <i>' .$_SERVER['HTTP_HOST']. '</i>)
-						</p>
 				';
-			
-			echo $this->getEpilogue();
-			exit();
-		}
-		else
-		{
-			error404();
-		}
+	        
+	        echo $this->getEpilogue();
+	        exit();
+	    }
+	    else
+	    {
+	        error404();
+	    }
 	}
 
 	function log($file, $msg)
@@ -590,17 +589,17 @@ class WISY_FRAMEWORK_CLASS
 		// append all additional parameters, for the parameter q= we remove trailing spaces and commas 
 		$i = 0;
 		reset($param);
-		while( list($key, $value) = each($param) )
+		foreach($param as $key => $value)
 		{
-			if( $key == 'q' )
-			{	
-				if( $value == '' )
-					continue;
-				$value = rtrim($value, ', '); // remove trailing ", "
-			}
-			
-			$ret .= ($i? '&' : '?') . $key . '=' . urlencode($value);
-			$i++;
+		    if( $key == 'q' )
+		    {
+		        if( $value == '' )
+		            continue;
+		            $value = rtrim($value, ', '); // remove trailing ", "
+		    }
+		    
+		    $ret .= ($i? '&' : '?') . $key . '=' . urlencode($value);
+		    $i++;
 		}
 		
 		return $ret;
@@ -619,41 +618,41 @@ class WISY_FRAMEWORK_CLASS
 
 	function replacePlaceholders_Callback($matches)
 	{
-		global $wisyPortalName;
-		global $wisyPortalKurzname;
-
-		$placeholder = $matches[0];
-		if( $placeholder == '__NAME__' )
-		{
-		    return PHP7 ? $wisyPortalName : utf8_encode($wisyPortalName);
-		}
-		else if( $placeholder == '__KURZNAME__' )
-		{
-		    return PHP7 ? $wisyPortalKurzname : utf8_encode($wisyPortalKurzname);
-		}
-		else if( $placeholder == '__ANZAHL_KURSE__' || $placeholder == '__ANZAHL_KURSE_G__' )
-		{
-		    return number_format(intval($this->cacheRead('stats.anzahl_kurse')), 0, ",", ".");
-		}
-		else if( $placeholder == '__ANZAHL_DURCHFUEHRUNGEN__' )
-		{
-		    return number_format(intval($this->cacheRead('stats.anzahl_durchfuehrungen')), 0, ",", ".");
-		}
-		else if( $placeholder == '__ANZAHL_ANBIETER__' || $placeholder == '__ANZAHL_ANBIETER_G__' )
-		{
-		    return number_format(intval($this->cacheRead('stats.anzahl_anbieter')), 0, ",", ".");
-		}
-		else if( $placeholder == '__A_PRINT__' )
-		{
-			return ' href="javascript:window.print();"';
-		}
-		else if( $placeholder == '__DATUM__' )
-		{
-			$format = '%u, %d.%m.%Y';
-			$weekdays = array('Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag');
-			$format = str_replace('%u', $weekdays[ date('w') /*strftime() does not support %u on all system*/ ], $format);
-			return strftime($format);
-		}
+	    global $wisyPortalName;
+	    global $wisyPortalKurzname;
+	    
+	    $placeholder = $matches[0];
+	    if( $placeholder == '__NAME__' )
+	    {
+	        return cs8($wisyPortalName);
+	    }
+	    else if( $placeholder == '__KURZNAME__' )
+	    {
+	        return cs8($wisyPortalKurzname);
+	    }
+	    else if( $placeholder == '__ANZAHL_KURSE__' || $placeholder == '__ANZAHL_KURSE_G__' )
+	    {
+	        return intval($this->cacheRead('stats.anzahl_kurse'));
+	    }
+	    else if( $placeholder == '__ANZAHL_DURCHFUEHRUNGEN__' )
+	    {
+	        return intval($this->cacheRead('stats.anzahl_durchfuehrungen'));
+	    }
+	    else if( $placeholder == '__ANZAHL_ANBIETER__' || $placeholder == '__ANZAHL_ANBIETER_G__' )
+	    {
+	        return intval($this->cacheRead('stats.anzahl_anbieter'));
+	    }
+	    else if( $placeholder == '__A_PRINT__' )
+	    {
+	        return ' href="javascript:window.print();"';
+	    }
+	    else if( $placeholder == '__DATUM__' )
+	    {
+	        $format = '%u, %d.%m.%Y';
+	        $weekdays = array('Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag');
+	        $format = str_replace('%u', $weekdays[ date('w') /*strftime() does not support %u on all system*/ ], $format);
+	        return strftime($format);
+	    }
 		else if( substr($placeholder, 0, 6) == '__MENU' )
 		{
 			$prefix = strtolower(str_replace('_', '', $placeholder));
@@ -734,9 +733,9 @@ class WISY_FRAMEWORK_CLASS
 	
 	function getEditAnbieterId()
 	{
-		return $this->editSessionStarted? intval($_SESSION['loggedInAnbieterId']) : -1;
-				// nicht "0" zurueckgeben, da es kurse gibt, die "0" als anbieter haben;
-				// ein Vergleich mit kursId==getEditAnbieterId() wuerde dann eine unerwartete Uebereinstimmung bringen ...
+	    return $this->editSessionStarted? intval($_SESSION['loggedInAnbieterId']) : -1;
+	    // nicht "0" zur&uuml;ckgeben, da es kurse gibt, die "0" als anbieter haben;
+	    // ein Vergleich mit kursId==getEditAnbieterId() w&uuml;rde dann eine unerwartete &Uuml;bereinstimmung bringen ...
 	}
 	
 
@@ -826,10 +825,10 @@ class WISY_FRAMEWORK_CLASS
 	    $db->query("SELECT glossar, $field FROM $table WHERE id=$id");
 	    if( $db->next_record() ) {
 	        if( !($glossarId=$db->f('glossar')) ) {
-	            /* $db->query("SELECT id FROM glossar WHERE begriff='" .addslashes(PHP7 ? $db->f($field) : $db->f8($field)). "'");
-	            if( $db->next_record() ) {
-	                $glossarId = $db->f('id');
-	            } */
+	            /* $db->query("SELECT id FROM glossar WHERE begriff='" .addslashes($db->fcs8($field)). "'");
+	             if( $db->next_record() ) {
+	             $glossarId = $db->f('id');
+	             } */
 	        }
 	    }
 	    
@@ -887,8 +886,8 @@ class WISY_FRAMEWORK_CLASS
 	        
 	        $derivedStichwort = $derivedStichwoerter[$i];
 	        if(!in_array($derivedStichwort['eigenschaften'], $filtersw)) {
-	            $derivedStichwort8 = PHP7 ? $derivedStichwort['stichwort'] : utf8_encode($derivedStichwort['stichwort']);
-	            $ret .= '<span class="typ_'.$derivedStichwort['eigenschaften'].'  orginal_'.$originalsw.' '.strtolower($typ_name).'_raw"><a href="/?q='.urlencode($derivedStichwort8).'">'.$derivedStichwort8.'</a></span>, ';
+	            $derivedStichwort8 = cs8($derivedStichwort['stichwort']);
+	            $ret .= '<span class="typ_'.$derivedStichwort['eigenschaften'].'  orginal_'.$originalsw.' '.strtolower($typ_name).'_raw"><a href="/search?q='.urlencode($derivedStichwort8).'">'.$derivedStichwort8.'</a></span>, ';
 	        }
 	    }
 	    return $ret;
@@ -922,7 +921,7 @@ class WISY_FRAMEWORK_CLASS
 				
 			$anythingOfThisCode = 0;
 			
-			for( $s = 0; $s < sizeof($tags); $s++ )
+			for( $s = 0; $s < sizeof((array) $tags); $s++ )
 			{
 				$glossarLink = '';
 				$glossarId = $this->glossarDb($db, 'stichwoerter', $tags[$s]['id']);
@@ -977,7 +976,7 @@ class WISY_FRAMEWORK_CLASS
 			}
 		}
 		
-		return (PHP7 ? $ret : utf8_encode($ret)); // UTF-8 encode because the source file (admin/config/codes.inc.php) is still ISO-encoded
+		return cs8($ret);
 	}
 	
 	function encode_windows_chars($input) {
@@ -1005,9 +1004,9 @@ class WISY_FRAMEWORK_CLASS
 				WHERE k.user_grp=g.id AND k.id=$recordId";
 		$db->query($sql); if( !$db->next_record() ) return array();
 	
-		$settings			= PHP7 ? $db->f('s') : $db->f8('s');
+		$settings			= $db->fcs8('s');
 		$settings			= explodeSettings($settings);
-		$vollstaendigkeit	= intval($db->f8('v'));  if( $vollstaendigkeit <= 0 ) return;
+		$vollstaendigkeit	= intval($db->fcs8('v'));  if( $vollstaendigkeit <= 0 ) return;
 		$ret				= array();
 	
 		if( $vollstaendigkeit <= intval($settings["$scope.bad.percent"]) )
@@ -1173,7 +1172,7 @@ class WISY_FRAMEWORK_CLASS
 	    $fullTitleNoHtml .= $pageTitleNoHtml;
 	    $fullTitleNoHtml .= $title_post;
 	    $fullTitleNoHtml .= $fullTitleNoHtml? ' - ' : '';
-	    $fullTitleNoHtml .= PHP7 ? $wisyPortalKurzname : utf8_encode($wisyPortalKurzname); // = default for home page
+	    $fullTitleNoHtml .= cs8($wisyPortalKurzname); // = default for home page
 	    
 	    return $fullTitleNoHtml;
 	}
@@ -1329,7 +1328,7 @@ class WISY_FRAMEWORK_CLASS
 		$ret = '';
 		
 		$css = $this->getCSSFiles();
-		for( $i = 0; $i < sizeof($css); $i++ )
+		for( $i = 0; $i < sizeof((array) $css); $i++ )
 		{	
 			$ret .= '<link rel="stylesheet" type="text/css" href="'.$css[$i].'" />' . "\n";
 		}
@@ -1385,124 +1384,126 @@ class WISY_FRAMEWORK_CLASS
 	
 	function getJSHeadTags()
 	{
-		// JavaScript tags to include to the header (if any)
-		$ret = '';
-		
-		$js = $this->getJSFiles();
-		for( $i = 0; $i < sizeof($js); $i++ )
-		{	
-			$ret .= '<script type="text/javascript" src="'.$js[$i].'" charset="utf-8"></script>' . "\n";
-		}
-		
-		// Cookie Banner settings
-		if($this->iniRead('cookiebanner', '') == 1) {
-			
-			$ret .= "<script>\n";
-			$ret .= "window.cookiebanner = {};\n";
-			$ret .= "window.cookiebanner.optoutCookies = \"{$this->iniRead('cookiebanner.cookies.optout', '')},fav,fav_init_hint\";\n";
-			$ret .= "window.cookiebanner.optedOut = false;\n";
-			$ret .= "window.cookiebanner.favOptoutMessage = \"{$this->iniRead('cookiebanner.fav.optouthinweis', 'Ihr Favorit konnte auf diesem Computer nicht gespeichert gewerden da Sie die Speicherung von Cookies abgelehnt haben. Sie k&ouml;nnen Ihre Cookie-Einstellungen in den Datenschutzhinweisen anpassen.')}\";\n";
-			$ret .= "window.cookiebanner.piwik = \"{$this->iniRead('analytics.piwik', '')}\";\n";
-			$ret .= "window.cookiebanner.uacct = \"{$this->iniRead('analytics.uacct', '')}\";\n";
-
-			$ret .= 'window.addEventListener("load",function(){window.cookieconsent.initialise({';
-
-			$cookieOptions = array();
-			$cookieOptions['type'] = 'opt-out';
-			$cookieOptions['revokeBtn'] = '<div style="display:none;"></div>'; // Workaround for cookieconsent bug. Revoke cannot be disabled correctly at the moment
-			$cookieOptions['position'] = $this->iniRead('cookiebanner.position', 'bottom-left');
-			
-			$cookieOptions['law'] = array();
-			$cookieOptions['law']['countryCode'] = 'DE';
-			
-			$cookieOptions['cookie'] = array();
-			$cookieOptions['cookie']['expiryDays'] = intval($this->iniRead('cookiebanner.cookiegueltigkeit', 7));
-			
-			$cookieOptions['content'] = array();
-			$cookieOptions['content']['message'] = $this->iniRead('cookiebanner.hinweis.text', 'Wir verwenden Cookies, um Ihnen eine Merkliste sowie eine Seiten&uuml;bersetzung anzubieten und um Kursanbietern die Pflege ihrer Kurse zu erm&ouml;glichen. Indem Sie unsere Webseite nutzen, erkl&auml;ren Sie sich mit der Verwendung der Cookies einverstanden. Weitere Details finden Sie in unserer Datenschutzerkl&auml;rung.');
-			
-			$this->detailed_cookie_settings_einstellungen = boolval(strlen(trim($this->iniRead('cookiebanner.zustimmung.einstellungen', ''))) > 3); // legacy compatibility
-			$cookieOptions['content']['zustimmung_einstellungen'] = $this->iniRead('cookiebanner.zustimmung.einstellungen', false);
-			
-			if(strlen($cookieOptions['content']['zustimmung_einstellungen']) > 3 && $this->iniRead('cookiebanner.zeige.speicherdauer', ''))
-			    $cookieOptions['content']['zustimmung_einstellungen'] .= " (".$cookieOptions['cookie']['expiryDays']." Tage)";
-			    
-			$this->detailed_cookie_settings_popuptext = boolval(strlen(trim($this->iniRead('cookiebanner.zustimmung.popuptext', ''))) > 3); // legacy compatibility
-			$cookieOptions['content']['zustimmung_popuptext'] = $this->iniRead('cookiebanner.zustimmung.popuptext', false);
-			
-			$this->detailed_cookie_settings_merkliste = boolval(strlen(trim($this->iniRead('cookiebanner.zustimmung.merkliste', ''))) > 3); // legacy compatibility
-			$cookieOptions['content']['zustimmung_merkliste'] = $this->iniRead('cookiebanner.zustimmung.merkliste', false);
-			
-			$this->detailed_cookie_settings_onlinepflege = boolval(strlen(trim($this->iniRead('cookiebanner.zustimmung.onlinepflege', ''))) > 3); // legacy compatibility
-			$cookieOptions['content']['zustimmung_onlinepflege'] = $this->iniRead('cookiebanner.zustimmung.onlinepflege', false);
-			
-			$this->detailed_cookie_settings_translate = boolval(strlen(trim($this->iniRead('cookiebanner.zustimmung.translate', ''))) > 3); // legacy compatibility
-			$cookieOptions['content']['zustimmung_translate'] = $this->iniRead('cookiebanner.zustimmung.translate', false);
-			
-			$this->detailed_cookie_settings_analytics = boolval(strlen(trim($this->iniRead('cookiebanner.zustimmung.analytics', ''))) > 3); // legacy compatibility
-			$cookieOptions['content']['zustimmung_analytics'] = $this->iniRead('cookiebanner.zustimmung.analytics', false);
-			
-			$cookieOptions['content']['message'] = str_ireplace('__ZUSTIMMUNGEN__',
-			    '<ul class="cc-consent-details">'
-			    .($cookieOptions['content']['zustimmung_popuptext'] ? $this->addCConsentOption("popuptext", $cookieOptions) : '')
-			    .($cookieOptions['content']['zustimmung_merkliste'] ? $this->addCConsentOption("merkliste", $cookieOptions) : '')
-			    .($cookieOptions['content']['zustimmung_onlinepflege'] ? $this->addCConsentOption("onlinepflege", $cookieOptions) : '')
-			    .($cookieOptions['content']['zustimmung_translate'] ? $this->addCConsentOption("translate", $cookieOptions) : '')
-			    .($cookieOptions['content']['zustimmung_analytics'] ? $this->addCConsentOption("analytics", $cookieOptions) : '')
-			    .'__ZUSTIMMUNGEN_SONST__'
-			    .'</ul>',
-			    $cookieOptions['content']['message']
-			    );
-			
-			global $wisyPortalEinstellungen;
-			reset($wisyPortalEinstellungen);
-			$allPrefix = 'cookiebanner.zustimmung.sonst';
-			$allPrefixLen = strlen($allPrefix);
-			foreach($wisyPortalEinstellungen as $key => $value)
-			{
-			    if( substr($key, 0, $allPrefixLen)==$allPrefix )
-			    {
-			        $cookieOptions['content']['message'] = str_replace('__ZUSTIMMUNGEN_SONST__',
-			            $this->addCConsentOption("analytics", $key).'__ZUSTIMMUNGEN_SONST__',
-			            $cookieOptions['content']['message']);
-			    }
-			}
-			$cookieOptions['content']['message'] = str_replace('__ZUSTIMMUNGEN_SONST__', '', $cookieOptions['content']['message']);
-			
-			
-			$cookieOptions['content']['message'] = str_ireplace('__HINWEIS_ABWAHL__',
-			    '<span class="hinweis_abwahl">'
-			    .$this->iniRead('cookiebanner.hinweis.abwahl', '(Option abw&auml;hlen, wenn nicht einverstanden)')
-			    .'</span>',
-			    $cookieOptions['content']['message']);
-			
-			$cookieOptions['content']['allow'] = $this->iniRead('cookiebanner.erlauben.text', 'OK', 1);
-			$cookieOptions['content']['deny'] = $this->iniRead('cookiebanner.ablehnen.text', 'Ablehnen', 1);
-			$cookieOptions['content']['link'] = $this->iniRead('cookiebanner.datenschutz.text', 'Mehr erfahren', 1);
-			$cookieOptions['content']['href'] = $this->iniRead('cookiebanner.datenschutz.link', '');
-			
-			$cookieOptions['palette'] = array();
-			$cookieOptions['palette']['popup'] = array();
-			$cookieOptions['palette']['popup']['background'] = $this->iniRead('cookiebanner.hinweis.hintergrundfarbe', '#EEE');
-			$cookieOptions['palette']['popup']['text'] = $this->iniRead('cookiebanner.hinweis.textfarbe', '#000');
-			$cookieOptions['palette']['popup']['link'] = $this->iniRead('cookiebanner.hinweis.linkfarbe', '#3E7AB8');
-			
-			$cookieOptions['palette']['button']['background'] = $this->iniRead('cookiebanner.erlauben.buttonfarbe', '#3E7AB8');
-			$cookieOptions['palette']['button']['text'] = $this->iniRead('cookiebanner.erlauben.buttontextfarbe', '#FFF');
-			
-			$cookieOptions['palette']['highlight']['background'] = $this->iniRead('cookiebanner.ablehnen.buttonfarbe', '#FFF');
-			$cookieOptions['palette']['highlight']['text'] = $this->iniRead('cookiebanner.ablehnen.buttontextfarbe', '#000');
-			
-			$ret .= trim(json_encode($cookieOptions, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES), '{}') . ',';
-			
-			// Callbacks for enabling / disabling Cookies
-			$ret .= 'onInitialise: function(status) {
+	    // JavaScript tags to include to the header (if any)
+	    $ret = '';
+	    
+	    $js = $this->getJSFiles();
+	    for( $i = 0; $i < sizeof((array) $js); $i++ )
+	    {
+	        $ret .= '<script type="text/javascript" src="'.$js[$i].'" charset="utf-8"></script>' . "\n";
+	    }
+	    
+	    // Cookie Banner settings
+	    if($this->iniRead('cookiebanner', '') == 1) {
+	        
+	        $ret .= "<script>\n";
+	        $ret .= "window.cookiebanner = {};\n";
+	        $ret .= "window.cookiebanner.optoutCookies = \"{$this->iniRead('cookiebanner.cookies.optout', '')},fav,fav_init_hint\";\n";
+	        $ret .= "window.cookiebanner.optedOut = false;\n";
+	        $ret .= "window.cookiebanner.favOptoutMessage = \"{$this->iniRead('cookiebanner.fav.optouthinweis', 'Ihr Favorit konnte auf diesem Computer nicht gespeichert gewerden da Sie die Speicherung von Cookies abgelehnt haben. Sie k&ouml;nnen Ihre Cookie-Einstellungen in den Datenschutzhinweisen anpassen.')}\";\n";
+	        $ret .= "window.cookiebanner.piwik = \"{$this->iniRead('analytics.piwik', '')}\";\n";
+	        $ret .= "window.cookiebanner.uacct = \"{$this->iniRead('analytics.uacct', '')}\";\n";
+	        
+	        $ret .= 'window.addEventListener("load",function(){window.cookieconsent.initialise({';
+	        
+	        $cookieOptions = array();
+	        $cookieOptions['type'] = 'opt-out';
+	        $cookieOptions['revokeBtn'] = '<div style="display:none;"></div>'; // Workaround for cookieconsent bug. Revoke cannot be disabled correctly at the moment
+	        $cookieOptions['position'] = $this->iniRead('cookiebanner.position', 'bottom-left');
+	        
+	        $cookieOptions['law'] = array();
+	        $cookieOptions['law']['countryCode'] = 'DE';
+	        
+	        $cookieOptions['cookie'] = array();
+	        $cookieOptions['cookie']['expiryDays'] = intval($this->iniRead('cookiebanner.cookiegueltigkeit', 7));
+	        
+	        $cookieOptions['content'] = array();
+	        $cookieOptions['content'] = array();
+	        $cookieOptions['content']['message'] = $this->iniRead('cookiebanner.hinweis.text', 'Wir verwenden Cookies, um Ihnen eine Merkliste sowie eine Seiten&uuml;bersetzung anzubieten und um Kursanbietern die Pflege ihrer Kurse zu erm&ouml;glichen. Indem Sie unsere Webseite nutzen, erkl&auml;ren Sie sich mit der Verwendung der Cookies einverstanden. Weitere Details finden Sie in unserer Datenschutzerkl&auml;rung.');
+	        
+	        $this->detailed_cookie_settings_einstellungen = boolval(strlen(trim($this->iniRead('cookiebanner.zustimmung.einstellungen', ''))) > 3); // legacy compatibility
+	        $cookieOptions['content']['zustimmung_einstellungen'] = $this->iniRead('cookiebanner.zustimmung.einstellungen', false);
+	        
+	        if(strlen($cookieOptions['content']['zustimmung_einstellungen']) > 3 && $this->iniRead('cookiebanner.zeige.speicherdauer', ''))
+	            $cookieOptions['content']['zustimmung_einstellungen'] .= " (".$cookieOptions['cookie']['expiryDays']." Tage)";
+	            
+	            $this->detailed_cookie_settings_popuptext = boolval(strlen(trim($this->iniRead('cookiebanner.zustimmung.popuptext', ''))) > 3); // legacy compatibility
+	            $cookieOptions['content']['zustimmung_popuptext'] = $this->iniRead('cookiebanner.zustimmung.popuptext', false);
+	            
+	            $this->detailed_cookie_settings_merkliste = boolval(strlen(trim($this->iniRead('cookiebanner.zustimmung.merkliste', ''))) > 3); // legacy compatibility
+	            $cookieOptions['content']['zustimmung_merkliste'] = $this->iniRead('cookiebanner.zustimmung.merkliste', false);
+	            
+	            $this->detailed_cookie_settings_onlinepflege = boolval(strlen(trim($this->iniRead('cookiebanner.zustimmung.onlinepflege', ''))) > 3); // legacy compatibility
+	            $cookieOptions['content']['zustimmung_onlinepflege'] = $this->iniRead('cookiebanner.zustimmung.onlinepflege', false);
+	            
+	            $this->detailed_cookie_settings_translate = boolval(strlen(trim($this->iniRead('cookiebanner.zustimmung.translate', ''))) > 3); // legacy compatibility
+	            $cookieOptions['content']['zustimmung_translate'] = $this->iniRead('cookiebanner.zustimmung.translate', false);
+	            
+	            $this->detailed_cookie_settings_analytics = boolval(strlen(trim($this->iniRead('cookiebanner.zustimmung.analytics', ''))) > 3); // legacy compatibility
+	            $cookieOptions['content']['zustimmung_analytics'] = $this->iniRead('cookiebanner.zustimmung.analytics', false);
+	            
+	            $cookieOptions['content']['message'] = str_ireplace('__ZUSTIMMUNGEN__',
+	                '<ul class="cc-consent-details">'
+	                .($cookieOptions['content']['zustimmung_einstellungen'] ? $this->addCConsentOption("einstellungen", $cookieOptions) : '')
+	                .($cookieOptions['content']['zustimmung_popuptext'] ? $this->addCConsentOption("popuptext", $cookieOptions) : '')
+	                .($cookieOptions['content']['zustimmung_merkliste'] ? $this->addCConsentOption("merkliste", $cookieOptions) : '')
+	                .($cookieOptions['content']['zustimmung_onlinepflege'] ? $this->addCConsentOption("onlinepflege", $cookieOptions) : '')
+	                .($cookieOptions['content']['zustimmung_translate'] ? $this->addCConsentOption("translate", $cookieOptions) : '')
+	                .($cookieOptions['content']['zustimmung_analytics'] ? $this->addCConsentOption("analytics", $cookieOptions) : '')
+	                .'__ZUSTIMMUNGEN_SONST__'
+	                .'</ul>',
+	                $cookieOptions['content']['message']
+	                );
+	            
+	            global $wisyPortalEinstellungen;
+	            reset($wisyPortalEinstellungen);
+	            $allPrefix = 'cookiebanner.zustimmung.sonst';
+	            $allPrefixLen = strlen($allPrefix);
+	            foreach($wisyPortalEinstellungen as $key => $value)
+	            {
+	                if( substr($key, 0, $allPrefixLen)==$allPrefix )
+	                {
+	                    $cookieOptions['content']['message'] = str_replace('__ZUSTIMMUNGEN_SONST__',
+	                        $this->addCConsentOption("analytics", $key).'__ZUSTIMMUNGEN_SONST__',
+	                        $cookieOptions['content']['message']);
+	                }
+	            }
+	            $cookieOptions['content']['message'] = str_replace('__ZUSTIMMUNGEN_SONST__', '', $cookieOptions['content']['message']);
+	            
+	            
+	            $cookieOptions['content']['message'] = str_ireplace('__HINWEIS_ABWAHL__',
+	                '<span class="hinweis_abwahl">'
+	                .$this->iniRead('cookiebanner.hinweis.abwahl', '(Option abw&auml;hlen, wenn nicht einverstanden)')
+	                .'</span>',
+	                $cookieOptions['content']['message']);
+	            
+	            $cookieOptions['content']['allow'] = $this->iniRead('cookiebanner.erlauben.text', 'OK', 1);
+	            $cookieOptions['content']['deny'] = $this->iniRead('cookiebanner.ablehnen.text', 'Ablehnen', 1);
+	            $cookieOptions['content']['link'] = $this->iniRead('cookiebanner.datenschutz.text', 'Mehr erfahren', 1);
+	            $cookieOptions['content']['href'] = $this->iniRead('cookiebanner.datenschutz.link', '');
+	            
+	            $cookieOptions['palette'] = array();
+	            $cookieOptions['palette']['popup'] = array();
+	            $cookieOptions['palette']['popup']['background'] = $this->iniRead('cookiebanner.hinweis.hintergrundfarbe', '#EEE');
+	            $cookieOptions['palette']['popup']['text'] = $this->iniRead('cookiebanner.hinweis.textfarbe', '#000');
+	            $cookieOptions['palette']['popup']['link'] = $this->iniRead('cookiebanner.hinweis.linkfarbe', '#3E7AB8');
+	            
+	            $cookieOptions['palette']['button']['background'] = $this->iniRead('cookiebanner.erlauben.buttonfarbe', '#3E7AB8');
+	            $cookieOptions['palette']['button']['text'] = $this->iniRead('cookiebanner.erlauben.buttontextfarbe', '#FFF');
+	            
+	            $cookieOptions['palette']['highlight']['background'] = $this->iniRead('cookiebanner.ablehnen.buttonfarbe', '#FFF');
+	            $cookieOptions['palette']['highlight']['text'] = $this->iniRead('cookiebanner.ablehnen.buttontextfarbe', '#000');
+	            
+	            $ret .= trim(json_encode($cookieOptions, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES), '{}') . ',';
+	            
+	            // Callbacks for enabling / disabling Cookies
+	            $ret .= 'onInitialise: function(status) {
 						var didConsent = this.hasConsented();
 						if(!didConsent) {
 							window.cookiebanner.optedOut = true;
 							updateCookieSettings();
 						}
-                        callCookieDependantFunctions();
+						callCookieDependantFunctions();
 					},
 					onStatusChange: function(status) {
 						var didConsent = this.hasConsented();
@@ -1510,12 +1511,12 @@ class WISY_FRAMEWORK_CLASS
 							window.cookiebanner.optedOut = true;
 							updateCookieSettings();
 						}
-                        callCookieDependantFunctions();
+						callCookieDependantFunctions();
 					}';
-					
-			// Hide Revoke Button and enable custom revoke function in e.g. "Datenschutzhinweise"
-			// Add an <a> tag with ID #wisy_cookieconsent_settings anywhere on your site. It will re-open the cookieconsent popup when clicked
-			$ret .= '},
+	            
+	            // Hide Revoke Button and enable custom revoke function in e.g. "Datenschutzhinweise"
+	            // Add an <a> tag with ID #wisy_cookieconsent_settings anywhere on your site. It will re-open the cookieconsent popup when clicked
+	            $ret .= '},
 					function(popup){
 						popup.toggleRevokeButton(false);
 						window.cookieconsent.popup = popup;
@@ -1526,61 +1527,86 @@ class WISY_FRAMEWORK_CLASS
 							return false;
 						});
 					}';
-			
-			$ret .= ');
-			    
+	            
+	            $ret .= ');
+	                
 			/* save detailed cookie consent status */
 				jQuery(".cc-btn.cc-allow").click(function(){
 					jQuery(".cc-consent-details input[type=checkbox]").each(function(){
 						var cname = jQuery(this).attr("name");
-						$.removeCookie(cname, { path: "/" });
-						if(jQuery(this).is(":checked")) {
-							setCookieSafely(cname, "allow", { expires:'.$cookieOptions['cookie']['expiryDays'].'});';
-			
-			if(!$this->iniRead("cookiebanner.zustimmung.analytics.autoload", 0)) {
-			    $ret .= '
+						jQuery.removeCookie(cname, { path: "/" });';
+	            
+	            if(trim($cookieOptions['content']['zustimmung_einstellungen']) != "" && $this->iniRead("cookiebanner.zustimmung.analytics.essentiell", false) !== false)
+	                $ret .='if( jQuery(this).is(":checked") && jQuery(".cc-consent-details .einstellungen input[type=checkbox]").is(":checked") ) {
+								setCookieSafely(cname, "allow", { expires:'.$cookieOptions['cookie']['expiryDays'].'});';
+	                else
+	                    $ret .='if( jQuery(this).is(":checked") ) {
+								setCookieSafely(cname, "allow", { expires:'.$cookieOptions['cookie']['expiryDays'].'});';
+	                    
+	                    if(!$this->iniRead("cookiebanner.zustimmung.analytics.autoload", 0)) {
+	                        $ret .= '
 										if(cname == "cconsent_analytics") {
-											$.ajax({ url: window.location.href, dataType: \'html\'}); // call same page with analytics allowed, since now allowed to count this page view // dataType html makes sure scripts are loaded
+											jQuery.ajax({ url: window.location.href, dataType: \'html\'}); // call same page with analytics allowed, since now allowed to count this page view // dataType html makes sure scripts are loaded
 										}';
-			}
-			
-			$ret .= '
-						}
-					});
+	                    }
+	                    
+	                    $ret .= '
+						}'; // End: is:checked
+	                    
+	                    if(trim($cookieOptions['content']['zustimmung_einstellungen']) != "" && $this->iniRead("cookiebanner.zustimmung.analytics.essentiell", false) !== false)
+	                        $ret .='if( jQuery(".cc-consent-details .einstellungen input[type=checkbox]").is(":checked") == false)
+													setTimeout(function(){ jQuery.cookie("cookieconsent_status", null, { path: "/" }); } , 500);';
+	                        
+	                        $ret .= '});
 				});
-			    
+	                            
 			});
-			    
-            '.($this->detailed_cookie_settings_einstellungen ? "" : "window.cookiebanner_zustimmung_einstellungen_legacy = 1;").'
+	                            
+		 '.($this->detailed_cookie_settings_einstellungen ? "" : "window.cookiebanner_zustimmung_einstellungen_legacy = 1;").'
 			'.($this->detailed_cookie_settings_popuptext ? "" : "window.cookiebanner_zustimmung_popuptext_legacy = 1;").'
 			'.($this->detailed_cookie_settings_merkliste ? "" : "window.cookiebanner_zustimmung_merkliste_legacy = 1;").'
 			'.($this->detailed_cookie_settings_onlinepflege ? "" : "window.cookiebanner_zustimmung_onlinepflege_legacy = 1;").'
 			'.($this->detailed_cookie_settings_translate ? "" : "window.cookiebanner_zustimmung_translate_legacy = 1;").'
 			    
 			</script>'."\n"; // end initialization of cookie consent window
-			
-			// count first visit / page view without interaction
-			if( $this->iniRead("cookiebanner.zustimmung.analytics.essentiell", 0) &&  $this->iniRead("cookiebanner.zustimmung.analytics.autoload", 0) && !isset($_COOKIE['cookieconsent_status']) ) {
-			    $ret .= '<script>';
-			    $ret .= 'setCookieSafely("cconsent_analytics", "allow", { expires:'.$cookieOptions['cookie']['expiryDays'].' });'." \n";
-			    $ret .= '$.ajax({ url: window.location.href, dataType: \'html\'});'." \n"; // call same page with analytics allowed to count this page view
-			    $ret .= '</script>';
-			}
-			
-		}
-		
-		
-		// Don't allow for empty searches
-		$homepage = trim($this->iniRead('homepage', ''), '/');
-		$homepage = ($homepage == "") ? '/' : '/'.$homepage;
-		
-		$ret .= "<script>\n";
-		$ret .= "var homepage = '".$homepage."'"; // neu: jQueryWisy
-		// $ret .= "jQuery(document).ready(function() { preventEmptySearch('".$homepage."'); });"; // <-> onload maybe in use already
-		$ret .= "</script>";
-		
-		
-		return $ret;
+	                        
+	                        // count first visit / page view without interaction
+	                        if( $this->iniRead("cookiebanner.zustimmung.analytics.essentiell", 0) &&  $this->iniRead("cookiebanner.zustimmung.analytics.autoload", 0) && !isset($_COOKIE['cookieconsent_status']) ) {
+	                            $ret .= '<script>';
+	                            $ret .= 'setCookieSafely("cconsent_analytics", "allow", { expires:'.$cookieOptions['cookie']['expiryDays'].' });'." \n";
+	                            $ret .= 'jQuery.ajax({ url: window.location.href, dataType: \'html\'});'." \n"; // call same page with analytics allowed to count this page view
+	                            $ret .= '</script>';
+	                        }
+	                        
+	    }
+	    
+	    
+	    // Don't allow for empty searches
+	    $homepage = trim($this->iniRead('homepage', ''), '/');
+	    $homepage = ($homepage == "") ? '/' : '/'.$homepage;
+	    
+	    $ret .= "<script>\n";
+	    $ret .= "var homepage = '".$homepage."'"; // neu: jQueryWisy
+	    // $ret .= "jQuery(document).ready(function() { preventEmptySearch('".$homepage."'); });"; // <-> onload maybe in use already
+	    $ret .= "</script>";
+	    
+	    
+	    return $ret;
+	}
+	
+	function match_loginid(&$db, $hoursago) {
+	    $visitor_login_id = berechne_loginid();
+	    $add_cond = $hoursago > 0 ? "AND last_login >= now() - INTERVAL $hoursago HOUR" : "";
+	    $db->query("SELECT id FROM user WHERE last_login_id='$visitor_login_id' ".$add_cond);
+	    return $db->num_rows();
+	}
+	
+	function is_editor_active(&$db, $hoursago = 0) {
+	    return $this->match_loginid($db, $hoursago); // default: false = normal visitor
+	}
+	
+	function is_frondendeditor_active() {
+	    return isset($_COOKIE['wisyEdit20']); // default: false = normal visitor
 	}
 	
 	function getJSOnload()
@@ -1681,7 +1707,7 @@ class WISY_FRAMEWORK_CLASS
 		if( !is_array($param) ) $param = array();
 		
 		// prepare the HTML-Page
-		$bodyStart = PHP7 ? $GLOBALS['wisyPortalBodyStart'] : utf8_encode($GLOBALS['wisyPortalBodyStart']);
+		$bodyStart = cs8($GLOBALS['wisyPortalBodyStart']);
 		if( strpos($bodyStart, '<html') === false )
 		{
 		    if($this->iniRead('portal.inframe', '') != 1)
@@ -1807,7 +1833,7 @@ class WISY_FRAMEWORK_CLASS
 	    {
 	        $ret .= '
 				<script>
-				'.($this->detailed_cookie_settings_analytics ? 'var optedOut = ($.cookie("cconsent_analytics") != "allow");' : ' var optedOut = (document.cookie.indexOf("cookieconsent_status=deny") > -1);').'
+				'.($this->detailed_cookie_settings_analytics ? 'var optedOut = (jQuery.cookie("cconsent_analytics") != "allow");' : ' var optedOut = (document.cookie.indexOf("cookieconsent_status=deny") > -1);').'
 				    
 				if (!optedOut) {
 					(function(i,s,o,g,r,a,m){i["GoogleAnalyticsObject"]=r;i[r]=i[r]||function(){
@@ -1823,37 +1849,42 @@ class WISY_FRAMEWORK_CLASS
 				</script>';
 	    }
 	    
-	    $piwik = ($this->detailed_cookie_settings_analytics ? $_COOKIE['cconsent_analytics'] == 'allow' : $this->iniRead('analytics.piwik', ''));
-	    if( $piwik != '' )
-		{
-			if( strpos($piwik, ',')!==false ) {
-				list($piwik_site, $piwik_id) = explode(',', $piwik);
-			}
-			else {
-				$piwik_site = 'statistik.kursportal.info';
-				$piwik_id = $piwik;
-			}
-			
-			$ret .= "
-            <!-- Matomo -->
-            <!-- analytics.piwik -->
-            <script type=\"text/javascript\">
-            		var _paq = window._paq || [];
-              _paq.push(['trackPageView']);
-              _paq.push(['enableLinkTracking']);
-            		(function() {
-                var u=\"//".$piwik_site."/\";
-                _paq.push(['setTrackerUrl', u+'matomo.php']);
-                _paq.push(['setSiteId', ".$piwik_id."]);
-                var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
-                g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
-              })();
-            </script>
-            <!-- /analytics.piwik -->
-            <!-- End Matomo Code -->
-            ";
-		}
-		return $ret;
+	    $piwik = '';
+	    if($this->detailed_cookie_settings_analytics && $_COOKIE['cconsent_analytics'] != 'allow')
+	        $piwik = '';
+	        else
+	            $piwik = $this->iniRead('analytics.piwik', '');
+	            
+	            if( $piwik != '' )
+	            {
+	                if( strpos($piwik, ',')!==false ) {
+	                    list($piwik_site, $piwik_id) = explode(',', $piwik);
+	                }
+	                else {
+	                    $piwik_site = 'statistik.kursportal.info';
+	                    $piwik_id = $piwik;
+	                }
+	                
+	                $ret .= "
+				<!-- Matomo -->
+				<!-- analytics.piwik -->
+				<script type=\"text/javascript\">
+						var _paq = window._paq || [];
+						_paq.push(['trackPageView']);
+						_paq.push(['enableLinkTracking']);
+						(function() {
+								var u=\"//".$piwik_site."/\";
+								_paq.push(['setTrackerUrl', u+'matomo.php']);
+								_paq.push(['setSiteId', ".$piwik_id."]);
+								var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+								g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+						})();
+				</script>
+				<!-- /analytics.piwik -->
+				<!-- End Matomo Code -->
+				";
+	            }
+	            return $ret;
 	}
 	
 	function getSearchField()
@@ -1872,7 +1903,7 @@ class WISY_FRAMEWORK_CLASS
 			$q = '';
 			$bei = '';
 			$km = '';			
-			for( $i = 0; $i < sizeof($tokens['cond']); $i++ ) {
+			for( $i = 0; $i < sizeof((array) $tokens['cond']); $i++ ) {
 				switch( $tokens['cond'][$i]['field'] ) {
 					case 'bei':	
 						$bei = $tokens['cond'][$i]['value']; 
@@ -1938,6 +1969,7 @@ class WISY_FRAMEWORK_CLASS
 		        
 		}
 		
+		// zukuenftig angestrebte Action
 		if($pagetype != "suche") {
 		    $searchAction = ($richtext) ? 'itemprop="potentialAction" itemscope itemtype="https://schema.org/SearchAction"' : '';
 		    $target = ($richtext) ? '<meta itemprop="target" content="https://'.$_SERVER['SERVER_NAME'].'/search?q={q}"/>' : '';
@@ -1965,10 +1997,12 @@ class WISY_FRAMEWORK_CLASS
 					echo '</div>';
 					if( $this->iniRead('searcharea.radiussearch', 0) )
 					{
-						echo '<div class="formrow">';
-							echo '<label for="bei">bei</label>';
-							echo '<input type="text" id="wisy_beiinput" class="ac_plzort" name="bei" value="' .$bei. '" placeholder="PLZ/Ort" />' . "\n";
-						echo '</div>';
+					    echo '<div class="formrow">';
+					    echo '<label for="wisy_searchinput">' . $this->iniRead('searcharea.placeholder', $DEFAULT_PLACEHOLDER) . '</label>';
+					    // #richtext
+					    echo '<input '.$queryinput.' type="text" id="wisy_searchinput" class="ac_keyword" name="q" value="' .$q. '" placeholder="' . $this->iniRead('searcharea.placeholder', $DEFAULT_PLACEHOLDER) . '" />' . "\n";
+					    echo '<div class="wisy_searchhints">' .  $this->replacePlaceholders($this->iniRead('searcharea.hint', $DEFAULT_BOTTOM_HINT)) . '</div>' . "\n";
+					    echo '</div>';
 						echo '<div class="formrow">';
 							echo '<label for="km">km</label>';
 							echo '<select id="wisy_kmselect" name="km" >' . "\n";
@@ -1991,6 +2025,8 @@ class WISY_FRAMEWORK_CLASS
 			echo "\n</div><!-- /.inner -->";
 		echo "\n</div><!-- /#wisy_searchare -->\n\n";
 	
+		if($richtext) { echo '</div>'; }
+		
 		echo $this->replacePlaceholders( $this->iniRead('searcharea.below', '') ); // deprecated!
 	}
 	
@@ -2196,6 +2232,17 @@ class WISY_FRAMEWORK_CLASS
 		return false;
 	}
 
+	function mysql_escape_mimic($inp) {
+	    if(is_array($inp))
+	        return array_map(__METHOD__, $inp);
+	        
+	    if(!empty($inp) && is_string($inp)) {
+	        return str_replace(array('\\', "\0", "\n", "\r", "'", '"', "\x1a"), array('\\\\', '\\0', '\\n', '\\r', "\\'", '\\"', '\\Z'), $inp);
+	    }
+	        
+	    return $inp;
+	} 
+	
 	function main()
 	{
 		// authentication required?

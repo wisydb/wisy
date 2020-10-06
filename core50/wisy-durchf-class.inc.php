@@ -54,12 +54,14 @@ class WISY_DURCHF_CLASS
 				'tc3'	=>	array('<span class="wisyr_art_icon wisyr_art_nachmittags">&#9681;</span>', 		'Nachmittags'),
 				'tc4'	=>	array('<span class="wisyr_art_icon wisyr_art_abends">&#9682;</span>',		 	'Abends'),
 				'tc5'	=>	array('<span class="wisyr_art_icon wisyr_art_wochenende">WE</span>',			'Wochenende'),
-				1		=>	array('<span class="wisyr_art_icon wisyr_art_bildungsurlaub">BU</span>',		'Bildungsurlaub'),
-			    7430	=>	array('<span class="wisyr_art_icon wisyr_art_fernunterricht">BL</span>',	    'Blended Learning'),
+			    1		=>	array('<span class="wisyr_art_icon wisyr_art_bildungsurlaub">BU</span>',		'Bildungsurlaub'),
+			    7721	=>	array('<span class="wisyr_art_icon wisyr_art_fernunterricht">&#9993;</span>',	'Fernunterricht'),
+			    7430	=>	array('<span class="wisyr_art_icon wisyr_art_fernunterricht">BL</span>',
 				7721	=>	array('<span class="wisyr_art_icon wisyr_art_fernunterricht">&#9993;</span>',	'Fernunterricht'),
 				7639	=>	array('<span class="wisyr_art_icon wisyr_art_fernunterricht">WWW</span>',		'Web-Seminar'),
 				17261	=>	array('<span class="wisyr_art_icon wisyr_art_fernunterricht">P</span>',			'Präsenzunterricht'),
-			    806441	=>	array('<span class="wisyr_art_icon wisyr_art_fernunterricht">WWW</span>',		'Web-Seminar') // eigentl. Teleteaching = Web-Seminar
+			    806441	=>	array('<span class="wisyr_art_icon wisyr_art_fernunterricht">WWW</span>',		'Web-Seminar'), // eigentl. Teleteaching = Web-Seminar
+			    832301	=>	array('<span class="wisyr_art_icon wisyr_art_bildungszeit">BZ</span>',	
 			);
 
 			// overwrite defaults with portal settings from img.tag
@@ -160,7 +162,7 @@ class WISY_DURCHF_CLASS
 	
 		$c = 0;
 		reset($codes_kurstage_array);
-		while( list($value, $descr) = each($codes_kurstage_array) ) {
+		foreach($codes_kurstage_array as $value => $descr) {
 			if( $kurstage & $value ) {
 				$c++;
 			}
@@ -168,7 +170,7 @@ class WISY_DURCHF_CLASS
 	
 		$ret = '';
 		reset($codes_kurstage_array);
-		while( list($value, $descr) = each($codes_kurstage_array) ) {
+		foreach($codes_kurstage_array as $value => $descr) {
 			if( $kurstage & $value ) {
 				$ret .= $ret? ($c==1? ' und ' : ', ') : '';
 				$ret .= $descr;
@@ -274,27 +276,29 @@ class WISY_DURCHF_CLASS
 			if( $preishinweise_str ) $preishinweise_arr[] = $preishinweise_str;
 			
 			foreach( $addParam['stichwoerter'] as $stichwort ) {
-				switch( $stichwort['id'] ) {
-				    case 3207:  $preishinweise_arr[] = PHP7 ? 'kostenlos per Bildungsgutschein' : utf8_decode('kostenlos per Bildungsgutschein'); break;
-				    case 6013:  $preishinweise_arr[] = PHP7 ? 'kostenlos durch Umschulung' : utf8_decode('kostenlos durch Umschulung');			break;
-				    case 16311: $preishinweise_arr[] = PHP7 ? 'kostenlos als Aktivierungsmaßnahme' : utf8_decode('kostenlos als Aktivierungsmaßnahme');	break;	
-				}
+			    switch( $stichwort['id'] ) {
+			        case 3207:  $preishinweise_arr[] = cs8('kostenlos per Bildungsgutschein'); break;
+			        case 6013:  $preishinweise_arr[] = cs8('kostenlos durch Umschulung');			break;
+			        case 16311: $preishinweise_arr[] = cs8('kostenlos als Aktivierungsma&szlig;nahme');	break;
+			        case 849451: $preishinweise_arr[] = cs8('Preisstruktur komplex. GGf. beim Anbieter einholen.');	break;
+			    }
 			}
 			
-			if( sizeof($preishinweise_arr) )
+			if( sizeof((array) $preishinweise_arr) )
 			{
 			    $preishinweise_out = implode(', ', $preishinweise_arr);
+			    $ret = str_replace(array("k. A.", "k.A."), "", $ret);
 			    if( $html ) {
 			        $preishinweise_out = cs8($preishinweise_out);
-			        $ret .= '<div class="wisyr_preis_hinweise">' . htmlentities(str_replace(chr(0xE2).chr(0x82).chr(0xAC), "&euro;", str_replace(chr(128), "&euro;", html_entity_decode($preishinweise_out)))) . '</div>';
+			        $ret .= '<div class="wisyr_preis_hinweise">' .  str_replace(chr(128), "&euro;", htmlentities(html_entity_decode($preishinweise_out))) . '</div>'; // str_replace(chr(0xE2).chr(0x82).chr(0xAC), "&euro;",
 			    }
 			    else {
-			        $ret .= " (".$preishinweise_out.")";
+			        $ret .= " ($preishinweise_out)";
 			    }
 			}
 			
 			// Auto link URLs in Preishinweis
-			$replaceURL = (strpos($ret, 'http') === FALSE && strpos($ret, 'https') === FALSE) ? '<a href="http://$0" target="_blank" title="$0">$0</a>' : '<a href="$0" target="_blank" title="$0">$0</a>';
+			$replaceURL = (strpos($ret, 'http') === FALSE && strpos($ret, 'https') === FALSE) ? '<a href="http://$0" target="_blank" title="$0">'.$this->framework->iniRead("preishinweis.linktext", "$0").'</a>' : '<a href="$0" target="_blank" title="$0">'.$this->framework->iniRead("preishinweis.linktext", "$0").'</a>';
 			$ret = preg_replace('~(?:(https?)://([^\s<]+)|(www\.[^\s<]+?\.[^\s<]+))(?<![\.,:])~i', $replaceURL, $ret);
 		}
 		
@@ -518,19 +522,32 @@ class WISY_DURCHF_CLASS
 		
 		if (($wisyPortalSpalten & 16) > 0)
 		{
-			// preis
-			echo '    <td class="wisyr_preis" data-title="Preis">';
-				$temp = $this->formatPreis($record['preis'],
-					$record['sonderpreis'], $record['sonderpreistage'], 
-					$record['beginn'], $details? $record['preishinweise'] : '',
-					true, /*format as HTML*/
-					array(
-						'showDetails'=>$details,
-						'stichwoerter'=>$addParam['stichwoerter']
-						)
-					);
-				echo $this->shy($temp);
-			echo ' </td>' . "\n";
+		    // preis
+		    echo '    <td class="wisyr_preis" data-title="Preis">';
+		    $temp = $this->formatPreis($record['preis'],
+		        $record['sonderpreis'], $record['sonderpreistage'],
+		        $record['beginn'], $details? $record['preishinweise'] : '',
+		        true, /*format as HTML*/
+		        array(
+		            'showDetails'=>$details,
+		            'stichwoerter'=>$addParam['stichwoerter']
+		        )
+		        );
+		    
+		    if( ($temp == "" || $temp == "k.A." || $temp == "k. A.")
+		        && (strlen($record['preishinweise']) > 3 ||
+		            $this->stichw_in_array($addParam['stichwoerter'], 849451) ||
+		            $this->stichw_in_array($addParam['stichwoerter'], 3207) ||
+		            $this->stichw_in_array($addParam['stichwoerter'], 6013) ||
+		            $this->stichw_in_array($addParam['stichwoerter'], 16311)
+		            )
+		        )
+		        
+		        echo "<small>s.&nbsp;Preishinw.</small>";
+		        else
+		            echo $this->shy($temp);
+		            
+		            echo ' </td>' . "\n";
 		}
 		
 		if (($wisyPortalSpalten & 32) > 0)
@@ -547,8 +564,8 @@ class WISY_DURCHF_CLASS
 			$land		= htmlentities(cs8($record['land']));
 			if( $ort && $stadtteil ) {
 			    if( strpos($ort, $stadtteil)===false ) {
-			        $ort = $ort . ' - ' . $stadtteil;
-				}
+			        $ort = $ort . '-' . $stadtteil;
+			    }
 				else {
 					$ort = $ort;
 				}
@@ -581,12 +598,12 @@ class WISY_DURCHF_CLASS
 				$cell = '';
 				
 				if( $strasse ) {
-					$cell .=  '<a href="' . $map_URL . '">' . $strasse . '</a>';
+				    $cell .=  '<a title="Adresse in Google Maps ansehen" href="' . $map_URL . '" target="_blank">' . $strasse . '</a>';
 				}
 				
 				if( $ort ) {
-					$cell .= $cell? '<br />' : '';
-					$cell .= '<a href="' . $map_URL . '">' . "$plz $ort" . '</a>';
+				    $cell .= $cell? '<br />' : '';
+				    $cell .= '<a title="Adresse in Google Maps ansehen" href="' . $map_URL . '" target="_blank">' . "$plz $ort" . '</a>';
 				}
 	
 				if( $land ) {
@@ -624,16 +641,16 @@ class WISY_DURCHF_CLASS
 			echo ' </td>' . "\n";
 		}
 		
-		if (($wisyPortalSpalten & 128) > 0)
+		if (($spalten & 128) > 0)
 		{
 		    // maxTN, Bemerkungen
 		    if($details)
 		    {
-		        echo ' <td class="wisyr_bemerkungen" data-title="Bemerkungen">';
+		        echo '    <td class="wisyr_bemerkungen" data-title="Bemerkungen">';
 		        if( $record['teilnehmer'] ) echo '<p class="wisyr_art_teilnehmer">max. ' . intval($record['teilnehmer']) . ' Teilnehmer</p>';
 		        $wiki2html =& createWisyObject('WISY_WIKI2HTML_CLASS', $this->framework);
 		        $bemerkungen = $record['bemerkungen'];
-		        $bemerkungen = str_replace(chr(0xE2).chr(0x82).chr(0xAC), "&euro;", str_replace(chr(128), "&euro;", $bemerkungen));
+		        $bemerkungen = str_replace(chr(128), "&euro;", $bemerkungen); // str_replace(chr(0xE2).chr(0x82).chr(0xAC), "&euro;",
 		        echo cs8($wiki2html->run($bemerkungen));
 		        echo ' </td>' . "\n";
 		    }

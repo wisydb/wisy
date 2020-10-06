@@ -362,11 +362,11 @@ class DB_Sql
 	private function halt($msg)
 	{
 	    if( $this->Link_ID ) {
-	        $this->Error = "* ".@mysql_error($this->Link_ID);
-	        $this->Errno = "* ".@mysql_errno($this->Link_ID);
+	        $this->Error = "* ".@mysqli_error($this->Link_ID);
+	        $this->Errno = "* ".@mysqli_errno($this->Link_ID);
 	    }
 	    else {
-	        $this->Error = "** ".@mysql_error();
+	        $this->Error = "** ".@mysqli_error();
 	        $this->Errno = "** ".@mysql_errno();
 	    }
 	    if( $this->Halt_On_Error == 'no' )
@@ -468,6 +468,12 @@ class DB_Sql
 		}
 		return $ret;
 	}
-
+	
+	function get_stat() {
+	    if($this->Link_ID)
+	        return mysqli_stat ( $this->Link_ID );
+	        
+	        return false;
+	}
+	
 }
-

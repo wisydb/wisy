@@ -1538,17 +1538,23 @@ class WISY_SEARCH_RENDERER_CLASS
 					reset( $titles );
 					$cnt_statuszero = 0;
 					
+					if(count($titles))
+					    echo "<ul>";
+					
 					foreach($titles as $currId => $currTitel)
 					{
 					    $cnt_statuszero++;
 					    if( !$liveIds[ $currId ] )
 					    {
 					        echo $out? '' : ''; // &ndash;
-					        echo '<a href="k'.$currId.'" class="in_vorbereitung '.($cnt_statuszero % 2 == 0 ? 'wisy_even' : 'wisy_odd').'">' . htmlspecialchars($currTitel) . '</a>';
+					        echo '<li><a href="k'.$currId.'" class="in_vorbereitung '.($cnt_statuszero % 2 == 0 ? 'wisy_even' : 'wisy_odd').'">' . htmlspecialchars($currTitel) . '</a></li>';
 					        
 					        $out++;
 					    }
 					}
+					
+					if(count($titles))
+					    echo "</ul>";
 					
 					if( $out == 0 ) echo '<i title="Um einen neuen Kurs hinzuzuf&uuml;gen, klicken Sie oben auf &quot;Neuer Kurs&quot;">keine</i>';
 					//echo ' &ndash; <a href="edit?action=ek&amp;id=0">Neuer Kurs...</a>';
