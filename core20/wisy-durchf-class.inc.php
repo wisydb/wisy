@@ -106,9 +106,9 @@ class WISY_DURCHF_CLASS
 	protected function formatArtSpalte($stichwoerter_arr, $details)
 	{
 		// Array Stichwoerter/Tags => Bilder/Text erzeugen
-		// (wir verwenden hier die Informationen aus der stichworttabelle anstelle von x_tags, da diese einfacher zur Verf�gung stehen und
-		// nicht aktualisiert werden muessen, d.h. �nderungen in der Onlinepflege sind sofort sichtbar.
-		// Nachteil ist, dass einige Stichw�rter erst rekonstruiert werden m�ssen (aus bu_nummer, s. wisy-sync-renderer-class.inc.php))
+		// (wir verwenden hier die Informationen aus der stichworttabelle anstelle von x_tags, da diese einfacher zur Verfuegung stehen und
+		// nicht aktualisiert werden muessen, d.h. Aenderungen in der Onlinepflege sind sofort sichtbar.
+	    // Nachteil ist, dass einige Stichwoerter erst rekonstruiert werden muessen (aus bu_nummer, s. wisy-sync-renderer-class.inc.php))
 		if( !is_array($this->imgTagArr) ) 
 		{
 			// init Array with defaults
@@ -122,7 +122,7 @@ class WISY_DURCHF_CLASS
     			    7430	=>	array('<b>BL</b>',	'Blended Learning'),
     			    7721	=>	array('<big>&#9993;</big>',	'Fernunterricht'),
     			    7639	=>	array('WWW', 'Web-Seminar'),
-    			    17261	=>  array('<b>P</b>',	'Pr�senzunterricht'),
+    			    17261	=>  array('<b>P</b>',	'Pr&auml;senzunterricht'),
 			    806441	=>	array('WWW', 'Web-Seminar'), // eigentl. Teleteaching = Web-Seminar
     			    832301 => array('<b>BZ</b>',	'Bildungszeit') // Bremen
 			);
@@ -142,7 +142,7 @@ class WISY_DURCHF_CLASS
 				$this->imgTagArr[7720]	= array("{$icons}/tc7.gif",	'Fernstudium');
 				$this->imgTagArr[7430]	= array("{$icons}/tc8.gif",	'Blended Learning');
 				$this->imgTagArr[7639]	= array("{$icons}/www.gif",	'Web-Seminar');
-				$this->imgTagArr[17261]	= array("{$icons}/P.gif",	'Pr�senzunterricht');
+				$this->imgTagArr[17261]	= array("{$icons}/P.gif",	'Pr&auml;senzunterricht');
 				// $this->imgTagArr[832301]	= array("{$icons}/B.gif",	'Bildungszeit'); // Bremen
 				$this->imgTagArr[806311]	= array("{$icons}/tc9.gif",	'E-Learning');
 				$this->imgTagArr[806441]	= array("{$icons}/www.gif",	'Web-Seminar');
@@ -368,7 +368,7 @@ class WISY_DURCHF_CLASS
 				switch( $stichwort['id'] ) {
 					case 3207:  $preishinweise_arr[] = 'kostenlos per Bildungsgutschein'; 		break;
 					case 6013:  $preishinweise_arr[] = 'kostenlos durch Umschulung';			break;
-					case 16311: $preishinweise_arr[] = 'kostenlos als Aktivierungsma�nahme';	break;				
+					case 16311: $preishinweise_arr[] = 'kostenlos als Aktivierungsma&szlig;nahme';	break;				
 				}
 			}
 			
@@ -476,17 +476,17 @@ class WISY_DURCHF_CLASS
 	    	$record = array('preis' => -1); // alle andere felder sind mit "leer" gut bedient
 	    }
 	    
-		// stichwoerter um im sync-process automatisch vergebene Stichw�rter erg�nzen
+		// stichwoerter um im sync-process automatisch vergebene Stichwoerter ergaenzen
 		//
 		// 2014-11-01 11:26 Anmerkung [1] (vgl. Anmerkungen [1] in wisy-sync-renderer.inc.php):
-		// 		da dies ungef�hr dasselbe ist, wie in wisy-sync-renderer-class.inc.php k�nnte man dies evtl. in eine Klasse wie "auto-stichwort" auslagern,
-		// 		v.a. da im Grunde an dieser Stelle auch die AutoStichwoerter vergeben werden m�ssten - und wenn man
-		//		ein System etabliert, Stichw�rter aus Volltext zu erzeugen, noch mehr.
+		// 		da dies ungefaehr dasselbe ist, wie in wisy-sync-renderer-class.inc.php koennte man dies evtl. in eine Klasse wie "auto-stichwort" auslagern,
+		// 		v.a. da im Grunde an dieser Stelle auch die AutoStichwoerter vergeben werden muessten - und wenn man
+		//		ein System etabliert, Stichwoerter aus Volltext zu erzeugen, noch mehr.
 		//
-		//		Es ist also eine Grunds�tzliche Frage, wie mit automatisch vergebenen Stichw�rtern verfahren werden soll,
+		//		Es ist also eine Grundsaetzliche Frage, wie mit automatisch vergebenen Stichwoertern verfahren werden soll,
 		//		vll. ist es doch am Einfachsten, diese beim Abspeichern direkt im Redaktionssystem zu hinterlegen,
 		//		auch wenn mal etwas nach core20 folgt ...
-		//		dies m�sste allerdings mit J�rgen und Monika besprochen werden (bp)
+		//		dies muesste allerdings mit JV und MP besprochen werden (bp)
 		if( $addParam['record']['bu_nummer'] )	{ if(!$this->stichw_in_array($addParam['stichwoerter'], 1   )) { $addParam['stichwoerter'][] = array('id'=>1   ); } }
 		if( $addParam['record']['fu_knr'] )		{ if(!$this->stichw_in_array($addParam['stichwoerter'], 7721)) { $addParam['stichwoerter'][] = array('id'=>7721); } }
 		if( $addParam['record']['azwv_knr'] ) 	{ if(!$this->stichw_in_array($addParam['stichwoerter'], 3207)) { $addParam['stichwoerter'][] = array('id'=>3207); } }
@@ -506,7 +506,7 @@ class WISY_DURCHF_CLASS
 		// termin abgelaufen?
 		$termin_abgelaufen = false;
 		$heute_datum = strftime("%Y-%m-%d 00:00:00");
-		if( $this->stichw_in_array($addParam['stichwoerter'], 315 /*Einstieg bis Kursende m�glich?*/ ) 
+		if( $this->stichw_in_array($addParam['stichwoerter'], 315 /*Einstieg bis Kursende moeglich?*/ ) 
 		 && $endesql > '0000-00-00 00:00:00' )
 		{
 			if( $endesql < $heute_datum ) {
@@ -662,7 +662,7 @@ class WISY_DURCHF_CLASS
 			// get ort
 			$strasse	= $record['strasse'];
 			$plz		= $record['plz'];
-			$ort		= $record['ort']; // hier wird noch der Stadtteil angeh�ngt
+			$ort		= $record['ort']; // hier wird noch der Stadtteil angehaengt
 			$stadt		= $ort;
 			$stadtteil	= $record['stadtteil'];
 			$land		= $record['land'];

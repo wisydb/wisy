@@ -903,7 +903,7 @@ print
 		display: block !important;
 	}
 	
-	/* implizit verwendete Klassen und IDs, die in der Druckausgabe besondere Ber�cksichtigung finden sollen */
+	/* implizit verwendete Klassen und IDs, die in der Druckausgabe besondere Beruecksichtigung finden sollen */
 	.wisy_help, .wisy_rss_link, .wisy_paginate, #wisy_searcharea {
 		display: none !important;
 	}	
@@ -919,7 +919,7 @@ print
 		border-bottom: 1px solid #000;
 	}
 	
-	/* einige Schriftgr�ssen korrigieren */	
+	/* einige Schriftgroessen korrigieren */	
 	body {
 		font-size: 15px; /*org: 12px*/
 	}

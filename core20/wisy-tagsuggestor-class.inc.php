@@ -321,9 +321,9 @@ class WISY_TAGSUGGESTOR_CLASS
 			// 15.11.2012: Der Vorschlag zur Volltextsuche kann nun ausgeschaltet werden
 			if( $suggest_fulltext )
 			{
-				// 13.02.2010: die folgende Erweiterung bewirkt, das neben den normalen Vorschl�gen auch immer die Volltextsuche vorgeschlagen wird -
+				// 13.02.2010: die folgende Erweiterung bewirkt, das neben den normalen Vorschlaegen auch immer die Volltextsuche vorgeschlagen wird -
 				// und zwar in der Ajax-Vorschlagliste und auch unter "Bitte verfeinern Sie Ihren Suchauftrag"
-				// wenn man hier differenzierter Vorgehen m�chte, muss man ein paar Ebenen h�her ansetzen (bp)
+				// wenn man hier differenzierter Vorgehen moechte, muss man ein paar Ebenen hoeher ansetzen (bp)
 				$ret[] = array(
 					'tag'	=>	'volltext:' . $q_tag_name,
 					'tag_descr' => '',
