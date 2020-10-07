@@ -1,4 +1,7 @@
 <?php
+
+// die(date("d.m.Y").": Wartungsarbeiten.");
+
 /*******************************************************************************
 WISY
 ********************************************************************************
@@ -20,7 +23,13 @@ else
         
 // convert string to UTF-8 or not
 function cs8($string) {
-    if(ini_get("default_charset") == "UTF-8") {
+        
+    if(PHP7)
+        return $string;
+    else
+        return utf8_encode($string);
+                
+ /* if(ini_get("default_charset") == "UTF-8" ||  $defaultoutput == "UTF-8") {
         if(mb_detect_encoding($string, 'UTF-8', true) === FALSE || mb_detect_encoding($string, 'ISO-8859-1', true))
             return utf8_encode($string);
         else
@@ -30,7 +39,7 @@ function cs8($string) {
             return utf8_decode($string);
         else
             return $string;
-    }
+    } */
 }
 
 
@@ -190,9 +199,9 @@ function selectPortalOrFwd301()
 	// some special domain handling
 	if( substr($ist_domain, 0, 7)=='sandbox' ) // remove sandbox prefix
 	{
-	    if(preg_match("/sandbox[0-9]/i", substr($ist_domain, 0, 8)) && !preg_match("/sandbox[10-13]/i", substr($ist_domain, 0, 9)))
+	    if(preg_match("/sandbox[0-9]/i", substr($ist_domain, 0, 8)) && !preg_match("/sandbox[10-18]/i", substr($ist_domain, 0, 9)))
 	        $ist_domain = substr($ist_domain, 8 + 1 /*dot or minus*/ );
-	    elseif(preg_match("/sandbox[10-13]/i", substr($ist_domain, 0, 9)))
+	    elseif(preg_match("/sandbox[10-18]/i", substr($ist_domain, 0, 9)))
 	        $ist_domain = substr($ist_domain, 9 + 1 /*dot or minus*/ );
 		else
 			$ist_domain = substr($ist_domain, 7 + 1 /*dot or minus*/ );
@@ -314,17 +323,18 @@ if( ($temp=strrpos($wisyRequestedFile, '.')) !== false )
 *******************************************************************************/
 
 $wisyCore = 'core20';
-if( strval($_GET['filecore']) != '' )
+/*if( strval($_GET['filecore']) != '' )
+ {
+ // $wisyCore = 'core' . strval($_GET['filecore']);
+ }
+ else */
+if( strval($_COOKIE['core']) != '' )
 {
-	$wisyCore = 'core' . strval($_GET['filecore']);
-}
-else if( strval($_COOKIE['core']) != '' )
-{
-	$wisyCore = 'core' . strval($_COOKIE['core']);
+    $wisyCore = 'core' . strval($_COOKIE['core']);
 }
 else if( strval($wisyPortalEinstellungen['core']) != '' )
 {
-	$wisyCore = 'core' . strval($wisyPortalEinstellungen['core']);
+    $wisyCore = 'core' . strval($wisyPortalEinstellungen['core']);
 }
 
 
@@ -347,25 +357,55 @@ $wisyMiniMime = array(
 
 if( @file_exists("$wisyCore/$wisyRequestedFile") )
 {
-	$temp = $wisyMiniMime[$wisyRequestedExt];
-	if( $temp == 'require_once' )
-	{
-		require_once("$wisyCore/$wisyRequestedFile");
-		exit();
-	}
-	else if( $temp != '' )
-	{
-		header("Content-type: $temp");
-		header("Content-length: " . @filesize("$wisyCore/$wisyRequestedFile"));
-		headerDoCache();
-		readfile("$wisyCore/$wisyRequestedFile");
-		exit();
-	}
+    $temp = $wisyMiniMime[$wisyRequestedExt];
+    if( $temp == 'require_once' )
+    {
+        require_once("$wisyCore/$wisyRequestedFile");
+        exit();
+    }
+    else if( $temp != '' )
+    {
+        $requested_filepath = "$wisyCore/$wisyRequestedFile";
+        header("Content-type: $temp");
+        
+        
+        if($wisyRequestedExt == "css"
+            || $wisyRequestedExt == "js"
+            ) {
+                $longer_expiration = (20); // 2 weeks // 86400*14
+                headerDoCache($longer_expiration); // $default_expiration
+                
+                $filectime_orig = filectime($requested_filepath);
+                $gzip = (strpos($_SERVER['HTTP_ACCEPT_ENCODING'], 'gzip') !== FALSE);
+                $requested_filepath_tmp = $requested_filepath.".tmp.gz";
+                
+                if(!is_file($requested_filepath_tmp) || ($filectime_orig > filectime($requested_filepath_tmp))) {
+                    $contents = file_get_contents($requested_filepath);
+                    $contents = gzencode($contents, 9, $gzip ? FORCE_GZIP : FORCE_DEFLATE);
+                    file_put_contents($requested_filepath_tmp, $contents);
+                } elseif($filectime_orig < filectime($requested_filepath_tmp) && $gzip) {
+                    header ("Content-Encoding: gzip");
+                    header ('Content-Length: ' . @filesize($requested_filepath_tmp));
+                    readfile($requested_filepath_tmp);
+                    exit(0);
+                }
+            } else {
+                headerDoCache();
+            }
+            
+            header("Content-length: " . @filesize($requested_filepath));
+            
+            // ob_start("ob_gzhandler");
+            readfile($requested_filepath);
+            // ob_end_flush();
+            exit();
+    }
 }
 else if( @file_exists("$wisyCore/main.inc.php") )
 {
-	require_once("$wisyCore/main.inc.php");
-	exit();
+    ini_set("zlib.output_compression", "On");
+    require_once("$wisyCore/main.inc.php");
+    exit(0);
 }
 
 /*******************************************************************************
