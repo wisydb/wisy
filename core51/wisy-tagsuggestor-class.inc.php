@@ -201,7 +201,7 @@ class WISY_TAGSUGGESTOR_CLASS
 							WHERE ( $COND )
 							$portalIdCond
 							GROUP BY tag_name 
-							ORDER BY LEFT(tag_name,$LEN)<>'$QUERY', tag_name LIMIT 0, $max"; // sortierung alphabetisch, richtiger Wortanfang aber immer zuerst! Grou By wg. evtl. doppelter tag_names (soll eigentl. n. noetig, wenn Loeschroutine alle Typen zuruecksetzt)
+							ORDER BY LEFT(tag_name,$LEN)<>'$QUERY', tag_name LIMIT 0, $max"; // sort alphabetically - matching word beginning esp. important! Group By because multiple same tag_name entries
                             
 				$this->db->query($sql); 
 				while( $this->db->next_record() )
@@ -266,29 +266,31 @@ class WISY_TAGSUGGESTOR_CLASS
 					
 							// Find Ancestor(s)
 							{
-							    // 32 = verstecktes Synonym, 256 = Volltext Titel, 512 = Volltext Beschreibung, 2048 = Verwaltungsstichwort, 8192 = Schlagwort nicht verwenden
-							    $dontdisplay = array(32, 256, 512, 2048, 8192);
+							    // 1. Anhand $tag_name in stichwoerter die stichwort-ID ermitteln
+							    $sql = "SELECT id FROM stichwoerter WHERE stichwort=". $this->db4->quote($tag_name);
+							    $this->db4->query($sql);
 							    
-								// 1. Anhand $tag_name in stichwoerter die stichwort-ID ermitteln
-								$this->db4->query("SELECT id FROM stichwoerter WHERE stichwort=". $this->db4->quote($tag_name));
-								if( $this->db4->next_record() )
-								{
-								    $stichwort_id = $this->db4->fcs8('id');
-						
-									// 2. in stichwoerter_verweis2 Oberbegriffe finden
-									$this->db4->query("SELECT id, stichwort, primary_id, eigenschaften 
-														FROM stichwoerter_verweis2 
+							    if( $this->db4->next_record() )
+							    {
+							        // 32 = verstecktes Synonym, 256 = Volltext Titel, 512 = Volltext Beschreibung, 2048 = Verwaltungsstichwort, 8192 = Schlagwort nicht verwenden
+							        $dontdisplay = array(32, 256, 512, 2048, 8192);
+							        
+							        $stichwort_id = $this->db4->fcs8('id');
+							        
+							        // 2. in stichwoerter_verweis2 Oberbegriffe finden
+							        $this->db4->query("SELECT id, stichwort, primary_id, eigenschaften
+														FROM stichwoerter_verweis2
 														LEFT JOIN stichwoerter ON id=primary_id
 														WHERE attr_id = " . intval($stichwort_id) );
-											
-									while( $this->db4->next_record() )
-									{
-									    $tag_type = $this->db4->fcs8('eigenschaften');
-									    
-									    if(!in_array($tag_type, $dontdisplay))
-									       $tag_groups[] = $this->db4->fcs8('stichwort');
-									}
-								}
+							        
+							        while( $this->db4->next_record() )
+							        {
+							            $tag_type = $this->db4->fcs8('eigenschaften');
+							            
+							            if(!in_array($tag_type, $dontdisplay))
+							                $tag_groups[] = $this->db4->fcs8('stichwort');
+							        }
+							    }
 							}
 						}
 							
@@ -391,18 +393,23 @@ class WISY_TAGSUGGESTOR_CLASS
 			// 15.11.2012: Der Vorschlag zur Volltextsuche kann nun ausgeschaltet werden
 			if( $suggest_fulltext )
 			{
-				// 13.02.2010: die folgende Erweiterung bewirkt, das neben den normalen Vorschlägen auch immer die Volltextsuche vorgeschlagen wird -
-				// und zwar in der Ajax-Vorschlagliste und auch unter "Bitte verfeinern Sie Ihren Suchauftrag"
-				// wenn man hier differenzierter Vorgehen möchte, muss man ein paar Ebenen höher ansetzen (bp)
-				$ret[] = array(
-					'tag'	=>	'volltext:' . $q_tag_name,
-					'tag_descr' => '',
-					'tag_type'	=> 0,
-					'tag_help'	=> -3 // to signify "volltext"
-				);
-				// /13.02.2010: 
+			        $searcher_tmp =& createWisyObject('WISY_SEARCH_CLASS', $this->framework);
+			        
+			        // 13.02.2010: die folgende Erweiterung bewirkt, das neben den normalen Vorschl√§gen auch immer die Volltextsuche vorgeschlagen wird -
+			        // und zwar in der Ajax-Vorschlagliste und auch unter "Bitte verfeinern Sie Ihren Suchauftrag"
+			        // wenn man hier differenzierter Vorgehen m√∂chte, muss man ein paar Ebenen h√∂her ansetzen (bp)
+			        if( strlen($q_tag_name) >= $searcher_tmp->getMinChars() ) { // only if long enough for MYSQL actually search in fulltext mode
+			            $ret[] = array(
+			                'tag'	=>	'volltext:' . $q_tag_name,
+			                'tag_descr' => '',
+			                'tag_type'	=> 0,
+			                'tag_help'	=> -3 // to signify "volltext"
+			            );
+			        }
+			        // /13.02.2010:
 			}
 			// /15.11.2012
+			
 
 		}
 		

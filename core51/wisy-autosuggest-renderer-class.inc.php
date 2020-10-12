@@ -117,27 +117,38 @@ class WISY_AUTOSUGGEST_RENDERER_CLASS
                 }
                 
 
-				// No results
-				if(!isset($_GET['type']) ||  $_GET['type'] != 'ort')
-				{
-					if(count($filtered_tags) == 0) {
-						$filtered_tags[] = array(
-							'tag'	=>	$querystring,
-						    'tag_descr' => 'Keine Suchvorschl'.(PHP7 ? utf8_decode("ä") : 'ä').'ge m'.(PHP7 ? utf8_decode("ö") : 'ö').'glich', // HTML entities not possible b/c 1:1 output by js
-							'tag_type'	=> 0,
-							'tag_help'	=> -2 // indicates "no results"
-						);
+                // No results
+                if(!isset($_GET['type']) ||  $_GET['type'] != 'ort')
+                {   
+                    // If hidden synonym don't display: "Keine Suchvorschläge"
+                    if($tagsuggestor->getTagId($querystring) && count($filtered_tags) == 0) {
+                        
+                        $filtered_tags[] = array(
+                            'tag'	=>	$querystring,
+                            'tag_descr' => '&nbsp;',
+                            'tag_type'	=> 0,
+                            'tag_help'	=> -2 // indicates "no results"
+                        );
+                        
+                    } elseif(count($filtered_tags) == 0) {
+                        
+                        $filtered_tags[] = array(
+                            'tag'	=>	$querystring,
+                            'tag_descr' => 'Keine Suchvorschl'.(PHP7 ? utf8_decode("ä") : 'ä').'ge m'.(PHP7 ? utf8_decode("ö") : 'ö').'glich', // HTML entities not possible b/c 1:1 output by js
+                            'tag_type'	=> 0,
+                            'tag_help'	=> -2 // indicates "no results"
+                        );
                         // addMoreLink at the end when more than 10 entries have been found
-					} else if(count($filtered_tags) > 9) {
-                            
-						$filtered_tags[] = array(
-							'tag'	=>	$querystring,
-							'tag_descr' => 'Alle Suchvorschl'.(PHP7 ? utf8_decode("ä") : 'ä').'ge anzeigen',
-							'tag_type'	=> 0,
-							'tag_help'	=> 1 // indicates "more"
-						);
-					}
-				}	
+                    } else if(count($filtered_tags) > 9) {
+                        
+                        $filtered_tags[] = array(
+                            'tag'	=>	$querystring,
+                            'tag_descr' => 'Alle Suchvorschl'.(PHP7 ? utf8_decode("ä") : 'ä').'ge anzeigen',
+                            'tag_type'	=> 0,
+                            'tag_help'	=> 1 // indicates "more"
+                        );
+                    }
+                }
 				
 				if( SEARCH_CACHE_ITEM_LIFETIME_SECONDS > 0 )
 					headerDoCache(SEARCH_CACHE_ITEM_LIFETIME_SECONDS);

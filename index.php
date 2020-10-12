@@ -16,6 +16,15 @@ header('X-Powered-By: Software');
 
 define('IN_WISY', true);
 
+// redirects
+$url = 'https://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'];
+
+if(strpos($url,'https://www.kursportal.info/search?q=requested-term') !== false) {
+    header("Location: https://portalx.kursportal.info/search?q=target-term", true, 301); // permanent URL redirections
+    exit();
+}
+
+
 if(substr(PHP_VERSION_ID, 0, 1) > 6)
     define('PHP7', true);
 else

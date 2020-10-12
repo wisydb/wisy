@@ -81,14 +81,14 @@ class WISY_MENU_CLASS
         $thema = "";
         if(is_array($startIndex)) {
             foreach($startIndex AS $i) {
-                $thema .= cs8($g_themen[$i]['thema'])." ODER ";
-                $q .= cs8($g_themen[$i]['thema'])." ODER "; // g_sync_removeSpecialChars()
+                $thema .= str_replace(',', '', cs8($g_themen[$i]['thema']))." ODER "; // Thema may contain comma
+                $q .= str_replace(',', '', cs8($g_themen[$i]['thema']))." ODER "; // g_sync_removeSpecialChars()
             }
             $thema = preg_replace('/ ODER $/', '', $thema);
             $title = htmlspecialchars($thema);
             $q = $thema;
         } else {
-            $thema = cs8($g_themen[$startIndex]['thema']);
+            $thema = str_replace(',', '', cs8($g_themen[$startIndex]['thema']));
             $title = htmlspecialchars($thema);
             $q = g_sync_removeSpecialChars($thema);
         }

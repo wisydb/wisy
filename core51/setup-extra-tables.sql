@@ -25,7 +25,7 @@ CREATE TABLE `x_cache_search` (
   `cdateinserted` datetime NOT NULL,
   PRIMARY KEY  (`ckey`),
   KEY `cexpires` (`cdateinserted`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci;
 
 -- --------------------------------------------------------
 
@@ -45,7 +45,7 @@ CREATE TABLE `x_kurse` (
   KEY `beginn` (`beginn`),
   KEY `preis` (`preis`),
   KEY `dauer` (`dauer`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci;
 
 -- --------------------------------------------------------
 
@@ -58,7 +58,7 @@ CREATE TABLE `x_kurse_tags` (
   `tag_id` int(11) NOT NULL,
   KEY `kurs_id` (`kurs_id`),
   KEY `tag_id` (`tag_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci;
 
 -- --------------------------------------------------------
 
@@ -70,7 +70,7 @@ CREATE TABLE `x_state` (
   `skey` varchar(255) collate latin1_general_ci NOT NULL,
   `svalue` longtext collate latin1_general_ci NOT NULL,
   PRIMARY KEY  (`skey`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci;
 
 -- --------------------------------------------------------
 
@@ -86,7 +86,7 @@ CREATE TABLE `x_tags` (
   PRIMARY KEY  (`tag_id`),
   KEY `tag_name` (`tag_name`),
   KEY `tag_soundex` (`tag_soundex`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci AUTO_INCREMENT=10351 ;
+) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci AUTO_INCREMENT=10351 ;
 
 -- --------------------------------------------------------
 
@@ -98,4 +98,4 @@ CREATE TABLE `x_tags_syn` (
   `tag_id` int(11) NOT NULL,
   `lemma_id` int(11) NOT NULL,
   KEY `lemma_id` (`lemma_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci;

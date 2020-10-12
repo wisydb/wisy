@@ -82,7 +82,7 @@ class WISY_KEYWORDTABLE_CLASS
 			else
 				$row_postfix = ($tag_freq==1? '1 Kurs' : "$tag_freq Kurse") . $row_preposition . $row_postfix;
 		} else {
-			return "<small>Z.Z. leider keine Angebote ".$row_preposition . $row_postfix.": ".htmlentities(utf8_encode($tag_name))."</small>";
+		    return "<small>Z.Z. leider keine Angebote ".$row_preposition . $row_postfix.": ".htmlentities(cs8($tag_name))."</small>";
 		}
 
 
@@ -124,7 +124,7 @@ class WISY_KEYWORDTABLE_CLASS
 		$icon_empty = '&nbsp;&bull;&nbsp;';
 				
 		$title = cs8(WISY_KEYWORDTABLE_CLASS::$keywords[ $keywordId ]['stichwort']);
-		$url = 'search?q=' . urlencode(g_sync_removeSpecialChars($title));
+		$url = 'search?q=' . g_sync_removeSpecialChars($title); // urlencode()
 		$zusatzinfo = cs8(WISY_KEYWORDTABLE_CLASS::$keywords[ $keywordId ]['zusatzinfo']);
 		$tag_type = WISY_KEYWORDTABLE_CLASS::$keywords[ $keywordId ]['eigenschaften'];
 		$glossarId = WISY_KEYWORDTABLE_CLASS::$keywords[ $keywordId ]['glossar'];

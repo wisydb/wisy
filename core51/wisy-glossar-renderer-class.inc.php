@@ -27,7 +27,7 @@ class WISY_GLOSSAR_RENDERER_CLASS
         }
     }
     
-    // Die Funktion prüft ob der Glossarbeitrag einem Stichwort zugeordnet ist
+    // Die Funktion prueft ob der Glossarbeitrag einem Stichwort zugeordnet ist
     function getGlossarArt($glossar_id)
     {
         $ret = 0;
@@ -55,7 +55,7 @@ class WISY_GLOSSAR_RENDERER_CLASS
             || ($glossarshowall != 1 && $glossar['user_grp'] != $wisyPortalUserGrp && !in_array($glossar_id, $glossarshowids) && !in_array($glossar['user_grp'], $glossarshowgrps) && $this->getGlossarArt($glossar_id) == 0) ) {
                 $this->framework->error404();
         }
-        // Wenn es keine Erklärung, aber eine Wikipedia-Seite gibt -> Weiterleitung auf die entspr. Wikipedia-Seite
+        // Wenn es keine Erklaerung, aber eine Wikipedia-Seite gibt -> Weiterleitung auf die entspr. Wikipedia-Seite
         if( $glossar['erklaerung'] == '' && $glossar['wikipedia'] != '' )
         {
             header('Location: ' . $this->getWikipediaUrl($glossar['wikipedia']));

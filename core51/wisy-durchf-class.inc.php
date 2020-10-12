@@ -1,6 +1,6 @@
 <?php if( !defined('IN_WISY') ) die('!IN_WISY');
 
-
+require_once('admin/config/codes.inc.php');
 
 class WISY_DURCHF_CLASS
 {
@@ -319,7 +319,7 @@ class WISY_DURCHF_CLASS
 			    $preishinweise_out = implode(', ', $preishinweise_arr);
 			    $ret = str_replace(array("k. A.", "k.A."), "", $ret);
 			    if( $html ) {
-			        $preishinweise_out = cs8(str_replace(chr(128), "&euro;", $preishinweise_out));
+			        $preishinweise_out = cs8($preishinweise_out);
 			        $ret .= '<div class="wisyr_preis_hinweise">' .  str_replace(chr(128), "&euro;", htmlentities(html_entity_decode($preishinweise_out))) . '</div>'; // str_replace(chr(0xE2).chr(0x82).chr(0xAC), "&euro;",
 			    }
 			    else {
@@ -581,7 +581,7 @@ class WISY_DURCHF_CLASS
 		    $temp = $this->formatPreis($record['preis'],
 		        $record['sonderpreis'], $record['sonderpreistage'],
 		        $record['beginn'], $details? $record['preishinweise'] : '',
-		        true, /*format as HTML*/
+		        true, // format as HTML
 		        array(
 		            'showDetails'=>$details,
 		            'stichwoerter'=>$addParam['stichwoerter']
@@ -590,7 +590,9 @@ class WISY_DURCHF_CLASS
 		    
 		    global $controlTags;
 		    $freeFinancialAid = (	 $this->stichw_in_array($addParam['stichwoerter'], $controlTags['Bildungsgutschein'])
+		        || $this->stichw_in_array($addParam['stichwoerter'], $controlTags['DeuFoeV'])
 		        || $this->stichw_in_array($addParam['stichwoerter'], $controlTags['Umschulung'])
+		        || $this->stichw_in_array($addParam['stichwoerter'], $controlTags['Orientierungskurs'])
 		        || $this->stichw_in_array($addParam['stichwoerter'], $controlTags['Aktivierungsgutschein'] )
 		        || $this->stichw_in_array($addParam['stichwoerter'], $controlTags['Integrationskurs'] )
 		        || $this->stichw_in_array($addParam['stichwoerter'], $controlTags['Integrationskurs (zu speziellem Förderbedarf)'] )
@@ -599,14 +601,23 @@ class WISY_DURCHF_CLASS
 		        || $this->stichw_in_array($addParam['stichwoerter'], $controlTags['Integrationskurs für Zweitschriftlernende'] )
 		        );
 		    
+		    //  && (is_array($preishinweise_arr) && !in_array("kostenlos", $preishinweise_arr))
 		    // Preis komplex: $this->stichw_in_array($addParam['stichwoerter'], 849451)
 		    if( ($temp == "" || $temp == "k.A." || $temp == "k. A.") && (strlen($record['preishinweise']) > 3 && !$freeFinancialAid) ) {
 		        echo "<small>s.&nbsp;Preishinw.</small>";
 		    }
-		    elseif( ($temp == "" || $temp == "k.A." || $temp == "k. A.") && $freeFinancialAid ) {
+		    elseif( ($temp == "" || $temp == "k.A." || $temp == "k. A.") && $freeFinancialAid && stripos($temp, 'kostenlos') === FALSE) {
 		        echo "<small>kostenlos&nbsp;b.&nbsp;F&ouml;rderung</small>";
-		    } elseif( !($temp == "" || $temp == "k.A." || $temp == "k. A.") && $freeFinancialAid ) {
-		        echo $this->shy($temp)."<br><small>kostenlos&nbsp;b.&nbsp;F&ouml;rderung</small>";
+		    } elseif( !($temp == "" || $temp == "k.A." || $temp == "k. A.") && $freeFinancialAid && stripos($temp, 'kostenlos') === FALSE) {
+		        /* Doesnt work well to differentiate:
+		         * if($this->stichw_in_array($addParam['stichwoerter'], $controlTags['Bildungsgutschein']))
+		         echo $this->shy($temp)."<br><small>kostenlos&nbsp;per&nbsp;Bildungsgutschein</small>";
+		         elseif($this->stichw_in_array($addParam['stichwoerter'], $controlTags['Umschulung']))
+		         echo $this->shy($temp)."<br><small>kostenlos&nbsp;durch&nbsp;Umschulung</small>";
+		         elseif($this->stichw_in_array($addParam['stichwoerter'], $controlTags['Aktivierungsgutschein']))
+		         echo $this->shy($temp)."<br><small>kostenlos&nbsp;als&nbsp;Aktivierungsma&szlig;nahme</small>";
+		         else */
+		         echo $this->shy($temp)."<br><small>kostenlos&nbsp;b.&nbsp;F&ouml;rderung</small>";
 		    } else
 		        echo $this->shy($temp);
 		        

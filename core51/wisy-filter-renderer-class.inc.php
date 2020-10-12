@@ -89,9 +89,9 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
     		$renderformData['records_ort'] = array_unique($renderformData['records_ort']);
 			$renderformData['records_dauer'] = array_unique($renderformData['records_dauer']);
 			sort($renderformData['records_dauer']);
-			if(count($renderformData['records_dauer'])) {
+			if(count((array) $renderformData['records_dauer'])) {
 				$renderformData['records_dauer_min'] = $renderformData['records_dauer'][0];
-				$renderformData['records_dauer_max'] = $renderformData['records_dauer'][count($renderformData['records_dauer'])-1];
+				$renderformData['records_dauer_max'] = $renderformData['records_dauer'][count((array) $renderformData['records_dauer'])-1];
 			}
 			
 			// Anfrage anhand der Liste der $records['id']s die alle Durchführungs-Tags findet um enthaltene Tageszeit, Förderungen, Zielgruppe, Zertifikate, Unterrichtsart zu finden.
@@ -106,6 +106,7 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 		
 		// TODO db: analoger zu filter-klasse aufbauen und nicht manuell zb. hier den q-tag ausgeben:
 		$searcher =& createWisyObject('WISY_SEARCH_CLASS', $this->framework);
+		$this->searcher = $searcher;
 		$this->tokens = $searcher->tokenize($q);
 		
 		$renderformData['fv_bei'] = '';
@@ -130,6 +131,7 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 		$renderformData['fv_tageszeit'] = '';
 		$renderformData['fv_stadtteil'] = '';
 		$renderformData['fv_bezirk'] = '';
+		$renderformData['fv_volltext'] = '';
 		
 		// if(!is_array($this->framework->tokensQF))
 		//	return false;
@@ -137,7 +139,7 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 		foreach($this->framework->tokensQF as $token) {
 			switch( $token['field'] ) {
 				case 'bei':	
-					$renderformData['fv_bei'] = $token['value']; 
+				    $renderformData['fv_bei'] = $filterlabel = str_replace('/', ',', $token['value']);
 					break;
 					
 				case 'km':	
@@ -293,8 +295,8 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 	        'rand'  => 'Zuf&auml;llig sortiert'
 	    );
 	    
-	    $portal_order_options = trim($this->framework->iniRead('kurse.sortierung.optionen', false). ",");
-	    if($portal_order_options)
+	    $portal_order_options = trim(trim($this->framework->iniRead('kurse.sortierung.optionen', false), ","));
+	    if($portal_order_options && strlen($portal_order_options))
 	        $portal_order_options = array_map("trim", explode(",", $portal_order_options));
 	        
 	    if(is_array($portal_order_options) && count($portal_order_options)) {
@@ -307,22 +309,24 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 	    
 	    $portal_order = $this->framework->specialSortOrder ? $this->framework->specialSortOrder : $this->framework->iniRead('kurse.sortierung', false);
 	    
-	    $portal_order = $this->framework->iniRead('kurse.sortierung', false);
 	    if($portal_order && $renderformData['order'] == '') $renderformData['order'] = $portal_order;
 	    if($renderformData['order'] == '') $renderformData['order'] = 'b';
 	    
-	    echo '<fieldset class="wisyr_filtergroup wisyr_filter_select filter_sortierung ui-front">';
-	    echo '	<legend data-filtervalue="' . $orders[$renderformData['order']] . '">Sortierung</legend>';
-	    echo '	<select name="filter_order" class="wisyr_selectmenu">';
-	    foreach($orders as $key => $value)
-	    {
-	        echo '		<option value="' . $key . '"';
-	        if($key == $renderformData['order']) echo ' selected="selected"';
-	        echo ' class="order_'.$key.'"';
-	        echo '>' . $value . '</option>';
+	    // display sort order filter, except if fulltext search (b/c then sorted by match category automatically + RAND as secondary criteria)
+	    if( stripos($this->framework->QS, 'volltext:') === FALSE && stripos($this->framework->QF, 'volltext:') === FALSE ) {
+    	    echo '<fieldset class="wisyr_filtergroup wisyr_filter_select filter_sortierung ui-front">';
+    	    echo '	<legend data-filtervalue="' . $orders[$renderformData['order']] . '">Sortierung</legend>';
+    	    echo '	<select name="filter_order" class="wisyr_selectmenu">';
+    	    foreach($orders as $key => $value)
+    	    {
+    	        echo '		<option value="' . $key . '"';
+    	        if($key == $renderformData['order']) echo ' selected="selected"';
+    	        echo ' class="order_'.$key.'"';
+    	        echo '>' . $value . '</option>';
+    	    }
+    	    echo '	</select>';
+    	    echo '</fieldset>';
 	    }
-	    echo '	</select>';
-	    echo '</fieldset>';
 	    
 	    echo '</form>';
 	    echo '</div>';
@@ -359,16 +363,16 @@ class WISY_FILTERMENU_ITEM
             $filterclasses = $this->getFilterclasses($data, true);
         }
         $legendvalue = isset($data['legendkey']) ? $this->getLegendvalue($data['legendkey']) : '';
-        $title = isset($data['title']) ? $data['title'] : '';
+        $title = isset($data['title']) ? (PHP7 ? utf8_decode($data['title']) : $data['title'])  : '';
         
         $ret = '<fieldset class="' . $filterclasses . '" style="z-index:' . $this->zindex . '" tabindex="0">';
         
         if(trim($title) !== '') {
-            $ret .= '<legend data-filtervalue="' . $legendvalue . '">' . $title . '</legend>';
+            $ret .= '<legend data-filtervalue="' . $legendvalue . '">' . $title . '</legend>'; // hoechste Ebene
         }
         $ret .= '<div class="filter_inner clearfix">';
         
-        if(isset($data['sections']) && count($data['sections'])) {
+        if(isset($data['sections']) && count((array) $data['sections'])) {
             $ret .= $this->getSections($data['sections']);
         } else {
             $this->getFormfields($data, false);
@@ -398,7 +402,7 @@ class WISY_FILTERMENU_ITEM
                 continue;
             }
             
-            $title = PHP7 ? utf8_decode($data['title']) : $data['title'];
+            $title = PHP7 ? $data['title'] : $data['title']; // utf8_decode
             $ret .= '<fieldset class="' . $filterclasses . '">';
             $ret .= '<legend data-filtervalue="' . $legendvalue . '">' . $title . '</legend>';
             
@@ -460,6 +464,7 @@ class WISY_FILTERMENU_ITEM
                 $fieldplaceholder = '';
                 $fieldsuffix = '';
                 $autofilltarget = '';
+                $autocomplete = 1;
                 $clearbutton = false;
                 
                 if(isset($input['type'])) $type = $input['type'];
@@ -471,6 +476,7 @@ class WISY_FILTERMENU_ITEM
                 if(isset($input['class'])) $fieldclass = $input['class'];
                 if(isset($input['placeholder'])) $fieldplaceholder = $input['placeholder'];
                 if(isset($input['autofilltarget'])) $autofilltarget = $input['autofilltarget'];
+                if(isset($input['autocomplete'])) $autocomplete = $input['autocomplete'];
                 if(isset($input['suffix'])) $fieldsuffix = $input['suffix'];
                 if(isset($input['clearbutton']) && $input['clearbutton'] == 1) $clearbutton = true;
         
@@ -487,7 +493,7 @@ class WISY_FILTERMENU_ITEM
                     case 'textfield':
             
                         if($clearbutton) $ret .= '<div class="filter_clearbutton_wrapper">';
-                        $ret .= '<input type="text" name="filter_' . $fieldname . '" id="filter_' . $fieldname . '" class="' . $fieldclass . '" value="' . $fieldvalue . '" placeholder="' . $fieldplaceholder . '" />';
+                        $ret .= '<input type="text" name="filter_' . $fieldname . '[]" id="filter_' . $fieldname . '" class="' . $fieldclass . '" value="' . $fieldvalue . '" placeholder="' . $fieldplaceholder . '" data-autocomplete="'.$autocomplete.'"/>';
                         if($clearbutton) $ret .= '</div>';
                         $ret .=  $fieldsuffix . '<br /><br />';
         
@@ -626,7 +632,7 @@ class WISY_FILTERMENU_ITEM
                         break;
                 }
             }
-        } else if(isset($data['sections']) && count($data['sections'])) {
+        } else if(isset($data['sections']) && count((array) $data['sections'])) {
             $ret .= $this->getHtml($data, true);
         }
         
@@ -910,12 +916,12 @@ class WISY_FILTERMENU_CLASS
 	            $levels = substr($key, $allPrefixLen);
 	            $newStructure = false;
 	            $elements = explode(".", $levels);
-	            if(count($elements) > 1) {
+	            if(count((array) $elements) > 1) {
 	                $last = &$newStructure[ $elements[0] ];
 	                
 	                // merge values that where separated falsely for containing '.'
 	                if( ($optionskey = array_search ("options", $elements)) !== FALSE) {
-	                    for($k = 0; $k < count($elements); $k++) {
+	                    for($k = 0; $k < count((array) $elements); $k++) {
 	                        if($k > ($optionskey+1)) {
 	                            $elements[($optionskey+1)] .= '.'.$elements[$k]; // merge elements (values) after option, bc. = one value separated by original '.'
 	                            $elements[$k] = ""; // don't unset while in loop

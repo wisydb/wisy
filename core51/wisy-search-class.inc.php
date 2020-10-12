@@ -50,6 +50,8 @@ class WISY_SEARCH_CLASS
 	
 	var $rawJoin;
 	var $rawWhere;
+	var $fulltext_select;
+	
 	private $rawCanCache;
 	
 	function __construct(&$framework, $param)
@@ -538,30 +540,66 @@ class WISY_SEARCH_CLASS
 					break;
 				
 				case 'volltext':
-					// volltextsuche, aktuell gibt es ein Volltextindex ueber kurse.titel und kurse.beschreibung; dieser
-					// wird vom core10 *nicht* verwendet und vom redaktionssystem wohl eher selten.
-					// aktuell nehmen wird diesen Index einfach, sollten wir hier aber etwas anderes benoetigen, 
-					// kann der alte Volltextindex verworfen werden. ALSO:
-					if( $value != '' )
-					{
-					    if(strpos($value, '.') !== FALSE) // char "." in (valid) search terms is being misinterpreted without quotes
-					        $value = '"'.$value.'"';
-					    
-						$this->rawJoinKurse = " LEFT JOIN kurse ON x_kurse.kurs_id=kurse.id";	 // this join is needed only to query COUNT(*)
-						
-						$this->rawWhere    .= $this->rawWhere? ' AND ' : ' WHERE ';				
-						$this->rawWhere    .= "MATCH(kurse.titel, kurse.beschreibung) AGAINST('\"".addslashes(trim($value))."\"' IN BOOLEAN MODE)"; // '"...'" to match exact phrase:https://dev.mysql.com/doc/refman/8.0/en/fulltext-boolean.html
-					}
-					else
-					{
-						$this->error = array('id'=>'missing_fulltext') ;
-					}
-					break;
-				
+				    // volltextsuche, aktuell gibt es ein Volltextindex ueber kurse.titel und kurse.beschreibung; dieser
+				    // wird vom core10 *nicht* verwendet und vom redaktionssystem wohl eher selten.
+				    // aktuell nehmen wird diesen Index einfach, sollten wir hier aber etwas anderes benoetigen,
+				    // kann der alte Volltextindex verworfen werden. ALSO:
+				    global $ignoreWords_DE;
+				    
+				    $this->min_chars = $this->getMinChars();
+				    
+				    if( strlen(trim($value)) >= $this->min_chars && !in_array($value, $ignoreWords_DE) )
+				    {
+				        if(strpos($value, '.') !== FALSE) // char "." in (valid) search terms is being misinterpreted without quotes
+				            $value = '"'.$value.'"';
+				            
+				            $this->rawJoinKurse = " LEFT JOIN kurse ON x_kurse.kurs_id=kurse.id";	 // this join is needed only to query COUNT(*)
+				            
+				            $fulltext_excactmatch = addslashes(trim($value));
+				            
+				            // ignore some irrelevant words
+				            $fulltext_matchall = $this->framework->replaceWords($ignoreWords_DE, $fulltext_excactmatch);
+				            
+				            
+				            // if( stripos($_SERVER['SERVER_NAME'], 'sandbox') !== FALSE) {
+				            // ", MATCH(kurse.titel) AGAINST('\"".addslashes(trim($value))."\"' IN BOOLEAN MODE) AS title_relevance" // .", MATCH(kurse.titel) AGAINST('".addslashes(trim($value))."*' IN BOOLEAN MODE) AS title_relevance_substr"
+				            // .", MATCH(kurse.beschreibung) AGAINST('\"".addslashes(trim($value))."\"' IN BOOLEAN MODE) AS beschreibung_relevance"
+				            
+				            $this->fulltext_select = ", CASE WHEN kurse.titel LIKE '%".addslashes(trim($value))."%' THEN 1 ELSE 0 END AS title_relevance"
+				                .", CASE WHEN kurse.beschreibung LIKE '%".addslashes(trim($value))."%' THEN 1 ELSE 0 END AS beschreibung_relevance"
+				                .", '".addslashes(trim($value))."' AS fulltext_query"
+				                .", beschreibung"
+				                .", '".$this->min_chars."' AS min_chars" // query_string (cleaned of irrelevant words)
+				                .", '".$fulltext_matchall."' AS fulltext_matchall"; // query_string (cleaned of irrelevant words)
+				                // }
+				                            
+				                $this->rawWhere    .= $this->rawWhere? ' AND ' : ' WHERE ';
+				                            
+				                            
+				                // if( stripos($_SERVER['SERVER_NAME'], 'sandbox') !== FALSE)	{
+				                //  "(  MATCH(kurse.titel,kurse.beschreibung) AGAINST('*\"".$fulltext_excactmatch."\"*' IN BOOLEAN MODE) " // part of word: \" = important // MATCH(kurse.titel,kurse.beschreibung) AGAINST('\"".$fulltext_excactmatch."\"' IN BOOLEAN MODE) "	// excact match: \" = important
+				                $this->rawWhere    .= "( kurse.titel LIKE '%".$fulltext_excactmatch."%' OR kurse.beschreibung LIKE '%".$fulltext_excactmatch."%' "
+				                                   ."OR MATCH(kurse.titel,kurse.beschreibung) AGAINST('".$fulltext_matchall."' IN BOOLEAN MODE) )";
+				                // }
+				                // else
+				                // $this->rawWhere    .= "MATCH(kurse.titel, kurse.beschreibung) AGAINST('\"".addslashes(trim($value))."\"' IN BOOLEAN MODE)"; // '"...'" to match exact phrase:https://dev.mysql.com/doc/refman/8.0/en/fulltext-boolean.html // IN BOOLEAN MODE// https://dev.mysql.com/doc/refman/8.0/en/fulltext-query-expansion.html
+				                                
+				    }
+				    else
+				    {
+				        if( strlen($value) > 0 && strlen($value) < $this->min_chars)
+				            $this->error = array('id'=>'tooshort_fulltext', 'help'=>'Suchbegriff muss mindestens '.$this->min_chars.' Buchstaben aufweisen.');
+				            elseif( in_array($value, $ignoreWords_DE) )
+				            $this->error = array('id'=>'ignored_fulltext', 'help'=>'Suchbegriff wurde als F&uuml;llwort o. &auml;. erkannt, welches keine ausreichend spezifischen Ergebnisse liefern w&uuml;rde.');
+				            else
+				                $this->error = array('id'=>'missing_fulltext', 'help'=>'Suchbegriff darf nicht leer sein.');
+				    }
+				    break;
+				    
 				default:
-					$this->error = array('id'=>'field_not_found', 'field'=>$this->tokens['cond'][$i]['field']) ;
-					break;
-			}			
+				    $this->error = array('id'=>'field_not_found', 'field'=>$this->tokens['cond'][$i]['field']) ;
+				    break;
+		        }
 		}
 		
 		/* -- leere Anfragen sind fuer "diese kurse beginnen morgen" notwendig, leere Anfragen sind _kein_ Fehler!
@@ -675,82 +713,144 @@ class WISY_SEARCH_CLASS
 	
 	function getKurseRecords($offset, $rows, $orderBy)
 	{
-		$ret = array('records'=>array());
-		
-		if( $this->error === false )
-		{
-			$start = $this->framework->microtime_float();
-			
-				global $wisyPortalId;
-				$do_recreate = true;
-				$cacheKey = "wisysearch.$wisyPortalId.$this->queryString.$offset.$rows.$orderBy";
-				if( $this->rawCanCache && ($temp=$this->dbCache->lookup($cacheKey))!='' )
-				{	
-					// result in cache :-)
-					$ret = unserialize($temp);
-					if( $ret === false )
-					{
-						if( isset($_COOKIE['debug']) ) {
-							echo "<p style=\"background-color: yellow;\">getKurseRecords(): bad result for key <i>$cacheKey</i>, recreating  ...</p>";
-						}
-					}
-					else
-					{
-						$do_recreate = false;
-						if( isset($_COOKIE['debug']) ) {
-							echo "<p style=\"background-color: yellow;\">getKurseRecords(): result for key <i>$cacheKey</i> loaded from cache ...</p>";
-						}
-					}
-				}
+	    
+	    $ret = array('records'=>array());
+	    
+	    if( $this->error === false )
+	    {
+	        $start = $this->framework->microtime_float();
+	        
+	        global $wisyPortalId;
+	        $do_recreate = true;
+	        $cacheKey = "wisysearch.$wisyPortalId.$this->queryString.$offset.$rows.$orderBy";
+	        if( $this->rawCanCache && ($temp=$this->dbCache->lookup($cacheKey))!='' )
+	        {
+	            // result in cache :-)
+	            $ret = unserialize($temp);
+	            if( $ret === false )
+	            {
+	                if( isset($_COOKIE['debug']) ) {
+	                    echo "<p style=\"background-color: yellow;\">getKurseRecords(): bad result for key <i>$cacheKey</i>, recreating  ...</p>";
+	                }
+	            }
+	            else
+	            {
+	                $do_recreate = false;
+	                if( isset($_COOKIE['debug']) ) {
+	                    echo "<p style=\"background-color: yellow;\">getKurseRecords(): result for key <i>$cacheKey</i> loaded from cache ...</p>";
+	                }
+	            }
+	        }
+	        
+	        // if($this->radius_select)
+	            // $do_recreate = true;
+	        
+	        
+	        if( $do_recreate )
+	        {
+	            switch( $orderBy )
+	            {
+	                case 'a':		$orderBy = "x_kurse.anbieter_sortonly";						break;	// sortiere nach anbieter
+	                case 'ad':		$orderBy = "x_kurse.anbieter_sortonly DESC";				break;
+	                case 't':		$orderBy = 'kurse.titel_sorted';							break;	// sortiere nach titel
+	                case 'td':		$orderBy = 'kurse.titel_sorted DESC';						break;
+	                case 'b':		$orderBy = "x_kurse.beginn='0000-00-00', x_kurse.beginn";		break;	// sortiere nach beginn, spezielle Daten ans Ende der Liste verschieben
+	                case 'bd':		$orderBy = "x_kurse.beginn='9999-09-09', x_kurse.beginn DESC";	break;
+	                case 'd':		$orderBy = 'x_kurse.dauer=0, x_kurse.dauer';				break;	// sortiere nach dauer
+	                case 'dd':		$orderBy = 'x_kurse.dauer DESC';							break;
+	                case 'p':		$orderBy = 'x_kurse.preis=-1, x_kurse.preis';				break;	// sortiere nach preis
+	                case 'pd':		$orderBy = 'x_kurse.preis DESC';							break;
+	                case 'o':		$orderBy = "x_kurse.ort_sortonly='', x_kurse.ort_sortonly";	break;	// sortiere nach ort
+	                case 'od':		$orderBy = "x_kurse.ort_sortonly DESC";						break;
+	                case 'creat':	$orderBy = 'x_kurse.begmod_date';							break;	// sortiere nach beginnaenderungsdatum (hauptsaechlich fuer die RSS-Feeds interessant)
+	                case 'creatd':	$orderBy = 'x_kurse.begmod_date DESC';						break;
+	                case 'rand':
+	                    $ip = str_replace('.', '', $_SERVER['REMOTE_ADDR']);
+	                    $seed = ($ip + date('d') );
+	                    $this->randSeed;
+	                    $orderBy = 'RAND('.$seed.')';
+	                    break;
+	                default:		$orderBy = 'kurse.id';										die('invalid order!');
+	            }
+	            
+	            if($this->fulltext_select)
+	                $orderBy = "title_relevance DESC, beschreibung_relevance DESC";
+	                
+	                $sql = $this->getKurseRecordsSql("kurse.id, kurse.user_grp, kurse.anbieter, kurse.thema, kurse.freigeschaltet, kurse.titel, kurse.vollstaendigkeit, kurse.date_modified, kurse.bu_nummer, kurse.fu_knr, kurse.azwv_knr, x_kurse.begmod_date, x_kurse.bezirk, x_kurse.ort_sortonly, x_kurse.ort_sortonly_secondary".$this->fulltext_select);
+	                
+	                if($this->fulltext_select)
+	                  $sql .= " ORDER BY $orderBy, RAND(".$this->randSeed.")";
+	                else
+	                  $sql .= " ORDER BY $orderBy, vollstaendigkeit DESC, x_kurse.kurs_id ";
+	                        
+	                if($this->fulltext_select) {
+	                 $sql_nolimit = $sql;
+	                 if($rows != 0) {
+	                   $sql .= " LIMIT $offset, $rows ";
+	                 }
+	                }
+	                else {
+	                   if($rows != 0) $sql .= " LIMIT $offset, $rows ";
+	                }
+	                        
 
-				if( $do_recreate )
-				{
-					switch( $orderBy )
-					{
-						case 'a':		$orderBy = "x_kurse.anbieter_sortonly";						break;	// sortiere nach anbieter
-						case 'ad':		$orderBy = "x_kurse.anbieter_sortonly DESC";				break;
-						case 't':		$orderBy = 'kurse.titel_sorted';							break;	// sortiere nach titel
-						case 'td':		$orderBy = 'kurse.titel_sorted DESC';						break;
-						case 'b':		$orderBy = "x_kurse.beginn='0000-00-00', x_kurse.beginn";		break;	// sortiere nach beginn, spezielle Daten ans Ende der Liste verschieben
-						case 'bd':		$orderBy = "x_kurse.beginn='9999-09-09', x_kurse.beginn DESC";	break;
-						case 'd':		$orderBy = 'x_kurse.dauer=0, x_kurse.dauer';				break;	// sortiere nach dauer
-						case 'dd':		$orderBy = 'x_kurse.dauer DESC';							break;
-						case 'p':		$orderBy = 'x_kurse.preis=-1, x_kurse.preis';				break;	// sortiere nach preis
-						case 'pd':		$orderBy = 'x_kurse.preis DESC';							break;
-						case 'o':		$orderBy = "x_kurse.ort_sortonly='', x_kurse.ort_sortonly";	break;	// sortiere nach ort
-						case 'od':		$orderBy = "x_kurse.ort_sortonly DESC";						break;
-						case 'creat':	$orderBy = 'x_kurse.begmod_date';							break;	// sortiere nach beginnaenderungsdatum (hauptsaechlich fuer die RSS-Feeds interessant)
-						case 'creatd':	$orderBy = 'x_kurse.begmod_date DESC';						break;
-						case 'rand':
-						                $ip = str_replace('.', '', $_SERVER['REMOTE_ADDR']);
-						                $seed = ($ip + date('d') );
-						                $orderBy = 'RAND('.$seed.')';
-						                break;
-						default:		$orderBy = 'kurse.id';										die('invalid order!');
-					}
-					
-					$sql = $this->getKurseRecordsSql("kurse.id, kurse.user_grp, kurse.anbieter, kurse.thema, kurse.freigeschaltet, kurse.titel, kurse.vollstaendigkeit, kurse.date_modified, kurse.bu_nummer, kurse.fu_knr, kurse.azwv_knr, x_kurse.begmod_date, x_kurse.bezirk, x_kurse.ort_sortonly, x_kurse.ort_sortonly_secondary");
-					$sql .= " ORDER BY $orderBy, vollstaendigkeit DESC, x_kurse.kurs_id ";
-					if($rows != 0) $sql .= " LIMIT $offset, $rows ";
-					
-					$this->db->query("SET SQL_BIG_SELECTS=1"); // optional
-					$this->db->query($sql);
-					while( $this->db->next_record() )
-						$ret['records'][] = $this->db->Record;
-					$this->db->free();
-					
-					// add result to cache
-					$this->dbCache->insert($cacheKey, serialize($ret));
-					
-					if( isset($_COOKIE['debug']) ) {
-						echo '<p style="background-color: yellow;">getKurseRecords(): ' .htmlspecialchars($sql). '</p>';
-					}
-				}
-			
-			$this->secneeded += $this->framework->microtime_float() - $start;
-		}
-		
-		return $ret;
+	                $this->db->query("SET SQL_BIG_SELECTS=1"); // optional
+	                $this->db->query($sql);
+	                            
+	                if($this->fulltext_select) {
+	                   $db_cnt = new DB_Admin();
+	                                
+	                   $db_cnt->query('SELECT COUNT(id) AS cnt_bothRelevance FROM ('.$sql_nolimit.') AS t WHERE t.title_relevance = 1 AND t.beschreibung_relevance = 1');
+	                   if( $db_cnt->next_record() )
+	                       $ret['meta']['cnt_bothRelevance'] = $db_cnt->f("cnt_bothRelevance");
+	                                    
+	                   $db_cnt->query('SELECT COUNT(id) AS cnt_titleRelevance FROM ('.$sql_nolimit.') AS t WHERE t.title_relevance = 1 AND t.beschreibung_relevance = 0');
+	                   if( $db_cnt->next_record() )
+	                       $ret['meta']['cnt_titleRelevance'] = $db_cnt->f("cnt_titleRelevance");
+	                                        
+	                   $db_cnt->query('SELECT COUNT(id) AS cnt_beschreibungRelevance FROM ('.$sql_nolimit.') AS t WHERE t.title_relevance = 0 AND t.beschreibung_relevance = 1');
+	                   if( $db_cnt->next_record() )
+	                       $ret['meta']['cnt_beschreibungRelevance'] = $db_cnt->f("cnt_beschreibungRelevance");
+	                                            
+	                   $db_cnt->query('SELECT COUNT(id) AS cnt_oneRelevance FROM ('.$sql_nolimit.') AS t WHERE t.title_relevance = 0 AND t.beschreibung_relevance = 0');
+	                   if( $db_cnt->next_record() )
+	                       $ret['meta']['cnt_oneRelevance'] = $db_cnt->f("cnt_oneRelevance");
+	                }
+	                            
+	                while( $this->db->next_record() ) {
+	                   $ret['records'][] = $this->db->Record;
+	                }
+	                $this->db->free();
+	                                
+	                foreach($ret['records'] AS $record) {
+	                   if($record['ort_sortonly_secondary'] != "") {
+	                       $sub_venues = array_map("trim", explode(",", $record['ort_sortonly_secondary']));
+	                       $cnt = 0;
+	                       foreach($sub_venues AS $sub_venue) {
+	                           // echo "<br>".$record['id']." - ".$record['ort_sortonly']." <-> ".$record['ort_sortonly_secondary'];
+	                           // $cnt++;
+	                           // echo "<br><br>";
+	                           // $this->db->Record[id] = $this->db->Record[id]+chr($cnt);
+	                           // print_r($this->db->Record);
+	                           // $ret['records'][] = $this->db->Record;
+	                       }
+	                   }
+	                 }
+	                 echo "<br><br><br><br>";
+	        }
+	                            
+	        // add result to cache
+	        $this->dbCache->insert($cacheKey, serialize($ret));
+	                            
+	        if( isset($_COOKIE['debug']) ) {
+	           echo '<p style="background-color: yellow;">getKurseRecords(): ' .htmlspecialchars($sql). '</p>';
+	        }
+	     }
+	        
+	     $this->secneeded += $this->framework->microtime_float() - $start;
+	  }
+	    
+	    return $ret;
 	}
 
 	function getAnbieterCount()
@@ -950,6 +1050,90 @@ class WISY_SEARCH_CLASS
 	    }
 	    
 	    return $tag_id;
+	}
+	
+	
+	// Search for a (Durchfuehrungs)-Nr, return offer ID(s)
+	public function nr2id($nr)
+	{
+	    $nr = trim($nr);
+	    $db_nr = new DB_Admin();
+	    
+	    $sql = "SELECT DISTINCT k.id" // DISTINCT is needed as there may be offers with double nr in different durchfuehrungen
+	    . " FROM kurse k
+			 LEFT JOIN kurse_durchfuehrung s ON k.id=s.primary_id
+			 LEFT JOIN durchfuehrung d ON s.secondary_id=d.id
+			 WHERE d.nr=".$db_nr->quote($nr);
+	    
+	    $editAnbieterId = $this->framework->getEditAnbieterId();
+	    if( $editAnbieterId > 0 ) {
+	        $sql .= ' AND k.anbieter='.intval($editAnbieterId);
+	    }
+	    
+	    $ret = array();
+	    $db_nr->query($sql);
+	    
+	    // currently unavailable for public
+	    if(!$this->framework->editSessionStarted) {
+	        /* if($db_nr->next_record()) {
+	         echo '<div class="info_conflict">'
+	         .'Es wurden nur Angebote gefunden, deren <b>Durchf&uuml;hrungsnummern</b> Ihren Suchbegriff enthalten.<br><br>'
+	         .'Da diese Nummern jedoch den Angaben der Anbieter unterliegen und redaktionell nicht gepr&uuml;ft werden k&ouml;nnen, stehen jene, alternativen Suchergebnisse aus Gr&uuml;nden der Vergleichbarkeit leider nicht mehr zur Verf&uuml;gung!<br><br>'
+	         .'Bitte versuchen Sie es mit einem alternativen Suchbegriff.'
+	         .'</div>';
+	         } */
+	    } else {
+	        while( $db_nr->next_record() )
+	        {
+	            $ret[] = $db_nr->fcs8('id');
+	        }
+	    }
+	    
+	    
+	    return $ret;
+	}
+	
+
+	// Search for a offer by provider ids from provaider tag id, return offer ID(s)
+	public function anbieter_tag2k_ids($a_sw_id)
+	{
+	    $a_sw_id = trim($a_sw_id);
+	    $db_a = new DB_Admin();
+	    
+	    // LEFT JOIN durchfuehrung d ON s.secondary_id=d.id
+	    // DISTINCT is needed as there may be offers with double nr in different durchfuehrungen
+	    $sql = "SELECT DISTINCT kurse.id FROM kurse "
+	        .	"LEFT JOIN anbieter ON kurse.anbieter=anbieter.id "
+	        .	"LEFT JOIN anbieter_stichwort ON anbieter.id=anbieter_stichwort.primary_id "
+	        .	"WHERE anbieter_stichwort.attr_id=".$db_a->quote($a_sw_id);
+	                
+	        $editAnbieterId = $this->framework->getEditAnbieterId();
+	        if( $editAnbieterId > 0 ) {
+	           $sql .= ' AND k.anbieter='.intval($editAnbieterId);
+	        }
+	                
+	        $ret = array();
+	        $db_a->query($sql);
+	                
+	        while( $db_a->next_record() ) {
+	           $ret[] = $db_a->fcs8('id');
+	        }
+	                
+	        return $ret;
+	}
+	
+	public function getMinChars() {
+	    $db_globalsettings = new DB_Admin();
+	    $db_globalsettings->query("SHOW VARIABLES LIKE 'ft_min_word_len'");
+	    
+	    if($db_globalsettings->next_record())
+	        return $db_globalsettings->f("Value");
+	        
+	        return 0;
+	}
+	
+	public function getFulltextSelect() {
+	    return $this->fulltext_select;
 	}
 
 

@@ -51,9 +51,8 @@ class WISY_INTELLISEARCH_CLASS
 		// try a nr:-search
 		if( intval($this->framework->iniRead('intellisearch.nr', 0))==1 )
 		{
-			$nrSearcher = createWisyObject('WISY_SEARCH_NR_CLASS', $this->framework);
-			$ids = $nrSearcher->nr2id($this->searcher->tokens['cond'][0]['value']);
-			if( sizeof((array) $ids) )
+		    $ids = $this->searcher->nr2id($this->searcher->tokens['cond'][0]['value']);
+		    if( sizeof((array) $ids) )
 			{
 				$changed_query = 'nr:' . $this->searcher->tokens['cond'][0]['value'];
 				$this->searcher->prepare($changed_query);
@@ -79,14 +78,12 @@ class WISY_INTELLISEARCH_CLASS
 			{
 				$this->changed_query = $changed_query;
 				return; // success with fulltext search :-)
+			} else {
+			    $this->changed_query = $changed_query; // document that query changed even if no result
 			}
 		}
 	}	
 
-	function getDoubleTags() {
-	    return $this->searcher->getDoubleTags();
-	}
-	
 	function ok()
 	{	
 		if( $this->searcher->error['id'] == 'tag_not_found' )
@@ -180,5 +177,13 @@ class WISY_INTELLISEARCH_CLASS
 		}
 		
 		return $ret;
+	}
+	
+	public function getFulltextSelect() {
+	    return $this->searcher->fulltext_select;
+	}
+	
+	public function getChangedQuery() {
+	    return $this->changed_query;
 	}
 };
