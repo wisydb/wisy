@@ -990,8 +990,18 @@ class WISY_FILTER_CLASS
 	                        break;
 	                }
 	            }
+	            
+	            // if radius search adress removed, remove radius, too
+	            if( strtolower($token['field'])  == 'bei') {
+	                $url_removedFilter = $this->getUrlRemoveFilterByName($token['field'], $value);
+	                $url_removedFilter = preg_replace('/qf=km.*&/i', '', $url_removedFilter);
+	                $url_removedFilter = preg_replace('/qf=km.*$/i', '', $url_removedFilter);
+	            }
+	            else
+	                $url_removedFilter = $this->getUrlRemoveFilterByName($token['field'], $value);
+	                
 	            if(!$ignore) {
-	                $active_filters .= '<li class="wisyr_filter"><a href="' . $this->getUrlRemoveFilterByName($token['field'], $value) . '">' . str_replace("#", " ", $filterlabel) . '</a></li>';
+	                $active_filters .= '<li class="wisyr_filter ' . strtolower($token['field']) . '"><a href="' . $url_removedFilter . '">' . str_replace("#", " ", $filterlabel) . '</a></li>';
 	            }
 	        }
 	    }
