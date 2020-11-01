@@ -11,6 +11,8 @@
 	- Wenn es beim Benutzer "template" die Einstellung "index_plugin_<tableName>_0.access=kurse.MULTIEDIT" gibt, 
 	  wird der Menüpunkt nur angezeigt, wenn der jeweilige Benutzer das Recht "kurse.MULTIEDIT" hat
 	  (sollte sich der Name der Rechte ändern, muss dies natürlich auch im Template angepasst werden)
+	  
+	- "Löschen" bei Nummern-Felder wäre zu "gefährlich", weil bei Preis u. Sonderpreis "Löschen" = "-1" bedeuten würde. Bei Dauer wäre "Löschen" aber "0"m bei Tagescode dagegen "1" etc.
 */
 
 

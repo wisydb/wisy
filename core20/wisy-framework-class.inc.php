@@ -1491,7 +1491,8 @@ class WISY_FRAMEWORK_CLASS
 		}
 		
 		// replace ALL placeholders
-		$bodyStart = str_replace('__HEADTAGS__', $this->getTitleTags($param['title']) . $this->getFaviconTags() . $this->getOpensearchTags() . $this->getRSSTags() . $this->getCSSTags() . $this->getCanonicalTag($param['canonical']) . $this->getMobileAlternateTag($param['canonical']) . $this->getJSHeadTags(). $this->getAdditionalHeadTags() . $this->getMetaDescription($param['title'], $param['beschreibung']) . $this->getHreflangTags(), $bodyStart);
+		// $this->getRSSTags() . 
+		$bodyStart = str_replace('__HEADTAGS__', $this->getTitleTags($param['title']) . $this->getFaviconTags() . $this->getOpensearchTags() . $this->getCSSTags() . $this->getCanonicalTag($param['canonical']) . $this->getMobileAlternateTag($param['canonical']) . $this->getJSHeadTags(). $this->getAdditionalHeadTags() . $this->getMetaDescription($param['title'], $param['beschreibung']) . $this->getHreflangTags(), $bodyStart);
 		$bodyStart = str_replace('__BODYATTR__', ' ' . $this->getJSOnload(). ' class="' . $this->getBodyClasses($param['bodyClass']) . '" x-ms-format-detection="none"', $bodyStart);
 		$bodyStart = $this->replacePlaceholders($bodyStart);
 		$i1 = strpos($bodyStart, "<!-- include ");
@@ -1907,7 +1908,7 @@ class WISY_FRAMEWORK_CLASS
 				return createWisyObject('WISY_OPENSEARCH_RENDERER_CLASS', $this);
 
 			case 'rss':
-				return createWisyObject('WISY_RSS_RENDERER_CLASS', $this, array('q'=>$this->getParam('q')));
+			; // return createWisyObject('WISY_RSS_RENDERER_CLASS', $this, array('q'=>$this->getParam('q')));
 
 			case 'portal.css':
 				return createWisyObject('WISY_DUMP_RENDERER_CLASS', $this, array('src'=>$wisyRequestedFile));

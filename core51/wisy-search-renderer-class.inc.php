@@ -919,8 +919,8 @@ class WISY_SEARCH_RENDERER_CLASS
 	                if( $pagesel )
 	                {
 	                    echo '<div class="wisyr_list_footer clearfix">';
-	                    if( $this->framework->iniRead('rsslink', 0) )
-	                     echo '<div class="wisyr_rss_link_wrapper">' . $this->framework->getRSSLink() . '</div>';
+	                    // if( $this->framework->iniRead('rsslink', 0) )
+	                     // echo '<div class="wisyr_rss_link_wrapper">' . $this->framework->getRSSLink() . '</div>';
 	                    $this->renderPagination($prevurl, $nexturl, $pagesel, $this->rows, $offset, $sqlCount, 'wisyr_paginate_bottom');
 	                    echo '</div>';
 	                }
@@ -934,8 +934,8 @@ class WISY_SEARCH_RENDERER_CLASS
 	            }
 	            
 	            echo '<div class="wisyr_list_footer clearfix">';
-	            if( $this->framework->iniRead('rsslink', 0) )
-	             echo '<div class="wisyr_rss_link_wrapper">' . $this->framework->getRSSLink() . '</div>';
+	            // if( $this->framework->iniRead('rsslink', 0) )
+	             // echo '<div class="wisyr_rss_link_wrapper">' . $this->framework->getRSSLink() . '</div>';
 	            echo '</div>';
 	        }
 	        
@@ -1206,8 +1206,8 @@ class WISY_SEARCH_RENDERER_CLASS
 			if( $pagesel )
 			{
 				echo '<div class="wisyr_list_footer clearfix">';
-				    if( $this->framework->iniRead('rsslink', 0) )
-					 echo '<div class="wisyr_rss_link_wrapper">' . $this->framework->getRSSLink() . '</div>';
+				    // if( $this->framework->iniRead('rsslink', 0) )
+					 // echo '<div class="wisyr_rss_link_wrapper">' . $this->framework->getRSSLink() . '</div>';
 					$this->renderPagination($prevurl, $nexturl, $pagesel, $this->rows, $offset, $sqlCount, 'wisyr_paginate_bottom');
 				echo '</div>';
 			}
