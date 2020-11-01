@@ -27,6 +27,15 @@ class WISY_MENU_ITEM
         $this->children = array();
     }
     
+    function filterProblemStrings($str) {
+        
+        // don't parameters designating human triggers in menu-links
+        $str = str_replace( array('?qsrc', '&qsrc', '&amp;qsrc'), array( '?replaced', '&replaced', '&amp;replaced' ), $str);
+        $str = str_replace( array('?qtrigger', '&qtrigger', '&amp;qtrigger'), array( '?replaced', '&replaced', '&amp;replaced' ), $str);
+        
+        return $str;
+    }
+    
     function getHtml()
     {
         $liClass = '';
@@ -34,7 +43,7 @@ class WISY_MENU_ITEM
         elseif($this->title == "OhneName") $liClass = ' class="ohneName"';
         
         $ret = "<li$liClass>";
-        if( $this->url ) $ret .= '<a href="'.isohtmlspecialchars($this->url). /*convert "&" in URLs to "&amp;" in HTML*/
+        if( $this->url ) $ret .= '<a href="'.$this->filterProblemStrings(isohtmlspecialchars($this->url)). // htmlspecialchars: convert "&" in URLs to "&amp;" in HTML
         '"'.$this->aparam.'>';
         $ret .= $this->title;
         if( $this->url ) $ret .= '</a>';
@@ -398,7 +407,7 @@ class WISY_MENU_CLASS
         global $wisyPortalModified;
         
         $cacheKey = $wisyPortalModified . ' ' .strftime('%Y-%m-%d %H:00:00'). ' v7'; // the key changes if the portal record is updated or at least every hour (remember __DATE__ etc.)
-        if( $this->framework->cacheRead("menu.{$this->prefix}.key", '')==$cacheKey && false)
+        if( $this->framework->cacheRead("menu.{$this->prefix}.key", '')==$cacheKey )
         {
             // read the menu from the cache ...
             $ret = '<!-- dropdown read from cache -->' . $this->framework->cacheRead("menu.{$this->prefix}.cache");
