@@ -94,6 +94,7 @@ class WISY_ROBOTS_RENDERER_CLASS
 			echo "User-agent: Mediapartners-Google*\n";
 			echo "Disallow: /terrapin\n";
 			
+			echo "\n";
 			// for all other spiders
 			echo "User-agent: *\n";
 			echo "Disallow: /advanced\n";

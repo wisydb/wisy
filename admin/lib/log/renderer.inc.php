@@ -72,7 +72,7 @@ class LOG_RENDERER_CLASS
 				}
 				else if( $record[0]!='' ) 
 				{
-					$cell = sql_date_to_human($record[0], 'datetime');
+				    $cell = sql_date_to_human($record[0], 'datetime').(isset($_GET['debug']) && $_GET['debug'] == "time" ? ' ('.date("H:i:s", strtotime($record[0])).')' : '');
 				}
 				else 
 				{

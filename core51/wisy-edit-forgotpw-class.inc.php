@@ -71,7 +71,7 @@ class WISY_EDIT_FORGOTPW_CLASS
 						
 						$f_link = "{$protocol}://__HTTP_HOST__/edit?action=forgotpw&c={$f_confirm}";
 						
-						$f_subject  = 'Ihr neues Passwort für __HTTP_HOST__ (__NAME__)';
+						$f_subject  = 'Ihr neues Passwort für '.$_SEERVER['HTTP_HOST'].' ('.$GLOBALS['wisyPortalKurzname'].')';
 						$f_mailbody =
 						"Hallo $f_email -
 						
@@ -84,7 +84,7 @@ Nur WENN Sie ein neues Passwort beantragt haben, klicken Sie bitte auf den folge
 Mit freundlichen Grüßen,
 __NAME__";
 						
-						$f_subject  = $this->replaceForgotPwPlaceholders(PHP7 ? $f_subject : utf8_decode($f_subject));
+						$f_subject  = $this->replaceForgotPwPlaceholders(mb_encode_mimeheader($f_subject,'UTF-8','Q'));
 						$f_mailbody = $this->replaceForgotPwPlaceholders($f_mailbody);
 						
 						$logwriter->addData('email', $f_email);

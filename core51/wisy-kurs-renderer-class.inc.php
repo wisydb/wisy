@@ -111,6 +111,7 @@ class WISY_KURS_RENDERER_CLASS
 		// page start
 		headerDoCache();
 		
+		// $elearning_special = 851131; // $this->framework->iniRead('label.elearning', 0) && count($kursAnalyzer->hasKeyword($db, 'kurse', $kursId, $elearning_special)) ||
 		$elearning = 806311;
 		if( $this->framework->iniRead('label.elearning', 0) && count($kursAnalyzer->hasKeyword($db, 'kurse', $kursId, $elearning)) )
 		    $isElearning = true;
@@ -167,6 +168,9 @@ class WISY_KURS_RENDERER_CLASS
 			}
 			
 			echo '<section class="wisyr_kursinfos clearfix">';
+			
+			// echo '<p class="noprint"><a href="javascript:history.back();">&#171; Zur&uuml;ck</a></p>';
+			
 			echo '<h1 class="wisyr_kurstitel">';
 			if( $isElearning ) echo '<span class="wisy_icon_elearning">E-Learning<span class="dp">:</span></span> ';
 			if( $anbieterdetails['typ'] == 2 && $isBeratung ) echo '<span class="wisy_icon_beratungsstelle">Beratung<span class="dp">:</span></span> ';
@@ -176,12 +180,15 @@ class WISY_KURS_RENDERER_CLASS
 			    echo '<span class="fav_add" data-favid="'.$kursId.'"></span>';
 			}
 			echo '</h1>';
+			
+			echo '<h3 class="printonly anbieter_short">'.$anbieterdetails['postname'].", ".$anbieterdetails['strasse'].', '.$anbieterdetails['plz'].' '.$anbieterdetails['ort'].'</h3>';
     			
     			if( $originaltitel != '' && $originaltitel != $title )
     			{
-    			    echo '<h2 class="wisy_originaltitel">' . /*'Originaltitel: ' .*/ htmlspecialchars($originaltitel) . '</h2>';
+    			    echo '<h2 class="wisy_originaltitel">(' . /*'Originaltitel: ' .*/ htmlspecialchars($originaltitel) . ')</h2>';
     			}
-				echo '<article class="wisy_kurs_inhalt"><h1>Inhalt</h1>';
+    			
+    			echo '<article class="wisy_kurs_inhalt"><h1 class="inhalt">Inhalt</h1>';
 			
 				if( $beschreibung != '' ) {
 					$wiki2html =& createWisyObject('WISY_WIKI2HTML_CLASS', $this->framework);
@@ -322,7 +329,7 @@ class WISY_KURS_RENDERER_CLASS
 			    
 			    if( ($temp=$this->dbCache->lookup($cacheKey))!='' )
 			    {
-			        $tag_cloud = (PHP7 ? html_entity_decode($temp) : html_entity_decode($temp))." <!-- tag cloud from cache -->";
+			        $tag_cloud = $temp." <!-- tag cloud from cache -->";
 			    }
 			    else
 			    {

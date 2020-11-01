@@ -383,7 +383,7 @@ class IMP_IMPORTER_CLASS
 		}
 		
 		if( sizeof((array) $imported_ids)==0 && sizeof((array) $todel_ids)==0 ) {
-		    $this->_log_full('Import gestarted, keine zu importierenden oder zu läschenden Datensätze gefunden.');
+		    $this->_log_full('Import gestarted, keine zu importierenden oder zu loeschenden Datensaetze gefunden.');
 		}
 
 		// DELETE - go through all records--

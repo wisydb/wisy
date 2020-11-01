@@ -78,9 +78,9 @@ class WISY_PLZFILTER_CLASS
 		if( $this->plz_order == 'deny,allow' )
 		{
 			// deny,allow
-			if( sizeof($this->plz_deny ) ) { 
+		    if( sizeof((array) $this->plz_deny ) ) { 
 				if( $this->is_plz_in_array_($plz, $this->plz_deny ) ) { 
-					if( sizeof($this->plz_allow) == 0 || !$this->is_plz_in_array_($plz, $this->plz_allow) ) { 
+				    if( sizeof((array) $this->plz_allow) == 0 || !$this->is_plz_in_array_($plz, $this->plz_allow) ) { 
 						return false; 
 					}
 				} 
@@ -89,13 +89,13 @@ class WISY_PLZFILTER_CLASS
 		else
 		{
 			// allow,deny - standard behaviour
-			if( sizeof($this->plz_allow) ) { 
+		    if( sizeof((array) $this->plz_allow) ) { 
 				if( !$this->is_plz_in_array_($plz, $this->plz_allow) ) { 
 					return false; 
 				}
 			}
 			
-			if( sizeof($this->plz_deny ) ) { 
+			if( sizeof((array) $this->plz_deny ) ) { 
 				if(  $this->is_plz_in_array_($plz, $this->plz_deny ) ) {
 					return false;
 				}

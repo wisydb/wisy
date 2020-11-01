@@ -32,32 +32,34 @@ class WISY_KURS_RENDERER_CLASS
 		if( !$db->next_record() )
 		   $this->framework->error404();
 		
-	    $title 				= PHP7 ? $db->f('titel') : $db->f8('titel');
-	    $originaltitel		= PHP7 ? $db->f('org_titel') : $db->f8('org_titel');;
-	    $freigeschaltet 	= intval($db->f('freigeschaltet'));
-	    $beschreibung		= PHP7 ? $db->f('beschreibung') : $db->f8('beschreibung');
-	    $anbieterId			= intval($db->f('anbieter'));
-	    $date_created		= $db->f('date_created');
-	    $date_modified		= $db->f('date_modified');
-		$bu_nummer 			= PHP7 ? $db->f('bu_nummer') : $db->f8('bu_nummer');
-		$pflege_pweinst		= PHP7 ? intval($db->f('pflege_pweinst')) : intval($db->f8('pflege_pweinst'));
-		
-		$anbieter_name = PHP7 ? $db->f('suchname') : $db->f8('suchname');
+		$title 				= $db->fcs8('titel');
+		$originaltitel		= $db->fcs8('org_titel');;
+		$freigeschaltet 	= intval($db->fcs8('freigeschaltet'));
+		$beschreibung		= $db->fcs8('beschreibung');
+		$anbieterId			= intval($db->f('anbieter'));
+		$date_created		= $db->f('date_created');
+		$date_modified		= $db->f('date_modified');
+		$bu_nummer 			= $db->fcs8('bu_nummer');
+		$pflege_pweinst		= intval($db->fcs8('pflege_pweinst'));
+		   
+		$this->filter_foreign_k($db, $wisyPortalId, $kursId, $date_created);
+		   
+		$anbieter_name = $db->fcs8('suchname');
 		$anbieterdetails['suchname'] = $anbieter_name;
-		$anbieterdetails['postname'] = PHP7 ? $db->f('postname') : $db->f8('postname');
-		$anbieterdetails['strasse'] = PHP7 ? $db->f('strasse') : $db->f8('strasse');
-		$anbieterdetails['plz'] = PHP7 ? $db->f('plz') : $db->f8('plz');
-		$anbieterdetails['ort'] = PHP7 ? $db->f('ort') : $db->f8('ort');
-		$anbieterdetails['stadtteil'] = PHP7 ? $db->f('stadtteil') : $db->f8('stadtteil');
-		$anbieterdetails['land'] = PHP7 ? $db->f('land') : $db->f8('land');
-		$anbieterdetails['anspr_name'] = PHP7 ? $db->f('anspr_name') : $db->f8('anspr_name');
-		$anbieterdetails['anspr_zeit'] = PHP7 ? $db->f('anspr_zeit') : $db->f8('anspr_zeit');
-		$anbieterdetails['anspr_tel'] = PHP7 ? $db->f('anspr_tel') : $db->f8('anspr_tel');
-		$anbieterdetails['anspr_fax'] = PHP7 ? $db->f('anspr_fax') : $db->f8('anspr_fax');
-		$anbieterdetails['anspr_email'] = PHP7 ? $db->f('anspr_email') : $db->f8('anspr_email');
-		    
+		$anbieterdetails['postname'] = $db->fcs8('postname');
+		$anbieterdetails['strasse'] = $db->fcs8('strasse');
+		$anbieterdetails['plz'] = $db->fcs8('plz');
+		$anbieterdetails['ort'] = $db->fcs8('ort');
+		$anbieterdetails['stadtteil'] = $db->fcs8('stadtteil');
+		$anbieterdetails['land'] = $db->fcs8('land');
+		$anbieterdetails['anspr_name'] = $db->fcs8('anspr_name');
+		$anbieterdetails['anspr_zeit'] = $db->fcs8('anspr_zeit');
+		$anbieterdetails['anspr_tel'] = $db->fcs8('anspr_tel');
+		$anbieterdetails['anspr_fax'] = $db->fcs8('anspr_fax');
+		$anbieterdetails['anspr_email'] = $db->fcs8('anspr_email');
+		$anbieterdetails['typ'] = $db->f('typ');
 		$record				= $db->Record;
-		
+		   
 		// #enrichtitles
 		$ort = "";
 		
@@ -68,7 +70,7 @@ class WISY_KURS_RENDERER_CLASS
 		$durchfClass =& createWisyObject('WISY_DURCHF_CLASS', $this->framework);
 		$durchfuehrungenIds = $durchfClass->getDurchfuehrungIds($db, $kursId, $showAllDurchf);	// bereits PLZ-ueberprueft
 		
-		if(sizeof($durchfuehrungenIds) == 0)
+		if(sizeof((array) $durchfuehrungenIds) == 0)
 		    $richtext = false;	// In dem fall kann der Richtext (EducationEvent) nicht vollstaendig sein und kann/sollte so nicht beworben werden.
 		    
 		if(intval(trim($this->framework->iniRead('seo.enrich_titles'))) == 1) {
@@ -78,7 +80,7 @@ class WISY_KURS_RENDERER_CLASS
     		      if( $db->next_record() ) {
     		          $df = $db->Record;
     		          if(trim($df['ort']) != "") {
-    		              $ort = PHP7 ? $df['ort'] : utf8_encode($df['ort']);	// $df['plz'], $df['strasse'], $df['land'], $df['stadtteil'], $df['beginn'],
+    		              $ort = $db->fcs8($df['ort']);	// $df['plz'], $df['strasse'], $df['land'], $df['stadtteil'], $df['beginn'],
         		      }
     		      }
 		  }
@@ -178,17 +180,17 @@ class WISY_KURS_RENDERER_CLASS
 			
 				// ... Stichwoerter
 				$tags = $this->framework->loadStichwoerter($db, 'kurse', $kursId);
-				if( sizeof($tags) )
+				if( sizeof((array) $tags) )
 				{
 					$rows .= $this->framework->writeStichwoerter($db, 'kurse', $tags);
 				}
 						
-				/* // ... Bildungsurlaubsnummer 
-				if (($wisyPortalSpalten & 128) > 0 && $bu_nummer)
+				// ... Bildungsurlaubsnummer 
+				if (($wisyPortalSpalten & 128) > 0)
 				{
-				    $rows .= '<dt>Bildungsurlaubsnummer:&nbsp;</dt>';
-				    $rows .= '<dd>ja</dd>';
-				} */
+					$rows .= '<dt>Bildungsurlaubsnummer:&nbsp;</dt>';
+					$rows .= '<dd>' .($bu_nummer? 'Ja' : 'Nein'). '</dd>';
+				}
 
 				if( $rows != '' ) 
 				{
@@ -218,14 +220,14 @@ class WISY_KURS_RENDERER_CLASS
 				$durchfClass =& createWisyObject('WISY_DURCHF_CLASS', $this->framework);
 				$durchfuehrungenIds = $durchfClass->getDurchfuehrungIds($db, $kursId, $showAllDurchf);
 				echo '<p>';
-					if( sizeof($durchfuehrungenIds)==0 ) {
+				if( sizeof((array) $durchfuehrungenIds)==0 ) {
 						echo $this->framework->iniRead('durchf.msg.keinedf', 'F&uuml;r dieses Angebot ist momentan keine Zeit und kein Ort bekannt.');
 					}
-					else if( sizeof($durchfuehrungenIds) == 1 ) {
+					else if( sizeof((array) $durchfuehrungenIds) == 1 ) {
 						echo 'F&uuml;r dieses Angebot ist momentan eine Zeit bzw. Ort bekannt:';
 					}
 					else {
-						echo 'F&uuml;r dieses Angebot sind momentan ' .sizeof($durchfuehrungenIds). ' Zeiten bzw. Orte bekannt:';
+					    echo 'F&uuml;r dieses Angebot sind momentan ' .sizeof((array) $durchfuehrungenIds). ' Zeiten bzw. Orte bekannt:';
 					}
 				echo '</p>';
 		
@@ -233,7 +235,7 @@ class WISY_KURS_RENDERER_CLASS
 				$this->framework->map =& createWisyObject('WISY_OPENSTREETMAP_CLASS', $this->framework);
 		
 				// Durchfuehrungen ausgeben
-				if( sizeof($durchfuehrungenIds) )
+				if( sizeof((array) $durchfuehrungenIds) )
 				{
 					echo '<table class="wisy_list wisyr_durchfuehrungen"><thead>';
 						echo '<tr>';
@@ -252,7 +254,7 @@ class WISY_KURS_RENDERER_CLASS
 						*/
 					
 						$renderedDurchf = 0;
-						for( $d = 0; $d < sizeof($durchfuehrungenIds); $d++ )
+						for( $d = 0; $d < sizeof((array) $durchfuehrungenIds); $d++ )
 						{
 							$class = ($d%2)==1? ' class="wisy_even"' : '';
 							echo "  <tr$class>\n";
@@ -277,7 +279,7 @@ class WISY_KURS_RENDERER_CLASS
 						}
 					echo '</table>';
 				
-					$allAvailDurchfCnt = sizeof($durchfClass->getDurchfuehrungIds($db, $kursId, true));
+					$allAvailDurchfCnt = sizeof((array) $durchfClass->getDurchfuehrungIds($db, $kursId, true));
 					if( $allAvailDurchfCnt > $renderedDurchf )
 					{
 						$missinglDurchfCnt = $allAvailDurchfCnt-$renderedDurchf;
@@ -299,7 +301,7 @@ class WISY_KURS_RENDERER_CLASS
 			    $cacheKey = "sw_cloud_p".$wisyPortalId."_k".$kursId;
 			    $this->dbCache		=& createWisyObject('WISY_CACHE_CLASS', $this->framework, array('table'=>'x_cache_tagcloud', 'itemLifetimeSeconds'=>60*60*24));
 			    
-			    if( ($temp=$this->dbCache->lookup($cacheKey))!='' )
+			    if( ($temp=utf8_decode($this->dbCache->lookup($cacheKey)))!='' )
 			    {
 			        $tag_cloud = $temp." <!-- tag cloud from cache -->";
 			    }
@@ -322,7 +324,7 @@ class WISY_KURS_RENDERER_CLASS
 			            
 			            if($tag['eigenschaften'] != $filtersw && $tag_freq > 0); {
 			                if($this->framework->iniRead('sw_cloud.kurs_stichwoerter', 1)) {
-			                    $tag_stichwort = PHP7 ? utf8_encode($tag['stichwort']) : $tag['stichwort'];
+			                    $tag_stichwort = cs8($tag['stichwort']);
 			                    $tag_cloud .= '<span class="sw_raw typ_'.$tag['eigenschaften'].'" data-weight="'.$weight.'"><a href="/?q='.urlencode($tag_stichwort).'">'.$tag_stichwort.'</a></span>, ';
 			                }
 			                    
@@ -442,6 +444,47 @@ class WISY_KURS_RENDERER_CLASS
 		if( trim($this->framework->iniRead('seo.set404_fremdkurse', "")) == 1 && (!$db->next_record() || !$db->f('id'))) // && ini.read(fremdekurseausschliessen)
 		$this->framework->error404();
 	}
+	
+	function filter_foreign_k(&$db, $wisyPortalId, $kursId, $date_created) {
+	    
+	    // if portal has no filter, display course
+	    if(!$GLOBALS['wisyPortalFilter']['stdkursfilter'] || trim($GLOBALS['wisyPortalFilter']['stdkursfilter']) == '')
+	        return true;
+	        
+	        // check if course in search index (=allowed by portal filter)
+	        $searcher2 =& createWisyObject('WISY_SEARCH_CLASS', $this->framework);
+	        $searcher2->prepare('kid:' . $kursId);
+	        $anzahlKurse = $searcher2->getKurseCount();
+	        
+	        if($_GET['debug'] == 10 && $anzahlKurse == 1) {
+	            echo "<br>Seite portaleigen!<br>";
+	        }
+	        
+	        if($anzahlKurse == 1)
+	            return true;
+	            
+	            // throw 404 error if filter active & visitor not logged in & course ceated one day ago or earlier
+	            $k_created = strtotime($this->framework->formatDatum($date_created));
+	            $k_min_lifespan = strtotime(date("Y-m-d H:i:s"))-(60*60*$this->h_before_coursefilter); // now - 27 hours (we want to ignore GMT time zone + daylight saving time)
+	            $k_oldenough = $k_created < $k_min_lifespan;
+	            
+	            $exclude_foreign_k = trim($this->framework->iniRead('seo.set404_fremdkurse', true));
+	            $filter_active = $exclude_foreign_k && $k_oldenough;
+	            
+	            if( trim($this->framework->iniRead('disable.kurse', false)) && !$this->framework->is_editor_active($db, $this->h_before_dontshowteditorforeign_k) && !$this->framework->is_frondendeditor_active() ) {
+	                $file = $_SERVER['DOCUMENT_ROOT'].'/kursportal.dat';
+	                $current = file_get_contents($file);
+	                $current .= $_SERVER['HTTP_REFERER']." - ".$_SERVER['QUERY_STRING']." - ".$_SERVER['REQUEST_URI']."\n";
+	                file_put_contents($file, $current);
+	                $this->framework->error404("Fehler 404 - Seite <i>in diesem Portal</i> nicht gefunden", "<ul><li><a href='/edit?action=ek&id=0'>Zur Seite wechseln: \"Onlinepflege-Login f&uuml;r Anbieter\" ...</a></li></ul>");
+	            }
+	            
+	            if($_GET['debug'] == 10) {
+	                echo "Anzahl Kurse: ".$anzahlKurse."<br>Exclude foreign Kurse:".$exclude_foreign_k."<br>Alt genug: ".$k_oldenough." <small><br>[created: ".date("d.m.Y H:i", $k_created)."<br>sp&auml;testens: ".date("d.m.Y H:i", $k_min_lifespan)."]</small><br>Editor active ".$this->framework->is_editor_active($db, $this->h_before_dontshowteditorforeign_k)."<br>Online-Pflege: ".intval($this->framework->is_frondendeditor_active())."<br>";
+	            }
+	            
+	            if($filter_active && !$this->framework->is_editor_active($db, $this->h_before_dontshowteditorforeign_k) && !$this->framework->is_frondendeditor_active()) // now - 27 hours (we want to ignore GMT time zone + daylight saving time)
+	                $this->framework->error404("Fehler 404 - Seite <i>in diesem Portal</i> nicht gefunden", "<ul><li><a href='/edit?action=ek&id=0'>Zur Seite wechseln: \"Onlinepflege-Login f&uuml;r Anbieter\" ...</a></li></ul>");
+	                
+	}
 };
-
-

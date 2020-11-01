@@ -95,7 +95,7 @@ class WISY_FILTER_CLASS
 					'Abends'			=> 'Abends',
 					'Wochenende'		=> 'Wochenende',
 				    'Fernunterricht'	=> 'nur Fernunterricht',
-				    '-Fernunterricht'	=> 'ohne Fernunterricht',
+				    'Fernunterricht2'	=> 'ohne Fernunterricht', // '-Fernunterricht'
 				    'Datum:alles'	=> 'Auch abgelaufene Termine'
 				),
 			);
@@ -566,9 +566,12 @@ class WISY_FILTER_CLASS
 			}
 		}
         
-		if(trim($_GET['filter_volltext']) != '')
+		if(isset($_GET['filter_volltext']) && is_array($_GET['filter_volltext']))
 		{
-		    $preis = trim($_GET['filter_volltext']);
+		    $volltext = trim($_GET['filter_volltext'][0]);
+		    
+		    if($volltext)
+		        $queryfilters[] = array('field' => 'volltext', 'value' => $volltext); // 'volltext:'.
 		}
 		
 		// Sonderfall Kursbeginn. TODO db: optimieren?
@@ -583,7 +586,7 @@ class WISY_FILTER_CLASS
 		    $queryfilters[] = array('field' => 'datum', 'value' => $datum);
 		}
 		
-		// Sonderfall Dauer. TODO db: Über Presets umsetzen?
+		// Sonderfall Dauer. TODO db: Ueber Presets umsetzen?
 		$filter_dauer_von = trim($this->implodeArray($_GET['filter_dauer_von']));
 		$filter_dauer_bis = trim($this->implodeArray($_GET['filter_dauer_bis']));
 		
@@ -671,6 +674,8 @@ class WISY_FILTER_CLASS
 			$this->framework->tokensQS = $this->tokensFromString($qs);
 			
 			if($this->filtered) {
+			    if($this->DEBUG) echo "Filtered!<br>";
+			    
 				// Use tokens to generate string if tokens were found
 				if(count($this->framework->tokensQF)) {
 					$this->framework->QF = $this->stringFromTokens($this->framework->tokensQF);
@@ -911,6 +916,10 @@ class WISY_FILTER_CLASS
 	                        }
 	                        break;
 	                        
+	                    case 'bei':
+	                        $filterlabel = str_replace('/', ',', $value);
+	                        break;
+	                        
 	                    case 'km':
 	                        $filterlabel = $value . ' km Umkreis';
 	                        if($value > 400) $filterlabel = '> 50 km Umkreis';
@@ -981,8 +990,18 @@ class WISY_FILTER_CLASS
 	                        break;
 	                }
 	            }
+	            
+	            // if radius search adress removed, remove radius, too
+	            if( strtolower($token['field'])  == 'bei') {
+	                $url_removedFilter = $this->getUrlRemoveFilterByName($token['field'], $value);
+	                $url_removedFilter = preg_replace('/qf=km.*&/i', '', $url_removedFilter);
+	                $url_removedFilter = preg_replace('/qf=km.*$/i', '', $url_removedFilter);
+	            }
+	            else
+	                $url_removedFilter = $this->getUrlRemoveFilterByName($token['field'], $value);
+	                
 	            if(!$ignore) {
-	                $active_filters .= '<li class="wisyr_filter"><a href="' . $this->getUrlRemoveFilterByName($token['field'], $value) . '">' . str_replace("#", " ", $filterlabel) . '</a></li>';
+	                $active_filters .= '<li class="wisyr_filter ' . strtolower($token['field']) . '"><a href="' . $url_removedFilter . '">' . str_replace("#", " ", $filterlabel) . '</a></li>';
 	            }
 	        }
 	    }

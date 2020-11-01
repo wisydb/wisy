@@ -464,13 +464,15 @@ class WISY_EDIT_RENDERER_CLASS
 			$loggedInAnbieterId = 0;
 			$loggedInAnbieterSuchname = 0;
 			$loggedInAnbieterPflegemail = "";
-
+			
 			// // Anbieter ID in name konvertieren
-			$db->query("SELECT suchname FROM anbieter WHERE id=".intval($anbieterSuchname_utf8dec)." AND freigeschaltet = 1");
-			if( $db->next_record() ) {
-				$anbieterSuchname = $db->fs('suchname');
-				$anbieterSuchname_utf8dec = (PHP7 ? $anbieterSuchname : $anbieterSuchname);
-			}
+			if(is_numeric($anbieterSuchname_utf8dec)) {
+			    $db->query("SELECT suchname FROM anbieter WHERE id=".intval($anbieterSuchname_utf8dec)." AND freigeschaltet = 1");
+			    if( $db->next_record() ) {
+			        $anbieterSuchname = $db->fs('suchname');
+			        $anbieterSuchname_utf8dec = (PHP7 ? $anbieterSuchname : $anbieterSuchname);
+			    }
+			} // end: is_numeric
 			
 			$login_as = false;
 			if( ($p=strpos($_REQUEST['wepw'], '.')) !== false )
@@ -967,7 +969,7 @@ class WISY_EDIT_RENDERER_CLASS
 			// additional data validation
 			if( $kurs['durchf'][$i]['ende']!='0000-00-00 00:00:00' && $kurs['durchf'][$i]['beginn']!='0000-00-00 00:00:00' 
 			 && $kurs['durchf'][$i]['ende']<$kurs['durchf'][$i]['beginn'] ) {
-				$kurs['error'][] = "Fehler: Durchführung ".($i+1).": Das Enddatum muss vor dem Beginndatum liegen.";
+				$kurs['error'][] = "Fehler: Durchführung ".($i+1).": Das Enddatum muss NACH dem Beginndatum liegen.";
 			}
 
 			$today = strftime("%Y-%m-%d %H:%M:%S");
@@ -1042,10 +1044,10 @@ class WISY_EDIT_RENDERER_CLASS
 		if( sizeof((array) $kurs['durchf']) > $max_df )
 		{
 			$kurs['error'][] =	'
-								Fehler: <b>Die Anzahl überschaubarer Durchführungen ist überschritten</b> -  
-								erlaubt sind maximal '.$max_df.' Durchführungen pro Kurs; der aktuelle Kurs hat jedoch '.sizeof((array) $kurs['durchf']).' Durchführungen.<br />
-								Bei häufigeren Beginnterminen wählen Sie bitte eine Terminoption wie beispielsweise <i>Beginnt laufend</i> oder <i>Beginnt wöchentlich</i>
-								und denken Sie auch daran, abgelaufene Durchführungen zu löschen.<br />
+								Fehler: <b>Die Anzahl &uuml;berschaubarer Durchf&uuml;hrungen ist &uuml;berschritten</b> -  
+								erlaubt sind maximal '.$max_df.' Durchf&uuml;hrungen pro Kurs; der aktuelle Kurs hat jedoch '.sizeof((array) $kurs['durchf']).' Durchf&uuml;hrungen.<br />
+								Bei h&auml;ufigeren Beginnterminen w&auml;hlen Sie bitte eine Terminoption wie beispielsweise <i>Beginnt laufend</i> oder <i>Beginnt w&ouml;chentlich</i>
+								und denken Sie auch daran, abgelaufene Durchf&uuml;hrungen zu l&ouml;schen.<br />
 								';
 		}
 		

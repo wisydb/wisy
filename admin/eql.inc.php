@@ -1659,7 +1659,7 @@ class EQL_PARSER_CLASS
 			 && count($retJoins)==0 // EDIT, jm, 2017: to allow search for courses without keywords
 			 && $tableDefName1=="stichwoerter" // EDIT, jm, 2017: to allow search for courses without keywords
 			 && $row->name=="stichwort" // EDIT, jm, 2017: to allow search for courses without keywords
-			 && ($tableDefName=="kurse" || $tableDefName=="anbieter")) // EDIT, jm, 2017: to allow search for courses without keywords
+			    && ($tableDefName=="kurse" || $tableDefName=="anbieter")) // EDIT, jm, 2017 and bp 2018: to allow search for courses without keywords
 			{
 				// this variation works, but is slower
 				g_addRelation($retJoins, $tableDefName1, $row->name, $tableDefName, $rowType);
@@ -2130,7 +2130,7 @@ class EQL2SQL_CLASS
 
 			global $g_eql_db;
 			$g_eql_db->query("EXPLAIN $retSql");
-			echo '<tr>';
+			echo '<br><br><br><br><br><br><table><tr>';
 				echo '<td><b>table</b></td><td><b>type</b></td><td><b>possible_keys</b></td><td><b>key</b></td><td><b>key_len</b></td><td><b>ref</b></td><td><b>rows</b></td><td><b>Extra</b></td>';
 			echo '</tr>';
 			while( $g_eql_db->next_record() ) {

@@ -110,9 +110,13 @@ class ADMIN_SITE_CLASS
 	
 	function pageEnd()
 	{
-				// $this->msgRender(); -- es ist besser, wenn die Nachricht auf der nächsten Seite oben angezeigt wird - vor allem, wenn z.B. beim Export die Seite automatisch neu geladen wird
+			// $this->msgRender(); -- es ist besser, wenn die Nachricht auf der nächsten Seite oben angezeigt wird - vor allem, wenn z.B. beim Export die Seite automatisch neu geladen wird
 				
-				$this->_poorMansCron();
+		    $this->_poorMansCron();
+		    
+		    if(defined('PAGE_CUSTOM_FOOTER')) {
+		        echo PAGE_CUSTOM_FOOTER;
+		    }
 				
 			echo "</body>\n\n";
 		echo '</html>';

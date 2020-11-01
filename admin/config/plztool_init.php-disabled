@@ -97,7 +97,7 @@ class PLZTOOL_INIT_CLASS
 			  stadtteil varchar(255) collate latin1_general_ci NOT NULL,
 			  PRIMARY KEY  (id),
 			  KEY strasse_norm (strasse_norm)
-			) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci AUTO_INCREMENT=1;";
+			) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci AUTO_INCREMENT=1;";
 		$this->db->query($sql);		
 	}
 	
@@ -179,7 +179,7 @@ class PLZTOOL_INIT_CLASS
 			  PRIMARY KEY  (id),
 			  KEY plz (plz),
 			  KEY ort (ort)			  
-		) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci AUTO_INCREMENT=1;";
+		) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci AUTO_INCREMENT=1;";
 		$this->db->query($sql);		
 	}	
 		

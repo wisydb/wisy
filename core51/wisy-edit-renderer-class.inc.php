@@ -441,7 +441,7 @@ class WISY_EDIT_RENDERER_CLASS
 		if( $db->fcs8('freigeschaltet') == 1 /*freigeschaltet*/
 		 || $db->fcs8('freigeschaltet') == 4 /*dauerhaft*/
 		 || $db->fcs8('freigeschaltet') == 3 /*abgelaufen*/
-		 ||	($db->fcs8('freigeschaltet') == 0 /*in Vorbereitung*/ ) ) // Kurse in Vorbereitung sollen √ºber Direktlinks editierbar sein, daher an dieser Stelle keine √úberpr√ºfung, ob der Kurs von getAdminAnbieterUserIds() angelegt wurde, s. https://mail.google.com/mail/#all/132aa92c4ec2cda7
+		 ||	($db->fcs8('freigeschaltet') == 0 /*in Vorbereitung*/ ) ) // Kurse in Vorbereitung sollen ueber Direktlinks editierbar sein, daher an dieser Stelle keine ueberpruefung, ob der Kurs von getAdminAnbieterUserIds() angelegt wurde, s. https://mail.google.com/mail/#all/132aa92c4ec2cda7
 		{
 		    // $db->close();
 			return 'yes'; // editable
@@ -471,28 +471,32 @@ class WISY_EDIT_RENDERER_CLASS
 		}
 		else if( $_REQUEST['action'] == 'loginSubseq' )
 		{
-			// "OK" wurde angeklickt - loginversuch starten
-			$fwd 				= $_REQUEST['fwd'];
-			$anbieterSuchname	= $_REQUEST['as'];
-			$anbieterSuchname_utf8dec = (PHP7 ? $anbieterSuchname : utf8_decode($anbieterSuchname));
-
-			$logwriter = new LOG_WRITER_CLASS;
-			$logwriter->addData('ip', $_SERVER['REMOTE_ADDR']);
-			$logwriter->addData('browser', $_SERVER['HTTP_USER_AGENT']);
-			$logwriter->addData('portal', $GLOBALS['wisyPortalId']);
-			
-			$loggedInAnbieterId = 0;
-			$loggedInAnbieterSuchname = 0;
-			$loggedInAnbieterPflegemail = "";
-
-			// Anbieter ID in name konvertieren 
-			$db->query("SELECT suchname FROM anbieter WHERE id=".intval($anbieterSuchname_utf8dec)." AND freigeschaltet = 1");
-			if( $db->next_record() ) {
-			    $anbieterSuchname = $db->fcs8('suchname');
-			    $anbieterSuchname_utf8dec = (PHP7 ? $anbieterSuchname : utf8_decode($anbieterSuchname));
-			}
-			
-			$login_as = false;
+		    // "OK" wurde angeklickt - loginversuch starten
+		    $fwd 				= $_REQUEST['fwd'];
+		    $anbieterSuchname	= $_REQUEST['as'];
+		    $anbieterSuchname_utf8dec = (PHP7 ? $anbieterSuchname : utf8_decode($anbieterSuchname));
+		    
+		    $logwriter = new LOG_WRITER_CLASS;
+		    $logwriter->addData('ip', $_SERVER['REMOTE_ADDR']);
+		    $logwriter->addData('browser', $_SERVER['HTTP_USER_AGENT']);
+		    $logwriter->addData('portal', $GLOBALS['wisyPortalId']);
+		    
+		    $loggedInAnbieterId = 0;
+		    $loggedInAnbieterSuchname = 0;
+		    $loggedInAnbieterPflegemail = "";
+		    
+		    // Anbieter ID in name konvertieren
+		    if(is_numeric($anbieterSuchname_utf8dec)) {
+		        
+		        $db->query("SELECT suchname FROM anbieter WHERE id=".intval($anbieterSuchname_utf8dec)." AND freigeschaltet = 1"); // intval converts "4 abcdef" into "4" => is_numeric before
+		        if( $db->next_record() ) {
+		            $anbieterSuchname = $db->fcs8('suchname');
+		            $anbieterSuchname_utf8dec = (PHP7 ? $anbieterSuchname : utf8_decode($anbieterSuchname));
+		        }
+		        
+		    } // end: is_numeric
+		    
+		    $login_as = false;
 			if( ($p=strpos($_REQUEST['wepw'], '.')) !== false )
 			{
 				// ...Login als registrierter Admin-Benutzer in der Form "<loginname>.<passwort>"
@@ -985,7 +989,7 @@ class WISY_EDIT_RENDERER_CLASS
 			// additional data validation
 			if( $kurs['durchf'][$i]['ende']!='0000-00-00 00:00:00' && $kurs['durchf'][$i]['beginn']!='0000-00-00 00:00:00' 
 			 && $kurs['durchf'][$i]['ende']<$kurs['durchf'][$i]['beginn'] ) {
-			    $kurs['error'][] = "Fehler: Durchf&uuml;hrung ".($i+1).": Das Enddatum muss vor dem Beginndatum liegen.";
+			    $kurs['error'][] = "Fehler: Durchf&uuml;hrung ".($i+1).": Das Enddatum muss NACH dem Beginndatum liegen.";
 			}
 
 			$today = strftime("%Y-%m-%d %H:%M:%S");
@@ -1161,13 +1165,13 @@ class WISY_EDIT_RENDERER_CLASS
 
 	private function ist_bagatelle($oldData, $newData)
 	{
-		/*
-		echo '<table><tr><td width="50%" valign="top"><pre>';
-			print_r($oldData);
-		echo '</pre></td><td width="50%" valign="top"><pre>';
-			print_r($newData);
-		echo '</pre></td></tr></table>';
-		*/
+		/* if($test) {
+    		echo '<table><tr><td width="50%" valign="top"><pre>';
+    			print_r($oldData);
+    		echo '</pre></td><td width="50%" valign="top"><pre>';
+    			print_r($newData);
+    		echo '</pre></td></tr></table>';
+	    } */
 		
 		if( !$oldData['rights_editTitel'] ) 	{ $newData['titel'] = $oldData['titel']; }
 		if( !$oldData['rights_editAbschluss'] )	{ $newData['abschluss'] = $oldData['abschluss']; $newData['msgtooperator'] = $oldData['msgtooperator']; }
@@ -1564,6 +1568,8 @@ class WISY_EDIT_RENDERER_CLASS
 			$vollst = $this->framework->getVollstaendigkeitMsg($db, $id, 'quality.edit');
 			$msg .= $vollst['msg'];
 		}
+		
+		// $db->close();
 		return $msg;
 	}
 	
@@ -1620,6 +1626,7 @@ class WISY_EDIT_RENDERER_CLASS
 				
 				setcookie('editmsg', $msg);
 				header('Location: ' . $this->bwd);
+				// $db->close();
 				exit();
 			}
 		}
@@ -1858,6 +1865,17 @@ class WISY_EDIT_RENDERER_CLASS
 					    echo '</tr>';
 					}
 					
+					// STICHWORTVORSCHLAEGE
+					if( $_GET['test'] == 'elearning' )
+					{
+					    echo '<tr>';
+					    echo '<td width="10%" valign="top" nowrap="nowrap"><strong>Ist dieser Unterricht in Corona-Zeiten<br>auch als Online-Unterricht verf&uuml;gbar?</strong>&nbsp;&nbsp;<br><br></td>';
+					    echo '<td style="vertical-align:top;">';
+					    $this->controlText('msgtooperator', $kurs['msgtooperator'], 40, 200, '', '');
+					    echo '</td>';
+					    echo '</tr>';
+					}
+					
 					// KURSBESCHREIBUNG
 					echo '<tr>';
 						echo '<td valign="top" nowrap="nowrap"><strong>Kursbeschreibung:</strong>&nbsp;</td>';
@@ -1869,7 +1887,7 @@ class WISY_EDIT_RENDERER_CLASS
 						echo '</td>';
 					echo '</tr>';
 					
-					// DURCHFÜHRUNGEN
+					// DURCHFUEHRUNGEN
 					for( $d = 0; $d < sizeof((array) $kurs['durchf']); $d++ )
 					{
 						$durchf = $kurs['durchf'][$d];

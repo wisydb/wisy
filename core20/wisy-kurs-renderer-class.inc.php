@@ -390,6 +390,35 @@ class WISY_KURS_RENDERER_CLASS
 		echo $this->framework->getEpilogue();
 	}
 	
+	function checkKursFilter($wisyPortalId, $kursId) {
+	    
+	    // If no filter, display course
+	    if(!$GLOBALS['wisyPortalFilter']['stdkursfilter'] || trim($GLOBALS['wisyPortalFilter']['stdkursfilter']) == '')
+	        return true;
+	        
+	        $portaltag = ".portal".$wisyPortalId;
+	        
+	        $db = new DB_Admin();
+	        $tagsql = 'SELECT tag_id FROM x_tags WHERE tag_name="'.$portaltag.'"';
+	        $db->query($tagsql);
+	        
+	        if( !$db->next_record() )
+	            $this->framework->error404();
+	            
+	        $tagId_portal = $db->f('tag_id');
+	            
+	        if( !$tagId_portal )
+	         $this->framework->error404();
+	                
+	        $kurssql = "SELECT DISTINCT kurse.id FROM kurse LEFT JOIN x_kurse ON x_kurse.kurs_id=kurse.id LEFT JOIN x_kurse_tags j0 ON x_kurse.kurs_id=j0.kurs_id "
+	                  ."LEFT JOIN x_kurse_tags j1 ON x_kurse.kurs_id=j1.kurs_id  WHERE kurse.id = $kursId AND j1.tag_id=$tagId_portal";
+	                    
+	        $db->query($kurssql);
+	                    
+	        if( trim($this->framework->iniRead('seo.set404_fremdkurse', "")) == 1 && (!$db->next_record() || !$db->f('id'))) // && ini.read(fremdekurseausschliessen)
+	          $this->framework->error404();
+	}
+	
 	function filter_foreign_k(&$db, $wisyPortalId, $kursId, $date_created) {
 	    $info = array();
 	    

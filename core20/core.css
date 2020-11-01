@@ -1,5 +1,3 @@
-
-
 /*******************************************************************************
 WISY CSS
 *******************************************************************************/
@@ -453,7 +451,7 @@ autocomplete styles v2
 .ac_results_v2 .ac_headline .tag_name,
 .ac_results_v2 .ac_more .tag_name { width: 100%; }
 
-/* Vorschläge im Hauptfenster */
+/* Vorschlï¿½ge im Hauptfenster */
 .wisy_tagtable { border-spacing: 1px; }
 .wisy_tagtable th { 
 	color: #000;
@@ -529,7 +527,6 @@ ul.dropdown li {
   float: left;
   line-height: 1.3em;
   vertical-align: middle;
-  zoom: 1;
 }
 
 ul.dropdown li.hover,
@@ -759,6 +756,11 @@ SEO
 	font-size: 1em;
 }
 
+.cc-window ul li.disabled {
+  font-weight: 100;
+  color: #555;
+}
+
 .cc-window ul li div.consent_option_infos {
 	vertical-align: top;
 	display: inline-block;
@@ -768,6 +770,10 @@ SEO
 .cc-window ul li .importance {
 	font-weight: 100;
 	font-size: .8em;
+}
+
+.cc-window ul li.disabled .importance {
+	color: #555;
 }
 
 .cc-window .hinweis_abwahl {
@@ -897,7 +903,7 @@ print
 		display: block !important;
 	}
 	
-	/* implizit verwendete Klassen und IDs, die in der Druckausgabe besondere Berücksichtigung finden sollen */
+	/* implizit verwendete Klassen und IDs, die in der Druckausgabe besondere Beruecksichtigung finden sollen */
 	.wisy_help, .wisy_rss_link, .wisy_paginate, #wisy_searcharea {
 		display: none !important;
 	}	
@@ -913,7 +919,7 @@ print
 		border-bottom: 1px solid #000;
 	}
 	
-	/* einige Schriftgrössen korrigieren */	
+	/* einige Schriftgroessen korrigieren */	
 	body {
 		font-size: 15px; /*org: 12px*/
 	}

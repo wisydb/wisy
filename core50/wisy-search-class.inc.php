@@ -125,15 +125,15 @@ class WISY_SEARCH_CLASS
 			$value = $this->tokens['cond'][$i]['value'];
 			switch( $this->tokens['cond'][$i]['field'] )
 			{
-				case 'tag':
-					$tagNotFound = false;
-					if( strpos($value, ' ODER ') !== false )
-					{
-						// ODER-Suche
-						$subval = explode(' ODER ', $value);
-						$rawOr = '';
-						for( $s = 0; $s < sizeof($subval); $s++ )
-						{	
+			    case 'tag':
+			        $tagNotFound = false;
+			        if( stripos($value, ' ODER ') !== false )
+			        {
+			            // ODER-Suche
+			            $subval = explode(' ODER ', strtoupper($value));
+			            $rawOr = '';
+			            for( $s = 0; $s < sizeof((array) $subval); $s++ )
+			            {
 							$tag_id = $this->lookupTag(trim($subval[$s]));
 							if( $tag_id == 0 )
 								{ $tagNotFound = true; break; }							
@@ -224,12 +224,15 @@ class WISY_SEARCH_CLASS
 					break;
 				
 				case 'id';
+				case 'kid':
+				    $this->rawWhere .= $this->rawWhere? ' AND ' : ' WHERE ';
+				    $this->rawWhere .= "x_kurse.kurs_id =$value";
 				case 'fav':
 				case 'favprint': // favprint is deprecated
 					$ids = array();
 					$temp = $this->tokens['cond'][$i]['field']=='fav'? $_COOKIE['fav'] : $value;
 					$temp = explode(',', strtr($temp, ' /',',,'));
-					for( $j = 0; $j < sizeof($temp); $j++ ) {
+					for( $j = 0; $j < sizeof((array) $temp); $j++ ) {
 						$ids[] = intval($temp[$j]); // safely get the IDs - do not use the Cookie/Request-String directly!
 					}
 					
@@ -386,7 +389,7 @@ class WISY_SEARCH_CLASS
 					break;
 				
 				case 'volltext':
-					// volltextsuche, aktuell gibt es ein Volltextindex ber kurse.titel und kurse.beschreibung; dieser
+					// volltextsuche, aktuell gibt es ein Volltextindex ueber kurse.titel und kurse.beschreibung; dieser
 					// wird vom core10 *nicht* verwendet und vom redaktionssystem wohl eher selten.
 					// aktuell nehmen wird diesen Index einfach, sollten wir hier aber etwas anderes benoetigen, 
 					// kann der alte Volltextindex verworfen werden. ALSO:
@@ -747,7 +750,7 @@ class WISY_SEARCH_CLASS
 			$this->db->query("SELECT tag_id, tag_type FROM x_tags WHERE tag_name='".addslashes($tag_name)."';");
 			if( $this->db->next_record() )
 			{
-				$tag_type = $this->db->fcs8('tag_type');
+			    $tag_type = PHP7 ? $this->db->f('tag_type') : $this->db->fcs8('tag_type');
 				if( $tag_type & 64 )
 				{
 					// synonym - ein lookup klappt nur, wenn es nur _genau_ ein synonym gibt

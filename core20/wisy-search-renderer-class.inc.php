@@ -1159,19 +1159,27 @@ class WISY_SEARCH_RENDERER_CLASS
 				}
 				
 				// show 'offers that are not "gesperrt"' which are _not_ in the search index (eg. just created offers) below the normal search result
-				echo '<p><span class="wisy_edittoolbar" title="Um einen neuen Kurs hinzuzuf�gen, klicken Sie oben auf &quot;Neuer Kurs&quot;">Kurse in Vorbereitung:</span>&nbsp; ';
+				echo '<p><span class="wisy_edittoolbar" title="Um einen neuen Kurs hinzuf&uuml;gen, klicken Sie oben auf &quot;Neuer Kurs&quot;">Kurse in Vorbereitung:</span>&nbsp; ';
 					$out = 0;
 					reset( $titles );
+					
+					if(count($titles))
+					    echo "<ul>";
+					
 					foreach($title as $currId => $currTitel)
 					{
 						if( !$liveIds[ $currId ] )
 						{
 							echo $out? ' &ndash; ' : '';
-							echo '<a href="k'.$currId.'">' . isohtmlspecialchars($currTitel) . '</a>';
+							echo '<li><a href="k'.$currId.'">' . isohtmlspecialchars($currTitel) . '</a></li>';
 
 							$out++; 
 						}
 					}
+					
+					if(count($titles))
+					    echo "</ul>";
+					
 					if( $out == 0 ) echo '<i title="Um einen neuen Kurs hinzuzuf&uuml;gen, klicken Sie oben auf &quot;Neuer Kurs&quot;">keine</i>';
 					//echo ' &ndash; <a href="edit?action=ek&amp;id=0">Neuer Kurs...</a>';
 				echo '</p>';

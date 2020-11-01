@@ -85,14 +85,7 @@ class WISY_ADVANCED_RENDERER_CLASS
 			    'type'		=> 'taglist',
 			    'descr'		=> 'Stadtteil:',
 			    'options'	=> array(
-			        ''					=> '',
-			        'Altenwerder'		=> 'Altenwerder',
-			        'Cranz'		        => 'Cranz',
-			        'Eißendorf'		    => 'Eißendorf',
-			        'Francop'			=> 'Francop',
-			        'Harburg'		    => 'Harburg',
-			        'Hausbruch'	        => 'Hausbruch',
-			        'Gut Moor'	        => 'Gut Moor'
+			        ''					=> ''
 			    ),
 			);
 			$this->presets['metaabschlussart'] = array
@@ -317,7 +310,7 @@ class WISY_ADVANCED_RENDERER_CLASS
 	 * render, misc.
 	 **********************************************************************/
 
-	function renderForm($q = null, $records = null)
+	function renderForm($q = null, $records = null, $hlevel=1, $number_of_results_string='')
 	{
 		
 		// explode the query string to its tokens

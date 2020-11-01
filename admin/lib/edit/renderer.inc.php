@@ -483,7 +483,7 @@ class EDIT_RENDERER_CLASS
 			$html .= '</td></tr>';
 			
 			$html .= '<tr><td class="e_cll">Referenzen:</td><td>&nbsp;';
-				$html .= '<span id="e_refcontainer" data-table="'.$this->data->table_def->name.'" data-id="'.$this->data->id.'">z�hle...</span>';
+				$html .= '<span id="e_refcontainer" data-table="'.$this->data->table_def->name.'" data-id="'.$this->data->id.'">z&auml;hle...</span>';
 			$html .= '</td></tr>';
 			
 			/*
