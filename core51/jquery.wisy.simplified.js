@@ -437,9 +437,15 @@ if (jQuery.ui)
 
 		if( tag_help == -3 )
 		{
-			/* add volltext */
-			row_class = 'ac_fulltext';
-			tag_name = 'Volltextsuche nach "' + request_term + '" ausf&uuml;hren?';
+			var minChars = (window.search_minchars ? window.search_minchars : 3);
+			if( request_term.length >= minChars ) {
+				/* add volltext */
+			    row_class = 'ac_fulltext';
+			    tag_name = 'Volltextsuche nach "' + request_term + '" ausf&uuml;hren?';
+			 } else {
+			     row_class = 'ac_ignore';
+			     tag_name = ''; /* too short for fulltext */
+			 }
 		}
 		else if( tag_help == -2 )
 		{
@@ -676,6 +682,7 @@ if (jQuery.ui)
 		);
 		$(".ac_keyword_ort").each(function()
 		{
+			if($(".ac_keyword_ort").data('autocomplete') == 1) {
 				var jqObj = $(this);
 				jqObj.autocomplete(
 				{
@@ -686,6 +693,7 @@ if (jQuery.ui)
 					,	focus:		ac_focuscallback 
 				});
 			}
+		}
 		);
 		$(".ac_keyword_anbieter").each(function()
 		{
@@ -771,24 +779,35 @@ if (jQuery.ui)
  * advanced search stuff
  *****************************************************************************/
 
-//Prevent empty search (<2 chars): on hompage: output message, on other page: search for all courses
+// prevent empty search (< 2 chars): on hompage: output message, on other page: search for all courses
 function preventEmptySearch(homepage) {
+ 
   // only if no other submit event is attached to search submit button:
-  if( typeof $._data( $("#wisy_searcharea form[action=search]")[0], "events" ) == 'undefined' ) {
+  if( Array.isArray($("#wisy_searcharea form[action=search]")) && typeof $._data( $("#wisy_searcharea form[action=search]")[0], "events" ) == 'undefined' ) {
     
    $('#wisy_searcharea form[action=search]').on('submit', function(e) {
     e.preventDefault();
     var len = $('#wisy_searchinput').val().length;
+    var emptyvalue = $('#wisy_searchinput').data('onemptyvalue');
     
        if ($(location).attr('pathname') == homepage) {
             if (len > 1) {
                    this.submit(); // default: normal search
                } else {
-                alert('Bitte geben Sie einen Suchbegriff an (mindesten 2 Buchstaben)');
+                if( emptyvalue != '' ) {
+                   $('#wisy_searchinput').val(emptyvalue);
+                   this.submit();
+                } else {
+                  alert('Bitte geben Sie einen Suchbegriff an (mindesten 2 Buchstaben)');
+                }
             }
        } else {
-           if(len < 2)
-            $('#wisy_searchinput').val("zeige:kurse");
+           if(len < 2) {
+            if( emptyvalue != '' )
+             $('#wisy_searchinput').val(emptyvalue);
+            else
+             $('#wisy_searchinput').val("zeige:kurse");
+           }
            
            // default: normal search on other than homepage
            this.submit();
@@ -1015,7 +1034,7 @@ function editDurchfLoeschen(jqObj)
 {
 	if( $('.editDurchfRow').size() == 1 )
 	{
-		alert("Diese Durchf"+ue+"hrung kann nicht gel"+oe+"scht werden, da ein Angebot mindestens eine Durchf"+ue+"hrung haben muss.\n\nWenn Sie das Angebot komplett l"+oe+"schen m"+oe"chten, verwenden Sie die Option \"Angebot l"+oe+"schen\" ganz unten auf dieser Seite.");
+		alert("Diese Durchf"+ue+"hrung kann nicht gel"+oe+"scht werden, da ein Angebot mindestens eine Durchf"+ue+"hrung haben muss.\n\nWenn Sie das Angebot komplett l"+oe+"schen m"+oe+"chten, verwenden Sie die Option \"Angebot l"+oe+"schen\" ganz unten auf dieser Seite.");
 		return;
 	}
 	else if( confirm("Diese Durchf"+ue+"hrung l"+oe+"schen?") )
@@ -1565,6 +1584,16 @@ $().ready(function()
 	       $(this).closest("form").submit();
 	   }
 	  });
+	  $(".wisyr_filtergroup .filter_submit").click(function(event){
+		   if (event.originalEvent === undefined) {
+		    /* robot: console.log(event); */
+		   } else {
+		       event.preventDefault();
+		       $(this).before("<input type=hidden id=qsrc name=qsrc value=s>");
+		       $(this).before("<input type=hidden id=qtrigger name=qtrigger value=h>");
+		       $(this).closest("form").submit();
+		   }
+	  });
 	 }
 	 
 	// Human triggered search, propagate to filter form + pagination
@@ -1577,9 +1606,7 @@ $().ready(function()
 
 function initializeTranslate() {
 	 if($.cookie('cconsent_translate') == "allow") {
-	  console.log("consented");
 	  $.loadScript('//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit', function(){
-	     /* console.log('Loaded Google Translate'); */
 	 });
 	  
 	 } else {
@@ -1606,26 +1633,27 @@ function hightlightCookieConsentOption(name) {
  $('.cc-consent-details .'+name+' .consent_option_infos').addClass('highlight');
 }
 
-	// check for consent of specific cookie, if page dependant on it being given
+// check for consent of specific cookie, if page dependant on it being given
 function consentCookieBeforePageFunction() {
 	 
   // Edit page
   if($(".wisyp_edit").length) {
 	   
-   // only if no other submit event is attached to search submit button:
-   if( typeof $._data( $(".wisyp_edit form[action=edit]"), "events" ) == 'undefined' ) {
-    $('.wisyp_edit form[action=edit]').on('submit', function(e) {
-     e.preventDefault();
+	// jQuery("input[type=password").length necessary b/c distinguishable from confirmation of AGB
+	if( $(".wisyp_edit form[action=edit]").length && jQuery("input[type=password").length && typeof $._data( $(".wisyp_edit form[action=edit]"), "events" ) == 'undefined' ) {
+	 $('.wisyp_edit form[action=edit]').on('submit', function(e) {
+	  e.preventDefault();
 
      if($.cookie('cconsent_onlinepflege') != "allow" && !window.cookiebanner_zustimmung_onlinepflege_legacy) {
       alert("Um die Onlinepflege nutzen zu k"+oe+"nnen, m"+ue+"ssen Sie dem Speichern von Cookies f"+ue+"r diese Funktion zustimmen (im Cookie-Hinweisfenster).");
       hightlightCookieConsentOption('onlinepflege');
       window.cookieconsent.popup.open();
       return false;
-     } else {
-      // default: normal search on other than homepage
-      this.submit();
      }
+     
+     // default: normal search on other than homepage
+     this.submit();
+     
     });
    }
   } // end: edit page
@@ -1676,6 +1704,11 @@ var ss = unescape("%DF");
      else {
       setCookieSafely('cconsent_popuptext', "allow", { expires:3}); 
      }
-   });                                                 
+   });                        
+   
+   // Hide load / wait message after page has actually completed loading (esp. fulltext)
+   if(jQuery(".laden").length)
+    jQuery(".laden").remove();
+   
  });
  

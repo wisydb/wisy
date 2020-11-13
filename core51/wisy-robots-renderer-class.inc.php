@@ -102,10 +102,13 @@ class WISY_ROBOTS_RENDERER_CLASS
 			// for all other spiders
 			echo "User-agent: *\n";
 			echo "Disallow: /advanced\n";
+			echo "Disallow: /edit\n";
+			echo "Disallow: /api\n";
 			echo "Disallow: /filter\n";
 			echo "Disallow: /edit\n";
 			echo "Disallow: /rss\n";
 			echo "Disallow: /terrapin\n";
+			echo "Disallow: /search?q=volltext*\n";
 			
 			echo "Disallow: /g151\n"; // for historic legal reasons, better: use portal setting below.
 			

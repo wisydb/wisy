@@ -7,6 +7,7 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 	var $framework;
     var $tokens;
     var $checked_values_combStr = array();
+    var $max_preis = '999999';
 
 	function __construct(&$framework)
 	{
@@ -160,9 +161,10 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
                         $renderformData['fv_preis_bis'] = intval($matches[1]);
 					}
 					else if( preg_match('/^([0-9]{1,9})\s?-\s?([0-9]{1,9})$/', $renderformData['fv_preis'], $matches) )
-					{	
-						$renderformData['fv_preis_von'] = intval($matches[1]);
-						$renderformData['fv_preis_bis'] = intval($matches[2]);
+					{
+					    $renderformData['fv_preis_von'] = intval($matches[1]);
+					    $renderformData['fv_preis_bis'] = intval($matches[2]);
+					    $renderformData['fv_preis_bis'] = str_replace($this->max_preis, '', $renderformData['fv_preis_bis']);
 					}
 					else
 					{
@@ -315,7 +317,7 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 	    // display sort order filter, except if fulltext search (b/c then sorted by match category automatically + RAND as secondary criteria)
 	    if( stripos($this->framework->QS, 'volltext:') === FALSE && stripos($this->framework->QF, 'volltext:') === FALSE ) {
     	    echo '<fieldset class="wisyr_filtergroup wisyr_filter_select filter_sortierung ui-front">';
-    	    echo '	<legend data-filtervalue="' . $orders[$renderformData['order']] . '">Sortierung</legend>';
+    	    echo '	<legend data-filtervalue="' . str_replace('- '.$this->max_preis, '', $orders[$renderformData['order']]) . '" >Sortierung</legend>';
     	    echo '	<select name="filter_order" class="wisyr_selectmenu">';
     	    foreach($orders as $key => $value)
     	    {
@@ -341,6 +343,7 @@ class WISY_FILTERMENU_ITEM
     var $renderformData;
     var $children;
     var $zindex;
+    var $max_preis = '999999';
     
     function __construct($framework, $data, $renderformData, $zindex)
     {
@@ -368,7 +371,7 @@ class WISY_FILTERMENU_ITEM
         $ret = '<fieldset class="' . $filterclasses . '" style="z-index:' . $this->zindex . '" tabindex="0">';
         
         if(trim($title) !== '') {
-            $ret .= '<legend data-filtervalue="' . $legendvalue . '">' . $title . '</legend>'; // hoechste Ebene
+            $ret .= '<legend data-filtervalue="' . str_replace('-'.$this->max_preis, '', $legendvalue) . '" >' . $title . '</legend>'; // hoechste Ebene
         }
         $ret .= '<div class="filter_inner clearfix">';
         

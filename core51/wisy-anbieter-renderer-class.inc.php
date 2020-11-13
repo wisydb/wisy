@@ -463,9 +463,8 @@ class WISY_ANBIETER_RENDERER_CLASS
 	    if($db->num_rows() == $kCntTotal)
 	        return true;
 	        
-	        return false;
+	    return false;
 	}
-	
 	
 	protected function renderSealsOverview($anbieter_id, $pruefsiegel_seit, $steckbrief=false)
 	{
@@ -561,7 +560,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		// link to another anbieter?
 		$db->query("SELECT attr_id FROM anbieter_verweis WHERE primary_id=$anbieter_id ORDER BY structure_pos");
 		if( $db->next_record() ) {
-			$anbieter_id = intval($db->f8('attr_id'));
+			$anbieter_id = intval($db->f('attr_id'));
 		}
 
 		// load anbieter
@@ -643,7 +642,9 @@ class WISY_ANBIETER_RENDERER_CLASS
 			echo htmlentities($suchname);
 		echo '</h1>';
 		
-		
+		if( $readsp_embedurl = $this->framework->iniRead('readsp.embedurl', false) )
+		    echo '<div id="readspeaker_button1" class="rs_skip rsbtn rs_preserve"> <a rel="nofollow" class="rsbtn_play" accesskey="L" title="Um den Text anzuh&ouml;ren, verwenden Sie bitte den webReader" href="'.$readsp_embedurl.'"><span class="rsbtn_left rsimg rspart"><span class="rsbtn_text"> <span>Vorlesen</span></span></span> <span class="rsbtn_right rsimg rsplay rspart"></span> </a> </div>';
+		    
 		if( $logo_w && $logo_h && $logo_name != '')
 		{
 		    echo "\n" . '<div class="wisyr_anbieter_logo">';

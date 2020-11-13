@@ -295,13 +295,13 @@ function berechne_dauer($start, $ende)
 	// anzahl tage berechnen
 	$d = strtr($start, ' :', '--');
 	$d = explode('-', $d);
-	$timestamp1 = mktime(0, 0, 0, intval($d[1]), intval($d[2]), intval($d[0]));
+	$timestamp1 = mktime(0, 0, 0, intval($d[1]), intval($d[2]), intval($d[0])); // mktime(intval($d[3]), intval($d[4]), 0, intval($d[1]), intval($d[2]), intval($d[0]));
 	if( $timestamp1 === -1 || $timestamp1 === false || intval($d[1])==0 || intval($d[2])==0 || intval($d[0])==0 )
 		return 0;
 
 	$d = strtr($ende, ' :', '--');
 	$d = explode('-', $d);
-	$timestamp2 = mktime(0, 0, 0, intval($d[1]), intval($d[2]), intval($d[0]));
+	$timestamp2 = mktime(0, 0, 0, intval($d[1]), intval($d[2]), intval($d[0])); // mktime(intval($d[3]), intval($d[4]), 0, intval($d[1]), intval($d[2]), intval($d[0]))
 	if( $timestamp2 === -1 || $timestamp2 === false || intval($d[1])==0 || intval($d[2])==0 || intval($d[0])==0 )
 		return 0;
 	

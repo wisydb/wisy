@@ -143,11 +143,11 @@ class WISY_KURS_RENDERER_CLASS
 			// headline + flush() (loading the rest may take some seconds)
 			$h1class = '';
 
-			
-			echo '<p class="noprint">' 
-			.	 	'<a class="wisyr_zurueck" href="javascript:history.back();">&laquo; Zur&uuml;ck</a>'
-			.	 '</p>';
-
+			if(!isset($_GET['deleted'])) {
+    			echo '<p class="noprint">' 
+    			.	 	'<a class="wisyr_zurueck" href="javascript:history.back();">&laquo; Zur&uuml;ck</a>'
+    			.	 '</p>';
+			}
 			flush();
 			
 			// Beschreibung ausgeben
@@ -182,13 +182,21 @@ class WISY_KURS_RENDERER_CLASS
 			echo '</h1>';
 			
 			echo '<h3 class="printonly anbieter_short">'.$anbieterdetails['postname'].", ".$anbieterdetails['strasse'].', '.$anbieterdetails['plz'].' '.$anbieterdetails['ort'].'</h3>';
-    			
-    			if( $originaltitel != '' && $originaltitel != $title )
-    			{
-    			    echo '<h2 class="wisy_originaltitel">(' . /*'Originaltitel: ' .*/ htmlspecialchars($originaltitel) . ')</h2>';
-    			}
-    			
-    			echo '<article class="wisy_kurs_inhalt"><h1 class="inhalt">Inhalt</h1>';
+			
+			if( $originaltitel != '' && $originaltitel != $title )
+			{
+			    echo '<h2 class="wisy_originaltitel">(' . /*'Originaltitel: ' .*/ htmlspecialchars($originaltitel) . ')</h2>';
+			    
+			    if(in_array($freigeschaltet, $freigeschaltet404) && $_SESSION['loggedInAnbieterId'])
+			        echo "<h3>".(isset($_GET['deleted']) ? "Der Kurs wurde gesperrt!" : "Status: gesperrt!" )."</h3>";
+			        
+			}
+			
+			if( $readsp_embedurl = $this->framework->iniRead('readsp.embedurl', false) )
+			    echo '<div id="readspeaker_button1" class="rs_skip rsbtn rs_preserve"> <a rel="nofollow" class="rsbtn_play" accesskey="L" title="Um den Text anzuh&ouml;ren, verwenden Sie bitte ReadSpeaker webReader" href="'.$readsp_embedurl.'"><span class="rsbtn_left rsimg rspart"><span class="rsbtn_text"> <span>Vorlesen</span></span></span> <span class="rsbtn_right rsimg rsplay rspart"></span> </a> </div>';
+			    
+			    
+			echo '<article class="wisy_kurs_inhalt"><h1 class="inhalt">Inhalt</h1>';
 			
 				if( $beschreibung != '' ) {
 					$wiki2html =& createWisyObject('WISY_WIKI2HTML_CLASS', $this->framework);

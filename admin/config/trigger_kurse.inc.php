@@ -347,7 +347,7 @@ function update_kurs_state($kurs_id, $param)
 					}
 
 					if( $setmsg )		{ $ret['returnmsg'] .= ($ret['returnmsg']? '<br />' : '') . 'Durchf&uuml;hrung '.($i+1).': '.$setmsg.' anhand von Strasse/Ort gesetzt.'; $ret['returnreload'] = true; }
-					if( $cannotsetmsg )	{ $ret['returnmsg'] .= ($ret['returnmsg']? '<br />' : '') . 'Durchf&uuml;hrung '.($i+1).': Für die gegeben Strasse/Ort sind unterschiedliche Werte für '.$cannotsetmsg.' möglich, die nicht automatisch ermittelt werden konnten.'; }
+					if( $cannotsetmsg )	{ $ret['returnmsg'] .= ($ret['returnmsg']? '<br />' : '') . 'Durchf&uuml;hrung '.($i+1).': F&uuml;r die gegeben Strasse/Ort sind unterschiedliche Werte f&uuml;r '.$cannotsetmsg.' m&ouml;glich, die nicht automatisch ermittelt werden konnten.'; }
 				}
 			}
 			
@@ -421,12 +421,12 @@ function update_kurs_state($kurs_id, $param)
 			if( $baD['strasse'] == $anz_durchf )	{ $punkte_erreicht +=  3.0; } else { $missing = $anz_durchf-$baD['strasse'];	$vmsg .= "<br />- Um die Vollst&auml;ndigkeit zu erh&ouml;hen, machen Sie bitte Angaben zu den <b>Strassen in allen Durchf&uuml;hrungen</b>. Es fehlen aktuell $missing Strassen."; }
 																		
 			// 5 Punkte nach Freischaltung durch die Redaktion
-			if( $anz_stichw >= 2 )					{ $punkte_erreicht +=  5.0; } else { if($vmsg=='') { $vmsg .= '<br />- Sie haben alle notwendigen Angaben zur Vollständigkeit gemacht; der Kurs wird als 100%-vollständig gelistet, sobald er von der Redaktion freigeschaltet wird.'; }	}
+			if( $anz_stichw >= 2 )					{ $punkte_erreicht +=  5.0; } else { if($vmsg=='') { $vmsg .= '<br />- Sie haben alle notwendigen Angaben zur Vollst&auml;ndigkeit gemacht; der Kurs wird als 100%-vollst&auml;ndig gelistet, sobald er von der Redaktion freigeschaltet wird.'; }	}
 		}
 	}
 	else
 	{
-		$vmsg .= '<br />- Um die Mindestvollständigkeit zu erreichen, legen Sie bitte eine <b>Durchführung</b> an.';
+		$vmsg .= '<br />- Um die Mindestvollständigkeit zu erreichen, legen Sie bitte eine <b>Durchf&uuml;hrung</b> an.';
 	}
 	$ret['vmsg'] = $vmsg;
 	

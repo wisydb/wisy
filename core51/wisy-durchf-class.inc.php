@@ -91,24 +91,24 @@ class WISY_DURCHF_CLASS
 		
 		foreach( $this->imgTagArr as $id=>$img_arr )
 		{
-			if( $stichwoerter_hash[ $id ] )
-			{	
-				$img_icon = $img_arr[0];
-				$img_text = $img_arr[1];
-				
-				$ext = substr($img_icon, -4);
-				if( $ext == '.gif' || $ext == '.png' || $ext == '.jpg' || $ext == '.svg' ) {
-					$alt = $details? '' : $img_text;
-					$html .= '<img src="'.$img_icon.'" alt="'.$alt.'" title="'.$img_text.'" />';
-				}
-				else {
-					$html .= '<span title="'.$img_text.'">'.$img_icon.'</span>';
-				}
-				
-				if( $details ) {
-					$html .= ' <span class="wisyr_art_details"> ' . $img_text . '</span>';
-				}
-			}
+		    if( $stichwoerter_hash[ $id ] )
+		    {
+		        $img_icon = $img_arr[0];
+		        $img_text = $img_arr[1];
+		        
+		        $ext = substr($img_icon, -4);
+		        if( $ext == '.gif' || $ext == '.png' || $ext == '.jpg' || $ext == '.svg' ) {
+		            $alt = $details? '' : $img_text;
+		            $html .= '<img src="'.$img_icon.'" alt="'.$alt.'" title="'.$img_text.'" data-sw_id="'.$id.'"/>';
+		        }
+		        else {
+		            $html .= '<span title="'.$img_text.'" data-sw_id="'.$id.'"/>'.$img_icon.'</span>';
+		        }
+		        
+		        if( $details ) {
+		            $html .= ' <span class="wisyr_art_details" data-sw_id="'.$id.'"/>' . $img_text . '</span>';
+		        }
+		    }
 		}
 		
 		return $html;
@@ -270,47 +270,28 @@ class WISY_DURCHF_CLASS
 		    $preishinweise_arr = array();
 		    
 		    global $controlTags;
+		    $aid_output = false;
 		    
 		    foreach( $addParam['stichwoerter'] as $stichwort ) {
-		        switch( $stichwort['id'] ) {
-		            
-		            case $controlTags['Bildungsgutschein']:
-		                $matches = array();
-		                $matches = ((array) preg_grep ('/^kostenlos/i', $preishinweise_arr));
-		                if(stripos($ret, 'kostenlos') === FALSE && stripos($preishinweise_str, 'kostenlos') === FALSE && count($matches) < 1)
-		                    $preishinweise_arr[] = cs8('kostenlos&nbsp;per&nbsp;Bildungsgutschein');
-		                    break;
-		                    
-		            case $controlTags['DeuFoeV']:
-		            case $controlTags['Integrationskurs']:
-		            case $controlTags['Integrationskurs (zu speziellem Förderbedarf)']:
-		            case $controlTags['Integrationskurs (Intensivkurs)']:
-		            case $controlTags['Integrationskurs (mit Alphabetisierung)']:
-		            case $controlTags['Integrationskurs für Zweitschriftlernende']:
-		            case $controlTags['Orientierungskurs']:
-		                $matches = array();
-		                $matches = ((array) preg_grep ('/^kostenlos/i', $preishinweise_arr));
-		                if(stripos($ret, 'kostenlos') === FALSE && stripos($preishinweise_str, 'kostenlos') === FALSE && count($matches) < 1)
-		                    $preishinweise_arr[] = cs8('kostenlos&nbsp;bei&nbsp;F&ouml;rderung');
-		                    break;
-		                    
-		            case $controlTags['Umschulung']:
-		                $matches = array();
-		                $matches = ((array) preg_grep ('/^kostenlos/i', $preishinweise_arr));
-		                if(stripos($ret, 'kostenlos') === FALSE && stripos($preishinweise_str, 'kostenlos') === FALSE && count($matches) < 1)
-		                    $preishinweise_arr[] = cs8('kostenlos&nbsp;durch&nbsp;Umschulung');
-		                    break;
-		                    
-		            case $controlTags['Aktivierungsgutschein']:
-		                $matches = array();
-		                $matches = ((array) preg_grep ('/^kostenlos/i', $preishinweise_arr));
-		                if(stripos($ret, 'kostenlos') === FALSE && stripos($preishinweise_str, 'kostenlos') === FALSE && count($matches) < 1)
-		                    $preishinweise_arr[] = cs8('kostenlos&nbsp;als&nbsp;Aktivierungsma&szlig;nahme');
-		                    break;
-		                    
-		            case $controlTags['Preis komplex']: $preishinweise_arr[] = cs8('Preisstruktur komplex. GGf. beim Anbieter einholen.');	break;
-		        }
-		    }
+		         
+		         if( !$aid_output && ($stichwort['id'] == $controlTags['Bildungsgutschein']
+		             || $stichwort['id'] == $controlTags['Umschulung']
+		             || $stichwort['id'] == $controlTags['Aktivierungsgutschein']
+		             || $stichwort['id'] == $controlTags['DeuFoeV']
+		             || $stichwort['id'] == $controlTags['Integrationskurs']
+		             || $stichwort['id'] == $controlTags['Integrationskurs (zu speziellem Förderbedarf)']
+		             || $stichwort['id'] == $controlTags['Integrationskurs (Intensivkurs)']
+		             || $stichwort['id'] == $controlTags['Integrationskurs (mit Alphabetisierung)']
+		             || $stichwort['id'] == $controlTags['Integrationskurs für Zweitschriftlernende']
+		             || $stichwort['id'] == $controlTags['Orientierungskurs'] )
+		             ) {
+		                 $preishinweise_arr[] = cs8('kostenlos&nbsp;bei&nbsp;F&ouml;rderung');
+		                 $aid_output = true;
+		             }
+		             
+		        if( $stichwort['id'] == $controlTags['Preis komplex'] )
+		          $preishinweise_arr[] = cs8('Preisstruktur komplex - ggf. beim Anbieter einholen.');       
+		    } 
 		    
 		    if( $preishinweise_str ) $preishinweise_arr[] = $preishinweise_str;
 			
@@ -488,56 +469,56 @@ class WISY_DURCHF_CLASS
 		
 		if (($spalten & 2) > 0)
 		{
-			echo '    <td class="wisyr_termin" data-title="Termin">';
-			
-			$cell = '';
-			
-			if( $beginn )
-			{
-				if( $termin_abgelaufen ) {
-					$cell .= '<span class="wisyr_termin_datum wisy_datum_abgel" data-title="Datum">';
-				} else {
-					$cell .= '<span class="wisyr_termin_datum" data-title="Datum">';
-				}
-			    $cell .= ($ende && $beginn!=$ende)? "$beginn - $ende</span>" : $beginn . '</span>';
-			    
-				if( $beginnoptionen ) { $cell .= " <span class=\"wisyr_termin_beginn\">$beginnoptionen</span>"; }
-			}
-			else if( $beginnoptionen )
-			{
-				$cell .= '<span class="wisyr_termin_optionen">' . $beginnoptionen . '</span>';
-			}
-			
-			if( $details && $this->framework->iniRead('details.kurstage', 1)==1 ) {
-			    $temp = $this->formatKurstage(intval($record['kurstage']));
-			    if( $temp ) {
-			        $cell .= "<div class=\"wisyr_art_kurstage\">$temp</div>";
-			    }
-			}
-			
-			if( $zeit_von && $zeit_bis ) {
-			    $cell .= " <span class=\"wisyr_termin_zeit\" data-title=\"Zeit\">{$zeit_von}&nbsp;-&nbsp;{$zeit_bis}&nbsp;Uhr</span>";
-			}
-			else if( $zeit_von ) {
-			    $cell .= " <span class=\"wisyr_termin_zeit\">{$zeit_von}&nbsp;Uhr</span>";
-			}
-			
-			if( $addParam['record']['freigeschaltet'] == 4 )
-			{
-			    $cell .= ' <span class="wisyr_termin_dauerhaft">dauerhaftes Angebot</span>';
-			}
-			
-			if( $addText ) // z.B. für "2 weitere Durchführungen ..."
-			{
-				$cell .= '<span class="wisyr_termin_text">' . $addText . '</span>';
-			}
-			
-			if( $cell == '' )
-			{
-				$cell .= '<span class="wisyr_termin_ka">k. A.</span>'; 
-			}
-			
-			echo $cell . ' </td>' . "\n";
+		    echo '    <td class="wisyr_termin" data-title="Termin">';
+		    
+		    $cell = '';
+		    
+		    if( $beginn )
+		    {
+		        if( $termin_abgelaufen ) {
+		            $cell .= '<span class="wisyr_termin_datum wisy_datum_abgel" data-title="Datum">';
+		        } else {
+		            $cell .= '<span class="wisyr_termin_datum" data-title="Datum">';
+		        }
+		        $cell .= ($ende && $beginn!=$ende)? "$beginn - $ende</span>" : $beginn . '</span>';
+		        
+		        if( $beginnoptionen ) { $cell .= "<span class=\"wisyr_termin_beginn\">".str_replace(' ', '&nbsp;', $beginnoptionen)."</span>"; }
+		    }
+		    else if( $beginnoptionen )
+		    {
+		        $cell .= '<span class="wisyr_termin_optionen">' . str_replace(' ', '&nbsp;', $beginnoptionen) . '</span>';
+		    }
+		    
+		    if( $details && $this->framework->iniRead('details.kurstage', 1)==1 ) {
+		        $temp = $this->formatKurstage(intval($record['kurstage']));
+		        if( $temp ) {
+		            $cell .= "<div class=\"wisyr_art_kurstage\">$temp</div>";
+		        }
+		    }
+		    
+		    if( $zeit_von && $zeit_bis ) {
+		        $cell .= "<span class=\"wisyr_termin_zeit\" data-title=\"Zeit\">{$zeit_von}&nbsp;-&nbsp;{$zeit_bis}&nbsp;Uhr</span>";
+		    }
+		    else if( $zeit_von ) {
+		        $cell .= "&nbsp;<span class=\"wisyr_termin_zeit\">{$zeit_von}&nbsp;Uhr</span>";
+		    }
+		    
+		    if( $addParam['record']['freigeschaltet'] == 4 )
+		    {
+		        $cell .= '<span class="wisyr_termin_dauerhaft">'.(strlen(trim($cell)) > 1 ? ' ' : '').'dauerhaftes Angebot</span>';
+		    }
+		    
+		    if( $addText ) // z.B. fuer "2 weitere Durchfuehrungen ..."
+		    {
+		        $cell .= '<span class="wisyr_termin_text">' . $addText . '</span>';
+		    }
+		    
+		    if( $cell == '' )
+		    {
+		        $cell .= '<span class="wisyr_termin_ka">k. A.</span>';
+		    }
+		    
+		    echo $cell . ' </td>' . "\n";
 		}
 		
 		if (($spalten & 4) > 0)
@@ -550,27 +531,25 @@ class WISY_DURCHF_CLASS
 		
 		if (($spalten & 8) > 0)
 		{
-			// tagescode / bildungsurlaub 
-			echo '    <td class="wisyr_art" data-title="Art">';
-	
-				$cell = '';
-				
-				// art-spalte: tagescode und img.tag 
-				$dfStichw = $addParam['stichwoerter'];
-				$dfStichw[] = array('id'=>'tc'.$record['tagescode']);
-				
-				$cell .= $this->formatArtSpalte($dfStichw, $details);
-				
-				if( $cell == $this->seeAboveArt && $details ) {
-				    echo '<div class="noprint">'.$cell.'</div><span class="printonly">s.o.</span>';
-				}
-				else {
-					echo $cell;
-					$this->seeAboveArt = $cell;
-				}
-				
-								
-			echo ' </td>' . "\n";
+		    $cell = '';
+		    
+		    // art-spalte: tagescode und img.tag
+		    $dfStichw = $addParam['stichwoerter'];
+		    $dfStichw[] = array('id'=>'tc'.$record['tagescode']);
+		    
+		    $cell .= $this->formatArtSpalte($dfStichw, $details);
+		    
+		    if( $cell == $this->seeAboveArt && $details ) {
+		        $cell = '<div class="noprint">'.$cell.'</div><span class="printonly">s.o.</span>';
+		    }
+		    else {
+		        $this->seeAboveArt = $cell;
+		    }
+		    
+		    // tagescode / bildungsurlaub
+		    echo '    <td class="wisyr_art" data-title="'.($cell ? 'Art' : '').'">';
+		    echo $cell;
+		    echo ' </td>' . "\n";
 		}
 		
 		if (($spalten & 16) > 0)

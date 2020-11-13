@@ -98,6 +98,7 @@ class WISY_INTELLISEARCH_CLASS
 			
 		$ret['suggestions'] = $this->suggestions;
 		$ret['changed_query'] = $this->changed_query;
+		$ret['changed_cnt'] = $this->getKurseCount();
 		
 		return $ret;
 	}

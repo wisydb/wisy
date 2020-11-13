@@ -124,7 +124,7 @@ class WISY_KEYWORDTABLE_CLASS
 		$icon_empty = '&nbsp;&bull;&nbsp;';
 				
 		$title = cs8(WISY_KEYWORDTABLE_CLASS::$keywords[ $keywordId ]['stichwort']);
-		$url = 'search?q=' . g_sync_removeSpecialChars($title); // urlencode()
+		$url = 'search?q=' . g_sync_removeSpecialChars($title);
 		$zusatzinfo = cs8(WISY_KEYWORDTABLE_CLASS::$keywords[ $keywordId ]['zusatzinfo']);
 		$tag_type = WISY_KEYWORDTABLE_CLASS::$keywords[ $keywordId ]['eigenschaften'];
 		$glossarId = WISY_KEYWORDTABLE_CLASS::$keywords[ $keywordId ]['glossar'];

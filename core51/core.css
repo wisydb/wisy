@@ -130,6 +130,12 @@ h1.wisy_df_headline {
   border: none;
 }
 
+.searcherror_help {
+ display: block;
+ margin-top: 1em;
+ font-weight: bold;
+}
+
 /*******************************************************************************
 wisy_searcharea
 *******************************************************************************/
@@ -175,6 +181,13 @@ wisy_searcharea
   padding: 1em;
 }
 
+.noresults .wisyr_filterform form fieldset.wisyr_filtergroup {
+	display: none ;
+}
+
+.noresults .wisy_suggestions_inner {
+  margin-top: 1.4em;
+}
 
 
 /*******************************************************************************
@@ -554,6 +567,76 @@ autocomplete styles v2
 	font-style: inherit;
 }
 
+/*******************************************************************************
+search: fulltext, changed queries, load animation
+*******************************************************************************/
+
+.fulltext_query {
+ font-weight: bold;
+}
+
+.wisy_kurstitel .mark, .excerpt .mark {
+    background-color: #fcfcc7;
+    padding: 1px;
+    padding-left: 0px;
+    padding-right: 0px;
+}
+
+.statistics b, .subheading b {
+ font-weight: bold;
+}
+
+.subheading {
+  padding-top: 1em;
+  border-top: 2px solid #E3F4FE !important;
+  border-bottom: 1px solid #E3F4FE !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.2), 0 3px 15px 0 rgba(0, 0, 0, 0.19);
+}
+
+.page_searchresults {
+ color: #aaa;
+}
+
+.changed_query .wisy_suggestions_inner {
+ display: none;
+}
+
+.changed_query .wisyr_angebote_zum_suchauftrag {
+ color: #999;
+}
+
+.laden {
+    animation: blinker 1s linear infinite;
+}
+.laden {
+    font-weight: bold;
+    font-size: 1.3em;
+    color: #3f88b7;
+    margin-bottom: 20px;
+    position: absolute;
+    z-index: 999;
+}
+
+.wisyq_volltext .laden {
+ display: block !important;
+}
+
+.ppp1, .ppp2, .ppp3 {
+    font-size: 1.6em;
+}
+.ppp1 {
+    color: #555;
+}
+
+.ppp3 {
+  color: #413496;
+}
+
+@keyframes blinker {
+  50% {
+    opacity: 0;
+  }
+}
 
 /*******************************************************************************
 portalmenu styles
@@ -583,7 +666,7 @@ ul.dropdown li {
   float: left;
   line-height: 1.3em;
   vertical-align: middle;
-  zoom: 1;
+  zoom: 1; /* IE10 */
 }
 
 ul.dropdown li.hover,

@@ -891,7 +891,7 @@ if($("form[name=dbsearch]") && ($("#fheader .mml .mms").text() == "Angebote" || 
 	
 }
 
-// make archived entries css-designable
+//make archived entries css-designable
 $('td:contains("Archiv")').parent().attr("class", "archiv");
 $('td:contains("Gesperrt")').parent().attr("class", "gesperrt");
 
@@ -901,5 +901,42 @@ $("input[name^='f_durchfuehrung_beginn'],input[name^='f_durchfuehrung_ende']").c
  if(!$(".dauer_fix_label:visible").length)
  $(".e_object .e_clr .e_defhide_more:last-child").trigger("click");
 });
+
+// Delete Portal Caches module link
+if( jQuery("form[name=edit]").find("input[name=table]").val() == "portale") {
+ var portal_id = jQuery("form[name=edit]").find("input[name=id]").val();
+ if(portal_id > 0)
+  jQuery("#fheader table.sm td.sml a:last-child").before('<a href="module.php?module=plugin_cache_portale_0&id='+portal_id+'" target="plugin_cache_portale_0" onclick="return popup(this,750,550);"> &nbsp;Cache l&ouml;schen&nbsp; </a></td>');
+}
+
+/* ********************************************************** */
+/* Dont allow user or user_grp to be empty when saving a view */
+jQuery("input[name=submit_ok]").click(function(){ 
+ return check_grp_user();
+});
+
+jQuery("input[name=submit_apply]").click(function(){ 
+ return check_grp_user();
+});
+
+
+function check_grp_user() {
+	
+  /* exceptions */
+ if( jQuery("form input[type=hidden][name=table][value=feedback]").length )
+  return true;
+	
+ if( jQuery("span[data-table=user_grp]").length && jQuery("span[data-table=user_grp]").text() == "" ) {
+  alert("Es wurde keine Benutzergruppe vergeben.\n\nBitte vor dem Speichern definieren!")
+  return false;
+ } else if( jQuery("span[data-table=user]").length && jQuery("span[data-table=user]").text() == "" ) {
+  alert("Es wurde kein Eigent¸mer dieses Angebots angegeben.\n\nBitte vor dem Speichern definieren!")
+  return false;
+ } else {
+  return true;
+ }
+ 
+}
+/* ********************************************************** */
 
 });

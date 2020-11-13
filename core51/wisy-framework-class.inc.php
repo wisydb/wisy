@@ -145,6 +145,14 @@ class WISY_FRAMEWORK_CLASS
 		if($this->simplified)
 		{
 			$this->filterer =& createWisyObject('WISY_FILTER_CLASS', $this);
+			
+			// Todo: better solution?
+			// This makes sure that a q parameter that is set by a google link and encoded in UTF-8 (like T%C3%B6pfern) is convertet to ISO-8859-15 for search
+			// While this also converts non-Umlaaut-strings as well, like "deutsch", that doesn't matter
+			// results: "deutsch" (= ASCII) => ISO = 1, UTF-8 = 1 // Töpfern => ISO = 1, UTF-8 = 0 // Tπpfern = ISO = 1, UTF-8 =  1
+			if((strpos($_SERVER["HTTP_REFERER"], "google.") !== FALSE) && trim($this->getParam('q', '')) != "" && mb_check_encoding(rawurldecode($this->getParam('q', '')), "ISO-8859-15") && mb_check_encoding(rawurldecode($this->getParam('q', '')), "UTF-8")) // deutsch oder T%C3%B6pfern, nicht (wie es korrekt w√§re ):T%F6pfern (ISO-8859)
+			    $this->Q = utf8_decode($this->Q);
+			
 			$this->tokens = $searcher->tokenize($this->Q);
 		}
 		else
@@ -830,7 +838,7 @@ class WISY_FRAMEWORK_CLASS
 	{
 		return $this->editSessionStarted? intval($_SESSION['loggedInAnbieterId']) : -1;
 				// nicht "0" zurueckgeben, da es kurse gibt, die "0" als anbieter haben;
-				// ein Vergleich mit kursId==getEditAnbieterId() würde dann eine unerwartete Uebereinstimmung bringen ...
+				// ein Vergleich mit kursId==getEditAnbieterId() wuerde dann eine unerwartete Uebereinstimmung bringen ...
 	}
 	
 
@@ -1734,10 +1742,19 @@ class WISY_FRAMEWORK_CLASS
 								setCookieSafely(cname, "allow", { expires:'.$cookieOptions['cookie']['expiryDays'].'});';
 							
 							// if not autoload: load homepage, with analytics set in order to count this page view AFTER settings saved. If autoload in use, this page view was already counted
+							// Cookie check not working b/c matomo opt-out = 3rd party, but: also nor necessary b/c already respected by matomo script
+							// & track here only executed once upon save with explicit consent, other pages: no - until de-selected { && '.boolval( !isset($_COOKIE['piwik_ignore']) ).' }
 							if(!$this->iniRead("cookiebanner.zustimmung.analytics.autoload", 0)) {
-								$ret .= '
+							    $ret .= '
 										if(cname == "cconsent_analytics") {
-											jQuery.ajax({ url: window.location.href, dataType: \'html\'}); // call same page with analytics allowed, since now allowed to count this page view // dataType html makes sure scripts are loaded
+											/* Calling analystics url by calling script in script-tag. Calling via ajax() would not execute script withou eval. */
+							        
+											if( jQuery("#ga_script").length )
+												eval(jQuery("#ga_script").text());
+							        
+											if( jQuery("#matomo_script").length )
+												embedMatomoTracking();
+							        
 										}';
 							}
 							
@@ -1762,13 +1779,14 @@ class WISY_FRAMEWORK_CLASS
 			    
 			</script>'."\n"; // end initialization of cookie consent window
 			
-			// count first visit / page view without interaction
-			if( $this->iniRead("cookiebanner.zustimmung.analytics.essentiell", 0) &&  $this->iniRead("cookiebanner.zustimmung.analytics.autoload", 0) && !isset($_COOKIE['cookieconsent_status']) ) {
-			    $ret .= '<script>';
-			    $ret .= 'setCookieSafely("cconsent_analytics", "allow", { expires:'.$cookieOptions['cookie']['expiryDays'].' });'." \n";
-			    $ret .= 'jQuery.ajax({ url: window.location.href, dataType: \'html\'});'." \n"; // call same page with analytics allowed to count this page view
-			    $ret .= '</script>';
-			}
+			// already set by script block
+			/* // count first visit / page view without interaction
+			if( $this->iniRead("cookiebanner.zustimmung.analytics.essentiell", 0) && $this->iniRead("cookiebanner.zustimmung.analytics.autoload", 0) && !isset($_COOKIE['cookieconsent_status']) ) {
+			 $ret .= '<script>';
+			 $ret .= 'setCookieSafely("cconsent_analytics", "allow", { expires:'.$cookieOptions['cookie']['expiryDays'].' });'." \n";
+			 $ret .= 'jQuery.ajax({ url: window.location.href, dataType: \'html\'});'." \n"; // call same page with analytics allowed to count this page view
+			 $ret .= '</script>';
+			} */
 		}
 		
 		
@@ -2055,10 +2073,24 @@ class WISY_FRAMEWORK_CLASS
 		if( $uacct != '' )
 		{
 			$ret .= '
-				<script>
+				<script id="ga_script">
 				'.($this->detailed_cookie_settings_analytics ? 'var optedOut = (jQuery.cookie("cconsent_analytics") != "allow");' : ' var optedOut = (document.cookie.indexOf("cookieconsent_status=deny") > -1);').'
 				
-				if (!optedOut) {					
+				
+				var gaProperty = "' . $uacct . '";
+				var disableStr = "ga-disable-" + gaProperty;
+				// Set Optout-Array if opt-out cookie already set
+				if (document.cookie.indexOf(disableStr + "=true") > -1) {
+						window[disableStr] = true;
+				}
+
+				// Opt-out funtion sets cookie + and opt-out-array
+				function gaOptout() {
+					document.cookie = disableStr + "=true; expires=Thu, 31 Dec 2099 23:59:59 UTC; path=/";
+					window[disableStr] = true;					
+				}
+
+				if (!optedOut) {				
 					(function(i,s,o,g,r,a,m){i["GoogleAnalyticsObject"]=r;i[r]=i[r]||function(){ 
 						(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o), 
 						m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m) 
@@ -2088,23 +2120,46 @@ class WISY_FRAMEWORK_CLASS
 				$piwik_id = $piwik;
 			}
 			
-			$ret .= "<!-- Matomo -->
+			$ret .= "
+				<!-- Matomo -->
 				<!-- analytics.piwik -->
-				<script type=\"text/javascript\">
+				<script type=\"text/javascript\" id=\"matomo_script\">
 						var _paq = window._paq || [];
 						_paq.push(['trackPageView']);
 						_paq.push(['enableLinkTracking']);
-						(function() {
+			    
+						function embedMatomoTracking() {
 								var u=\"//".$piwik_site."/\";
 								_paq.push(['setTrackerUrl', u+'matomo.php']);
 								_paq.push(['setSiteId', ".$piwik_id."]);
 								var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
 								g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
-						})();
+						};
+								    
+						/* console.log('".($_COOKIE['cconsent_analytics'] != 'allow')."'); */
 				</script>
 				<!-- /analytics.piwik -->
-				<!-- End Matomo Code -->";
+				<!-- End Matomo Code -->
+				";
 		}
+		
+		$do_track_matomo = ( $piwik && $this->detailed_cookie_settings_analytics && $_COOKIE['cconsent_analytics'] == 'allow' ) || ( $piwik && $this->detailed_cookie_settings_analytics && $this->iniRead("cookiebanner.zustimmung.analytics.autoload", 0) );
+		
+		// Load if piwik defined and cookie consent allow OR piwik defined and autoload
+		// Cannot check for !isset($_COOKIE['piwik_ignore'] b/c thrd.party cookie statistik..., but not necessary either, b/c cookie resepekted by matomoscript
+		// Alternative https://developer.matomo.org/guides/tracking-javascript-guide#optional-creating-a-custom-opt-out-form
+		if( $do_track_matomo ) {
+		    $ret .= "
+				<!-- Execute Matomo Tracking-->
+				<script type=\"text/javascript\">
+					setTimeout(function () {
+							embedMatomoTracking();
+					}, 5);
+				</script>
+				";
+		    
+		}
+		
 		return $ret;
 	}
 	
@@ -2228,19 +2283,38 @@ class WISY_FRAMEWORK_CLASS
 		if($this->simplified)
 		{
 		    // #richtext
-		    $qs = $this->QS;
-		    echo '<input '.$queryinput.' type="text" id="wisy_searchinput" class="' . $autocomplete_class . '" name="qs" value="' .$qs. '" placeholder="' . $searchinput_placeholder . '" data-onemptyvalue="' . $this->iniRead('search.emptyvalue', '') . '"/>' . "\n";
-		    echo '<input type="hidden" id="wisy_searchinput_q" name="q" value="' . $this->Q . '" />' . "\n";
-		    echo '<input type="hidden" id="wisy_searchinput_qf" name="qf" value="' . $this->QF . '" />' . "\n";
-		    if( isset($tokens['show']) && $tokens['show'] == 'anbieter' ) {
-		        echo '<input type="hidden" name="filter_zeige" value="Anbieter" />';
-		    }
-		    $active_filters = $this->filterer->getActiveFilters();
-		    $hintwithfilters = $this->iniRead('searcharea.hintwithfilters', 0);
-		    if($active_filters == '' || $hintwithfilters) {
-		        $hint = ($hintwithfilters && $active_filters) ? $hintwithfilters : ($hint =="") ? $this->replacePlaceholders($this->iniRead('searcharea.hint', $DEFAULT_BOTTOM_HINT)) : $hint;
-		        echo '<div class="wisy_searchhints">' .  $hint . '</div>' . "\n";
-		    }
+		    // Todo: better solution?
+		    // This makes sure that a q parameter that is set by a google link and encoded in UTF-8 (like T%C3%B6pfern) is convertet to ISO-8859-15 for search
+		    // While this also converts non-Umlaaut-strings as well, like "deutsch", that doesn't matter
+		    // results: "deutsch" (= ASCII) => ISO = 1, UTF-8 = 1 // Töpfern => ISO = 1, UTF-8 = 0 // Tπpfern = ISO = 1, UTF-8 =  1
+		    if((strpos($_SERVER["HTTP_REFERER"], "google.") !== FALSE) && trim($this->getParam('q', '')) != "" && mb_check_encoding(rawurldecode($this->getParam('q', '')), "ISO-8859-15") && mb_check_encoding(rawurldecode($this->getParam('q', '')), "UTF-8")) // deutsch oder T%C3%B6pfern, nicht (wie es korrekt w√§re ):T%F6pfern (ISO-8859)
+		        $this->QS = utf8_decode($this->QS);
+		        
+		        $qs = $this->QS;
+		        echo '<input '.$queryinput.' type="text" id="wisy_searchinput" class="' . $autocomplete_class . '" name="qs" value="' .$qs. '" placeholder="' . $searchinput_placeholder . '" data-onemptyvalue="' . $this->iniRead('search.emptyvalue', '') . '"/>' . "\n";
+		        echo '<input type="hidden" id="wisy_searchinput_q" name="q" value="' . $this->Q . '" />' . "\n";
+		        echo '<input type="hidden" id="wisy_searchinput_qf" name="qf" value="' . $this->QF . '" />' . "\n";
+		        
+		        // if(isset($_GET['qtrigger']))
+		        //    echo '<input type="hidden" id="qtrigger" name="qtrigger" value="' . $_GET['qtrigger'] . '" />' . "\n";
+		        
+		        // if(isset($_GET['force']))
+		        //    echo '<input type="hidden" id="force" name="force" value="' . $_GET['force'] . '" />' . "\n";
+		        
+		        if( isset($tokens['show']) && $tokens['show'] == 'anbieter' ) {
+		            echo '<input type="hidden" name="filter_zeige" value="Anbieter" />';
+		        }
+		        $active_filters = $this->filterer->getActiveFilters();
+		        $hintwithfilters = $this->iniRead('searcharea.hintwithfilters', 0);
+		        if($active_filters == '' || $hintwithfilters) {
+		            $hint = ($hintwithfilters && $active_filters) ? $hintwithfilters : ($hint =="") ? $this->replacePlaceholders($this->iniRead('searcharea.hint', $DEFAULT_BOTTOM_HINT)) : $hint;
+		            echo '<div class="wisy_searchhints">' .  $hint;
+		            
+		            if($_GET['anbieterRedirect'] == 1)
+		                echo "<br><br><b>Ihre Suche hat zu genau 1 Anbieter-Datensatz gef&uuml;hrt:</b>";
+		                
+		                echo "</div>\n";
+		        }
 		}
 		else
 		{

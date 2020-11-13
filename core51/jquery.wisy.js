@@ -211,7 +211,7 @@ function fav_click(jsObj, id)
 }
 function fav_delete_all()
 {
-	if( !confirm('Gesamte Merkliste l'+oe'schen?') )
+	if( !confirm('Gesamte Merkliste l'+oe+'schen?') )
 		return false;
 	
 	g_all_fav = {};
@@ -659,24 +659,35 @@ if (jQuery.ui)
  * advanced search stuff
  *****************************************************************************/
 
-//Prevent empty search (<2 chars): on hompage: output message, on other page: search for all courses
+//prevent empty search (< 2 chars): on hompage: output message, on other page: search for all courses
 function preventEmptySearch(homepage) {
+ 
   // only if no other submit event is attached to search submit button:
-	if($._data( $("#wisy_searcharea form[action=search]")[0], "events" )['submit'].length < 2) {
-   
+  if( Array.isArray($("#wisy_searcharea form[action=search]")) && typeof $._data( $("#wisy_searcharea form[action=search]")[0], "events" ) == 'undefined' ) {
+    
    $('#wisy_searcharea form[action=search]').on('submit', function(e) {
     e.preventDefault();
     var len = $('#wisy_searchinput').val().length;
+    var emptyvalue = $('#wisy_searchinput').data('onemptyvalue');
     
        if ($(location).attr('pathname') == homepage) {
             if (len > 1) {
                    this.submit(); // default: normal search
                } else {
-                alert('Bitte geben Sie einen Suchbegriff an (mindesten 2 Buchstaben)');
+                if( emptyvalue != '' ) {
+                   $('#wisy_searchinput').val(emptyvalue);
+                   this.submit();
+                } else {
+                  alert('Bitte geben Sie einen Suchbegriff an (mindesten 2 Buchstaben)');
+                }
             }
        } else {
-           if(len < 2)
-            $('#wisy_searchinput').val("zeige:kurse");
+           if(len < 2) {
+            if( emptyvalue != '' )
+             $('#wisy_searchinput').val(emptyvalue);
+            else
+             $('#wisy_searchinput').val("zeige:kurse");
+           }
            
            // default: normal search on other than homepage
            this.submit();
@@ -1218,6 +1229,17 @@ $().ready(function()
 	       $(this).closest("form").submit();
 	   }
 	  });
+	  
+	  $(".wisyr_filtergroup .filter_submit").click(function(event){
+		   if (event.originalEvent === undefined) {
+		    /* robot: console.log(event); */
+		   } else {
+		       event.preventDefault();
+		       $(this).before("<input type=hidden id=qsrc name=qsrc value=s>");
+		       $(this).before("<input type=hidden id=qtrigger name=qtrigger value=h>");
+		       $(this).closest("form").submit();
+		   }
+	   });
 	 }
 	
 	// Human triggered search, propagate to filter form + pagination

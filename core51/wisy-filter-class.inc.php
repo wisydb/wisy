@@ -241,7 +241,7 @@ class WISY_FILTER_CLASS
 		}
 		
 		$zertifikate = $this->getSpezielleStichw(65536);
-		if( sizeof($zertifikate) > 1 )
+		if( sizeof((array) $zertifikate) > 1 )
 		{
 		    $this->presets['zertifikat'] = array
 		    (
@@ -523,7 +523,7 @@ class WISY_FILTER_CLASS
 			}
 		}
 		
-		// Sonderfall Preisspanne. TODO db: Über Presets umsetzen?
+		// Sonderfall Preisspanne. TODO db: Ueber Presets umsetzen?
 		$filter_preis = trim($this->implodeArray($_GET['filter_preis']));
 		$filter_preis_von = trim($this->implodeArray($_GET['filter_preis_von']));
 		$filter_preis_bis = trim($this->implodeArray($_GET['filter_preis_bis']));

@@ -979,10 +979,12 @@ class WISY_EDIT_RENDERER_CLASS
 			if( $posted == 'Ort' ) $posted = '';
 			$kurs['durchf'][$i]['ort'] = $posted;
 
-			if( ($kurs['durchf'][$i]['strasse'].','.$kurs['durchf'][$i]['plz'].','.$kurs['durchf'][$i]['ort']) == $_POST['stadtteil_for'][$i] )
-				$kurs['durchf'][$i]['stadtteil'] = $_POST['stadtteil'][$i];
-			else
-				$kurs['durchf'][$i]['stadtteil'] = '';
+			if( ($kurs['durchf'][$i]['strasse'].','.$kurs['durchf'][$i]['plz'].','.$kurs['durchf'][$i]['ort']) == $_POST['stadtteil_for'][$i] ) {
+			    $kurs['durchf'][$i]['stadtteil'] = $_POST['stadtteil'][$i];
+			}
+			else {
+			    $kurs['durchf'][$i]['stadtteil'] = '';
+			}
 			
 			$kurs['durchf'][$i]['bemerkungen'] 		=  $_POST['bemerkungen'][$i]		;
 			
@@ -1588,11 +1590,10 @@ class WISY_EDIT_RENDERER_CLASS
 		// see what to do ...
 		if( intval($_GET['deletekurs']) == 1 )
 		{
-			// ... "Delete" hit - maybe this is a subsequent call, but not necessarily
-			$this->deleteKurs($kursId__);
-			header('Location: ' . $this->bwd);
-			// $db->close();
-			exit();
+		    // ... "Delete" hit - maybe this is a subsequent call, but not necessarily
+		    $this->deleteKurs($kursId__);
+		    header('Location: ' . $this->bwd.(strpos($this->bwd,'?')===false?'?':'&') . 'deleted='.date("Y-m-d-H-i-s") );
+		    exit();
 		}
 		else if( $_POST['subseq'] == 1 && isset($_POST['cancel']) )
 		{
@@ -1625,7 +1626,7 @@ class WISY_EDIT_RENDERER_CLASS
 				$msg .= ($temp? '<br /><br />' : '') . $temp;
 				
 				setcookie('editmsg', $msg);
-				header('Location: ' . $this->bwd);
+				header('Location: '.$this->framework->getUrl('k', array('id'=>$kurs['id'])));
 				// $db->close();
 				exit();
 			}
@@ -1763,7 +1764,7 @@ class WISY_EDIT_RENDERER_CLASS
 							echo "<div class=\"editFoerderungDiv\" $styleFoerderung>";
 								echo '<table cellpadding="0" cellspacing="2" border="0">';
 									echo '<tr><td>Bildungsurlaubs-Nr.:</td><td><input type="text" name="bu_nummer" value="'.htmlspecialchars($kurs['bu_nummer']).'" /> <small>(N&ouml;tig zur Anzeige als Bildungsurlaub/Freistellung)</small></td></tr>';
-									echo '<tr><td>AZAV-Nr.:</td><td><input type="text" name="azwv_knr" value="'.htmlspecialchars($kurs['azwv_knr']).'" />  <small>(N&ouml;tig zur Suche nach Bildungsgutschein)</small></td></tr>';
+									echo '<tr><td>AZAV-Zertifikatsnr.:</td><td><input type="text" name="azwv_knr" value="'.htmlspecialchars($kurs['azwv_knr']).'" />  <small>(N&ouml;tig zur Suche nach Bildungs- oder Aktivierungsgutschein )</small></td></tr>';
 									if( $foerderungsOptionen != '' )
 									{
 									    echo '<tr><td>sonstige F&ouml;rderung:</td><td>';
@@ -1862,17 +1863,6 @@ class WISY_EDIT_RENDERER_CLASS
     					    $this->controlText('msgtooperator', $kurs['msgtooperator'], 40, 200, '', '');
     					    echo '</label> &nbsp; <a href="' .$this->framework->getHelpUrl(4100). '" class="wisy_help" target="_blank" title="Hilfe">i</a> <br />&nbsp;';
     					    echo '</td>';
-					    echo '</tr>';
-					}
-					
-					// STICHWORTVORSCHLAEGE
-					if( $_GET['test'] == 'elearning' )
-					{
-					    echo '<tr>';
-					    echo '<td width="10%" valign="top" nowrap="nowrap"><strong>Ist dieser Unterricht in Corona-Zeiten<br>auch als Online-Unterricht verf&uuml;gbar?</strong>&nbsp;&nbsp;<br><br></td>';
-					    echo '<td style="vertical-align:top;">';
-					    $this->controlText('msgtooperator', $kurs['msgtooperator'], 40, 200, '', '');
-					    echo '</td>';
 					    echo '</tr>';
 					}
 					

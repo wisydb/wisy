@@ -34,7 +34,7 @@ class WISY_DUMP_RENDERER_CLASS
 	            $date_modified = $db->f('date_modified');
 	            
 	            header("Content-type: text/css");
-	            header('Expires: '.gmdate('D, d M Y H:i:s \G\M\T', time() + (60 * 60 * 24 * 30))); // 1 month // headerDoCache();
+	            header('Expires: '.gmdate('D, d M Y H:i:s \G\M\T', time() + (60 * 60 * 24))); // 1 day // headerDoCache();
 	            header('Last-Modified: '.gmdate('D, d M Y H:i:s \G\M\T', strtotime($date_modified)));
 	            
 	            // ! reactivate when population of css_gz is explained
@@ -63,7 +63,7 @@ class WISY_DUMP_RENDERER_CLASS
 	            $date_modified = $db->f('date_modified');
 	            
 	            header("Content-type: text/css");
-	            header('Expires: '.gmdate('D, d M Y H:i:s \G\M\T', time() + (60 * 60 * 24 * 30))); // 1 month // headerDoCache();
+	            header('Expires: '.gmdate('D, d M Y H:i:s \G\M\T', time() + (60 * 60 * 24))); // 1 day // headerDoCache();
 	            header('Last-Modified: '.gmdate('D, d M Y H:i:s \G\M\T', strtotime($date_modified)));
 	            
 	            if($gzip && trim($css_gz) != "") {

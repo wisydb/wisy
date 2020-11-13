@@ -377,7 +377,6 @@ class WISY_SEARCH_CLASS
 				
 				case 'nr':
 					// search for durchfuehrungsnummer
-					$nrSearcher = createWisyObject('WISY_SEARCH_NR_CLASS', $this->framework);
 					$ids = $nrSearcher->nr2id($value);
 					$this->rawCanCache = false; // no caching as we have different results for login/no login
 					$this->rawWhere .= $this->rawWhere? ' AND ' : ' WHERE ';
@@ -1053,7 +1052,9 @@ class WISY_SEARCH_CLASS
 	}
 	
 	
-	// Search for a (Durchfuehrungs)-Nr, return offer ID(s)
+	/*	***************************************************** *
+	Search for a (Durchfuehrungs)-Nr, return offer ID(s)
+	* ***************************************************** */
 	public function nr2id($nr)
 	{
 	    $nr = trim($nr);
@@ -1094,7 +1095,9 @@ class WISY_SEARCH_CLASS
 	}
 	
 
-	// Search for a offer by provider ids from provaider tag id, return offer ID(s)
+	/*	******************************************************************************* *
+	 Search for a offer by provider ids from provaider tag id, return offer ID(s)
+	 * ******************************************************************************* */
 	public function anbieter_tag2k_ids($a_sw_id)
 	{
 	    $a_sw_id = trim($a_sw_id);

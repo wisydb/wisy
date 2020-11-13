@@ -111,7 +111,11 @@ class WISY_GLOSSAR_RENDERER_CLASS
         echo $this->framework->getLinkList('help.link', ' &middot; ');
         echo '</p>';
         echo '<h1 class="wisyr_glossartitel">' . htmlspecialchars($this->framework->encode_windows_chars($glossar['begriff'])) . '</h1>';
-        flush();
+        
+        if( $readsp_embedurl = $this->framework->iniRead('readsp.embedurl', false) )
+            echo '<div id="readspeaker_button1" class="rs_skip rsbtn rs_preserve"> <a rel="nofollow" class="rsbtn_play" accesskey="L" title="Um den Text anzuh&ouml;ren, verwenden Sie bitte ReadSpeaker webReader" href="'.$readsp_embedurl.'"><span class="rsbtn_left rsimg rspart"><span class="rsbtn_text"> <span>Vorlesen</span></span></span> <span class="rsbtn_right rsimg rsplay rspart"></span> </a> </div>';
+            
+            flush();
         
         // render entry
         echo '<section class="wisyr_glossar_infos clearfix">';

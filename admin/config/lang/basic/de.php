@@ -15,7 +15,7 @@ define('_INDEX_PLUGIN_ANBIETER_2',     "Rundschreiben via Kunden - E-Mail");
 define('_INDEX_PLUGIN_GLOSSAR_0',      "MultiEdit");
 define('_INDEX_PLUGIN_KURSE_0',        "MultiEdit");
 define('_INDEX_PLUGIN_KURSE_1',        "Adr.Probleme (Umkr.Suche)");
-define('_INDEX_PLUGIN_KURSE_2',        "Paralleldurchführungen im gleichen Kurs");
+define('_INDEX_PLUGIN_KURSE_2',        "Paralleldurchf&uuml;hrungen im gleichen Kurs");
 define('_INDEX_PLUGIN_STICHWOERTER_0', "MultiEdit");
 define('_INDEX_PLUGIN_STICHWOERTER_1', "Baum");
 define('_PRINT_ANBIETER_DETAILS',      "Detailansicht wie im Portal");
