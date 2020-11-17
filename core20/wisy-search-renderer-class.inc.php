@@ -587,7 +587,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			echo '<div class="wisy_suggestions">';
 				if( $info['changed_query'] )
 				{
-					echo '<b>Hinweis:</b> Der Suchauftrag wurde abge&auml;dert in <i><a href="'.$this->framework->getUrl('search', array('q'=>$info['changed_query'])).'">'.isohtmlspecialchars($info['changed_query']).'</a></i>';
+					echo '<b>Hinweis:</b> Der Suchauftrag wurde abge&auml;ndert in <i><a href="'.$this->framework->getUrl('search', array('q'=>$info['changed_query'])).'">'.isohtmlspecialchars($info['changed_query']).'</a></i>';
 					if( sizeof((array) $info['suggestions']) )
 						echo ' &ndash; ';
 				}
@@ -834,7 +834,7 @@ class WISY_SEARCH_RENDERER_CLASS
 				<script type="text/javascript">
 			        var defaultZIP="PLZ";
 			        var defaultCity="Ort";
-			        var defaultKeywords = "Suchw�rter eingeben";
+			        var defaultKeywords = "Suchwoerter eingeben";
 
 			        function IWWBonFocusTextField(field,defaultValue){
 			                if (field.value==defaultValue) field.value="";
@@ -844,7 +844,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			        }
 			        function IWWBsearch(button) {
 			            if (button.form.feldinhalt1.value == defaultKeywords) {
-			                        alert("Bitte geben Sie Ihre Suchw366rter ein!");
+			                        alert("Bitte geben Sie Ihre Suchwoerter ein!");
 			                } else {
 			                        if ((typeof button.form.feldinhalt2=="object") && button.form.feldinhalt2.value == defaultZIP) button
 			.form.feldinhalt2.value="";
@@ -1001,7 +1001,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		}
 		else /* if( sqlCount ) */
 		{
-			echo '<p class="wisy_topnote">Keine Datens�tze f�r <em>&quot;'.isohtmlspecialchars(trim($queryString, ', ')).'&quot;</em> gefunden.</p>' . "\n";
+			echo '<p class="wisy_topnote">Keine Datens&auml;tze f&uuml;r <em>&quot;'.isohtmlspecialchars(trim($queryString, ', ')).'&quot;</em> gefunden.</p>' . "\n";
 		}
 	}
 	
@@ -1098,7 +1098,7 @@ class WISY_SEARCH_RENDERER_CLASS
 						break;
 				
 					case 'missing_fulltext':
-						echo '<p class="wisy_topnote">Bitte geben Sie die zu suchenden Volltextw�rter hinter <em>Volltext:</em> an.</p>' . "\n";
+						echo '<p class="wisy_topnote">Bitte geben Sie die zu suchenden Volltextw&ouml;rter hinter <em>Volltext:</em> an.</p>' . "\n";
 						break;
 				
 					case 'bad_location':
