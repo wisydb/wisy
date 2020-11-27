@@ -2048,6 +2048,9 @@ class WISY_FRAMEWORK_CLASS
 			case 'sync':
 				return createWisyObject('WISY_SYNC_RENDERER_CLASS', $this);
 			
+			case 'menucheck':
+				return createWisyObject('WISY_MENUCHECK_CLASS', $this);
+			
 			case 'autosuggest':
 				return createWisyObject('WISY_AUTOSUGGEST_RENDERER_CLASS', $this);
 
