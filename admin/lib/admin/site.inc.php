@@ -96,6 +96,9 @@ class ADMIN_SITE_CLASS
 				for( $i = 0; $i < sizeof((array) $this->scripts); $i++ ) {
 					echo $this->scripts[$i] . "\n";
 				}
+			
+			if(defined('PAGE_CUSTOM_HEADITEMS'))
+			    echo PAGE_CUSTOM_HEADITEMS;
 				
 			echo "</head>\n\n";
 			

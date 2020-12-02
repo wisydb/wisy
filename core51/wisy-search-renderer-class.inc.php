@@ -1012,15 +1012,29 @@ class WISY_SEARCH_RENDERER_CLASS
 	                 }
 	                 else
 	                 {
-	                     echo ' <span class="wisyr_angebote_suchauftrag">"' . htmlspecialchars((trim($queryString, ', '))) . '"</span>';
+	                     echo ' <span class="wisyr_angebote_suchauftrag">"' . htmlentities((trim(html_entity_decode($queryString), ', '))) . '"</span>';	// htmlspecialchars
 	                 }
 	                 
 	                 $double_tags = $searcher->getDoubleTags();
+	                 $tags_heap = (array) $searcher->getTagHeap();
 	                 if(is_array($double_tags) && count($double_tags) > 0) {
-	                     echo '<br><br><span style="color:darkred; font-size: 0.8em;" class="double_tags">Achtung: Die Suche wurde abge&auml;ndert, weil Begriffe doppelt vorkamen. Am besten so spezifisch wie m&ouml;glich suchen.<br><br>Entfernt wurde/n: ';
+	                     echo '<br><br><span class="redundant_tags">Hinweis: Die Suche wurde abge&auml;ndert, weil redundante Begriffe vorkamen:<br>';
 	                     foreach($double_tags AS $double_tag) {
-	                         echo '<br>"'.$double_tag.'" ';
+	                         echo $double_tag.'<br>';
 	                     }
+	                     echo "</span>";
+	                     
+	                     global $wisyPortalId;
+	                     if (($key = array_search(".portal".$wisyPortalId, $tags_heap)) !== false) { unset($tags_heap[$key]); } // remove portal identifying tag
+	                     $tags_heap = array_map(function($tag){ $tag = strtolower($tag); $tag = ucfirst($tag); return $tag; }, $tags_heap); // format string
+	                     $tag_heap_str = implode(" &bull; ", $tags_heap);
+	                     $tag_heap_str = preg_replace('/&bull$/', '', $tag_heap_str);
+	                     
+	                     echo '<span class="redundant_tags" id="actual_searchtags">Ber&uuml;cksichtigte Suchbegriffe: '.$tag_heap_str.'</span>';
+	                 }
+	                 
+	                 if( $assumedLocation = $searcher->getAssumedLocation() ) {
+	                     echo '<br><br><span class="changed_ort">Ort verstanden als: '.$assumedLocation.'<br>';
 	                     echo "</span>";
 	                 }
 	                 

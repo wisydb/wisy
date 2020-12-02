@@ -12,6 +12,7 @@ Portals Main Entry Point
 
 *******************************************************************************/
 
+header('Referrer-Policy: origin-when-cross-origin');
 header('X-Powered-By: Software');
 
 define('IN_WISY', true);

@@ -34,6 +34,8 @@ Achtung: Leere Anfragen oder Leere Ergebnismengen sind _keine_ Fehler!
 
 *******************************************************************************/
 
+require_once('admin/config/codes.inc.php');
+
 class WISY_SEARCH_CLASS
 {
 	// all private!
@@ -51,6 +53,8 @@ class WISY_SEARCH_CLASS
 	var $rawJoin;
 	var $rawWhere;
 	var $fulltext_select;
+	var $assumedLocation;
+	var $globalTagHeap;
 	
 	private $rawCanCache;
 	
@@ -65,6 +69,8 @@ class WISY_SEARCH_CLASS
 		
 		$this->error		= false;
 		$this->secneeded	= 0;
+		
+		$this->checked_reftag = array();
 	}
 	
 
@@ -72,63 +78,303 @@ class WISY_SEARCH_CLASS
 	 * performing a search
 	 **************************************************************************/
 
-	function isRedundantSearchTag($q_tag, $tag_heap) {
+	/* ********************* *
+	 * handle redundant tags *
+	 * ********************* */
+	
+	function findSiblingTags($type, $tag_orig_id, $tag_heap, $max_levels, $cnt_levels = 1) {
 	    
-	    $sql = "SELECT id FROM stichwoerter WHERE stichwort='".addslashes($q_tag)."';";
-	    
-	    $this->db->query($sql);
-	    if( $this->db->next_record() )
-	        $tag_orig_id = intval($this->db->f('id'));
-	        $this->db->free();
+	    // this function called recursively, increasing level up/down with each call until max_levels reached
+	    if($cnt_levels >= $max_levels)
+	        return false;
 	        
-	        // tag is used at lest twice in query ?
-	        if(in_array(strtolower(trim($q_tag)), array_map('strtolower', $tag_heap))) {
-	            array_push($this->double_tags, $q_tag." (Grund: Wort mehrfach vorhanden)");
-	            return true;
+	        $ref_tags = array();
+	        $this->framework->loadDerivedTags($this->db, $tag_orig_id, $ref_tags, ($type == "descendant" ? "Unterbegriffe" : "Oberbegriffe") );
+	        
+	        foreach($ref_tags AS &$ref_tag) { // &$ref_tag b/c pushing synonyms to $ref_tags in loop to have effect
+	            if(in_array(strtolower(trim($ref_tag)), array_map('strtolower', $tag_heap)))
+	                return array("found" => $type, "tag" => $ref_tag);
+	                
+	                $result = $this->db->query("SELECT id FROM stichwoerter WHERE stichwort='".addslashes($ref_tag)."'");
+	                while($this->db->next_record()) {
+	                    $ref_tagID = $this->db->f('id');
+	                    $synonym_tags = array();
+	                    $this->framework->loadDerivedTags($this->db, $ref_tagID, $synonym_tags, "Synonyme"); // also hidden synonyms! just checks if mapped to other tag
+	                    foreach($synonym_tags AS $sibling) { // foreach synonym
+	                        if( !in_array($sibling, $this->checked_reftag) ) {
+	                            array_push($ref_tags, $sibling); // check siblings of this level (and their ancestors/descendants) after looping through regular tags of this level
+	                            array_push($this->checked_reftag, $sibling);
+	                        }
+	                    }
+	                    
+	                    if( $found = $this->findSiblingTags($type, $ref_tagID, $tag_heap, $max_levels, $cnt_levels+1) )
+	                        return $found; // enough if one of the descendant matches
+	                        else
+	                            ; // continue with next descendant of this level (of foreach)
+	                }
 	        }
 	        
-	        if($tag_orig_id) {
-	            $distinct_tags = array();
-	            $this->framework->loadDerivedTags($this->db, $tag_orig_id, $distinct_tags, "Oberbegriffe");
-	            foreach($distinct_tags AS $ancestor) {
-	                if(in_array(strtolower(trim($ancestor)), array_map('strtolower', $tag_heap))) {
-	                    array_push($this->double_tags, $ancestor." (Grund: Oberbegriff von ".$q_tag.")");
-	                    return true;
-	                }
-	            }
-	            
-	            $distinct_tags = array();
-	            $this->framework->loadDerivedTags($this->db, $tag_orig_id, $distinct_tags, "Unterbegriffe");
-	            foreach($distinct_tags AS $descendant) {
-	                if(in_array(strtolower(trim($descendant)), array_map('strtolower', $tag_heap))) {
-	                    array_push($this->double_tags, $descendant." (Grund: Unterbegriff von ".$q_tag.")");
-	                    return true;
-	                }
-	            }
-	            
-	            $distinct_tags = array();
-	            // also hidden synonyms! just checks if mapped to other tag
-	            $this->framework->loadDerivedTags($this->db, $tag_orig_id, $distinct_tags, "Synonyme");
-	            foreach($distinct_tags AS $synonym) {
-	                if(in_array(strtolower(trim($synonym)), array_map('strtolower', $tag_heap))) {
-	                    array_push($this->double_tags, $synonym.'" (Grund: Synonym zu '.$q_tag.')');
-	                    return true;
-	                }
-	            }
-	        }
-	        
+	        // no descendant found on 1st level
 	        return false;
 	}
 	
+	
+	function findSynonyms($tag_orig_id, $tag_heap, $q_tag = "") {
+	    $ref_tags = array();
+	    $this->framework->loadDerivedTags($this->db, $tag_orig_id, $ref_tags, "Synonyme"); // also hidden synonyms! just checks if mapped to other tag
+	    $result = $this->db->query("SELECT eigenschaften FROM stichwoerter WHERE id=".intval($tag_orig_id)); // determine wether open or hidden
+	    
+	    if($this->db->next_record()) {
+	        $tag_type = $this->db->f('eigenschaften');
+	        foreach($ref_tags AS $sibling) { // foreach synonym
+	            if(in_array(strtolower(trim($sibling)), array_map('strtolower', $tag_heap))) {
+	                return array("found" => "synonym", "tag_type_current_q" => $tag_type, "tag" => ($tag_type == (64 || 32)) ?  $sibling : $q_tag, "synonym" => ($tag_type == (64 || 32)) ? $q_tag : $sibling );
+	            }
+	        }
+	    }
+	    
+	    return false;
+	}
+	
+	function isRedundantSearchTag( $q_tag, $tag_heap, $valid = array(), $max_levels = 4 ) {
+	    
+	    if($q_tag == "" || strpos($q_tag, '.portal') !== FALSE)
+	        return false;
+	        
+	        $sql = "SELECT id FROM stichwoerter WHERE stichwort='".addslashes($q_tag)."';";
+	        
+	        $this->db->query($sql);
+	        if( $this->db->next_record() )
+	            $tag_orig_id = intval($this->db->f('id'));
+	            
+	        if( $tag_orig_id && in_array("ancestor", $valid) && $ancestor = $this->findSiblingTags("ancestor", $tag_orig_id, $tag_heap, $max_levels) )
+	            return $ancestor;
+	                
+	        if( $tag_orig_id && in_array("descendant", $valid) && $descendant = $this->findSiblingTags("descendant", $tag_orig_id, $tag_heap, $max_levels) )
+	            return $descendant;
+	                    
+	        if( $tag_orig_id && in_array("synonyms", $valid) && $synonyms = $this->findSynonyms($tag_orig_id, $tag_heap, $q_tag) )
+	            return $synonyms;
+	                        
+	        // tag used at least twice in query?
+	        if($q_tag != "" && in_array("duplicate", $valid)) {
+	            if(in_array(strtolower(trim($q_tag)), array_map('strtolower', $tag_heap))) {
+	               return array("found" => "duplicate", "tag" => $q_tag);
+	            }
+	        }
+	                        
+	        // no ancestors, descendants, snyonyms or duplicates in tag_heap
+	        return false;
+	}
+	
+	
+	function filterRedundantTags($operator, $tag_heap, $tag, $maxlevels) {
+	    
+	    // Remove redundant search tags from actual query string: ancestors, descendant, synonyms, duplicates
+	    
+	    $continue_redundant = false;
+	    $original = false;
+	    
+	    if($operator == "OR") {
+	        
+	        // duplicates and synonyms
+	        // do this firsst b/c ancestors/descendants are not mapped to synonyms
+	        if( $redundantFound = $this->isRedundantSearchTag($tag, $tag_heap, array("duplicate", "synonyms"), $maxlevels) ) { // Redundant found
+	            if( isset($redundantFound["synonym"]) ) { // only works if both original and synonym in search string
+	                array_push($this->double_tags, "Entfernt wurde: \"<strike>".$redundantFound["synonym"]."</strike>\" - Grund: Synonym zu ".$redundantFound["tag"])."</b>";
+	                if($tag == $redundantFound["synonym"]) // curent q is synonym
+	                    $continue_redundant = true; // => SKIP
+	                    else { // former q contain synonym => keep $subval[$s] = $tag
+	                        if (($key = array_search( strtolower($redundantFound["synonym"]), array_map("strtolower", $tag_heap) )) !== false)
+	                            unset($tag_heap[$key]);
+	                    }
+	            }
+	            else { // duplicate found
+	                array_push($this->double_tags, "1x Entfernt wurde: \"<strike>".$tag."</strike>\" - Grund: Doppeltes Vorkommen");
+	                $continue_redundant = true; // => skip duplicate
+	            }
+	        }
+	        
+	        // ancestors and descendants - continue witch ancestors only in OR-search!
+	        $redundantFound = $this->isRedundantSearchTag($tag, $tag_heap, array("ancestor", "descendant"), $maxlevels);
+	        
+	        // curent value may still be a synonym => descendant/ancestor would not be found => check referenced tag
+	        if(!$redundantFound["found"] == "descendant" && !$redundantFound["found"] == "ancestor") {
+	            
+	            // Look for: 64 = Synonym, 32 = verstecktes Synonym
+	            $sql = "SELECT stichwort FROM stichwoerter WHERE id IN (SELECT stichwoerter_verweis.attr_id AS id "
+	                ."FROM stichwoerter, stichwoerter_verweis WHERE stichwoerter.stichwort = '".addslashes($tag)."' AND stichwoerter.eigenschaften IN (64,32) AND stichwoerter_verweis.primary_id = stichwoerter.id)";
+	                $this->db->query($sql);
+	                while($this->db->next_record()) {
+	                    $redundantFound = $this->isRedundantSearchTag($this->db->f('stichwort'), $tag_heap, array("ancestor", "descendant"), $maxlevels);
+	                }
+	        }
+	        
+	        if($redundantFound["found"] == "descendant") {
+	            if (($key = array_search( strtolower($redundantFound["tag"]), array_map("strtolower", $tag_heap) )) !== false) {  // descendant is second tag
+	                unset($tag_heap[$key]);
+	                
+	                array_push($this->double_tags, "Entfernt wurde: \"<strike>".$redundantFound["tag"]."</strike>\" - Grund: Unterbegriff von \"".$tag."\"");
+	            }
+	        } elseif($redundantFound["found"] == "ancestor") {
+	            if (($key = array_search( strtolower($tag), array_map("strtolower", $tag_heap) )) !== false)
+	                unset($tag_heap[$key]);
+	                
+	                array_push($this->double_tags, "Entfernt wurde: \"<strike>".$tag."</strike>\" - Grund: Unterbegriff von \"".$redundantFound["tag"]."\"");
+	                $continue_redundant = true; // = > skip
+	        }
+	        
+	    } elseif("AND") { // comma
+	        
+	        // duplicates and synonyms
+	        // do this firsst b/c ancestors/descendants are not mapped to synonyms
+	        if( $redundantFound = $this->isRedundantSearchTag($tag, $tag_heap, array("duplicate", "synonyms"), $maxlevels) ) {
+	            if( isset($redundantFound["synonym"]) ) { // only works if both original and synonym in search string
+	                array_push($this->double_tags, "Entfernt wurde: \"<strike>".$redundantFound["synonym"]."</strike>\" - Grund: Synonym zu ".$redundantFound["tag"])."</b>";
+	                if($tag == $redundantFound["synonym"]) { // curent q is synonym
+	                    $continue_redundant = true;
+	                }
+	                else { // former q contain synonym
+	                    if (($key = array_search( strtolower($redundantFound["synonym"]), array_map("strtolower", $tag_heap) )) !== false)
+	                        unset($tag_heap[$key]);
+	                }
+	            }
+	            else {
+	                array_push($this->double_tags, "1x Entfernt wurde: \"<strike>".$tag."</strike>\" - Grund: Doppeltes Vorkommen");
+	                $continue_redundant = true;
+	            }
+	        }
+	        
+	        // ancestors and descendants - continue witch ancestors only in OR-search!
+	        $redundantFound = $this->isRedundantSearchTag($tag, $tag_heap, array("ancestor", "descendant"), $maxlevels);
+	        
+	        // curent value may still be a synonym => descendant/ancestor would not be found => check referenced tag
+	        if(!$redundantFound["found"] == "descendant" && !$redundantFound["found"] == "ancestor") {
+	            // Look for: 64 = Synonym, 32 = verstecktes Synonym
+	            $sql = "SELECT stichwort FROM stichwoerter WHERE id IN (SELECT stichwoerter_verweis.attr_id AS id "
+	                ."FROM stichwoerter, stichwoerter_verweis WHERE stichwoerter.stichwort = '".addslashes($tag)."' AND stichwoerter.eigenschaften IN (64,32) AND stichwoerter_verweis.primary_id = stichwoerter.id)";
+	                $this->db->query($sql);
+	                while($this->db->next_record()) {
+	                    // Current value = synonym => check referenced original for ancestors/descendants
+	                    $redundantFound = $this->isRedundantSearchTag($this->db->f('stichwort'), $tag_heap, array("ancestor", "descendant"), $maxlevels);
+	                }
+	        }
+	        
+	        if($redundantFound["found"] == "ancestor") {
+	            if (($key = array_search( strtolower($redundantFound["tag"]), array_map("strtolower", $tag_heap) )) !== false) {  // descendant is second tag
+	                unset($tag_heap[$key]);
+	                array_push($this->double_tags, "Entfernt wurde: \"<strike>".$redundantFound["tag"]."</strike>\" - Grund: Oberbegriff von \"".$tag."\"");
+	            }
+	            
+	        } elseif($redundantFound["found"] == "descendant") {
+	            if (($key = array_search( strtolower($tag), array_map("strtolower", $tag_heap) )) !== false)
+	                unset($tag_heap[$key]);
+	                array_push($this->double_tags, "Entfernt wurde: \"<strike>".$tag."</strike>\" - Grund: Oberbegriff von \"".$redundantFound["tag"]."\"");
+	                $continue_redundant = true;
+	        }
+	        
+	    }
+	    
+	    return array("continue_redundant" => $continue_redundant, "tag_heap" => $tag_heap);
+	}
+	
+	
+	/* ************************** *
+	 * end: handle redundant tags *
+	 * ************************** */
+	
+	function checkqueryString($queryString)
+	{
+	    // Excel in Mainz => Excel, Mainz if "Excel in Mainz" not a tag
+	    global $ignoreWords_DE;
+	    
+	    $queryArr = explode(',', $queryString);
+	    for( $i = 0; $i < sizeof($queryArr); $i++ )
+	    {
+	        $value = trim($queryArr[$i]);
+	        if ($this->lookupTag($value) == 0) {
+	            $parts =  explode(' ', $value);
+	            for( $j = 0; $j < sizeof($parts); $j++ ) {
+	                if (in_array($parts[$j], $ignoreWords_DE)) {
+	                    $parts[$j] = "";
+	                } else {
+	                    $rort = $this->lookupOrt($parts[$j]);
+	                    if ($rort) {
+	                        
+	                        if (sizeof($parts) == 1) {
+	                        } else if ($i == 0) {
+	                            $parts[$j] = ",".$rort.",";
+	                        } else {
+	                            $parts[$j] = ",".$rort;
+	                        }
+	                        break;
+	                    }
+	                }
+	            }
+	            $queryArr[$i] = implode(" ",  (array)$parts);
+	        }
+	    }
+	    $queryString = implode(",", $queryArr);
+	    
+	    return $queryString;
+	}
+	
+	function lookupOrt($ort)
+	{
+	    $ort_plz = 0;
+	    $bezirk = 0;
+	    $stadtteil = 0;
+	    
+	    if( $ort != '' )
+	    {
+	        global $geoMap_orte;
+	        
+	        foreach($geoMap_orte AS $synonym => $original) {
+	            if (stristr(trim($ort), trim($synonym)))   { $ort = trim($original); }
+	        }
+	        
+	        
+	        $this->db->query("SELECT ort, plz FROM plz_ortscron WHERE ort = '".trim($ort)."';");
+	        if( $this->db->next_record() ) {
+	            $this->assumedLocation = $ort;
+	            return $ort;
+	        }
+	        
+	        $bezirk_name = str_replace('(Bezirk)', '', $ort); // space can't be part of ort
+	        $this->db->query("SELECT tag_name FROM x_tags WHERE tag_name LIKE '".trim($bezirk_name)."%' AND tag_descr = 'Bezirk'");
+	        if( $this->db->next_record() )
+	            $bezirk = $this->db->fs('tag_name'); // recover Bezirk with " ... (Bezirk)"
+	            
+	            if( $bezirk ) {
+	                $this->assumedLocation = $bezirk;
+	                return $bezirk;
+	            }
+	            
+	            $this->db->query("SELECT tag_name FROM x_tags WHERE tag_name LIKE '".trim($ort)."%' AND tag_descr = 'Stadtteil'");
+	            if( $this->db->next_record() ) {
+	                $this->assumedLocation = $ort." (Stadtteil)";
+	                return $ort;
+	            }
+	    }
+	    
+	    
+	    return 0;
+	}
 	
 	function prepare($queryString)
 	{
 	    // Convert utf-8 input back to ISO-8859-15 because the DB ist still encoded with ISO
 	    $queryString = PHP7 ? $queryString : iconv("UTF-8", "ISO-8859-15//IGNORE", $queryString);
 	            
-	            // first, apply the stdkursfilter
+	    // first, apply the stdkursfilter
 		global $wisyPortalFilter;
 		global $wisyPortalId;
+		
+		// Ortsnamen im Suchstring nach dem Trennwort in umsetzen
+		if ( $this->framework->getParam('qs', false) ) {
+		    $queryString = $this->checkqueryString($queryString);
+		}
+		
 		if( $wisyPortalFilter['stdkursfilter'] != '' )
 		{
 			$queryString .= ", .portal$wisyPortalId";
@@ -179,8 +425,11 @@ class WISY_SEARCH_CLASS
 		    
 		    // build SQL statements for this part
 		    $value = $this->tokens['cond'][$i]['value']; // PHP7 ? utf8_decode()
+		    
+		    // redundant search cache -> one week // todo: invalidate cache if tag younger?
+		    $this->dbCacheRedundant =& createWisyObject('WISY_CACHE_CLASS', $this->framework, array('table'=>'x_cache_search', 'itemLifetimeSeconds'=>60*60*24*7));
 		        
-		        switch( $this->tokens['cond'][$i]['field'] )
+		    switch( $this->tokens['cond'][$i]['field'] )
 			{
 				case 'tag':
 					$tagNotFound = false;
@@ -192,8 +441,33 @@ class WISY_SEARCH_CLASS
 					    $rawOr = '';
 					    for( $s = 0; $s < sizeof((array) $subval); $s++ )
 					    {
-					        // check after explode "ODER"
-					        if($this->isRedundantSearchTag($subval[$s], $tag_heap) === true)
+					        // Remove redundant search tags from actual query string: ancestors, descendant, synonyms, duplicates
+					        
+					        $cacheKey = "redundant_tags_OR_query_".$value."_subval_".$subval[$s];
+					        if( ($temp=$this->dbCacheRedundant->lookup($cacheKey))!='' ) // found in cache
+					        {
+					            $cacheArr = unserialize($temp);
+					            $continue_redundant = $cacheArr['continue_redundant'];
+					            
+					            $tag_heap = $cacheArr['tag_heap'];
+					            
+					            foreach( $cacheArr['double_tags'] AS $double_tag) {
+					                array_push($this->double_tags, $double_tag); // don't do $this->double_tags = $cacheArr['double_tags'] - otherwise overwrites doubletags from AND search below
+					            }
+					            
+					        } else {
+					            $result = $this->filterRedundantTags( "OR", $tag_heap, $subval[$s], $this->framework->iniRead('search.redundant.maxlevels', 4) );
+					            $continue_redundant = $result['continue_redundant'];
+					            $tag_heap = $result['tag_heap'];
+					            
+					            $input = serialize( array("tag_heap" => $tag_heap, "continue_redundant" => $continue_redundant, "double_tags" => $this->double_tags));
+					            
+					            // Write to cache
+					            $this->dbCacheRedundant->insert($cacheKey, $input );
+					            
+					        }
+					        
+					        if($continue_redundant)
 					            continue;
 					            
 					            array_push($tag_heap, trim($subval[$s]));
@@ -230,7 +504,35 @@ class WISY_SEARCH_CLASS
 					    }
 					    else
 					    {
-					        if($this->isRedundantSearchTag($value, $tag_heap) === true)
+					        // Remove redundant search tags from actual query string: ancestors, descendant, synonyms, duplicates
+					        
+					        // adding position of the value within query ($i) only matches for exact positition within query = not very agressive caching
+					        $cacheKey = "redundant_tags_AND_query_".$value.$i;
+					        
+					        // false = todo
+					        if( false && ($temp=$this->dbCacheRedundant->lookup($cacheKey))!='' ) // found in cache
+					        {
+					            $cacheArr = unserialize($temp);
+					            $continue_redundant = $cacheArr['continue_redundant'];
+					            
+					            $tag_heap = $cacheArr['tag_heap'];
+					            foreach( $cacheArr['double_tags'] AS $double_tag) {
+					                if( array_search($double_tag, $this->double_tags) === FALSE)
+					                    array_push($this->double_tags, $double_tag); // don't do $this->double_tags = $cacheArr['double_tags'] - otherwise overwrites doubletags from OR search above
+					            }
+					        } else {
+					            
+					            $result = $this->filterRedundantTags( "AND", $tag_heap, $value, $this->framework->iniRead('search.redundant.maxlevels', 4) );
+					            $continue_redundant = $result['continue_redundant'];
+					            $tag_heap = $result['tag_heap'];
+					            
+					            // Write to cache
+					            $this->dbCacheRedundant->insert($cacheKey, serialize( array("tag_heap" => $tag_heap, "continue_redundant" => $continue_redundant, "double_tags" => $this->double_tags)) );
+					        }
+					        
+					        $this->double_tags = array_unique($this->double_tags);
+					        
+					        if($continue_redundant)
 					            continue 2;
 					            
 					            array_push($tag_heap, $value);
@@ -601,6 +903,9 @@ class WISY_SEARCH_CLASS
 		        }
 		}
 		
+		if(count($tag_heap))
+		    $this->globalTagHeap = $tag_heap;
+		
 		/* -- leere Anfragen sind fuer "diese kurse beginnen morgen" notwendig, leere Anfragen sind _kein_ Fehler!
 		if( !is_array($this->error) && $this->rawWhere=='' )
 		{
@@ -621,8 +926,13 @@ class WISY_SEARCH_CLASS
 		}
 	}
 	
-	function getDoubleTags() {
+	public function getDoubleTags() {
 	    return $this->double_tags;
+	}
+	
+	public function getTagHeap() {
+	    // return what was actually searched for
+	    return $this->globalTagHeap;
 	}
 	
 	function ok()
@@ -706,7 +1016,7 @@ class WISY_SEARCH_CLASS
 		// create complete SQL query
 		$sql =  "SELECT DISTINCT $fields
 				   FROM kurse LEFT JOIN x_kurse ON x_kurse.kurs_id=kurse.id " . $this->rawJoin . $this->rawWhere;
-
+		
 		return $sql;		
 	}
 	
@@ -1003,6 +1313,7 @@ class WISY_SEARCH_CLASS
 	function lookupTag($tag_name)
 	{
 	    // search a single tag
+	    $tag_name = trim($tag_name);
 	    $tag_id = 0;
 	    if( $tag_name != '' )
 	    {
@@ -1139,6 +1450,8 @@ class WISY_SEARCH_CLASS
 	    return $this->fulltext_select;
 	}
 
-
+	public function getAssumedLocation() {
+	    return $this->assumedLocation;
+	}
 };
 

@@ -460,11 +460,11 @@ class WISY_FRAMEWORK_CLASS
 		}
 			
         $ret .= '<meta property="og:locale" content="de_DE">'."\n";
-		/* $ret .= '<meta property="fb:app_id" content="100940970255996">'."\n"; */
+		/* $ret .= '<meta property="fb:app_id" content="<app_id>">'."\n"; */
 				
 		// Twitter
 		$ret .= '<meta name="twitter:card" content="summary">'."\n";
-		/* $ret .= '<meta name="twitter:site" content="@weiterbrlp">'."\n"; // $ret .= '<meta name="twitter:creator" content="weiterbrlp">'."\n"; */
+		/* $ret .= '<meta name="twitter:site" content="<@twitterhandle>">'."\n"; // $ret .= '<meta name="twitter:creator" content="<twitterhandle>">'."\n"; */
 			
 		// GGf. in Bitly aendern, weil Query String ignoriert wird
 		$url_twitter = $url; // sonst muss canonical url uebereinstimmen, um nicht ignoriert zu werden!

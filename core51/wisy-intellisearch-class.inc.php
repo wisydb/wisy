@@ -13,10 +13,6 @@ class WISY_INTELLISEARCH_CLASS
 		$this->searcher		=& createWisyObject('WISY_SEARCH_CLASS', $framework, $param);	
 	}
 	
-	function getDoubleTags() {
-	    return $this->searcher->getDoubleTags();
-	}
-	
 	function prepare($queryString)
 	{
 		$this->suggestions = array();
@@ -180,11 +176,24 @@ class WISY_INTELLISEARCH_CLASS
 		return $ret;
 	}
 	
+	public function getChangedQuery() {
+	    return $this->changed_query;
+	}
+	
+	public function getDoubleTags() {
+	    return $this->searcher->getDoubleTags();
+	}
+	
+	public function getTagHeap() {
+	    return $this->searcher->getTagHeap();
+	}
+	
 	public function getFulltextSelect() {
 	    return $this->searcher->fulltext_select;
 	}
 	
-	public function getChangedQuery() {
-	    return $this->changed_query;
+	public function getAssumedLocation() {
+	    return $this->searcher->getAssumedLocation();
 	}
+	
 };
