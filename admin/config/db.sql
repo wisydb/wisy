@@ -1270,6 +1270,19 @@ CREATE TABLE IF NOT EXISTS `x_kurse_tags` (
 -- --------------------------------------------------------
 
 --
+-- Tabellenstruktur für Tabelle `x_logins`
+--
+
+CREATE TABLE `x_logins` (
+  `id` int(11) NOT NULL,
+  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `ip` varbinary(255) NOT NULL,
+  `freischalten` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00'
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
 -- Tabellenstruktur für Tabelle `x_querystats`
 --
 

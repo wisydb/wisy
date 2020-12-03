@@ -44,8 +44,9 @@ function get_first_accecssible_table()
 function login_screen()
 {
 	global $site;
+	global $denymessage;
 
-	$enter_loginname = $_REQUEST['enter_loginname']; 
+	$enter_loginname = strval( $_REQUEST['enter_loginname'] ); 
 	$enter_password = '';  
 	$resetlogin = $_REQUEST['resetlogin'];
 	
@@ -102,6 +103,13 @@ function login_screen()
 	// render page...
 	//
 	$site->pageStart();
+	
+	if ($denymessage) {
+	    print        $denymessage;
+	    $site->pageEnd();
+	    exit();
+	}
+	
 	$site->menuHelpScope = '.';
 	$site->menuOut();
 
@@ -238,7 +246,39 @@ function login_screen()
 
 function login_check()
 {
-	global $site;
+    global $site;
+    global $salt;
+    global $denymessage;
+    $denymessage = "";
+    
+    $db = new DB_Admin;
+    $ip = $_SERVER['REMOTE_ADDR'];
+    
+    $sqlstmt = "DELETE FROM x_logins WHERE timestamp < DATE_SUB( NOW( ) , INTERVAL 24 HOUR )";  // alles was aelter als 24 h loeschen
+    $db->query($sqlstmt);
+    
+    if($_REQUEST['enter_subsequent']) {
+        $sqlstmt = "INSERT INTO x_logins (ip, login_name) VALUES (AES_ENCRYPT('$ip', '$salt'), '')"; // if DEBUG login_name: ".$_REQUEST['enter_loginname']."
+        $db->query($sqlstmt);
+    }
+    
+    $sqlstmt = "SELECT COUNT(*) AS COUNT FROM x_logins WHERE AES_DECRYPT(ip, '$salt') = '$ip' and freischalten > NOW() OR freischalten = '0000-00-00 00:00:00'";
+    $db->query($sqlstmt);
+    $db->next_record();
+    $loginversuche = $db->fs('COUNT');
+    if ($loginversuche > 50) {
+        if($_REQUEST['enter_subsequent']) {
+            $sqlstmt = "UPDATE x_logins SET freischalten = now()+ 144000 WHERE AES_DECRYPT(ip, '$salt') = '$ip'";
+            $db->query($sqlstmt);
+        }
+        $denymessage = "Zu viele falsche Login-Versuche. Ihre IP-Adresse wurde f&uuml;r 24 Stunden gesperrt";
+    } else if ($loginversuche > 10) {
+        if($_REQUEST['enter_subsequent']) {
+            $sqlstmt = "UPDATE x_logins SET freischalten = now()+ 1000 WHERE AES_DECRYPT(ip, '$salt') = '$ip'";
+            $db->query($sqlstmt);
+        }
+        $denymessage = "Zu viele falsche Login-Versuche. Ihre IP-Adresse wurde f&uuml;r 10 Minuten gesperrt";
+    }
 
 	// if a role-confirmation screen was printed, the user already entered the password successfully; read it from the session in this case
 	if( isset($_REQUEST['role_confirm_ok']) ) {
@@ -250,8 +290,9 @@ function login_check()
 	unset($_SESSION['g_role_confirm_login_credential_pw']);
 
 	// get loginname/password from the request
-	$enter_loginname = $_REQUEST['enter_loginname']; 
-	$enter_password = $_REQUEST['enter_password'];
+	$enter_loginname = strval( $_REQUEST['enter_loginname'] );
+	$enter_password = strval( $_REQUEST['enter_password'] );
+	$resetlogin = $_REQUEST['resetlogin'];
 	
 	require_lang('lang/login');
 
@@ -323,7 +364,7 @@ function login_check()
 	$logwriter->addData('browser', $_SERVER['HTTP_USER_AGENT']);
 	$logwriter->addData('loginname', $enter_loginname);
 	
-	if( regGet('login.as', 0) && strpos($enter_loginname, ' as ') ) {
+	if( regGet('login.as', 0) && strlen($enter_loginname) && strpos($enter_loginname, ' as ') ) {
 		list($enter_loginnameuser, $enter_loginnameas) = explode(' as ', $enter_loginname);
 		$enter_as = 1;
 	}
@@ -512,6 +553,9 @@ function login_check()
 	require_lang('lang/overview');
 	$site->msgAdd(htmlconstant('_LOGIN_WELCOME', "<b>$username</b>", sql_date_to_human($db_last_login, 'datetime')) . "\n", 'i');
 	
+	$sqlstmt = "DELETE FROM x_logins WHERE AES_DECRYPT(ip, '$salt') = '$ip'";  // bei erfolgreichem login werden die Versuche geloescht
+	$db->query($sqlstmt);
+	
 	if ($_REQUEST['resetlogin']) {
 	    regSet("index.view.kurse.lastquery", '', '');
 	    regSet("index.view.kurse.rows", '20', '');
@@ -535,7 +579,7 @@ function login_check()
 	}
 
 		// DEPRECATED
-		// $site->msgAdd("\n\n" . '<b>Neuer Editor:</b> Unter &quot;Einstellungen / Ansicht&quot; steht Ihnen ab sofort ein neuer, modernerer Editor zur Verfügung. <a href="https://b2b.kursportal.info/index.php?title=Neuer_Editor" target="_blank">Weitere Informationen...</a>' . "\n\n", 'i');
+		// $site->msgAdd("\n\n" . '<b>Neuer Editor:</b> Unter &quot;Einstellungen / Ansicht&quot; steht Ihnen ab sofort ein neuer, modernerer Editor zur Verfuegung. <a href="https://b2b.kursportal.info/index.php?title=Neuer_Editor" target="_blank">Weitere Informationen...</a>' . "\n\n", 'i');
 		// DEPRECATED
 
 	if( regGet('settings.editable', 1) && $db_num_login_errors ) { 
