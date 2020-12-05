@@ -1,6 +1,10 @@
 <?php if( !defined('IN_WISY') ) die('!IN_WISY');
 
 
+date_default_timezone_set('Europe/Berlin');
+
+define('DEBUG', false);
+
 /*****************************************************************************
  * WISY_SYNC_RENDERER_CLASS
  * automatische Synchronisation Datenbank -> Suchindex
@@ -75,7 +79,7 @@ class WISY_SYNC_STATETABLE_CLASS
 		$sql = "SELECT svalue FROM x_state WHERE skey='".addslashes($key)."';";
 		$this->db->query($sql);
 		if( $this->db->next_record() )
-			$ret = $this->db->f8('svalue');
+		    $ret = $this->db->fs('svalue');
 		return $ret;
 	}
 	function writeState($key, $val)
@@ -102,6 +106,15 @@ class WISY_SYNC_STATETABLE_CLASS
 						{ $this->lock(false); return false; }
 					$this->updatestick_datetime = strftime("%Y-%m-%d %H:%M:00");
 					$this->writeState('updatestick', $this->updatestick_datetime);
+					
+					$what = '';
+					if( isset($_GET['kurseSlow']) )
+					    $what = "kurseSlow";
+					if( isset($_GET['kurseFast']) )
+					    $what = "kurseFast";
+					
+					$this->writeState('what', $what );
+					        
 		$this->lock(false);
 		return true;
 	}
@@ -119,6 +132,7 @@ class WISY_SYNC_STATETABLE_CLASS
 	{
 		$this->lock(true);
 					$this->writeState('updatestick', '0000-00-00 00:00:00');
+					$this->writeState('what', '');
 		$this->lock(false);
 	}
 }
@@ -150,7 +164,7 @@ class TAGTABLE_CLASS
 			$this->db->query("SELECT tag_id, tag_type, tag_help, tag_descr FROM x_tags WHERE tag_name='".addslashes($tag_name)."';");
 			if( $this->db->next_record() )
 			{
-				$this->tags[ $tag_name ] = array( intval($this->db->f8('tag_id')), intval($this->db->f8('tag_type')), intval($this->db->f8('tag_help')), $this->db->f8('tag_descr') );
+			    $this->tags[ $tag_name ] = array( intval($this->db->f('tag_id')), intval($this->db->f('tag_type')), intval($this->db->f('tag_help')), $this->db->fs('tag_descr') );
 			}
 			else
 			{
@@ -161,8 +175,10 @@ class TAGTABLE_CLASS
 		return $this->tags[ $tag_name ][ 0 ];
 	}
 	
-	function lookupOrInsert($tag_name, $tag_type, $tag_help = 0, $tag_descr = '')
+	function lookupOrInsert($tag_name, $tag_type, $tag_help = 0, $tag_descr = '', $tag_eigenschaften = '-1')
 	{
+	    require_once("admin/lib/soundex/x3m_soundex_ger.php");
+	    
 		// lookup a tag and return its ID; if unexistant, the tag is inserted
 		$tag_name = trim($tag_name);
 		
@@ -173,25 +189,39 @@ class TAGTABLE_CLASS
 		
 		if( $this->lookup($tag_name) == 0 )
 		{
-		    require_once("admin/lib/soundex/x3m_soundex_ger.php");
+		    $tag_soundex = soundex_ger($tag_name);
+		    $tag_metaphone = metaphone($tag_name);
 		    
-			$tag_soundex = soundex_ger($tag_name);
-			$tag_metaphone = metaphone($tag_name);
-			$this->db->query("INSERT INTO x_tags (tag_name, tag_descr, tag_type, tag_help, tag_soundex, tag_metaphone) VALUES ('".addslashes($tag_name)."', '".addslashes($tag_descr)."', $tag_type, $tag_help, '$tag_soundex', '$tag_metaphone')");
-			$this->tags[ $tag_name ] = array( intval($this->db->insert_id()), $tag_type, $tag_help, $tag_descr );
+		    // Wird ueber Name nachgeschaut, weil ID nicht vorhanden (zentraler Ansatz aber sinnvoll) und Name soll eh eindeutig sein bei SW!
+		    $this->db->query("SELECT eigenschaften FROM stichwoerter WHERE stichwort='".addslashes($tag_name)."'");
+		    $this->db->next_record();
+		    $tag_eigenschaften = $this->db->f('eigenschaften');
+		    $tag_eigenschaften = ($tag_eigenschaften) ? $tag_eigenschaften : $tag_eigenschaften = -1; // if($tag_eigenschaften == -1) ... // Orte etc. ?
+		    
+		    $sql = "INSERT INTO x_tags (tag_name, tag_eigenschaften, tag_descr, tag_type, tag_help, tag_soundex, tag_metaphone) VALUES ('".addslashes($tag_name)."', ".addslashes($tag_eigenschaften).", '".addslashes($tag_descr)."', $tag_type, $tag_help, '$tag_soundex', '$tag_metaphone')";
+		    $this->db->query($sql);
+		            
+		    $insert_id = $this->db->insert_id();
+		    $this->tags[ $tag_name ] = array( intval($insert_id), $tag_type, $tag_help, $tag_descr );
+		            
+		    $sql = "SELECT * FROM x_tags WHERE tag_id = ".$insert_id.";";
+		    $this->db->query($sql);
+		    $ergebnis = "";
+		    while( $this->db->next_record() )
+		       $ergebnis .= "\n " . $this->db->f('tag_id').": ".$this->db->f('tag_name');            
 		}
-		else 
+		else
 		{
-			// if needed, correct tag_type/tag_help - this may happen if we add new tag types, in the normal db usage, these values normally do not change.
-			if( $this->tags[ $tag_name ][ 1 ] != $tag_type 
-			 || $this->tags[ $tag_name ][ 2 ] != $tag_help 
-			 || $this->tags[ $tag_name ][ 3 ] != $tag_descr )
-			{
-				$this->db->query("UPDATE x_tags SET tag_type=$tag_type, tag_help=$tag_help, tag_descr='".addslashes($tag_descr)."' WHERE tag_id=".$this->tags[ $tag_name ][ 0 ]);
-				$this->tags[ $tag_name ][ 1 ] = $tag_type;
-				$this->tags[ $tag_name ][ 2 ] = $tag_help;
-				$this->tags[ $tag_name ][ 3 ] = $tag_descr;
-			}
+		    // if needed, correct tag_type/tag_help - this may happen if we add new tag types, in the normal db usage, these values normally do not change.
+		    if( $this->tags[ $tag_name ][ 1 ] != $tag_type
+		        || $this->tags[ $tag_name ][ 2 ] != $tag_help
+		        || $this->tags[ $tag_name ][ 3 ] != $tag_descr )
+		    {
+		        $this->db->query("UPDATE x_tags SET tag_eigenschaften=$tag_eigenschaften, tag_type=$tag_type, tag_help=$tag_help, tag_descr='".addslashes($tag_descr)."' WHERE tag_id=".$this->tags[ $tag_name ][ 0 ]);
+		        $this->tags[ $tag_name ][ 1 ] = $tag_type;
+		        $this->tags[ $tag_name ][ 2 ] = $tag_help;
+		        $this->tags[ $tag_name ][ 3 ] = $tag_descr;
+		    }
 		}
 		
 		return $this->tags[ $tag_name ][ 0 ];
@@ -204,13 +234,13 @@ class TAGTABLE_CLASS
 		// in fact, the returned list ist used to delete old records from the database)
 		$ret = '0';
 		reset( $this->tags );
-		while( list($tag_name, $tag_param) = each($this->tags) )
+		foreach($this->tags as $tag_name => $tag_param)
 			$ret .= ', ' . $tag_param[ 0 ];
 		
 		// add all synonyms and all portal tags; they should be preserved as the function is used to delete tags
 		$this->db->query("SELECT tag_id FROM x_tags WHERE tag_type & 64;");
 		while( $this->db->next_record() )
-			$ret .= ', ' . $this->db->f8('tag_id');
+		    $ret .= ', ' . $this->db->f('tag_id');
 		
 		return $ret;
 	}
@@ -276,44 +306,46 @@ class ATTR2TAG_CLASS
 			$curr_tag_descr = '';
 			if( $this->table == 'stichwoerter' )
 			{
-				$curr_tag_type = intval($this->db->f8('eigenschaften')) & (1+2+4+8+16+1024+32768+65536) /*flags, s.o.*/;
-				$curr_tag_help = intval($this->db->f8('glossar'));
-				$curr_tag_descr = $this->db->f8('zusatzinfo');
+			    
+			    $curr_tag_type = intval($this->db->f('eigenschaften')) & (1+2+4+8+16+1024+32768+65536) /*flags, s.o.*/;
+			    $curr_tag_help = intval($this->db->f('glossar'));
+			    $curr_tag_descr = $this->db->fs('zusatzinfo');
 			}
 			else if( $this->table == 'anbieter' )
 			{
-				$curr_tag_type = 256 								// maintype: Anbieter
-						+		(intval($this->db->f8('typ'))<<16);	// subtype:  0=Anbieter,  1=Trainer, 2=Betratungsstelle, 64=Namensverweisung/Synonym
-				
+			    
+			    $curr_tag_type = 256 					    // maintype: Anbieter
+			    +		(intval($this->db->f('typ'))<<16);	// subtype:  0=Anbieter,  1=Trainer, 2=Betratungsstelle, 64=Namensverweisung/Synonym
+			    
 			}
 			
 			// do insert
 			$this->cache[ $attr_id ][ 'names' ] = array();
-			$this->cache[ $attr_id ][ 'names' ][] = array(g_sync_removeSpecialChars($this->db->f8($this->field)), $curr_tag_type, $curr_tag_help, $curr_tag_descr);
+			$this->cache[ $attr_id ][ 'names' ][] = array(g_sync_removeSpecialChars($this->db->fs($this->field)), $curr_tag_type, $curr_tag_help, $curr_tag_descr);
 			if( $this->table == 'themen' )
 			{
-				$attr_kuerzel = $this->db->f8('kuerzel_sorted');
-				$sql = '';
-				for( $slen = strlen($attr_kuerzel) - 10; $slen > 0; $slen -= 10 )
-				{
-					$parent_kuerzel = substr($attr_kuerzel, 0, $slen);
-					$sql .= $sql==''? "SELECT thema FROM themen WHERE kuerzel_sorted IN (" : ',';
-					$sql .= "'" . $parent_kuerzel . "'";
-				}
-				
-				if( $sql != '' )
-				{
-					$sql .= ');';
-					$this->db->query($sql);
-					while( $this->db->next_record() )
-					{
-						$this->cache[ $attr_id ][ 'names' ][] = array(g_sync_removeSpecialChars($this->db->f8('thema')), $curr_tag_type, 0);
-					}
-				}
+			    $attr_kuerzel = $this->db->fs('kuerzel_sorted');
+			    $sql = '';
+			    for( $slen = strlen($attr_kuerzel) - 10; $slen > 0; $slen -= 10 )
+			    {
+			        $parent_kuerzel = substr($attr_kuerzel, 0, $slen);
+			        $sql .= $sql==''? "SELECT thema FROM themen WHERE kuerzel_sorted IN (" : ',';
+			        $sql .= "'" . $parent_kuerzel . "'";
+			    }
+			    
+			    if( $sql != '' )
+			    {
+			        $sql .= ');';
+			        $this->db->query($sql);
+			        while( $this->db->next_record() )
+			        {
+			            $this->cache[ $attr_id ][ 'names' ][] = array(g_sync_removeSpecialChars($this->db->fs('thema')), $curr_tag_type, 0);
+			        }
+			    }
 			}
 			else if( $this->table == 'anbieter' )
 			{
-				$this->cache[ $attr_id ][ 'sorted' ] = $this->db->f8('suchname_sorted');
+			    $this->cache[ $attr_id ][ 'sorted' ] = $this->db->fs('suchname_sorted');
 			}
 		}
 		
@@ -324,7 +356,7 @@ class ATTR2TAG_CLASS
 	{
 		$names = array();
 		$this->lookupNames($attr_id, $names);
-		for( $i = 0; $i < sizeof($names); $i++ )
+		for( $i = 0; $i < sizeof((array) $names); $i++ )
 		{
 			$id = $this->tagtable->lookupOrInsert($names[$i][0], $names[$i][1], $names[$i][2], $names[$i][3]);
 			if( $id != 0 )
@@ -367,38 +399,46 @@ class KURS2PORTALTAG_CLASS
 		$db->query("SELECT id, einstellungen, einstcache, filter FROM portale WHERE status=1;");
 		while( $db->next_record() )
 		{
-			$portal_id		= $db->f8('id');
-			$portal_tag		= 0;
-			$einstellungen	= explodeSettings($db->f8('einstellungen'));
-			$einstcache		= explodeSettings($db->f8('einstcache'));
-			$filter			= explodeSettings($db->f8('filter'));
+		    $portal_id		= $db->f('id');
+		    $portal_tag		= 0;
+		    $einstellungen	= explodeSettings($db->fs('einstellungen'));
+		    $einstcache		= explodeSettings($db->fs('einstcache'));
+		    $filter			= explodeSettings($db->fs('filter'));
 
-			if( $filter['stdkursfilter'] != '' )
+			if( $filter['stdkursfilter'] != '' ) // -- ignore core (2.0) setting, this was to distinguish between WISY 1.0 and WISY 2.0; nowadays we have other core version numbers
 			{
-				$portal_tag = $tagtable->lookupOrInsert(".portal$portal_id", 0);
-				
-				$sql = $eql2sql->eql2sql($filter['stdkursfilter'], 'id', '(kurse.id IN ('.$alle_kurse_str.'))', '');
-				$db2->query($sql);
-				
-				echo sprintf("... lade %d Kurse fuer Portal %d ...\n", $db2->num_rows(), $portal_id); flush();
-				$statetable->updateUpdatestick();
-				
-				while( $db2->next_record() ) {
-					$this->portaltags[ $db2->f8('id') ][] = $portal_tag;
-				}
-				
-				if( $einstellungen['durchf.plz.hardfilter'] ) {
-					$this->plzfilter[ $portal_tag ] =& createWisyObject('WISY_PLZFILTER_CLASS', $this->framework, $einstellungen);
-				}
+			    $portal_tag = $tagtable->lookupOrInsert(".portal$portal_id", 0);
+			    
+			    $sql = $eql2sql->eql2sql($filter['stdkursfilter'], 'id', '(kurse.id IN ('.$alle_kurse_str.'))', '');
+			    
+			    $db2->query($sql);
+			    
+			    echo sprintf("\n... lade %d Kurse fuer Portal %d ...\n", $db2->num_rows(), $portal_id); flush();
+			    $statetable->updateUpdatestick();
+			    
+			    while( $db2->next_record() ) {
+			        $this->portaltags[ $db2->f('id') ][] = $portal_tag;
+			    }
+			    
+			    if( $einstellungen['durchf.plz.hardfilter'] ) {
+			        $this->plzfilter[ $portal_tag ] =& createWisyObject('WISY_PLZFILTER_CLASS', $this->framework, $einstellungen);
+			    }
 			}
 			
 			$this->all_portals[ $portal_id ] = array( 'einstellungen'=>$einstellungen, 'einstcache'=>$einstcache, 'filter'=>$filer, 'portal_tag'=>$portal_tag);
 		}
+		
+		if(DEBUG)
+		{		echo "Kurse fuer Portale geladen. \n"; flush(); }
+		
+		// Delete zipped .css
+		$db->query("UPDATE portale SET css_gz =''; ");
+		
 	}
 	
 	function getPortalTagsAndIncCounts($kurs_id, &$tag_ids, $anbieter_id, $anz_durchf, $d_plz, $d_has_unset_plz)
 	{
-		for( $i = sizeof($this->portaltags[ $kurs_id ])-1; $i >= 0; $i-- )
+	    for( $i = sizeof((array) $this->portaltags[ $kurs_id ])-1; $i >= 0; $i-- )
 		{
 			// der kurs ist in diesem portal ...
 			$portal_tag_id = $this->portaltags[ $kurs_id ][ $i ];
@@ -438,7 +478,7 @@ class KURS2PORTALTAG_CLASS
 	function getPortalTagsCounts($portal_tag_id)
 	{
 		return array(
-			'anz_anbieter'	=>	sizeof($this->portal_tags_anz_anbieter[ $portal_tag_id ]),
+		    'anz_anbieter'	=>	sizeof((array) $this->portal_tags_anz_anbieter[ $portal_tag_id ]),
 			'anz_kurse'		=>	intval($this->portal_tags_anz_kurse   [ $portal_tag_id ]),
 			'anz_durchf'	=>	intval($this->portal_tags_anz_durchf  [ $portal_tag_id ]),
 		);
@@ -478,7 +518,7 @@ class WISY_SYNC_RENDERER_CLASS
 		$this->verweis2 = array();
 		$db->query("SELECT primary_id, attr_id FROM stichwoerter_verweis2 LEFT JOIN stichwoerter ON attr_id=id WHERE eigenschaften&(32|64)=0;");
 		while( $db->next_record() ) {
-			$this->verweis2[ $db->f8('attr_id') ][] = $db->f8('primary_id');
+		    $this->verweis2[ $db->f('attr_id') ][] = $db->f('primary_id');
 		}
 		
 		$this->flatenArray($this->verweis2);
@@ -504,7 +544,7 @@ class WISY_SYNC_RENDERER_CLASS
 			if( is_array($ids[$super_id]) ) 
 			{
 				$this->flatenArray__($ids, $super_id);
-				for( $k = 0; $k < sizeof($ids[$super_id]); $k++ )
+				for( $k = 0; $k < sizeof((array) $ids[$super_id]); $k++ )
 				{
 					$to_add = $ids[$super_id][$k];
 					if( !in_array($to_add, $ids[$id]) )
@@ -519,7 +559,9 @@ class WISY_SYNC_RENDERER_CLASS
 	
 	function log($str)
 	{
-		echo $str . "\n";
+	    date_default_timezone_set('Europe/Berlin');
+	    
+	    echo "[".date("d.m.Y")." - ".date("H:i:s")."] ".$str . "\n";
 		flush();
 		$this->framework->log('sync', $str);
 	}
@@ -541,15 +583,15 @@ class WISY_SYNC_RENDERER_CLASS
 		$db->query("SELECT id, stichwort, eigenschaften FROM stichwoerter WHERE eigenschaften=32 OR eigenschaften=64;"); // !!! in "eigenschaften" gilt: 32 = versteckte Synonyme, 64 =normale Synonyme
 		while( $db->next_record() )
 		{
-			$synonym = g_sync_removeSpecialChars($db->f8('stichwort'));
-			$synonym_id = intval($db->f8('id'));
-			$eigenschaften = intval($db->f8('eigenschaften'));
+		    $synonym = g_sync_removeSpecialChars($db->fs('stichwort'));
+			$synonym_id = intval($db->f('id'));
+			$eigenschaften = intval($db->f('eigenschaften'));
 			$dest_found = false;
 
 			$db2->query("SELECT stichwort FROM stichwoerter LEFT JOIN stichwoerter_verweis v ON id=v.attr_id WHERE v.primary_id=$synonym_id");
 			while( $db2->next_record() )
 			{	
-				$cur = g_sync_removeSpecialChars($db2->f8('stichwort'));
+			    $cur = g_sync_removeSpecialChars($db2->fs('stichwort'));
 				$cur_id = $this->tagtable->lookup($cur);
 				if( $cur_id ) { $dest_found = true; $tableValues[] = array($synonym, $cur_id); }
 			}
@@ -557,37 +599,67 @@ class WISY_SYNC_RENDERER_CLASS
 			if( $dest_found )
 				$insertValues[] = array($synonym, $eigenschaften==32? 64+32 : 64); // !!! in "tag_type" gilt: das Synonym-Bit ist immer gesetzt, das Versteckte-Synonym-Bit kommt optional dazu
 		}
-																				$this->statetable->updateUpdatestick();
+		
+		$this->statetable->updateUpdatestick();
+		
 		// collect Anbieter / Namensverweise
-		$db->query("SELECT suchname, id FROM anbieter WHERE typ=64;"); // 64 = Synonym
+		$db->query("SELECT suchname, id FROM anbieter WHERE typ=262144 AND freigeschaltet=1"); // neue Namensverweisung (ehemals 64 = Synonym)
 		while( $db->next_record() )
 		{
-			$synonym = g_sync_removeSpecialChars($db->f8('suchname'));
-			$synonym_id = intval($db->f8('id'));
-			$dest_found = false;
-			
-			$db2->query("SELECT suchname FROM anbieter LEFT JOIN anbieter_verweis v ON id=v.attr_id WHERE v.primary_id=$synonym_id");
-			while( $db2->next_record() )
-			{
-				$cur = g_sync_removeSpecialChars($db2->f8('suchname'));
+		  $synonym = g_sync_removeSpecialChars($db->fs('suchname'));
+																				    
+		  $synonym_id = intval($db->f('id'));
+		  $dest_found = false;
+																				    
+		  $db2->query("SELECT suchname FROM anbieter LEFT JOIN anbieter_verweis v ON id=v.attr_id WHERE v.primary_id=$synonym_id");
+		  while( $db2->next_record() )
+		  {
+				$cur = g_sync_removeSpecialChars($db2->fs('suchname'));
 				$cur_id = $this->tagtable->lookup($cur);
 				if( $cur_id ) { $dest_found = true; $tableValues[] = array($synonym, $cur_id); }
-			}
-			
-			if( $dest_found )
-				$insertValues[] = array($synonym, 64);
+		  }
+																				    
+		  if( $dest_found )
+		      $insertValues[] = array($synonym, 262144);
 		}
-																				$this->statetable->updateUpdatestick();
+																				
+		// Versteckte Namensverweise
+		$db->query("SELECT suchname, id FROM anbieter WHERE typ=65 AND freigeschaltet=1;"); // 131072
+		while( $db->next_record() )
+		{
+		  $synonym = g_sync_removeSpecialChars($db->fs('suchname'));
+																				    
+		  $synonym_id = intval($db->f('id'));
+		  $dest_found = false;
+																				    
+		  $db2->query("SELECT suchname FROM anbieter LEFT JOIN anbieter_verweis v ON id=v.attr_id WHERE v.primary_id=$synonym_id");
+		  while( $db2->next_record() )
+		  {
+				$cur = g_sync_removeSpecialChars($db2->fs('suchname'));
+				$cur_id = $this->tagtable->lookup($cur);
+				if( $cur_id ) { $dest_found = true; $tableValues[] = array($synonym, $cur_id); }
+		  }
+																				    
+		  if( $dest_found )
+		      $insertValues[] = array($synonym, 65); // 131072
+		}
+		
+		$this->statetable->updateUpdatestick();
+		
 		// write all synonyms
-		$db->query("DELETE FROM x_tags WHERE tag_type & 64;");
-		for( $i = 0; $i < sizeof($insertValues); $i++ ) {
-			$this->tagtable->lookupOrInsert($insertValues[$i][0], $insertValues[$i][1]);
+		$db->query("DELETE FROM x_tags WHERE tag_type & 64;"); // Synonym
+		$db->query("DELETE FROM x_tags WHERE tag_type & 262144;"); // Anbieter-Namensverweisung
+		$db->query("DELETE FROM x_tags WHERE tag_type = 65;"); // Versteckte Anbieter-Namensverweisung // "=" weil & 131072 (65) sonst auch Beratungsstellen (131328) l√∂scht
+		for( $i = 0; $i < sizeof((array) $insertValues); $i++ ) {
+		  $this->tagtable->lookupOrInsert($insertValues[$i][0], $insertValues[$i][1]);
 		}
-																				$this->statetable->updateUpdatestick();
+		
+		$this->statetable->updateUpdatestick();
+																				
 		// create table to show where the synonyms link to
 		$db->query("DELETE FROM x_tags_syn;");
 		$values = '';
-		for( $t = 0; $t < sizeof($tableValues); $t++ ) 
+		for( $t = 0; $t < sizeof((array) $tableValues); $t++ ) 
 		{
 			$syn_id = $this->tagtable->lookup($tableValues[$t][0]);
 			if( $syn_id )
@@ -607,7 +679,7 @@ class WISY_SYNC_RENDERER_CLASS
 			$db->query($sql);
 		}
 		
-		$this->log(sprintf("%s synonyms checked.", sizeof($insertValues)));
+		$this->log(sprintf("%s synonyms checked.", sizeof((array) $insertValues)));
 	}	
 	
 
@@ -619,12 +691,15 @@ class WISY_SYNC_RENDERER_CLASS
 		$db = new DB_Admin;
 		$db2 = new DB_Admin;
 		$db3 = new DB_Admin;
+		$db_anbieter = new DB_Admin;
+		
+		global $geocode_errors_file;
 		
 		$updateLatlng = $deepupdate;
 		if( $updateLatlng ) {
-		    $geo_protocol_file = "files/logs/non_geocoded_adresses.dat";
+		    $geo_protocol_file = $geocode_errors_file;
 		    $live_geocode_max = 5500; // mapquest: free account = 15.000 / month
-		    $is_geocode_day = (intval(date('d')) === 2 || intval(date('d')) === 12 || intval(date('d')) === 25); // update on 2nd, 12th and 25th day of the month
+		    $is_geocode_day = (intval(date('d')) === 5 || intval(date('d')) === 15 || intval(date('d')) === 25); // update on 5th, 15th and 25th day of the month
 		    $GLOBALS['geocode_called'] = 0;
 		    $geocoding_total_s = 0.0;
 		    $geocoded_addresses = 0;
@@ -641,576 +716,1218 @@ class WISY_SYNC_RENDERER_CLASS
 		else
 			$lastsync = $this->statetable->readState('lastsync.kurse.global', '0000-00-00 00:00:00');
 		
+		// Kurse: (nur) in Vorbereitung
+		$this->log("Bearbeite Kurse (nur) in Vorbereitung");
+		$db4 = new DB_ADMIN;
+		$sql = "SELECT id, titel FROM kurse WHERE freigeschaltet=0 $this->dbgCond;";
+		if(DEBUG)
+		{ echo "Kurs-Ermittlung- in Vorbereitung -SQL:\n";
+		echo $sql."\n"; }
+			
+		$db4->query( $sql );
+			
+		$kurse4_cnt = $db4->ResultNumRows;
+		if(DEBUG)
+		{ echo "Kurse in Vorbereitung: ".$kurse_cnt."\n\n"; }
+			
+		// go through all kurse in Vorbereitung modified since $lastsync
+		$kurs4_cnt = 0;
+		while( $db4->next_record() )
+		{
+		    $kurs4_cnt++;
+		    $kurs_id 		= intval($db4->fs('id'));							if( ($kurs4_cnt % 100 ) == 0 ) { echo "\n".date("Y-m-d H:i:s")."... $kurs4_cnt ff ...\n"; $this->statetable->updateUpdateStick(); }
+			    
+		    $kurs_titel = $db4->fs('titel');
+		    update_titel_sorted($kurs_id, $kurs_titel); // in admin/config/trigger_kurse.inc.php
+		}
+			
+		$this->log("Done: ".$kurs4_cnt." Kurse in Vorbereitung.");
+			
+			
+		// Kurse: Freigegeben, Abgelaufen, Dauerhaft
+		
 		// load all kurse modified since $lastsync
-		$sql = "SELECT id, freigeschaltet, thema, anbieter, date_modified, bu_nummer, fu_knr, azwv_knr FROM kurse WHERE date_modified>='$lastsync' AND (freigeschaltet=1 OR freigeschaltet=4 OR freigeschaltet=3) $this->dbgCond;";
+		$sql = "SELECT id, titel, freigeschaltet, thema, anbieter, date_modified, bu_nummer, fu_knr, azwv_knr FROM kurse WHERE date_modified>='$lastsync' AND (freigeschaltet=1 OR freigeschaltet=4 OR freigeschaltet=3) $this->dbgCond;";
+		if(DEBUG)
+		{ echo "Kurs-Ermittlung-SQL:\n"; echo $sql."\n"; }
 		$db->query( $sql );
 
 		$alle_kurse_str = '0';
 		$kurse_cnt = $db->ResultNumRows;
+		echo "Kurse-Cnt vorher: ".$kurse_cnt."\n\n";
 		for( $i = 0; $i < $kurse_cnt; $i++ )
 			$alle_kurse_str .= ', ' . $db->Result[$i]['id'];
 		
 		$kurs2portaltag = new KURS2PORTALTAG_CLASS($this->framework, $this->tagtable, $this->statetable, $alle_kurse_str);
 		
+		echo "\nLade Kurse.\n";
+		
 		// go through all kurse modified since $lastsync
 		$kurs_cnt = 0;
 		while( $db->next_record() )
 		{
-			$kurs_id 		= intval($db->f8('id'));							if( ($kurs_cnt % 100 ) == 0 ) { echo "... $kurs_cnt ff ...\n"; $this->statetable->updateUpdateStick(); }
-			$anbieter_id	= intval($db->f8('anbieter'));						if( $anbieter_id <= 0 ) { $this->log("ERROR: kein Anbieter angegeben fuer Kurs ID $kurs_id."); }
-			$freigeschaltet	= intval($db->f8('freigeschaltet'));
-			
-			// convert thema, stichw, anbieter etc. to tag IDs
-			$tag_ids = array();
-			$this->themen2tag->  lookupTagIds(intval($db->f8('thema')),    $tag_ids);
-			$this->anbieter2tag->lookupTagIds($anbieter_id, $tag_ids);
-			$db2->query("SELECT attr_id FROM kurse_stichwort WHERE primary_id=$kurs_id");
-			$all_stichwort_ids = array();
-			while( $db2->next_record() )
-			{
-				$stichwort_id = intval($db2->f8('attr_id'));
-				$all_stichwort_ids[] = $stichwort_id;
-				$this->stichw2tag->lookupTagIds($stichwort_id, $tag_ids);
-			}
-			
-			$db2->query("SELECT attr_id FROM anbieter_stichwort WHERE primary_id=$anbieter_id;");
-			while( $db2->next_record() )
-			{
-				$stichwort_id = intval($db2->f8('attr_id'));
-				$all_stichwort_ids[] = $stichwort_id;
-				$this->stichw2tag->lookupTagIds($stichwort_id, $tag_ids);
-			}		
-			
-			// spezielle Nummern erzeugen spezielle Tags
-			// siehe hierzu die Anmerkungen in wisy-durchf-class.inc.php bei [1]
-			if( $db->f8('bu_nummer') != '' ) 
-			{
-				$tag_id = $this->tagtable->lookupOrInsert('Bildungsurlaub', 2 /*foerderungsart*/);
-				if( $tag_id ) $tag_ids[] = $tag_id;
-			}
-
-			if( $db->f8('fu_knr') != '' ) 
-			{
-				$tag_id = $this->tagtable->lookupOrInsert('Fernunterricht', 0 /*sachstichw*/);
-				if( $tag_id ) $tag_ids[] = $tag_id;
-			}
-			
-			if( $db->f8('azwv_knr') != '' ) 
-			{
-				$tag_id = $this->tagtable->lookupOrInsert('Bildungsgutschein', 2 /*foerderungsart*/);
-				if( $tag_id ) $tag_ids[] = $tag_id;
-			}			
-			
-			// add AutoStichwort (d.h. zu einem Stichwort die uebergeordneten Stichwoerter automatisch hinzufuegen)
-			// siehe hierzu die Anmerkungen in wisy-durchf-class.inc.php bei [1]
-			foreach( $all_stichwort_ids as $stichwort_id )
-			{
-				if( is_array($this->verweis2[$stichwort_id]) )
-				{
-					foreach( $this->verweis2[$stichwort_id] as $stichwort_id2 )
-					{
-						$this->stichw2tag->lookupTagIds($stichwort_id2, $tag_ids);
-					}
-				}
-			}
-			
-			// durchfuehrungen durchgehen ...
-			$d_beginn			= array();
-			$d_plz				= array(); $d_has_unset_plz = false;
-			$d_latlng			= array();
-			$k_beginn			= '0000-00-00';
-			$k_beginn_last		= '0000-00-00';
-			$k_preis			= -1;
-			$k_dauer			= 0;
-			$k_kurstage			= 0;
-			$k_tagescodes		= array();
-			$ort_sortonly		= '';
-			$db2->query("SELECT durchfuehrung.id AS did, durchfuehrung.user_grp, durchfuehrung.date_modified, strasse, plz, ort, stadtteil, land, beginn, ende, beginnoptionen, dauer, dauer_fix, preis, kurstage, tagescode, zeit_von, zeit_bis, user_grp.shortname FROM durchfuehrung LEFT JOIN user_grp ON user_grp.id=durchfuehrung.user_grp LEFT JOIN kurse_durchfuehrung ON secondary_id=durchfuehrung.id WHERE primary_id=$kurs_id");
-			$anz_durchf = 0;
-			//$at_least_one_durchf = false;
-			while( $db2->next_record() )
-			{
-				// ... stadtteil / ort als Tag anlegen
-				$strasse   		     = $db2->f8('strasse');
-				$plz 			     = $db2->f8('plz'); if( $plz == '00000' ) $plz = '';
-				$ort       		     = $db2->f8('ort');
-				$stadtteil 		     = $db2->f8('stadtteil');
-				$land 			     = $db2->f8('land');
-				$beginn			     = $db2->f8('beginn');
-				$ende			     = $db2->f8('ende');
-				$df_id			     = $db2->f8('did');
-				$dauer_fix 	         = intval($db2->f('dauer_fix'));
-				$user_grp			 = $db2->f8('user_grp');
-				$user_grp_shortname  = $db2->f8('shortname');
-				$date_modified		 = $db2->f8('date_modified');
-				$d_kurstage  	     = intval($db2->f8('kurstage'));
-				if( strpos($stadtteil, ',')===false && strpos($ort, ',')===false
-				 && strpos($stadtteil, ':')===false && strpos($ort, ':')===false  // do not add suspicious fields -- there is no reason for a comma in stadtteil/ort
-				) 
-				{
-					$tag_id = $this->tagtable->lookupOrInsert($stadtteil, 512);
-					if( $tag_id ) $tag_ids[] = $tag_id;
-	
-					if( $ort!='Fernunterricht' /*ja, das wird teilweise so eingegeben ...*/)
-					{
-						$tag_id = $this->tagtable->lookupOrInsert($ort, 512);
-						if( $tag_id ) $tag_ids[] = $tag_id;
-					}
-				}
-				
-				// stadtteil / ort zum sortieren aufbereiten
-				if( $ort_sortonly == '' && $ort != '' )
-				{
-					$ort_sortonly = "$ort $stadtteil";
-					$ort_sortonly = g_eql_normalize_natsort($ort_sortonly);
-				}
-				
-				// plz sammeln
-				if( $plz != '' )
-				{
-					$d_plz[$plz] = 1;
-				}
-				else
-				{
-					$d_has_unset_plz = true;
-				}
-				
-				// get lat, lng from external source
-				if( $updateLatlng )
-				{
-				    $geocoding_start_s = microtime(true);
-				    $temp = $geocoder->geocode2($db2->Record, false);
-				    
-				    if( !$temp['error'] ) {
-				        $d_latlng[ intval($temp['lat']*1000000).','.intval($temp['lng']*1000000) ] = 1;
-				        $geocoded_addresses++;
-				    } else { // not in cache yet
-				        
-				        $done_key = md5(trim($db2->Record['strasse']).trim($db2->Record['ort'])); // remember all adresses already transmitted for geocoding
-				        
-				        // try to live geocode
-				        if(!isset($geocoded_addresses_live[$done_key]) // only once per address
-				            && ($this->framework->iniRead('nominatim.alternate.geocoder', '') == 1 && strlen($this->framework->iniRead('nominatim.url', '')) > 3) // and other than openstreetmap.org
-				            ) {
-				                if($geocoded_addresses_ext < $live_geocode_max && $is_geocode_day) { // Not too many and only on specified days
-				                    if(stripos($db2->Record['ort'], "Fernunterricht") === FALSE
-				                        && stripos($db2->Record['ort'], ".") === FALSE
-				                        && stripos($db2->Record['ort'], ",") === FALSE
-				                        && strlen($db2->Record['ort']) > 1) {
-				                            $this->log("geocode from LIVE: ".$db2->Record['strasse'].", ".$db2->Record['ort']."\n");
-				                            usleep(100000); // 0,1s delay between ext. calls
-				                            $temp = $geocoder->geocode2($db2->Record, true);
-				                            $geocoded_addresses_ext++;
-				                            
-				                            if( !$temp['error'] ) {
-				                                $d_latlng[ intval($temp['lat']*1000000).','.intval($temp['lng']*1000000) ] = 1;
-				                                $this->log("OK: ".$db2->Record['strasse'].", ".$db2->Record['ort'].", lat: ".$temp['lat'].", lng: ".$temp['lng']."\n");
-				                                $geocoded_addresses_live[$done_key] = true;
-				                                $geocoded_addresses++;
-				                            } else {
-				                                $this->log("** Geocoding-Fehler: ".$temp['error'].", URL:".$temp['url']."\n");
-				                                array_push($nongeocoded_addresses, array("error"=>$temp['error'], "url"=>$temp['url'], "adresse"=>$db2->Record, "df_id"=>$df_id, "kurs_id"=>$kurs_id, "user_grp"=>$user_grp, "user_grp_shortname"=>$user_grp_shortname, "date_modified"=>$date_modified));
-				                                $geocoded_addresses_live[$done_key] = true;
-				                            }
-				                        }
-				                } else {
-				                    $geocoded_addresses_live[$done_key] = true;
-				                    
-				                    if($is_geocode_day)
-				                        $non_geocoded_addresses_limit++;
-				                }
-				            } // End: no geocode attempt until now & alternative geocoder
-				    } // End: not yet in cache
-				    $geocoding_total_s += microtime(true)-$geocoding_start_s;
-				} // End: get lat, lng from external source
-				
-				// alle beginndaten sammeln
-				$temp = substr($beginn, 0, 10); // yyyy-mm-dd
-				if( $temp != '0000-00-00' )
-				{
-					$d_beginn[] = $temp;
-					
-					if( $temp >= $this->today_datenotime )
-						$anz_durchf++;
-				}
-				else
-				{
-					$anz_durchf++;
-				}
-				//$at_least_one_durchf = true;
-				
-				$d_beginnoptionen = intval($db2->f8('beginnoptionen'));
-				if( $d_beginnoptionen & 512 )
-				{
-					$tag_id = $this->tagtable->lookupOrInsert('Startgarantie', 0);
-					if( $tag_id ) $tag_ids[] = $tag_id;
-				}					
-				
-				// HACK: tagescode und dauer in Quelle berechnen
-				// (dies sollte besser ausserhalb des Portals im Redaktionssystem passieren, aber hier ist es so schoen praktisch, da die Trigger sowieso aufgerufen werden)
-				$write_back = '';
-				$d_tagescode = berechne_tagescode($db2->f8('zeit_von'), $db2->f8('zeit_bis'), $d_kurstage);
-				if( $d_tagescode != intval($db2->f8('tagescode')) )
-				{
-					$write_back = " tagescode=$d_tagescode ";
-				}
-
-				$d_dauer = berechne_dauer($beginn, $ende);
-				if( $d_dauer != intval($db2->f('dauer')) && !$dauer_fix)
-				{
-					$write_back = " dauer=$d_dauer ";
-				}
-				
-				if( $write_back != '' )
-				{
-					$sql = "UPDATE durchfuehrung SET $write_back WHERE id=".$db2->f8('did');
-					$db3->query($sql);
-				}
-				
-				// hoechste dauer setzen ("hoechste" hier willkuerlich, in 99.9% sind eh alle Angaben hierzu bei allen Druchfuehrungen gleich)
-				if( $d_dauer > 0 && ($d_dauer > $k_dauer || $k_dauer==0) )
-				{
-					$k_dauer = $d_dauer;
-				}				
-
-				// hoechsten preis setzen ("hoechsten" wg. spam verhinderung, keine Ausnutzung besonderheiten des Systems)
-				$d_preis = intval($db2->f8('preis'));
-				if( $d_preis != -1 && ($d_preis > $k_preis || $k_preis == -1) )
-				{
-					$k_preis = $d_preis;
-				}
-				
-				// kurstage (wochentage) / tagescode (vormittags, nachmittags, ...) sammeln
-				$k_kurstage |= $d_kurstage;
-				$k_tagescodes[ $d_tagescode ] = 1;
-				
-			} // ende durchfuehrungen
-
-			// portale-tags zu $tag_ids hinzufuegen, anzahlen erhoehen
-			//if( $anz_durchf == 0 && $at_least_one_durchf ) // 21:29 01.10.2013 at_least_one_durchf stellt sicher, dass im Zweifelsfalle eher mehr gezaehlt wird als zu wenig, s. Mails mit Juergen
-			//	$anz_durchf++;								 // 15:11 08.10.2013 das fuehrt zu zu hohen Zahlen in RLP und anderswo, wir lassen das so also sein...
-			
-			$kurs2portaltag->getPortalTagsAndIncCounts($kurs_id, $tag_ids /*modified*/, $anbieter_id, $anz_durchf, $d_plz, $d_has_unset_plz);
-
-			// kurstage (wochentage) / tagescode (vormittags, nachmittags, ...) setzen
-			for( $i = 0; $i < 7; $i++ ) 
-			{
-				if( $k_kurstage & (1<<$i) )
-				{
-					$tag_id = $this->tagtable->lookupOrInsert($this->weekdays[$i], 0);
-					if( $tag_id ) $tag_ids[] = $tag_id;
-				}
-			}
-			
-			reset($k_tagescodes);
-			while( list($code) = each($k_tagescodes) )
-			{
-				if( $this->tagescodes[$code] != '' )
-				{
-					$tag_id = $this->tagtable->lookupOrInsert($this->tagescodes[$code], 0);
-					if( $tag_id ) $tag_ids[] = $tag_id;
-				}
-			}
-			
-			// fruehestmoeglichstes beginndatum setzen
-			if( sizeof($d_beginn) )
-			{
-				sort($d_beginn);
-				for( $i = 0; $i < sizeof($d_beginn); $i++ )
-				{
-					$k_beginn = $d_beginn[$i];
-					if( $k_beginn >= $this->today_datenotime )
-						break;
-				}
-				
-				// spaetestmoegliches beginndatum setzen
-				for( $i = 0; $i < sizeof($d_beginn); $i++ )
-				{
-					if( $d_beginn[$i] >= $this->today_datenotime && $d_beginn[$i] >= $k_beginn_last)
-						$k_beginn_last = $d_beginn[$i];
-				}
-			}
-			
-			if( $freigeschaltet == 1 /*freigegeben*/ || $freigeschaltet == 4 /*dauerhaft*/ )
-			{
-				if( $k_beginn < $this->today_datenotime )
-					$k_beginn = '9999-09-09';	// Any date in the future -- this may happen frequently on missing dates with given beginnoptionen
-												// -- 11:23 26.04.2013 it also happens with the new Stichwort #315/Einstieg bis Kursende moeglich
-			}
-			else if( $freigeschaltet == 3 /*abgelaufen*/ ) 
-			{
-				if( $k_beginn >= $this->today_datenotime )
-					$k_beginn = '0000-00-00'; // Any date in the past -- this should normally not happen, only if the kurs is valid normally but set to abgelaufen manually
-				
-				if( $k_beginn_last >= $this->today_datenotime )
-					$k_beginn_last = '0000-00-00'; // Any date in the past -- this should normally not happen, only if the kurs is valid normally but set to abgelaufen manually
-			}
-
-			// fruehestmoeglichstes beginndatum korrigieren, falls dieses in der Vergangenheit liegt UND kurse die Eigentschaften "Beginn erfragen" etc. zugewiesen wurde
-			/*
-			if( $k_beginn < $this->today_datenotime && $k_beginnerfragenetc )
-			{
-				$k_beginn = '0000-00-00';
-			}
-			*/
-
-			// CREATE main search entry for this record (if not exist)
-			$db2->query("SELECT begmod_hash, begmod_date FROM x_kurse WHERE kurs_id=$kurs_id;");
-			if( $db2->next_record() )
-			{
-				$begmod_hash = $db2->f8('begmod_hash');
-				$begmod_date = $db2->f8('begmod_date'); 
-			}
-			else
-			{
-				$db2->query("INSERT INTO x_kurse (kurs_id) VALUES ($kurs_id);");
-				$begmod_hash = '';
-				$begmod_date = $db->f8('date_modified');
-			}
-
-			// "Beginnaenderungsdatum" aktualisieren
-			$begmod_hash = explode(',', $begmod_hash);
-			for( $i = 0; $i < sizeof($d_beginn); $i++ )
-			{
-				if( !in_array($d_beginn[$i], $begmod_hash) )
-				{
-					$begmod_date = $db->f8('date_modified');
-					break;
-				}
-			}
-			$begmod_hash = implode(',', $d_beginn);
-			
-			// UPDATE main search entry for this record
-			$sql = "UPDATE	x_kurse 
+		    $kurs_id 		= intval($db->fs('id'));
+		    if( ($kurs_cnt % 100 ) == 0 ) { echo "\n".date("Y-m-d H:i:s")."... $kurs_cnt ff ...\n"; $this->statetable->updateUpdateStick(); }
+		    
+		    $kurs_titel = $db->fs('titel');
+		    update_titel_sorted($kurs_id, $kurs_titel); // in admin/config/trigger_kurse.inc.php
+		    
+		    $anbieter_id	= intval($db->fs('anbieter'));						
+		    if( $anbieter_id <= 0 ) { $this->log("ERROR: kein Anbieter angegeben fuer Kurs ID $kurs_id."); }
+		    $freigeschaltet	= intval($db->fs('freigeschaltet'));
+		    
+		    // convert thema, stichw, anbieter etc. to tag IDs
+		    $tag_ids = array();
+		    $this->themen2tag->  lookupTagIds(intval($db->f('thema')),    $tag_ids);
+		    $this->anbieter2tag->lookupTagIds($anbieter_id, $tag_ids);
+		    $db2->query("SELECT attr_id FROM kurse_stichwort WHERE primary_id=$kurs_id");
+		    $all_stichwort_ids = array();
+		    while( $db2->next_record() )
+		    {
+		        $stichwort_id = intval($db2->f('attr_id'));
+		        $all_stichwort_ids[] = $stichwort_id;
+		        $this->stichw2tag->lookupTagIds($stichwort_id, $tag_ids);
+		    }
+		    
+		    if(DEBUG) echo "Ende: convert-Thema\n";
+		    
+		    $db2->query("SELECT attr_id FROM anbieter_stichwort WHERE primary_id=$anbieter_id;");
+		    while( $db2->next_record() )
+		    {
+		        $stichwort_id = intval($db2->f('attr_id'));
+		        $all_stichwort_ids[] = $stichwort_id;
+		        $this->stichw2tag->lookupTagIds($stichwort_id, $tag_ids);
+		    }
+		    
+		    if(DEBUG) echo "Ende: Anbieter-SW\n";
+		    
+		    // spezielle Nummern erzeugen spezielle Tags
+		    // siehe hierzu die Anmerkungen in wisy-durchf-class.inc.php bei [1]
+		    if( $db->f('bu_nummer') != '' )
+		    {
+		        $tag_id = $this->tagtable->lookupOrInsert('Bildungsurlaub', 2 ); // foerderungsart
+		        if( $tag_id ) $tag_ids[] = $tag_id;
+		    }
+		    
+		    if( $db->f('fu_knr') != '' )
+		    {
+		        $tag_id = $this->tagtable->lookupOrInsert('Fernunterricht', 0 ); // sachstichw
+		        if( $tag_id ) $tag_ids[] = $tag_id;
+		    }
+		    
+		    if( $db->f('azwv_knr') != '' )
+		    {
+		        $tag_id = $this->tagtable->lookupOrInsert('Bildungsgutschein', 2 ); // foerderungsart
+		        if( $tag_id ) $tag_ids[] = $tag_id;
+		    }
+		    
+		    if(DEBUG) echo "Add Auto-SW\n";
+		    
+		    // add AutoStichwort (d.h. zu einem Stichwort die uebergeordneten Stichwoerter automatisch hinzufuegen)
+		    // siehe hierzu die Anmerkungen in wisy-durchf-class.inc.php bei [1]
+		    foreach( $all_stichwort_ids as $stichwort_id )
+		    {
+		        if( is_array($this->verweis2[$stichwort_id]) )
+		        {
+		            foreach( $this->verweis2[$stichwort_id] as $stichwort_id2 )
+		            {
+		                $this->stichw2tag->lookupTagIds($stichwort_id2, $tag_ids);
+		            }
+		        }
+		    }
+		    
+		    if(DEBUG) echo "Ende: Add Auto-SW\n";
+		    
+		    // durchfuehrungen durchgehen ...
+		    $d_beginn			= array();
+		    $d_plz				= array(); $d_has_unset_plz = false;
+		    $d_latlng			= array();
+		    $k_beginn			= '0000-00-00';
+		    $k_beginn_last		= '0000-00-00';
+		    $k_preis			= -1;
+		    $k_dauer			= 0;
+		    $k_kurstage			= 0;
+		    $k_tagescodes		= array();
+		    $bezirk     		= '';
+		    $ort_sortonly		= '';
+		    $ort_sortonly_secondary		= '';
+		    $db2->query("SELECT durchfuehrung.id AS did, durchfuehrung.user_grp, durchfuehrung.date_modified, strasse, plz, bezirk, ort, stadtteil, land, beginn, ende, beginnoptionen, dauer, dauer_fix, preis, kurstage, tagescode, zeit_von, zeit_bis, user_grp.shortname FROM durchfuehrung LEFT JOIN user_grp ON user_grp.id=durchfuehrung.user_grp LEFT JOIN kurse_durchfuehrung ON secondary_id=durchfuehrung.id WHERE primary_id=$kurs_id");
+		    $anz_durchf = 0;
+		    
+		    //$at_least_one_durchf = false;
+		    while( $db2->next_record() )
+		    {
+		        $db_anbieter->query("SELECT id FROM anbieter WHERE id=".$anbieter_id." AND freigeschaltet = 1");
+		        
+		        if($db_anbieter->next_record()) {
+		            // Anbieter freigeschaltet
+		        } else {
+		            // ! Nicht freigeschaltet, trotz freigegebenem Kurs (!)
+		            $db_anbieter->query("DELETE FROM x_kurse_tags WHERE kurs_id=$kurs_id;");
+		            continue 2; // Anbieter nicht freigeschaltet => nicht inidizieren und zwar in Kurs-Schleife weiter (nicht nur DF)
+		        }
+		        
+		        // ... stadtteil / ort als Tag anlegen
+		        $strasse   		= $db2->fs('strasse');
+		        $plz 			= $db2->fs('plz'); if( $plz == '00000' ) $plz = '';
+		        $bezirk       	= $db2->fs('bezirk');
+		        $ort       		= $db2->fs('ort');
+		        $stadtteil 		= $db2->fs('stadtteil');
+		        $land 			= $db2->fs('land');
+		        $beginn			= $db2->fs('beginn');
+		        $ende			= $db2->fs('ende');
+		        $df_id			= $db2->f('did');
+		        $dauer_fix 	= intval($db2->f('dauer_fix'));
+		        
+		        
+		        if(DEBUG) echo "DF-ID ".$df_id.", ";
+		        
+		        $user_grp			= $db2->f('user_grp');
+		        $user_grp_shortname			= $db2->fs('shortname');
+		        $date_modified			= $db2->fs('date_modified');
+		        $d_kurstage  	= intval($db2->f('kurstage'));
+		        $bezirk         = $bezirk." (Bezirk)";
+		        if( strpos($stadtteil, ',')===false && strpos($ort, ',')===false
+		            && strpos($stadtteil, ':')===false && strpos($ort, ':')===false
+		            && strpos($bezirk, ':')===false && strpos($bezirk, ':')===false    // do not add suspicious fields -- there is no reason for a comma in stadtteil/bezirk/ort
+		            )
+		        {
+		            // lookupOrInsert($tag_name, $tag_type, $tag_help = 0, $tag_descr = '', $tag_eigenschaften = '-1')
+		            $tag_id = $this->tagtable->lookupOrInsert($stadtteil, 512, 0, 'Stadtteil');
+		            if( $tag_id ) $tag_ids[] = $tag_id;
+		            
+		            // lookupOrInsert($tag_name, $tag_type, $tag_help = 0, $tag_descr = '', $tag_eigenschaften = '-1')
+		            $tag_id = $this->tagtable->lookupOrInsert($bezirk, 512, 0, 'Bezirk');
+		            if( $tag_id ) $tag_ids[] = $tag_id;
+		            
+		            if( $ort != 'Fernunterricht' && $ort != 'Fernstudium') // from manual entries
+		            {
+		                $tag_id = $this->tagtable->lookupOrInsert($ort, 512);
+		                if( $tag_id ) $tag_ids[] = $tag_id;
+		            }
+		        }
+		        
+		        // stadtteil / ort zum sortieren aufbereiten
+		        if( $ort_sortonly == '' && $ort != '' )
+		        {
+		            $ort_sortonly = "$ort $stadtteil";
+		            $ort_sortonly = g_eql_normalize_natsort($ort_sortonly);
+		            $db_orte = new DB_Admin;
+		            if(stripos($ort, "Fernunterricht") !== FALSE || stripos($stadtteil, "Fernunterricht") !== FALSE || stripos($strasse, "Fernunterricht") !== FALSE
+		                || stripos($ort, "Fernstudium") !== FALSE || stripos($stadtteil, "Fernstudium") !== FALSE || stripos($strasse, "Fernstudium") !== FALSE) {
+		                    $sql = "INSERT INTO	x_kurse_orte SET kurs_id=$kurs_id, ort='".$ort."', ort_sortonly='zzz_fernstudium (".$df_id.")'"; // ort=... obsolete?
+		                } else {
+		                    $sql = "INSERT INTO	x_kurse_orte SET kurs_id=$kurs_id, ort='".$ort."', ort_sortonly='".$ort_sortonly." (".$df_id.")'"; // ort=... obsolete?
+		                }
+		                $db_orte->query($sql);
+		        } elseif( $ort_sortonly != '' && $ort != '' ) {
+		            $ort_sortonly_secondary_tmp = g_eql_normalize_natsort("$ort $stadtteil");
+		            if($ort_sortonly != $ort_sortonly_secondary_tmp && @strpos($ort_sortonly_secondary, $ort_sortonly_secondary_tmp) === FALSE) {
+		                $ort_sortonly_secondary .= ",".$ort_sortonly_secondary_tmp; // obsolete
+		                if(stripos($ort, "Fernunterricht") !== FALSE || stripos($stadtteil, "Fernunterricht") !== FALSE || stripos($strasse, "Fernunterricht") !== FALSE
+		                    || stripos($ort, "Fernstudium") !== FALSE || stripos($stadtteil, "Fernstudium") !== FALSE || stripos($strasse, "Fernstudium") !== FALSE) {
+		                        $sql = "INSERT INTO	x_kurse_orte SET kurs_id=$kurs_id, ort='".$ort."', ort_sortonly='zzz_fernstudium (".$df_id.")#'"; // ort=... obsolete
+		                    } else {
+		                        $sql = "INSERT INTO	x_kurse_orte SET kurs_id=$kurs_id, ort='".$ort."', ort_sortonly='".$ort_sortonly_secondary_tmp." (".$df_id.")#'"; // ort=... obsolete
+		                    }
+		                    $db_orte->query($sql);
+		            }
+		        }
+		        // $db_orte->free();
+		        
+		        if(stripos($ort, "Fernunterricht") !== FALSE || stripos($stadtteil, "Fernunterricht") !== FALSE || stripos($strasse, "Fernunterricht") !== FALSE
+		            || stripos($ort, "Fernstudium") !== FALSE || stripos($stadtteil, "Fernstudium") !== FALSE || stripos($strasse, "Fernstudium") !== FALSE) {
+		                $ort_sortonly == "zzz"; // put Fernunterricht / Fernstudium at the end when sorting by city // obsolete
+		            }
+		            
+		            // plz sammeln
+		            if( $plz != '' )
+		            {
+		                $d_plz[$plz] = 1;
+		            }
+		            else
+		            {
+		                $d_has_unset_plz = true;
+		            }
+		            
+		            // latlng sammeln
+		            if( $updateLatlng )
+		            {
+		                $geocoding_start_s = microtime(true);
+		                
+		                if(DEBUG) $this->log("geocode from Cache: ".$db2->Record['strasse'].", ".$db2->Record['ort']."\n");
+		                
+		                $temp = $geocoder->geocode2($db2->Record, false); // checks perm and search (temp) - caches, Umlaute being converted! Straße -> Strasse
+		                
+		                if(DEBUG) $this->log("Resultat =>".print_r($temp, true)."\n");
+		                
+		                if( !$temp['error'] ) {
+		                    $d_latlng[ intval($temp['lat']*1000000).','.intval($temp['lng']*1000000) ] = 1;
+		                    $geocoded_addresses++;
+		                } else { // not in cache yet
+		                    
+		                    $done_key = md5(trim($db2->Record['strasse']).trim($db2->Record['ort']));
+		                    
+		                    // try to live geocode
+		                    if(!isset($geocoded_addresses_live[$done_key]) // only once per address
+		                        && ($this->framework->iniRead('nominatim.alternate.geocoder', '') == 1 && strlen($this->framework->iniRead('nominatim.url', '')) > 3) // and other than openstreetmap.org
+		                        ) {
+		                            
+		                            if( $geocoded_addresses_ext < $live_geocode_max && ($is_geocode_day) ) {
+		                                
+		                                if(stripos($db2->Record['ort'], "Fernunterricht") === FALSE
+		                                    && stripos($db2->Record['ort'], ".") === FALSE
+		                                    && stripos($db2->Record['ort'], ",") === FALSE
+		                                    && strlen($db2->Record['ort']) > 1) {
+		                                        
+		                                        $adress_str = $db2->Record['strasse'].", ".$db2->Record['ort'];
+		                                        $adress_check = $this->clean_address($adress_str);
+		                                        if($adress_check["skip"]) {
+		                                            if(DEBUG) $this->log($adress_str);
+		                                        }
+		                                        else {
+		                                                
+		                                                if($adress_check["changed"]) {
+		                                                    if(DEBUG) $this->log("=> Geocoding changed");
+		                                                    $addrArr = explode(",", $adress_check['address']);
+		                                                    if( count($addrArr) == 2 ) {
+		                                                        $db2->Record['strasse'] = $addrArr[0];
+		                                                        $db2->Record['ort'] = $addrArr[1];
+		                                                    } elseif( count($addrArr) == 3 ) {
+		                                                        $db2->Record['strasse'] = $addrArr[1];
+		                                                        $db2->Record['ort'] = $addrArr[2];
+		                                                    }
+		                                                }
+		                                                
+		                                                $this->log("geocode from LIVE: ".$adress_str."\n");
+		                                                usleep(100000); // 0,1s delay between ext. calls
+		                                                
+		                                                $temp = $geocoder->geocode2($db2->Record, true);
+		                                                
+		                                                $geocoded_addresses_ext++;
+		                                                
+		                                                if( !$temp['error'] ) {
+		                                                    $d_latlng[ intval($temp['lat']*1000000).','.intval($temp['lng']*1000000) ] = 1;
+		                                                    if(DEBUG) $this->log( "** OK ** von Live: ".$db2->Record['strasse'].", ".$db2->Record['ort'].", lat: ".$temp['lat'].", lng: ".$temp['lng']."\n" );
+		                                                    $geocoded_addresses_live[$done_key] = true;
+		                                                    $geocoded_addresses++;
+		                                                } else {
+		                                                    
+		                                                    echo "** Fehler ** von Live: ".$temp['error'].", URL:".$temp['url']."\n";
+		                                                    
+		                                                    $this->log("** Fehler ** von Live: ".$temp['error'].", URL:".$temp['url']."\n");
+		                                                    array_push($nongeocoded_addresses, array("error"=>$temp['error'], "url"=>$temp['url'], "adresse"=>$db2->Record, "df_id"=>$df_id, "kurs_id"=>$kurs_id, "user_grp"=>$user_grp, "user_grp_shortname"=>$user_grp_shortname, "date_modified"=>$date_modified));
+		                                                    $geocoded_addresses_live[$done_key] = true;
+		                                                }
+		                                                
+		                                            }
+		                                    }
+		                                    
+		                            } else {
+		                                $geocoded_addresses_live[$done_key] = true;
+		                                
+		                                if($is_geocode_day)
+		                                    $non_geocoded_addresses_limit++;
+		                            }
+		                        }
+		                }
+		                $geocoding_total_s += microtime(true)-$geocoding_start_s;
+		            }
+		            
+		            // alle beginndaten sammeln
+		            $temp = substr($beginn, 0, 10); // yyyy-mm-dd
+		            if( $temp != '0000-00-00' )
+		            {
+		                $d_beginn[] = $temp;
+		                
+		                if( $temp >= $this->today_datenotime )
+		                    $anz_durchf++;
+		            }
+		            else
+		            {
+		                $anz_durchf++;
+		            }
+		            //$at_least_one_durchf = true;
+		            
+		            $d_beginnoptionen = intval($db2->f('beginnoptionen'));
+		            if( $d_beginnoptionen & 512 )
+		            {
+		                $tag_id = $this->tagtable->lookupOrInsert('Startgarantie', 0);
+		                if( $tag_id ) $tag_ids[] = $tag_id;
+		            }
+		            
+		            // HACK: tagescode und dauer in Quelle berechnen
+		            // (dies sollte besser ausserhalb des Portals im Redaktionssystem passieren, aber hier ist es so schoen praktisch, da die Trigger sowieso aufgerufen werden)
+		            $write_back = '';
+		            $d_tagescode = berechne_tagescode($db2->f('zeit_von'), $db2->f('zeit_bis'), $d_kurstage);
+		            if( $d_tagescode != intval($db2->f('tagescode')) )
+		            {
+		                $write_back = " tagescode=$d_tagescode ";
+		            }
+		            
+		            $d_dauer = berechne_dauer($beginn, $ende);
+		            if( $d_dauer != intval($db2->f('dauer')) && !$dauer_fix)
+		            {
+		                $write_back = " dauer=$d_dauer ";
+		            }
+		            
+		            if( $write_back != '' )
+		            {
+		                $sql = "UPDATE durchfuehrung SET $write_back WHERE id=".$db2->f('did');
+		                $db3->query($sql);
+		            }
+		            
+		            // hoechste dauer setzen ("hoechste" hier willkuerlich, in 99.9% sind eh alle Angaben hierzu bei allen Druchfuehrungen gleich)
+		            if( $d_dauer > 0 && ($d_dauer > $k_dauer || $k_dauer==0) )
+		            {
+		                $k_dauer = $d_dauer;
+		            }
+		            
+		            // hoechsten preis setzen ("hoechsten" wg. spam verhinderung, keine Ausnutzung besonderheiten des Systems)
+		            $d_preis = intval($db2->f('preis'));
+		            if( $d_preis != -1 && ($d_preis > $k_preis || $k_preis == -1) )
+		            {
+		                $k_preis = $d_preis;
+		            }
+		            
+		            // kurstage (wochentage) / tagescode (vormittags, nachmittags, ...) sammeln
+		            $k_kurstage |= $d_kurstage;
+		            $k_tagescodes[ $d_tagescode ] = 1;
+		            
+		    } // ende durchfuehrungen
+		    
+		    
+		    if(DEBUG) echo "Ende: Durchfuehrungen.\n";
+		    
+		    // portale-tags zu $tag_ids hinzufuegen, anzahlen erhoehen
+		    //if( $anz_durchf == 0 && $at_least_one_durchf ) // 21:29 01.10.2013 at_least_one_durchf stellt sicher, dass im Zweifelsfalle eher mehr gezaehlt wird als zu wenig, s. Mails mit Juergen
+		    //	$anz_durchf++;								 // 15:11 08.10.2013 das fuehrt zu zu hohen Zahlen in RLP und anderswo, wir lassen das so also sein...
+		        $kurs2portaltag->getPortalTagsAndIncCounts($kurs_id, $tag_ids, $anbieter_id, $anz_durchf, $d_plz, $d_has_unset_plz); // $tag_ids -> modified
+		        
+		        // kurstage (wochentage) / tagescode (vormittags, nachmittags, ...) setzen
+		        for( $i = 0; $i < 7; $i++ )
+		        {
+		            if( $k_kurstage & (1<<$i) )
+		            {
+		                $tag_id = $this->tagtable->lookupOrInsert($this->weekdays[$i], 0);
+		                if( $tag_id ) $tag_ids[] = $tag_id;
+		            }
+		        }
+		        reset($k_tagescodes);
+		        foreach(array_keys($k_tagescodes) as $code)
+		        {
+		            if( $this->tagescodes[$code] != '' )
+		            {
+		                $tag_id = $this->tagtable->lookupOrInsert($this->tagescodes[$code], 0);
+		                if( $tag_id ) $tag_ids[] = $tag_id;
+		            }
+		        }
+		        
+		        // fruehestmoegliches beginndatum setzen
+		        if( sizeof((array) $d_beginn) )
+		        {
+		            sort($d_beginn);
+		            for( $i = 0; $i < sizeof((array) $d_beginn); $i++ )
+		            {
+		                $k_beginn = $d_beginn[$i];
+		                if( $k_beginn >= $this->today_datenotime )
+		                    break;
+		            }
+		            
+		            // spaetestmoegliches beginndatum setzen
+		            for( $i = 0; $i < sizeof((array) $d_beginn); $i++ )
+		            {
+		                if( $d_beginn[$i] >= $this->today_datenotime && $d_beginn[$i] >= $k_beginn_last)
+		                    $k_beginn_last = $d_beginn[$i];
+		            }
+		        }
+		        
+		        if( $freigeschaltet == 1 || $freigeschaltet == 4 ) // 1 = freigegeben, 4 = dauerhaft
+		        {
+		            if( $k_beginn < $this->today_datenotime )
+		                $k_beginn = '9999-09-09';	// Any date in the future -- this may happen frequently on missing dates with given beginnoptionen
+		                // -- 11:23 26.04.2013 it also happens with the new Stichwort #315/Einstieg bis Kursende moeglich
+		        }
+		        else if( $freigeschaltet == 3  )  // abgelaufen
+		        {
+		            if( $k_beginn >= $this->today_datenotime )
+		                $k_beginn = '0000-00-00'; // Any date in the past -- this should normally not happen, only if the kurs is valid normally but set to abgelaufen manually
+		                
+		                if( $k_beginn_last >= $this->today_datenotime )
+		                    $k_beginn_last = '0000-00-00'; // Any date in the past -- this should normally not happen, only if the kurs is valid normally but set to abgelaufen manually
+		        }
+		        
+		        // fruehestmoeglichstes beginndatum korrigieren, falls dieses in der Vergangenheit liegt UND kurse die Eigentschaften "Beginn erfragen" etc. zugewiesen wurde
+		        //
+		        // if( $k_beginn < $this->today_datenotime && $k_beginnerfragenetc )
+		        // {
+		        // 	$k_beginn = '0000-00-00';
+		            // }
+		            
+		            // CREATE main search entry for this record (if not exist)
+		            $db2->query("SELECT begmod_hash, begmod_date FROM x_kurse WHERE kurs_id=$kurs_id;");
+		            if( $db2->next_record() )
+		            {
+		                $begmod_hash = $db2->f('begmod_hash');
+		                $begmod_date = $db2->f('begmod_date');
+		            }
+		            else
+		            {
+		                $db2->query("INSERT INTO x_kurse (kurs_id) VALUES ($kurs_id);");
+		                $begmod_hash = '';
+		                $begmod_date = $db->f('date_modified');
+		            }
+		            
+		            // "Beginnaenderungsdatum" aktualisieren
+		            $begmod_hash = explode(',', $begmod_hash);
+		            for( $i = 0; $i < sizeof((array) $d_beginn); $i++ )
+		            {
+		                if( !in_array($d_beginn[$i], $begmod_hash) )
+		                {
+		                    $begmod_date = $db->f('date_modified');
+		                    break;
+		                }
+		            }
+		            $begmod_hash = implode(',', $d_beginn);
+		            
+		            
+		            if(DEBUG) echo "Update x_kurse Kurs: ".$kurs_id.".\n";
+		            
+		            // UPDATE main search entry for this record
+		            $sql = "UPDATE	x_kurse
 					SET 	beginn='$k_beginn'
 					,		beginn_last='$k_beginn_last'
 					,		dauer=$k_dauer
 					,		preis=$k_preis
 					,		anbieter_sortonly='".$this->anbieter2tag->lookupSorted($anbieter_id)."'
+                    ,       bezirk='$bezirk'
 					,		ort_sortonly='$ort_sortonly'
+					,       ort_sortonly_secondary='".trim($ort_sortonly_secondary, ",")."'
 					,		begmod_hash='$begmod_hash'
 					,		begmod_date='$begmod_date'
 					WHERE 	kurs_id=$kurs_id;";
-			$db2->query($sql);
-			
-			// UPDATE tag table for this record
-			$sql = '';
-			$added = array();
-			for( $t = 0; $t < sizeof($tag_ids); $t++ )
-			{
-				$tag_id = $tag_ids[$t];
-				if( !$added[ $tag_id ] )
-				{
-					$added[ $tag_id ] = true;
-					$sql .= $sql==""? "INSERT INTO x_kurse_tags (kurs_id, tag_id) VALUES " : ", ";
-					$sql .= "($kurs_id, $tag_id)";
-				}
-			}
-			
-			$db2->query("DELETE FROM x_kurse_tags WHERE kurs_id=$kurs_id;");
-			if( $sql != '' )
-			{
-				$db2->query($sql);
-			}
-
-			// UPDATE plz table for this record
-			$sql = '';
-			reset($d_plz);
-			while( list($plz) = each($d_plz) )
-			{
-				$sql .= $sql==""? "INSERT INTO x_kurse_plz (kurs_id, plz) VALUES " : ", ";
-				$sql .= "($kurs_id, '".addslashes($plz)."')";
-			}
-			
-			$db2->query("DELETE FROM x_kurse_plz WHERE kurs_id=$kurs_id;");
-			if( $sql != '' )
-			{
-				$db2->query($sql);
-			}
-
-			// UPDATE latlng table for this record
-			// die Abfrage in x_kurse_latlng sollte ausreihend schnell sein; 
-			// lt. https://dev.mysql.com/doc/refman/4.1/en/mysql-indexes.html wird der B-Tree auch fuer groesser/kleiner oder BETWEEN abfragen verwendet.
-			if( $updateLatlng )
-			{
-				$sql = '';
-				reset($d_latlng);
-				while( list($latlng) = each($d_latlng) )
-				{
-					$sql .= $sql==""? "INSERT INTO x_kurse_latlng (kurs_id, lat, lng) VALUES " : ", ";
-					$sql .= "($kurs_id, ".addslashes($latlng).")";
-				}
-				
-				$db2->query("DELETE FROM x_kurse_latlng WHERE kurs_id=$kurs_id;");
-				if( $sql != '' )
-				{
-					$db2->query($sql);
-				}
-			}
-			
-			// next kurs
-			$kurs_cnt++;
+		            $db2->query($sql);
+		            
+		            // UPDATE tag table for this record
+		            $sql = '';
+		            $added = array();
+		            for( $t = 0; $t < sizeof($tag_ids); $t++ )
+		            {
+		                $tag_id = $tag_ids[$t];
+		                if( !$added[ $tag_id ] )
+		                {
+		                    $added[ $tag_id ] = true;
+		                    $sql .= $sql==""? "INSERT INTO x_kurse_tags (kurs_id, tag_id) VALUES " : ", ";
+		                    $sql .= "($kurs_id, $tag_id)";
+		                }
+		            }
+		            
+		            $db2->query("DELETE FROM x_kurse_tags WHERE kurs_id=$kurs_id;");
+		            if( $sql != '' )
+		            {
+		                $db2->query($sql);
+		            }
+		            
+		            // UPDATE plz table for this record
+		            $sql = '';
+		            reset($d_plz);
+		            foreach(array_keys($d_plz) as $plz)
+		            {
+		                $sql .= $sql==""? "INSERT INTO x_kurse_plz (kurs_id, plz) VALUES " : ", ";
+		                $sql .= "($kurs_id, '".addslashes($plz)."')";
+		            }
+		            
+		            $db2->query("DELETE FROM x_kurse_plz WHERE kurs_id=$kurs_id;");
+		            if( $sql != '' )
+		            {
+		                $db2->query($sql);
+		            }
+		            
+		            
+		            $sql = '';
+		            reset($d_latlng);
+		            foreach(array_keys($d_latlng) as $latlng)
+		            {
+		                $sql .= $sql==""? "INSERT INTO x_kurse_latlng (kurs_id, lat, lng) VALUES " : ", ";
+		                $sql .= "($kurs_id, ".addslashes($latlng).")";
+		            }
+		            
+		            $db2->query("DELETE FROM x_kurse_latlng WHERE kurs_id=$kurs_id;");
+		            if( $sql != '' )
+		            {
+		                $db2->query($sql);
+		            }
+		            /* } */
+		            
+		            // next kurs
+		            $kurs_cnt++;
 		}
+		
+		if(DEBUG) echo "Ende Kurse.\n";
+		
+		
+		// put all distant learning courses at the end of search results sorted by city
+		/* ! redundant? $db->query("UPDATE x_kurse SET ort_sortonly = REPLACE(ort_sortonly, 'fernunterricht','zzz')");
+		 $db->query("UPDATE x_kurse SET ort_sortonly = REPLACE(ort_sortonly, 'fernstudium','zzz')"); */
+		
 		
 		$this->log(sprintf("%d addressed geocoded in %1.3f seconds.", $geocoded_addresses, $geocoding_total_s));
 		$this->log(sprintf("%d of which were geocoded through external service (only 1st and 15th day of the week)!", $geocoded_addresses_ext));
 		$this->log(sprintf("%d addresses were *not* geocoded through external service because of daily limit!", $non_geocoded_addresses_limit));
 		$this->log(sprintf("%d records updated.", $kurs_cnt));
 		
+		global $geocode_errors_file;
+		
 		if($is_geocode_day && is_array($nongeocoded_addresses) && count($nongeocoded_addresses) > 1)
-		    file_put_contents($geo_protocol_file, serialize($nongeocoded_addresses));
-		
-		// some specials for deepupdates
-		if( $lastsync == '0000-00-00 00:00:00' )
-		{
-			// delete old records
-			$db->query("DELETE FROM x_kurse_latlng WHERE kurs_id NOT IN($alle_kurse_str);");
-			$db->query("DELETE FROM x_kurse_tags WHERE kurs_id NOT IN($alle_kurse_str);");
-			$db->query("DELETE FROM x_kurse WHERE kurs_id NOT IN($alle_kurse_str);");
-			$this->log($db->affected_rows() . " records deleted.");
-
-			// delete unused tags
-			$all_tag_ids = $this->tagtable->getUsedTagIdsAsString();
-			$db->query("DELETE FROM x_kurse_tags WHERE tag_id NOT IN($all_tag_ids);");
-			$db->query("DELETE FROM x_tags WHERE tag_id NOT IN($all_tag_ids);");
-			$this->log($db->affected_rows() . " unused tags deleted.");
-			
-			// sync synonyms (should be done before calculating tag frequencies)
-			$this->doSyncSynonyms();
-
-			// TAG_FREQ: get the hash portal_tag_id => portal_id
-			$portal_tag_ids = array(0=>1);
-			reset($kurs2portaltag->all_portals);
-			while( list($portalId, $values) = each($kurs2portaltag->all_portals) )
-				$portal_tag_ids[ $values['portal_tag'] ] = 1; // $portalTagId may be 0
-																				$this->statetable->updateUpdatestick();
-			// TAG_FREQ: alle Tagfilter synchronisieren
-			$cont			= true;
-			$curr_portals	= array(0);
-			$curr_tags		= array();
-			$last_kurs_id	= 0;
-			$result			= array();
-			$today 			= strftime("%Y-%m-%d");
-			
-			$limit_i = 0;
-			$limit_cnt = 200000;
-			$sql = "SELECT t.tag_id, t.kurs_id 
-					FROM x_kurse_tags t 
-					LEFT JOIN x_kurse k ON k.kurs_id=t.kurs_id 
-					WHERE (k.beginn>='$today') 
+		    file_put_contents($geocode_errors_file, serialize($nongeocoded_addresses));
+		    
+		    // some specials for deepupdates
+		    if( $lastsync == '0000-00-00 00:00:00' )
+		    {
+		        // delete old records
+		        $db->query("DELETE FROM x_kurse_latlng WHERE kurs_id NOT IN($alle_kurse_str);");
+		        $db->query("DELETE FROM x_kurse_tags WHERE kurs_id NOT IN($alle_kurse_str);");
+		        $db->query("DELETE FROM x_kurse WHERE kurs_id NOT IN($alle_kurse_str);");
+		        $this->log($db->affected_rows() . " records deleted.");
+		        
+		        // delete unused tags
+		        $all_tag_ids = $this->tagtable->getUsedTagIdsAsString();
+		        $db->query("DELETE FROM x_kurse_tags WHERE tag_id NOT IN($all_tag_ids);");
+		        $db->query("DELETE FROM x_tags WHERE tag_id NOT IN($all_tag_ids);");
+		        $this->log($db->affected_rows() . " unused tags deleted.");
+		        
+		        // sync synonyms (should be done before calculating tag frequencies)
+		        $this->doSyncSynonyms();
+		        
+		        // TAG_FREQ: get the hash portal_tag_id => portal_id
+		        $portal_tag_ids = array(0=>1);
+		        reset($kurs2portaltag->all_portals);
+		        foreach($kurs2portaltag->all_portals as $portalId => $values)
+		            $portal_tag_ids[ $values['portal_tag'] ] = 1; // $portalTagId may be 0
+		            $this->statetable->updateUpdatestick();
+		            // TAG_FREQ: alle Tagfilter synchronisieren
+		            $cont			= true;
+		            $curr_portals	= array(0);
+		            $curr_tags		= array();
+		            $last_kurs_id	= 0;
+		            $result			= array();
+		            $today 			= strftime("%Y-%m-%d");
+		            
+		            $limit_i = 0;
+		            $limit_cnt = 200000;
+		            $sql = "SELECT t.tag_id, t.kurs_id
+					FROM x_kurse_tags t
+					LEFT JOIN x_kurse k ON k.kurs_id=t.kurs_id
+					WHERE (k.beginn>='$today')
 					ORDER BY kurs_id";  // -- dies beruecksichtigt nur die akt. kurse ... "SELECT tag_id, kurs_id FROM x_kurse_tags ORDER BY kurs_id"; wuerde auch die abgelaufenen kurse beruecksichtigen
-										// Abfrage vor 13:55 30.01.2013: (k.beginn='0000-00-00' OR k.beginn>='$today')
-			$db->query($sql . " LIMIT $limit_i, $limit_cnt"); // da die Abfrage sehr speicherintensiv ist, und die SQL-implementierung in DB_Admin ein ergebnis komplett einliest, hier ausnahmsweise Limitanweisungen, um speicher zu sparen.
-			while( $cont )
-			{
-				if( !$db->next_record() )
-				{
-					$limit_i += $limit_cnt;
-					$db->query($sql . " LIMIT $limit_i, $limit_cnt");
-					if( !$db->next_record() )
-						$cont = false; $db->Record['kurs_id'] = 0;  // force one for flush below!
-				} 
-					
-				if( $last_kurs_id != $db->Record['kurs_id'] )
-				{
-					// flush tags ...
-					for( $p = sizeof($curr_portals)-1; $p >= 0; $p-- )
-					{
-						for( $t = sizeof($curr_tags)-1; $t >= 0; $t-- )
-						{
-							$result[ $curr_portals[$p] ][ $curr_tags[$t] ] ++;
-						}
-					}
-					
-					// prepare for next
-					$last_kurs_id = $db->Record['kurs_id'];
-					$curr_portals = array(0);
-					$curr_tags = array();
-				}
-				
-				// collect tags
-				$tag_id  = $db->Record['tag_id'];
-				if( $portal_tag_ids[$tag_id] )
-					$curr_portals[] = $tag_id;
-				else
-					$curr_tags[] = $tag_id;
-			}
-																				$this->statetable->updateUpdatestick();
-			// TAG_FREQ: add the synonyms
-			$rev_syn = array();
-			$db->query("SELECT s.tag_id, s.lemma_id FROM x_tags_syn s LEFT JOIN x_tags t ON s.tag_id=t.tag_id WHERE NOT(t.tag_type&32);");
-			while( $db->next_record() )
-			{
-				$rev_syn[ $db->f8('lemma_id') ][] = $db->f8('tag_id');
-			}
-																				$this->statetable->updateUpdatestick();			
-			// TAG_FREQ: write the stuff
-			$db->query("DELETE FROM x_tags_freq;");
-			$portalIdFor0Out = false;
-			reset($kurs2portaltag->all_portals);
-			while( list($portalId, $values) = each($kurs2portaltag->all_portals) )
-			{
-				if( $values['einstellungen']['core'] == '20' )
-				{
-					// calculate the stats for the portal
-					$portalTagId = $values['portal_tag'];
-					if( $portalTagId && sizeof($result[$portalTagId]) )
-					{
-						$portalIdFor = $portalId;
-					}
-					else
-					{
-						$portalIdFor = 0;
-						$portalTagId = 0;
-					}
-					
-					// write the x_tags_freq table
-					if( $portalIdFor != 0 || !$portalIdFor0Out )
-					{
-						$v = '';
-						
-						if( is_array($result[$portalTagId]) )
-						{
-							reset( $result[$portalTagId] );
-							while( list($currTagId, $currFreq) = each($result[$portalTagId]) )
-							{
-								$v .= $v===''? '' : ', ';
-								$v .= "($currTagId, $portalIdFor, $currFreq)";
-								
-								if( is_array($rev_syn[$currTagId]) )
-								{
-									for( $s = sizeof($rev_syn[$currTagId])-1; $s >= 0; $s-- )
-									{
-										$v .= $v===''? '' : ', ';										// these two lines will add the synonymes
-										$v .= "({$rev_syn[$currTagId][$s]}, $portalIdFor, $currFreq)";	// to x_tags_freq - hiding, if needed, may happen in the viewing classes.
-									}
-								}
-							}
-						}
-						
-						if( $v != '' )
-							$db->query("INSERT INTO x_tags_freq (tag_id, portal_id, tag_freq) VALUES $v;");
-						
-						if( $portalIdFor == 0 ) $portalIdFor0Out = true;
-					}
-																				$this->statetable->updateUpdatestick();
-					// update the stats for the portal
-					$counts = $kurs2portaltag->getPortalTagsCounts( $values['portal_tag'] );
-					$values['einstcache']['stats.anzahl_kurse'] = $counts['anz_kurse'];
-					$values['einstcache']['stats.anzahl_anbieter'] = $counts['anz_anbieter'];
-					$values['einstcache']['stats.anzahl_durchfuehrungen'] = $counts['anz_durchf'];
-					//$values['einstcache']['stats.tag_filter'] = $einstcache_tagfilter;
-					$this->framework->cacheFlushInt($values['einstcache'], $portalId);
-					//$this->log("stats for portal $portalId updated to anz_kurse=".$counts['anz_kurse'].'/anz_anbieter='.$counts['anz_anbieter'].'/anz_durchf='.$counts['anz_durchf']);
-
-				}
-			}
-			$this->log("tag frequencies updated.");
-			
-		}
-		
-		// done
-		$this->statetable->writeState('lastsync.kurse.global', $this->today_datetime);
+		            // Abfrage vor 13:55 30.01.2013: (k.beginn='0000-00-00' OR k.beginn>='$today')
+		            $db->query($sql . " LIMIT $limit_i, $limit_cnt"); // da die Abfrage sehr speicherintensiv ist, und die SQL-implementierung in DB_Admin ein ergebnis komplett einliest, hier ausnahmsweise Limitanweisungen, um speicher zu sparen.
+		            while( $cont )
+		            {
+		                if( !$db->next_record() )
+		                {
+		                    $limit_i += $limit_cnt;
+		                    $db->query($sql . " LIMIT $limit_i, $limit_cnt");
+		                    if( !$db->next_record() )
+		                        $cont = false; $db->Record['kurs_id'] = 0;  // force one for flush below!
+		                }
+		                
+		                if( $last_kurs_id != $db->Record['kurs_id'] )
+		                {
+		                    // flush tags ...
+		                    for( $p = sizeof((array) $curr_portals)-1; $p >= 0; $p-- )
+		                    {
+		                        for( $t = sizeof((array) $curr_tags)-1; $t >= 0; $t-- )
+		                        {
+		                            $result[ $curr_portals[$p] ][ $curr_tags[$t] ] ++;
+		                        }
+		                    }
+		                    
+		                    // prepare for next
+		                    $last_kurs_id = $db->Record['kurs_id'];
+		                    $curr_portals = array(0);
+		                    $curr_tags = array();
+		                }
+		                
+		                // collect tags
+		                $tag_id  = $db->Record['tag_id'];
+		                if( $portal_tag_ids[$tag_id] )
+		                    $curr_portals[] = $tag_id;
+		                    else
+		                        $curr_tags[] = $tag_id;
+		            }
+		            $this->statetable->updateUpdatestick();
+		            // TAG_FREQ: add the synonyms
+		            $rev_syn = array();
+		            $db->query("SELECT s.tag_id, s.lemma_id FROM x_tags_syn s LEFT JOIN x_tags t ON s.tag_id=t.tag_id WHERE NOT(t.tag_type&32);");
+		            while( $db->next_record() )
+		            {
+		                $rev_syn[ $db->fs('lemma_id') ][] = $db->fs('tag_id');
+		            }
+		            
+		            // TAG_FREQ: get all tag IDs for all abschluesse (needed to calculate the number of certificates and the number of offers with certificates)
+		            $this->statetable->updateUpdatestick();
+		            
+		            $elearning = array();
+		            $db->query("SELECT tag_id FROM x_tags WHERE tag_name = 'E-Learning'"); //  AND tag_type&32768;
+		            while( $db->next_record() )
+		            {
+		                $elearning[ $db->f('tag_id') ] = 1;
+		                echo "E-Learning - Tag: ".$db->f('tag_id')."\n";
+		            }
+		            
+		            $abschluesse = array();
+		            $db->query("SELECT tag_id FROM x_tags WHERE tag_type&1;");
+		            while( $db->next_record() )
+		            {
+		                $abschluesse[ $db->f('tag_id') ] = 1;
+		            }
+		            
+		            $zertifikate = array();
+		            $db->query("SELECT tag_id FROM x_tags WHERE tag_type&65536;");
+		            while( $db->next_record() )
+		            {
+		                $zertifikate[ $db->f('tag_id') ] = 1;
+		            }
+		            
+		            $this->statetable->updateUpdatestick();
+		            // TAG_FREQ: write the stuff
+		            $db->query("DELETE FROM x_tags_freq;");
+		            $portalIdFor0Out = false;
+		            reset($kurs2portaltag->all_portals);
+		            foreach($kurs2portaltag->all_portals as $portalId => $values)
+		            {
+		                //if( $values['einstellungen']['core'] == '20' ) -- ignore core setting, this was to distinguish between WISY 1.0 and WISY 2.0; nowadays we have other core version numbers
+		                {
+		                    // calculate the stats for the portal
+		                    $portalTagId = $values['portal_tag'];
+		                    if( $portalTagId && sizeof((array) $result[$portalTagId]) )
+		                    {
+		                        $portalIdFor = $portalId;
+		                    }
+		                    else
+		                    {
+		                        $portalIdFor = 0;
+		                        $portalTagId = 0;
+		                    }
+		                    
+		                    $anz_kurse_mit_elearning  = 0;
+		                    $anz_kurse_mit_abschluss  = 0;
+		                    $anz_kurse_mit_zertifikat = 0;
+		                    
+		                    // write the x_tags_freq table
+		                    if( $portalIdFor != 0 || !$portalIdFor0Out )
+		                    {
+		                        $v = '';
+		                        
+		                        if( is_array($result[$portalTagId]) )
+		                        {
+		                            reset( $result[$portalTagId] );
+		                            foreach($result[$portalTagId] as $currTagId => $currFreq)
+		                            {
+		                                $v .= $v===''? '' : ', ';
+		                                $v .= "($currTagId, $portalIdFor, $currFreq)";
+		                                
+		                                if( is_array($rev_syn[$currTagId]) )
+		                                {
+		                                    for( $s = sizeof((array) $rev_syn[$currTagId])-1; $s >= 0; $s-- )
+		                                    {
+		                                        $v .= $v===''? '' : ', ';										// these two lines will add the synonymes
+		                                        $v .= "({$rev_syn[$currTagId][$s]}, $portalIdFor, $currFreq)";	// to x_tags_freq - hiding, if needed, may happen in the viewing classes.
+		                                    }
+		                                }
+		                                
+		                                if( $elearning[ $currTagId ] )
+		                                {
+		                                    $anz_kurse_mit_elearning += $currFreq;
+		                                }
+		                                
+		                                if( $abschluesse[ $currTagId ] )
+		                                {
+		                                    $anz_kurse_mit_abschluss += $currFreq;
+		                                }
+		                                
+		                                if( $zertifikate[ $currTagId ] )
+		                                {
+		                                    $anz_kurse_mit_zertifikat += $currFreq;
+		                                }
+		                            }
+		                        }
+		                        
+		                        if( $v != '' )
+		                            $db->query("INSERT INTO x_tags_freq (tag_id, portal_id, tag_freq) VALUES $v;");
+		                            
+		                            if( $portalIdFor == 0 ) $portalIdFor0Out = true;
+		                    }
+		                    
+		                    $this->statetable->updateUpdatestick();
+		                    
+		                    // update the stats for the portal
+		                    $counts = $kurs2portaltag->getPortalTagsCounts( $values['portal_tag'] );
+		                    $values['einstcache']['stats.anzahl_kurse'] = $counts['anz_kurse'];
+		                    $values['einstcache']['stats.anzahl_anbieter'] = $counts['anz_anbieter'];
+		                    $values['einstcache']['stats.anzahl_durchfuehrungen'] = $counts['anz_durchf'];
+		                    $values['einstcache']['stats.anzahl_elearning'] = $anz_kurse_mit_elearning;
+		                    $values['einstcache']['stats.anzahl_abschluesse'] = $anz_kurse_mit_abschluss;
+		                    $values['einstcache']['stats.anzahl_zertifikate'] = $anz_kurse_mit_zertifikat;
+		                    $values['einstcache']['stats.statistik_stand'] = date("d.m.Y H:i");
+		                    
+		                    // $yesterday = date('d.m.Y',strtotime('-1 day' , strtotime(date("d.m.Y H:i"))));
+		                    // Fuer Vergleich am morgigen Tag
+		                    $values['einstcache'][date("d.m.Y")] = 'stats.anzahl_anbieter:'.$counts['anz_anbieter']
+		                    .'###stats.anzahl_durchfuehrungen:'.$counts['anz_durchf']
+		                    .'###stats.anzahl_kurse:'.$counts['anz_kurse']
+		                    .'###stats.anzahl_elearning:'.$anz_kurse_mit_elearning
+		                    .'###stats.anzahl_abschluesse:'.$anz_kurse_mit_abschluss
+		                    .'###stats.anzahl_zertifikate:'.$anz_kurse_mit_zertifikat
+		                    .'###stats.statistik_stand:'.date("d.m.Y H:i");
+		                    
+		                    //$values['einstcache']['stats.tag_filter'] = $einstcache_tagfilter;
+		                    
+		                    $ist_domain = strtolower($_SERVER['HTTP_HOST']);
+		                    
+		                    $stats_file = 'admin/stats/'.( substr($ist_domain, 0, 7) != 'sandbox' ? '' : substr($ist_domain, 0, strpos($ist_domain, '.'))."_" ).'statistiken_'.$portalId.'.csv'; 
+		                    if(file_exists($stats_file))
+		                        $fp = fopen(	$stats_file, 'a'); // append
+		                        else {
+		                            $fp = fopen(	$stats_file, 'w'); // Open for writing only, place the file pointer at the beginning of the file and truncate the file to zero length
+		                            fputcsv($fp, array("Legende", "Datum", "Anzahl") );
+		                        }
+		                        fputcsv($fp, array("Kurse", date("Y-m-d"), $values['einstcache']['stats.anzahl_kurse'] ));
+		                        fputcsv($fp, array("Anbieter", date("Y-m-d"), $values['einstcache']['stats.anzahl_anbieter'] ));
+		                        fputcsv($fp, array("Durchfuehrungen", date("Y-m-d"), $values['einstcache']['stats.anzahl_durchfuehrungen'] ));
+		                        fputcsv($fp, array("ELearning", date("Y-m-d"), $values['einstcache']['stats.anzahl_elearning'] ));
+		                        fputcsv($fp, array("Abschluesse", date("Y-m-d"), $values['einstcache']['stats.anzahl_abschluesse'] ));
+		                        fputcsv($fp, array("Zertifikate", date("Y-m-d"), $values['einstcache']['stats.anzahl_zertifikate'] ));
+		                        fclose($fp);
+		                        
+		                        $csvData = $this->readCSV($stats_file);
+		                        
+		                        // Obtain a list of columns
+		                        foreach ($csvData as $key => $row) {
+		                            $legende[$key]  = $row['Legende'];
+		                            $datum[$key] = $row['Datum'];
+		                        }
+		                        
+		                        // Sort the data with age first, then favorite
+		                        // Add $csvData as the last parameter, to sort by the common key
+		                        array_multisort($legende, SORT_ASC, $datum, SORT_ASC, $csvData);
+		                        
+		                        $fp = fopen(	$stats_file, 'w');
+		                        fputcsv($fp, array("Legende", "Datum", "Anzahl") );
+		                        foreach($csvData AS $row) {
+		                            fputcsv($fp, explode(",", $row[0]));
+		                        }
+		                        fclose($fp);
+		                        
+		                        
+                                // write to portal cache
+		                        $this->cacheFlushInt($values['einstcache'], $portalId);
+		                }
+		            }
+		            $this->log("tag frequencies updated.");
+		            
+		    }
+		    
+		    // done
+		    $this->statetable->writeState('lastsync.kurse.global', $this->today_datetime);
+	}
+	
+	// write to portal cache
+	function cacheFlushInt(&$values, $portalId)
+	{
+	    echo "CacheFlushInt für Portal: ".$portalId."<br><br>";
+	    
+	    $ret = '';
+	    ksort($values);
+	    reset($values);
+	    foreach($values as $regKey => $regValue)
+	    {
+	        $regKey		= strval($regKey);
+	        $regValue	= strval($regValue);
+	        if( $regKey!='' )
+	        {
+	            if(strpos($regKey, "stats") !== FALSE)
+	                echo $regKey."=>".$regValue."\n";
+	                
+	                $regValue = strtr($regValue, "\n\r\t", "   ");
+	                $ret .= "$regKey=$regValue\n";
+	        }
+	    }
+	    
+	    $db = new DB_Admin;
+	    $db->query("UPDATE portale SET einstcache='".addslashes($ret)."' WHERE id=$portalId;");
+	}
+	
+	function readCSV($file)
+	{
+	    $row      = 0;
+	    $csvArray = array();
+	    if( ( $handle = fopen($file, "r") ) !== FALSE ) {
+	        while( ( $data = fgetcsv($handle, 0, ";") ) !== FALSE ) {
+	            $num = count($data);
+	            for( $c = 0; $c < $num; $c++ ) {
+	                $csvArray[$row][] = $data[$c];
+	            }
+	            $row++;
+	        }
+	    }
+	    if( !empty( $csvArray ) ) {
+	        return array_splice($csvArray, 1); //cut off the first row (names of the fields)
+	    } else {
+	        return false;
+	    }
+	}
+	
+	function doGeoMapping() {
+	    // Bezirke: Berlin, Hamburg, ...?
+	    // to be moved
+	    $db = new DB_ADMIN;
+	    $file_geodef = "config/geo.php";
+	    require_once($file_geodef);
+	    
+	    if( !$bezirke_hamburg_ort || !is_array($stadtteile_bezirke_hamburg) ) {
+	        echo "Bezirke-Defintion nicht gefunden. (".$file_geodef.")"."\n";
+	        return false;
+	    }
+	    
+	    foreach($stadtteile_bezirke_hamburg AS $stadtteil => $bezirk) {
+	        // DF
+	        $query = "UPDATE durchfuehrung SET bezirk = '".$bezirk."' WHERE stadtteil = '".$stadtteil."' AND ort = '".$bezirke_hamburg_ort."'";
+	        $db->query($query);
+	        // echo $query."\n";
+	        
+	        // anbieter
+	        $query = "UPDATE anbieter SET bezirk = '".$bezirk."' WHERE stadtteil = '".$stadtteil."' AND ort = '".$bezirke_hamburg_ort."'";
+	        $db->query($query);
+	        // echo $query."\n";
+	    }
+	    
+	    // $db->close();
+	    echo "Bezirke anhand von Stadt und Stadtteilen zugeordnet"."\n";
+	    return true;
+	}
+	
+	// global clean up queries, e.g for legal reasons
+	function doDBCleanup() {
+	    $db = new DB_ADMIN;
+	    $file_db_sql_skripte = "db_cleanup_queries.inc.php";
+	    require_once($file_db_sql_skripte);
+	    
+	    if( !$db_sql || !is_array($db_sql) ) {
+	        echo "Keine zusätzlichen DB-Skripte gefunden. (".$file_db_sql_skripte.")"."\n";
+	        return false;
+	    }
+	    
+	    foreach($db_sql AS $query) {
+	        
+	        echo "Ausführen von:\n".$query."\n";
+	        $this->log("Clean up: Ausführen von:\n".$query."\n");
+	        $db->query($query);
+	        echo "\n";
+	    }
+	    
+	    // $db->close();
+	    echo "Zusätzliche DB-Skripte ausgeführt."."\n\n";
+	    return true;
+	}
+	
+	// public static for call in adress filter test skript
+	// Todo: get rid of redundancies
+	// Todo: move values to admin/config/...
+	public static function clean_address($address, $manualtest = false) {
+	    
+	    
+	    /* *********************** */
+	    /* find / replace patterns */
+	    
+	    // Wenn Strasse = ... und sonst nur noch Ort entspr. dann: Strasse leer
+	    // Standort - Eingang - VHS - Zentrum: Theoretisch crop, aber man weiß nicht, was nach der Strasse kommt.
+	    $patterns2_skip = array(".*e\.V\.$", '""$', ".*G\.m\.b\.H\.$", ".*GmbH$", ".*ohne .*", ".*unbekannt.*", ".*E-Learning.*", ".*virtuell.*", ".*Web-Seminar.*", ".*Webinar.*", ".*Online.*", ".*Online-Seminar.*", ".*WWW.*", ".*Fernstudium.*", ".*Inhouse.*", ".*In House.*", ".*Live", ".*Internet.*", ".*Cloud.*", ".*Zoom.*", "N\.N\.", "--", "Campus .*", "Klinikum .*", "gegenüber .*", "Eingang .*", "Campus .*", "Klinikum .*", "Standort.*", ".* neben .*", ".* neben,", ".* neben$", ".* hinter .*", ".* hinter,", ".* hinter$", ".* unten .*", ".* unten,", ".* unten$", ".* oben .*", ".* oben,", ".* oben$", ".* bekannt .*", ".* bekannt$", ".* Anfrage .*", ".* Anfrage$", ".*Adresse .*", ".*Treffpunkt.*"); 
+	    
+	    // Wenn von mehreren Teil der Ort - NUR LETZER TEIL!
+	    $patterns_2_3_last_skip = array(".*e\.V\.", '""', ".*G\.m\.b\.H\.", ".*GmbH", ".*ohne .*", ".*unbekannt.*", ".*E-Learning.*", ".*virtuell.*", ".*Web-Seminar.*", ".*Webinar.*", ".*Online.*", ".*Online-Seminar.*", ".*WWW.*", ".*Fernstudium.*", ".*Inhouse.*", ".*In House.*", ".*Live", ".*Internet.*", ".*Cloud.*", ".*Zoom.*", ".* Campus .*", ".* Klinikum .*", "gegenüber .*", "Eingang .*", "Campus .*", "Klinikum .*", "Standort .*", ".* Standort$", ".* neben.*", ".* neben,", ".* neben$", ".* hinter.*", ".* hinter,", ".* hinter$", ".* unten .*", ".* unten,", ".* unten$", ".* oben .*", ".* oben,", ".* oben$", ".* bekannt .*", ".* bekannt$", ".* Anfrage .*", ".* Anfrage$", ".*Adresse .*", ".*Treffpunkt.*");
+	    
+	    // Etwas was bei 3 Teilen bereits durch den ersten Teil die gesamte Adresse disqualifiziert
+	    $patterns_3_first_skip = array(".*E-Learning.*", ".*virtuell.*", ".*Web-Seminar.*", ".*Webinar.*", ".*Online.*", ".*Online-Seminar.*", ".*WWW.*", ".*Fernstudium.*", ".*Internet.*", ".*Cloud.*", ".*Zoom.*");
+	    
+	    /*$patterns_3_first_crop = array(".*e\.V\.$", '.*""$', ".*G.m.b.H.$", ".*GmbH$", ".*Club$", ".*Hotel$", ".*Kirchengemeinde$", ".*Kirche$", ".*Anstalt$", ".*Gebäude$", ".*Kolleg$", ".*Kita$", ".*Kindertagesstätte$", ".*Schule$", ".*VHS$", ".*Zentrum$",  ".*Eingang$", ".*Campus$", ".*Klinikum$"); */
+	    
+	    // 2ter od. 3ter Teil durch "" ersetzen => wenn einziger String = Skip - Reihenfolge wichtig
+	    $patterns_2_3_crop = array(".*e\.V\.", '""', ".*G.m.b.H.", ".*GmbH", ".*Club", ".*Hotel", ".*Kirchengemeinde", ".*Kirche", ".*Anstalt", ".*Gebäude", ".*Kolleg", ".*Kita", ".*Kindertagesstätte", ".*Schule", ".*VHS", ".*Zentrum", ".*Raum.{0,2}[0-9]{0,4}", ".*Raum", ".*Haus.{0,2}[0-9]{0,4}" );
+	    
+	    // In Straße am Anfang beschneiden - Reihenfolge wichtig:
+	    $patterns_strasse_crop = array("^.*N.N.", "^.*--", "^.* \/", "^.*.{0,2}\/.{0,2}Ecke", ".*Kirchengemeinde ", ".*Kirche ", ".*Hotel ", ".*Club ", ".*Anstalt ", ".*Gebäude ", ".*Kolleg ", ".*Kita", ".*Kindertagesstätte", ".*Schule ", ".*VHS ", ".*Zentrum ", " Raum.*");
+	    
+	    // In Ort am Ende beschneiden - Reihenfolge wichtig:
+	    $patterns_ort_post_crop = array("^\/.{0,2}Ecke.*", "\/.*", "N\.N\..*", "--.*"); // Ort
+	    
+	    /* *** */
+	    
+	    
+	    if( strstr($address, "\n") ) {
+	        echo "<b style='color: darkblue; padding-top: 5px; padding-bottom: 5px;'>Zeilenumbrüche erkannt. Ersetze durch Komma...</b><br>";
+	        $address = str_replace("\n", ",", $address);
+	    }
+	    
+	    $address = trim($address);
+	    $testArr = explode(",", $address);
+	    $testArr = array_map("trim", $testArr);
+	    $adresse = "";
+	    $ok = false;
+	    $skip = false;
+	    $changed = false;
+	    $uneindeutig = false;
+	    $leer = false;
+	    
+	    
+	    while(count($testArr) > 3) {
+	        echo "<b style='color: darkblue; padding-top: 5px; padding-bottom: 5px;'>Adresse besteht aus ".count($testArr)." Teilen, verwerfe 1. Teil (".$testArr[0].").</b><br>";
+	        unset($testArr[0]);
+	        $testArr = array_values( $testArr );
+	        $address = implode($testArr, ',');
+	    }
+	    
+	    
+	    // zu wenig Strassen- oder Ortsinfo
+	    if( trim($address) == "" || count($testArr) == 2 && strlen($testArr[0]) < 3 || count($testArr) == 2 && strlen($testArr[1]) < 3 || count($testArr) == 3 && strlen($testArr[1]) < 3 || count($testArr) == 3 && strlen($testArr[2]) < 3) {
+	        $leer = true;
+	        $skip = true;
+	    }
+	    
+	    // Strasse und Ort sind gleich
+	    if( (count($testArr) == 2 && strlen($testArr[0]) > 2 && $testArr[0] == $testArr[1])
+	        || (count($testArr) == 3 && strlen($testArr[1]) > 2 && $testArr[1] == $testArr[2] ) ) {
+	            $skip = true;
+	        }
+	        
+	        
+	        
+	        if(count($testArr) == 3) {
+	            
+	            
+	            // Ersten Teil ververfen
+	            
+	            // Ort
+	            foreach($patterns_2_3_last_skip AS $pattern) {
+	                if( preg_match('/'.$pattern.'$/i', $testArr[2]) ) {
+	                    if(DEBUG) { echo "<small>K) </small>"; }
+	                    $adresse = "<b>2)</b> ".$address;
+	                    $skip = true;
+	                }
+	            }
+	            
+	            
+	            foreach($patterns_2_3_crop AS $pattern) {
+	                if($skip) { ; } // already handled
+	                elseif( preg_match('/'.$pattern.'/i', $testArr[0], $matches) ) { // ERSTER Teil (nicht zweiter)
+	                    $result = $testArr[1].", ".$testArr[2];
+	                    $adresse = " <b>3)</b> <strike>".$matches[0].", </strike>".$testArr[1].", ".$testArr[2]
+	                    ." => <b>".$result."</b>";
+	                    $changed = true;
+	                    
+	                    if(strlen($result) < 3 || strlen($testArr[1]) < 3 || strlen($testArr[2]) < 3) {
+	                        $uneindeutig = true;
+	                        $skip = true;
+	                    }
+	                } elseif( preg_match('/'.$pattern.'/i', $testArr[1], $matches) ) { // ZWEITER Teil (nicht dritter)
+	                    $result = $testArr[0].", ".$testArr[2];
+	                    $adresse = " <b>3)</b> <strike>".$matches[1].", </strike>".$testArr[0].", ".$testArr[2]
+	                    ." => <b>".$result."</b>";
+	                    $changed = true;
+	                    
+	                    if(strlen($result) < 3 || strlen($testArr[0]) < 3 || strlen($testArr[2]) < 3) {
+	                        $uneindeutig = true;
+	                        $skip = true;
+	                    }
+	                } elseif($testArr[2] == "") {
+	                    $adresse = " <b>3)</b> ".$address;
+	                    $uneindeutig = true;
+	                    $skip = true;
+	                }
+	            }
+	            
+	            foreach($patterns_3_first_skip AS $pattern) {
+	                if($skip) { ; } // already handled
+	                elseif( preg_match('/'.$pattern.'$/i', $testArr[0]) ) {
+	                    if(DEBUG) { echo "<small>M) </small>"; }
+	                    $adresse = "<b>2)</b> ".$address;
+	                    $skip = true;
+	                }
+	            }
+	            
+	            foreach($patterns2_skip AS $pattern) {
+	                if( preg_match('/'.$pattern.'$/i', $testArr[1]) ) {
+	                    if(DEBUG) { echo "<small>L) </small>"; }
+	                    $adresse = "<b>2)</b> ".$address;
+	                    $skip = true;
+	                }
+	            }
+	            
+	            foreach($patterns_strasse_crop AS $pattern) {
+	                if($skip) { ; } // already handled
+	                elseif( preg_match('/'.$pattern.'/i', $testArr[1], $matches) ) { // 1. Teil
+	                    if(DEBUG) { echo "<small>G) </small>"; }
+	                    $changed_str = preg_replace('/'.$pattern.'/i', "", $testArr[1]);
+	                    $result = $changed_str.", ".$testArr[2];
+	                    $adresse = "<b>2)</b> <strike>".$matches[0]." </strike>".$result." => <b>".$result."</b>";
+	                    $changed = true;
+	                    
+	                    if(strlen($changed_str) < 3) {
+	                        $uneindeutig = true;
+	                        $skip = true;
+	                    }
+	                    
+	                }
+	            }
+	            
+	            foreach($patterns_ort_post_crop AS $pattern) { // post_crop: nachfolgendes wird gestrichen
+	                if($skip) { ; } // already handled
+	                elseif( preg_match('/'.$pattern.'/i', $testArr[2], $matches) ) { // 2. Teil
+	                    if(DEBUG) { echo "<small>H) </small>"; }
+	                    $changed_str = preg_replace('/'.$pattern.'/i', "", $testArr[2]);
+	                    $result = $testArr[0].", ".$changed_str;
+	                    $adresse = "<b>2)</b> ".$testArr[0].", ".$testArr[1].", ".$result."<strike>".$matches[0]." </strike>"." => <b>".$result."</b>";
+	                    $changed = true;
+	                    
+	                    if(strlen($changed_str) < 3) {
+	                        $uneindeutig = true;
+	                        $skip = true;
+	                    }
+	                    
+	                }
+	            }
+	            
+	            // no change
+	            if($adresse == "")
+	                $adresse = "<b>2)</b> ".$address;
+	                
+	                
+	        } elseif(count($testArr) == 2) {
+	            
+	            foreach($patterns2_skip AS $pattern) {
+	                if($skip) { ; } // already handled
+	                elseif( preg_match('/'.$pattern.'$/i', $testArr[0]) ) {
+	                    $adresse = "<b>2)</b> ".$address; 
+	                    $skip = true;
+	                }
+	            }
+	            
+	            // Ort
+	            foreach($patterns_2_3_last_skip AS $pattern) {
+	                if($skip) { ; } // already handled
+	                elseif( preg_match('/'.$pattern.'$/i', $testArr[1]) ) {
+	                    $adresse = "<b>2)</b> ".$address; 
+	                    $skip = true;
+	                }
+	            }
+	            
+	            foreach($patterns_2_3_crop AS $pattern) {
+	                if($skip) { ; } // already handled
+	                elseif( preg_match('/'.$pattern.'/i', $testArr[0], $matches) ) { // 1. Teil
+	                    $changed_str = preg_replace('/'.$pattern.'/i', "", $testArr[0]);
+	                    $result = $changed_str.", ".$testArr[1];
+	                    $adresse = "<b>2)</b> <strike>".$matches[0]." </strike>".$result." => <b>".$result."</b>";
+	                    $changed = true;
+	                    
+	                    if(strlen($changed_str) < 3) {
+	                        $uneindeutig = true;
+	                        $skip = true;
+	                    }
+	                    
+	                } elseif( preg_match('/'.$pattern.'/i', $testArr[1], $matches) ) { // 2. Teil
+	                    $changed_str = preg_replace('/'.$pattern.'/i', "", $testArr[1]);
+	                    $result = $testArr[0].", ".$changed_str;
+	                    $adresse = "<b>2)</b> ".$testArr[0]." , <strike>".$matches[0]." </strike>".$changed_str." => <b>".$result."</b>";
+	                    $changed = true;
+	                    
+	                    if(strlen($changed_str) < 3) {
+	                        $uneindeutig = true;
+	                        $skip = true;
+	                    }
+	                    
+	                } elseif($testArr[0] == "") {
+	                    $uneindeutig = true;
+	                    $skip = true;
+	                }
+	                elseif($testArr[1] == "") {
+	                    $uneindeutig = true;
+	                    $skip = true;
+	                }
+	            }
+	            
+	            foreach($patterns_strasse_crop AS $pattern) {
+	                if($skip) { ; } // already handled
+	                elseif( preg_match('/'.$pattern.'/i', $testArr[0], $matches) ) { // 1. Teil
+	                    $changed_str = preg_replace('/'.$pattern.'/i', "", $testArr[0]);
+	                    $result = $changed_str.", ".$testArr[1];
+	                    $adresse = "<b>2)</b> <strike>".$matches[0]." </strike>".$result." => <b>".$result."</b>";
+	                    $changed = true;
+	                    
+	                    if(strlen($changed_str) < 3) {
+	                        $uneindeutig = true;
+	                        $skip = true;
+	                    }
+	                    
+	                }
+	            }
+	            
+	            foreach($patterns_ort_post_crop AS $pattern) { // post_crop: nachfolgendes wird gestrichen
+	                if($skip) { ; } // already handled
+	                elseif( preg_match('/'.$pattern.'/i', $testArr[1], $matches) ) { // 2. Teil
+	                    $changed_str = preg_replace('/'.$pattern.'/i', "", $testArr[1]);
+	                    $result = $testArr[0].", ".$changed_str;
+	                    $adresse = "<b>2)</b> ".$testArr[0].", ".$result."<strike>".$matches[0]." </strike>"." => <b>".$result."</b>";
+	                    $changed = true;
+	                    
+	                    if(strlen($changed_str) < 3) {
+	                        $uneindeutig = true;
+	                        $skip = true;
+	                    }
+	                    
+	                }
+	            }
+	            
+	            if($adresse == "")
+	                $adresse = "<b>2)</b> ".$address;
+	                
+	        } elseif(count($testArr) == 1) {
+	            $adresse = "<b>1)</b> ".$address;
+	            $uneindeutig = true;
+	            $skip = true;
+	            
+	            if($adresse == "")
+	                $adresse = "<b>2)</b> ".$address;
+	        }
+	        
+	        
+	        
+	        
+	        if($skip) {
+	            if($manualtest)
+	                echo "<div style='color: darkred; padding-top: 5px; padding-bottom: 5px;'>";
+	                
+	                echo "Ueberspringen".($uneindeutig ? ' (uneindeutig)' : '').($leer ? ' (leer)' : '').": ".$adresse;
+	                
+	                if($manualtest)
+	                    echo "</div>";
+	        }
+	        elseif($changed) {
+	            if($manualtest)
+	                echo "<div style='color: darkblue; padding-top: 5px; padding-bottom: 5px;'>";
+	                
+	                echo "Geaendert: ".$adresse;
+	                
+	                if($manualtest)
+	                    echo "</div>";
+	        }
+	        else {
+	            $ok = true;
+	            $adresse = $address;
+	            if(DEBUG || $manualtest) echo "<div style='color: darkgreen; padding-top: 5px; padding-bottom: 5px;'>OK: ".$adresse."</div>";
+	        }
+	        
+	        return array("adress" => trim($address, ","), "skip" => $skip, "changed" => $changed, "ok" => $ok);
 	}
 	
 	/* main - see what to do
@@ -1236,7 +1953,7 @@ class WISY_SYNC_RENDERER_CLASS
 		}
 		
 		// make sure, this script does not abort too soon
-		set_time_limit(2*60*60 /*2 hours ...*/);
+		set_time_limit(5*60*60 /*5 hours ...*/);
 		ignore_user_abort(true);
 
 		// use the following for debugging only ...
@@ -1289,4 +2006,3 @@ class WISY_SYNC_RENDERER_CLASS
 		$this->statetable->releaseUpdatestick();
 	}
 };
-

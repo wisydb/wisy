@@ -1,5 +1,3 @@
-
-
 var ANIM_DURATION = 200;
 var AJAX_INDICATOR = '<img src="skins/default/img/ajaxload-16x11.gif " width="16" height="11" alt="" />';
 
@@ -465,7 +463,7 @@ function selUpdtOpnr(id)
 	}
 	else
 	{
-		alert('Das zu dieser Attributauswahl gehörige Fenster ist bereits geschlossen.');
+		alert('Das zu dieser Attributauswahl geh'+oe+'rige Fenster ist bereits geschlossen.');
 	}
 }
 
@@ -797,7 +795,7 @@ function sectd(id, display /*0=off, 1=on, 2=toggle*/)
 }
 
 /* SERER-SPECIFIC ! To be resolved !*/
-/* Leitung ausblenden, wenn Benutzergruppe HH oder HA enthält */
+/* Leitung ausblenden, wenn Benutzergruppe HH oder HA enthaelt */
 jQuery(document).ready(function() {
 	jQuery(".e_cll").each(function(){
 		if(jQuery(this).text().match(/Benutzergruppe:/)){ 
@@ -830,10 +828,10 @@ $(document).ready(function(){
 if($(".msgt").text().match(/Unbekannte Funktion/i) || $(".msgt").text().match(/Keine Ihren Suchkriterien/i)) {
 	$(".ui-autocomplete-input").each(function() { 
 		if($(this).val().match(/\(/) && !$(this).val().match(/"/) && !$(this).val().match(/'/)) {
-			alert('Hinweis:\n\nWert evtl. mit Anführungszeichen versehen (Grund: Klammern haben eine Sonderfunktion):\n"'+$(this).val()+'"');
+			alert('Hinweis:\n\nWert evtl. mit Anf'+ue+'hrungszeichen versehen (Grund: Klammern haben eine Sonderfunktion):\n"'+$(this).val()+'"');
 		}
 		else if($(this).val().match(/ /) && !$(this).val().match(/"/) && !$(this).val().match(/'/)) {
-			alert('Hinweis:\n\nWert evtl. mit Anführungszeichen versehen (Grund: Leerzeichen):\n"'+$(this).val()+'"');
+			alert('Hinweis:\n\nWert evtl. mit Anf'+ue+'hrungszeichen versehen (Grund: Leerzeichen):\n"'+$(this).val()+'"');
 		}
 	});
 }
@@ -859,7 +857,7 @@ if($("form[name=dbsearch]") && ($("#fheader .mml .mms").text() == "Angebote" || 
 					$(this).css("color", "darkred");
 					s_op_select.css("color", "darkred");
 						
-					alert('Achtung: Das Feld "'+s_feld+'" führt zusammen mit der NICHT-Suche (< >) i.d.R. zu falschen Ergebnissen!\n\nSolches ist immer dann der Fall, wenn einem Kurs mehrere der gesuchten Werte werden können - wie etwa SW oder DF-Parameter.');
+					alert('Achtung: Das Feld "'+s_feld+'" f'+ue+'hrt zusammen mit der NICHT-Suche (< >) i.d.R. zu falschen Ergebnissen!\n\nSolches ist immer dann der Fall, wenn einem Kurs mehrere der gesuchten Werte werden k'+oe+'nnen - wie etwa SW oder DF-Parameter.');
 					
 				} else {
 				 $("form[name=dbsearch] select.acselect").css("color", "black");
@@ -880,7 +878,7 @@ if($("form[name=dbsearch]") && ($("#fheader .mml .mms").text() == "Angebote" || 
 				 $(this).css("color", "darkred");
 				 s_feld_select.css("color", "darkred");
 					 
-				 alert('Achtung: Das Feld "'+s_feld.val()+'" führt zusammen mit der NICHT-Suche (< >) i.d.R. zu falschen Ergebnissen!\n\nSolches ist immer dann der Fall, wenn einem Kurs mehrere der gesuchten Werte werden können - wie etwa SW oder DF-Parameter.');
+				 alert('Achtung: Das Feld "'+s_feld.val()+'" f'+ue+'hrt zusammen mit der NICHT-Suche (< >) i.d.R. zu falschen Ergebnissen!\n\nSolches ist immer dann der Fall, wenn einem Kurs mehrere der gesuchten Werte werden k'+oe+'nnen - wie etwa SW oder DF-Parameter.');
 				 
 			 } else {
 				$("form[name=dbsearch] select.acselect").css("color", "black");
@@ -909,6 +907,13 @@ if( jQuery("form[name=edit]").find("input[name=table]").val() == "portale") {
   jQuery("#fheader table.sm td.sml a:last-child").before('<a href="module.php?module=plugin_cache_portale_0&id='+portal_id+'" target="plugin_cache_portale_0" onclick="return popup(this,750,550);"> &nbsp;Cache l&ouml;schen&nbsp; </a></td>');
 }
 
+// Show statistics plugin link
+if( jQuery("form[name=edit]").find("input[name=table]").val() == "portale") {
+  var portal_id = jQuery("form[name=edit]").find("input[name=id]").val();
+   if(portal_id > 0)
+     jQuery("#fheader table.sm td.sml a:last-child").before('<a href="module.php?module=plugin_portale_1_statistiken&id='+portal_id+'&what=Durchfuehrungen&strokeColor=tomato" target="plugin_cache_portale_0" onclick="return popup(this,750,550);"> &nbsp;Statistiken&nbsp; </a></td>');
+}
+
 /* ********************************************************** */
 /* Dont allow user or user_grp to be empty when saving a view */
 jQuery("input[name=submit_ok]").click(function(){ 
@@ -930,7 +935,7 @@ function check_grp_user() {
   alert("Es wurde keine Benutzergruppe vergeben.\n\nBitte vor dem Speichern definieren!")
   return false;
  } else if( jQuery("span[data-table=user]").length && jQuery("span[data-table=user]").text() == "" ) {
-  alert("Es wurde kein Eigent¸mer dieses Angebots angegeben.\n\nBitte vor dem Speichern definieren!")
+  alert("Es wurde kein Eigent"+ue+"mer dieses Angebots angegeben.\n\nBitte vor dem Speichern definieren!")
   return false;
  } else {
   return true;
@@ -940,3 +945,8 @@ function check_grp_user() {
 /* ********************************************************** */
 
 });
+
+var ae = unescape("%E4");
+var ue = unescape("%FC");
+var oe = unescape("%F6");
+var ss = unescape("%DF");
