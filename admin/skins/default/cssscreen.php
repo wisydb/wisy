@@ -572,6 +572,34 @@ input.df_bezirk {
 	display: none;
 }
 
+.additionalload {
+	font-weight: normal;
+}
+
+.blink_me {
+  animation: blinker 1s linear infinite;
+		background-color: #FF0;
+		box-shadow: #FF0 0 -1px 5px 1px, inset #930 0 -1px 6px, #930 0 2px 8px; 
+		/* background-color: #A90;
+		box-shadow: #fff 0 -1px 7px 1px, inset #660 0 -1px 9px, #DD0 0 2px 12px; */
+		/* background-color: #00FFFF;
+		box-shadow: #fff 0 -1px 7px 1px, inset #00FFFF 0 -1px 9px, #00FFFF 0 2px 12px; */
+		border-radius: 50%;
+		width: 8px;
+		height: 8px;
+		opacity: .8;
+		display: block;
+		position: absolute;
+		margin-top: 5px;
+		margin-left: 4px;
+}
+
+@keyframes blinker {
+  50% {
+    opacity: 0;
+  }
+}
+
 label[for='resetlogin'], input[name='resetlogin'] {
 	float: right;
 	margin-top: 1px;
