@@ -14,6 +14,7 @@
  */
 
 loadWisyClass('WISY_SYNC_RENDERER_CLASS');
+loadWisyClass('WISY_MENU_CLASS');
 
 class WISY_MENUCHECK_CLASS
 {
@@ -21,6 +22,7 @@ class WISY_MENUCHECK_CLASS
 	{
 		$this->framework		=& $framework;
 		$this->statetable		= new WISY_SYNC_STATETABLE_CLASS($this->framework);
+		$this->menuclass		= new WISY_MENU_CLASS($this->framework, array('prefix'=>''));
 		$this->today_datetime   = strftime("%Y-%m-%d %H:%M:%S");
 	}
 	
@@ -33,7 +35,7 @@ class WISY_MENUCHECK_CLASS
 		$host = $_SERVER['HTTP_HOST'];
 		
 		// print common information
-		$this->log(sprintf("menucheck script started"));
+		$this->log(sprintf("menucheck script started\n"));
 		
 		// check the apikey
 		// the apikey must be set in the portal settings of the domain this script is executed on.
@@ -64,7 +66,7 @@ class WISY_MENUCHECK_CLASS
 		$lastcheck = $this->statetable->readState('lastcheck.menucheck', '0000-00-00 00:00:00');
 		
 		// Select portal settings
-		$sql = "SELECT id, einstellungen, einstellungen_hinweise FROM portale WHERE date_modified>='$lastcheck' AND status='1';";
+		$sql = "SELECT id, einstellungen, einstellungen_hinweise, bodystart FROM portale WHERE date_modified>='$lastcheck' AND status='1';";
 		$db->query( $sql );
 		
 		while( $db->next_record() )
@@ -72,20 +74,146 @@ class WISY_MENUCHECK_CLASS
 			$portal_id 		= intval($db->f8('id'));
 			$einstellungen  = $db->f8('einstellungen');
 			$einstellungen_hinweise = $db->f8('einstellungen_hinweise');
+			$bodystart = $db->f8('bodystart');
 			
-			// TODO: Menu Einstellungen in Einstellungen finden und durcharbeiten
-			// TODO: URLs finden, aufrufen und Rückgabewert auswerten
-			// TODO: Andere Einträge von Menurenderer rendern lassen und Ergebnis überprüfen
+			$einstellungen_exploded = explodeSettings($einstellungen);
+			$hinweise = "MENUCHECK $this->today_datetime\n";
+
+			$this->log("-------------------- Portal $portal_id überprüfen ----------------------");
 			
+			// Collect menu items sorted by type
+			$itemsToCheck = ['externalUrl' => [], 'glossar' => [], 'search' => []];
+			
+			// Loop over menus for which placeholders exist
+			preg_match_all('/__MENU[A-Z0-9_]*__/', $bodystart, $menus);
+			foreach($menus[0] as $menu) {
+				$prefix = strtolower(str_replace('_', '', $menu));
+				$allPrefix = $prefix . '.';
+				$allPrefixLen = strlen($allPrefix);
+				
+				$this->log("\n+ Menu \"$prefix\" überprüfen ++++++++++++++");
+				$hinweise .= "\n$prefix:";
+				
+				// Loop over menu entries
+				foreach($einstellungen_exploded as $key => $value) {
+					if( substr($key, 0, $allPrefixLen)==$allPrefix ) {
+						$items = $this->menuclass->createItems($value, 0);
+						foreach($items as $item) {
+								$type = $this->getMenuType($item->url);
+								if($type) {
+									$itemsToCheck[$type][$key] = $item->url;
+								} else {
+									$this->log("!!! Unbekannter Menutype für $item->url");
+								}
+							if(count($item->children)) {
+								foreach($item->children as $item) {
+									$type = $this->getMenuType($item->url);
+									if($type) {
+										$itemsToCheck[$type][$key] = $item->url;
+									} else {
+										$this->log("!!! Unbekannter Menutype für $item->url");
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+			
+			$hinweise .= $this->checkExternalUrls($itemsToCheck['externalUrl']);
+			
+			$hinweise .= $this->checkGlossarEntries($itemsToCheck['glossar']);
+			
+			$hinweise .= $this->checkSearchRequests($itemsToCheck['search']);
 			
 			// Update einstellungen_hinweise
-			$sql = "UPDATE portale SET einstellungen_hinweise='MENUCHECK " . $this->today_datetime . ": TODO', date_modified='" . $this->today_datetime . "' WHERE id=" . $portal_id;
+			$sql = "UPDATE portale SET einstellungen_hinweise='" . $hinweise . "', date_modified='" . $this->today_datetime . "' WHERE id=" . $portal_id;
 			$db2->query($sql);
 			
 			$this->statetable->updateUpdatestick();
+			// TODO: evtl. hier kurze Verzögerung vor nächstem Schleifendurchlauf einbauen
 		}
 		
 		$this->statetable->writeState('lastcheck.menucheck', $this->today_datetime);
+	}
+	
+	function getMenuType($url) {
+		$link = trim($url);
+		if($url == '') return false;
+		
+		// determine type of $link
+		if(substr($url, 0, 7) == 'http://' || substr($url, 0, 8) == 'https://') {
+			// External URL
+			return 'externalUrl';
+		
+		} else if(substr($url, 0, 7) == 'search?') {
+			// Search
+			return 'search';
+		
+		} else if(preg_match('/^g\d+$/', $url)) {
+			// Glossar
+			return 'glossar';
+		}
+		
+		// TODO: Was fehlt? Arbeitgeber? Kurs? ...
+		
+		return false;
+	}
+	
+	function checkExternalUrls($urls) {
+		$this->log("-> checking external URLs");
+		$hinweise = '';
+		foreach(array_unique($urls) as $key => $url) {
+			// get HTTP headers for URL
+			$headers = @get_headers($url);
+			if($headers !== false) {
+				foreach($headers as $header) {
+					// corrects $url when 301/302 redirect(s) lead(s) to 200:
+					if(preg_match("/^Location: (http.+)$/", $header, $m)) $url = $m[1];
+					// grabs the last $header $code, in case of redirect(s):
+					if(preg_match("/^HTTP.+\s(\d\d\d)\s/", $header, $m)) $code = $m[1];
+				}
+				if($code == '200') continue;
+			}
+			foreach(array_keys($urls, $url) as $key) {
+				$this->log("$key / $url liefert keine Ergebnisse");
+				$hinweise .= "\n - $key / $url liefert keine Ergebnisse";
+			}
+		}
+		return $hinweise;
+	}
+	
+	function checkGlossarEntries($urls) {
+		$db = new DB_Admin;
+		$this->log("-> checking glossar entries");
+		
+		$hinweise = '';
+		$glossar_ids = [];
+		foreach($urls as $key => $url) {
+			$glossar_ids[] = intval(substr($url, 1));
+		}
+		$glossar_ids = array_unique($glossar_ids);
+		
+		if(count($glossar_ids)) {
+			$db->query("SELECT id FROM glossar WHERE status=1 AND (erklaerung != '' OR wikipedia != '') AND id IN(" . implode(',', $glossar_ids) . ")");
+			while($db->next_record()) {
+				array_splice($glossar_ids, array_search($db->f8('id'), $glossar_ids), 1);
+			}
+			$db->free();
+		}
+		foreach($glossar_ids as $glossar_id) {
+			$url = "g" . $glossar_id;
+			foreach(array_keys($urls, $url) as $key) {
+				$this->log("$key / $url liefert keine Ergebnisse");
+				$hinweise .= "\n - $key / $url liefert keine Ergebnisse";
+			}
+		}
+		return $hinweise;
+	}
+	
+	function checkSearchRequests($urls) {
+		$this->log("-> checking search requests");
+		return true; // TODO
 	}
 	
 	function log($str)
