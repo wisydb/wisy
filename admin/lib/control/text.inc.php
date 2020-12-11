@@ -110,15 +110,51 @@ class CONTROL_TEXT_CLASS extends CONTROL_BASE_CLASS
 		
 
 		// render
-
-		$html .= '<input name="' . $this->name . '" type="text" value="'.isohtmlspecialchars($this->dbval).'"' . $this->tooltip_attr() . $this->readonly_attr();
-			
-			if( ($placeholder=strval($this->row_def->prop['ctrl.placeholder']))!='' ) {
-				if( $placeholder == '1' ) $placeholder = trim($this->row_def->descr);
-				$html .= ' placeholder="'.$placeholder.'" ';
-			}
-
-			$css_classes = '';
+		$value = isohtmlspecialchars($this->dbval);
+		
+		if( is_array($this->row_def->prop['value.replace']) ) {
+		    $value = str_replace($this->row_def->prop['value.replace'][0], $this->row_def->prop['value.replace'][1], $value);
+		}
+		
+		if( is_array($this->row_def->prop['value.table_key']) ) { // defines table, key row and value row to look up: e.g. array( 'table' => '...', 'key' => 'id', 'value' => '...')
+		    $dba = $addparam['dba'];
+		    
+		    $table = strval( $this->row_def->prop['value.table_key']['table'] ) ;
+		    $values = explode('###', $value); // if string is array => php array
+		    $value_strheap = array();
+		    foreach($values AS $val) {
+		        $key = strval( $this->row_def->prop['value.table_key']['key'] );
+		        $value_ref = strval( $this->row_def->prop['value.table_key']['value'] );
+		        if(trim($value_ref) && trim($key) && trim($val)) {
+		            $dba->query("SELECT ".$value_ref." FROM " . $table . " WHERE " . $key . "=" . addslashes($val));
+		            if( $dba->next_record() ) {
+		                $value_strheap[$val] = $dba->fs($value_ref); // if one of the values found in defined table add to output value
+		            }
+		            
+		            // check if value from displayed table (cell) is present in second table, e.g. tag suggestion in actual tags
+		            $dba->query("SELECT * FROM kurse_stichwort WHERE primary_id=".$addparam['id']." AND attr_id=" . addslashes($val)); 
+		            if( $dba->next_record() ) {
+		                $matched_str = "&#10004; "; // tick
+		                $value_strheap[$val] = $matched_str.$value_strheap[$val]; // converts stored values via key to values from table
+		            }
+		        }
+		    }
+		    
+		    if( is_array($value_strheap) && count($value_strheap) && $this->row_def->prop['layout.value.aslabel'] ) // don't output (converted?) values as input values but as lable + hide actual values => no change in CMS
+		        $label = implode("; ", $value_strheap);
+		        elseif( is_array($value_strheap) && count($value_strheap) )
+		        $value = implode("; ", $value_strheap);
+		}
+		
+		$html .= ($label ? '<label for="#' . strval( $this->name ) . '" class="'.$this->row_def->prop['layout.descr.class'].'">'.$label.'</label>' : '')
+		.'<input id="#' . strval( $this->name ) . '" name="' . $this->name . '" type="'.( $this->row_def->prop['layout.input.hide'] ? 'hidden' : 'text' ).'" value="'.$value.'"' . $this->tooltip_attr() . $this->readonly_attr();
+		
+		if( ($placeholder=strval($this->row_def->prop['ctrl.placeholder']))!='' ) {
+		    if( $placeholder == '1' ) $placeholder = trim($this->row_def->descr);
+		    $html .= ' placeholder="'.$placeholder.'" ';
+		}
+		
+		$css_classes = '';
 			
 			if( $this->row_def->flags & (TABLE_ACNEST|TABLE_ACNESTSTART|TABLE_ACNORMAL) ) {
 				$html .= ' data-acdata="'. $this->table_def->name . '.' . $this->row_def->name .'" ';

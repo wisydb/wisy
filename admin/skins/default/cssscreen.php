@@ -613,3 +613,11 @@ input[name='resetlogin'] {
 	min-width: 0px;
 	margin-top: 3px;
 }
+
+.vorschlag_label {
+	color: #333 !important;
+}
+
+.vorschlag {
+	color: #777 !important;;
+}

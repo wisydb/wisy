@@ -18,7 +18,7 @@ parameters on first call:
 the new `layout.*` options that may be adde to `$addparam` of each control:
 
 - `layout.*, help.*` - control-independent options as:
-
+        - 'layout.value.aslabel' = 0|1 display stored values as label for the input field        
 - `layout.defhide = 0|1|2` - Hides controls by default - either if the 
 			control is still default (1) or always, even if set by the 
 			user (2). To show the control, the user must click the link `>` 
@@ -27,6 +27,8 @@ the new `layout.*` options that may be adde to `$addparam` of each control:
 - `layout.defhide.title` - Title or tooltip of the link to show controls 
 			hidden by `layout.defhide`; if missing, the description of the 
 			first hidden row is used
+
+- 'layout.input.hide' = 0|1 hide input field and therefore values (e.g. show labels only)
 
 - `layout.join = 0|1` - Add the control to the end of the _previous_ line 
 			instead of starting a new one (adding a space at the end of the 
@@ -73,11 +75,12 @@ the new `layout.*` options that may be adde to `$addparam` of each control:
 - `ctrl.phpclass` - PHP class to use, should be sth. like CONTROL_FOOBAR_CLASS,
 			if unset, a default class for each TABLE_ROW-Type is used (which may
 			also be used as a base class for ctrl.phpclass)
-
+- 'value.replace' - replace (multiple) string(s) for string(s) before output, e.g. => array( array(','), array(';') )
+- 'value.table_key'=>array( 'table' => 'stichwoerter', 'key' => 'id', 'value' => 'stichwort'),
+        
 @author Bjoern Petersen, http://b44t.com
 
 ******************************************************************************/
-
 
 
 

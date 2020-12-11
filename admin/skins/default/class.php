@@ -94,7 +94,7 @@ usage:
 class SKIN_DEFAULT_CLASS
 {
 	// Texticons:
-	var $ti_sortdesc = '&darr;';	// Alternative: &#9660; ist aber etwas zu auff�llig, &darr; passt besser
+	var $ti_sortdesc = '&darr;';	// Alternative: &#9660; ist aber etwas zu auffaellig, &darr; passt besser
 	var $ti_sortasc  = '&uarr;';	// Alternative: &#9650;       - " -
 	var $ti_next     = '&gt;&gt;';	// Alternative: &#9654; ist aber je nach Browser etwas klein
 	var $ti_prev     = '&lt;&lt;';	// Alternative: &#9664;       - " -

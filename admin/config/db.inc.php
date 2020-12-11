@@ -314,7 +314,25 @@ $kurse->add_row(TABLE_SATTR|TABLE_LIST|TABLE_TRACKDEFAULTS|TABLE_MUST,
 $kurse->add_row(TABLE_TEXTAREA|TABLE_WIKI|TABLE_NEWSECTION,		'beschreibung',		'Beschreibung', 0, 0, 'Kursporträt');
 $kurse->add_row(TABLE_SATTR|TABLE_TRACKDEFAULTS,				'thema',			'Thema', 0, $themen, '', array());
 $kurse->add_row(TABLE_MATTR|TABLE_TRACKDEFAULTS,				'stichwort',		'Stichwörter', 0, $stichwoerter, '', array('layout.join'=>0));
-$kurse->add_row(TABLE_TEXT,										'msgtooperator',	'Stichwortvorschläge', 0, 0, '', array('layout.join'=>1, 'layout.defhide'=>1, 'help.tooltip'=>'Stichwortvorschläge vom Anbieter', 'ctrl.size'=>'10-20-60'));
+$kurse->add_row(TABLE_TEXT,										'msgtooperator',	'Stichwortvorschläge', 0, 0, '',
+    array('layout.join'=>0, 'layout.defhide'=>0,
+        'help.tooltip'=>'Stichwortvorschläge vom Anbieter',
+        'ctrl.size'=>'10-20-60',
+        'ctrl.class'=>'vorschlag',
+        'layout.descr.class' => 'vorschlag_label'
+    ));
+
+$kurse->add_row(TABLE_TEXT|TABLE_READONLY,		                 'msgtooperator_unterrichtsart',	'Vorschläge Unterrichtsart', 0, 0, '',
+    array('layout.join'=>1, 'layout.defhide'=>0,
+        'help.tooltip'=>'Unterrichtsart-Vorschläge vom Anbieter. Diese sind zur Bearbeitung gesperrt, weil sie bei der Onlinepflege mit existierenden SW abgeglichen werden m¸ssen.',
+        'ctrl.size'=>'60-60-200',
+        'ctrl.class'=>'vorschlag',
+        'layout.descr.class' => 'vorschlag_label',
+        'value.table_key'=>array( 'table' => 'stichwoerter', 'key' => 'id', 'value' => 'stichwort'),
+        'layout.value.aslabel' => 1,
+        'layout.input.hide' => 1
+    ));  //'value.replace'=>array( array('###'), array(',') )
+    
 $kurse->add_row(TABLE_SECONDARY|TABLE_TRACKDEFAULTS,			'durchfuehrung',	'Durchführung', 1, $durchfuehrung);
 if(!$use_neweditor) {
 	$kurse->add_row(TABLE_TEXT|TABLE_NEWSECTION,					'bu_nummer',		'BU-Kursnummer', '','', 'Kurs-IDs', array('layout.join'=>1));
