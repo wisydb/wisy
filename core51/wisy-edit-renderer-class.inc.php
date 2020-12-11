@@ -1562,7 +1562,7 @@ class WISY_EDIT_RENDERER_CLASS
 		if( $temp['vmsg'] != '' )
 		{
 		    $vollst = $this->framework->getVollstaendigkeitMsg($db, $id, 'quality.edit');
-		    $msg .= '<b>Informationen zu Vollst&auml;ndigkeit:</b> ' . $vollst['msg'];
+		    $msg .= '<span class="info_vollstaendigkeit" style="font-weight: bold;">Informationen zu Vollst&auml;ndigkeit:</span> ' . $vollst['msg'];
 		    $msg .= cs8($temp['vmsg']);
 		}
 		else if ( $always )
