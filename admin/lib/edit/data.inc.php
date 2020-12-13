@@ -735,49 +735,67 @@ class EDIT_DATA_CLASS
 		// save primary record - no abort here
 		$this->save_record_($this->table_def, $this->id, 0, '');
 		
+		$old_records = array();
+		
 		// save secondary records
 		for( $r = 0; $r < sizeof((array) $this->table_def->rows); $r++ )
 		{
-			$row = $this->table_def->rows[$r];
-			if( ($row->flags&TABLE_ROW) == TABLE_SECONDARY )
-			{
-				// load old secondary records
-				$old_ids = $this->read_simple_list_($this->db1, "SELECT secondary_id AS ret FROM {$this->table_def->name}_{$row->name} WHERE primary_id=$this->id ORDER BY structure_pos;");
-			
-				// update/create the secondary records
-				$table_def2 = Table_Find_Def($this->table_def->rows[$r]->addparam->name, $this->do_access_check);
-				$new_ids = array();
-				for( $field_index = 0; $field_index < sizeof((array) $this->controls); $field_index++ )
-				{
-					$field = $this->controls[$field_index];
-					if( $field->name == "f_{$row->name}_object_start[]" )
-					{
-						if( $field->dbval == -1 ) {
-							$field->dbval = $this->create_record_($table_def2);
-						}
-						
-						$new_ids[] = $field->dbval;
-						$this->save_record_($table_def2, $field->dbval, $field_index+1, $row->name);
-					}
-					else if( $field->name == "f_{$row->name}_template_start" )
-					{
-						break; // last is template, this is not saved!
-					}
-				}
-				
-				// update the secondary relations table, if needed
-				if( !$this->ids_array_equal($old_ids, $new_ids) )
-				{
-					$this->db1->query("DELETE FROM {$this->table_def->name}_{$row->name} WHERE primary_id=$this->id");
-					if( sizeof((array) $new_ids) ) {
-						$sql = "INSERT INTO {$this->table_def->name}_{$row->name} (primary_id,secondary_id,structure_pos) VALUES ";
-						for( $i = 0; $i < sizeof((array) $new_ids); $i++ ) {
-							$sql .= $i? ', ' : '';
-							$sql .= "($this->id,{$new_ids[$i]},$i)";
-						}
-						$this->db1->query($sql);
-					}
-					//$this->warnings[] = 'secondary relations UPDATED.';
+		    $row = $this->table_def->rows[$r];
+		    if( ($row->flags&TABLE_ROW) == TABLE_SECONDARY )
+		    {
+		        // load old secondary records
+		        $old_ids = $this->read_simple_list_($this->db1, "SELECT secondary_id AS ret FROM {$this->table_def->name}_{$row->name} WHERE primary_id=$this->id ORDER BY structure_pos;");
+		        
+		        // update/create the secondary records
+		        $table_def2 = Table_Find_Def($this->table_def->rows[$r]->addparam->name, $this->do_access_check);
+		        $new_ids = array();
+		        for( $field_index = 0; $field_index < sizeof((array) $this->controls); $field_index++ )
+		        {
+		            $field = $this->controls[$field_index];
+		            if( $field->name == "f_{$row->name}_object_start[]" )
+		            {
+		                if( $field->dbval == -1 ) {
+		                    $field->dbval = $this->create_record_($table_def2);
+		                }
+		                
+		                $new_ids[] = $field->dbval;
+		                $this->save_record_($table_def2, $field->dbval, $field_index+1, $row->name);
+		            }
+		            else if( $field->name == "f_{$row->name}_template_start" )
+		            {
+		                break; // last is template, this is not saved!
+		            }
+		        }
+		        
+		        // update the secondary relations table, if needed
+		        if( !$this->ids_array_equal($old_ids, $new_ids) )
+		        {
+		            $sql_selectoldentries = "SELECT secondary_id FROM {$this->table_def->name}_{$row->name} WHERE primary_id=$this->id";
+		            
+		            $this->db1->query($sql_selectoldentries);
+		            
+		            while( $this->db1->next_record() ) {
+		                $old_records[$this->db1->f("secondary_id")] = true;
+		            }
+		            
+		            $this->db1->query("DELETE FROM {$this->table_def->name}_{$row->name} WHERE primary_id=$this->id");
+		            if( sizeof((array) $new_ids) ) {
+		                $sql = "INSERT INTO {$this->table_def->name}_{$row->name} (primary_id,secondary_id,structure_pos) VALUES ";
+		                for( $i = 0; $i < sizeof((array) $new_ids); $i++ ) {
+		                    $sql .= $i? ', ' : '';
+		                    $sql .= "($this->id,{$new_ids[$i]},$i)";
+		                    
+		                    unset($old_records[$new_ids[$i]]);
+		                }
+		                $this->db1->query($sql);
+		                
+		                foreach($old_records AS $key => $value) {
+		                    $sql_deletesecondary = "UPDATE {$row->name} SET nr = '**DELETE**' WHERE id = ".$key;
+		                    $this->db1->query($sql_deletesecondary);
+		                }
+		                
+		            }
+		            //$this->warnings[] = 'secondary relations UPDATED.';
 				}
 				else
 				{

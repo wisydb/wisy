@@ -18,7 +18,7 @@ parameters on first call:
 the new `layout.*` options that may be adde to `$addparam` of each control:
 
 - `layout.*, help.*` - control-independent options as:
-        - 'layout.value.aslabel' = 0|1 display stored values as label for the input field        
+- 'layout.value.aslabel' = 0|1 display stored values as label for the input field        
 - `layout.defhide = 0|1|2` - Hides controls by default - either if the 
 			control is still default (1) or always, even if set by the 
 			user (2). To show the control, the user must click the link `>` 

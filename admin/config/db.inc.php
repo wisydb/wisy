@@ -210,7 +210,7 @@ $anbieter->rows[$use_neweditor? 10 : 2]->addparam = $anbieter;
 
 /*** DURCHFUEHRUNGEN ***/
 $timecheck_reg = 'ss:mm###/^[012]\d:[0123456]\d{1,1}$/######/\./###:###/\s/######/^(\d):/###0\1:###/(\d\d)(\d\d)/###\1:\2###/(\d)(\d\d)/###0\1:\2';
-$durchfuehrung = new Table_Def_Class(TABLE_SYNCABLE,		'durchfuehrung',	'Durchführungen');
+$durchfuehrung = new Table_Def_Class(TABLE_SYNCABLE,		'durchfuehrung',	'Durchführungen', 0, 0, true); // last parameter: delete DF as secondary entry in lookup table (adter deleting in course view)
 $durchfuehrung->add_row(TABLE_TEXT|TABLE_LIST|TABLE_SUMMARY,'nr',				'Durchführungs-Nr.', '', '', '', array('ctrl.size'=>'10-40'));
 if( $use_neweditor )
 {
