@@ -146,7 +146,7 @@ class WISY_MENUCHECK_CLASS
 			// External URL
 			return 'externalUrl';
 		
-		} else if(substr($url, 0, 7) == 'search?') {
+		} else if(substr($url, 0, 9) == 'search?q=') {
 			// Search
 			return 'search';
 		
@@ -155,8 +155,7 @@ class WISY_MENUCHECK_CLASS
 			return 'glossar';
 		}
 		
-		// TODO: Was fehlt? Arbeitgeber? Kurs? ...
-		
+		$this->log("!!! Error: unknown MenuType: $url");
 		return false;
 	}
 	
@@ -213,7 +212,19 @@ class WISY_MENUCHECK_CLASS
 	
 	function checkSearchRequests($urls) {
 		$this->log("-> checking search requests");
-		return true; // TODO
+		
+		$hinweise = '';
+		$searcher =& createWisyObject('WISY_SEARCH_CLASS', $this->framework);
+		foreach($urls as $key => $url) {
+			$search = urldecode(trim(substr($url, 9)));
+			$searcher->prepare($search);
+			$count = $searcher->getKurseCount();
+			if($count == 0) {
+				$this->log("$key / $search liefert keine Ergebnisse");
+				$hinweise .= "\n - $key / $search liefert keine Ergebnisse";
+			}
+		}
+		return $hinweise;
 	}
 	
 	function log($str)
