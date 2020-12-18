@@ -7,9 +7,18 @@
  *****************************************************************************
  
  Aufruf dieses Scripts:
- menucheck&apikey=<apikey>	-	evtl. notwendiges Passwort, kann in den Portaleinstellungen
-								der Domain unter apikey= definiert werden.
-								Standardpasswort: none
+ menucheck?all 		-	Überprüft alle Menülinks in dem aktiven Portal das
+   						am längsten nicht mehr überprüft wurde
+   
+ menucheck?updated	-	Überprüft alle Menülinks in dem aktiven Portal das
+ 						am längsten nicht mehr überprüft wurde, aber limitiert
+						auf Portale die seit dem letzten Menucheck noch mal
+						geändert wurden
+
+Zusaetzliche Parameter:
+ &apikey=<apikey>	-	evtl. notwendiges Passwort, kann in den Portaleinstellungen
+						der Domain unter apikey= definiert werden.
+						Standardpasswort: none
 
  */
 
@@ -45,6 +54,25 @@ class WISY_MENUCHECK_CLASS
 			return;
 		}
 		
+		if( isset($_GET['all']) )
+		{
+			$this->doMenucheck('all');
+		}
+		else if( isset($_GET['updated']) )
+		{
+			$this->doMenucheck('updated');
+		}
+		else
+		{
+			$this->log("********** ERROR: $host: unknown menucheck option, use one of \"all\" or \"updated\".");
+		}
+	}
+	
+	function doMenucheck($typeOfCheck)
+	{
+		$db = new DB_Admin;
+		$db2 = new DB_Admin;
+		
 		// make sure, this script does not abort too soon
 		set_time_limit(2*60*60 /*2 hours ...*/);
 		ignore_user_abort(true);
@@ -52,21 +80,15 @@ class WISY_MENUCHECK_CLASS
 		// allocate exclusive access
 		if( !$this->statetable->allocateUpdatestick() ) { $this->log("********** ERROR: $host: cannot menucheck now, update stick in use, please try again in about 10 minutes."); return; }
 		
-		$this->doMenucheck();
-		
-		// release exclusive access
-		$this->statetable->releaseUpdatestick();
-	}
-	
-	function doMenucheck()
-	{
-		$db = new DB_Admin;
-		$db2 = new DB_Admin;
-		
 		$lastcheck = $this->statetable->readState('lastcheck.menucheck', '0000-00-00 00:00:00');
+		$limit = 1;
 		
 		// Select portal settings
-		$sql = "SELECT id, einstellungen, einstellungen_hinweise, bodystart FROM portale WHERE date_modified>='$lastcheck' AND status='1';";
+		if($typeOfCheck == 'all') {
+			$sql = "SELECT id, einstellungen, einstellungen_hinweise, bodystart FROM portale WHERE status='1' ORDER BY date_modified ASC LIMIT $limit;";
+		} else {
+			$sql = "SELECT id, einstellungen, einstellungen_hinweise, bodystart FROM portale WHERE date_modified>='$lastcheck' AND status='1' ORDER BY date_modified ASC LIMIT $limit;";
+		}
 		$db->query( $sql );
 		
 		while( $db->next_record() )
@@ -131,10 +153,12 @@ class WISY_MENUCHECK_CLASS
 			$db2->query($sql);
 			
 			$this->statetable->updateUpdatestick();
-			// TODO: evtl. hier kurze Verzögerung vor nächstem Schleifendurchlauf einbauen
 		}
 		
 		$this->statetable->writeState('lastcheck.menucheck', $this->today_datetime);
+		
+		// release exclusive access
+		$this->statetable->releaseUpdatestick();
 	}
 	
 	function getMenuType($url) {
