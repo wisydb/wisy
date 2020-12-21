@@ -123,7 +123,7 @@ class WISY_MENUCHECK_CLASS
 						foreach($items as $item) {
 								$type = $this->getMenuType($item->url);
 								if($type) {
-									$itemsToCheck[$type][$key] = $item->url;
+									if($type != 'ignore') $itemsToCheck[$type][$key] = $item->url;
 								} else {
 									$this->log("!!! Unbekannter Menutype für $item->url");
 								}
@@ -162,19 +162,29 @@ class WISY_MENUCHECK_CLASS
 	}
 	
 	function getMenuType($url) {
-		$link = trim($url);
-		if($url == '') return false;
+		$url = trim($url);
+		if($url == '' || $url == '/' || $url == 'search' || $url == 'edit') {
+			return 'ignore';
+		}
 		
-		// determine type of $link
-		if(substr($url, 0, 7) == 'http://' || substr($url, 0, 8) == 'https://') {
+		// determine type of $url
+		if(substr($url, 0, 1) == '#') {
+			// #
+			return 'ignore';
+			
+		} else if(substr($url, 0, 11) == 'javascript:') {
+			// javascript:
+			return 'ignore';
+			
+		} else if(substr($url, 0, 7) == 'http://' || substr($url, 0, 8) == 'https://') {
 			// External URL
 			return 'externalUrl';
 		
-		} else if(substr($url, 0, 9) == 'search?q=') {
+		} else if(substr($url, 0, 9) == 'search?q=' || substr($url, 0, 10) == '/search?q=') {
 			// Search
 			return 'search';
 		
-		} else if(preg_match('/^g\d+$/', $url)) {
+		} else if(preg_match('/^\/?g\d+/', $url)) {
 			// Glossar
 			return 'glossar';
 		}
@@ -213,7 +223,8 @@ class WISY_MENUCHECK_CLASS
 		$hinweise = '';
 		$glossar_ids = [];
 		foreach($urls as $key => $url) {
-			$glossar_ids[] = intval(substr($url, 1));
+			preg_match('/^\/?(g\d+)/', $url, $matches);
+			$glossar_ids[] = intval(substr($matches[1], 1));
 		}
 		$glossar_ids = array_unique($glossar_ids);
 		
@@ -240,7 +251,12 @@ class WISY_MENUCHECK_CLASS
 		$hinweise = '';
 		$searcher =& createWisyObject('WISY_SEARCH_CLASS', $this->framework);
 		foreach($urls as $key => $url) {
-			$search = urldecode(trim(substr($url, 9)));
+			$url = urldecode(trim($url));
+			if(substr($url, 0, 1) == '/') {
+				$search = urldecode(trim(substr($url, 10)));
+			} else {
+				$search = urldecode(trim(substr($url, 9)));
+			}
 			$searcher->prepare($search);
 			$count = $searcher->getKurseCount();
 			if($count == 0) {
