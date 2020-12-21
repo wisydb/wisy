@@ -121,19 +121,19 @@ class WISY_MENUCHECK_CLASS
 					if( substr($key, 0, $allPrefixLen)==$allPrefix ) {
 						$items = $this->menuclass->createItems($value, 0);
 						foreach($items as $item) {
-								$type = $this->getMenuType($item->url);
-								if($type) {
-									if($type != 'ignore') $itemsToCheck[$type][$key] = $item->url;
-								} else {
-									$this->log("!!! Unbekannter Menutype für $item->url");
-								}
+							$type = $this->getMenuType($item->url);
+							if($type) {
+								if($type != 'ignore') $itemsToCheck[$type][$key] = $item->url;
+							} else {
+								$this->log("!!! Unbekannter Menutype für '$item->title' / '$item->url'");
+							}
 							if(count($item->children)) {
 								foreach($item->children as $item) {
 									$type = $this->getMenuType($item->url);
 									if($type) {
-										$itemsToCheck[$type][$key] = $item->url;
+										if($type != 'ignore') $itemsToCheck[$type][$key] = $item->url;
 									} else {
-										$this->log("!!! Unbekannter Menutype für $item->url");
+										$this->log("!!! Unbekannter Menutype für '$item->title' / '$item->url'");
 									}
 								}
 							}
@@ -163,7 +163,7 @@ class WISY_MENUCHECK_CLASS
 	
 	function getMenuType($url) {
 		$url = trim($url);
-		if($url == '' || $url == '/' || $url == 'search' || $url == 'edit') {
+		if($url == '' || $url == ';' || $url == '/' || $url == 'search' || $url == 'edit') {
 			return 'ignore';
 		}
 		
@@ -189,7 +189,6 @@ class WISY_MENUCHECK_CLASS
 			return 'glossar';
 		}
 		
-		$this->log("!!! Error: unknown MenuType: $url");
 		return false;
 	}
 	
