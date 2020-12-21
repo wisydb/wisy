@@ -125,7 +125,7 @@ class WISY_MENUCHECK_CLASS
 							if($type) {
 								if($type != 'ignore') $itemsToCheck[$type][$key] = $item->url;
 							} else {
-								$this->log("!!! Unbekannter Menutype für '$item->title' / '$item->url'");
+								$this->log("!!! Unbekannter Menutype für $key: '$item->title' / '$item->url'");
 							}
 							if(count($item->children)) {
 								foreach($item->children as $item) {
@@ -133,7 +133,7 @@ class WISY_MENUCHECK_CLASS
 									if($type) {
 										if($type != 'ignore') $itemsToCheck[$type][$key] = $item->url;
 									} else {
-										$this->log("!!! Unbekannter Menutype für '$item->title' / '$item->url'");
+										$this->log("!!! Unbekannter Menutype für $key: '$item->title' / '$item->url'");
 									}
 								}
 							}
