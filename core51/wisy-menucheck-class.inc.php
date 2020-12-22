@@ -19,6 +19,8 @@ Zusaetzliche Parameter:
  &apikey=<apikey>	-	evtl. notwendiges Passwort, kann in den Portaleinstellungen
 						der Domain unter apikey= definiert werden.
 						Standardpasswort: none
+ ?portal=<portalid>		optional ID des zu überprüfenden Portals. Parameter "updated"
+ 						und "all" werden in dem Fall ignoriert.
 
  */
 
@@ -54,7 +56,11 @@ class WISY_MENUCHECK_CLASS
 			return;
 		}
 		
-		if( isset($_GET['all']) )
+		if( isset($_GET['portal']) && intval($_GET['portal']) > 0 )
+		{
+			$this->doMenucheck('one', intval($_GET['portal']));
+		}
+		else if( isset($_GET['all']) )
 		{
 			$this->doMenucheck('all');
 		}
@@ -68,8 +74,11 @@ class WISY_MENUCHECK_CLASS
 		}
 	}
 	
-	function doMenucheck($typeOfCheck)
+	function doMenucheck($typeOfCheck, $portalId=0)
 	{
+		global $wisyPortalId;
+		global $wisyPortalFilter;
+		
 		$db = new DB_Admin;
 		$db2 = new DB_Admin;
 		
@@ -84,10 +93,12 @@ class WISY_MENUCHECK_CLASS
 		$limit = 1;
 		
 		// Select portal settings
-		if($typeOfCheck == 'all') {
-			$sql = "SELECT id, einstellungen, einstellungen_hinweise, bodystart FROM portale WHERE status='1' ORDER BY date_modified ASC LIMIT $limit;";
+		if($typeOfCheck == 'one') {
+			$sql = "SELECT id, einstellungen, einstellungen_hinweise, bodystart, filter FROM portale WHERE status='1' AND id='" . $portalId . "' LIMIT 1";
+		} else if($typeOfCheck == 'all') {
+			$sql = "SELECT id, einstellungen, einstellungen_hinweise, bodystart, filter FROM portale WHERE status='1' ORDER BY date_modified ASC LIMIT $limit;";
 		} else {
-			$sql = "SELECT id, einstellungen, einstellungen_hinweise, bodystart FROM portale WHERE date_modified>='$lastcheck' AND status='1' ORDER BY date_modified ASC LIMIT $limit;";
+			$sql = "SELECT id, einstellungen, einstellungen_hinweise, bodystart, filter FROM portale WHERE date_modified>='$lastcheck' AND status='1' ORDER BY date_modified ASC LIMIT $limit;";
 		}
 		$db->query( $sql );
 		
@@ -97,6 +108,10 @@ class WISY_MENUCHECK_CLASS
 			$einstellungen  = $db->f8('einstellungen');
 			$einstellungen_hinweise = $db->f8('einstellungen_hinweise');
 			$bodystart = $db->f8('bodystart');
+			
+			// Set global portal ID for correct search context
+			$wisyPortalId = $portal_id;
+			$wisyPortalFilter = explodeSettings($db->fs('filter'));
 			
 			$einstellungen_exploded = explodeSettings($einstellungen);
 			$hinweise = "MENUCHECK $this->today_datetime\n";
