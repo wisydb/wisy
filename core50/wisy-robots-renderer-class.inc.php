@@ -98,11 +98,15 @@ class WISY_ROBOTS_RENDERER_CLASS
 			// for all other spiders
 			echo "User-agent: *\n";
 			echo "Disallow: /advanced\n";
+			echo "Disallow: /edit\n";
+			echo "Disallow: /api\n";
 			echo "Disallow: /filter\n";
 			echo "Disallow: /edit\n";
 			echo "Disallow: /rss\n";
 			echo "Disallow: /terrapin\n";
 			echo "Disallow: /g151\n";
+			echo "Disallow: /search?q=volltext*\n";
+			
 			foreach($block_specificlink AS $link) {
 			    if(strlen($link) >= 1)
 			        echo "Disallow: ".$link."\n";
@@ -171,7 +175,7 @@ class WISY_ROBOTS_RENDERER_CLASS
 		if( $searcher->ok() )
 		{
 			$records = $searcher->getAnbieterRecords(0 /*offset*/, intval($maxUrls/2) /*rows*/, 'creatd');
-			for( $r = 0; $r < sizeof($records['records']); $r++ )
+			for( $r = 0; $r < sizeof((array) $records['records']); $r++ )
 			{
 				$sitemap .= $this->addUrl('a'.$records['records'][$r]['id'], strtotime($records['records'][$r]['date_modified']), 'monthly');
 			}

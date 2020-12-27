@@ -705,8 +705,8 @@ class WISY_SEARCH_CLASS
 			'cond'		=>	array(),
 		);
 
-		$queryArr = explode(',', $queryString);
-		for( $i = 0; $i < sizeof($queryArr); $i++ )
+		$queryArr = explode(',', strval( $queryString ));
+		for( $i = 0; $i < sizeof((array) $queryArr); $i++ )
 		{
 			// get initial value to search tags for, remove multiple spaces
 			$field = '';

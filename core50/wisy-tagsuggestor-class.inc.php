@@ -72,7 +72,7 @@ class WISY_TAGSUGGESTOR_CLASS
 
 	public function getTagFreq($tag_ids_arr)
 	{	
-	    if((array) sizeof($tag_ids_arr) == 1 )
+	    if( sizeof((array) $tag_ids_arr) == 1 )
 		{
 			$portalIdCond = '';
 			if( $GLOBALS['wisyPortalFilter']['stdkursfilter']!='' ) {
@@ -86,7 +86,7 @@ class WISY_TAGSUGGESTOR_CLASS
 			    return $this->db2->fcs8('tag_freq');
 			}
 		}
-		else if((array) sizeof($tag_ids_arr) > 1 )
+		else if( sizeof((array) $tag_ids_arr) > 1 )
 		{
 			$portalTagId = $this->getWisyPortalTagId();
 			if( $portalTagId ) {

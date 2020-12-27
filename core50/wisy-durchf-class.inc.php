@@ -47,22 +47,21 @@ class WISY_DURCHF_CLASS
 		// Nachteil ist, dass einige Stichwörter erst rekonstruiert werden müssen (aus bu_nummer, s. wisy-sync-renderer-class.inc.php))
 		if( !is_array($this->imgTagArr) ) 
 		{
-			// init Array with defaults
-			$this->imgTagArr = array(
-				'tc1'	=>	array('<span class="wisyr_art_icon wisyr_art_ganztaegig">&#9673;</span>',	 	'Ganzt&auml;gig'),
-				'tc2'	=>	array('<span class="wisyr_art_icon wisyr_art_vormittags">&#9680;</span>',  		'Vormittags'),
-				'tc3'	=>	array('<span class="wisyr_art_icon wisyr_art_nachmittags">&#9681;</span>', 		'Nachmittags'),
-				'tc4'	=>	array('<span class="wisyr_art_icon wisyr_art_abends">&#9682;</span>',		 	'Abends'),
-				'tc5'	=>	array('<span class="wisyr_art_icon wisyr_art_wochenende">WE</span>',			'Wochenende'),
-			    1		=>	array('<span class="wisyr_art_icon wisyr_art_bildungsurlaub">BU</span>',		'Bildungsurlaub'),
-			    7721	=>	array('<span class="wisyr_art_icon wisyr_art_fernunterricht">&#9993;</span>',	'Fernunterricht'),
-			    7430	=>	array('<span class="wisyr_art_icon wisyr_art_fernunterricht">BL</span>',
-				7721	=>	array('<span class="wisyr_art_icon wisyr_art_fernunterricht">&#9993;</span>',	'Fernunterricht'),
-				7639	=>	array('<span class="wisyr_art_icon wisyr_art_fernunterricht">WWW</span>',		'Web-Seminar'),
-				17261	=>	array('<span class="wisyr_art_icon wisyr_art_fernunterricht">P</span>',			'Präsenzunterricht'),
-			    806441	=>	array('<span class="wisyr_art_icon wisyr_art_fernunterricht">WWW</span>',		'Web-Seminar'), // eigentl. Teleteaching = Web-Seminar
-			    832301	=>	array('<span class="wisyr_art_icon wisyr_art_bildungszeit">BZ</span>',	
-			);
+		    // init Array with defaults
+		    $this->imgTagArr = array(
+		        'tc1'	=>	array('<span class="wisyr_art_icon wisyr_art_ganztaegig">&#9673;</span>',	 	'Ganzt&auml;gig'),
+		        'tc2'	=>	array('<span class="wisyr_art_icon wisyr_art_vormittags">&#9680;</span>',  		'Vormittags'),
+		        'tc3'	=>	array('<span class="wisyr_art_icon wisyr_art_nachmittags">&#9681;</span>', 		'Nachmittags'),
+		        'tc4'	=>	array('<span class="wisyr_art_icon wisyr_art_abends">&#9682;</span>',		 	'Abends'),
+		        'tc5'	=>	array('<span class="wisyr_art_icon wisyr_art_wochenende">WE</span>',			'Wochenende'),
+		        1		=>	array('<span class="wisyr_art_icon wisyr_art_bildungsurlaub">BU</span>',		'Bildungsurlaub'),
+		        7721	=>	array('<span class="wisyr_art_icon wisyr_art_fernunterricht">&#9993;</span>',	'Fernunterricht'),
+		        7430	=>	array('<span class="wisyr_art_icon wisyr_art_fernunterricht">BL</span>',	'Blended Learning'),
+		        7639	=>	array('<span class="wisyr_art_icon wisyr_art_fernunterricht">WWW</span>',		'Web-Seminar'),
+		        17261	=>	array('<span class="wisyr_art_icon wisyr_art_fernunterricht">P</span>',			'Pr&auml;senzunterricht'),
+		        806441	=>	array('<span class="wisyr_art_icon wisyr_art_fernunterricht">WWW</span>',		'Web-Seminar'), // eigentl. Teleteaching = Web-Seminar
+		        832301	=>	array('<span class="wisyr_art_icon wisyr_art_bildungszeit">BZ</span>',		'Bildungszeit')
+		    );
 
 			// overwrite defaults with portal settings from img.tag
 			foreach( $GLOBALS['wisyPortalEinstellungen'] as $key => $value ) {
@@ -298,7 +297,7 @@ class WISY_DURCHF_CLASS
 			}
 			
 			// Auto link URLs in Preishinweis
-			$replaceURL = (strpos($ret, 'http') === FALSE && strpos($ret, 'https') === FALSE) ? '<a href="http://$0" target="_blank" title="$0">'.$this->framework->iniRead("preishinweis.linktext", "$0").'</a>' : '<a href="$0" target="_blank" title="$0">'.$this->framework->iniRead("preishinweis.linktext", "$0").'</a>';
+			$replaceURL = (strpos($ret, 'http') === FALSE && strpos($ret, 'https') === FALSE) ? '<a href="http://$0" target="_blank" rel="noopener noreferrer" title="$0">'.$this->framework->iniRead("preishinweis.linktext", "$0").'</a>' : '<a href="$0" target="_blank" rel="noopener noreferrer" title="$0">'.$this->framework->iniRead("preishinweis.linktext", "$0").'</a>';
 			$ret = preg_replace('~(?:(https?)://([^\s<]+)|(www\.[^\s<]+?\.[^\s<]+))(?<![\.,:])~i', $replaceURL, $ret);
 		}
 		
@@ -598,12 +597,12 @@ class WISY_DURCHF_CLASS
 				$cell = '';
 				
 				if( $strasse ) {
-				    $cell .=  '<a title="Adresse in Google Maps ansehen" href="' . $map_URL . '" target="_blank">' . $strasse . '</a>';
+				    $cell .=  '<a title="Adresse in Google Maps ansehen" href="' . $map_URL . '" target="_blank" rel="noopener noreferrer">' . $strasse . '</a>';
 				}
 				
 				if( $ort ) {
 				    $cell .= $cell? '<br />' : '';
-				    $cell .= '<a title="Adresse in Google Maps ansehen" href="' . $map_URL . '" target="_blank">' . "$plz $ort" . '</a>';
+				    $cell .= '<a title="Adresse in Google Maps ansehen" href="' . $map_URL . '" target="_blank" rel="noopener noreferrer">' . "$plz $ort" . '</a>';
 				}
 	
 				if( $land ) {

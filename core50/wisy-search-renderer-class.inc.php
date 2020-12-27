@@ -444,7 +444,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		}
 		
 		return '<span class="' .$row_class. '">' .
-				$row_prefix . ' <a href="' . $this->framework->getUrl('search', array('q'=>$addparam['qprefix'].$tag_name)) . '">' . htmlspecialchars($tag_name) . '</a> ' . $row_postfix .
+		  		$row_prefix . ' <a href="' . $this->framework->getUrl('search', array('q'=>$addparam['qprefix'].$tag_name)) . ( $this->framework->qtrigger ? '&qtrigger='.$this->framework->qtrigger : '').($this->framework->force ? '&force='.$this->framework->force : '') . '">' . htmlspecialchars($tag_name) . '</a> ' . $row_postfix .
 			   '</span>';
 	}
 	
@@ -585,7 +585,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		$richtext = (intval(trim($this->framework->iniRead('meta.richtext'))) === 1); // #richtext
 	
 		$validOrders = array('a', 'ad', 't', 'td', 'b', 'bd', 'd', 'dd', 'p', 'pd', 'o', 'od', 'creat', 'creatd', 'rand');
-		$orderBy = $_GET['order']; if( !in_array($orderBy, $validOrders) ) $orderBy = 'b';
+		$orderBy = strval( $this->framework->getParam('order') ); if( !in_array($orderBy, $validOrders) ) $orderBy = 'b';
 
 		$info = $searcher->getInfo();
 		if( $info['changed_query'] || sizeof((array) $info['suggestions']) )
@@ -633,8 +633,11 @@ class WISY_SEARCH_RENDERER_CLASS
 
 			// render head
 			echo '<div class="wisyr_list_header">';
-			echo '<div class="wisyr_listnav"><span class="active">Kurse</span><a href="search?q=' . urlencode($queryString) . '%2C+Zeige:Anbieter">Anbieter</a></div>';
-				echo '<div class="wisyr_filternav">';
+			echo '<div class="wisyr_listnav">';
+			echo '<span class="active tab_kurse">Angebote</span>';
+			echo '<a href="' . $baseurl . '?q=' . ($this->changedquery ? urlencode($this->changedquery) : urlencode($queryString)) . '%2C+Zeige:Anbieter' . ( $this->framework->qtrigger ? '&qtrigger='.$this->framework->qtrigger : '') . ( $this->framework->force ? '&force='.$this->framework->force : '') . '" class="tab_anbieter">Anbieter</a>';
+			echo '</div>';
+			echo '<div class="wisyr_filternav';
 			
 				if( $queryString == '' ) {
 					echo '<span class="wisyr_aktuelle_angebote">Aktuelle Angebote</span>';
@@ -653,7 +656,7 @@ class WISY_SEARCH_RENDERER_CLASS
 				}
 				
 				// Show filter / advanced search
-				$DEFAULT_FILTERLINK_HTML= '<a href="filter?q=__Q_URLENCODE__" id="wisy_filterlink">Suche anpassen</a>';
+				$DEFAULT_FILTERLINK_HTML= '<a href="filter?q=__Q_URLENCODE__'. ( $this->framework->qtrigger ? '&qtrigger='.$this->framework->qtrigger : '') . ( $this->framework->force ? '&force='.$this->framework->force : '')  .'" id="wisy_filterlink">Suche anpassen</a>';
 				echo $this->framework->replacePlaceholders($this->framework->iniRead('searcharea.filterlink', $DEFAULT_FILTERLINK_HTML));
 				
 
@@ -745,20 +748,20 @@ class WISY_SEARCH_RENDERER_CLASS
 			echo '</table>' . "\n\n";
 			
 			/* // #richtext
-			 if($richtext) {
-			 // sort($durchfClass->preise);
-			 // echo '<meta itemprop="lowprice" content="'.$this->framework->preisUS($durchfClass->preise[0]).'">';
-			 // 	echo '<meta itemprop="highprice" content="'.$this->framework->preisUS($durchfClass->preise[sizeof($durchfClass->preise)-1]).'">';
-			 
-			 echo '<meta itemprop="priceCurrency" content="EUR">';
-			 // 	echo '<meta itemprop="offerCount" content="'.sizeof((array) $durchfClass->preise).'">';
-			 echo '<meta itemprop="url" content="http://'.$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI'].'">';
-			 echo '<meta itemprop="eligibleRegion" content="DE-RP">';
-			 echo '<span itemprop="eligibleCustomerType" itemscope itemtype="https://schema.org/BusinessEntityType">';
-			 echo '<meta itemprop="additionalType" content="http://purl.org/goodrelations/v1#Enduser">';
-			 echo '</span>';
-			 echo '</div>'; // Ende AggregateOffer
-			 } */
+				if($richtext) {
+					// sort($durchfClass->preise);
+					// echo '<meta itemprop="lowprice" content="'.$this->framework->preisUS($durchfClass->preise[0]).'">';
+				// 	echo '<meta itemprop="highprice" content="'.$this->framework->preisUS($durchfClass->preise[sizeof((array) $durchfClass->preise)-1]).'">';
+					
+					echo '<meta itemprop="priceCurrency" content="EUR">';
+				// 	echo '<meta itemprop="offerCount" content="'.sizeof((array) $durchfClass->preise).'">';
+					echo '<meta itemprop="url" content="http://'.$_SERVER['SERVER_NAME'].str_replace('&amp;', '&', htmlspecialchars( $_SERVER['REQUEST_URI'] )).'">';
+					echo '<meta itemprop="eligibleRegion" content="DE-RP">';
+					echo '<span itemprop="eligibleCustomerType" itemscope itemtype="https://schema.org/BusinessEntityType">';
+					echo '<meta itemprop="additionalType" content="http://purl.org/goodrelations/v1#Enduser">';
+					echo '</span>';
+					echo '</div>'; // Ende AggregateOffer
+				} */
 			
 			flush();
 			
@@ -807,16 +810,16 @@ class WISY_SEARCH_RENDERER_CLASS
 			                    
 			                    if($tag['eigenschaften'] != $filtersw && $tag_freq > 0); {
 			                        if($this->framework->iniRead('sw_cloud.suche_stichwoerter', 1))
-			                            $tag_cloud .= '<span class="sw_raw typ_'.$tag['eigenschaften'].'" data-weight="'.$weight.'"><a href="/search?q='.urlencode(utf8_encode($tag['stichwort'])).'">'.utf8_encode($tag['stichwort']).'</a></span>, ';
+			                            $tag_cloud .= '<span class="sw_raw typ_'.$tag['eigenschaften'].'" data-weight="'.$weight.'"><a href="/search?q='.urlencode( cs8($tag['stichwort']) ).( $this->framework->qtrigger ? '&qtrigger='.$this->framework->qtrigger : '').( $this->framework->force ? '&force='.$this->framework->force : '').'">'.cs8($tag['stichwort']).'</a></span>, ';
 			                            
 			                        if($this->framework->iniRead('sw_cloud.suche_synonyme', 0))
-			                            $tag_cloud .= $this->framework->writeDerivedTags($this->framework->loadDerivedTags($db, $tag['id'], $distinct_tags, "Synonyme"), $filtersw, "Synonym", $tag['stichwort']);
+			                            $tag_cloud .= $this->framework->writeDerivedTags($this->framework->loadDerivedTags($db, $tag['id'], $distinct_tags, "Synonyme"), $filtersw, "Synonym", cs8($tag['stichwort']));
 			                                
 			                        if($this->framework->iniRead('sw_cloud.suche_oberbegriffe', 0))
-			                            $tag_cloud .= $this->framework->writeDerivedTags($this->framework->loadDerivedTags($db, $tag['id'], $distinct_tags, "Oberbegriffe"), $filtersw, "Oberbegriff", $tag['stichwort']);
+			                            $tag_cloud .= $this->framework->writeDerivedTags($this->framework->loadDerivedTags($db, $tag['id'], $distinct_tags, "Oberbegriffe"), $filtersw, "Oberbegriff", cs8($tag['stichwort']));
 			                                    
 			                        if($this->framework->iniRead('sw_cloud.suche_unterbegriffe', 0))
-			                            $tag_cloud .= $this->framework->writeDerivedTags($this->framework->loadDerivedTags($db, $tag['id'], $distinct_tags, "Unterbegriffe"), $filtersw, "Unterbegriff", $tag['stichwort']);
+			                            $tag_cloud .= $this->framework->writeDerivedTags($this->framework->loadDerivedTags($db, $tag['id'], $distinct_tags, "Unterbegriffe"), $filtersw, "Unterbegriff", cs8($tag['stichwort']));
 			                    }
 			                    
 			                    array_push($tag_done, $tag['id']);
@@ -898,7 +901,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			 #A5AAC6;font-weight: bold;color: #FFFFFF;margin: 0px;border: 1px solid #FFFFFF;padding: 0px;" value="Suche starten" onClick=
 			"IWWBsearch(this)"></td>
 			<td align="right" style="font-family: Verdana, Arial, Helvetica, sans-serif;font-size: 11px;color: #5F6796;font-weight: bold;
-			"><a href="https://www.iwwb.de" target="_blank"><img src="https://www.iwwb.de/web/images/iwwb.gif" border="0"></a>&nbsp;</td>
+			"><a href="https://www.iwwb.de" target="_blank" rel="noopener noreferrer"><img src="https://www.iwwb.de/web/images/iwwb.gif" border="0"></a>&nbsp;</td>
 			</tr>
 			</form>
 			</table>
@@ -913,7 +916,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		$anbieterRenderer =& createWisyObject('WISY_ANBIETER_RENDERER_CLASS', $this->framework);
 
 		$validOrders = array('a', 'ad', 's', 'sd', 'p', 'pd', 'o', 'od', 'h', 'hd', 'e', 'ed', 't', 'td', 'creat', 'creatd');
-		$orderBy = $_GET['order']; if( !in_array($orderBy, $validOrders) ) $orderBy = 'a';
+		$orderBy = strval( $this->framework->getParam('order') ); if( !in_array($orderBy, $validOrders) ) $orderBy = 'a';
 
 		$db2 = new DB_Admin();
 
@@ -936,17 +939,19 @@ class WISY_SEARCH_RENDERER_CLASS
 			}
 
 			// render head
-			echo '<div class="wisyr_list_header">';
-			echo '<div class="wisyr_listnav"><a href="search?q=' . urlencode(str_replace(array(',,', ', ,'), array(',', ','), str_replace('Zeige:Anbieter', '', $queryString))). '">Kurse</a><span class="active">Anbieter</span></div>';
-				echo '<span class="wisyr_anbieter_zum_suchauftrag">';
-				echo '<span class="wisyr_anzahl_anbieter">' . $sqlCount . ' Anbieter</span> zum Suchauftrag';
-				echo '<a class="wisyr_kurse_switch" href="search?q=' . urlencode(str_replace(array(',,', ', ,'), array(',', ','), str_replace('Zeige:Anbieter', '', $queryString))). '">Zeige Kurse</a>';
-				echo '</span>';
-
-				if( $pagesel )
-				{
-					$this->renderPagination($prevurl, $nexturl, $pagesel, $this->rows, $offset, $sqlCount, 'wisyr_paginate_top');
-				}
+			echo '<div class="wisyr_listnav">';
+			$link_angebote = trim(urlencode(str_replace(array(',,', ', ,'), array(',', ','), str_replace('Zeige:Anbieter', '', $queryString))));
+			if($link_angebote)
+			    echo '<a href="search?q=' . $link_angebote . ( $this->framework->qtrigger ? '&qtrigger='.$this->framework->qtrigger : '') . ( $this->framework->force ? '&force='.$this->framework->force : '') . '" class="tab_kurse">Angebote</a>';
+			    
+			echo '<span class="active tab_anbieter">Anbieter</span>';
+			echo '<a class="wisyr_kurse_switch" href="search?q=' . urlencode(str_replace(array(',,', ', ,'), array(',', ','), str_replace('Zeige:Anbieter', '', $queryString))). '">Zeige Kurse</a>';
+			echo '</span>';
+			    
+			if( $pagesel )
+			{
+			     $this->renderPagination($prevurl, $nexturl, $pagesel, $this->rows, $offset, $sqlCount, 'wisyr_paginate_top');
+			}
 			echo '</div>' . "\n";
 			flush();
 			
@@ -989,13 +994,13 @@ class WISY_SEARCH_RENDERER_CLASS
 						{
 							if( substr($link, 0, 4) != 'http' )
 								$link = 'http:/' . '/' . $link;
-							echo '<a href="'.$link.'" target="_blank">Web</a>';
+							echo '<a href="'.$link.'" target="_blank" rel="noopener noreferrer">Web</a>';
 						}
 					echo ' </td>';
 					echo '<td class="wisyr_email" data-title="E-Mail">';
 						$link = $record['anspr_email'];
 						if( $link != '' )
-							echo '<a href="' . $anbieterRenderer->createMailtoLink($link) . '" target="_blank">E-Mail</a>';
+							echo '<a href="' . $anbieterRenderer->createMailtoLink($link) . '" target="_blank"" rel="noopener noreferrer">E-Mail</a>';
 					echo ' </td>';
 					echo '<td class="wisyr_telefon" data-title="Telefon">';
 						echo '<a href="tel:' . urlencode(cs8($record['anspr_tel'])) . '">' . htmlspecialchars(cs8($record['anspr_tel'])) . '</a>';
@@ -1049,13 +1054,13 @@ class WISY_SEARCH_RENDERER_CLASS
 			}
 		}
 		
-		$offset = intval($_GET['offset']); if( $offset < 0 ) $offset = 0;
+		$offset = intval( $this->framework->getParam('offset') ); if( $offset < 0 ) $offset = 0;
 		$title = trim($queryString, ', ');
 
 		// page / ajax start
 		// --------------------------------------------------------------------
 
-		if( intval($_GET['ajax']) )
+		if( intval( $this->framework->getParam('ajax') ) )
 		{
 			header('Content-type: text/html; charset=utf-8');
 		}
@@ -1082,7 +1087,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		
 		echo '<div id="wisy_resultarea" class="' .$this->framework->getAllowFeedbackClass(). '">';
 		
-			if( $_GET['show'] == 'tags' )
+		    if( $this->framework->getParam('show') == 'tags' )
 			{
 				$this->renderTagliste($queryString);
 			}
@@ -1200,7 +1205,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		// page / ajax end
 		// --------------------------------------------------------------------
 		
-		if( intval($_GET['ajax']) )
+		if( intval( $this->framework->getParam('ajax') ) )
 		{
 			;
 		}

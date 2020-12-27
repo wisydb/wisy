@@ -18,7 +18,7 @@ class WISY_KURS_RENDERER_CLASS
 		global $wisyPortalSpalten;
 		global $wisyPortalId;
 
-		$kursId = intval($_GET['id']);
+		$kursId = intval( $this->framework->getParam('id') );
 		
 		$this->checkKursFilter($wisyPortalId, $kursId);
 
@@ -66,7 +66,7 @@ class WISY_KURS_RENDERER_CLASS
 		// #enrichtitles
 		// #richtext
 		// #socialmedia
-		$showAllDurchf = intval($_GET['showalldurchf'])==1? 1 : 0;
+		$showAllDurchf = intval( $this->framework->getParam('showalldurchf') )==1? 1 : 0;
 		$durchfClass =& createWisyObject('WISY_DURCHF_CLASS', $this->framework);
 		$durchfuehrungenIds = $durchfClass->getDurchfuehrungIds($db, $kursId, $showAllDurchf);	// bereits PLZ-ueberprueft
 		
@@ -87,7 +87,7 @@ class WISY_KURS_RENDERER_CLASS
 		}
 		    
 		// promoted?
-		if( intval($_GET['promoted']) == $kursId )
+		if( intval( $this->framework->getParam('promoted') ) == $kursId )
 		{
 			$promoter =& createWisyObject('WISY_PROMOTE_CLASS', $this->framework);
 			$promoter->logPromotedRecordClick($kursId, $anbieterId);
@@ -128,10 +128,10 @@ class WISY_KURS_RENDERER_CLASS
 			// headline + flush() (loading the rest may take some seconds)
 			$h1class = '';
 
-			
-			echo '<p class="noprint">' 
-			.	 	'<a class="wisyr_zurueck" href="javascript:history.back();">&laquo; Zur&uuml;ck</a>'
-			.	 '</p>';
+			if( !$this->framework->getParam('deleted', false) )
+    			echo '<p class="noprint">' 
+    			.	 	'<a class="wisyr_zurueck" href="javascript:history.back();">&laquo; Zur&uuml;ck</a>'
+    			.	 '</p>';
 			
 			echo '<h1 class="wisyr_kurstitel">';
 				if( $anbieter_typ == 2 ) echo '<span class="wisy_icon_beratungsstelle">Beratung<span class="dp">:</span></span> ';
@@ -213,7 +213,7 @@ class WISY_KURS_RENDERER_CLASS
 				// Durchfuehrungen vorbereiten
 				echo '<article class="wisy_kurs_durchf"><h1 class="wisy_df_headline">Termine</h1>';
 			
-				$showAllDurchf = intval($_GET['showalldurchf'])==1? 1 : 0;
+				$showAllDurchf = intval( $this->framework->getParam('showalldurchf') )==1? 1 : 0;
 				if( $showAllDurchf )
 					echo '<a id="showalldurchf"></a>';
 			
@@ -325,7 +325,7 @@ class WISY_KURS_RENDERER_CLASS
 			            if($tag['eigenschaften'] != $filtersw && $tag_freq > 0); {
 			                if($this->framework->iniRead('sw_cloud.kurs_stichwoerter', 1)) {
 			                    $tag_stichwort = cs8($tag['stichwort']);
-			                    $tag_cloud .= '<span class="sw_raw typ_'.$tag['eigenschaften'].'" data-weight="'.$weight.'"><a href="/?q='.urlencode($tag_stichwort).'">'.$tag_stichwort.'</a></span>, ';
+			                    $tag_cloud .= '<span class="sw_raw typ_'.$tag['eigenschaften'].'" data-weight="'.$weight.'"><a href="/search?q='.urlencode($tag_stichwort).'">'.$tag_stichwort.'</a></span>, ';
 			                }
 			                    
 			                if($this->framework->iniRead('sw_cloud.kurs_synonyme', 0))
@@ -392,7 +392,7 @@ class WISY_KURS_RENDERER_CLASS
 								$editurl = $copyrightClass->getEditUrl($db, 'kurse', $kursId);
 							}
 							echo '<span class="noprint"> - ';
-								$target = $editurl==''? '' : 'target="_blank"';
+								$target = $editurl==''? '' : 'target="_blank" rel="noopener noreferrer"';
 								echo $class? "<span class=\"$class\">" : '';
 									echo "<a href=\"" . 
 										$editurl
@@ -454,7 +454,7 @@ class WISY_KURS_RENDERER_CLASS
 	        // check if course in search index (=allowed by portal filter)
 	        $searcher2 =& createWisyObject('WISY_SEARCH_CLASS', $this->framework);
 	        $searcher2->prepare('kid:' . $kursId);
-	        $anzahlKurse = $searcher2->getKurseCount();
+	        $anzahlKurse = $searcher2->getKurseCount(); // = page/course part of portal
 	        
 	        if($_GET['debug'] == 10 && $anzahlKurse == 1) {
 	            echo "<br>Seite portaleigen!<br>";

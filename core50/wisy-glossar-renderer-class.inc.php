@@ -28,7 +28,7 @@ class WISY_GLOSSAR_RENDERER_CLASS
 	
 	function render()
 	{
-		$glossar_id = intval($_GET['id']);
+	    $glossar_id = intval( $this->framework->getParam('id') );
 	
 		$db = new DB_Admin;
 
@@ -39,8 +39,8 @@ class WISY_GLOSSAR_RENDERER_CLASS
 		$begriff 		= $db->fcs8('begriff');
 		$erklaerung 	= $db->fcs8('erklaerung'); // ?
 		$wikipedia 		= $db->fcs8('wikipedia');
-		$date_created	= cs8($db->fs('date_created'));
-		$date_modified	= cs8($db->fs('date_modified'));
+		$date_created	= $db->f('date_created');
+		$date_modified	= $db->f('date_modified');
 
 		// Wenn es keine Erklärung, aber eine Wikipedia-Seite gibt -> Weiterleitung auf die entspr. Wikipedia-Seite
 		if( $erklaerung == '' && $wikipedia != '' )
@@ -89,7 +89,7 @@ class WISY_GLOSSAR_RENDERER_CLASS
 					$isB2b = (substr($wikipedia, 0, 4) == 'b2b:')? true : false;
 				
 					echo '<p>';
-						echo 'Weitere Informationen zu diesem Thema finden Sie <a href="'.htmlspecialchars($this->getWikipediaUrl($wikipedia)).'" target="_blank">';
+						echo 'Weitere Informationen zu diesem Thema finden Sie <a href="'.htmlspecialchars($this->getWikipediaUrl($wikipedia)).'" target="_blank" rel="noopener noreferrer">';
 							echo ' ' . ($isB2b? 'im Weiterbildungs-WIKI' : 'in der Wikipedia');
 						echo '</a>';
 					echo '</p>';

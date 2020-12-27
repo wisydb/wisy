@@ -383,7 +383,7 @@ class WISY_EDIT_RENDERER_CLASS
 			}
 
 			// link "hilfe"
-			$ret .=  ' | <a href="' .$this->framework->getHelpUrl($this->framework->iniRead('useredit.help', '3371')). '" target="_blank">Hilfe</a>';
+			$ret .=  ' | <a href="' .$this->framework->getHelpUrl($this->framework->iniRead('useredit.help', '3371')). '" target="_blank" rel="noopener noreferrer">Hilfe</a>';
 			
 		$ret .=  '</div>';
 
@@ -447,8 +447,8 @@ class WISY_EDIT_RENDERER_CLASS
 		else if( $_REQUEST['action'] == 'loginSubseq' )
 		{
 		    // "OK" wurde angeklickt - loginversuch starten
-		    $fwd 				= $_REQUEST['fwd'];
-		    $anbieterSuchname	= $_REQUEST['as'];
+		    $fwd 				= strval( $_REQUEST['fwd'] );
+		    $anbieterSuchname	= strval( $_REQUEST['as'] );
 		    $anbieterSuchname_utf8dec = (PHP7 ? $anbieterSuchname : utf8_decode($anbieterSuchname));
 		    
 		    $logwriter = new LOG_WRITER_CLASS;
@@ -470,12 +470,12 @@ class WISY_EDIT_RENDERER_CLASS
 		    } // end: is_numeric
 		    
 		    $login_as = false;
-			if( ($p=strpos($_REQUEST['wepw'], '.')) !== false )
+		    if( ($p=strpos( strval( $_REQUEST['wepw'] ), '.')) !== false )
 			{
 				// ...Login als registrierter Admin-Benutzer in der Form "<loginname>.<passwort>"
 				// KEINE Fehler für  diesen Bereich loggen - ansonsten würden wir u.U. Teile des Passworts loggen!
-				$temp[0] = substr($_REQUEST['wepw'], 0, $p);
-				$temp[1] = substr($_REQUEST['wepw'], $p+1);
+			    $temp[0] = substr( strval( $_REQUEST['wepw'] ), 0, $p);
+			    $temp[1] = substr( strval( $_REQUEST['wepw'] ), $p+1);
 				
 				$sql = "SELECT password, id FROM user WHERE loginname='".addslashes($temp[0])."'";
 				$db->query($sql);
@@ -508,7 +508,7 @@ class WISY_EDIT_RENDERER_CLASS
 			    {
 			        $dbPw = $db->fcs8('pflege_passwort');
 			        $dbPwEinst = intval($db->fcs8('pflege_pweinst'));
-			        if( crypt($_REQUEST['wepw'], $dbPw) == $dbPw
+			        if( crypt( strval( $_REQUEST['wepw'] ), $dbPw) == $dbPw
 			            && $dbPwEinst&1 /*freigeschaltet?*/ )
 			        {
 			            $loggedInAnbieterId = intval($db->fcs8('id'));
@@ -628,8 +628,8 @@ class WISY_EDIT_RENDERER_CLASS
 					echo '<table>';
 						echo "<input type=\"hidden\" name=\"action\" value=\"loginSubseq\" />";
 						echo "<script type=\"text/javascript\"><!--\ndocument.write('<input type=\"hidden\" name=\"javascript\" value=\"enabled\" />');\n/"."/--></script>";
-						echo "<input type=\"hidden\" name=\"fwd\" value=\"".htmlspecialchars($fwd)."\" />";
-						echo "<input type=\"hidden\" name=\"bwd\" value=\"".htmlspecialchars($this->bwd)."\" />";
+						echo "<input type=\"hidden\" name=\"fwd\" value=\"".htmlspecialchars( strval( $fwd ) )."\" />";
+						echo "<input type=\"hidden\" name=\"bwd\" value=\"".htmlspecialchars( strval( $this->bwd ) )."\" />";
 						echo '<tr>';
 							echo '<td nowrap="nowrap">Anbietername oder -ID:</td>';
 							echo "<td><input type=\"text\" name=\"as\" value=\"".htmlspecialchars($anbieterSuchname)."\" size=\"50\" /></td>";
@@ -992,7 +992,7 @@ class WISY_EDIT_RENDERER_CLASS
 		            $andere_kurs_id = $db->fcs8('id');
 		            if( $this->isEditable($andere_kurs_id)=='yes' )
 		            {
-		                // meine knappe Variante waere gewesen: "Ein Kurse mit dem Titel <i><titel><i> <b>ist bereits vorhanden.</b> Bitte ‚àö¬ßndern Sie den bestehenden Kurs und f‚àö¬∫gen dort ggf. Durchf‚àö¬∫hrungen hinzu. <a>bestehenden Kurs bearbeiten</a>"
+		                // meine knappe Variante waere gewesen: "Ein Kurse mit dem Titel <i><titel><i> <b>ist bereits vorhanden.</b> Bitte ‚aendern Sie den bestehenden Kurs und f‚àö¬∫gen dort ggf. Durchfuehrungen hinzu. <a>bestehenden Kurs bearbeiten</a>"
 		                $otherUrl = $this->framework->getUrl('edit', array('action'=>'ek', 'id'=>$andere_kurs_id));
 		                $kurs['error'][] =
 		                '
@@ -1074,7 +1074,7 @@ class WISY_EDIT_RENDERER_CLASS
 			
 			if( $check_maxlen_bemerkungen ) { /*bei unklaren URL-Verhältnissen wird die Länge nicht geprüft, da sowieso ein Fehler ausgegeben wird - mit dem Hinweis nur max. 1 URL zu verwenden*/
 				if( strlen($durchf['bemerkungen']) > $check_maxlen_bemerkungen ) {
-					$kurs['error'][] = 'Fehler: Im Feld <i>Bemerkungen</i> sind max. '.$maxlen_bemerkungen.' Zeichen erlaubt; URLs werden dabei nicht mitgezählt. Eingegebene Zeichen: '.strlen($durchf['bemerkungen']);
+					$kurs['error'][] = 'Fehler: Im Feld <i>Bemerkungen</i> sind max. '.$maxlen_bemerkungen.' Zeichen erlaubt; URLs werden dabei nicht mitgez&auml;hlt. Eingegebene Zeichen: '.strlen($durchf['bemerkungen']);
 				}
 			}
 			
@@ -1257,7 +1257,7 @@ class WISY_EDIT_RENDERER_CLASS
 		    {
 		        $newData['error'][] = 'Fehler: Der angemeldete Benutzer hat <b>nicht das Recht</b> diese &Auml;nderungen am Feld <i>'.htmlspecialchars($this->keine_bagatelle_why).'</i> vorzunehmen.<br />
 									   Es d&uuml;rfen nur Datum und Preis und andere Felder in gewissen Grenzen ge&auml;ndert werden.
-									   <a href="'.$this->framework->getHelpUrl($this->framework->iniRead('useredit.help.norights', '20')).'" target="_blank">Weitere Informationen hierzu ...</a><br />';
+									   <a href="'.$this->framework->getHelpUrl($this->framework->iniRead('useredit.help.norights', '20')).'" target="_blank" rel="noopener noreferrer">Weitere Informationen hierzu ...</a><br />';
 		        // $db->close();
 		        return;
 		    }

@@ -92,7 +92,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		$ort			= htmlentities($db->fcs8('ort'));
 		$stadtteil		= htmlentities($db->fcs8('stadtteil'));
 		$land			= htmlentities($db->fcs8('land'));
-		$anspr_tel		= htmlentities($db->fcs8('anspr_tel'));  // Achtung, Bindestrich muss g√ºltig sein, sonst wird nichts angezeigt
+		$anspr_tel		= htmlentities($db->fcs8('anspr_tel'));  // Achtung, Bindestrich muss gueltig sein, sonst wird nichts angezeigt
 		$anspr_fax		= htmlentities($db->fcs8('anspr_fax'));
 		$anspr_name		= htmlentities($db->fcs8('anspr_name'));
 		$anspr_email	= htmlentities($db->fcs8('anspr_email'));
@@ -143,7 +143,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		{
 		    if( $steckbrief )
 		    {
-		        $vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_strasse" itemprop="streetAddress"><a title="Adresse in Google Maps ansehen" href="' . $map_URL . '" target="_blank">' . $strasse . '</a></div>';
+		        $vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_strasse" itemprop="streetAddress"><a title="Adresse in Google Maps ansehen" href="' . $map_URL . '" target="_blank" rel="noopener noreferrer">' . $strasse . '</a></div>';
 		    } else {
 		        $vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_strasse" itemprop="streetAddress">' . $strasse . '</div>';
 		    }
@@ -153,7 +153,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		{
 		    if( $steckbrief )
 		    {
-		        $vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_ort"><a title="Adresse in Google Maps ansehen" href="' . $map_URL . '" target="_blank">';
+		        $vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_ort"><a title="Adresse in Google Maps ansehen" href="' . $map_URL . '" target="_blank" rel="noopener noreferrer">';
 		    } else {
 		        $vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_ort">';
 		    }
@@ -166,7 +166,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 			$vc['Adresse'] .= ' <span class="wisyr_anbieter_ort" itemprop="addressLocality">' . $ort . '</span>';
 
 		if( $stadtteil ) {
-			$vc['Adresse'] .= ($plz||$ort)? '-' : '';
+		    $vc['Adresse'] .= ($plz||$ort)? ' - ' : '';
 			$vc['Adresse'] .= ' <span class="wisyr_anbieter_stadtteil">' . $stadtteil . '</span>';
 		}
 
@@ -207,7 +207,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 			    $homepage = 'https:/'.'/'.$homepage;
 			}
 			
-			$vc['Website'] .= "\n<div class=\"wisyr_anbieter_homepage\" itemprop=\"url\"><a href=\"$homepage\" target=\"_blank\">" . $this->trimLength($homepage, $MAX_URL_LEN). '</a></div>';
+			$vc['Website'] .= "\n<div class=\"wisyr_anbieter_homepage\" itemprop=\"url\"><a href=\"$homepage\" target=\"_blank\" rel=\"noopener noreferrer\">" . $this->trimLength($homepage, $MAX_URL_LEN). '</a></div>';
 		}
 		
 		/* email*/
@@ -386,7 +386,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 
 		$db = new DB_Admin;
 		$db->query("SELECT stichwort FROM stichwoerter WHERE id IN (16311,2827,2826,16851,3207,1,6013,7721,7720,810701,810691,810681,810671,810661,810611,810641,810651,806441,5469,1472)");
-		$temp = ''; while( $db->next_record() ) { $temp .= ($temp==''?'':', ') . $db->quote(PHP7 ? $db->f('stichwort') : $db->f8('stichwort')); }
+		$temp = ''; while( $db->next_record() ) { $temp .= ($temp==''?'':', ') . $db->quote(cs8($db->fs('stichwort'))); }
 		$filter_tag_ids = array();
 		if( sizeof((array) $temp) ) { // strlen(trim($temp))
 			$db->query("SELECT tag_id FROM x_tags WHERE tag_name IN(".$temp.")");
@@ -506,7 +506,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 	
 	public function render()
 	{
-		$anbieter_id = intval($_GET['id']);
+	    $anbieter_id = intval( $this->framework->getParam('id') );
 
 		$db = new DB_Admin();
 
@@ -543,7 +543,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		// check for existance, get title, #socialmedia
 		$db->query("SELECT suchname, ort, firmenportraet, freigeschaltet FROM anbieter WHERE id=$anbieter_id");
 		if( !$db->next_record() || in_array($db->f('freigeschaltet'), $freigeschaltet404) ) {
-		    $this->framework->error404(); // record does not exist, reporta normal 404 error, not a "Soft 404", see  https://goo.gl/IKMnm -- f√ºr nicht-freigeschaltete Datens√§tze, s. [here]
+		    $this->framework->error404(); // record does not exist, reporta normal 404 error, not a "Soft 404", see  https://goo.gl/IKMnm -- f√ºr nicht-freigeschaltete Datensaetze, s. [here]
 		}
 		$anbieter_suchname = cs8($db->fs('suchname'), "UTF-8");
 		
@@ -551,10 +551,10 @@ class WISY_ANBIETER_RENDERER_CLASS
 		$anbieter_portraet = cs8($db->fs('firmenportraet'), "UTF-8");
 		
 		// promoted?
-		if( intval($_GET['promoted']) > 0 )
+		if( intval( $this->framework->getParam('promoted') ) > 0 )
 		{
-			$promoter =& createWisyObject('WISY_PROMOTE_CLASS', $this->framework);
-			$promoter->logPromotedRecordClick(intval($_GET['promoted']), $anbieter_id);
+		    $promoter =& createWisyObject('WISY_PROMOTE_CLASS', $this->framework);
+		    $promoter->logPromotedRecordClick(intval( $this->framework->getParam('promoted') ), $anbieter_id);
 		}
 		
 		// page out
