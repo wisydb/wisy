@@ -127,7 +127,7 @@ class WISY_GLOSSAR_RENDERER_CLASS
 				$isB2b = (substr($wikipedia, 0, 4) == 'b2b:')? true : false;
 				
 				echo '<p>';
-					echo 'Weitere Informationen zu diesem Thema finden Sie <a href="'.isohtmlspecialchars($this->getWikipediaUrl($wikipedia)).'" target="_blank">';
+					echo 'Weitere Informationen zu diesem Thema finden Sie <a href="'.isohtmlspecialchars($this->getWikipediaUrl($wikipedia)).'" target="_blank" rel="noopener noreferrer">';
 						echo ' ' . ($isB2b? 'im Weiterbildungs-WIKI' : 'in der Wikipedia');
 					echo '</a>';
 				echo '</p>';

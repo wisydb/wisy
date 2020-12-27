@@ -101,9 +101,12 @@ class WISY_ROBOTS_RENDERER_CLASS
 			echo "User-agent: *\n";
 			echo "Disallow: /advanced\n";
 			echo "Disallow: /edit\n";
+			echo "Disallow: /api\n";
+			echo "Disallow: /edit\n";
 			echo "Disallow: /rss\n";
 			echo "Disallow: /terrapin\n";
 			echo "Disallow: /g151\n";
+			echo "Disallow: /search?q=volltext*\n";
 			foreach($block_specificlink AS $link) {
 			    if(strlen($link) >= 1)
 			        echo "Disallow: ".$link."\n";

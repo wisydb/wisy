@@ -27,6 +27,8 @@ class WISY_FRAMEWORK_CLASS
 	
 	var $editCookieName;
 	var $editSessionStarted;
+	var $qtrigger;
+	var $force;
 
 	function __construct($baseObject, $addParam)
 	{
@@ -50,6 +52,9 @@ class WISY_FRAMEWORK_CLASS
 		if( strpos($temp, 'kursnummer'			)!==false ) $GLOBALS['wisyPortalSpalten'] += 64;
 		if( strpos($temp, 'bemerkungen'			)!==false ) $GLOBALS['wisyPortalSpalten'] += 128;
 		// if( strpos($temp, 'bunummer'			)!==false ) $GLOBALS['wisyPortalSpalten'] += 256;
+		
+		$this->qtrigger = intval( $this->getParam('qtrigger', '') ); // anti-xss & sanity
+		$this->force = intval( $this->getParam('force', '') ); // anti-xss & sanity
 	}
 
 	/******************************************************************************
@@ -416,15 +421,18 @@ class WISY_FRAMEWORK_CLASS
 	    
 	    if(strpos($ret, 'offset=') === FALSE) {
 	        // human trigger of page
+	        // code not beautiful:
 	        if($i > 0)
-	            $ret .= (isset($_GET['qtrigger']) ? '&qtrigger='.$_GET['qtrigger'] : '').(isset($_GET['force']) ? '&force='.$_GET['force'] : '');
-	        else
-	            $ret .= (isset($_GET['qtrigger']) ? '?qtrigger='.$_GET['qtrigger'] : '').(isset($_GET['force']) && !isset($_GET['qtrigger']) ? '?force='.$_GET['force'] : '');
+	            $ret .= ($this->qtrigger ? '&qtrigger='.$this->qtrigger : '') . ($this->force ? '&force='.$this->force : '') . ($this->showcol ? '&showcol='.$this->showcol : '');
+	            else
+	                $ret .= ($this->qtrigger ? '?qtrigger='.$this->qtrigger : '') . ($this->force && !$this->qtrigger ? '?force='.$this->force : '')  . (!$this->force && !$this->qtrigger && $this->showcol ? '?showcol='.$this->showcol : '');
 	    } else {
-	        if(isset($_GET['qtrigger']))
-	            $ret = str_replace('offset=', 'qtrigger='.$_GET['qtrigger'].'&offset=', $ret);
-	        if(isset($_GET['force']))
-	            $ret = str_replace('offset=', 'force='.$_GET['force'].'&offset=', $ret);
+	        if( $this->qtrigger )
+	            $ret = str_replace('offset=', 'qtrigger='.$this->qtrigger.'&offset=', $ret);
+	        if( $this->force )
+	            $ret = str_replace('offset=', 'force='.$this->force.'&offset=', $ret);
+	        if($this->showcol)
+	            $ret = str_replace('offset=', 'showcol='.$this->showcol.'&offset=', $ret);
 	    }
 	    
 	    return $ret;
@@ -641,26 +649,13 @@ class WISY_FRAMEWORK_CLASS
 
 	function loadStichwoerter(&$db, $table, $id)
 	{
-		// Stichwoerter laden
-		$ret = array();
-
-		require_once('admin/config/codes.inc.php'); // fuer hidden_stichwort_eigenschaften
-		global $hidden_stichwort_eigenschaften;
-		
-		$sql = "SELECT id, stichwort, eigenschaften, zusatzinfo FROM stichwoerter LEFT JOIN {$table}_stichwort ON id=attr_id WHERE primary_id=$id AND (eigenschaften & $hidden_stichwort_eigenschaften)=0 ORDER BY structure_pos;";
-		$db->query($sql);
-		while( $db->next_record() )
-		{
-			$ret[] = $db->Record;
-		}
-		
-		return $ret;
-	}
-	
-	function loadDescendants(&$db, $tag_id)
-	{
+	    // Stichwoerter laden
 	    $ret = array();
-	    $sql = "SELECT DISTINCT id, stichwort, eigenschaften, zusatzinfo FROM stichwoerter, stichwoerter_verweis2 WHERE stichwoerter_verweis2.attr_id = stichwoerter.id and stichwoerter_verweis2.primary_id = ".$tag_id;
+	    
+	    require_once('admin/config/codes.inc.php'); // fuer hidden_stichwort_eigenschaften
+	    global $hidden_stichwort_eigenschaften;
+	    
+	    $sql = "SELECT id, stichwort, eigenschaften, zusatzinfo FROM stichwoerter LEFT JOIN {$table}_stichwort ON id=attr_id WHERE primary_id=$id AND (eigenschaften & $hidden_stichwort_eigenschaften)=0 ORDER BY structure_pos;";
 	    $db->query($sql);
 	    while( $db->next_record() )
 	    {
@@ -670,10 +665,36 @@ class WISY_FRAMEWORK_CLASS
 	    return $ret;
 	}
 	
-	function loadAncestors(&$db, $tag_id)
+	function loadSynonyme(&$db, $sw_id)
 	{
 	    $ret = array();
-	    $sql = "SELECT DISTINCT id, stichwort, eigenschaften, zusatzinfo FROM stichwoerter, stichwoerter_verweis2 WHERE stichwoerter_verweis2.primary_id = stichwoerter.id and stichwoerter_verweis2.attr_id = ".$tag_id;
+	    $sql = "SELECT DISTINCT id, stichwort, eigenschaften, zusatzinfo FROM stichwoerter, stichwoerter_verweis WHERE stichwoerter_verweis.primary_id = stichwoerter.id and stichwoerter_verweis.attr_id = ".$sw_id;
+	    $db->query($sql);
+	    while( $db->next_record() )
+	    {
+	        $ret[] = $db->Record;
+	    }
+	    
+	    return $ret;
+	}
+	
+	function loadDescendants(&$db, $sw_id)
+	{
+	    $ret = array();
+	    $sql = "SELECT DISTINCT id, stichwort, eigenschaften, zusatzinfo FROM stichwoerter, stichwoerter_verweis2 WHERE stichwoerter_verweis2.attr_id = stichwoerter.id and stichwoerter_verweis2.primary_id = ".$sw_id;
+	    $db->query($sql);
+	    while( $db->next_record() )
+	    {
+	        $ret[] = $db->Record;
+	    }
+	    
+	    return $ret;
+	}
+	
+	function loadAncestors(&$db, $sw_id)
+	{
+	    $ret = array();
+	    $sql = "SELECT DISTINCT id, stichwort, eigenschaften, zusatzinfo FROM stichwoerter, stichwoerter_verweis2 WHERE stichwoerter_verweis2.primary_id = stichwoerter.id and stichwoerter_verweis2.attr_id = ".$sw_id;
 	    $db->query($sql);
 	    while( $db->next_record() )
 	    {
@@ -690,7 +711,7 @@ class WISY_FRAMEWORK_CLASS
 	        
 	        $derivedStichwort = $derivedStichwoerter[$i];
 	        if(!in_array($derivedStichwort['eigenschaften'], $filtersw))
-	            $ret .= '<span class="typ_'.$derivedStichwort['eigenschaften'].'  orginal_'.$originalsw.' '.strtolower($typ_name).'_raw"><a href="/?q='.$derivedStichwort['stichwort'].'">'.$derivedStichwort['stichwort'].'</a></span>, ';
+	            $ret .= '<span class="typ_'.$derivedStichwort['eigenschaften'].'  orginal_'.$originalsw.' '.strtolower($typ_name).'_raw"><a href="/search?q='.$derivedStichwort['stichwort'].'">'.$derivedStichwort['stichwort'].'</a></span>, ';
 	    }
 	    return $ret;
 	}
@@ -1840,7 +1861,7 @@ class WISY_FRAMEWORK_CLASS
 					if( $this->askfwd ) {
 						$temp .= (strpos($temp, '?')!==false? '&' : '?') . 'askfwd=' . urlencode($this->askfwd);
 					}
-					return $temp;
+					return $temp . (strpos($temp, '?') !== FALSE ? "&" : "?") . "ver=".date("Y-m-d-H-i-s");
 				}
 				else
 				{
@@ -1964,7 +1985,7 @@ class WISY_FRAMEWORK_CLASS
 		        );
 		    
 		    foreach($_GET AS $get) {
-		        if(strpos($get, 'volltext') !== FALSE && $_GET['qtrigger'] != 'h')
+		        if(!is_array($get) && strpos($get, 'volltext') !== FALSE && $this->qtrigger != 'h' && $this->force != 1) // qtrigger = h -> human search (click/return), force = link from unsuccessful searches
 		            $this->error404("Volltextanfrage per direkter Verlinkung aus Ressourcengr&uuml;nden nicht erlaubt.<br><br>Bitte geben Sie Ihre Volltextanfrage unbedingt manuell in das Suchfeld ein - bzw. klicken Sie noch mal selbst auf 'Kurse finden' !<br><br>");
 		    }
 

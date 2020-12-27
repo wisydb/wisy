@@ -75,7 +75,7 @@ class G_GEOCODE
 	    $this->nominatim_explicit_city = $this->framework->iniRead('nominatim.explicit.city', '');
 	    
 	    if(!$alternate_geocoder || !$nominatim_url)
-	        return array('error'=>'err_geocode_missing_good_geocoder', 'url'=>'not called');
+	        return array('error'=>'err_geocode_missing_good_geocoder', 'url'=>'not called', 'alternate_geocoder' => $err_geocode_missing_good_geocoder, 'nominatim_key' => $nominatim_key);
 	        
 	    $this->nominatim_url = $nominatim_url;
 	    $this->nominatim_params .= '&key='.$nominatim_key;

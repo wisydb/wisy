@@ -329,7 +329,7 @@ class WISY_KURS_RENDERER_CLASS
 							$editurl = $copyrightClass->getEditUrl($db, 'kurse', $kursId);
 						}
 						echo '<span class="noprint"> - ';
-							$target = $editurl==''? '' : 'target="_blank"';
+							$target = $editurl==''? '' : 'target="_blank" rel="noopener noreferrer"';
 							echo $class? "<span class=\"$class\">" : '';
 								echo "<a href=\"" . 
 									$editurl

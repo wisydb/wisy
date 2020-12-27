@@ -150,7 +150,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 			 	$homepage = 'http:/'.'/'.$homepage;
 			}
 			
-			$ret .= "<br /><a href=\"$homepage\" target=\"_blank\"><i>" .isohtmlentities($this->trimLength($homepage, $MAX_URL_LEN)). '</i></a>';
+			$ret .= "<br /><a href=\"$homepage\" target=\"_blank\" rel=\"noopener noreferrer\"><i>" .isohtmlentities($this->trimLength($homepage, $MAX_URL_LEN)). '</i></a>';
 		}
 		
 		/* email*/
@@ -270,7 +270,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 								$title = "";
 								/* - aufgrund der inneren konsistenz das logo nicht anklickbar gestalten - es ist ansonsten verwirrend, ob es zum portait oder zur homepage f�hrt ...
 								if( $homepage ) {
-									echo "<a href=\"$homepage\" target=\"_blank\">";
+									echo "<a href=\"$homepage\" target=\"_blank\" rel=\"noopener noreferrer\">";
 									$title = "Der Anbieter im Internet";
 								}
 								*/
@@ -395,7 +395,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 						{
 							echo '<tr>';
 								echo '<td valign="top" nowrap="nowrap">Der Anbieter im Internet:&nbsp;</td>';
-								echo "<td valign=\"top\"><a href=\"$homepage\" target=\"_blank\"><i>" .isohtmlspecialchars($homepage). '</i></a></td>';
+								echo "<td valign=\"top\"><a href=\"$homepage\" target=\"_blank\" rel=\"noopener noreferrer\"><i>" .isohtmlspecialchars($homepage). '</i></a></td>';
 							echo '</tr>';
 						}
 		
