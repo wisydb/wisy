@@ -135,7 +135,7 @@ class WISY_FRAMEWORK_CLASS
 	/**
 	 * #metadescription
 	 *
-	 * Gibt je Portal-Seitentyp aus übergebenem $description-String formatierten Metadescription-String zurück
+	 * Gibt je Portal-Seitentyp aus uebergebenem $description-String formatierten Metadescription-String zurück
 	 * Sonst: den Default-Portalbeschreibungstext aus den Portaleinstellungen.
 	 * Max. 160 Zeichen
 	 **/
@@ -158,7 +158,7 @@ class WISY_FRAMEWORK_CLASS
 	            case 'suche':
 	                // getTitleStrings Ort, Anbietername kann leer bleiben, weil Suche die params nicht braucht aber force muss sein, um enrichtitles_Einstellung zu ignorieren
 	                // $this->getTitleString($title, null, null, true);
-	                // Google-Linkbeschreibung als Tabellen-Überschrift misbrauchen = optisch sinnvoll:
+	                // Google-Linkbeschreibung als Tabellen-Ueberschrift misbrauchen = optisch sinnvoll:
 	                // $description_parsed = "Ergebnis: Termin | Titel | Anbieter"; // wird nicht übernommen, sollte unterschiedlich sein pro Seite
 	                $skip_contentdescription = true;
 	                break;
@@ -185,13 +185,13 @@ class WISY_FRAMEWORK_CLASS
 	 * #metasocialmedia
 	 * #metadescription
 	 *
-	 * Gibt aus $description generierten, metadescription-konformen Text von $charlength Zeichen zurück.
+	 * Gibt aus $description generierten, metadescription-konformen Text von $charlength Zeichen zurueck.
 	 * -> landet in Linkbeschreibung (=unter Links auf SERP) sowie Beschreibung bei geteilten Links in Social-Media-Portalen
 	 **/
 	function generate_page_description($description, $charlength) {
 	    
 	    // Wenn Wikitext in Seitentext auftaucht (Glossarseiten): erst mal parsen
-	    // dann -> HTML + echte ISO8859-Umlaute (keine Entities), und Umbrüche durch Punkt ersetzen (ist ja Linkbeschreibung) -> später strip_tags
+	    // dann -> HTML + echte ISO8859-Umlaute (keine Entities), und Umbrueche durch Punkt ersetzen (ist ja Linkbeschreibung) -> später strip_tags
 	    $wiki2html =& createWisyObject('WISY_WIKI2HTML_CLASS', $this);
 	    $description = html_entity_decode(preg_replace("/<br.{0,5}>/i", ". ", $wiki2html->run($description)));
 	    
@@ -231,8 +231,8 @@ class WISY_FRAMEWORK_CLASS
 	function getPageType() {
 	    
 	    // Der Konstruktor ist jeweils sehr leichtgewichtig,
-	    // darum können ruhig neue Objekte erzeugt werden.
-	    // Andernfalls müsste man hier den getRenderercode mehr oder weniger duplizieren...
+	    // darum koennen ruhig neue Objekte erzeugt werden.
+	    // Andernfalls muesste man hier den getRenderercode mehr oder weniger duplizieren...
 	    $result = $this->getRenderer();
 	    
 	    if(!is_object($result))
@@ -242,7 +242,7 @@ class WISY_FRAMEWORK_CLASS
 	            return 'startseite';
 	        }
 	        
-	        // Dieser sollte beim Überschreiben von Kernfunktionen immer gleich sein:
+	        // Dieser sollte beim Ueberschreiben von Kernfunktionen immer gleich sein:
 	        switch(str_replace(array("CUSTOM_", "DEV_", "ALPHA_", "BETA_"), "", get_class($result))) {
 	            case 'WISY_SEARCH_RENDERER_CLASS':
 	                return "suche";
@@ -285,7 +285,7 @@ class WISY_FRAMEWORK_CLASS
 							<p><b>'.$title.'</b></p>';
 	        
 	        if(!$skip_standardmsg)		{
-	            echo '<p>Entschuldigung, aber die von Ihnen gewünschte Seite konnte leider nicht gefunden werden. Sie können jedoch ...
+	            echo '<p>Entschuldigung, aber die von Ihnen gew&uuml;nschte Seite konnte leider nicht gefunden werden. Sie k&ouml;nnen jedoch ...
 							<ul>
 								<li><a href="http://'.$_SERVER['HTTP_HOST'].'">Die Startseite von '.$_SERVER['HTTP_HOST'].' aufrufen ...</a></li>
 								<li><a href="javascript:history.back();">Zur&uuml;ck zur zuletzt besuchten Seite wechseln ...</a></li>
@@ -544,9 +544,9 @@ class WISY_FRAMEWORK_CLASS
 	
 	function getEditAnbieterId()
 	{
-		return $this->editSessionStarted? intval($_SESSION['loggedInAnbieterId']) : -1;
-				// nicht "0" zurückgeben, da es kurse gibt, die "0" als anbieter haben;
-				// ein Vergleich mit kursId==getEditAnbieterId() würde dann eine unerwartete Übereinstimmung bringen ...
+	    return $this->editSessionStarted? intval($_SESSION['loggedInAnbieterId']) : -1;
+	    // nicht "0" zurueckgeben, da es kurse gibt, die "0" als anbieter haben;
+	    // ein Vergleich mit kursId==getEditAnbieterId() wuerde dann eine unerwartete uebereinstimmung bringen ...
 	}
 	
 
@@ -806,17 +806,17 @@ class WISY_FRAMEWORK_CLASS
 	function getVollstaendigkeitMsg(&$db, $recordId, $scope = '')
 	{
 		// Einstellungen der zug. Gruppe und Kursvollstaendigkeit laden
-		// die Einstellungen können etwa wie folgt aussehen:
+		// die Einstellungen koennen etwa wie folgt aussehen:
 		/*
 		quality.portal.warn.percent= 80
-		quality.portal.warn.msg    = Informationen lückenhaft (nur __PERCENT__% Vollständigkeit)
+		quality.portal.warn.msg    = Informationen lueckenhaft (nur __PERCENT__% Vollstaendigkeit)
 		quality.portal.bad.percent = 50
-		quality.portal.bad.msg     = Informationen unzureichend (nur __PERCENT__% Vollständigkeit)
+		quality.portal.bad.msg     = Informationen unzureichend (nur __PERCENT__% Vollstaendigkeit)
 		quality.edit.warn.percent  = 80
-		quality.edit.warn.msg      = Informationen lückenhaft (nur __PERCENT__% Vollständigkeit)
+		quality.edit.warn.msg      = Informationen lueckenhaft (nur __PERCENT__% Vollstaendigkeit)
 		quality.edit.bad.percent   = 50
-		quality.edit.bad.msg       = Informationen unzureichend (nur __PERCENT__% Vollständigkeit)
-		quality.edit.bad.banner    = Informationen unzureichend (nur __PERCENT__% Vollständigkeit) - gelistet aus Gründen der Marktübersicht
+		quality.edit.bad.msg       = Informationen unzureichend (nur __PERCENT__% Vollstaendigkeit)
+		quality.edit.bad.banner    = Informationen unzureichend (nur __PERCENT__% Vollstaendigkeit) - gelistet aus Gruenden der Marktuebersicht
 		*/
 	
 		
@@ -851,7 +851,7 @@ class WISY_FRAMEWORK_CLASS
 	function getAllowFeedbackClass()
 	{
 		if( !$this->iniRead('feedback.disable', 0) 
-		 && !$this->editSessionStarted /*keine Feedback-Funktion für angemeldete Anbieter - die Anbieter sind die Adressaten, nicht die Absender*/ )
+		 && !$this->editSessionStarted /*keine Feedback-Funktion fuer angemeldete Anbieter - die Anbieter sind die Adressaten, nicht die Absender*/ )
 		{
 			return 'wisy_allow_feedback';
 		}
@@ -1070,22 +1070,6 @@ class WISY_FRAMEWORK_CLASS
 	
 	function getJSHeadTags()
 	{
-		// JavaScript tags to include to the header (if any)
-		$ret = '';
-		
-		$js = $this->getJSFiles();
-		for( $i = 0; $i < sizeof((array) $js); $i++ )
-		{	
-			$ret .= '<script type="text/javascript" src="'.$js[$i].'"></script>' . "\n";
-		}
-		
-		return $ret;
-		
-		return '';
-	}
-	
-	function getJSHeadTags()
-	{
 	    // JavaScript tags to include to the header (if any)
 	    $ret = '';
 	    
@@ -1101,6 +1085,7 @@ class WISY_FRAMEWORK_CLASS
 	    /* ! if($this->iniRead('cookiebanner', '') == 1) {
 	     $ret .= '<script type="text/javascript">window.cookiebanner_html = \''.$this->iniRead('cookiebanner.html', '').'\'; window.cookiebanner_gueltig = '.$this->iniRead('cookiebanner.gueltig', '').';</script>' . "\n";
 	     }  */
+	    
 	    
 	    // Cookie Banner settings
 	    if($this->iniRead('cookiebanner', '') == 1) {
@@ -1252,7 +1237,14 @@ class WISY_FRAMEWORK_CLASS
 							if(!$this->iniRead("cookiebanner.zustimmung.analytics.autoload", 0)) {
 								$ret .= '
 										if(cname == "cconsent_analytics") {
-											jQuery.ajax({ url: window.location.href, dataType: \'html\'}); // call same page with analytics allowed, since now allowed to count this page view // dataType html makes sure scripts are loaded
+											/* Calling analystics url by calling script in script-tag. Calling via ajax() would not execute script withou eval. */
+												
+											if( jQuery("#ga_script").length )
+												eval(jQuery("#ga_script").text());
+											
+											if( jQuery("#matomo_script").length )
+												embedMatomoTracking();
+										
 										}';
 							}
 							
@@ -1603,6 +1595,8 @@ class WISY_FRAMEWORK_CLASS
 	    $uacct = $this->iniRead('analytics.uacct', '');
 	    if( $uacct != '' )
 	    {
+	        $expiryDays = intval($this->iniRead('cookiebanner.cookiegueltigkeit', 7));
+	        
 	        $ret .= '
 				<script>
 				'.($this->detailed_cookie_settings_analytics ? 'var optedOut = (jQuery.cookie("cconsent_analytics") != "allow");' : ' var optedOut = (document.cookie.indexOf("cookieconsent_status=deny") > -1);').'
@@ -1612,51 +1606,70 @@ class WISY_FRAMEWORK_CLASS
 						(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
 						m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
 					})(window,document,"script","https://www.google-analytics.com/analytics.js","ga");
-					ga("create", "' . $uacct . '", "none");
+					ga("create", "' . $uacct . '", { cookieFlags: "max-age='. ( $expiryDays * 24 * 3600 ) .';secure;samesite=none" });
 					ga("set", "anonymizeIp", true);
 					ga("send", "pageview");
 				} else {
-					/* console.log("No Analytics: opted out"); */
+					;
 				}
 				</script>';
 	    }
 	    
-	    $piwik = '';
-	    if($this->detailed_cookie_settings_analytics && $_COOKIE['cconsent_analytics'] != 'allow')
-	        $piwik = '';
-	        else
-	            $piwik = $this->iniRead('analytics.piwik', '');
-	            
-	            if( $piwik != '' )
-	            {
-	                if( strpos($piwik, ',')!==false ) {
-	                    list($piwik_site, $piwik_id) = explode(',', $piwik);
-	                }
-	                else {
-	                    $piwik_site = 'statistik.kursportal.info';
-	                    $piwik_id = $this->iniRead('analytics.piwik', '');
-	                }
-	                
-	                $ret .= "
+	    $piwik = $this->iniRead('analytics.piwik', '');
+	    
+	    if( $piwik != '' )
+	    {
+	        if( strpos($piwik, ',')!==false ) {
+	            list($piwik_site, $piwik_id) = explode(',', $piwik);
+	        }
+	        else {
+	            $piwik_site = 'statistik.kursportal.info';
+	            $piwik_id = $piwik;
+	        }
+	        
+	        $ret .= "
 				<!-- Matomo -->
 				<!-- analytics.piwik -->
-				<script type=\"text/javascript\">
+				<script type=\"text/javascript\" id=\"matomo_script\">
 						var _paq = window._paq || [];
 						_paq.push(['trackPageView']);
 						_paq.push(['enableLinkTracking']);
-						(function() {
+	            
+						function embedMatomoTracking() {
 								var u=\"//".$piwik_site."/\";
 								_paq.push(['setTrackerUrl', u+'matomo.php']);
 								_paq.push(['setSiteId', ".$piwik_id."]);
 								var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
 								g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
-						})();
+						};
+								    
+						/* console.log('".($_COOKIE['cconsent_analytics'] != 'allow')."'); */
 				</script>
 				<!-- /analytics.piwik -->
 				<!-- End Matomo Code -->
 				";
-	            }
-	            return $ret;
+	    }
+	    
+	    $do_track_matomo = ( $piwik && $this->detailed_cookie_settings_analytics && $_COOKIE['cconsent_analytics'] == 'allow' )
+	    || ( $piwik && $this->detailed_cookie_settings_analytics && $this->iniRead("cookiebanner.zustimmung.analytics.autoload", 0) )
+	    || ( $this->detailed_cookie_settings_einstellungen == "" );
+	    
+	    // Load if piwik defined and cookie consent allow OR piwik defined and autoload
+	    // Cannot check for !isset($_COOKIE['piwik_ignore'] b/c thrd.party cookie statistik..., but not necessary either, b/c cookie resepekted by matomoscript
+	    // Alternative https://developer.matomo.org/guides/tracking-javascript-guide#optional-creating-a-custom-opt-out-form
+	    if( $do_track_matomo ) {
+	        $ret .= "
+				<!-- Execute Matomo Tracking-->
+				<script type=\"text/javascript\">
+					setTimeout(function () {
+							embedMatomoTracking();
+					}, 5);
+				</script>
+				";
+	        
+	    }
+	    
+	    return $ret;
 	}
 	
 	function getSearchField()
@@ -1727,7 +1740,7 @@ class WISY_FRAMEWORK_CLASS
 		$DEFAULT_PLACEHOLDER	= '';
 		$DEFAULT_ADVLINK_HTML	= '<a href="advanced?q=__Q_URLENCODE__" id="wisy_advlink">Erweitern</a>';
 		$DEFAULT_RIGHT_HTML		= '| <a href="javascript:window.print();">Drucken</a>';
-		$DEFAULT_BOTTOM_HINT	= 'bitte <strong>Suchwörter</strong> eingeben - z.B. Englisch, VHS, Bildungsurlaub, ...';
+		$DEFAULT_BOTTOM_HINT	= 'bitte <strong>Suchw&ouml;rter</strong> eingeben - z.B. Englisch, VHS, Bildungsurlaub, ...';
 		
 		echo "\n";
 		
@@ -1760,7 +1773,7 @@ class WISY_FRAMEWORK_CLASS
 		    $target = ($richtext) ? '<meta itemprop="target" content="https://'.$_SERVER['SERVER_NAME'].'/search?q={q}"/>' : '';
 		    if($pagetype == "startseite") { $q = $this->iniRead('searcharea.placeholder', $DEFAULT_PLACEHOLDER); }
 		    $queryinput = ($richtext) ? 'itemprop="query-input" placeholder="'.$q.'"': '';
-		    $q = ""; // sonst ändert sich mit jedr Seite der DefaultValue
+		    $q = ""; // sonst aendert sich mit jeder Seite der DefaultValue
 		} else {
 		    $searchAction = ($richtext) ? 'itemscope itemtype="https://schema.org/FindAction"' : '';
 		    $target = ($richtext) ? '
@@ -1834,9 +1847,9 @@ class WISY_FRAMEWORK_CLASS
 
 		switch( $wisyRequestedFile )
 		{
-			// homepage
-			// (in WISY 2.0 gibt es keine Datei "index.php", diese wird vom Framework aber als Synonym für "Homepage" verwendet)
-			case 'index.php':
+		    // homepage
+		    // (in WISY 2.0 gibt es keine Datei "index.php", diese wird vom Framework aber als Synonym fuer "Homepage" verwendet)
+		    case 'index.php':
 				for( $i = 1; $i <= 9; $i++ ) 
 				{
 					$prefix = $i==1? 'switch' : "switch{$i}";
@@ -1906,10 +1919,10 @@ class WISY_FRAMEWORK_CLASS
 				// #vanityurl
 				else if( ($gid=$this->iniRead('glossaralias.'.$wisyRequestedFile, '0'))!='0' )
 				{
-				    // Wenn sinnvolle Glossar-ID: Ist max. 20-stellige Zahl, die nicht mit 0 anfängt
+				    // Wenn sinnvolle Glossar-ID: Ist max. 20-stellige Zahl, die nicht mit 0 anfaengt
 				    if(preg_match("/^[1-9][0-9]{1,20}$/", $gid))
 				    {
-				        $_GET['id'] = trim($gid);	// unschön, aber hier nicht sinnvoll anders möglich?.
+				        $_GET['id'] = trim($gid);	// unschoen, aber hier nicht sinnvoll anders moeglich?.
 				        return createWisyObject('WISY_GLOSSAR_RENDERER_CLASS', $this);
 				    }
 				}

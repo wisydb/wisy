@@ -354,7 +354,7 @@ class WISY_EDIT_RENDERER_CLASS
 			$ret .=		' | <a href="'.$this->framework->getUrl('edit', array('action'=>'logout')) . '">Logout</a>'
 				 .	'</div>';
 		
-			$ret .= 'für Anbieter: ';
+			$ret .= 'f&uuml;r Anbieter: ';
 
 			// link "meine kurse"		
 			$q = $_SESSION['loggedInAnbieterTag'] . ', Datum:Alles';
@@ -388,7 +388,7 @@ class WISY_EDIT_RENDERER_CLASS
 			}
 
 			// link "hilfe"
-			$ret .=  ' | <a href="' .$this->framework->getHelpUrl($this->framework->iniRead('useredit.help', '3371')). '" target="_blank">Hilfe</a>';
+			$ret .=  ' | <a href="' .$this->framework->getHelpUrl($this->framework->iniRead('useredit.help', '3371')). '" target="_blank" rel="noopener noreferrer">Hilfe</a>';
 			
 		$ret .=  '</div>';
 
@@ -423,7 +423,7 @@ class WISY_EDIT_RENDERER_CLASS
 		if( $db->f('freigeschaltet') == 1 /*freigeschaltet*/ 
 		 || $db->f('freigeschaltet') == 4 /*dauerhaft*/ 
 		 || $db->f('freigeschaltet') == 3 /*abgelaufen*/
-		 ||	($db->f('freigeschaltet') == 0 /*in Vorbereitung*/ ) ) // Kurse in Vorbereitung sollen über Direktlinks editierbar sein, daher an dieser Stelle keine Überprüfung, ob der Kurs von getAdminAnbieterUserIds() angelegt wurde, s. https://mail.google.com/mail/#all/132aa92c4ec2cda7
+		 ||	($db->f('freigeschaltet') == 0 /*in Vorbereitung*/ ) ) // Kurse in Vorbereitung sollen ueber Direktlinks editierbar sein, daher an dieser Stelle keine Ueberprüfung, ob der Kurs von getAdminAnbieterUserIds() angelegt wurde, s. https://mail.google.com/mail/#all/132aa92c4ec2cda7
 		{
 			return 'yes'; // editable
 		}
@@ -478,7 +478,7 @@ class WISY_EDIT_RENDERER_CLASS
 			if( ($p=strpos($_REQUEST['wepw'], '.')) !== false )
 			{
 				// ...Login als registrierter Admin-Benutzer in der Form "<loginname>.<passwort>"
-				// KEINE Fehler für  diesen Bereich loggen - ansonsten würden wir u.U. Teile des Passworts loggen!
+				// KEINE Fehler fuer  diesen Bereich loggen - ansonsten würden wir u.U. Teile des Passworts loggen!
 				$temp[0] = substr($_REQUEST['wepw'], 0, $p);
 				$temp[1] = substr($_REQUEST['wepw'], $p+1);
 				
@@ -616,7 +616,7 @@ class WISY_EDIT_RENDERER_CLASS
 			else if( $loginError == 'no_js' )
 			{
 				$url = 'edit?as=' . urlencode($anbieterSuchname) . '&fwd=' .urlencode($fwd). '&bwd=' . urlencode($this->bwd);
-				echo  '<p class="wisy_topnote">Um alle Funktionen im Login-Bereich nutzen zu können, <b>aktivieren Sie bitte jetzt Javascript in Ihrem Browser.</b> '
+				echo  '<p class="wisy_topnote">Um alle Funktionen im Login-Bereich nutzen zu koennen, <b>aktivieren Sie bitte jetzt Javascript in Ihrem Browser.</b> '
 					. 'Danach <a href="'.isohtmlspecialchars($url).'">melden Sie sich bitte erneut an ...</a></p>';
 				$showLoginForm = false;
 			}
@@ -705,7 +705,7 @@ class WISY_EDIT_RENDERER_CLASS
 
 		if( !$this->canPromote() )
 		{
-			echo '<p class="wisy_topnote">Das Bewerben von Kursen ist für dieses Portal und/oder diesen Anbieterzugang gesperrt. Bitte wenden Sie sich an den Systemadministrator, der Ihnen den Zugang zu diesem Bereich gewährt hat.</p>';
+			echo '<p class="wisy_topnote">Das Bewerben von Kursen ist f&uuml;r dieses Portal und/oder diesen Anbieterzugang gesperrt. Bitte wenden Sie sich an den Systemadministrator, der Ihnen den Zugang zu diesem Bereich gewährt hat.</p>';
 			echo $this->framework->getEpilogue();
 			exit();
 		}
@@ -714,11 +714,11 @@ class WISY_EDIT_RENDERER_CLASS
 		echo "\n\n<h1>Kontostand: $credits Einblendungen</h1>\n";
 		
 		echo "<p>";
-			echo "Ihr aktuelles Guthaben beträgt <b>$credits Einblendungen</b>.";
+			echo "Ihr aktuelles Guthaben betr&auml;gt <b>$credits Einblendungen</b>.";
 		echo "</p>";
 		
 		echo "<p>";
-			echo "Mit Ihren Einblendungen können Sie beliebige Kurse in den Suchergebnissen an die ersten Stellen bringen. ";
+			echo "Mit Ihren Einblendungen k&ouml;nnen Sie beliebige Kurse in den Suchergebnissen an die ersten Stellen bringen. ";
 			echo $this->billingRenderer->allPrices[0][0]." Einblendungen kosten aktuell&nbsp;<b>".str_replace('.', ',', $this->billingRenderer->allPrices[0][1])."&nbsp;&euro;</b>.";
 		echo "</p>";
 		
@@ -728,7 +728,7 @@ class WISY_EDIT_RENDERER_CLASS
 		
 		echo "\n\n<h1>Beworbene Kurse</h1>\n";
 		
-		// WENN es kredite gibt, den Status der Tabelle anbieter_promote auf "aktiv" setzen, damit wieder Kurse geschaltet werden können
+		// WENN es kredite gibt, den Status der Tabelle anbieter_promote auf "aktiv" setzen, damit wieder Kurse geschaltet werden koennen
 		$this->promoter->setAllPromotionsActive($_SESSION['loggedInAnbieterId'], $credits > 0? 1 : 0);
 		
 		
@@ -792,7 +792,7 @@ class WISY_EDIT_RENDERER_CLASS
 		echo '</table>';
 		if( $showInactiveHints )
 		{
-			echo "(*) wenn eine Bewerbung inaktiv ist liegt dies entweder daran, dass kein Kredit mehr zur Verfügung steht oder dass die Bedingung für die Bewerbung abgelaufen ist";
+			echo "(*) wenn eine Bewerbung inaktiv ist liegt dies entweder daran, dass kein Kredit mehr zur Verf&uuml;gung steht oder dass die Bedingung f&uuml;r die Bewerbung abgelaufen ist";
 		}
 
 		echo "<p>";
@@ -805,15 +805,15 @@ class WISY_EDIT_RENDERER_CLASS
 	}
 	
 	/**************************************************************************
-	 * einzelnen Kurs bearbeiten / löschen
+	 * einzelnen Kurs bearbeiten / loeschen
 	 **************************************************************************/
 	
 	function loadKursFromDb($kursId /* may be "0" for "new kurs"; defaults loaded in this case */ )
 	{
-		// kurs inkl. aller durchführungen laden
-		// 		das zurückgegebene Array ist wie bei loadKursFromPOST() beschrieben formatiert
-		
-		// kursdatensatz und alle durchfuehrungen lesen
+	    // kurs inkl. aller durchfuehrungen laden
+	    // 		das zurueckgegebene Array ist wie bei loadKursFromPOST() beschrieben formatiert
+	    
+	    // kursdatensatz und alle durchfuehrungen lesen
 		$db = new DB_Admin;
 		$db->query("SELECT * FROM kurse WHERE id=$kursId;");
 		if( $db->next_record() )
@@ -942,7 +942,7 @@ class WISY_EDIT_RENDERER_CLASS
 			
 			// preis
 			$kurs['durchf'][$i]['preis'] 			= $this->checkEmptyOnMinusOne($_POST['preis'][$i], $kurs['error'], "Fehler: Ung&uuml;ltiger Wert f&uuml;r den Preis; wenn Sie den Preis nicht kennen, lassen Sie dieses Feld leer; f&uuml;r &quot;kostenlos&quot; verwenden Sie bitte den Wert 0.");
-			$kurs['durchf'][$i]['sonderpreis']		= $this->checkEmptyOnMinusOne($_POST['sonderpreis'][$i], $kurs['error'], "Fehler: Ung&uuml;ltiger Wert f&uuml;r den Sonderpreis; wenn Sie den Sonderpreis nicht verwenden möchten, lassen Sie dieses Feld leer.");
+			$kurs['durchf'][$i]['sonderpreis']		= $this->checkEmptyOnMinusOne($_POST['sonderpreis'][$i], $kurs['error'], "Fehler: Ung&uuml;ltiger Wert f&uuml;r den Sonderpreis; wenn Sie den Sonderpreis nicht verwenden m&ouml;chten, lassen Sie dieses Feld leer.");
 			$kurs['durchf'][$i]['sonderpreistage'] 	= $this->checkEmptyOnNull($_POST['sonderpreistage'][$i], $kurs['error'], "Fehler: Ung&uuml;ltiger Wert f&uuml;r die Tage beim Sonderpreis; wenn Sie den Sonderpreis nicht verwenden m&ouml;chten, lassen Sie dieses Feld leer.");
 			$kurs['durchf'][$i]['preishinweise'] 	=  $_POST['preishinweise'][$i];
 			
@@ -969,7 +969,7 @@ class WISY_EDIT_RENDERER_CLASS
 			// additional data validation
 			if( $kurs['durchf'][$i]['ende']!='0000-00-00 00:00:00' && $kurs['durchf'][$i]['beginn']!='0000-00-00 00:00:00' 
 			 && $kurs['durchf'][$i]['ende']<$kurs['durchf'][$i]['beginn'] ) {
-				$kurs['error'][] = "Fehler: Durchführung ".($i+1).": Das Enddatum muss NACH dem Beginndatum liegen.";
+				$kurs['error'][] = "Fehler: Durchf&uuml;hrung ".($i+1).": Das Enddatum muss NACH dem Beginndatum liegen.";
 			}
 
 			$today = strftime("%Y-%m-%d %H:%M:%S");
@@ -1004,25 +1004,25 @@ class WISY_EDIT_RENDERER_CLASS
 					$andere_kurs_id = $db->fs('id');
 					if( $this->isEditable($andere_kurs_id)=='yes' )
 					{
-						// meine knappe Variante wäre gewesen: "Ein Kurse mit dem Titel <i><titel><i> <b>ist bereits vorhanden.</b> Bitte ändern Sie den bestehenden Kurs und fügen dort ggf. Durchführungen hinzu. <a>bestehenden Kurs bearbeiten</a>"
-						$otherUrl = $this->framework->getUrl('edit', array('action'=>'ek', 'id'=>$andere_kurs_id));
-						$kurs['error'][] = 
-							'
-							Fehler: Ein Kurs mit dem Titel <i>'.isohtmlspecialchars($kurs['titel']).'</i> <b>ist bereits vorhanden</b>. 
-							Um Verwirrungen zu vermeiden, können Sie das folgende tun:<br /><br />
-							
-							&bull; <b>Sie wollen weitere Termine des Kurses angelegen?</b> <a href="'.$otherUrl.'">Gehen Sie zum bereits vorhandenen Kurs</a> - 
-							eventuell ist er nur abgelaufen. Geben Sie beim vorhandenen Kurs in der Durchführung die neuen Termine ein. 
-							Mit Klick  auf &quot;Durchführung duplizieren&quot; können Sie mehrere Termine, auch an unterschiedlichen Orten, an den 
-							Kurs anhängen. Falls erforderlich, können Sie auch die Kursbeschreibung aktualisieren.<br /><br />
-							
-							&bull; <b>Soll der neue Kurs eine völlig andere Kursbeschreibung erhalten als der schon vorhandene Kurs?</b>
-							Wählen Sie für diesen Kurs einen Titel, der ihn vom vorhandenen Kurs unterscheidet. Eventuell reicht es ja, 
-							einfach nur eine Zahl anhängen, z.B. Englisch 1 und Englisch 2.<br /><br />
-							 
-							&bull; <b>Soll der neue Kurs nur eine kleine Änderung im Titel erhalten, inhaltlich aber gleich bleiben?</b>
-							Senden Sie einfach den gewünschten neuen Titel per E-Mail an den Träger dieser Datenbank. Die 
-							Datenredaktion kann den Titel für Sie ändern; dann müssen Sie nicht alle Angaben zum Kurs komplett neu eingeben.<br />
+					    // meine knappe Variante waere gewesen: "Ein Kurse mit dem Titel <i><titel><i> <b>ist bereits vorhanden.</b> Bitte aendern Sie den bestehenden Kurs und fuegen dort ggf. Durchfuehrungen hinzu. <a>bestehenden Kurs bearbeiten</a>"
+					    $otherUrl = $this->framework->getUrl('edit', array('action'=>'ek', 'id'=>$andere_kurs_id));
+					    $kurs['error'][] =
+					    '
+							Fehler: Ein Kurs mit dem Titel <i>'.isohtmlspecialchars($kurs['titel']).'</i> <b>ist bereits vorhanden</b>.
+							Um Verwirrungen zu vermeiden, k&ouml;nnen Sie das folgende tun:<br /><br />
+							    
+							&bull; <b>Sie wollen weitere Termine des Kurses angelegen?</b> <a href="'.$otherUrl.'">Gehen Sie zum bereits vorhandenen Kurs</a> -
+							eventuell ist er nur abgelaufen. Geben Sie beim vorhandenen Kurs in der Durchf&uuml;hrung die neuen Termine ein.
+							Mit Klick  auf &quot;Durchf&uuml;hrung duplizieren&quot; k&ouml;nnen Sie mehrere Termine, auch an unterschiedlichen Orten, an den
+							Kurs anh&auml;ngen. Falls erforderlich, k&ouml;nnen Sie auch die Kursbeschreibung aktualisieren.<br /><br />
+							    
+							&bull; <b>Soll der neue Kurs eine v&ouml;llig andere Kursbeschreibung erhalten als der schon vorhandene Kurs?</b>
+							W&auml;hlen Sie f&uuml;r diesen Kurs einen Titel, der ihn vom vorhandenen Kurs unterscheidet. Eventuell reicht es ja,
+							einfach nur eine Zahl anh&auml;ngen, z.B. Englisch 1 und Englisch 2.<br /><br />
+							    
+							&bull; <b>Soll der neue Kurs nur eine kleine &Auml;nderung im Titel erhalten, inhaltlich aber gleich bleiben?</b>
+							Senden Sie einfach den gew&uuml;nschten neuen Titel per E-Mail an den Tr&auml;ger dieser Datenbank. Die
+							Datenredaktion kann den Titel f&uuml;r Sie &auml;ndern; dann m&uuml;ssen Sie nicht alle Angaben zum Kurs komplett neu eingeben.<br />
 							';
 					}
 				}
@@ -1037,7 +1037,7 @@ class WISY_EDIT_RENDERER_CLASS
 		
 		if( sizeof((array) $kurs['durchf']) < 1 )
 		{
-			$kurs['error'][] = 'Fehler: Der Kurs muss mindestens eine Durchführung haben.';
+		    $kurs['error'][] = 'Fehler: Der Kurs muss mindestens eine Durchf&uuml;hrung haben.';
 		}
 		
 		$max_df = $this->framework->iniRead('useredit.durchf.max', 25);
@@ -1051,7 +1051,7 @@ class WISY_EDIT_RENDERER_CLASS
 								';
 		}
 		
-		// new 20:55 01.06.2014: es ist nur eine URL erlaubt - entweder in der Kursbeschreibung oder in den Durchführungsbemerkungen
+		// new 20:55 01.06.2014: es ist nur eine URL erlaubt - entweder in der Kursbeschreibung oder in den Durchfuehrungsbemerkungen
 		$stopwords = $this->tools->loadStopwords('useredit.stopwords');
 		$maxlen_preishinweise = 160;
 		$maxlen_bemerkungen = 250;
@@ -1077,17 +1077,17 @@ class WISY_EDIT_RENDERER_CLASS
 					$kurs['error'][] = 'Fehler: Die URL im Feld <i>Bemerkungen</i> ist die Standard-URL des Anbieters; bitte verwenden Sie kurspezifische URLs.';
 				}
 				else {
-					$check_maxlen_bemerkungen = $maxlen_bemerkungen + strlen($durchf_urls[0]) + 6 /*do not count the URL and special characters needed for the URL - but the URL text _is_ counted*/;
+					$check_maxlen_bemerkungen = $maxlen_bemerkungen + strlen($durchf_urls[0]) + 6 /* do not count the URL and special characters needed for the URL - but the URL text _is_ counted */;
 				}
 			}
 			else {
 				$check_maxlen_bemerkungen = $maxlen_bemerkungen;
 			}
 			
-			if( $check_maxlen_bemerkungen ) { /*bei unklaren URL-Verhältnissen wird die Länge nicht geprüft, da sowieso ein Fehler ausgegeben wird - mit dem Hinweis nur max. 1 URL zu verwenden*/
-				if( strlen($durchf['bemerkungen']) > $check_maxlen_bemerkungen ) {
-					$kurs['error'][] = 'Fehler: Im Feld <i>Bemerkungen</i> sind max. '.$maxlen_bemerkungen.' Zeichen erlaubt; URLs werden dabei nicht mitgezählt. Eingegebene Zeichen: '.strlen($durchf['bemerkungen']);
-				}
+			if( $check_maxlen_bemerkungen ) { /* bei unklaren URL-Verhaeltnissen wird die Laenge nicht geprueft, da sowieso ein Fehler ausgegeben wird - mit dem Hinweis nur max. 1 URL zu verwenden */
+			    if( strlen($durchf['bemerkungen']) > $check_maxlen_bemerkungen ) {
+			        $kurs['error'][] = 'Fehler: Im Feld <i>Bemerkungen</i> sind max. '.$maxlen_bemerkungen.' Zeichen erlaubt; URLs werden dabei nicht mitgez&auml;hlt. Eingegebene Zeichen: '.strlen($durchf['bemerkungen']);
+			    }
 			}
 			
 			if( ($badWord=$this->tools->containsStopword($durchf['bemerkungen'], $stopwords))!==false ) {
@@ -1125,12 +1125,12 @@ class WISY_EDIT_RENDERER_CLASS
 				$kurs['promote_active'] = (sizeof((array) $kurs['error'])==0 && $kurs['promote_param']>strftime("%Y-%m-%d"))? 1 : 0;
 			}
 			
-					// TODEL: Promote AGB
+			// TODEL: Promote AGB
 			if( intval($_POST['promote_agb_read']) != 1 )
 			{
-				$kurs['error'][] = "Fehler: Um einen Kurs zu bewerben, müssen Sie zunächst die AGB bestätigen.";
+			    $kurs['error'][] = "Fehler: Um einen Kurs zu bewerben, m&uuml;ssen Sie zun&auml;chst die AGB best&auml;tigen.";
 			}
-					// /TODEL: Promote AGB
+		    // /TODEL: Promote AGB
 		}
 		else
 		{
@@ -1159,7 +1159,7 @@ class WISY_EDIT_RENDERER_CLASS
 		$allowed_dfields = array('id', 'nr', 'stunden', 'teilnehmer', 'preis', 'preishinweise', 'sonderpreis', 'sonderpreistage', 'beginn', 'ende',
 								 'beginnoptionen', 'zeit_von', 'zeit_bis', 'kurstage', 'tagescode', 'stadtteil');
 
-		// nach Änderungen im Kurs suchen
+		// nach Aenderungen im Kurs suchen
 		reset($newData);
 		foreach($newData as $name => $newValue) {
 			if( $newValue != $oldData[$name] ) {
@@ -1170,10 +1170,10 @@ class WISY_EDIT_RENDERER_CLASS
 			}
 		}
 		
-		// nach Änderungen in den Durchführungen suchen (Löschen von Df sind Bagatellen)
+		// nach Aenderungen in den Durchfuehrungen suchen (Loeschen von Df sind Bagatellen)
 		for( $n = 0; $n < sizeof((array) $newData['durchf']); $n++ ) 
 		{	
-			// suche nach einer alten Df, die dieselben Daten wie die Neue hat bzw. nur Änderungen, die erlaubt sind
+			// suche nach einer alten Df, die dieselben Daten wie die Neue hat bzw. nur Aenderungen, die erlaubt sind
 			$template_found = false;
 			
 			for( $o = 0; $o < sizeof((array) $oldData['durchf']); $o++ ) 
@@ -1198,15 +1198,15 @@ class WISY_EDIT_RENDERER_CLASS
 				}
 			}
 			
-			if( !$template_found ) 
+			if( !$template_found )
 			{
-				return false; // neue Durchführung oder Durchführungsänderungen, die über eine Bagatelle hinausgehen
+			    return false; // neue Durchfuehrung oder Durchfuehrungsaenderungen, die ueber eine Bagatelle hinausgehen
 			}
 			
-			// weiter mit der nächsten, neuen/geänderten Durchführung
+			// weiter mit der naechsten, neuen/geaenderten Durchfuehrung
 		}
 		
-		return true; // alle Änderungen sind Bagatell-Änderungen
+		return true; // alle Aenderungen sind Bagatell-Aenderungen
 	}
 	
 	function saveKursToDb(&$newData)
@@ -1236,28 +1236,28 @@ class WISY_EDIT_RENDERER_CLASS
 		// BAGATELLE?
 		if( $this->ist_bagatelle($oldData, $newData) )
 		{
-			// die Änderung IST eine BAGATELLE
-			$logwriter->addData('ist_bagatelle', 1);
-			if( $oldData['user_modified'] == $this->getAdminAnbieterUserId20() ) 
-			{
-				// wenn die letzte Änderung eine Onlinepflege war, die potentiell noch nicht von der Redaktion eingesehen wurde, 
-				// ist auch die neue Änderung keine Bagatelle
-			}
-			else
-			{
-				$user =  $this->getAdminAnbieterUserId19();
-			}
+		    // die Aenderung IST eine BAGATELLE
+		    $logwriter->addData('ist_bagatelle', 1);
+		    if( $oldData['user_modified'] == $this->getAdminAnbieterUserId20() )
+		    {
+		        // wenn die letzte Aenderung eine Onlinepflege war, die potentiell noch nicht von der Redaktion eingesehen wurde,
+		        // ist auch die neue Aenderung keine Bagatelle
+		    }
+		    else
+		    {
+		        $user =  $this->getAdminAnbieterUserId19();
+		    }
 		}
 		else
 		{
-			// die Änderung ist KEINE BAGATELLE - Nicht-Bagatelländerung erlaubt?
-			if( $this->canEditBagatelleOnly() )
-			{
-				$newData['error'][] = 'Fehler: Der angemeldete Benutzer hat <b>nicht das Recht</b> diese Änderungen am Feld <i>'.isohtmlspecialchars($this->keine_bagatelle_why).'</i> vorzunehmen.<br />
-									   Es dürfen nur Datum und Preis und andere Felder in gewissen Grenzen geändert werden. 
-									   <a href="'.$this->framework->getHelpUrl($this->framework->iniRead('useredit.help.norights', '20')).'" target="_blank">Weitere Informationen hierzu ...</a><br />';
-				return;
-			}
+		    // die Aenderung ist KEINE BAGATELLE - Nicht-Bagatellaenderung erlaubt?
+		    if( $this->canEditBagatelleOnly() )
+		    {
+		        $newData['error'][] = 'Fehler: Der angemeldete Benutzer hat <b>nicht das Recht</b> diese &Auml;nderungen am Feld <i>'.isohtmlspecialchars($this->keine_bagatelle_why).'</i> vorzunehmen.<br />
+									   Es d&uuml;rfen nur Datum und Preis und andere Felder in gewissen Grenzen ge&auml;ndert werden.
+									   <a href="'.$this->framework->getHelpUrl($this->framework->iniRead('useredit.help.norights', '20')).'" target="_blank" rel="noopener noreferrer">Weitere Informationen hierzu ...</a><br />';
+		        return;
+		    }
 		}
 
 		
@@ -1276,18 +1276,18 @@ class WISY_EDIT_RENDERER_CLASS
 			$newData['id'] = $kursId;
 		}
 		
-		// DURCHFÜHRUNGS-Änderungen ablegen
+		// DURCHFUEHRUNGS-Aenderungen ablegen
 		for( $d = 0; $d < sizeof((array) $newData['durchf']); $d++ )
 		{
-			// neue daten holen
-			$newDurchf = $newData['durchf'][$d];
-			
-			// passende alten daten suchen, wenn es keine gibt, ist dies eine neue Durchführung!
-			$isNew = false;
-			$oldDurchf = array();
-			if( $newDurchf['id'] )
-			{
-				// existierende durchführung
+		    // neue daten holen
+		    $newDurchf = $newData['durchf'][$d];
+		    
+		    // passende alten daten suchen, wenn es keine gibt, ist dies eine neue Durchfuehrung!
+		    $isNew = false;
+		    $oldDurchf = array();
+		    if( $newDurchf['id'] )
+		    {
+		        // existierende durchfuehrung
 			    for( $d2 = 0; $d2 < sizeof((array) $oldData['durchf']); $d2++ )
 				{
 					if( $oldData['durchf'][$d2]['id'] == $newDurchf['id'] )
@@ -1298,11 +1298,11 @@ class WISY_EDIT_RENDERER_CLASS
 					}
 				}
 				if( sizeof((array) $oldDurchf) == 0 )
-					{ $newData['error'][] = "Fataler Fehler: Die Durchführung ID ".$newDurchf['id']." kann nicht gefunden werden!"; return; }
-			}
-			else
-			{
-				// neue Durchführung!				
+				{ $newData['error'][] = "Fataler Fehler: Die Durchf&uuml;hrung ID ".$newDurchf['id']." kann nicht gefunden werden!"; return; }
+		    }
+		    else
+		    {
+		        // neue Durchfuehrung!	
 				$db->query("SELECT user_grp, user_access FROM kurse WHERE id=$kursId;");
 				$db->next_record();
 				$user_grp = intval($db->f('user_grp'));
@@ -1323,7 +1323,7 @@ class WISY_EDIT_RENDERER_CLASS
 				$actions .= ' DURCHF-INSERT ';
 			}
 			
-			// änderungen überprüfen
+			// Aenderungen ueberpruefen
 			$sqlExpr = '';
 			reset( $newDurchf );
 			foreach($newDurchf as $name => $value)
@@ -1360,7 +1360,7 @@ class WISY_EDIT_RENDERER_CLASS
 			}
 		}
 		
-		// ÜBERSCHÜSSIGE durchführungen löschen
+		// UEBERSCHUESSIGE durchfuehrungen loeschen
 		$delCnt = 0;
 		for( $d2 = 0; $d2 < sizeof((array) $oldData['durchf']); $d2++ )
 		{
@@ -1406,11 +1406,11 @@ class WISY_EDIT_RENDERER_CLASS
 					$db->query("UPDATE anbieter_promote SET promote_active=".intval($newData['promote_active']).", promote_mode='".addslashes($newData['promote_mode'])."', promote_param='".addslashes($newData['promote_param'])."' WHERE kurs_id=$kursId AND portal_id=$wisyPortalId;");
 				}
 				
-				$actions .=  ' PROMOTION-UPDATE '; // ACHTUNG: dies erzeugt ein Update des KURS-Datensatzes, das auch notwendig ist,  damit der neue active-status übernommen wird (der cache wird geleert)
+				$actions .=  ' PROMOTION-UPDATE '; // ACHTUNG: dies erzeugt ein Update des KURS-Datensatzes, das auch notwendig ist,  damit der neue active-status uebernommen wird (der cache wird geleert)
 			}
 		}
 
-		// KURS-Änderungen ablegen
+		// KURS-Aenderungen ablegen
 		if( !$oldData['rights_editTitel'] ) 	{ $newData['titel'] = $oldData['titel']; }
 		if( !$oldData['rights_editAbschluss'] )	{ $newData['abschluss'] = $oldData['abschluss']; $newData['msgtooperator'] = $oldData['msgtooperator']; }
 		
@@ -1476,7 +1476,7 @@ class WISY_EDIT_RENDERER_CLASS
 
 	function deleteKurs($kursId)
 	{
-		// kurs als gelöscht markieren ...
+		// kurs als geloescht markieren ...
 		$user = $this->getAdminAnbieterUserId20();
 		$today = strftime("%Y-%m-%d %H:%M:%S");
 	
@@ -1499,16 +1499,16 @@ class WISY_EDIT_RENDERER_CLASS
 
 	function renderEditorToolbar($addKursUrl)
 	{
-		$ret = '<small>';
-			$ret .= '<a href="" onclick="add_chars($(this), \'\\\'\\\'\\\'\', \'\\\'\\\'\\\'\'); return false;" style="font-weight:bold; letter-spacing: 1px;" title="Markieren Sie den zu fettenden Text und klicken Sie dann diese Schaltfläche" >\'\'\'Fett\'\'\'</a> &nbsp; ';
-			$ret .= '<a href="" onclick="add_chars($(this), \'\\\'\\\'\', \'\\\'\\\'\'); return false;" style="font-style:italic; letter-spacing: 1px;" title="Markieren Sie den kursiv darzustellenden Text und klicken Sie dann diese Schaltfläche" >\'\'Kursiv\'\'</a> &nbsp; ';
-			if( $addKursUrl )
-			{
-				$ret .= '<a href="" onclick="add_chars($(this), \'[[http://verweis.com | Kurs-URL\', \']]\'); return false;" style="letter-spacing: 1px;" title="Markieren Sie den Text, den Sie als Verweis verwenden möchten, und klicken Sie dann diese Schaltfläche">[[Verweis]]</a> &nbsp; ';
-			}
-		$ret .= '</small><br />';
-		return $ret;
-		// must be followed by the textarea element! if you change the hierarchy, please also change "parent().parent()" in add_chars() in jquery.wisy.js - see (**)!
+	    $ret = '<small>';
+	    $ret .= '<a href="" onclick="add_chars($(this), \'\\\'\\\'\\\'\', \'\\\'\\\'\\\'\'); return false;" style="font-weight:bold; letter-spacing: 1px;" title="Markieren Sie den zu fettenden Text und klicken Sie dann diese Schaltfl&auml;che" >\'\'\'Fett\'\'\'</a> &nbsp; ';
+	    $ret .= '<a href="" onclick="add_chars($(this), \'\\\'\\\'\', \'\\\'\\\'\'); return false;" style="font-style:italic; letter-spacing: 1px;" title="Markieren Sie den kursiv darzustellenden Text und klicken Sie dann diese Schaltfl&auml;che" >\'\'Kursiv\'\'</a> &nbsp; ';
+	    if( $addKursUrl )
+	    {
+	        $ret .= '<a href="" onclick="add_chars($(this), \'[[http://verweis.com | Kurs-URL\', \']]\'); return false;" style="letter-spacing: 1px;" title="Markieren Sie den Text, den Sie als Verweis verwenden m&ouml;chten, und klicken Sie dann diese Schaltfl&auml;che">[[Verweis]]</a> &nbsp; ';
+	    }
+	    $ret .= '</small><br />';
+	    return $ret;
+	    // must be followed by the textarea element! if you change the hierarchy, please also change "parent().parent()" in add_chars() in jquery.wisy.js - see (**)!
 	}
 
 	function renderVollstMsg($id, $always)
@@ -1519,7 +1519,7 @@ class WISY_EDIT_RENDERER_CLASS
 		if( $temp['vmsg'] != '' )
 		{
 			$vollst = $this->framework->getVollstaendigkeitMsg($db, $id, 'quality.edit');
-			$msg .= '<b>Informationen zu Vollständigkeit:</b> ' . $vollst['msg'];
+			$msg .= '<b>Informationen zu Vollst&auml;ndigkeit:</b> ' . $vollst['msg'];
 			$msg .= $temp['vmsg'];
 		}
 		else if ( $always )
@@ -1671,17 +1671,17 @@ class WISY_EDIT_RENDERER_CLASS
 							$styleFoerderung = '';
 							if( $kurs['bu_nummer']=='' && $kurs['azwv_knr']=='' && $kurs['foerderung']==0 )
 							{
-								echo "<span class=\"editFoerderungLink\"> <a href=\"#\" onclick=\"editShowHide($(this), '.editFoerderungDiv', '.editFoerderungLink'); return false;\" title=\"Förderungsmöglichkeiten hinzuf&uuml;gen\"><small>+Förderung</small></a></span>";
-								$styleFoerderung = ' style="display: none;" ';
+							    echo "<span class=\"editFoerderungLink\"> <a href=\"#\" onclick=\"editShowHide($(this), '.editFoerderungDiv', '.editFoerderungLink'); return false;\" title=\"F&ouml;rderungsm&ouml;glichkeiten hinzuf&uuml;gen\"><small>+F&ouml;rderung</small></a></span>";
+							    $styleFoerderung = ' style="display: none;" ';
 							}
-
+							
 							/* only via import:
 							 * $styleFernunterricht = '';
-							if( $kurs['fu_knr']=='' )
-							{
-							    $styleFernunterricht = ' style="display: none;" ';
-							    echo "<span class=\"editFernunterrichtLink\" ".$styleFernunterricht."> <a href=\"#\" onclick=\"editShowHide($(this), '.editFernunterrichtDiv', '.editFernunterrichtLink'); return false;\" title=\"Kursnummer für Fernunterricht hinzuf&uuml;gen\"><small>+Fernunterricht</small></a></span>";
-							} */
+							 if( $kurs['fu_knr']=='' )
+							 {
+							 $styleFernunterricht = ' style="display: none;" ';
+							 echo "<span class=\"editFernunterrichtLink\" ".$styleFernunterricht."> <a href=\"#\" onclick=\"editShowHide($(this), '.editFernunterrichtDiv', '.editFernunterrichtLink'); return false;\" title=\"Kursnummer fuer Fernunterricht hinzuf&uuml;gen\"><small>+Fernunterricht</small></a></span>";
+							 } */
 
 							$styleBewerben = '';
 							if( $this->canPromote() )
@@ -1703,16 +1703,16 @@ class WISY_EDIT_RENDERER_CLASS
 
 							// ... Foerderung
 							echo "<div class=\"editFoerderungDiv\" $styleFoerderung>";
-								echo '<table cellpadding="0" cellspacing="2" border="0">';
-									echo '<tr><td>Bildungsurlaubs-Nr.:</td><td><input type="text" name="bu_nummer" value="'.isohtmlspecialchars($kurs['bu_nummer']).'" /> <small>(Nötig zur Anzeige als Bildungsurlaub/Freistellung)</small></td></tr>';
-									echo '<tr><td>AZAV-Nr.:</td><td><input type="text" name="azwv_knr" value="'.isohtmlspecialchars($kurs['azwv_knr']).'" />  <small>(Nötig zur Suche nach Bildungsgutschein)</small></td></tr>';
-									if( $foerderungsOptionen != '' )
-									{
-										echo '<tr><td>sonstige Förderung:</td><td>'; 
-											$this->controlSelect('foerderung', $kurs['foerderung'], '0######'.$foerderungsOptionen);
-										echo '</td></tr>';
-									}
-								echo '</table>';
+    							echo '<table cellpadding="0" cellspacing="2" border="0">';
+    							echo '<tr><td>Bildungsurlaubs-Nr.:</td><td><input type="text" name="bu_nummer" value="'.isohtmlspecialchars($kurs['bu_nummer']).'" /> <small>(N&ouml;tig zur Anzeige als Bildungsurlaub/Freistellung)</small></td></tr>';
+    							echo '<tr><td>AZAV-Nr.:</td><td><input type="text" name="azwv_knr" value="'.isohtmlspecialchars($kurs['azwv_knr']).'" />  <small>(N&ouml;tig zur Suche nach Bildungsgutschein)</small></td></tr>';
+    							if( $foerderungsOptionen != '' )
+    							{
+    							    echo '<tr><td>sonstige F&ouml;rderung:</td><td>';
+    							    $this->controlSelect('foerderung', $kurs['foerderung'], '0######'.$foerderungsOptionen);
+    							    echo '</td></tr>';
+    							}
+    							echo '</table>';
 								echo '&nbsp;';
 							echo '</div>';
 
@@ -1720,7 +1720,7 @@ class WISY_EDIT_RENDERER_CLASS
 							 * // ... Fernunterricht
 							echo "<div class=\"editFernunterrichtDiv\" $styleFernunterricht>";
 								echo '<table cellpadding="0" cellspacing="2" border="0">';
-									echo '<tr><td>ZFU-Fernunterrichts-Nr.:</td><td><input type="text" name="fu_knr" value="'.isohtmlspecialchars($kurs['fu_knr']).'" /> <small>(Nötig zur Anzeige als Fernunterricht)</small></td></tr>';
+									echo '<tr><td>ZFU-Fernunterrichts-Nr.:</td><td><input type="text" name="fu_knr" value="'.isohtmlspecialchars($kurs['fu_knr']).'" /> <small>(Noetig zur Anzeige als Fernunterricht)</small></td></tr>';
 								echo '</table>';
 								echo '&nbsp;';
 							echo '</div>'; */
@@ -1733,8 +1733,8 @@ class WISY_EDIT_RENDERER_CLASS
 								
 									$radio = $kurs['promote_mode']=='times'? ' checked="checked" ' : '';
 									$param = $kurs['promote_mode']=='times'? $kurs['promote_param'] : '1000';
-									echo '<input type="radio" name="promote_mode" id="pl1" value="times" '.$radio.' /> <label for="pl1">Kurs kostenpflichtig bewerben mit max.</label> <input type="text" size="6" name="promote_param_times" value="'.$param.'" /> Einblendungen (Bruttopreis '.str_replace('.', ',', $this->billingRenderer->allPrices[0][1]).' &euro; für '.$this->billingRenderer->allPrices[0][0].' Einblendungen) ';
-									echo '<a href="' .$this->framework->getHelpUrl(3367). '" class="wisy_help" target="_blank" title="Hilfe">i</a>';
+									echo '<input type="radio" name="promote_mode" id="pl1" value="times" '.$radio.' /> <label for="pl1">Kurs kostenpflichtig bewerben mit max.</label> <input type="text" size="6" name="promote_param_times" value="'.$param.'" /> Einblendungen (Bruttopreis '.str_replace('.', ',', $this->billingRenderer->allPrices[0][1]).' &euro; f&uuml;r '.$this->billingRenderer->allPrices[0][0].' Einblendungen) ';
+									echo '<a href="' .$this->framework->getHelpUrl(3367). '" class="wisy_help" target="_blank" rel="noopener noreferrer" title="Hilfe">i</a>';
 									echo '<br />';
 									
 									$radio = $kurs['promote_mode']=='date'? ' checked="checked" ' : '';
@@ -1760,7 +1760,7 @@ class WISY_EDIT_RENDERER_CLASS
 										$db->query("SELECT kurs_id FROM anbieter_promote WHERE anbieter_id=".$_SESSION['loggedInAnbieterId']. " AND portal_id=$wisyPortalId;");
 										if( $db->next_record() )
 										{
-											$agb_reading_required = 0; // es existiert bereits mind. ein beworbener Kurse; eine erneute bestätigung ist daher nicht erforderlich
+										    $agb_reading_required = 0; // es existiert bereits mind. ein beworbener Kurse; eine erneute bestaetigung ist daher nicht erforderlich
 										}
 									}
 									
@@ -1769,7 +1769,7 @@ class WISY_EDIT_RENDERER_CLASS
 										echo '<br />';
 										echo '<br />';
 										echo '<input type="checkbox" name="promote_agb_read" value="1" /> ';
-										echo 'Ich habe die <a href="'.$this->framework->getHelpUrl($agb_reading_required).'" target="_blank">AGB zum Bewerben von Kursen</a> gelesen und akzeptiere diese';
+										echo 'Ich habe die <a href="'.$this->framework->getHelpUrl($agb_reading_required).'" target="_blank" rel="noopener noreferrer">AGB zum Bewerben von Kursen</a> gelesen und akzeptiere diese';
 									}
 									else
 									{
@@ -1787,24 +1787,24 @@ class WISY_EDIT_RENDERER_CLASS
 					// STICHWORTVORSCHLAEGE
 					if( $kurs['rights_editAbschluss'] )
 					{
-						echo '<tr>';
-							echo '<td width="10%" valign="top" nowrap="nowrap"><strong>Stichwortvorschläge:</strong>&nbsp;&nbsp;</td>';
-							echo '<td>';
-								if( $abschlussOptionen!='' )
-								{
-									echo '<label title="Fehlt ein Abschluss? Dann bitte unter &quot;Stichwortvorschläge&quot; eintragen.">Abschluss: '; 
-										$this->controlSelect('abschluss', $kurs['abschluss'], '0######'.$abschlussOptionen);
-									echo '</label><br />';
-									echo '<label title="weitere Stichwort- oder Abschlussvorschläge">weitere Vorschläge: ';
-								}
-								else
-								{
-									echo '<label title="Stichwort- oder Abschlussvorschläge">';
-								}
-								$this->controlText('msgtooperator', $kurs['msgtooperator'], 40, 200, '', '');
-								echo '</label> &nbsp; <a href="' .$this->framework->getHelpUrl(4100). '" class="wisy_help" target="_blank" title="Hilfe">i</a> <br />&nbsp;';
-							echo '</td>';
-						echo '</tr>';
+					    echo '<tr>';
+					    echo '<td width="10%" valign="top" nowrap="nowrap"><strong>Stichwortvorschl&auml;ge:</strong>&nbsp;&nbsp;</td>';
+					    echo '<td>';
+					    if( $abschlussOptionen!='' )
+					    {
+					        echo '<label title="Fehlt ein Abschluss? Dann bitte unter &quot;Stichwortvorschl&auml;ge&quot; eintragen.">Abschluss: ';
+					        $this->controlSelect('abschluss', $kurs['abschluss'], '0######'.$abschlussOptionen);
+					        echo '</label><br />';
+					        echo '<label title="weitere Stichwort- oder Abschlussvorschl&auml;ge">weitere Vorschl&auml;ge: ';
+					    }
+					    else
+					    {
+					        echo '<label title="Stichwort- oder Abschlussvorschl&auml;ge">';
+					    }
+					    $this->controlText('msgtooperator', $kurs['msgtooperator'], 40, 200, '', '');
+					    echo '</label> &nbsp; <a href="' .$this->framework->getHelpUrl(4100). '" class="wisy_help" target="_blank" rel="noopener noreferrer" title="Hilfe">i</a> <br />&nbsp;';
+					    echo '</td>';
+					    echo '</tr>';
 					}
 					
 					// KURSBESCHREIBUNG
@@ -1818,13 +1818,13 @@ class WISY_EDIT_RENDERER_CLASS
 						echo '</td>';
 					echo '</tr>';
 					
-					// DURCHFÜHRUNGEN
+					// DURCHFUEHRUNGEN
 					for( $d = 0; $d < sizeof((array) $kurs['durchf']); $d++ )
 					{
 						$durchf = $kurs['durchf'][$d];
 						echo '<tr class="editDurchfRow">';
-							echo '<td valign="top"><strong>Durchführung:</strong><br />';
-								echo '<small>';
+						   echo '<td valign="top"><strong>Durchf&uuml;hrung:</strong><br />';
+						        echo '<small>';
 									echo '<input type="hidden" name="durchfid[]" value="'.$durchf['id'].'" class="hiddenId" />';
 									echo '<a href="#" onclick="editDurchfKopieren($(this)); return false;" title="Eine Kopie dieser Durchführung zur weiteren Bearbeitung anlegen">+kopieren</a> ';
 									echo '<a href="#" onclick="editDurchfLoeschen($(this)); return false;" title="Diese Durchführung löschen">-löschen</a> ';
@@ -1835,10 +1835,10 @@ class WISY_EDIT_RENDERER_CLASS
 									
 									echo '<table cellspacing="6" cellpadding="0">';
 									
-										// DURCHFÜHRUNGS-NR
-										echo '<tr>';
-											echo '<td valign="top" nowrap="nowrap">Durchführungs-Nr.:&nbsp;&nbsp;&nbsp;</td>';
-											echo '<td>';
+									// DURCHFUEHRUNGS-NR
+									echo '<tr>';
+    									echo '<td valign="top" nowrap="nowrap">Durchf&uuml;hrungs-Nr.:&nbsp;&nbsp;&nbsp;</td>';
+    									    echo '<td>';
 												$this->controlText('nr[]', $durchf['nr'], 24, 64, 'Geben Sie hier eine f&uuml;r Sie eindeutige numerische oder alphanumerische Kennung dieser Durchf&uuml;hrung ein', 'k. A.');
 											echo '</td>';
 										echo '</tr>';
@@ -1861,8 +1861,8 @@ class WISY_EDIT_RENDERER_CLASS
 													for( $i = 0; $i < sizeof($bits); $i+=2 ) 
 													{
 														// normally, we would use the normal <input type="checkbox" /> - however this does
-														// not work with our array'ed durchführungen as a checkbox value is not appended to an array it it is not checked ...
-														echo '<span>'; // needed to get the both items on one level
+														// not work with our array'ed durchfuehrungen as a checkbox value is not appended to an array it it is not checked ...
+													    echo '<span>'; // needed to get the both items on one level
 															$value = $durchf['kurstage']&intval($bits[$i])? 1 : 0;
 															echo "<input type=\"hidden\" name=\"kurstage$i"."[]\" value=\"$value\" />";
 															echo '<span onclick="editWeekdays($(this));" class="'.($value?'wisy_editweekdayssel':'wisy_editweekdaysnorm').'">' . trim(str_replace('.', '', $bits[$i+1])) . '</span>';
@@ -1882,7 +1882,7 @@ class WISY_EDIT_RENDERER_CLASS
 												if( berechne_dauer($durchf['beginn'], $durchf['ende'])==0 && $durchf['dauer']!=0 ) { $do_expand = true; }
 												if( berechne_tagescode($durchf['zeit_von'], $durchf['zeit_bis'], $durchf['kurstage'])==0 && $durchf['tagescode']!=0 ) { $do_expand = true; }
 												
-												$titleBeginnoptionen = 'Hiermit können Sie für diese Durchführung eine Terminoption festlegen, etwa wenn die Durchführung regelmäßig stattfindet';
+												$titleBeginnoptionen = 'Hiermit k&ouml;nnen Sie f&uuml;r diese Durchf&uuml;hrung eine Terminoption festlegen, etwa wenn die Durchf&uuml;hrung regelm&auml;&szlig;ig stattfindet';
 												$styleBeginnoptionen = '';
 												if( !$do_expand )
 												{
@@ -1896,13 +1896,13 @@ class WISY_EDIT_RENDERER_CLASS
 														$this->controlSelect('beginnoptionen[]', $durchf['beginnoptionen'], $GLOBALS['codes_beginnoptionen']);
 														
 														echo "<br />Dauer: ";
-														$this->controlSelect('dauer[]', $durchf['dauer'], $GLOBALS['codes_dauer']);			
-														echo '<small> (wird, wenn möglich, aus Beginn-/Endedatum automatisch berechnet)</small>';
+														$this->controlSelect('dauer[]', $durchf['dauer'], $GLOBALS['codes_dauer']);
+														echo '<small> (wird, wenn m&ouml;glich, aus Beginn-/Endedatum automatisch berechnet)</small>';
 														
 														echo "<br />Tagescode: ";
-														$this->controlSelect('tagescode[]', $durchf['tagescode'], $GLOBALS['codes_tagescode']);		
-														echo '<small>  (wird, wenn möglich, aus Wochentag/Uhrzeit automatisch berechnet)</small>';
-													echo '</label>';
+														$this->controlSelect('tagescode[]', $durchf['tagescode'], $GLOBALS['codes_tagescode']);
+														echo '<small>  (wird, wenn m&ouml;glich, aus Wochentag/Uhrzeit automatisch berechnet)</small>';
+													 echo '</label>';
 											echo '</div>';
 											echo '</td>';
 										echo '</tr>';
@@ -1933,15 +1933,15 @@ class WISY_EDIT_RENDERER_CLASS
 												$styleSonderpreis = '';
 												if( !$durchf['sonderpreis'] )
 												{
-													echo "<span class=\"editSonderpreisLink\"> <a href=\"#\" onclick=\"editShowHide($(this), '.editSonderpreisDiv', '.editSonderpreisLink'); return false;\" title=\"Sonderpreis für diese Durchführung hinzufügen\"><small>+Sonderpreis</small></a></span>";
-													$styleSonderpreis = ' style="display:none;" ';
+												    echo "<span class=\"editSonderpreisLink\"> <a href=\"#\" onclick=\"editShowHide($(this), '.editSonderpreisDiv', '.editSonderpreisLink'); return false;\" title=\"Sonderpreis f&uuml;r diese Durchf&uuml;hrung hinzuf&uuml;gen\"><small>+Sonderpreis</small></a></span>";
+												    $styleSonderpreis = ' style="display:none;" ';
 												}
-												
+													
 												$stylePreishinweise = '';
 												if( !$durchf['preishinweise'] )
 												{
-													echo "<span class=\"editPreishinweiseLink\"> <a href=\"#\" onclick=\"editShowHide($(this), '.editPreishinweiseDiv', '.editPreishinweiseLink'); return false;\" title=\"Preishinweise hinzufügen\"><small>+Preishinweise</small></a></span>";
-													$stylePreishinweise = ' style="display:none;" ';
+												    echo "<span class=\"editPreishinweiseLink\"> <a href=\"#\" onclick=\"editShowHide($(this), '.editPreishinweiseDiv', '.editPreishinweiseLink'); return false;\" title=\"Preishinweise hinzuf&uuml;gen\"><small>+Preishinweise</small></a></span>";
+												    $stylePreishinweise = ' style="display:none;" ';
 												}
 												
 												echo "<div class=\"editSonderpreisDiv\" $styleSonderpreis>";
@@ -1980,17 +1980,17 @@ class WISY_EDIT_RENDERER_CLASS
 											echo '<td valign="top">Kurs-URL/Bemerkungen:</td>';
 											echo '<td>';
 											
-												$style = '';
-												if( !$durchf['bemerkungen'] )
-												{
-													echo "<span class=\"editAdvOrtLink\"> <a href=\"#\" onclick=\"editShowHide($(this), '.editAdvOrtDiv', '.editAdvOrtLink'); return false;\" title=\"URL und/oder Bemerkungen zur Durchführung hinzufügen\"><small>+Hinzufügen</small></a></span>";
-													$style = ' style="display:none;" ';
-												}
-
-												echo "<div class=\"editAdvOrtDiv\" $style>";
-													echo $this->renderEditorToolbar(true);
-													echo "<textarea name=\"bemerkungen[]\" title=\"Geben Sie hier die Kurs-URL oder sonstige Hinweise ein zur Durchführung ein\" cols=\"40\" rows=\"3\" style=\"width: 90%; border: 1px solid #ddd;\" />" . isohtmlentities($durchf['bemerkungen']) . '</textarea>';
-												echo '<div>';
+    											$style = '';
+    											if( !$durchf['bemerkungen'] )
+    											{
+    											    echo "<span class=\"editAdvOrtLink\"> <a href=\"#\" onclick=\"editShowHide($(this), '.editAdvOrtDiv', '.editAdvOrtLink'); return false;\" title=\"URL und/oder Bemerkungen zur Durchf&uuml;hrung hinzuf&uuml;gen\"><small>+Hinzuf&uuml;gen</small></a></span>";
+    											    $style = ' style="display:none;" ';
+    											}
+    											
+    											echo "<div class=\"editAdvOrtDiv\" $style>";
+    											echo $this->renderEditorToolbar(true);
+    											echo "<textarea name=\"bemerkungen[]\" title=\"Geben Sie hier die Kurs-URL oder sonstige Hinweise ein zur Durchf&uuml;hrung ein\" cols=\"40\" rows=\"3\" style=\"width: 90%; border: 1px solid #ddd;\" />" . isohtmlentities($durchf['bemerkungen']) . '</textarea>';
+    											echo '<div>';
 											
 											echo '</td>';
 										echo '</tr>';
@@ -2005,34 +2005,31 @@ class WISY_EDIT_RENDERER_CLASS
 			}
 		
 			echo '<p>' . "\n";
-				if( $showForm )
-				{
-					echo '<input type="submit" value="OK - Kurs speichern" title="Alle Änderungen übernehmen und Kurs speichern" style="font-weight: bold;" /> ' . "\n";
-				}
-				
-				echo '<input type="submit" name="cancel" value="Abbruch" title="Änderungen verwerfen und Kurs nicht speichern" />' . "\n";
+			if( $showForm )
+			{
+			    echo '<input type="submit" value="OK - Kurs speichern" title="Alle &Auml;nderungen &uuml;bernehmen und Kurs speichern" style="font-weight: bold;" /> ' . "\n";
+			}
+			
+			echo '<input type="submit" name="cancel" value="Abbruch" title="&Auml;nderungen verwerfen und Kurs nicht speichern" />' . "\n";
 			echo '</p>' . "\n";
 			
 			if ($showForm )
 			{
-				echo '<p>';
-					echo 'Ich versichere mit dem Speichern, dass ich den Beitrag selbst verfasst habe bzw. 
-							dass er keine fremden Rechte verletzt und willige ein, ihn unter der 
-							<a href="http://creativecommons.org/licenses/by-sa/3.0/deed.de" target="_blank" title="Weitere Informationen auf creativecommons.org">Lizenz f&uuml;r freie Dokumentation</a> zu ver&ouml;ffentlichen.';
-					echo '<br><br>Hinweis: Neue Angebote, neue Durchf&uuml;hrungen und neue Stichworte stehen evtl. erst am n&auml;chsten Tag &uuml;ber die Stichwort-Suche zur Verf&uuml;gung.<br>Auf den Detailseiten sind &Auml;nderungen sofort sichtbar.';
-				echo '</p>';
-				if( $kurs['rights_editTitel'] )
-				{
-					echo '<p>';
-						echo 'Achtung: Neue Kurse müssen i.d.R. zunächst <b>von der Redaktion freigeschaltet</b> werden. 
-							Bis die neuen Kurse in den Ergebnislisten auftauchen, finden Sie sie unter unter der Ergebnisliste im Bereich <b>Kurse in Vorbereitung</b>.';
-					echo '</p>';
-				}
-				echo '<p>';
-					echo 'Weitere Optionen: ';
-					echo '<a href="edit?action=ek&amp;id='.$kurs['id'].'&amp;deletekurs=1&amp;bwd='.urlencode($this->bwd).'" onclick="return editKursLoeschen($(this));">Diesen Kurs löschen</a>';
-					//echo ' | <a href="http://kursportal.info/cgi-bin/export/export_start.pl?id=' . $_SESSION['loggedInAnbieterId'] . '" target="_blank">Alle Kursdaten als CSV oder XML herunterladen</a>';
-				echo '</p>';
+			    echo '<p>';
+			    echo 'Ich versichere mit dem Speichern, dass ich den Beitrag selbst verfasst habe bzw. dass er keine fremden Rechte verletzt und willige ein, ihn unter der <a href="http://creativecommons.org/licenses/by-sa/3.0/deed.de" target="_blank" rel="noopener noreferrer" title="Weitere Informationen auf creativecommons.org">Lizenz f&uuml;r freie Dokumentation</a> zu ver&ouml;ffentlichen.';
+			    echo '<br><br>Hinweis: Neue Angebote, neue Durchf&uuml;hrungen und neue Stichworte stehen evtl. erst am n&auml;chsten Tag &uuml;ber die Stichwort-Suche zur Verf&uuml;gung.<br>Auf den Detailseiten sind &Auml;nderungen sofort sichtbar.';
+			    echo '</p>';
+			    if( $kurs['rights_editTitel'] )
+			    {
+			        echo '<p>';
+			        echo 'Achtung: Neue Kurse m&uuml;ssen i.d.R. zun&uuml;chst <b>von der Redaktion freigeschaltet</b> werden. Bis die neuen Kurse in den Ergebnislisten auftauchen, finden Sie sie unter unter der Ergebnisliste im Bereich <b>Kurse in Vorbereitung</b>.';
+			        echo '</p>';
+			    }
+			    echo '<p>';
+			    echo 'Weitere Optionen: ';
+			    echo '<a href="edit?action=ek&amp;id='.$kurs['id'].'&amp;deletekurs=1&amp;bwd='.urlencode($this->bwd).'" onclick="return editKursLoeschen($(this));">Diesen Kurs l&ouml;schen</a>';
+			    //echo ' | <a href="http://kursportal.info/cgi-bin/export/export_start.pl?id=' . $_SESSION['loggedInAnbieterId'] . '" target="_blank" rel="noopener noreferrer">Alle Kursdaten als CSV oder XML herunterladen</a>';
+			    echo '</p>';
 			}
 		
 		echo '</form>' . "\n";
@@ -2047,7 +2044,7 @@ class WISY_EDIT_RENDERER_CLASS
 
 	function loadAnbieterFromDb($anbieterId)
 	{
-		// anbieter laden - das zurückgegebene Array ist wie bei loadKursFromPOST() beschrieben formatiert
+		// anbieter laden - das zurueckgegebene Array ist wie bei loadKursFromPOST() beschrieben formatiert
 
 		// kursdatensatz und alle durchfuehrungen lesen
 		$db = new DB_Admin;
@@ -2281,7 +2278,7 @@ class WISY_EDIT_RENDERER_CLASS
 						echo '</td>';
 					echo '</tr>';
 					echo '<tr>';
-						echo '<td width="10%">Gründungsjahr:</td>';
+						echo '<td width="10%">Gr&uuml;ndungsjahr:</td>';
 						echo '<td width="90%">';
 							$ausgabe_jahr = $anbieter['gruendungsjahr']<=0? '' : $anbieter['gruendungsjahr'];
 							$this->controlText('gruendungsjahr', $ausgabe_jahr, 6, 4, '', '');
@@ -2319,8 +2316,8 @@ class WISY_EDIT_RENDERER_CLASS
 
 					// Kundenkontakt
 					echo '<tr>';
-						echo '<td colspan="2">&nbsp;<br /><strong>Kundenkontakt:</strong> (öffentlich im Web sichtbar)</td>';		
-					echo '</tr>';					
+					    echo '<td colspan="2">&nbsp;<br /><strong>Kundenkontakt:</strong> (&ouml;ffentlich im Web sichtbar)</td>';
+					echo '</tr>';
 					echo '<tr>';
 						echo '<td width="10%" nowrap="nowrap">Name:</td>';		
 						echo '<td width="90%">';
@@ -2354,7 +2351,7 @@ class WISY_EDIT_RENDERER_CLASS
 
 					// Pflegekontakt
 					echo '<tr>';
-						echo '<td colspan="2">&nbsp;<br /><strong>Pflegekontakt:</strong> (nur für die interne Datenredaktion)</td>';		
+						echo '<td colspan="2">&nbsp;<br /><strong>Pflegekontakt:</strong> (nur f&uuml;r die interne Datenredaktion)</td>';		
 					echo '</tr>';					
 					echo '<tr>';
 						echo '<td width="10%" nowrap="nowrap">Name:</td>';		
@@ -2385,12 +2382,12 @@ class WISY_EDIT_RENDERER_CLASS
 			}
 		
 			echo '<p>' . "\n";
-				if( $showForm )
-				{
-					echo '<input type="submit" value="OK - Anbieterprofil speichern" title="Alle Änderungen übernehmen und Anbieterprofil speichern" style="font-weight: bold;" /> ' . "\n";
-				}
-				
-				echo '<input type="submit" name="cancel" value="Abbruch" title="Änderungen verwerfen und Kurs nicht speichern" />' . "\n";
+    			if( $showForm )
+    			{
+    			    echo '<input type="submit" value="OK - Anbieterprofil speichern" title="Alle &Auml;nderungen &uuml;bernehmen und Anbieterprofil speichern" style="font-weight: bold;" /> ' . "\n";
+    			}
+    			
+    			echo '<input type="submit" name="cancel" value="Abbruch" title="&Auml;nderungen verwerfen und Kurs nicht speichern" />' . "\n";
 			echo '</p>' . "\n";
 			
 			if( $showForm )
@@ -2403,7 +2400,7 @@ class WISY_EDIT_RENDERER_CLASS
 					$aend = "</a>";
 				}
 
-				echo "<p>Änderungsbedarf in der Anbieterbeschreibung und weiteren Merkmalen bitte {$a}an die Redaktion mailen{$aend}.</p>";
+				echo "<p>&Auml;nderungsbedarf in der Anbieterbeschreibung und weiteren Merkmalen bitte {$a}an die Redaktion mailen{$aend}.</p>";
 			}
 		
 		echo '</form>' . "\n";
