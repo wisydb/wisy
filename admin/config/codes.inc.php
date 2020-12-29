@@ -1,5 +1,7 @@
 <?php
 
+define('USER_ONLINEPFLEGE', 20);
+define('USER_MENUCHECK', -1); // to be defined
 define('TAG_EINRICHTUNGSORT', 806392);
 
 // synonym => original
