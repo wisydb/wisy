@@ -775,6 +775,11 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 }
 
 /* Cookiebanner */
+
+.cc-allow-all.inactive {
+ display: none;	
+}
+
 .cc-window ul li {
 	list-style: none;
 	padding-left: .2em;

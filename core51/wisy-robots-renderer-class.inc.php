@@ -109,6 +109,17 @@ class WISY_ROBOTS_RENDERER_CLASS
 			echo "Disallow: /rss\n";
 			echo "Disallow: /terrapin\n";
 			echo "Disallow: /search?q=volltext*\n";
+			echo "Disallow: /search?q=*volltext\n";
+			echo "Disallow: /search?qs=volltext*\n";
+			echo "Disallow: /search?qs=*volltext\n";
+			echo "Disallow: /search?qf=volltext*\n";
+			echo "Disallow: /search?qf=*volltext\n";
+			echo "Disallow: /search?*q=volltext*\n";
+			echo "Disallow: /search?*q=*volltext\n";
+			echo "Disallow: /search?*qs=volltext*\n";
+			echo "Disallow: /search?*qs=*volltext\n";
+			echo "Disallow: /search?*qf=volltext*\n";
+			echo "Disallow: /search?*qf=*volltext\n";
 			
 			echo "Disallow: /g151\n"; // for historic legal reasons, better: use portal setting below.
 			

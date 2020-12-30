@@ -1,7 +1,5 @@
 <?php if( !defined('IN_WISY') ) die('!IN_WISY');
 
-require_once('admin/config/codes.inc.php');
-
 /*****************************************************************************
  * WISY_MENUCHECK_CLASS
  * automatische Überprüfung der Portal-Menüs auf tote Links
@@ -24,6 +22,8 @@ Zusaetzliche Parameter:
  						und "all" werden in dem Fall ignoriert.
 
  */
+
+require_once('admin/config/codes.inc.php');
 
 loadWisyClass('WISY_SYNC_RENDERER_CLASS');
 loadWisyClass('WISY_MENU_CLASS');
@@ -298,8 +298,6 @@ class WISY_MENUCHECK_CLASS
 			elseif(isset($params['qs']))
 			 $search_query = $params['qs'];
 
-// echo "\nPrüfe: >$search_query<\n";
-			 
 			$searcher->prepare($search_query);
 			 
 			$count = $searcher->getKurseCount();
