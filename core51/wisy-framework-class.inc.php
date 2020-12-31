@@ -1543,7 +1543,7 @@ class WISY_FRAMEWORK_CLASS
 	}
 	
 	function addCConsentOption($name, $cookieOptions) {
-	    $cookie_essentiell = $this->iniRead("cookiebanner.zustimmung.{$name}.essentiell", 0);
+	    $cookie_essentiell = intval($this->iniRead("cookiebanner.zustimmung.{$name}.essentiell", 0));
 	    $expiration = $cookieOptions['cookie']['expiryDays'];
 	    $details = "<span class='cookies_techdetails inactive'><br>Speicherdauer:".$expiration." Tage, Name: cconsent_{$name}".($name == 'analytics' ? ', Name: _pk_ref (Speicherdauer: 6 Monate), Name: _pk_cvar (Speicherdauer: 30min.), Name: _pk_id (Speicherdauer: 13 Monate), Name: _pk_ses (Speicherdauer: 30min.)': '').'</span>';
 	    // print_r($cookieOptions['cookie']); die("ok");
@@ -1740,7 +1740,7 @@ class WISY_FRAMEWORK_CLASS
 			/* save detailed cookie consent status */
 
                 jQuery(".cc-btn.cc-allow-all").click(function(){ 
-				 jQuery(".cc-consent-details input[type=checkbox]").each(function(){ console.log(jQuery(this).attr("checked", "checked")) });
+				 jQuery(".cc-consent-details input[type=checkbox]").each(function(){ jQuery(this).attr("checked", "checked") });
 				 jQuery(".cc-btn.cc-allow").trigger("click");
  				});
 

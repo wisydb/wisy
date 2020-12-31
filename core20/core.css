@@ -451,7 +451,7 @@ autocomplete styles v2
 .ac_results_v2 .ac_headline .tag_name,
 .ac_results_v2 .ac_more .tag_name { width: 100%; }
 
-/* Vorschl�ge im Hauptfenster */
+/* Vorschlaege im Hauptfenster */
 .wisy_tagtable { border-spacing: 1px; }
 .wisy_tagtable th { 
 	color: #000;
@@ -748,6 +748,31 @@ SEO
 }
 
 /* Cookiebanner */
+.toggle_cookiedetails.inactive::after {
+ content: " anzeigen..." !important;
+}
+
+.toggle_cookiedetails::after {
+ content: " ausblenden..." !important;
+}
+
+.toggle_cookiedetails {
+    color: #444 !important;
+    text-decoration: underline;
+}
+
+.cc-link {
+ color: rgb(28, 88, 151) !important;
+}
+
+.cookies_techdetails.inactive {
+ display: none;
+}
+
+.cc-allow-all.inactive {
+ display: none;	
+}
+
 .cc-window ul li {
 	list-style: none;
 	padding-left: .2em;

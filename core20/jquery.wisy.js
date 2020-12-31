@@ -1159,6 +1159,11 @@ function consentCookieBeforePageFunction() {
   } // end: edit page
 }
 
+function toggle_cookiedetails() {
+ jQuery(".cookies_techdetails").toggleClass("inactive");
+ jQuery(".toggle_cookiedetails").toggleClass("inactive");
+}
+
 function openCookieSettings() {
  window.cookieconsent.popup.open();
 }

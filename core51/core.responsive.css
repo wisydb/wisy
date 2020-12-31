@@ -776,6 +776,27 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 
 /* Cookiebanner */
 
+.toggle_cookiedetails.inactive::after {
+ content: " anzeigen..." !important;
+}
+
+.toggle_cookiedetails::after {
+ content: " ausblenden..." !important;
+}
+
+.toggle_cookiedetails {
+    color: #444 !important;
+    text-decoration: underline;
+}
+
+.cc-link {
+ color: rgb(28, 88, 151) !important;
+}
+
+.cookies_techdetails.inactive {
+ display: none;
+}
+
 .cc-allow-all.inactive {
  display: none;	
 }

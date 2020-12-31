@@ -1135,14 +1135,18 @@ class WISY_FRAMEWORK_CLASS
 	        $this->detailed_cookie_settings_analytics = boolval(strlen(trim($this->iniRead('cookiebanner.zustimmung.analytics', ''))) > 3); // legacy compatibility
 	        $cookieOptions['content']['zustimmung_analytics'] = $this->iniRead('cookiebanner.zustimmung.analytics', false);
 	        
+	        $toggle_details = "javascript:toggle_cookiedetails();";
+	        
 	        $cookieOptions['content']['message'] = str_ireplace('__ZUSTIMMUNGEN__',
 	            '<ul class="cc-consent-details">'
-	            .($cookieOptions['content']['zustimmung_merkliste'] ? $this->addCConsentOption("merkliste", $cookieOptions) : '')
+	            .($cookieOptions['content']['zustimmung_einstellungen'] ? $this->addCConsentOption("einstellungen", $cookieOptions) : '')
+	            .($cookieOptions['content']['zustimmung_popuptext'] ? $this->addCConsentOption("popuptext", $cookieOptions) : '')
 	            .($cookieOptions['content']['zustimmung_onlinepflege'] ? $this->addCConsentOption("onlinepflege", $cookieOptions) : '')
+	            .($cookieOptions['content']['zustimmung_merkliste'] ? $this->addCConsentOption("merkliste", $cookieOptions) : '')
 	            .($cookieOptions['content']['zustimmung_translate'] ? $this->addCConsentOption("translate", $cookieOptions) : '')
 	            .($cookieOptions['content']['zustimmung_analytics'] ? $this->addCConsentOption("analytics", $cookieOptions) : '')
 	            .'__ZUSTIMMUNGEN_SONST__'
-	            .'</ul>',
+	            .'</ul>'."<br><a href='".$toggle_details."' class='toggle_cookiedetails inactive'>Cookie-Details</a><br>",
 	            $cookieOptions['content']['message']
 	            );
 	        
@@ -2034,7 +2038,10 @@ class WISY_FRAMEWORK_CLASS
 	}
 	
 	function addCConsentOption($name, $cookieOptions) {
-	    $cookie_essentiell = $this->iniRead("cookiebanner.zustimmung.{$name}.essentiell", 0);
+	    $cookie_essentiell = intval($this->iniRead("cookiebanner.zustimmung.{$name}.essentiell", 0));
+	    $expiration = $cookieOptions['cookie']['expiryDays'];
+	    $details = "<span class='cookies_techdetails inactive'><br>Speicherdauer:".$expiration." Tage, Name: cconsent_{$name}".($name == 'analytics' ? ', Name: _pk_ref (Speicherdauer: 6 Monate), Name: _pk_cvar (Speicherdauer: 30min.), Name: _pk_id (Speicherdauer: 13 Monate), Name: _pk_ses (Speicherdauer: 30min.)': '').'</span>';
+	    // print_r($cookieOptions['cookie']); die("ok");
 	    return "<li class='{$name} ".($cookie_essentiell == 2 ? "disabled" : "")."'>
     				<input type='checkbox' name='cconsent_{$name}' "
     				.(($cookie_essentiell || $_COOKIE['cconsent_'.$name] == 'allow') ? "checked='checked'" : "")
@@ -2043,9 +2050,9 @@ class WISY_FRAMEWORK_CLASS
     				."<div class='consent_option_infos'>"
     				.$cookieOptions["content"]["zustimmung_{$name}"]
     				."<span class='importance'>"
-    				.($cookie_essentiell === 1 ? '<br>(essentiell)' : ($cookie_essentiell == 2 ? '<br>(technisch notwendig)' : '<br>(optional'.($_COOKIE['cconsent_'.$name] == 'allow' ? ' - aktiv zugestimmt' : '').')')).'</span>'
+    				.($cookie_essentiell === 1 ? '<br>(essentiell)' : ($cookie_essentiell == 2 ? '<br>(technisch notwendig)' : '<br><b>(optional'.($_COOKIE['cconsent_'.$name] == 'allow' ? ' - aktiv zugestimmt' : '').')</b>')).$details.'</span>'
     				.'</div>'
-    				."</li>";
+    		  ."</li>";
 	}
 	
 };
