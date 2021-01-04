@@ -24,7 +24,7 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 	function render()
 	{
 		
-		if( intval($_GET['ajax']) )
+	    if( intval( $this->framework->getParam('ajax') ) )
 		{
 			header('Content-type: text/html; charset=utf-8');
 			$this->renderForm();
@@ -401,13 +401,13 @@ class WISY_FILTERMENU_ITEM
             $legendvalue = $this->getLegendvalue($data['legendkey']);
             
             if(isset($data['resetfilter']) && strlen($data['resetfilter'])) {
-                $ret .= '<a class="wisyr_filterform_reset" href="' . $this->framework->filterer->getSearchUrlWithoutFilters() . (isset($_GET['qtrigger']) ? '&qtrigger='.$_GET['qtrigger'] : '') . (isset($_GET['force']) ? '&force='.$_GET['force'] : '') . '">' . $data['resetfilter'] . '</a>';
+                $ret .= '<a class="wisyr_filterform_reset" href="' . $this->framework->filterer->getSearchUrlWithoutFilters() . ( $this->framework->qtrigger ? '&qtrigger='.$this->framework->qtrigger : '') . ( $this->framework->force ? '&force='.$this->framework->force : '') . '">' . $data['resetfilter'] . '</a>';
                 continue;
             }
             
-            $title = PHP7 ? $data['title'] : $data['title']; // utf8_decode
+            $title = PHP7 ? $data['title'] : $data['title']; // utf8_decode(
             $ret .= '<fieldset class="' . $filterclasses . '">';
-            $ret .= '<legend data-filtervalue="' . $legendvalue . '">' . $title . '</legend>';
+            $ret .= '<legend data-filtervalue="' . str_replace('-'.$this->max_preis, '', $legendvalue) . '" >' . $title . '</legend>';
             
             $this->getFormfields($data, false);
             $ret .= $this->getFormfields($data, true);
@@ -494,13 +494,20 @@ class WISY_FILTERMENU_ITEM
                 switch($type) {
             
                     case 'textfield':
-            
+                        
                         if($clearbutton) $ret .= '<div class="filter_clearbutton_wrapper">';
                         $ret .= '<input type="text" name="filter_' . $fieldname . '[]" id="filter_' . $fieldname . '" class="' . $fieldclass . '" value="' . $fieldvalue . '" placeholder="' . $fieldplaceholder . '" data-autocomplete="'.$autocomplete.'"/>';
+                        
+                        if( isset($input['deletebutton']) ) // only mobile
+                            $ret .= '<div class="clear_btn hidden" aria-label="Eingabe l&ouml;schen" onclick=" jQuery(\'#filter_'.$fieldname.'\').val(\'\'); "></div>';
+                            
+                        if( isset($input['explicitsubmitbutton']) ) // only mobile
+                            $ret .= '<input class="filter_submit hidden" type="submit" value="&Uuml;bernehmen">';
+                                
                         if($clearbutton) $ret .= '</div>';
-                        $ret .=  $fieldsuffix . '<br /><br />';
-        
-                    break;
+                        $ret .= $fieldsuffix . '<br /><br />';
+                                
+                        break;
             
                     case 'radiolinklist':
                         
@@ -816,7 +823,7 @@ class WISY_FILTERMENU_ITEM
     
 	private function getSpezielleStichw($flag, $whitelist='', $orderbywhitelist=false)
 	{
-	    // nur die stichwörter zurückgeben, die im aktuellem Portal auch verwendet werden!
+	    // nur die Stichwoerter zurueckgeben, die im aktuellem Portal auch verwendet werden!
 	    $keyPrefix = "advStichw.$flag";
 	    $magic = strftime("%Y-%m-%d-v5-").md5($GLOBALS['wisyPortalFilter']['stdkursfilter']);
 	    if( $this->framework->cacheRead("adv_stichw.$flag.magic") != $magic )

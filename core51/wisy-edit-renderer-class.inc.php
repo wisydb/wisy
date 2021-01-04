@@ -404,9 +404,9 @@ class WISY_EDIT_RENDERER_CLASS
 			}
 
 			// link "hilfe"
-			$ret .=  ' | <a href="' .$this->framework->getHelpUrl($this->framework->iniRead('useredit.help', '3371')). '" target="_blank">Hilfe</a>';
+			$ret .=  ' | <a href="' .$this->framework->getHelpUrl($this->framework->iniRead('useredit.help', '3371')). '" target="_blank" rel="noopener noreferrer">Hilfe</a> ';
 			
-		$ret .=  '</div>';
+			$ret .=  '</div>';
 
 		if( $_COOKIE['editmsg'] != '' )
 		{
@@ -472,8 +472,8 @@ class WISY_EDIT_RENDERER_CLASS
 		else if( $_REQUEST['action'] == 'loginSubseq' )
 		{
 		    // "OK" wurde angeklickt - loginversuch starten
-		    $fwd 				= $_REQUEST['fwd'];
-		    $anbieterSuchname	= $_REQUEST['as'];
+		    $fwd 				= strval( $_REQUEST['fwd'] );
+		    $anbieterSuchname	= strval( $_REQUEST['as'] );
 		    $anbieterSuchname_utf8dec = (PHP7 ? $anbieterSuchname : utf8_decode($anbieterSuchname));
 		    
 		    $logwriter = new LOG_WRITER_CLASS;
@@ -497,12 +497,12 @@ class WISY_EDIT_RENDERER_CLASS
 		    } // end: is_numeric
 		    
 		    $login_as = false;
-			if( ($p=strpos($_REQUEST['wepw'], '.')) !== false )
-			{
-				// ...Login als registrierter Admin-Benutzer in der Form "<loginname>.<passwort>"
-				// KEINE Fehler für  diesen Bereich loggen - ansonsten würden wir u.U. Teile des Passworts loggen!
-				$temp[0] = substr($_REQUEST['wepw'], 0, $p);
-				$temp[1] = substr($_REQUEST['wepw'], $p+1);
+		    if( ($p=strpos( strval( $_REQUEST['wepw'] ), '.')) !== false )
+		    {
+		        // ...Login als registrierter Admin-Benutzer in der Form "<loginname>.<passwort>"
+		        // KEINE Fehler fuer  diesen Bereich loggen - ansonsten wuerden wir u.U. Teile des Passworts loggen!
+		        $temp[0] = substr( strval( $_REQUEST['wepw'] ), 0, $p);
+		        $temp[1] = substr( strval( $_REQUEST['wepw'] ), $p+1);
 				
 				$sql = "SELECT password, id FROM user WHERE loginname='".addslashes($temp[0])."'";
 				$db->query($sql);
@@ -535,7 +535,7 @@ class WISY_EDIT_RENDERER_CLASS
 				{
 				    $dbPw = $db->fcs8('pflege_passwort');
 				    $dbPwEinst = intval($db->fcs8('pflege_pweinst'));
-					if( crypt($_REQUEST['wepw'], $dbPw) == $dbPw 
+				    if( crypt( strval( $_REQUEST['wepw'] ), $dbPw) == $dbPw 
 					 && $dbPwEinst&1 /*freigeschaltet?*/ )
 					{
 					    $loggedInAnbieterId = intval($db->fcs8('id'));
@@ -654,8 +654,8 @@ class WISY_EDIT_RENDERER_CLASS
 					echo '<table>';
 						echo "<input type=\"hidden\" name=\"action\" value=\"loginSubseq\" />";
 						echo "<script type=\"text/javascript\"><!--\ndocument.write('<input type=\"hidden\" name=\"javascript\" value=\"enabled\" />');\n/"."/--></script>";
-						echo "<input type=\"hidden\" name=\"fwd\" value=\"".htmlspecialchars($fwd)."\" />";
-						echo "<input type=\"hidden\" name=\"bwd\" value=\"".htmlspecialchars($this->bwd)."\" />";
+						echo "<input type=\"hidden\" name=\"fwd\" value=\"".htmlspecialchars( strval( $fwd ) )."\" />";
+						echo "<input type=\"hidden\" name=\"bwd\" value=\"".htmlspecialchars( strval( $this->bwd ) )."\" />";
 						echo '<tr>';
 							echo '<td nowrap="nowrap">Anbietername oder -ID:</td>';
 							echo "<td><input type=\"text\" name=\"as\" value=\"".htmlspecialchars($anbieterSuchname)."\" size=\"50\" /></td>";
@@ -1180,9 +1180,9 @@ class WISY_EDIT_RENDERER_CLASS
 		
 		$allowed_kfields = array('error', 'info', 'durchf', 'msgtooperator');
 		$allowed_dfields = array('id', 'nr', 'stunden', 'teilnehmer', 'preis', 'preishinweise', 'sonderpreis', 'sonderpreistage', 'beginn', 'ende',
-								 'beginnoptionen', 'zeit_von', 'zeit_bis', 'kurstage', 'tagescode', 'stadtteil');
-
-		// nach Änderungen im Kurs suchen
+		    'beginnoptionen', 'zeit_von', 'zeit_bis', 'kurstage', 'tagescode', 'stadtteil', 'strasse', 'dauer');
+		
+		// nach Aenderungen im Kurs suchen
 		reset($newData);
 		foreach($newData as $name => $newValue) {
 			if( $newValue != $oldData[$name] ) {
@@ -1293,7 +1293,7 @@ class WISY_EDIT_RENDERER_CLASS
 		    {
 		        $newData['error'][] = 'Fehler: Der angemeldete Benutzer hat <b>nicht das Recht</b> diese &Auml;nderungen am Feld <i>'.htmlspecialchars($this->keine_bagatelle_why).'</i> vorzunehmen.<br />
 									   Es d&uuml;rfen nur Datum und Preis und andere Felder in gewissen Grenzen ge&auml;ndert werden.
-									   <a href="'.$this->framework->getHelpUrl($this->framework->iniRead('useredit.help.norights', '20')).'" target="_blank">Weitere Informationen hierzu ...</a><br />';
+									   <a href="'.$this->framework->getHelpUrl($this->framework->iniRead('useredit.help.norights', '20')).'" target="_blank" rel="noopener noreferrer">Weitere Informationen hierzu ...</a><br />';
 		        // $db->close();
 		        return;
 		    }
@@ -1793,7 +1793,7 @@ class WISY_EDIT_RENDERER_CLASS
 									$radio = $kurs['promote_mode']=='times'? ' checked="checked" ' : '';
 									$param = $kurs['promote_mode']=='times'? $kurs['promote_param'] : '1000';
 									echo '<input type="radio" name="promote_mode" id="pl1" value="times" '.$radio.' /> <label for="pl1">Kurs kostenpflichtig bewerben mit max.</label> <input type="text" size="6" name="promote_param_times" value="'.$param.'" /> Einblendungen (Bruttopreis '.str_replace('.', ',', $this->billingRenderer->allPrices[0][1]).' &euro; f&uuml;r '.$this->billingRenderer->allPrices[0][0].' Einblendungen) ';
-									echo '<a href="' .$this->framework->getHelpUrl(3367). '" class="wisy_help" target="_blank" title="Hilfe">i</a>';
+									echo '<a href="' .$this->framework->getHelpUrl(3367). '" class="wisy_help" target="_blank" title="Hilfe" rel="noopener noreferrer">i</a>';
 									echo '<br />';
 									
 									$radio = $kurs['promote_mode']=='date'? ' checked="checked" ' : '';
@@ -1828,7 +1828,7 @@ class WISY_EDIT_RENDERER_CLASS
 										echo '<br />';
 										echo '<br />';
 										echo '<input type="checkbox" name="promote_agb_read" value="1" /> ';
-										echo 'Ich habe die <a href="'.$this->framework->getHelpUrl($agb_reading_required).'" target="_blank">AGB zum Bewerben von Kursen</a> gelesen und akzeptiere diese';
+										echo 'Ich habe die <a href="'.$this->framework->getHelpUrl($agb_reading_required).'" target="_blank" rel="noopener noreferrer">AGB zum Bewerben von Kursen</a> gelesen und akzeptiere diese';
 									}
 									else
 									{
@@ -1847,22 +1847,22 @@ class WISY_EDIT_RENDERER_CLASS
 					if( $kurs['rights_editAbschluss'] )
 					{
 					    echo '<tr>';
-    					    echo '<td width="10%" valign="top" nowrap="nowrap"><strong>Stichwortvorschl&auml;ge:</strong>&nbsp;&nbsp;</td>';
-    					    echo '<td>';
-    					    if( $abschlussOptionen!='' )
-    					    {
-    					        echo '<label title="Fehlt ein Abschluss? Dann bitte unter &quot;Stichwortvorschl&auml;ge&quot; eintragen.">Abschluss: ';
-    					        $this->controlSelect('abschluss', $kurs['abschluss'], '0######'.$abschlussOptionen);
-    					        echo '</label><br />';
-    					        echo '<label title="weitere Stichwort- oder Abschlussvorschl&auml;ge">weitere Vorschl&auml;ge: ';
-    					    }
-    					    else
-    					    {
-    					        echo '<label title="Stichwort- oder Abschlussvorschl&auml;ge">';
-    					    }
-    					    $this->controlText('msgtooperator', $kurs['msgtooperator'], 40, 200, '', '');
-    					    echo '</label> &nbsp; <a href="' .$this->framework->getHelpUrl(4100). '" class="wisy_help" target="_blank" title="Hilfe">i</a> <br />&nbsp;';
-    					    echo '</td>';
+					    echo '<td width="10%" valign="top" nowrap="nowrap"><strong>Stichwortvorschl&auml;ge:</strong>&nbsp;&nbsp;</td>';
+					    echo '<td>';
+					    if( $abschlussOptionen!='' )
+					    {
+					        echo '<label title="Fehlt ein Abschluss? Dann bitte unter &quot;Stichwortvorschl&auml;ge&quot; eintragen.">Abschluss: ';
+					        $this->controlSelect('abschluss', $kurs['abschluss'], '0######'.$abschlussOptionen);
+					        echo '</label><br />';
+					        echo '<label title="weitere Stichwort- oder Abschlussvorschl&auml;ge">weitere Vorschl&auml;ge: ';
+					    }
+					    else
+					    {
+					        echo '<label title="Stichwort- oder Abschlussvorschl&auml;ge">';
+					    }
+					    $this->controlText('msgtooperator', $kurs['msgtooperator'], 40, 200, '', '');
+					    echo '</label> &nbsp; <a href="' .$this->framework->getHelpUrl(4100). '" class="wisy_help" target="_blank" rel="noopener noreferrer" title="Hilfe">i</a> <br />&nbsp;';
+					    echo '</td>';
 					    echo '</tr>';
 					}
 					
@@ -2074,24 +2074,21 @@ class WISY_EDIT_RENDERER_CLASS
 			
 			if ($showForm )
 			{
-				echo '<p>';
-					echo 'Ich versichere mit dem Speichern, dass ich den Beitrag selbst verfasst habe bzw. 
-							dass er keine fremden Rechte verletzt und willige ein, ihn unter der 
-							<a href="https://creativecommons.org/licenses/by-sa/3.0/deed.de" target="_blank" title="Weitere Informationen auf creativecommons.org">Lizenz f&uuml;r freie Dokumentation</a> zu ver&ouml;ffentlichen.';
-					echo '<br><br>Hinweis: Neue Angebote, neue Durchf&uuml;hrungen und neue Stichworte stehen evtl. erst am n&auml;chsten Tag &uuml;ber die Stichwort-Suche zur Verf&uuml;gung.<br>Auf den Detailseiten sind &Auml;nderungen sofort sichtbar.';
-				echo '</p>';
-				if( $kurs['rights_editTitel'] )
-				{
-				    echo '<p>';
-				        echo 'Achtung: Neue Kurse m&uuml;ssen i.d.R. zun&auml;chst <b>von der Redaktion freigeschaltet</b> werden.
+			    echo '<p>';
+			    echo 'Ich versichere mit dem Speichern, dass ich den Beitrag selbst verfasst habe bzw. dass er keine fremden Rechte verletzt und willige ein, ihn unter der <a href="https://creativecommons.org/licenses/by-sa/3.0/deed.de" target="_blank" rel="noopener noreferrer" title="Weitere Informationen auf creativecommons.org">Lizenz f&uuml;r freie Dokumentation</a> zu ver&ouml;ffentlichen.';
+			    echo '<br><br>Hinweis: Neue Angebote, neue Durchf&uuml;hrungen und neue Stichworte stehen evtl. erst am n&auml;chsten Tag &uuml;ber die Stichwort-Suche zur Verf&uuml;gung.<br>Auf den Detailseiten sind &Auml;nderungen sofort sichtbar.';
+			    echo '</p>';
+			    if( $kurs['rights_editTitel'] )
+			    {
+			        echo '<p>';
+			        echo 'Achtung: Neue Kurse m&uuml;ssen i.d.R. zun&auml;chst <b>von der Redaktion freigeschaltet</b> werden.
 							Bis die neuen Kurse in den Ergebnislisten auftauchen, finden Sie sie unter der Ergebnisliste im Bereich <b>Kurse in Vorbereitung</b>.';
-				    echo '</p>';
-				}
-				echo '<p>';
-				        echo 'Weitere Optionen: ';
-				        echo '<a href="edit?action=ek&amp;id='.$kurs['id'].'&amp;deletekurs=1&amp;bwd='.urlencode($this->bwd).'" onclick="return editKursLoeschen($(this));">Diesen Kurs l&ouml;schen</a>';
-				        //echo ' | <a href="https://kursportal.info/cgi-bin/export/export_start.pl?id=' . $_SESSION['loggedInAnbieterId'] . '" target="_blank">Alle Kursdaten als CSV oder XML herunterladen</a>';
-				echo '</p>';
+			        echo '</p>';
+			    }
+			    echo '<p>';
+			    echo 'Weitere Optionen: ';
+			    echo '<a href="edit?action=ek&amp;id='.$kurs['id'].'&amp;deletekurs=1&amp;bwd='.urlencode($this->bwd).'" onclick="return editKursLoeschen($(this));">Diesen Kurs l&ouml;schen</a>';
+			    echo '</p>';
 			}
 		
 		echo '</form>' . "\n";

@@ -710,13 +710,13 @@ function ed(theAnchor)
  * new edit stuff
  *****************************************************************************/
 
-jQuery(document).ready(function(){
+/* jQuery(document).ready(function(){
  if( typeof jQuery("textarea[name=beschreibung]") != undefined) {
   jQuery("textarea[name=beschreibung]").keyup(function(){
 	jQuery("#hinweisedit").remove();  
 	if(jQuery("textarea[name=beschreibung]").val().match(/Webinar/)) { jQuery(".editFoerderungDiv").append("<div id='hinweisedit' style='font-weight: bold;'>Hinweis:<br>Beim Wort 'Webinar' k&ouml;nnte es sich um eine gesch&uuml;tzte Wortmarke handeln. Es w&uuml;rde am n&auml;chsten Tag automatisch durch 'Web-Seminar' ersetzt - au&szlig;er in Links.</div>"); }; });
  }
-});
+}); */
 
 function editShowHide(jqObj, toShow, toHide)
 {
@@ -742,10 +742,10 @@ function editDurchfLoeschen(jqObj)
 {
 	if( $('.editDurchfRow').size() == 1 )
 	{
-		alert("Diese Durchführung kann nicht gelöscht werden, da ein Kurs mindestens eine Durchführung haben muss.\n\nWenn Sie den Kurs komplett löschen möchten, verwenden Sie die Option \"Kurs löschen\" ganz unten auf dieser Seite.");
+		alert("Diese Durchf"+ue+"hrung kann nicht gel"+oe+"scht werden, da ein Kurs mindestens eine Durchführung haben muss.\n\nWenn Sie den Kurs komplett l"+oe+"schen m"+oe+"chten, verwenden Sie die Option \"Kurs l"+oe+"schen\" ganz unten auf dieser Seite.");
 		return;
 	}
-	else if( confirm("Diese Durchführung löschen?") )
+	else if( confirm("Diese Durchf"+ue+"hrung l"+oe+"schen?") )
 	{
 		editFindDurchfRow(jqObj).remove();
 	}
@@ -762,7 +762,7 @@ function editDurchfKopieren(jqObj)
 
 function editKursLoeschen(jqObj)
 {
-	if( confirm("Wenn Sie einen Kurs löschen möchten, wird zunächst ein Sperrvermerk gesetzt; beim nächsten Index-Update wird der Kurs dann inkl. aller Durchführungen komplett gelöscht. Dieser Vorgang kann nicht rückgängig gemacht werden!\n\nDen kompletten Kurs inkl. ALLER Durchführungen löschen?") )
+	if( confirm("Wenn Sie einen Kurs l"+oe+"schen m"+oe+"chten, wird zun"+ae+"chst ein Sperrvermerk gesetzt; beim n"+ae+"chsten Index-Update wird der Kurs dann inkl. aller Durchführungen komplett gel"+oe+"scht. Dieser Vorgang kann nicht r"+ue+"ckg"+ae+"ngig gemacht werden!\n\nDen kompletten Kurs inkl. ALLER Durchf"+ue+"hrungen l"+oe+"schen?") )
 	{
 		return true;
 	}

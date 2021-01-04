@@ -21,7 +21,7 @@ class WISY_KURS_RENDERER_CLASS
         global $wisyPortalSpaltenDurchf;
 		global $wisyPortalId;
 
-		$kursId = intval($_GET['id']);
+		$kursId = intval( $this->framework->getParam('id') );
 
 		// query DB
 		$db = new DB_Admin();
@@ -75,7 +75,7 @@ class WISY_KURS_RENDERER_CLASS
 		// #enrichtitles
 		// #richtext
 		// #socialmedia
-		$showAllDurchf = intval($_GET['showalldurchf'])==1? 1 : 0;
+		$showAllDurchf = intval( $this->framework->getParam('showalldurchf') )==1? 1 : 0;
 		$durchfClass =& createWisyObject('WISY_DURCHF_CLASS', $this->framework);
 		$durchfuehrungenIds = $durchfClass->getDurchfuehrungIds($db, $kursId, $showAllDurchf);	// bereits PLZ-ueberprueft
 		
@@ -96,7 +96,7 @@ class WISY_KURS_RENDERER_CLASS
 		}
 		
 		// promoted?
-		if( intval($_GET['promoted']) == $kursId )
+		if( intval( $this->framework->getParam('promoted') ) == $kursId )
 		{
 			$promoter =& createWisyObject('WISY_PROMOTE_CLASS', $this->framework);
 			$promoter->logPromotedRecordClick($kursId, $anbieterId);
@@ -143,7 +143,7 @@ class WISY_KURS_RENDERER_CLASS
 			// headline + flush() (loading the rest may take some seconds)
 			$h1class = '';
 
-			if(!isset($_GET['deleted'])) {
+			if( !$this->framework->getParam('deleted', false) ) {
     			echo '<p class="noprint">' 
     			.	 	'<a class="wisyr_zurueck" href="javascript:history.back();">&laquo; Zur&uuml;ck</a>'
     			.	 '</p>';
@@ -153,8 +153,13 @@ class WISY_KURS_RENDERER_CLASS
 			// Beschreibung ausgeben
 				 if ($freigeschaltet==0) { echo '<p><i>Dieses Angebot ist in Vorbereitung.</i></p>';	}
 			else if ($freigeschaltet==3) { echo '<p><i>Dieses Angebot ist abgelaufen.</i></p>';			}
-			else if ($freigeschaltet==2) { echo '<p><i>Dieses Angebot ist gesperrt.</i></p>';			}
-
+			else if ($freigeschaltet==2) { echo '<p><i>Dieses Angebot ist gesperrt.</i></p>';
+    			if(in_array($freigeschaltet, $freigeschaltet404) && $_SESSION['loggedInAnbieterId']){
+    			    $q = $_SESSION['loggedInAnbieterTag'] . ', Datum:Alles';
+    			    echo '<a class="wisy_edittoolbar" href="' . $this->framework->getUrl('search', array('q'=>$q)) . '">Alle Kurse</a>';
+    			}
+			}
+			
 			$copyrightClass =& createWisyObject('WISY_COPYRIGHT_CLASS', $this->framework);
 
 	if( $freigeschaltet!=2 || $_REQUEST['showinactive']==1 )
@@ -188,7 +193,7 @@ class WISY_KURS_RENDERER_CLASS
 			    echo '<h2 class="wisy_originaltitel">(' . /*'Originaltitel: ' .*/ htmlspecialchars($originaltitel) . ')</h2>';
 			    
 			    if(in_array($freigeschaltet, $freigeschaltet404) && $_SESSION['loggedInAnbieterId'])
-			        echo "<h3>".(isset($_GET['deleted']) ? "Der Kurs wurde gesperrt!" : "Status: gesperrt!" )."</h3>";
+			        echo "<h3>".( $this->framework->getParam('deleted', false) ? "Der Kurs wurde gesperrt!" : "Status: gesperrt!" )."</h3>";
 			        
 			}
 			
@@ -244,7 +249,7 @@ class WISY_KURS_RENDERER_CLASS
                 $spalten = $wisyPortalSpalten;
                 if($wisyPortalSpaltenDurchf != '') $spalten = $wisyPortalSpaltenDurchf;
 			
-				$showAllDurchf = intval($_GET['showalldurchf'])==1? 1 : 0;
+                $showAllDurchf = intval( $this->framework->getParam('showalldurchf') )==1? 1 : 0;
 				if( $showAllDurchf )
 					echo '<a id="showalldurchf"></a>';
 			
@@ -277,7 +282,7 @@ class WISY_KURS_RENDERER_CLASS
 							if (($spalten & 16) > 0)	{ echo '<th>Preis</th>';			}
 							if (($spalten & 32) > 0)	{ echo '<th>Ort</th>';	}
 							if (($spalten & 64) > 0)	{ echo '<th>Ang.-Nr.</th>';			}
-							if (($spalten & 128) > 0)	{ echo '<th>Bemerkungen</th>';
+							if (($spalten & 128) > 0)	{ echo '<th>Bemerkungen</th>';			}
 						echo '</tr></thead>';
 					
 						/*
@@ -298,7 +303,7 @@ class WISY_KURS_RENDERER_CLASS
 															'', /*addText*/
 															array(
 																'record'=>$record,
-																'stichwoerter'=>$tags
+															    'stichwoerter'=>$stichwoerter
 															)
 														);
 								$renderedDurchf++;
@@ -426,7 +431,7 @@ class WISY_KURS_RENDERER_CLASS
 								$editurl = $copyrightClass->getEditUrl($db, 'kurse', $kursId);
 							}
 							echo '<span class="noprint">';
-								$target = $editurl==''? '' : 'target="_blank"';
+							    $target = $editurl==''? '' : 'target="_blank" rel="noopener noreferrer"';
 								echo $class? "<span class=\"$class\">" : '';
 									echo "<a class=\"wisyr_angebot_editlink\" href=\"" . 
 										$editurl
@@ -461,7 +466,7 @@ class WISY_KURS_RENDERER_CLASS
 	        // check if course in search index (=allowed by portal filter)
 	        $searcher2 =& createWisyObject('WISY_SEARCH_CLASS', $this->framework);
 	        $searcher2->prepare('kid:' . $kursId);
-	        $anzahlKurse = $searcher2->getKurseCount();
+	        $anzahlKurse = $searcher2->getKurseCount(); // = page/course part of portal
 	        
 	        if($_GET['debug'] == 10 && $anzahlKurse == 1) {
 	            echo "<br>Seite portaleigen!<br>";

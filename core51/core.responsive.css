@@ -166,7 +166,8 @@ body { padding: 0; margin: 0; }
 	margin: 0 0 1em 25%;
 }
 
-@media screen and (max-width: 760px), print {
+/* , print */
+@media screen and (max-width: 760px) {
 	
 	#page { padding-top: 50px; }
 	
@@ -274,6 +275,11 @@ body { padding: 0; margin: 0; }
 	
 	table.wisyr_kursliste .wisyr_termin_weitere a:before {
 		content: '+';
+	}
+	
+	/* Anbieter-Detail */
+	.wisyr_anbieter_firmenportraet {
+		min-height: 300px;
 	}
 	
 	/* Paginierung */
@@ -801,6 +807,38 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
  display: none;	
 }
 
+.cc-btn.cc-allow {
+  color: rgb(255, 255, 255);
+  background-color: rgb(62, 122, 184);
+}
+
+.cc-btn.cc-allow:hover {
+  background-color: #aaa !important;
+}
+
+.cc-revoke, .cc-window {
+ overflow: scroll !important;
+}
+
+.cc-window.cc-floating {
+ max-width: 40em;
+ border: 2px solid white;
+ max-height: 97vH;
+}
+
+.cc-window ul li.disabled {
+    font-weight: 200;
+    color: #444;
+}
+
+.cc-window ul li {
+ font-size: 1em;
+}
+
+.cc-window ul li .importance {
+ font-size: .8em;
+}
+
 .cc-window ul li {
 	list-style: none;
 	padding-left: .2em;
@@ -1258,6 +1296,10 @@ textarea + .wisy-form--error {
 }
 .wisyr_align--center {
 	text-align: center;
+}
+
+.redundant_tags, .changed_ort {
+ font-size: 0.8em;
 }
 
 @media screen and (-ms-high-contrast: active) {

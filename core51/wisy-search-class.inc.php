@@ -327,9 +327,9 @@ class WISY_SEARCH_CLASS
 	    
 	    if( $ort != '' )
 	    {
-	        global $geoMap_orte;
+	        global $geomap_orte;
 	        
-	        foreach($geoMap_orte AS $synonym => $original) {
+	        foreach($geomap_orte AS $synonym => $original) {
 	            if (stristr(trim($ort), trim($synonym)))   { $ort = trim($original); }
 	        }
 	        
@@ -452,7 +452,8 @@ class WISY_SEARCH_CLASS
 					            $tag_heap = $cacheArr['tag_heap'];
 					            
 					            foreach( $cacheArr['double_tags'] AS $double_tag) {
-					                array_push($this->double_tags, $double_tag); // don't do $this->double_tags = $cacheArr['double_tags'] - otherwise overwrites doubletags from AND search below
+					                if( array_search($double_tag, $this->double_tags) === FALSE)
+					                    array_push($this->double_tags, $double_tag); // don't do $this->double_tags = $cacheArr['double_tags'] - otherwise overwrites doubletags from AND search below
 					            }
 					            
 					        } else {
@@ -679,7 +680,7 @@ class WISY_SEARCH_CLASS
 				
 				case 'nr':
 					// search for durchfuehrungsnummer
-					$ids = $nrSearcher->nr2id($value);
+				    $ids = $this->nr2id($value);
 					$this->rawCanCache = false; // no caching as we have different results for login/no login
 					$this->rawWhere .= $this->rawWhere? ' AND ' : ' WHERE ';
 					if( sizeof($ids) >= 1 ) {
@@ -1013,6 +1014,11 @@ class WISY_SEARCH_CLASS
 	
 	function getKurseRecordsSql($fields)
 	{	
+	    /* if(strpos($this->rawWhere, "kurse.freigeschaltet") === FALSE) {
+	     $this->rawWhere .= $this->rawWhere? ' AND ' : ' WHERE ';
+	     $this->rawWhere .= "kurse.freigeschaltet <> 0 AND kurse.freigeschaltet <> 2"; // never show "In Vorbereitung" or "Gesperrt"
+	     } */
+	    
 		// create complete SQL query
 		$sql =  "SELECT DISTINCT $fields
 				   FROM kurse LEFT JOIN x_kurse ON x_kurse.kurs_id=kurse.id " . $this->rawJoin . $this->rawWhere;
@@ -1274,8 +1280,8 @@ class WISY_SEARCH_CLASS
 			'cond'		=>	array(),
 		);
 
-		$queryArr = explode(',', $queryString);
-		for( $i = 0; $i < sizeof($queryArr); $i++ )
+		$queryArr = explode(',', strval( $queryString ));
+		for( $i = 0; $i < sizeof((array) $queryArr); $i++ )
 		{
 			// get initial value to search tags for, remove multiple spaces
 			$field = '';

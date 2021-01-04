@@ -309,10 +309,10 @@ class WISY_DURCHF_CLASS
 			}
 			
 			// Auto link URLs in Preishinweis
-			$replaceURL = (strpos($ret, 'http') === FALSE && strpos($ret, 'https') === FALSE) ? '<a href="http://$0" target="_blank" title="$0">'.$this->framework->iniRead("preishinweis.linktext", "$0").'</a>' : '<a href="$0" target="_blank" title="$0">'.$this->framework->iniRead("preishinweis.linktext", "$0").'</a>';
+			$replaceURL = (strpos($ret, 'http') === FALSE && strpos($ret, 'https') === FALSE) ? '<a href="http://$0" target="_blank" rel="noopener noreferrer" title="$0">'.$this->framework->iniRead("preishinweis.linktext", "$0").'</a>' : '<a href="$0" target="_blank" rel="noopener noreferrer" title="$0">'.$this->framework->iniRead("preishinweis.linktext", "$0").'</a>';
 			$ret = preg_replace('~(?:(https?)://([^\s<]+)|(www\.[^\s<]+?\.[^\s<]+))(?<![\.,:])~i', $replaceURL, $ret);
 		}
-	
+		
 		return $ret;
 	}
 	
@@ -642,7 +642,7 @@ class WISY_DURCHF_CLASS
 				$ort = '';
 			}
 			
-			if($_GET['order'] == 'o') {
+			if( $this->framework->getParam('order') == 'o' ) {
 			    
 			    $strasse_a = array();
 			    $ort_a = array();
@@ -722,12 +722,12 @@ class WISY_DURCHF_CLASS
 				$cell = '';
 				
 				if( $strasse ) {
-					$cell .=  '<a title="Adresse in Google Maps ansehen" href="' . $map_URL . '" target="_blank">' . $strasse . '</a>';
+				    $cell .=  '<a title="Adresse in Google Maps ansehen" href="' . $map_URL . '" target="_blank" rel="noopener noreferrer">' . $strasse . '</a>';
 				}
 				
 				if( $ort ) {
-					$cell .= $cell? '<br />' : '';
-					$cell .= '<a title="Adresse in Google Maps ansehen" href="' . $map_URL . '" target="_blank">' . "$plz $ort" . '</a>';
+				    $cell .= $cell? '<br />' : '';
+				    $cell .= '<a title="Adresse in Google Maps ansehen" href="' . $map_URL . '" target="_blank" rel="noopener noreferrer">' . "$plz $ort" . '</a>';
 				}
 	
 				if( $land ) {

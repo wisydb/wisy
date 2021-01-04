@@ -47,12 +47,12 @@ class WISY_AUTOSUGGEST_RENDERER_CLASS
 	
 	function render()
 	{
-		$querystring = utf8_decode($_GET["q"]);
-		$querystring = strip_tags($querystring);
+	    $querystring = utf8_decode( strval( $this->framework->getParam('q') ) );
+	    $querystring = strip_tags($querystring);
 		
 		$tagsuggestor =& createWisyObject('WISY_TAGSUGGESTOR_CLASS', $this->framework);
 
-		switch( $_GET['format'] )
+		switch( $this->framework->getParam('format') )
 		{
 			case 'json':
 				// return as JSON, used by out OpenSearch implementation
@@ -73,13 +73,13 @@ class WISY_AUTOSUGGEST_RENDERER_CLASS
 				break;
 			
 			default:
-				// return as simple text, one tag per line, used by the site's AutoSuggest
-				if(isset($_GET['type']) &&  $_GET['type'] == 'ort')
-				{
-					$tags = $tagsuggestor->suggestTags($querystring, array('max'=>10, 'q_tag_type'=>array(512)));
-				} 
-				else if(isset($_GET['type']) &&  $_GET['type'] == 'anbieter')
-				{
+			    // return as simple text, one tag per line, used by the site's AutoSuggest
+			    if( $this->framework->getParam('type') == 'ort' )
+			    {
+			        $tags = $tagsuggestor->suggestTags($querystring, array('max'=>10, 'q_tag_type'=>array(512)));
+			    }
+			    else if( $this->framework->getParam('type') == 'anbieter')
+			    {
 				    $tag_type_anbieter = $this->framework->iniRead('autosuggest_sw_typ_anbieter', array(2, 131328, 256, 262144));
 				    $tag_type_anbieter = (is_array($tag_type_anbieter)) ? $tag_type_anbieter : array_map("trim", explode(",", $tag_type_anbieter));
 				    $tags = $tagsuggestor->suggestTags($querystring, array('max'=>10, 'q_tag_type'=>$tag_type_anbieter, 'q_tag_type_not'=>array(0,1,65536,4,8,32768,16,32,64,128,512,1024,2048,4096,8192,16384,65)));
@@ -118,9 +118,9 @@ class WISY_AUTOSUGGEST_RENDERER_CLASS
                 
 
                 // No results
-                if(!isset($_GET['type']) ||  $_GET['type'] != 'ort')
-                {   
-                    // If hidden synonym don't display: "Keine Suchvorschläge"
+                if( $this->framework->getParam('type') != 'ort')
+                {
+                    // If hidden synonym don't display: "Keine Suchvorschlaege"
                     if($tagsuggestor->getTagId($querystring) && count($filtered_tags) == 0) {
                         
                         $filtered_tags[] = array(
@@ -133,7 +133,7 @@ class WISY_AUTOSUGGEST_RENDERER_CLASS
                     } elseif(count($filtered_tags) == 0) {
                         
                         $filtered_tags[] = array(
-                            'tag'	=>	$querystring,
+                            'tag'	=>	"Suchbegriff: ".$querystring,
                             'tag_descr' => 'Keine Suchvorschl'.(PHP7 ? utf8_decode("ä") : 'ä').'ge m'.(PHP7 ? utf8_decode("ö") : 'ö').'glich', // HTML entities not possible b/c 1:1 output by js
                             'tag_type'	=> 0,
                             'tag_help'	=> -2 // indicates "no results"

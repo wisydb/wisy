@@ -44,7 +44,7 @@ class WISY_GLOSSAR_RENDERER_CLASS
     {
         // wird in der index.php gesetzt
         global $wisyPortalUserGrp;
-        $glossar_id = intval($_GET['id']);
+        $glossar_id = intval( $this->framework->getParam('id') );
         $glossarshowall = $this->framework->iniRead('glossarshowall', '');
         $glossarshowgrps = array_map("trim", explode(",", $this->framework->iniRead('glossarshowgrps', '')));
         $glossarshowids = array_map("trim", explode(",", $this->framework->iniRead('glossarshowids', '')));
@@ -133,7 +133,7 @@ class WISY_GLOSSAR_RENDERER_CLASS
             $isB2b = (substr($glossar['wikipedia'], 0, 4) == 'b2b:')? true : false;
             
             echo '<p>';
-            echo 'Weitere Informationen zu diesem Thema finden Sie <a href="'.htmlspecialchars($this->getWikipediaUrl($glossar['wikipedia'])).'" target="_blank">';
+            echo 'Weitere Informationen zu diesem Thema finden Sie <a href="'.htmlspecialchars($this->getWikipediaUrl($glossar['wikipedia'])).'" target="_blank" rel="noopener noreferrer">';
             echo ' ' . ($isB2b? 'im Weiterbildungs-WIKI' : 'in der Wikipedia');
             echo '</a>';
             echo '</p>';

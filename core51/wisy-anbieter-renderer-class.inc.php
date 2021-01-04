@@ -155,22 +155,22 @@ class WISY_ANBIETER_RENDERER_CLASS
 
 		if( $strasse )
 		{
-			if( $steckbrief )
-			{
-				$vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_strasse" itemprop="streetAddress"><a title="Adresse in Google Maps ansehen" href="' . $map_URL . '" target="_blank">' . $strasse . '</a></div>';
-			} else {
-				$vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_strasse" itemprop="streetAddress">' . $strasse . '</div>';
-			}
+		    if( $steckbrief )
+		    {
+		        $vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_strasse" itemprop="streetAddress"><a title="Adresse in Google Maps ansehen" href="' . $map_URL . '" target="_blank" rel="noopener noreferrer">' . $strasse . '</a></div>';
+		    } else {
+		        $vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_strasse" itemprop="streetAddress">' . $strasse . '</div>';
+		    }
 		}
-
+		
 		if( $plz || $ort || $stadtteil || $land )
 		{
-			if( $steckbrief )
-			{
-				$vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_ort"><a title="Adresse in Google Maps ansehen" href="' . $map_URL . '" target="_blank">';
-			} else {
-				$vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_ort">';
-			}
+		    if( $steckbrief )
+		    {
+		        $vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_ort"><a title="Adresse in Google Maps ansehen" href="' . $map_URL . '" target="_blank" rel="noopener noreferrer">';
+		    } else {
+		        $vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_ort">';
+		    }
 		}
 			
 		if( $plz )
@@ -217,11 +217,11 @@ class WISY_ANBIETER_RENDERER_CLASS
 		$MAX_URL_LEN = 31;
 		if( $homepage )
 		{
-			if( substr($homepage, 0, 5) != 'http:' && substr($homepage, 0, 6) != 'https:' ) {
-			 	$homepage = 'http:/'.'/'.$homepage;
-			}
-			
-			$vc['Website'] .= "\n<div class=\"wisyr_anbieter_homepage\" itemprop=\"url\"><a href=\"$homepage\" target=\"_blank\">" . trim($this->trimLength($homepage, $MAX_URL_LEN), "/"). '</a></div>';
+		    if( substr($homepage, 0, 5) != 'http:' && substr($homepage, 0, 6) != 'https:' ) {
+		        $homepage = 'http:/'.'/'.$homepage;
+		    }
+			    
+		    $vc['Website'] .= "\n<div class=\"wisyr_anbieter_homepage\" itemprop=\"url\"><a href=\"$homepage\" target=\"_blank\" rel=\"noopener noreferrer\">" . trim($this->trimLength($homepage, $MAX_URL_LEN), "/"). '</a></div>';
 		}
 		
 		/* email*/
@@ -550,7 +550,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 	
 	public function render()
 	{
-		$anbieter_id = intval($_GET['id']);
+	    $anbieter_id = intval( $this->framework->getParam('id') );
 		
 		if(trim($this->framework->iniRead('disable.anbieter', false)))
 		    $this->framework->error404();
@@ -600,10 +600,10 @@ class WISY_ANBIETER_RENDERER_CLASS
 		$anbieter_portraet = cs8($db->fs('firmenportraet'), "UTF-8");
 		
 		// promoted?
-		if( intval($_GET['promoted']) > 0 )
+		if( intval( $this->framework->getParam('promoted') ) > 0 )
 		{
-			$promoter =& createWisyObject('WISY_PROMOTE_CLASS', $this->framework);
-			$promoter->logPromotedRecordClick(intval($_GET['promoted']), $anbieter_id);
+		    $promoter =& createWisyObject('WISY_PROMOTE_CLASS', $this->framework);
+		    $promoter->logPromotedRecordClick(intval( $this->framework->getParam('promoted') ), $anbieter_id);
 		}
 		
 		// page out
@@ -694,11 +694,12 @@ class WISY_ANBIETER_RENDERER_CLASS
 		require_once('admin/config/codes.inc.php');
 		$tag_pseudoOffer = $this->framework->iniRead('angebote_einrichtungsort', TAG_EINRICHTUNGSORT);
 		
-		if($this->checkOffersSameTag($tag_suchname, $freq, $tag_pseudoOffer)) { // Einrichtungsort only
-		    echo '<h1>&nbsp;</h1>' . "\n";
-		} else {
-		    echo '<h1>Angebot</h1>' . "\n";
-		}
+		// ok?
+		/* if($this->checkOffersSameTag($tag_suchname, $freq, $tag_pseudoOffer)) { // Einrichtungsort only
+		 echo '<h1>&nbsp;</h1>' . "\n";
+		 } else {
+		 echo '<h1>Angebot</h1>' . "\n";
+		 } */
 		
 		
 		if( ($freq == "" && $typ == 2) || ($freq == 1 && $typ == 2) ) {

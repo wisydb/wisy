@@ -99,7 +99,7 @@ class WISY_FILTER_CLASS
 				    'Datum:alles'	=> 'Auch abgelaufene Termine'
 				),
 			);
-		    /* TODO: content as portal settting */
+		    /* TODO: content as portal setting */
 			$this->presets['stadtteil'] = array
 			(
 			    'type'		=> 'taglist',
@@ -109,7 +109,7 @@ class WISY_FILTER_CLASS
 			        ''					=> ''
 			    ),
 			);
-			/* TODO: content as portal settting */
+			/* TODO: content as portal setting */
 			$this->presets['bezirk'] = array
 			(
 			    'type'		=> 'taglist',
@@ -472,18 +472,18 @@ class WISY_FILTER_CLASS
 		
 		foreach($this->presets as $field_name => $preset)
 		{
-			$field_name = mb_strtolower($field_name);
-			if($this->DEBUG) echo $field_name;
-			 
-			if(!isset($_GET['filter_' . $field_name])) continue;
-			
-			$this->filtered = true;
-			
-			$field = '';
-			$value = $this->implodeArray($_GET['filter_' . $field_name]);
-			$value = htmlspecialchars(trim($value)); // '&' -> '&amp;', '"' -> '&quot;', wenn n. ENT_NOQUOTES, "'" -> '&#039;' (oder &apos;), wenn n. ENT_QUOTES, '<' -> '&lt;', '>' -> '&gt;'
-			
-			$value = str_replace("&amp;", "&", $value);
+		    $field_name = mb_strtolower($field_name);
+		    if($this->DEBUG) echo $field_name;
+		    
+		    if( !$this->framework->getParam('filter_' . $field_name) ) continue;
+		    
+		    $this->filtered = true;
+		    
+		    $field = '';
+		    $value = $this->implodeArray( $this->framework->getParam('filter_' . $field_name) );
+		    $value = htmlspecialchars(trim($value)); // '&' -> '&amp;', '"' -> '&quot;', wenn n. ENT_NOQUOTES, "'" -> '&#039;' (oder &apos;), wenn n. ENT_QUOTES, '<' -> '&lt;', '>' -> '&gt;'
+		    
+		    $value = str_replace("&amp;", "&", $value);
 			if( $value != '' )
 			{
 				
@@ -524,9 +524,9 @@ class WISY_FILTER_CLASS
 		}
 		
 		// Sonderfall Preisspanne. TODO db: Ueber Presets umsetzen?
-		$filter_preis = trim($this->implodeArray($_GET['filter_preis']));
-		$filter_preis_von = trim($this->implodeArray($_GET['filter_preis_von']));
-		$filter_preis_bis = trim($this->implodeArray($_GET['filter_preis_bis']));
+		$filter_preis = trim($this->implodeArray( $this->framework->getParam('filter_preis') ));
+		$filter_preis_von = trim($this->implodeArray( $this->framework->getParam('filter_preis_von') ));
+		$filter_preis_bis = trim($this->implodeArray( $this->framework->getParam('filter_preis_bis') ));
 		
 		if($filter_preis != '' || $filter_preis_von != '' || $filter_preis_bis != '')
 		{
@@ -566,29 +566,38 @@ class WISY_FILTER_CLASS
 			}
 		}
         
-		if(isset($_GET['filter_volltext']) && is_array($_GET['filter_volltext']))
+		if( $this->framework->getParam('filter_volltext', false) && is_array( $this->framework->getParam('filter_volltext') ))
 		{
-		    $volltext = trim($_GET['filter_volltext'][0]);
+		    $filter_volltext = $this->framework->getParam('filter_volltext');
+		    $volltext_q = trim( strval( $filter_volltext[0]) );
 		    
-		    if($volltext)
-		        $queryfilters[] = array('field' => 'volltext', 'value' => $volltext); // 'volltext:'.
+		    if( strlen($volltext_q) != "" && $this->match_validFulltext( $volltext_q ) ) {
+		        $volltext = $volltext_q;
+		        $queryfilters[] = array('field' => 'volltext', 'value' =>  $volltext  );
+		    }
 		}
 		
 		// Sonderfall Kursbeginn. TODO db: optimieren?
-		$filter_datum_von = trim($this->implodeArray($_GET['filter_datum_von']));
+		$filter_datum_von = trim($this->implodeArray( $this->framework->getParam('filter_datum_von') ));
 		
 		if($filter_datum_von != '')
 		{
-		    $datum = $filter_datum_von;
+		    if( $this->match_validDate($filter_datum_von) )
+		        $datum = $filter_datum_von;
+		    else
+		        $datum = utf8_decode("Wert ungültig");
 		}
 		if($datum != '')
 		{
-		    $queryfilters[] = array('field' => 'datum', 'value' => $datum);
+		    if( $this->match_validDate($datum) )
+		        $queryfilters[] = array( 'field' => 'datum', 'value' => $datum );
+		    else
+		        $queryfilters[] = array( 'field' => 'datum', 'value' => utf8_decode("Wert ungültig") );
 		}
 		
-		// Sonderfall Dauer. TODO db: Ueber Presets umsetzen?
-		$filter_dauer_von = trim($this->implodeArray($_GET['filter_dauer_von']));
-		$filter_dauer_bis = trim($this->implodeArray($_GET['filter_dauer_bis']));
+		// Sonderfall Dauer. TODO db: ueber Presets umsetzen?
+		$filter_dauer_von = trim($this->implodeArray( $this->framework->getParam('filter_dauer_von') ));
+		$filter_dauer_bis = trim($this->implodeArray( $this->framework->getParam('filter_dauer_bis') ));
 		
 		if($filter_dauer_von != '' || $filter_dauer_bis != '')
 		{
@@ -620,16 +629,30 @@ class WISY_FILTER_CLASS
 			
 			if($dauer != '')
 			{
-				$queryfilters[] = array('field' => 'dauer', 'value' => $dauer);
+			    $queryfilters[] = array('field' => 'dauer', 'value' => $dauer);
 			}
 		}
 		
-		$this->framework->order = trim($_GET['order']);
-		if( isset($_GET['filter_order']) && trim($_GET['filter_order']) != '') $this->framework->order = trim($_GET['filter_order']);
+		$this->framework->order = trim( strval( $this->framework->getParam('order') ) );
+		$filter_order = trim( strval( $this->framework->getParam('filter_order') ) );
+		if( $filter_order != '') $this->framework->order = $filter_order;
+		
 		
 		if($this->DEBUG) echo 'count(queryfilters): ' . count((array) $queryfilters);
 		
 		$this->framework->tokensQF = $queryfilters;
+	}
+	
+	function match_validFulltext($str) {
+	    // anti-xss & sanity => matches wisy-search-class
+	    // may not be enough for q, qs, qf - but enough for fulltext
+	    // match a single character NOT (^) present in the list below
+	    return ( !preg_match('/[^a-zA-Z0-9äÄöÖüÜß., ]/', $str) );
+	}
+	
+	function match_validDate($str) {
+	    // anti-xss & sanity => matches wisy-search-class
+	    return( strtolower($str) == 'alles' || preg_match('/^heute([+-][0-9]{1,5})?$/i', $str) || preg_match('/^([0-9]{1,2})\.([0-9]{1,2})\.([0-9]{2,4})$/', $str) );
 	}
 	
 	function implodeArray($input) {
@@ -643,10 +666,10 @@ class WISY_FILTER_CLASS
 	
 	function constructTokens() {
 	    
-	    // $q =  htmlspecialchars(trim(cs8($this->framework->getParam('q',  '')), ', ')); // ! utf8_encode
-	    $q =  htmlspecialchars(trim($this->framework->getParam('q',  ''), ', ')); // ! utf8_encode
-	    $qs = htmlspecialchars(trim($this->framework->getParam('qs', ''), ', ')); // ! utf8_encode
-	    $qf = htmlspecialchars(trim($this->framework->getParam('qf', ''), ', ')); // ! utf8_encode
+	    // $q =  htmlspecialchars(trim(cs8($this->framework->getParam('q',  '')), ', '));
+	    $q =  htmlspecialchars(trim( strval( $this->framework->getParam('q',  '') ), ', '));
+	    $qs = htmlspecialchars(trim( strval( $this->framework->getParam('qs', '') ), ', '));
+	    $qf = htmlspecialchars(trim( strval( $this->framework->getParam('qf', '') ), ', '));
 	    
 	    if($this->DEBUG) echo 'Vorher' . "<br />\n";
 	    if($this->DEBUG) echo 'q: ' .  $q . "<br />\n";
@@ -900,15 +923,16 @@ class WISY_FILTER_CLASS
 	    $active_filters = '';
 	    foreach($this->framework->tokensQF as $token) {
 	        foreach(explode($this->framework->filterValueSeparator, $token['value']) as $value) {
-	            $value = trim($value);
-	            $token['field'] = trim($token['field']);
+	            
+	            $value = trim( strval($value) );
+	            $token['field'] = trim( strval( $token['field']) );
 	            
 	            if($value !== '' && $token['field'] != 'tag') {
 	                $ignore = false;
 	                
 	                switch(strtolower($token['field'])) {
 	                    case 'preis':
-	                        $filterlabel = number_format($value, 0, ',', '.') . ' EUR';
+	                        $filterlabel = number_format( intval( $value ), 0, ',', '.') . ' EUR';
 	                        if($value > 0 && strpos($value, '-') === false) {
 	                            $filterlabel = 'bis ' . $filterlabel;
 	                        } else if($value === 0) {
@@ -934,7 +958,7 @@ class WISY_FILTER_CLASS
 	                        break;
 	                        
 	                    case 'dauer':
-	                        if(strpos($value, "-") === FALSE && $_GET['filter_dauer_bis'] > 0)
+	                        if(strpos($value, "-") === FALSE && $this->framework->getParam('filter_dauer_bis') > 0)
 	                            $filterlabel = 'Dauer max: ';
 	                            else
 	                                $filterlabel = 'Dauer: ';
@@ -951,19 +975,23 @@ class WISY_FILTER_CLASS
 	                                {
 	                                    $filterlabel .= floor($value / 7) . ' Wochen';
 	                                    
-	                                    if(strpos($filterlabel, "-") === FALSE && $_GET['filter_dauer_von'] > 0 && !$_GET['filter_dauer_bis'] )
+	                                    if(strpos($filterlabel, "-") === FALSE && $this->framework->getParam('filter_dauer_von') > 0 && !$this->framework->getParam('filter_dauer_bis') )
 	                                        $filterlabel = str_replace('Dauer', 'Dauer min', $filterlabel);
 	                                }
 	                                else
 	                                {
 	                                    $filterlabel .= floor($value / 31) . ' Monate';
 	                                    
-	                                    if(strpos($filterlabel, "-") === FALSE && $_GET['filter_dauer_von'] > 0 && !$_GET['filter_dauer_bis'])
+	                                    if(strpos($filterlabel, "-") === FALSE && $this->framework->getParam('filter_dauer_von') > 0 && !$this->framework->getParam('filter_dauer_bis'))
 	                                        $filterlabel = str_replace('Dauer', 'Dauer min', $filterlabel);
 	                                }
 	                                break;
 	                                
 	                    case 'fav':
+	                        $ignore = true;
+	                        break;
+	                        
+	                    case 'favprint':
 	                        $ignore = true;
 	                        break;
 	                        

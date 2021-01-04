@@ -38,7 +38,8 @@ class WISY_DUMP_RENDERER_CLASS
 	            header('Last-Modified: '.gmdate('D, d M Y H:i:s \G\M\T', strtotime($date_modified)));
 	            
 	            // ! reactivate when population of css_gz is explained
-	            if(false && $gzip && trim($css_gz) != "") {
+	            // false && 
+	            if($gzip && trim($css_gz) != "") {
 	                header ("Content-Encoding: gzip");
 	                header("Content-length: " . strlen($css_gz));
 	                echo $css_gz;

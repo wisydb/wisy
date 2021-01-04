@@ -464,9 +464,9 @@ class WISY_ADVANCED_RENDERER_CLASS
 		 **********************************************************************/
 	
 
-		if( isset($_GET['adv_subseq']) )
+	    if( $this->framework->getParam('adv_subseq') )
 		{
-			if( isset($_GET['adv_cancel']) )
+		    if( $this->framework->getParam('adv_cancel') )
 			{
 				header('Location: search');
 				exit();
@@ -477,7 +477,7 @@ class WISY_ADVANCED_RENDERER_CLASS
 				reset($this->presets);
 				foreach($this->presets as $field_name => $preset)
 				{
-					$item = trim($_GET['adv_' . $field_name]);
+				    $item = trim( $this->framework->getParam('adv_' . $field_name, '') );
 					if( $item != '' )
 					{
 						if( $preset['comma_to_slash'] )
@@ -493,7 +493,7 @@ class WISY_ADVANCED_RENDERER_CLASS
 					}
 				}
 				
-				if( isset($_GET['adv_searchanb']) )
+				if( $this->framework->getParam('adv_searchanb', false) )
 				{
 					$q .= $q==''? '' : ', ';
 					$q .= 'Zeige:Anbieter';
@@ -510,7 +510,7 @@ class WISY_ADVANCED_RENDERER_CLASS
 		 **********************************************************************/
 		 
 		
-		if( intval($_GET['ajax']) )
+		if( intval( $this->framework->getParam('ajax') ) )
 		{
 			header('Content-type: text/html; charset=utf-8');
 			$this->renderForm();
