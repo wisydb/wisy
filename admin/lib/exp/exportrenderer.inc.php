@@ -127,7 +127,7 @@ class EXP_EXPORTRENDERER_CLASS extends EXP_FUNCTIONS_CLASS
 				form_button('ok', htmlconstant('_EXP_STARTEXPORT', $this->expDescr));
 				//form_clickbutton('etc.php', htmlconstant('_CANCEL'));-- we do not have "cancel" buttons to go back to the "etc." screen. "Cancel" should be only possible within the export functionality.
 			$site->skin->buttonsBreak();
-				echo "<a href=\"log.php\" target=\"_blank\">" . htmlconstant('_LOG') . '</a>';
+				echo "<a href=\"log.php\" target=\"_blank\" rel=\"noopener noreferrer\">" . htmlconstant('_LOG') . '</a>';
 			$site->skin->buttonsEnd();
 
 			echo '</form>';

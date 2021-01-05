@@ -68,7 +68,7 @@ class IMP_FILESRENDERER_CLASS extends IMP_FUNCTIONS_CLASS
 								if( $table_def ) 
 									$table_descr = $table_def->descr;
 								$cell .= $ob->ini_read('record_cnt_base', 0) . ' ' . $table_descr . ', ';
-								$cell .= $ob->ini_read('record_cnt_others', 0) . ' andere Datensätze';
+								$cell .= $ob->ini_read('record_cnt_others', 0) . ' andere Datens&auml;tze';
 							}
 							else
 							{
@@ -112,7 +112,7 @@ class IMP_FILESRENDERER_CLASS extends IMP_FUNCTIONS_CLASS
 					'<a href="'.isohtmlspecialchars('imp.php?page=files&delete=all'.$addParam).'" title="'.htmlconstant('_EXP_FILESDELETEALL').'" onclick="return confirm(\''.htmlconstant('_EXP_FILESDELETEALLASK', $filesCnt).'\');">',
 					'</a>') . ' | ';
 			}
-			echo "<a href=\"log.php\" target=\"_blank\">" . htmlconstant('_LOG') . '</a>';
+			echo "<a href=\"log.php\" target=\"_blank\" rel=\"noopener noreferrer\">" . htmlconstant('_LOG') . '</a>';
 		$site->skin->buttonsEnd();
 		
 		$this->imp_render_page_end();

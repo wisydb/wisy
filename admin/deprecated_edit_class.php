@@ -792,7 +792,7 @@ class Table_Inst_Class
 
 		if( !$ret ) {
 			global $site;
-			$temp = "<a href=\"edit.php?table=$tg_table&id=$tg_id\" target=\"_blank\">$tg_id</a>";
+			$temp = "<a href=\"edit.php?table=$tg_table&id=$tg_id\" target=\"_blank\" rel=\"noopener noreferrer\">$tg_id</a>";
 			$site->msgAdd(htmlconstant('_EDIT_ERRNOTREFERENCABLE', $temp), 'e');
 		}
 
@@ -1355,7 +1355,7 @@ class Table_Inst_Class
 					if( ($rowflags&TABLE_UNIQUE || $rowflags&TABLE_UNIQUE_RECOMMENTED) && $this->values[$r] != '' ) {
 						$db->query("SELECT id FROM " . $table_def->name . " WHERE " . $table_def->rows[$r]->name . "='" . addslashes($this->values[$r]) . "' AND id!=".intval($this->id));
 						if( $db->next_record() ) {
-							$href = "<a href=\"edit.php?table=$table_def->name&id=" .$db->f('id'). '" target="_blank">' . $db->f('id') . '</a>';
+							$href = "<a href=\"edit.php?table=$table_def->name&id=" .$db->f('id'). '" target="_blank" rel="noopener noreferrer">' . $db->f('id') . '</a>';
 							if( $rowflags & TABLE_UNIQUE ) {
 								$error = htmlconstant('_EDIT_ERRFIELDNOTUNIQUE', $href);
 							}
@@ -1885,7 +1885,7 @@ class Table_Inst_Class
 						form_control_start($references[$i][1] . '.' . $references[$i][3]);
 							if( $cnt >= 1 ) {
 								echo "<a href=\"$href\" title=\"".htmlconstant('_EDIT_REF_OPENINTHIS')."\">".htmlconstant($cnt==1?'_EDIT_REF_1REFERENCE':'_EDIT_REF_NREFERENCES', $cnt)."</a>"
-								 .   "<a href=\"$href\" title=\"".htmlconstant('_EDIT_REF_OPENINNEW') ."\" target=\"_blank\">&nbsp;&#8599;&nbsp;</a>";
+								 .   "<a href=\"$href\" title=\"".htmlconstant('_EDIT_REF_OPENINNEW') ."\" target=\"_blank\" rel=\"noopener noreferrer\">&nbsp;&#8599;&nbsp;</a>";
 							}
 							else {
 								echo '0';
@@ -2078,7 +2078,7 @@ class Table_Inst_Class
 			if( $viewurl )
 			{
 				$site->menuItem('mview', htmlconstant('_VIEW'), 
-					($this->id!=-1 && $any_access)? "<a href=\"$viewurl\" target=\"_blank\">" : ''); // was before 2011-03-27: target=\"index_view\" onclick=\"return popup(this,750,550);\"
+					($this->id!=-1 && $any_access)? "<a href=\"$viewurl\" target=\"_blank\" rel=\"noopener noreferrer\">" : ''); // was before 2011-03-27: target=\"index_view\" onclick=\"return popup(this,750,550);\"
 			}
 
 			// start page: menu link to edit plugin(s)
@@ -2484,7 +2484,7 @@ class Table_Inst_Class
 							 $helpattr = '';
 							 if( $table_def->rows[$r]->prop['help.url'] )
 							 {
-								$helpattr = 'href="'.$table_def->rows[$r]->prop['help.url'].'" target="_blank"';
+								$helpattr = 'href="'.$table_def->rows[$r]->prop['help.url'].'" target="_blank" rel="noopener noreferrer"';
 							 }
 							 else if( $rowflags&TABLE_WIKI )
 							 {
@@ -2546,11 +2546,11 @@ class Table_Inst_Class
 						{
 							if( !$readonly ) form_control_check("control[$curr_control_index][2]", '1');
 							
-							echo  ' <a href="media.php/' . $table_def->rows[$r]->name . '/' . $table_def->name . '/' . $this->id . '/' . $this->values[$r][2] . '" target="_blank" title="' .htmlconstant('_VIEW'). '">'
+							echo  ' <a href="media.php/' . $table_def->rows[$r]->name . '/' . $table_def->name . '/' . $this->id . '/' . $this->values[$r][2] . '" target="_blank" rel="noopener noreferrer" title="' .htmlconstant('_VIEW'). '">'
 								.   isohtmlspecialchars($this->values[$r][2]) . '&nbsp;&#8599;'
 							    . '</a>';
 							
-							echo ' (<a href="media.php?t=' . $table_def->name . '&id='.$this->id . '&f='.$table_def->rows[$r]->name . '&hex=1" target="_blank" title="Hexdump">' . smart_size($this->values[$r][4]) . '</a>';
+							echo ' (<a href="media.php?t=' . $table_def->name . '&id='.$this->id . '&f='.$table_def->rows[$r]->name . '&hex=1" target="_blank" rel="noopener noreferrer" title="Hexdump">' . smart_size($this->values[$r][4]) . '</a>';
 								if( $this->values[$r][5] && $this->values[$r][6] ) {
 									echo ', ' . $this->values[$r][5] . 'x' . $this->values[$r][6];
 								}
@@ -2590,7 +2590,7 @@ class Table_Inst_Class
 							}
 
 							if( $attr_readable ) {
-								echo '<a href="edit.php?table=' . $table_def->rows[$r]->addparam->name . '&id=' . $this->values[$r] . '" target="_blank">';
+								echo '<a href="edit.php?table=' . $table_def->rows[$r]->addparam->name . '&id=' . $this->values[$r] . '" target="_blank" rel="noopener noreferrer">';
 							}
 
 							echo isohtmlentities($curr_name);
@@ -2675,7 +2675,7 @@ class Table_Inst_Class
 							}
 
 							if( $attr_readable ) {
-								echo '<a href="edit.php?table=' . $attr_table . '&id=' . $this->values[$r][$a] . '" target="_blank">';
+								echo '<a href="edit.php?table=' . $attr_table . '&id=' . $this->values[$r][$a] . '" target="_blank" rel="noopener noreferrer">';
 							}
 
 							echo isohtmlentities($attr_summaries[$a]);
@@ -2737,7 +2737,7 @@ class Table_Inst_Class
 							$control_started = 1;
 							for( $a = 0; $a < sizeof($attr_references); $a++ ) {
 								echo "<img src=\"{$site->skin->imgFolder}/check1.gif\" width=\"{$checkimgsize[0]}\" height=\"{$checkimgsize[1]}\" border=\"0\" alt=\"[X]\" title=\"\" />&nbsp;";
-								echo '<a href="edit.php?table=' . $attr_table . '&id=' . $attr_references[$a][0] . '" target="_blank">';
+								echo '<a href="edit.php?table=' . $attr_table . '&id=' . $attr_references[$a][0] . '" target="_blank" rel="noopener noreferrer">';
 									echo isohtmlentities($attr_references[$a][1]);
 								echo '</a>';
 								if( $a != sizeof((array) $attr_references)-1 ) {
@@ -2790,7 +2790,7 @@ class Table_Inst_Class
 					$site->skin->buttonsBreak();
 						echo         htmlconstant('_EDIT_CREATED')  . ': ' . isohtmlentities(sql_date_to_human($this->date_created, 'datetime')) 
 						 .	 " | " . htmlconstant('_EDIT_MODIFIED') . ': ' . isohtmlentities(sql_date_to_human($this->date_modified, 'datetime')) . ' ' .  htmlconstant('_EDIT_BY') . ' ' . user_html_name($this->user_modified)
-						 .   " | <a href=\"log.php?table={$this->table_def_name}&amp;id={$this->id}\" target=\"_blank\">" . htmlconstant('_LOG') . '</a>'
+						 .   " | <a href=\"log.php?table={$this->table_def_name}&amp;id={$this->id}\" target=\"_blank\" rel=\"noopener noreferrer\">" . htmlconstant('_LOG') . '</a>'
 						 ;
 
 				}

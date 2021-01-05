@@ -9,7 +9,7 @@ We simply use the placeholder attribute, this is spreaded about 75% (1/2014)
 and is available in all modern browsers, see http://caniuse.com/#search=placeholder .
 If this feature is missing for a user, the user should switch the browser.
 
-@author Björn Petersen, http://b44t.com
+@author Bjoern Petersen, http://b44t.com
 
 ******************************************************************************/
 
@@ -61,7 +61,7 @@ class CONTROL_TEXT_CLASS extends CONTROL_BASE_CLASS
 			$dba = $addparam['dba'];
 			$dba->query("SELECT id FROM " . $this->table_def->name . " WHERE " . $this->row_def->name . "=" . $dba->quote($this->dbval) . " AND id!=".intval($addparam['id']));
 			if( $dba->next_record() ) {
-				$href = '<a href="edit.php?table=' . $this->table_def->name . '&amp;id=' .$dba->f('id'). '" target="_blank">' . $dba->f('id') . '</a>';
+				$href = '<a href="edit.php?table=' . $this->table_def->name . '&amp;id=' .$dba->f('id'). '" target="_blank" rel="noopener noreferrer">' . $dba->f('id') . '</a>';
 				if( $this->row_def->flags & TABLE_UNIQUE ) {
 					$errors[] = htmlconstant('_EDIT_ERRFIELDNOTUNIQUE', $href);
 				}

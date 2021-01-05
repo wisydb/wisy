@@ -119,13 +119,13 @@ function update_alle_anbieter_vollst(&$param)
 
 
 /* update_kurs_state() ...
- * ... schaltet Kurse abhängig vom Beginndatum automatisch frei
+ * ... schaltet Kurse abhaengig vom Beginndatum automatisch frei
  *     oder entfernt diesen Status wieder
  * ... berechnet aufgrund des Beginndatums die Wochentage
  * ... setzt die PLZ und/oder den Stadtteil auf Grundlage von Strasse und Ort
  *
  *   !!  Diese Funktion wird auch aus dem Portal von edit.php aufgerufen  !!
- *   !!  Nicht davon ausgehen, daß das komplette CMS zur Verfügung steht  !!
+ *   !!  Nicht davon ausgehen, dass das komplette CMS zur Verfuegung steht  !!
  *
  * Aufrufparameter:
  * $param['from_cms']				- Aufruf durch das CMS?
@@ -238,8 +238,8 @@ function update_kurs_state($kurs_id, $param)
 			
 			$update = '';
 			
-			// beginnstatus überprüfen
-			/* -- 11:54 18.12.2012: Fehlende Beginndaten führen nicht mehr zu freigeschalteten Kursen!
+			// beginnstatus ueberpruefen
+			/* -- 11:54 18.12.2012: Fehlende Beginndaten fuehren nicht mehr zu freigeschalteten Kursen!
 			if( $beginn == '' || $beginn == '0000-00-00 00:00:00' )
 			{
 				$neuer_status = 1;
@@ -252,18 +252,18 @@ function update_kurs_state($kurs_id, $param)
 			*/
 			
 			if( ($beginn > $test_datum)
-			 /* || ($beginnoptionen >= 4) -- 11:55 18.12.2012: Irgendwelche Optionen führen nicht mehr zu freigeschalteten Kursen! */ )
+			 /* || ($beginnoptionen >= 4) -- 11:55 18.12.2012: Irgendwelche Optionen fuehren nicht mehr zu freigeschalteten Kursen! */ )
 			{
 				$neuer_status = 1; /*freigeschaltet*/
 			}
 			else if( $beginn == '' || $beginn == '0000-00-00 00:00:00' )
 			{
 				if( $beginnoptionen >= 1 )
-					$neuer_status = 1; /*freigeschaltet*/ /*Änderung vom 4.01.2013: Kurse ohne Datum mit Option sind freigeschaletet, das ist mit beate noch nicht geklärt*/
+					$neuer_status = 1; /*freigeschaltet*/ /*Aenderung vom 4.01.2013: Kurse ohne Datum mit Option sind freigeschaletet, das ist mit beate noch nicht geklaert*/
 			}
 			else if( $einstieg_bis_kursende_moeglich ) 
 			{
-				/*EDIT 22:54 24.04.2013: Kurse mit dem Stichwort 315/"Einstieg bis Kursende möglich" sind freigeschaltet solange der Kurse nicht zu Ende ist; 
+				/*EDIT 22:54 24.04.2013: Kurse mit dem Stichwort 315/"Einstieg bis Kursende moeglich" sind freigeschaltet solange der Kurse nicht zu Ende ist; 
 					gibt es kein Endedatum, hat die Option keine Auswirkung */
 				if( $ende != '' && $ende != '0000-00-00 00:00:00' ) {
 					if( $ende >= $heute_datum ) {
@@ -272,7 +272,7 @@ function update_kurs_state($kurs_id, $param)
 				}
 			}
 		
-			// wochentage überprüfen
+			// wochentage ueberpruefen
 			if( $wochentage == 0 )
 			{
 				$wochentage = berechne_wochentage($beginn, $ende);
@@ -284,23 +284,23 @@ function update_kurs_state($kurs_id, $param)
 				}
 			}
 			
-			// tagescode überprüfen
+			// Tagescode ueberpruefen
 			$neuer_tagescode = berechne_tagescode($zeit_von, $zeit_bis, $wochentage);
 			if( $neuer_tagescode != 0 && $neuer_tagescode != $alter_tagescode )
 			{
 				$update .= ($update==''? '' : ', ') . " tagescode=$neuer_tagescode ";
 				//if( $alter_tagescode != 0 ) 20:32 30.01.2014: die entsprechende Nachricht wird immer ausgegeben. Warum auch nicht? Man wundert sich sonst, warum ein eigentlich nicht geänderter Datensatz be Klick auf "Übernehmen" tatsächlich gespeichert wird ... [**]
-					$ret['returnmsg'] .= ($ret['returnmsg']? '<br />' : '') . 'Tagescode anhand Uhrzeit/Wochentage korrigiert. <a href="https://b2b.kursportal.info/index.php?title=Berechnung_des_Tagescode" target="_blank">Weitere Informationen hierzu...</a>';
+					$ret['returnmsg'] .= ($ret['returnmsg']? '<br />' : '') . 'Tagescode anhand Uhrzeit/Wochentage korrigiert. <a href="https://b2b.kursportal.info/index.php?title=Berechnung_des_Tagescode" target="_blank" rel="noopener noreferrer">Weitere Informationen hierzu...</a>';
 				$ret['returnreload'] = true;
 			}
 
-			// dauer überprüfen (06.12.2012: wenn kein Wert berechnet werden konnte, alten (evtl. manuell gesetzten) Wert lassen)
+			// Dauer ueberpruefen (06.12.2012: wenn kein Wert berechnet werden konnte, alten (evtl. manuell gesetzten) Wert lassen)
 			$neue_dauer = berechne_dauer(str_replace("00:00:00", $zeit_von.":00", $beginn), str_replace("00:00:00", $zeit_bis.":00", $ende));
 			if( $neue_dauer != 0 && $neue_dauer != $alte_dauer && !$dauer_fix)
 			{
 				$update .= ($update==''? '' : ', ') . " dauer=$neue_dauer ";
 				//if( $alte_dauer != 0 ) 20:32 30.01.2014: die entsprechende Nachricht wird immer ausgegeben, s. [**]
-					$ret['returnmsg'] .= ($ret['returnmsg']? '<br />' : '') . 'Dauer anhand Beginn-/Endedatum korrigiert. <a href="https://b2b.kursportal.info/index.php?title=Berechnung_der_Dauer" target="_blank">Weitere Informationen hierzu...</a>';
+					$ret['returnmsg'] .= ($ret['returnmsg']? '<br />' : '') . 'Dauer anhand Beginn-/Endedatum korrigiert. <a href="https://b2b.kursportal.info/index.php?title=Berechnung_der_Dauer" target="_blank" rel="noopener noreferrer">Weitere Informationen hierzu...</a>';
 				$ret['returnreload'] = true;
 			}
 			
@@ -401,7 +401,7 @@ function update_kurs_state($kurs_id, $param)
 	// vollstaendigkeit berechnen
 	$vmsg = '';
 	$punkte_erreicht = 0.0;
-	f( $anz_durchf > 0 )
+	if( $anz_durchf > 0 )
 	{
 	    // 50 punkte
 	    if( strlen($beschreibung)>strlen($titel) )	{ $punkte_erreicht += 12.5; } else { $vmsg .= "<br><span class='missing_textlaenge'>&bull; Um die Mindestvollst&auml;ndigkeit zu erreichen, stellen Sie bitte eine <b>Mindesttextl&auml;nge</b> sicher.</span>"; }
@@ -444,7 +444,7 @@ function update_kurs_state($kurs_id, $param)
 		}
 	}
 	
-	// neue vollständigkeit schreiben
+	// Neue Vollstaendigkeit schreiben
 	$punkte_erreicht = intval($punkte_erreicht);
 	if( $punkte_erreicht < 1   ) $punkte_erreicht = 1;
 	if( $punkte_erreicht > 100 ) $punkte_erreicht = 100;
@@ -472,7 +472,7 @@ function update_kurs_state($kurs_id, $param)
 function alle_freischaltungen_ueberpruefen()
 {
 	$db = new DB_Admin();
-	$oneWeekAgo = strftime("%Y-%m-%d 00:00:00", time()-7*24*60*60); // 14:46 03.06.2014 wir überprüfen auch abgelaufene Kurse, die kürzlich geändert wurden - mag sein, dass z.B. duch MultiEdit etwas geändert wurde, das den Kurs wieder freigeschaltet werden lässt
+	$oneWeekAgo = strftime("%Y-%m-%d 00:00:00", time()-7*24*60*60); // 14:46 03.06.2014 wir ueberpruefen auch abgelaufene Kurse, die kuerzlich geaendert wurden - mag sein, dass z.B. duch MultiEdit etwas geaendert wurde, das den Kurs wieder freigeschaltet werden laesst
 	$sql = "SELECT id FROM kurse WHERE freigeschaltet=1 OR (freigeschaltet=3 AND date_modified>='$oneWeekAgo');";
 	$db->query($sql); 
 	while( $db->next_record() )

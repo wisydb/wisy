@@ -79,7 +79,7 @@ function render_embed_error($embed_w, $embed_h, $file_url, $error)
 	return	"<table cellpadding=\"0\" cellspacing=\"0\" border=\"1\" width=\"$embed_w\" height=\"$embed_h\">"
 	.			'<tr>'
 	.				'<td align="center" valign="middle">'
-	.					"<a href=\"$file_url\" target=\"_blank\">$file_url</a><br />($error)"
+	.					"<a href=\"$file_url\" target=\"_blank\" rel=\"noopener noreferrer\">$file_url</a><br />($error)"
 	.				'</td>'
 	.			'</tr>'
 	.		'</table>';

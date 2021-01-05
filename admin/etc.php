@@ -185,7 +185,7 @@ function table_details($level, $t, $table, $curr_access, $curr_last_modification
 	table_item($level);
 		echo htmlconstant('_OVERVIEW_RIGHTS') . ':';
 	table_item_break();
-		echo "<a href=\"user_access_view.php?table=$table\" target=\"_blank\">";
+		echo "<a href=\"user_access_view.php?table=$table\" target=\"_blank\" rel=\"noopener noreferrer\">";
 			echo acl_get_readable_str($curr_access);
 		echo '</a>';
 	table_item_end();
@@ -376,7 +376,7 @@ $site->skin->fixedFooterStart();
 			isohtmlentities(sql_date_to_human($last_modification, 'datetime')),
 			$last_modification_table,
 			user_html_name($last_modification_user));
-		echo " | <a href=\"log.php\" target=\"_blank\">" . htmlconstant('_LOG') . '</a>';
+		echo " | <a href=\"log.php\" target=\"_blank\" rel=\"noopener noreferrer\">" . htmlconstant('_LOG') . '</a>';
 	$site->skin->submenuEnd();
 $site->skin->fixedFooterEnd();
 

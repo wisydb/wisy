@@ -726,6 +726,7 @@ CREATE TABLE IF NOT EXISTS `portale` (
   `css_gz` longtext NOT NULL,
   `bodystart` longtext NOT NULL,
   `einstellungen` longtext NOT NULL,
+  `einstellungen_hinweise` longtext,
   `notizen` longtext NOT NULL,
   `notizen_fix` longtext NOT NULL,
   `spalten` int(11) NOT NULL DEFAULT '65535',

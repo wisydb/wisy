@@ -1011,7 +1011,7 @@ function sysloc_new($f, $scope, $op)
 		form_control_start(htmlconstant('_ID'), $error_id);
 			form_control_text('id', $id, 20 /*width*/);
 			if( $scope == 'lang' ) {
-				$hint = htmlconstant('_SYSLOC_NEWLANGHINT', '<a href="http:/'.'/www.ietf.org/rfc/rfc1766.txt" target="_blank">RFC 1766</a>', '<a href="http:/'.'/www.oasis-open.org/cover/iso639a.html" target="_blank">ISO 639</a>');
+				$hint = htmlconstant('_SYSLOC_NEWLANGHINT', '<a href="http:/'.'/www.ietf.org/rfc/rfc1766.txt" target="_blank" rel="noopener noreferrer">RFC 1766</a>', '<a href="http:/'.'/www.oasis-open.org/cover/iso639a.html" target="_blank">ISO 639</a>');
 			}
 			else {
 				$hint = htmlconstant('_SYSLOC_NEWENTRYHINT');

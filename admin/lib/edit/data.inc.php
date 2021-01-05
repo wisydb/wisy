@@ -102,7 +102,7 @@ class EDIT_DATA_CLASS
 	{
 		// object cloning is used for mainly for test_save() 
 		// Klon fonktioniert so: Alle Eigenschaften, die Referenzen auf andere Variablen sind, werden Referenzen bleiben. 
-		// für controls[] ist uns das nicht genug, da z.B. save() die Daten ändert, nach einem test_save() sollten sie aber unverändert sein. 
+		// fuer controls[] ist uns das nicht genug, da z.B. save() die Daten aendert, nach einem test_save() sollten sie aber unveraendert sein. 
 		for( $i = 0; $i < sizeof($this->controls); $i++ ) {
 			$this->controls[$i] = clone $this->controls[$i]; 
 		}
@@ -689,7 +689,7 @@ class EDIT_DATA_CLASS
 		 || ( $this->is_new && !($this->table_def->acl&ACL_NEW) ) 
 		 || (!$this->is_new && !acl_check_access("$this->table_name.COMMON", $this->id, ACL_EDIT)) )		
 		{
-			$this->errors[] = "Fehlende Rechte für $this->table_name.$this->id in Datenbank {$this->db_name}.";
+			$this->errors[] = "Fehlende Rechte f&uuml;r $this->table_name.$this->id in Datenbank {$this->db_name}.";
 			return false;
 		}
 
@@ -860,7 +860,7 @@ class EDIT_DATA_CLASS
 				}
 				
 				$html .= $html? ', ' : '';
-				$html .= '<a href="'.$href.'" target="_blank">';
+				$html .= '<a href="'.$href.'" target="_blank" rel="noopener noreferrer">';
 				$html .= htmlentities($references[$i][1]) . '.' . htmlentities($references[$i][3]) . ': ' . $cnt;
 				$html .= '</a>';
 			}

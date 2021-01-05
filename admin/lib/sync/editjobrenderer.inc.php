@@ -72,7 +72,7 @@ class SYNC_EDITJOBRENDERER_CLASS extends SYNC_FUNCTIONS_CLASS
 				form_control_end();
 				form_control_start('Anfrage an Quellserver');
 					form_control_text('query', $currJob->query, 60 /*width*/);
-					echo '<br />z.B. <i>modified(today)</i> oder <i>modified>=__LAST_DATE__</i> - wenn Sie die Anfrage leer lassen, werden alle Datensätze der Tabelle synchronisiert.';
+					echo '<br />z.B. <i>modified(today)</i> oder <i>modified>=__LAST_DATE__</i> - wenn Sie die Anfrage leer lassen, werden alle Datens&auml;tze der Tabelle synchronisiert.';
 					echo '<br />&nbsp;';
 					echo '<br />&nbsp;';
 				form_control_end();
@@ -87,7 +87,7 @@ class SYNC_EDITJOBRENDERER_CLASS extends SYNC_FUNCTIONS_CLASS
 				form_control_end();
 				form_control_start(htmlconstant('_IMP_FURTHEROPTIONS'));
 					form_control_text('further_options', $currJob->further_options, 60 /*width*/);
-					echo '<br />z.B. <i>kurse.stichwort=protect; anbieter.stichwort=protect;</i> um das Überschreiben eigener Stichwörter zu verhindern';
+					echo '<br />z.B. <i>kurse.stichwort=protect; anbieter.stichwort=protect;</i> um das &Uuml;berschreiben eigener Stichw&ouml;rter zu verhindern';
 					echo '<br />&nbsp;';
 					echo '<br />&nbsp;';
 				form_control_end();
@@ -104,14 +104,14 @@ class SYNC_EDITJOBRENDERER_CLASS extends SYNC_FUNCTIONS_CLASS
 				
 				form_control_start('Aufgabe automatisch starten');
 					form_control_enum('freq', $currJob->freq, 	'0###nie###'
-															.	'3600###Stündlich###'
-															.	'86400###Täglich###'
-															.	'604800###Wöchentlich###'
+															.	'3600###St&uuml;ndlich###'
+															.	'86400###T&auml;glich###'
+															.	'604800###W&ouml;chentlich###'
 															.	'2592000###Monatlich'
 															,
 						0, '' );
 					$apikey = regGet('export.apikey', '', 'template');
-					echo " <a href=\"cron.php?apikey=".urlencode($apikey)."&amp;force=sync&amp;forceid={$currJob->jobid}\" target=\"_blank\" onclick=\"return confirm('Das starten einer Aufgabe führt u.U. zum Komplettverlust aller bestehenden Daten.\\n\\nDie Aufgabe jetzt starten?');\">[Aufgabe jetzt starten ...]</a>"; 
+					echo " <a href=\"cron.php?apikey=".urlencode($apikey)."&amp;force=sync&amp;forceid={$currJob->jobid}\" target=\"_blank\" rel=\"noopener noreferrer\" onclick=\"return confirm('Das starten einer Aufgabe führt u.U. zum Komplettverlust aller bestehenden Daten.\\n\\nDie Aufgabe jetzt starten?');\">[Aufgabe jetzt starten ...]</a>"; 
 				form_control_end();
 
 			$site->skin->dialogEnd();
@@ -122,7 +122,7 @@ class SYNC_EDITJOBRENDERER_CLASS extends SYNC_FUNCTIONS_CLASS
 				form_clickbutton('sync.php?hilite='.$currJob->jobid, htmlconstant('_CANCEL'));
 				form_button('apply', htmlconstant('_APPLY'));
 			$site->skin->buttonsBreak();
-				echo "<a href=\"log.php\" target=\"_blank\">" . htmlconstant('_LOG') . '</a>';
+				echo "<a href=\"log.php\" target=\"_blank\" rel=\"noopener noreferrer\">" . htmlconstant('_LOG') . '</a>';
 			$site->skin->buttonsEnd();
 			
 		echo '</form>';

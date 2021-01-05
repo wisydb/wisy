@@ -1,12 +1,13 @@
 <?php
 
+// Encoding: ISO8859-15, Test:: üäö¸
 
-	// deprecated
-	$use_neweditor = true;
-	if( $_COOKIE['oldeditor'] ) {	
-		$use_neweditor = false;
-	}
-	// /deprecated
+// deprecated
+$use_neweditor = true;
+if( $_COOKIE['oldeditor'] ) {	
+	$use_neweditor = false;
+}
+// /deprecated
 
 
 if( @file_exists('config/codes.inc.php') ) {
@@ -273,7 +274,8 @@ $portale->add_row(TABLE_ENUM,								        'status',	        'Status', 1, '1##
 $portale->add_row(TABLE_TEXT|TABLE_SUMMARY|TABLE_LIST|TABLE_MUST,	'name',				'Name', 0, 0, '', array('ctrl.size'=>'10-20-80', 'layout.bg.class'=>'e_bglite', 'layout.descr.class'=>'e_bolder', 'ctrl.class'=>'e_bolder'));
 $portale->add_row(TABLE_TEXT|TABLE_MUST,							'kurzname',			'Kurzname', 0, 0, '', array('layout.join'=>1, 'ctrl.size'=>'7-15-40'));
 $portale->add_row(TABLE_TEXT|TABLE_LIST|TABLE_MUST,					'domains',			'Domains', 0, 0, '', array('ctrl.size'=>'10-20-100'));
-$portale->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION, 					'einstellungen',	'Einstellungen', 0, 0, 'Einstellungen', array('help.url'=>'https://b2b.kursportal.info/index.php?title=Portaleinstellungen', 'ctrl.rows'=>10)); 
+$portale->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION, 					'einstellungen',	'Einstellungen', 0, 0, 'Einstellungen', array('help.url'=>'https://b2b.kursportal.info/index.php?title=Portaleinstellungen', 'ctrl.rows'=>10));
+$portale->add_row(TABLE_TEXTAREA|TABLE_READONLY, 					'einstellungen_hinweise', 'Hinweise', 0, 0, '', array('help.url'=>'https://b2b.kursportal.info/index.php?title=Portaleinstellungen_Hinweise', 'ctrl.rows'=>3));
 $portale->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION, 					'bodystart',		'HTML', 0, 0, 'Layout', array('help.url'=>'https://b2b.kursportal.info/index.php?title=Portallayout', 'ctrl.rows'=>3, 'layout.section'=>'Layout'));
 $portale->add_row(TABLE_TEXTAREA, 									'css',				'CSS', 0, 0, 'Layout', array('help.url'=>'https://b2b.kursportal.info/index.php?title=Portallayout', 'ctrl.rows'=>3));
 $portale->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION, 					'filter',			'Filter', 0, 0, 'Filter', array('help.url'=>'https://b2b.kursportal.info/index.php?title=Portaleinstellungen#Filtereinstellungen', 'ctrl.rows'=>3, 'layout.section'=>'Filter'));

@@ -97,7 +97,7 @@ function get_avail_lang_from_folder($onlyTheseLang = '')
 
 function check_wanted_lang($availLang, $wantedLang)
 {
-	$wantedLangArray = explode(',', strtolower(str_replace(';', ',', $wantedLang)));
+    $wantedLangArray = explode(',', strtolower(str_replace(';', ',', strval( $wantedLang ) )));
 	$wantedLang = '';
 	
 	for( $wl = 0; $wl < sizeof($wantedLangArray); $wl++ ) {

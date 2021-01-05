@@ -191,10 +191,10 @@ function render_b44t_logo()
 	return '<p align="center">
 				&nbsp;<br />
 				&nbsp;<br />
-				<a href="http:/'.'/b44t.com" target="_blank"><img src="lang/help/files/b44t-81x50.png" width="81" height="50" alt="[b44t.com]" title="" border="0"></a>
+				<a href="http:/'.'/b44t.com" target="_blank" rel="noopener noreferrer"><img src="lang/help/files/b44t-81x50.png" width="81" height="50" alt="[b44t.com]" title="" border="0"></a>
 			 </p>
 			 <p align="center">
-				Program by <a href="http:/'.'/b44t.com" target="_blank">Bj&ouml;rn Petersen Software Design and Development</a>.
+				Program by <a href="http:/'.'/b44t.com" target="_blank" rel="noopener noreferrer">Bj&ouml;rn Petersen Software Design and Development</a>.
 			 </p><br />';
 }
 function render_sysinfo()
@@ -209,7 +209,7 @@ function render_sysinfo()
 		// program 
 		$temp = CMS_VERSION.', ' . sql_date_to_human(strftime('%Y-%m-%d %H:%M:%S', render_sysinfo_scan__()), 'datetime');
 		$changelogurl = htmlconstant('_CONST_CHANGELOGURL');
-		if( $changelogurl ) $temp .= ' - <a href="'.$changelogurl.'" target="_blank">changelog...</a>';
+		if( $changelogurl ) $temp .= ' - <a href="'.$changelogurl.'" target="_blank" rel="noopener noreferrer">changelog...</a>';
 		render_sysinfo_item__($ret, htmlconstant('_SYSINFO_XVERSION', $systemname), $temp);
 
 		// php
@@ -217,7 +217,7 @@ function render_sysinfo()
 		if( defined('GLOBALS_ENABLED') || !isset($_REQUEST['id']) /*if $_REQUEST['id'] is not set, we cannt safely set GLOBALS_ENABLED */ ) {
 			$temp .= ", register"."_globals=".ini_get('register'.'_globals')." (for security reasons, it is recommended to switch register"."_globals off)";
 		}
-		if( acl_get_access('SYSTEM.*') ) $temp .= " - <a href=\"help.php?phpinfo\" target=\"_blank\">phpinfo()...</a>";
+		if( acl_get_access('SYSTEM.*') ) $temp .= " - <a href=\"help.php?phpinfo\" target=\"_blank\" rel=\"noopener noreferrer\">phpinfo()...</a>";
 		render_sysinfo_item__($ret, htmlconstant('_SYSINFO_XVERSION', 'PHP'), $temp);
 			  
 		// Password encryption methods _available_ by PHP (just for information, currently we _use_ MD5 with 12 character Salt (default on PHP crypt()))
@@ -244,7 +244,7 @@ function render_sysinfo()
 		$sync_tools = new SYNC_TOOLS_CLASS();
 		if( ($syncinfo=$sync_tools->get_sync_info())!==false )
 		{
-			$syncable = $syncinfo['dbs'] == '*'? 'Daten <i>nicht vollständig synchronisierbar</i>' : 'Daten <i>sind synchronisierbar</i>';
+			$syncable = $syncinfo['dbs'] == '*'? 'Daten <i>nicht vollst&auml;ndig synchronisierbar</i>' : 'Daten <i>sind synchronisierbar</i>';
 			
 			$syncable .= '<br />Datenbankkennung: '.$syncinfo['offset'];
 			$syncable .= "<br />ID-Algorithmus: <i>N</i>*".$syncinfo['inc']."+".$syncinfo['offset'] . ', Minimum: '.$syncinfo['start'];

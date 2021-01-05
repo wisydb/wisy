@@ -160,7 +160,7 @@ class EDIT_RENDERER_CLASS
 			else																					{ $viewurl = ''; }
 			if( $viewurl ) { 
 				$can_view = ( $this->data->id!=-1 && $this->data->db_name == '' );
-				$site->menuItem('mview', htmlconstant('_VIEW'), ($can_view)? "<a href=\"".isohtmlspecialchars($viewurl)."\" target=\"_blank\">" : '');
+				$site->menuItem('mview', htmlconstant('_VIEW'), ($can_view)? "<a href=\"".isohtmlspecialchars($viewurl)."\" target=\"_blank\" rel=\"noopener noreferrer\">" : '');
 			}
 			
 			// start page: menu link to edit plugin(s)
@@ -232,7 +232,7 @@ class EDIT_RENDERER_CLASS
 						echo '</a>';
 						
 						$log_url = 'log.php?table='.$this->data->table_name; if( $this->data->id != -1 ) { $log_url .= '&id='.$this->data->id; }
-						echo " | <a href=\"".isohtmlspecialchars($log_url)."\" target=\"_blank\" title=\"Protokoll anzeigen\">" . htmlconstant('_LOG') . '</a>';
+						echo " | <a href=\"".isohtmlspecialchars($log_url)."\" target=\"_blank\" rel=\"noopener noreferrer\" title=\"Protokoll anzeigen\">" . htmlconstant('_LOG') . '</a>';
 				
 				$site->skin->buttonsEnd();
 				$site->skin->fixedFooterEnd();		
@@ -437,7 +437,7 @@ class EDIT_RENDERER_CLASS
 				}
 				
 				$helpattr = '';
-					 if( $control->row_def->prop['help.url'] )  { $helpattr = 'href="'.$control->row_def->prop['help.url'].'" target="_blank"'; }
+					 if( $control->row_def->prop['help.url'] )  { $helpattr = 'href="'.$control->row_def->prop['help.url'].'" target="_blank" rel="noopener noreferrer"'; }
 				else if( $control->row_def->flags&TABLE_WIKI && ($control->row_def->flags&TABLE_ROW)==TABLE_TEXTAREA )	{ $helpattr = 'href="help.php?id=iwiki" target="help" onclick="return popup(this,500,380);"'; }
 				if( $helpattr ) {
 					echo '<a '.$helpattr.' title="'.htmlconstant('_HELP').'">&nbsp;?</a>';

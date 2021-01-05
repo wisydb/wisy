@@ -615,7 +615,7 @@ input[name='resetlogin'] {
 }
 
 .vorschlag_label {
-	color: #333 !important;
+	color: #666 !important;
 }
 
 .vorschlag {

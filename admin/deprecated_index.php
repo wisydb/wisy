@@ -896,7 +896,7 @@ if( $select_numrows )
 
 					if( $action_view_base ) {
 						if( canRead() ) {
-							echo	'<a href="' . isohtmlentities($action_view_base) . $id . '" target="_blank" onclick="setClickConsumed();return true;" title="' .htmlconstant('_VIEW'). '">'  
+							echo	'<a href="' . isohtmlentities($action_view_base) . $id . '" target="_blank" rel="noopener noreferrer" onclick="setClickConsumed();return true;" title="' .htmlconstant('_VIEW'). '">'  
 								.		'&#8599;&nbsp;'
 								.	'</a>';
 						}
@@ -1145,7 +1145,7 @@ if( $select_numrows )
 		$site->skin->submenuBreak();
 
 			echo htmlconstant('_OVERVIEW_ROWS') . ' ' . rows_per_page_sel("$baseurl&searchoffset=0&rows=", $rows);
-			echo " | <a href=\"log.php?table=$table\" target=\"_blank\">" . htmlconstant('_LOG') . '</a>';
+			echo " | <a href=\"log.php?table=$table\" target=\"_blank\" rel=\"noopener noreferrer\">" . htmlconstant('_LOG') . '</a>';
 
 		$site->skin->submenuEnd();
 		
@@ -1164,7 +1164,7 @@ else
 	$site->skin->buttonsStart();
 		form_clickbutton(isohtmlentities(($hasError || $searchedButNothingFound)? $allurl : $baseurl), htmlconstant('_CANCEL'));
 	$site->skin->buttonsBreak();
-		echo "<a href=\"log.php?table=$table\" target=\"_blank\">" . htmlconstant('_LOG') . '</a>';
+		echo "<a href=\"log.php?table=$table\" target=\"_blank\" rel=\"noopener noreferrer\">" . htmlconstant('_LOG') . '</a>';
 	$site->skin->buttonsEnd();
 }
 
