@@ -114,7 +114,7 @@ class WISY_GOOGLEMAPS_CLASS
 			);
 			$temp = $g_countryTransl;
 			reset($temp);
-			while( list($n, $v) = each($temp) )
+			foreach($temp as $n => $v)
 			{
 				$g_countryTransl[ strtolower($v) ] = $v; // also add the english names in lower-case to the table
 			}
@@ -283,7 +283,7 @@ class WISY_GOOGLEMAPS_CLASS
 			}
 			
 			// already added? if so, just add the additional information to the existing point
-			for( $i = 0; $i < sizeof($this->adr); $i++ )
+			for( $i = 0; $i < sizeof((array) $this->adr); $i++ )
 			{
 				if( $this->adr[$i]['highQ'] == $this->cleanStr($highQ) )
 				{
@@ -327,7 +327,7 @@ class WISY_GOOGLEMAPS_CLASS
 
 	function hasPoints()
 	{
-		return sizeof($this->adr)>0;
+	    return sizeof((array) $this->adr)>0;
 	}
 	
 	function render()
@@ -336,24 +336,24 @@ class WISY_GOOGLEMAPS_CLASS
 			return '';
 		
 		$ret = "";
-		if( sizeof($this->adr) == 0 )
+		if( sizeof((array) $this->adr) == 0 )
 		{
 			return '';
 		}
 		else
 		{
 			$allInfo = '';
-			for( $i = 0; $i < sizeof($this->adr); $i++ )
+			for( $i = 0; $i < sizeof((array) $this->adr); $i++ )
 			{
 				$nexti = $i+1;
-				if( $nexti >= sizeof($this->adr) ) $nexti = 0;
+				if( $nexti >= sizeof((array) $this->adr) ) $nexti = 0;
 				
 				$nextShortDescr = $this->adr[$nexti]['descr'];
 				$p=strpos($nextShortDescr, '<br />');
 				if($p!==false)
 					$nextShortDescr = substr($nextShortDescr, 0, $p);
 				
-				if( sizeof($this->adr) > 1 )
+				if( sizeof((array) $this->adr) > 1 )
 				{
 					$this->adr[$i]['descr'] .= '<br /><br /><small><a title="'.isohtmlentities($nextShortDescr).'" href="javascript:gm_panToNext();">Nächster Ort...</small></a>';
 				}
@@ -363,7 +363,7 @@ class WISY_GOOGLEMAPS_CLASS
 		}
 
 		$ret .= "
-				<script src=\"http://maps.google.com/maps?file=api&amp;v=2&amp;key={$this->apiKey}\" type=\"text/javascript\"></script>
+				<script src=\"https://maps.google.com/maps?file=api&amp;v=2&amp;key={$this->apiKey}\" type=\"text/javascript\"></script>
 				<script src=\"wisy-googlemaps.js\" type=\"text/javascript\"></script>
 				<script type=\"text/javascript\"><!--
 					var gm_allAdr=new Array;var gm_allDescr=new Array;$allInfo
@@ -414,7 +414,7 @@ class WISY_GOOGLEMAPS_CLASS
 		xml_set_element_handler($this->xml_obj, 'geocode_startHandler', 'geocode_endHandler');
 		
 		//$q = "scheplerstr. 4, hamburg";
-        $url = 'http://maps.google.com/maps/geo?q='.urlencode(utf8_encode($q)).'&output=xml&key=' . $this->apiKey;
+        $url = 'https://maps.google.com/maps/geo?q='.urlencode(utf8_encode($q)).'&output=xml&key=' . $this->apiKey;
 		if (!($fp = @fopen($url, "r"))) {
 			return false;
 		}

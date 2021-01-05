@@ -75,8 +75,12 @@ class WISY_SEARCH_RENDERER_CLASS
 	
 	function renderColumnTitle($title, $sollOrder, $istOrder, $info=0)
 	{
+	    // #richtext
+	    $richtext = (intval(trim($this->framework->iniRead('meta.richtext'))) === 1);
+	    $headattribs = ($richtext) ? ' content="'.$title.'"' : '';
+	    
 		// Add column title class for use in responsive CSS
-		echo '    <th class="wisyr_'. $this->framework->cleanClassname($title) .'">';
+		echo '    <th class="wisyr_'. $this->framework->cleanClassname($title) .'" '.$headattribs.'>'; // #richtext
 			
 			if( $sollOrder )
 			{
@@ -154,7 +158,7 @@ class WISY_SEARCH_RENDERER_CLASS
 						if( $record['typ'] == 2 ) echo '<span class="wisy_icon_beratungsstelle">Beratungsstelle<span class="dp">:</span></span> ';
 					}
 					
-					echo htmlspecialchars($this->framework->encode_windows_chars(utf8_encode($anbieterName)));
+					echo htmlspecialchars($this->framework->encode_windows_chars(cs8($anbieterName)));
 					
 				if( $param['clickableName'] ) echo '</a>';
 
@@ -162,7 +166,7 @@ class WISY_SEARCH_RENDERER_CLASS
 				{
 					// $anspr_tel = str_replace(' ', '', $anspr_tel); // macht Aerger, da in den Telefonnummern teilw. Erklaerungen/Preise mitstehen. Auskommentiert am 5.9.2008 (bp)
 					$anspr_tel = str_replace('/', ' / ', $anspr_tel);
-					echo '<br><span class="wisyr_anbieter_telefon"> ' . htmlspecialchars(utf8_encode($anspr_tel)) . '</span>';
+					echo '<br><span class="wisyr_anbieter_telefon"> ' . htmlspecialchars(cs8($anspr_tel)) . '</span>';
 				}
 				
 				if( !$param['clickableName'] )  echo '<span class="wisyr_anbieter_profil"> - <a href="'.$this->framework->getUrl('a', $aparam).'">Anbieterprofil...</a></span>';
@@ -172,6 +176,8 @@ class WISY_SEARCH_RENDERER_CLASS
 				echo 'k. A.';
 			}
 		echo '</td>' . "\n";
+		
+		return $anbieterName; // #richtext
 	}
 	
 	function renderKursRecords(&$db, &$records, &$recordsToSkip, $param)
@@ -185,7 +191,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		if( is_array($recordsToSkip['records']) )
 		{
 			reset($recordsToSkip['records']);
-			while( list($i, $record) = each($recordsToSkip['records']) )
+			foreach($recordsToSkip['records'] as $i => $record)
 			{
 				$recordsToSkipHash[ $record['id'] ] = true;
 			}
@@ -197,7 +203,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		{
 			$ids = '';
 			reset($records['records']);
-			while( list($i, $record) = each($records['records']) )
+			foreach($records['records'] as $i => $record)
 			{
 				$ids .= ($ids==''? '' : ', ') . $record['id'];
 			}
@@ -210,15 +216,15 @@ class WISY_SEARCH_RENDERER_CLASS
 				$db->query($sql);
 				while( $db->next_record() )
 				{
-					$kurs_id = intval($db->f8('kurs_id'));
-					$x2 = (floatval($db->f8('lng')) / 1000000) *  71460.0;
-					$y2 = (floatval($db->f8('lat')) / 1000000) * 111320.0;
+					$kurs_id = intval($db->fcs8('kurs_id'));
+					$x2 = (floatval($db->fcs8('lng')) / 1000000) *  71460.0;
+					$y2 = (floatval($db->fcs8('lat')) / 1000000) * 111320.0;
 
 					// calculate the distance between the points ($x1/$y1) and ($x2/$y2)
 					// d = sqrt( (x1-x2)^2 + (y1-y2)^2 )
 					$dx = $x1 - $x2; if( $dx < 0 ) $dx *= -1;
 					$dy = $y1 - $y2; if( $dy < 0 ) $dy *= -1;
-					$d = sqrt( $dx*$dx + $dy*dy ); // $d ist nun die Entfernung in Metern ;-)
+					$d = sqrt( $dx*$dx + $dy*$dy ); // $d ist nun die Entfernung in Metern ;-)
 					
 					// remember the smallest distance
 					if( !isset($distances[ $kurs_id ]) || $distances[ $kurs_id ] > $d )
@@ -237,8 +243,11 @@ class WISY_SEARCH_RENDERER_CLASS
 		$fav_use = $this->framework->iniRead('fav.use', 0);
 		
 		$rows = 0;
+		
+		$tag_cloud = array();
+		
 		reset($records['records']);
-		while( list($i, $record) = each($records['records']) )
+		foreach($records['records'] as $i => $record)
 		{	
 			// get kurs basics
 			$currKursId = $record['id'];
@@ -260,11 +269,15 @@ class WISY_SEARCH_RENDERER_CLASS
 			
 			echo "  <tr$class>\n";
 
-				// SPALTE: kurstitel
-				$db->query("SELECT id, suchname, pruefsiegel_seit, anspr_tel, typ FROM anbieter WHERE id=$currAnbieterId");
-				$db->next_record();
-				$anbieter_record = $db->Record;
-					
+			// SPALTE: kurstitel
+			$db->query("SELECT id, suchname, pruefsiegel_seit, anspr_tel, typ, freigeschaltet FROM anbieter WHERE id=$currAnbieterId");
+			$db->next_record();
+			$anbieter_record = $db->Record;
+			
+			// continue if Anbieter disabled!
+			if($anbieter_record['freigeschaltet'] == 2)
+			    continue;
+			
 				echo '    <td class="wisy_kurstitel wisyr_angebot" data-title="Angebot">';
 					$aparam = array('id'=>$currKursId, 'q'=>$param['q']);
 					if( $param['promoted'] ) {$aparam['promoted'] = $currKursId;}
@@ -285,7 +298,7 @@ class WISY_SEARCH_RENDERER_CLASS
 							if($this->framework->iniRead('label.abschluss', 0) && count($kursAnalyzer->loadKeywordsAbschluss($db, 'kurse', $currKursId))) echo '<span class="wisy_icon_abschluss">Abschluss<span class="dp">:</span></span> ';
 							if($this->framework->iniRead('label.zertifikat', 0) && count($kursAnalyzer->loadKeywordsZertifikat($db, 'kurse', $currKursId))) echo '<span class="wisy_icon_zertifikat">Zertifikat<span class="dp">:</span></span> ';
 						
-							echo htmlspecialchars($this->framework->encode_windows_chars(utf8_encode($record['titel'])));
+							echo htmlspecialchars($this->framework->encode_windows_chars(cs8($record['titel'])));
 						
 					echo '</a>';
 					if( $loggedInAnbieterId == $currAnbieterId )
@@ -301,22 +314,23 @@ class WISY_SEARCH_RENDERER_CLASS
 				if (($wisyPortalSpalten & 1) > 0)
 				{
 					// SPALTE: anbieter
-
-					$this->renderAnbieterCell2($db, $anbieter_record, array('q'=>$param['q'], 'addPhone'=>true, 'promoted'=>$param['promoted'], 'kurs_id'=>$currKursId));
+					// #richtext
+				    $anbieterName = $this->renderAnbieterCell2($db, $anbieter_record, array('q'=>$param['q'], 'addPhone'=>true, 'promoted'=>$param['promoted'], 'kurs_id'=>$currKursId));
 				}
 				
 				// SPALTEN: durchfuehrung
 				$addText = '';
-				if( sizeof($durchfuehrungenIds) > 1 )
+				if( sizeof((array) $durchfuehrungenIds) > 1 )
 				{
-					$addText = ' <span class="wisyr_termin_weitere"><a href="' .$this->framework->getUrl('k', $aparam). '">';
-						$temp = sizeof($durchfuehrungenIds) - 1;
-						$addText .= $temp==1? "1 weiterer..." : "$temp weitere...";
-					$addText .= '</a></span>';
+				    $addText = ' <span class="wisyr_termin_weitere"><a href="' .$this->framework->getUrl('k', $aparam). '">';
+				    $temp = sizeof((array) $durchfuehrungenIds) - 1;
+				    $addText .= $temp==1? "$temp<span> weiterer...</span>" : "$temp<span> weitere...</span>";
+				    $addText .= '</a></span>';
 				}
 				
-				$stichwoerter = $this->framework->loadStichwoerter($db, 'kurse', $currKursId);
-				$durchfClass->formatDurchfuehrung($db, $currKursId, intval($durchfuehrungenIds[0]), 0, 0, 1, $addText, array('record'=>$record, 'stichwoerter'=>$stichwoerter));
+				$tags = $this->framework->loadStichwoerter($db, 'kurse', $currKursId);
+				array_push($tag_cloud, $tags);
+				$durchfClass->formatDurchfuehrung($db, $currKursId, intval($durchfuehrungenIds[0]), 0, 0, 1, $addText, array('record'=>$record, 'stichwoerter'=>$tags));
 				
 				// SPALTE: Entfernung
 				if( $this->hasDistanceColumn )
@@ -353,6 +367,8 @@ class WISY_SEARCH_RENDERER_CLASS
 				
 			echo '  </tr>' . "\n";
 		}
+		
+		return $tag_cloud;
 	}
 	
 	function formatItem($tag_name, $tag_descr, $tag_type, $tag_help, $tag_freq, $addparam=0)
@@ -401,7 +417,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		
 		if( $row_postfix != '' )
 		{
-			$row_postfix = ' <span class="ac_tag_type">(' . $row_postfix . ')</span> ';
+		    $row_postfix = ' <span class="ac_tag_type">(' . htmlentities($row_postfix) . ')</span> ';
 		}
 	
 		/* additional flags */
@@ -428,7 +444,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		}
 		
 		return '<span class="' .$row_class. '">' .
-				$row_prefix . ' <a href="' . $this->framework->getUrl('search', array('q'=>$addparam['qprefix'].$tag_name)) . '">' . htmlspecialchars($tag_name) . '</a> ' . $row_postfix .
+		  		$row_prefix . ' <a href="' . $this->framework->getUrl('search', array('q'=>$addparam['qprefix'].$tag_name)) . ( $this->framework->qtrigger ? '&qtrigger='.$this->framework->qtrigger : '').($this->framework->force ? '&force='.$this->framework->force : '') . '">' . htmlspecialchars($tag_name) . '</a> ' . $row_postfix .
 			   '</span>';
 	}
 	
@@ -462,7 +478,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		else if( $tag_type & 32768){ $row_class = "ac_unterrichtsart";		 $row_type = 'Unterrichtsart'; $row_count_prefix = ($tag_freq == 1) ? ' Kurs zur' : ' Kurse zur'; }
 		else if( $tag_type & 65536){ $row_class = "ac_zertifikat";           $row_type = 'Zertifikat'; }
 
-		if( $tag_descr ) $row_postfix .= ' <span class="ac_tag_type">('. $tag_descr .')</span>';
+		if( $tag_descr ) $row_postfix .= ' <span class="ac_tag_type">('. htmlentities($tag_descr) .')</span>';
 		
 	
 		if( $tag_freq > 0 ) {
@@ -522,7 +538,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		$tagsuggestor =& createWisyObject('WISY_TAGSUGGESTOR_CLASS', $this->framework);
 		$suggestions = $tagsuggestor->suggestTags($queryString);
 
-		if( sizeof($suggestions) ) 
+		if( sizeof((array) $suggestions) )
 		{
 			if($this->framework->iniRead('search.suggest.v2') == 1)
 			{
@@ -537,7 +553,7 @@ class WISY_SEARCH_RENDERER_CLASS
 							'</tr>';
 				echo '	</thead>';
 				echo '	<tbody>';
-				for( $i = 0; $i < sizeof($suggestions); $i++ )
+				for( $i = 0; $i < sizeof((array) $suggestions); $i++ )
 				{
 					$tr_class = ($i%2) ? 'ac_even' : 'ac_odd';
 					echo $this->formatItem_v2($suggestions[$i]['tag'], $suggestions[$i]['tag_descr'], $suggestions[$i]['tag_type'], intval($suggestions[$i]['tag_help']), intval($suggestions[$i]['tag_freq']), $suggestions[$i]['tag_anbieter_id'], $suggestions[$i]['tag_groups'], $tr_class, $queryString);
@@ -549,7 +565,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			{
 				echo '<span class="wisyr_rechercheziele">Gefundene Rechercheziele - verfeinern Sie Ihren Suchauftrag:</span>';
 				echo '<ul>';
-					for( $i = 0; $i < sizeof($suggestions); $i++ )
+				    for( $i = 0; $i < sizeof((array) $suggestions); $i++ )
 					{
 						echo '<li>' . $this->formatItem($suggestions[$i]['tag'], $suggestions[$i]['tag_descr'], $suggestions[$i]['tag_type'], intval($suggestions[$i]['tag_help']), intval($suggestions[$i]['tag_freq'])) . '</li>';
 					}
@@ -565,17 +581,19 @@ class WISY_SEARCH_RENDERER_CLASS
 	function renderKursliste(&$searcher, $queryString, $offset)
 	{
 		global $wisyPortalSpalten;
+		
+		$richtext = (intval(trim($this->framework->iniRead('meta.richtext'))) === 1); // #richtext
 	
 		$validOrders = array('a', 'ad', 't', 'td', 'b', 'bd', 'd', 'dd', 'p', 'pd', 'o', 'od', 'creat', 'creatd', 'rand');
-		$orderBy = $_GET['order']; if( !in_array($orderBy, $validOrders) ) $orderBy = 'b';
+		$orderBy = strval( $this->framework->getParam('order') ); if( !in_array($orderBy, $validOrders) ) $orderBy = 'b';
 
 		$info = $searcher->getInfo();
-		if( $info['changed_query'] || sizeof($info['suggestions']) )
+		if( $info['changed_query'] || sizeof((array) $info['suggestions']) )
 		{
 			echo '<div class="wisy_suggestions">';
 				if( $info['changed_query'] )
 				{
-					echo '<b>Hinweis:</b> Der Suchauftrag wurde abgeändert in <i><a href="'.$this->framework->getUrl('search', array('q'=>$info['changed_query'])).'">'.htmlspecialchars(utf8_encode($info['changed_query'])).'</a></i>';
+					echo '<b>Hinweis:</b> Der Suchauftrag wurde abge&auml;ndert in <i><a href="'.$this->framework->getUrl('search', array('q'=>$info['changed_query'])).'">'.htmlspecialchars(cs8($info['changed_query'])).'</a></i>';
 					if( sizeof($info['suggestions']) ) 
 						echo ' &ndash; ';
 				}
@@ -615,14 +633,22 @@ class WISY_SEARCH_RENDERER_CLASS
 
 			// render head
 			echo '<div class="wisyr_list_header">';
-			echo '<div class="wisyr_listnav"><span class="active">Kurse</span><a href="search?q=' . urlencode($queryString) . '%2C+Zeige:Anbieter">Anbieter</a></div>';
-				echo '<div class="wisyr_filternav">';
+			echo '<div class="wisyr_listnav">';
+			echo '<span class="active tab_kurse">Angebote</span>';
+			echo '<a href="' . $baseurl . '?q=' . ($this->changedquery ? urlencode($this->changedquery) : urlencode($queryString)) . '%2C+Zeige:Anbieter' . ( $this->framework->qtrigger ? '&qtrigger='.$this->framework->qtrigger : '') . ( $this->framework->force ? '&force='.$this->framework->force : '') . '" class="tab_anbieter">Anbieter</a>';
+			echo '</div>';
+			echo '<div class="wisyr_filternav';
 			
 				if( $queryString == '' ) {
 					echo '<span class="wisyr_aktuelle_angebote">Aktuelle Angebote</span>';
 				}
 				else {
 					echo '<span class="wisyr_angebote_zum_suchauftrag">';
+					
+					/* ! actually makes sense: but how? Because of richtext additional output above?
+					 if($richtext)
+					 echo "&nbsp;"; // notwendig
+					 else */
 					echo $sqlCount==1? '<span class="wisyr_anzahl_angebote">1 Angebot</span> zum Suchauftrag ' : '<span class="wisyr_anzahl_angebote">' . $sqlCount . ' Angebote</span> zum Suchauftrag ';
 					echo '<span class="wisyr_angebote_suchauftrag">"' . htmlspecialchars((trim($queryString, ', '))) . '"</span>';
 					echo '<a class="wisyr_anbieter_switch" href="search?q=' . urlencode($queryString) . '%2C+Zeige:Anbieter">Zeige Anbieter</a>';
@@ -630,7 +656,7 @@ class WISY_SEARCH_RENDERER_CLASS
 				}
 				
 				// Show filter / advanced search
-				$DEFAULT_FILTERLINK_HTML= '<a href="filter?q=__Q_URLENCODE__" id="wisy_filterlink">Suche anpassen</a>';
+				$DEFAULT_FILTERLINK_HTML= '<a href="filter?q=__Q_URLENCODE__'. ( $this->framework->qtrigger ? '&qtrigger='.$this->framework->qtrigger : '') . ( $this->framework->force ? '&force='.$this->framework->force : '')  .'" id="wisy_filterlink">Suche anpassen</a>';
 				echo $this->framework->replacePlaceholders($this->framework->iniRead('searcharea.filterlink', $DEFAULT_FILTERLINK_HTML));
 				
 
@@ -643,6 +669,9 @@ class WISY_SEARCH_RENDERER_CLASS
 			echo '</div>';
 			
 			flush();
+			
+			/* $aggregateOffer = ($richtext) ? 'itemprop="offers" itemscope itemtype="http://schema.org/AggregateOffer"': '';
+			 echo '<div '.$aggregateOffer.'>'; */
 
 			// render table start
 			echo "\n".'<table class="wisy_list wisyr_kursliste">' . "\n";
@@ -659,7 +688,8 @@ class WISY_SEARCH_RENDERER_CLASS
 				if (($wisyPortalSpalten & 16) > 0) {	$this->renderColumnTitle('Preis',			'p',	$orderBy,	309);			$colspan++; }
 				if (($wisyPortalSpalten & 32) > 0) {	$this->renderColumnTitle('Ort',				'o', 	$orderBy,	1936);			$colspan++; }
 				if (($wisyPortalSpalten & 64) > 0) {	$this->renderColumnTitle('Ang.-Nr.',		'', 	$orderBy,	0);				$colspan++; }
-				if (($wisyPortalSpalten & 128)> 0) { 	$this->renderColumnTitle('BU',				'', 	$orderBy,	0);				$colspan++; }
+				/* if (($wisyPortalSpalten & 128)> 0) { 	$this->renderColumnTitle('Bemerkungen',				'', 	$orderBy,	0);				$colspan++; } */ /* ohne $details=true sinnlos */
+				/* if (($wisyPortalSpalten & 256)> 0) { 	$this->renderColumnTitle('BU',				'', 	$orderBy,	0);				$colspan++; } */
 				if( $info['lat'] && $info['lng'] ) {    $this->renderColumnTitle('Entfernung',		'', 	$orderBy,	0);				$colspan++; $this->hasDistanceColumn = true; $this->baseLat = $info['lat']; $this->baseLng = $info['lng'];  }
 			echo '  </tr></thead>' . "\n";
 			
@@ -669,10 +699,15 @@ class WISY_SEARCH_RENDERER_CLASS
 			 && $offset == 0 
 			 && $this->framework->iniRead('useredit.promote', 0)!=0 )
 			{
-				global $wisyPortalId;
-				$searcher2 =& createWisyObject('WISY_SEARCH_CLASS', $this->framework);
-				$searcher2->prepare($queryString . ', schaufenster:' . $wisyPortalId);
-				if( $searcher2->ok() )
+			    global $wisyPortalId;
+			    $searcher2 =& createWisyObject('WISY_SEARCH_CLASS', $this->framework);
+			    
+			    $queryString_db = mysql_escape_mimic($queryString);
+			    
+			    if($queryString_db != "")
+			        $searcher2->prepare($queryString_db . ', schaufenster:' . $wisyPortalId);
+			        
+			        if( $searcher2->ok() )
 				{
 					$promoteCnt = $searcher2->getKurseCount();
 					if( $promoteCnt > 0 )
@@ -707,19 +742,98 @@ class WISY_SEARCH_RENDERER_CLASS
 			
 			// render other records
 			$records = $searcher->getKurseRecords($offset, $this->rows, $orderBy);
-			$this->renderKursRecords($db, $records, $records2 /*recordsToSkip*/, array('q'=>$queryString));
+			$tags_heap = $this->renderKursRecords($db, $records, $records2 /*recordsToSkip*/, array('q'=>$queryString));
 		
 			// main table end
 			echo '</table>' . "\n\n";
+			
+			/* // #richtext
+				if($richtext) {
+					// sort($durchfClass->preise);
+					// echo '<meta itemprop="lowprice" content="'.$this->framework->preisUS($durchfClass->preise[0]).'">';
+				// 	echo '<meta itemprop="highprice" content="'.$this->framework->preisUS($durchfClass->preise[sizeof((array) $durchfClass->preise)-1]).'">';
+					
+					echo '<meta itemprop="priceCurrency" content="EUR">';
+				// 	echo '<meta itemprop="offerCount" content="'.sizeof((array) $durchfClass->preise).'">';
+					echo '<meta itemprop="url" content="http://'.$_SERVER['SERVER_NAME'].str_replace('&amp;', '&', htmlspecialchars( $_SERVER['REQUEST_URI'] )).'">';
+					echo '<meta itemprop="eligibleRegion" content="DE-RP">';
+					echo '<span itemprop="eligibleCustomerType" itemscope itemtype="https://schema.org/BusinessEntityType">';
+					echo '<meta itemprop="additionalType" content="http://purl.org/goodrelations/v1#Enduser">';
+					echo '</span>';
+					echo '</div>'; // Ende AggregateOffer
+				} */
+			
 			flush();
 			
 			if( $pagesel )
 			{
 				echo '<div class="wisyr_list_footer clearfix">';
-					echo '<div class="wisyr_rss_link_wrapper">' . $this->framework->getRSSLink() . '</div>';
+				    // if( $this->framework->iniRead('rsslink', 0) )
+					 // echo '<div class="wisyr_rss_link_wrapper">' . $this->framework->getRSSLink() . '</div>';
 					$this->renderPagination($prevurl, $nexturl, $pagesel, $this->rows, $offset, $sqlCount, 'wisyr_paginate_bottom');
 				echo '</div>';
 			}
+			
+			if($this->framework->iniRead('sw_cloud.suche_anzeige', 0)) {
+			    global $wisyPortalId;
+			    
+			    $cacheKey = "sw_cloud_p".$wisyPortalId."_s".$queryString;
+			    $this->dbCache		=& createWisyObject('WISY_CACHE_CLASS', $this->framework, array('table'=>'x_cache_tagcloud', 'itemLifetimeSeconds'=>60*60*24));
+			    
+			    
+			    if( ($temp=$this->dbCache->lookup($cacheKey))!='' )
+			    {
+			        $tag_cloud = $temp." <!-- tag cloud from cache -->";
+			    }
+			    else
+			    {
+			        $filtersw = array_map("trim", explode(",", $this->framework->iniRead('sw_cloud.filtertyp', "32, 2048, 8192")));
+			        $distinct_tags = array();
+			        $tag_cloud = '<div id="sw_cloud">Suchbegriffe: ';
+			        $tag_cloud .= '<h4>Suchbegriffe</h4>';
+			        $tag_done = array();
+			        
+			        foreach($tags_heap AS $tags) {
+			            for($i = 0; $i < count($tags); $i++)
+			            {
+			                $tag = $tags[$i];
+			                
+			                if(in_array($tag['id'], $tag_done))
+			                    continue;
+			                    
+			                    $weight = 0;
+			                    
+			                    if($this->framework->iniRead('sw_cloud.suche_gewichten', 1)) {
+			                        $tag_freq = $this->framework->getTagFreq($db, $tag['stichwort']);
+			                        $weight = (floor($tag_freq/50) > 15) ? 15 : floor($tag_freq/50);
+			                    }
+			                    
+			                    if($tag['eigenschaften'] != $filtersw && $tag_freq > 0); {
+			                        if($this->framework->iniRead('sw_cloud.suche_stichwoerter', 1))
+			                            $tag_cloud .= '<span class="sw_raw typ_'.$tag['eigenschaften'].'" data-weight="'.$weight.'"><a href="/search?q='.urlencode( cs8($tag['stichwort']) ).( $this->framework->qtrigger ? '&qtrigger='.$this->framework->qtrigger : '').( $this->framework->force ? '&force='.$this->framework->force : '').'">'.cs8($tag['stichwort']).'</a></span>, ';
+			                            
+			                        if($this->framework->iniRead('sw_cloud.suche_synonyme', 0))
+			                            $tag_cloud .= $this->framework->writeDerivedTags($this->framework->loadDerivedTags($db, $tag['id'], $distinct_tags, "Synonyme"), $filtersw, "Synonym", cs8($tag['stichwort']));
+			                                
+			                        if($this->framework->iniRead('sw_cloud.suche_oberbegriffe', 0))
+			                            $tag_cloud .= $this->framework->writeDerivedTags($this->framework->loadDerivedTags($db, $tag['id'], $distinct_tags, "Oberbegriffe"), $filtersw, "Oberbegriff", cs8($tag['stichwort']));
+			                                    
+			                        if($this->framework->iniRead('sw_cloud.suche_unterbegriffe', 0))
+			                            $tag_cloud .= $this->framework->writeDerivedTags($this->framework->loadDerivedTags($db, $tag['id'], $distinct_tags, "Unterbegriffe"), $filtersw, "Unterbegriff", cs8($tag['stichwort']));
+			                    }
+			                    
+			                    array_push($tag_done, $tag['id']);
+			                    
+			            } // end: for
+			        }
+			        
+			        $tag_cloud = trim($tag_cloud, ", ");
+			        $tag_cloud .= '</div>';
+			        
+			        $this->dbCache->insert($cacheKey, utf8_decode($tag_cloud));
+			    }
+			    echo $tag_cloud;
+			} // end: tag cloud
 		}
 		else 
 		{
@@ -728,13 +842,14 @@ class WISY_SEARCH_RENDERER_CLASS
 			{
 				$temp = trim($queryString, ', ');
 				echo '<p class="wisy_topnote">';
-					echo 'Keine aktuellen Datensätze für <em>&quot;'  . htmlspecialchars(utf8_encode($temp)) . '&quot;</em> gefunden.<br /><br />';
-					echo '<a href="' . $this->framework->getUrl('search', array('q'=>"$temp, Datum:Alles")) . '">Suche wiederholen und dabei <b>auch abgelaufene Kurse berücksichtigen</b> ...</a>';
+					echo 'Keine aktuellen Datens&auml;tze f&uuml;r <em>&quot;'  . htmlspecialchars(cs8($temp)) . '&quot;</em> gefunden.<br /><br />';
+					echo '<a href="' . $this->framework->getUrl('search', array('q'=>"$temp, Datum:Alles")) . '">Suche wiederholen und dabei <b>auch abgelaufene Kurse ber&uuml;cksichtigen</b> ...</a>';
 				echo "</p>\n";
 			}
 			
 			echo '<div class="wisyr_list_footer clearfix">';
-				echo '<div class="wisyr_rss_link_wrapper">' . $this->framework->getRSSLink() . '</div>';
+			     // if( $this->framework->iniRead('rsslink', 0) )
+			      // echo '<div class="wisyr_rss_link_wrapper">' . $this->framework->getRSSLink() . '</div>';
 			echo '</div>';
 		}
 
@@ -744,7 +859,7 @@ class WISY_SEARCH_RENDERER_CLASS
 				<script type="text/javascript">
 			        var defaultZIP="PLZ";
 			        var defaultCity="Ort";
-			        var defaultKeywords = "Suchwörter eingeben";
+			        var defaultKeywords = "Suchw&ouml;rter eingeben";
 
 			        function IWWBonFocusTextField(field,defaultValue){
 			                if (field.value==defaultValue) field.value="";
@@ -786,7 +901,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			 #A5AAC6;font-weight: bold;color: #FFFFFF;margin: 0px;border: 1px solid #FFFFFF;padding: 0px;" value="Suche starten" onClick=
 			"IWWBsearch(this)"></td>
 			<td align="right" style="font-family: Verdana, Arial, Helvetica, sans-serif;font-size: 11px;color: #5F6796;font-weight: bold;
-			"><a href="https://www.iwwb.de" target="_blank"><img src="https://www.iwwb.de/web/images/iwwb.gif" border="0"></a>&nbsp;</td>
+			"><a href="https://www.iwwb.de" target="_blank" rel="noopener noreferrer"><img src="https://www.iwwb.de/web/images/iwwb.gif" border="0"></a>&nbsp;</td>
 			</tr>
 			</form>
 			</table>
@@ -801,7 +916,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		$anbieterRenderer =& createWisyObject('WISY_ANBIETER_RENDERER_CLASS', $this->framework);
 
 		$validOrders = array('a', 'ad', 's', 'sd', 'p', 'pd', 'o', 'od', 'h', 'hd', 'e', 'ed', 't', 'td', 'creat', 'creatd');
-		$orderBy = $_GET['order']; if( !in_array($orderBy, $validOrders) ) $orderBy = 'a';
+		$orderBy = strval( $this->framework->getParam('order') ); if( !in_array($orderBy, $validOrders) ) $orderBy = 'a';
 
 		$db2 = new DB_Admin();
 
@@ -824,17 +939,19 @@ class WISY_SEARCH_RENDERER_CLASS
 			}
 
 			// render head
-			echo '<div class="wisyr_list_header">';
-			echo '<div class="wisyr_listnav"><a href="search?q=' . urlencode(str_replace(array(',,', ', ,'), array(',', ','), str_replace('Zeige:Anbieter', '', $queryString))). '">Kurse</a><span class="active">Anbieter</span></div>';
-				echo '<span class="wisyr_anbieter_zum_suchauftrag">';
-				echo '<span class="wisyr_anzahl_anbieter">' . $sqlCount . ' Anbieter</span> zum Suchauftrag';
-				echo '<a class="wisyr_kurse_switch" href="search?q=' . urlencode(str_replace(array(',,', ', ,'), array(',', ','), str_replace('Zeige:Anbieter', '', $queryString))). '">Zeige Kurse</a>';
-				echo '</span>';
-
-				if( $pagesel )
-				{
-					$this->renderPagination($prevurl, $nexturl, $pagesel, $this->rows, $offset, $sqlCount, 'wisyr_paginate_top');
-				}
+			echo '<div class="wisyr_listnav">';
+			$link_angebote = trim(urlencode(str_replace(array(',,', ', ,'), array(',', ','), str_replace('Zeige:Anbieter', '', $queryString))));
+			if($link_angebote)
+			    echo '<a href="search?q=' . $link_angebote . ( $this->framework->qtrigger ? '&qtrigger='.$this->framework->qtrigger : '') . ( $this->framework->force ? '&force='.$this->framework->force : '') . '" class="tab_kurse">Angebote</a>';
+			    
+			echo '<span class="active tab_anbieter">Anbieter</span>';
+			echo '<a class="wisyr_kurse_switch" href="search?q=' . urlencode(str_replace(array(',,', ', ,'), array(',', ','), str_replace('Zeige:Anbieter', '', $queryString))). '">Zeige Kurse</a>';
+			echo '</span>';
+			    
+			if( $pagesel )
+			{
+			     $this->renderPagination($prevurl, $nexturl, $pagesel, $this->rows, $offset, $sqlCount, 'wisyr_paginate_top');
+			}
 			echo '</div>' . "\n";
 			flush();
 			
@@ -842,7 +959,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			echo "\n".'<table class="wisy_list wisyr_anbieterliste">' . "\n";
 			echo '  <thead><tr>' . "\n";
 				$this->renderColumnTitle('Anbieter',	'a', 	$orderBy,	311);
-				$this->renderColumnTitle('Straße',		's', 	$orderBy,	0);
+				$this->renderColumnTitle('Stra&szlig;e',		's', 	$orderBy,	0);
 				$this->renderColumnTitle('PLZ',			'p',	$orderBy,	0);
 				$this->renderColumnTitle('Ort',			'o',	$orderBy,	0);
 				$this->renderColumnTitle('Web',			'h',	$orderBy,	0);
@@ -854,7 +971,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			$records = $searcher->getAnbieterRecords($offset, $this->rows, $orderBy);
 			$rows = 0;
 			
-			while( list($i, $record) = each($records['records']) )
+			foreach($records['records'] as $i => $record)
 			{
 				
 				$rows++;
@@ -863,13 +980,13 @@ class WISY_SEARCH_RENDERER_CLASS
 				echo "  <tr$class>\n";
 					$this->renderAnbieterCell2($db2, $record, array('q'=>$queryString, 'addPhone'=>false, 'clickableName'=>true, 'addIcon'=>true));
 					echo '<td class="wisyr_strasse" data-title="Straße">';
-						echo htmlspecialchars(utf8_encode($record['strasse']));
+						echo htmlspecialchars(cs8($record['strasse']));
 					echo ' </td>';
 					echo '<td class="wisyr_plz" data-title="PLZ">';
-						echo htmlspecialchars(utf8_encode($record['plz']));
+						echo htmlspecialchars(cs8($record['plz']));
 					echo ' </td>';
 					echo '<td class="wisyr_ort" data-title="Ort">';
-						echo htmlspecialchars(utf8_encode($record['ort']));
+						echo htmlspecialchars(cs8($record['ort']));
 					echo ' </td>';
 					echo '<td class="wisyr_homepage" data-title="Homepage">';
 						$link = $record['homepage'];
@@ -877,16 +994,16 @@ class WISY_SEARCH_RENDERER_CLASS
 						{
 							if( substr($link, 0, 4) != 'http' )
 								$link = 'http:/' . '/' . $link;
-							echo '<a href="'.$link.'" target="_blank">Web</a>';
+							echo '<a href="'.$link.'" target="_blank" rel="noopener noreferrer">Web</a>';
 						}
 					echo ' </td>';
 					echo '<td class="wisyr_email" data-title="E-Mail">';
 						$link = $record['anspr_email'];
 						if( $link != '' )
-							echo '<a href="' . $anbieterRenderer->createMailtoLink($link) . '" target="_blank">E-Mail</a>';
+							echo '<a href="' . $anbieterRenderer->createMailtoLink($link) . '" target="_blank"" rel="noopener noreferrer">E-Mail</a>';
 					echo ' </td>';
 					echo '<td class="wisyr_telefon" data-title="Telefon">';
-						echo '<a href="tel:' . htmlspecialchars(utf8_encode($record['anspr_tel'])) . '">' . htmlspecialchars(utf8_encode($record['anspr_tel'])) . '</a>';
+						echo '<a href="tel:' . urlencode(cs8($record['anspr_tel'])) . '">' . htmlspecialchars(cs8($record['anspr_tel'])) . '</a>';
 					echo ' </td>';
 				echo '  </tr>' . "\n";
 			}
@@ -899,14 +1016,15 @@ class WISY_SEARCH_RENDERER_CLASS
 			if( $pagesel )
 			{
 				echo '<div class="wisyr_list_footer clearfix">';
-					echo '<div class="wisyr_rss_link_wrapper">' . $this->framework->getRSSLink() . '</div>';
+				    // if( $this->framework->iniRead('rsslink', 0) )
+				     // echo '<div class="wisyr_rss_link_wrapper">' . $this->framework->getRSSLink() . '</div>';
 					$this->renderPagination($prevurl, $nexturl, $pagesel, $this->rows, $offset, $sqlCount, 'wisyr_paginate_bottom');
 				echo '</div>';
 			}
 		}
 		else /* if( sqlCount ) */
 		{
-			echo '<p class="wisy_topnote">Keine Datensätze für <em>&quot;'.htmlspecialchars(utf8_encode(trim($queryString, ', '))).'&quot;</em> gefunden.</p>' . "\n";
+			echo '<p class="wisy_topnote">Keine Datens&auml;tze f&uuml;r <em>&quot;'.htmlspecialchars(cs8(trim($queryString, ', '))).'&quot;</em> gefunden.</p>' . "\n";
 		}
 	}
 	
@@ -936,13 +1054,13 @@ class WISY_SEARCH_RENDERER_CLASS
 			}
 		}
 		
-		$offset = intval($_GET['offset']); if( $offset < 0 ) $offset = 0;
+		$offset = intval( $this->framework->getParam('offset') ); if( $offset < 0 ) $offset = 0;
 		$title = trim($queryString, ', ');
 
 		// page / ajax start
 		// --------------------------------------------------------------------
 
-		if( intval($_GET['ajax']) )
+		if( intval( $this->framework->getParam('ajax') ) )
 		{
 			header('Content-type: text/html; charset=utf-8');
 		}
@@ -969,7 +1087,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		
 		echo '<div id="wisy_resultarea" class="' .$this->framework->getAllowFeedbackClass(). '">';
 		
-			if( $_GET['show'] == 'tags' )
+		    if( $this->framework->getParam('show') == 'tags' )
 			{
 				$this->renderTagliste($queryString);
 			}
@@ -992,30 +1110,30 @@ class WISY_SEARCH_RENDERER_CLASS
 				switch( $error['id'] )
 				{
 					case 'tag_not_found':
-						echo '<p class="wisy_topnote">Ihre Suche nach &quot;' .htmlspecialchars(utf8_encode(trim($queryString, ', '))). '&quot; liefert keine Treffer.</p>' . "\n";
+						echo '<p class="wisy_topnote">Ihre Suche nach &quot;' .htmlspecialchars(cs8(trim($queryString, ', '))). '&quot; liefert keine Treffer.</p>' . "\n";
 						break;
 				
 					case 'field_not_found':
-						echo '<p class="wisy_topnote">Das zu durchsuchende Feld &quot;'.htmlspecialchars(utf8_encode($error['field'])).'&quot; ist unbekannt oder falsch geschrieben.</p>' . "\n";
+						echo '<p class="wisy_topnote">Das zu durchsuchende Feld &quot;'.htmlspecialchars(cs8($error['field'])).'&quot; ist unbekannt oder falsch geschrieben.</p>' . "\n";
 						break;
 				
 					case 'missing_fulltext':
-						echo '<p class="wisy_topnote">Bitte geben Sie die zu suchenden Volltextwörter hinter <em>Volltext:</em> an.</p>' . "\n";
+						echo '<p class="wisy_topnote">Bitte geben Sie die zu suchenden Volltextw&ouml;rter hinter <em>Volltext:</em> an.</p>' . "\n";
 						break;
 				
 					case 'bad_location':
 						echo 	'<p class="wisy_topnote">'
-							.		' Die Ortsangabe <em>bei:'.htmlspecialchars(utf8_encode($error['field'])).'</em> konnte nicht lokalisiert werden (Status='.htmlspecialchars(utf8_encode($error['status'])).').'
+							.		' Die Ortsangabe <em>bei:'.htmlspecialchars(cs8($error['field'])).'</em> konnte nicht lokalisiert werden (Status='.htmlspecialchars(cs8($error['status'])).').'
 							.	'</p>' . "\n";
 						break;
 						
 					case 'inaccurate_location':
 						// see http://code.google.com/intl/de/apis/maps/documentation/reference.html#GGeoAddressAccuracy
-						$accuracies = array('Unbekannt', 'Land', 'Region', 'Kreis', 'Ortschaft', 'PLZ', 'Strasse', 'Kreuzung', 'Adresse', 'Grundstück');
+						$accuracies = array('Unbekannt', 'Land', 'Region', 'Kreis', 'Ortschaft', 'PLZ', 'Strasse', 'Kreuzung', 'Adresse', 'Grundst&uuml;ck');
 						$ist_accuracy = intval($error['ist_accuracy']);
 						$soll_accuracy = intval($error['soll_accuracy']);
 						echo 	'<p class="wisy_topnote">'
-							.		' Die Ortsangabe <em>bei:'.htmlspecialchars(utf8_encode($error['field'])).'</em> wurde als '
+							.		' Die Ortsangabe <em>bei:'.htmlspecialchars(cs8($error['field'])).'</em> wurde als '
 							.		' wurde als <em>'.$accuracies[$ist_accuracy].' ('.$ist_accuracy.')</em> klassifiziert und ist damit zu ungenau. '
 							.		' Erforderlich ist mindestens die Genauigkeit <em>'.$accuracies[$soll_accuracy].'</em>. '
 							.	'</p>' . "\n";
@@ -1026,7 +1144,7 @@ class WISY_SEARCH_RENDERER_CLASS
 						break;
 
 					case 'km_without_bei':
-						echo '<p class="wisy_topnote">Die Angabe von <em>km:</em> ist nur in Kombination mit <em>bei:</em> gültig. Für eine einfache Eingabe der richtigen Werte, verwenden Sie bitte die <em>Erweiterte Suche</em>.</p>' . "\n";
+						echo '<p class="wisy_topnote">Die Angabe von <em>km:</em> ist nur in Kombination mit <em>bei:</em> g&uuml;ltig. F&uuml;r eine einfache Eingabe der richtigen Werte, verwenden Sie bitte die <em>Erweiterte Suche</em>.</p>' . "\n";
 						break;
 				
 					default:
@@ -1049,7 +1167,7 @@ class WISY_SEARCH_RENDERER_CLASS
 				$db->query("SELECT id, titel FROM kurse WHERE anbieter=$loggedInAnbieterId AND user_created IN (".implode(',',$adminAnbieterUserIds).") AND freigeschaltet!=2;");
 				while( $db->next_record() )
 				{ 
-					$currId = intval($db->f8('id')); $titles[ $currId ] = $db->f8('titel'); $temp .= ', ' . $currId;
+					$currId = intval($db->fcs8('id')); $titles[ $currId ] = $db->fcs8('titel'); $temp .= ', ' . $currId;
 				}
 				
 				// compare the 'offers that are not "gesperrt"' against the ones that are in the search index
@@ -1057,14 +1175,14 @@ class WISY_SEARCH_RENDERER_CLASS
 				$db->query("SELECT kurs_id FROM x_kurse WHERE kurs_id IN($temp)");
 				while( $db->next_record() )
 				{
-					$liveIds[ $db->f8('kurs_id') ] = 1;
+					$liveIds[ $db->fcs8('kurs_id') ] = 1;
 				}
 				
 				// show 'offers that are not "gesperrt"' which are _not_ in the search index (eg. just created offers) below the normal search result
-				echo '<p><span class="wisy_edittoolbar" title="Um einen neuen Kurs hinzuzufügen, klicken Sie oben auf &quot;Neuer Kurs&quot;">Kurse in Vorbereitung:</span>&nbsp; ';
+				echo '<p><span class="wisy_edittoolbar" title="Um einen neuen Kurs hinzuzuf&uuml;gen, klicken Sie oben auf &quot;Neuer Kurs&quot;">Kurse in Vorbereitung:</span>&nbsp; ';
 					$out = 0;
 					reset( $titles );
-					while( list($currId, $currTitel) = each($titles) )
+					foreach($titles as $currId => $currTitel)
 					{
 						if( !$liveIds[ $currId ] )
 						{
@@ -1074,7 +1192,7 @@ class WISY_SEARCH_RENDERER_CLASS
 							$out++; 
 						}
 					}
-					if( $out == 0 ) echo '<i title="Um einen neuen Kurs hinzuzufügen, klicken Sie oben auf &quot;Neuer Kurs&quot;">keine</i>';
+					if( $out == 0 ) echo '<i title="Um einen neuen Kurs hinzuzuf&uuml;gen, klicken Sie oben auf &quot;Neuer Kurs&quot;">keine</i>';
 					//echo ' &ndash; <a href="edit?action=ek&amp;id=0">Neuer Kurs...</a>';
 				echo '</p>';
 			}
@@ -1087,7 +1205,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		// page / ajax end
 		// --------------------------------------------------------------------
 		
-		if( intval($_GET['ajax']) )
+		if( intval( $this->framework->getParam('ajax') ) )
 		{
 			;
 		}

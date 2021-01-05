@@ -29,12 +29,12 @@ class WISY_FEEDBACK_RENDERER_CLASS
 
 		headerDoCache(0);
 		
-		$url    = $_GET['url'];
+		$url    = $this->framework->getParam('url');
 		$ip		= $this->anonymize_ip1($_SERVER['REMOTE_ADDR']);
-		$rating = intval($_GET['rating']); if( $rating != 0 && $rating != 1 ) { echo 'BAD RATING'; return; }
-		$descr  = trim(utf8_decode($_GET['descr']));
-		$name  = trim(utf8_decode($_GET['name']));
-		$email  = trim(utf8_decode($_GET['email']));
+		$rating = intval( $this->framework->getParam('rating') ); if( $rating != 0 && $rating != 1 ) { echo 'BAD RATING'; return; }
+		$descr  = trim(utf8_decode( $this->framework->getParam('descr') ));
+		$name  = trim(utf8_decode( $this->framework->getParam('name') ));
+		$email  = trim(utf8_decode( $this->framework->getParam('email') ));
 		
 		// connect to db
 		$today = strftime("%Y-%m-%d %H:%M:%S");
@@ -45,7 +45,7 @@ class WISY_FEEDBACK_RENDERER_CLASS
 		if( $db->next_record() )
 		{
 			// modify an existing record (only adding a description is allowed)
-			$id = intval($db->f8('id'));
+			$id = intval($db->fcs8('id'));
 			if( $descr != '' )
 			{
 			    $db->query("UPDATE feedback SET descr='".addslashes($descr)."', name='".addslashes($name)."', email='".addslashes($email)."' WHERE id=$id;");
@@ -61,13 +61,15 @@ class WISY_FEEDBACK_RENDERER_CLASS
 
 		$db->query("SELECT user_grp FROM portale WHERE id=".$GLOBALS['wisyPortalId']);
 		$db->next_record();
-		$user_grp = intval($db->f8('user_grp'));
+		$user_grp = intval($db->fcs8('user_grp'));
 
 		$user_access = 511; // =0777, was: 508=0774, however, this would require supervisor settings to modify the feedback settings
 		$db->query("INSERT INTO feedback (url, ip, rating, descr, date_created, date_modified, user_grp, user_access) 
 					VALUES ('".addslashes($url)."', '".addslashes($ip)."', $rating, '".addslashes($descr)."', '$today', '$today', $user_grp, $user_access)");
 
 		echo 'FEEDBACK ADDED';
+		
+		$db->close();
 	}
 };
 

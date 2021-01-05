@@ -86,7 +86,7 @@ CREATE TABLE `x_tags` (
   PRIMARY KEY  (`tag_id`),
   KEY `tag_name` (`tag_name`),
   KEY `tag_soundex` (`tag_soundex`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci AUTO_INCREMENT=10351 ;
+) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci AUTO_INCREMENT=10351 ;
 
 -- --------------------------------------------------------
 

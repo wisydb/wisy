@@ -22,7 +22,7 @@ class WISY_AUTOSUGGEST_RENDERER_CLASS
 		}
 	
 		// convert a UTF-8-encoded string to a JSON-encoded string.
-		// to use this with strings encoded with ISO-8859-1, call utf8_encode() before
+		// to use this with strings encoded with ISO-8859-15, call utf8_encode() before
 		$oldEnc = mb_internal_encoding();
 		mb_internal_encoding("UTF-8");
 			static $convmap = array(0x80, 0xFFFF, 0, 0xFFFF);
@@ -47,11 +47,12 @@ class WISY_AUTOSUGGEST_RENDERER_CLASS
 	
 	function render()
 	{
-		$querystring = utf8_decode($_GET["q"]);
+	    $querystring = utf8_decode( strval( $this->framework->getParam('q') ) );
+	    $querystring = strip_tags($querystring);
 		
 		$tagsuggestor =& createWisyObject('WISY_TAGSUGGESTOR_CLASS', $this->framework);
 
-		switch( $_GET['format'] )
+		switch( $this->framework->getParam('format') )
 		{
 			case 'json':
 				// return as JSON, used by out OpenSearch implementation
@@ -62,60 +63,92 @@ class WISY_AUTOSUGGEST_RENDERER_CLASS
 
 				header('Content-type: application/json');
 				
-				echo '["' .$this->utf8_to_json(utf8_encode($querystring)). '",[';
-					for( $i = 0; $i < count((array) $tags); $i++ )
+				echo '["' .$this->utf8_to_json(cs8($querystring)). '",[';
+				    for( $i = 0; $i < count((array) $tags); $i++ )
 					{
 						echo $i? ',' : '';
-						echo '"' .$this->utf8_to_json(utf8_encode($tags[$i]['tag'])). '"';
+						echo '"' .$this->utf8_to_json(cs8($tags[$i]['tag'])). '"';
 					}
 				echo ']]';
 				break;
 			
 			default:
-				// return as simple text, one tag per line, used by the site's AutoSuggest
-				if(isset($_GET['type']) &&  $_GET['type'] == 'ort')
-				{
-					$tags = $tagsuggestor->suggestTags($querystring, array('max'=>10, 'q_tag_type'=>array(512)));
-				} 
-				else if(isset($_GET['type']) &&  $_GET['type'] == 'anbieter')
-				{
-					$tags = $tagsuggestor->suggestTags($querystring, array('max'=>10, 'q_tag_type'=>array(64,256)));
+			    // return as simple text, one tag per line, used by the site's AutoSuggest
+			    if( $this->framework->getParam('type') == 'ort' )
+			    {
+			        $tags = $tagsuggestor->suggestTags($querystring, array('max'=>10, 'q_tag_type'=>array(512)));
+			    }
+			    else if( $this->framework->getParam('type') == 'anbieter')
+			    {
+				    $tag_type_anbieter = $this->framework->iniRead('autosuggest_sw_typ_anbieter', array(2, 131328, 256, 262144));
+				    $tag_type_anbieter = (is_array($tag_type_anbieter)) ? $tag_type_anbieter : array_map("trim", explode(",", $tag_type_anbieter));
+				    $tags = $tagsuggestor->suggestTags($querystring, array('max'=>10, 'q_tag_type'=>$tag_type_anbieter, 'q_tag_type_not'=>array(0,1,65536,4,8,32768,16,32,64,128,512,1024,2048,4096,8192,16384,65)));
 				}
 				else
 				{
-					$tags = $tagsuggestor->suggestTags($querystring, array('max'=>10, 'q_tag_type_not'=>array(64,256,512)));
+
+				    $tags = $tagsuggestor->suggestTags($querystring, array('max'=>10, 'q_tag_type_not'=>array(0,32,128,256,2048,4096,131072,262144)));
+				    
+				    if($this->framework->iniRead('search.ajax.combine_angebote_anbieter', false)) {
+				        $tag_type_anbieter = $this->framework->iniRead('autosuggest_sw_typ_anbieter', array(2, 131328, 256, 262144));
+				        $tag_type_anbieter = (is_array($tag_type_anbieter)) ? $tag_type_anbieter : array_map("trim", explode(",", $tag_type_anbieter));
+				        $tags_anbieter = $tagsuggestor->suggestTags($querystring, array('max'=>10, 'q_tag_type'=>$tag_type_anbieter, 'q_tag_type_not'=>array(0,1,65536,4,8,32768,16,32,64,128,512,1024,2048,4096,8192,16384,65))); // 131072 = 65
+				        
+				        $tags = array_merge($tags, $tags_anbieter);
+				    }
+				    
 				}
                 
                 // Filter out suggestions with tag_freq == 0
                 $filtered_tags = array();
-				for( $i = 0; $i < count((array) $tags); $i++ )
-				{
-					if(intval($tags[$i]['tag_help']) == 0 && intval($tags[$i]['tag_freq']) == 0) continue;
-                    $filtered_tags[] = $tags[$i];
-				}
+                for( $i = 0; $i < count((array) $tags); $i++ )
+                {
+                    $skip = false;
+                    
+                    foreach($filtered_tags AS $filtered_tag) {
+                        // eliminate double tags and tags without courses (except for synonyms)
+                        if( ($filtered_tag['tag'] == $tags[$i]['tag']) || (intval($tags[$i]['tag_help']) == 0 && (intval($tags[$i]['tag_freq']) == 0 && intval($tags[$i]['tag_type']) != 64)) )
+                            $skip = true;
+                    }
+                    
+                    if(!$skip) {
+                        $filtered_tags[] = $tags[$i];
+                    }
+                }
                 
 
-				// No results
-				if(!isset($_GET['type']) ||  $_GET['type'] != 'ort')
-				{
-					if(count((array) $filtered_tags) == 0) {
-						$filtered_tags[] = array(
-							'tag'	=>	$querystring,
-							'tag_descr' => 'Keine Suchvorschläge möglich',
-							'tag_type'	=> 0,
-							'tag_help'	=> -2 // indicates "no results"
-						);
+                // No results
+                if( $this->framework->getParam('type') != 'ort')
+                {
+                    // If hidden synonym don't display: "Keine Suchvorschlaege"
+                    if($tagsuggestor->getTagId($querystring) && count($filtered_tags) == 0) {
+                        
+                        $filtered_tags[] = array(
+                            'tag'	=>	$querystring,
+                            'tag_descr' => '&nbsp;',
+                            'tag_type'	=> 0,
+                            'tag_help'	=> -2 // indicates "no results"
+                        );
+                        
+                    } elseif(count($filtered_tags) == 0) {
+                        
+                        $filtered_tags[] = array(
+                            'tag'	=>	"Suchbegriff: ".$querystring,
+                            'tag_descr' => 'Keine Suchvorschl'.(PHP7 ? utf8_decode("ä") : 'ä').'ge m'.(PHP7 ? utf8_decode("ö") : 'ö').'glich', // HTML entities not possible b/c 1:1 output by js
+                            'tag_type'	=> 0,
+                            'tag_help'	=> -2 // indicates "no results"
+                        );
                         // addMoreLink at the end when more than 10 entries have been found
-					} else if(count((array) $filtered_tags) > 9) {
-                            
-						$filtered_tags[] = array(
-							'tag'	=>	$querystring,
-							'tag_descr' => 'Alle Suchvorschläge anzeigen',
-							'tag_type'	=> 0,
-							'tag_help'	=> 1 // indicates "more"
-						);
-					}
-				}	
+                    } else if(count($filtered_tags) > 9) {
+                        
+                        $filtered_tags[] = array(
+                            'tag'	=>	$querystring,
+                            'tag_descr' => 'Alle Suchvorschl'.(PHP7 ? utf8_decode("ä") : 'ä').'ge anzeigen',
+                            'tag_type'	=> 0,
+                            'tag_help'	=> 1 // indicates "more"
+                        );
+                    }
+                }
 				
 				if( SEARCH_CACHE_ITEM_LIFETIME_SECONDS > 0 )
 					headerDoCache(SEARCH_CACHE_ITEM_LIFETIME_SECONDS);

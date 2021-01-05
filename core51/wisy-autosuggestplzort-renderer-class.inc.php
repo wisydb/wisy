@@ -19,7 +19,7 @@ class WISY_AUTOSUGGESTPLZORT_RENDERER_CLASS
 
 	function render()
 	{
-		$querystring = utf8_decode($_GET["q"]);
+	    $querystring = utf8_decode( strval($this->framework->getParam('q', '')) );
 		$db = new DB_Admin;
 		
 		// collect all PLZ/Ort into an array as ort=>array(plz1, plz2, ...)
@@ -28,8 +28,8 @@ class WISY_AUTOSUGGESTPLZORT_RENDERER_CLASS
 		$startsWithNumber = $this->startsWithNumber(trim($querystring));
 		$db->query("SELECT plz, ort FROM plz_ortscron WHERE plz LIKE ".$db->quote($querystring.'%')." OR ort LIKE ".$db->quote($querystring.'%'));
 		while( $db->next_record() ) {
-			$plz = $db->f8('plz');
-			$ort = $db->f8('ort');
+		    $plz = $db->fcs8('plz');
+		    $ort = $db->fcs8('ort');
 			
             // Filtern nach PLZ die in diesem Portal erlaubt sind
 			if( $this->plzfilterObj->is_valid_plz($plz) ) {
@@ -57,7 +57,7 @@ class WISY_AUTOSUGGESTPLZORT_RENDERER_CLASS
 			
 		if(count((array) $plzorte) == 0 && count((array) $orte) == 0)
 		{
-			echo 'Keine Ortsvorschläge möglich| ' . "\n";
+		    echo 'Keine Ortsvorschl&auml;ge m&ouml;glich| ' . "\n";
 		}
 		else
 		{
@@ -76,6 +76,8 @@ class WISY_AUTOSUGGESTPLZORT_RENDERER_CLASS
 				echo $value . "|" . $value . "\n";
 			}
 		}
+		
+		// $db->close();
 	}
 	
 	function startsWithNumber($string) {

@@ -202,7 +202,7 @@ class DB_Sql
 			}
 
 			$this->phys_query_id = @mysql_query($query_string, $this->Link_ID);			// do the query
-			if( !$this->phys_query_id )  { $this->halt("Invalid SQL: " . $query_string); return 0; }
+			if( !$this->phys_query_id )  { $this->halt("Invalid SQL OR connection closed before Query: " . $query_string); return 0; }
 			
 			$this->ResultAffectedRows	= @mysql_affected_rows($this->Link_ID); 		// fetch some result information
 			$this->ResultInsertId		= @mysql_insert_id($this->Link_ID);
@@ -211,13 +211,22 @@ class DB_Sql
 		}
 		else
 		{
-			$this->Link_ID = $this->lazy_connect();										// connect
-			if( !$this->Link_ID ) return 0; 
-			
-			$lazy_query_id = @mysql_query($query_string, $this->Link_ID);				// do the query
-			if( !$lazy_query_id )  { $this->halt("Invalid SQL: " . $query_string); return 0; }
-			
-			$this->ResultAffectedRows	= @mysql_affected_rows($this->Link_ID); 		// fetch some result information
+		    
+		    $this->Link_ID = $this->lazy_connect();										// connect
+		    $mysqli = is_object($this->Link_ID);
+		    
+		    if( !$this->Link_ID )
+		      return 0;
+		        
+		    if(!$mysqli)
+		      $lazy_query_id = mysql_query($query_string, $this->Link_ID);				// do the query
+		    else
+		      $lazy_query_id = mysql_query($query_string, $this->Link_ID);				// do the query
+		                
+		                
+		    if( !$lazy_query_id )  { $this->halt("Invalid SQL OR connection closed before Query: " . $query_string); return 0; }
+		                
+		    $this->ResultAffectedRows	= @mysql_affected_rows($this->Link_ID); 		// fetch some result information
 			$this->ResultInsertId		= @mysql_insert_id($this->Link_ID);
 			$this->ResultNumRows		= 0;
 			$this->ResultI 				= 0;
@@ -342,20 +351,22 @@ class DB_Sql
 	function close() {
 	    $this->free();
 	    
-	    if($this->Link_ID)
-	        return true; // mysql_close($this->Link_ID); // @mysql... #PHP7
-	        else
-	            return false;
+	    if($this->Link_ID && function_exists("mysql_close"))
+	       return mysql_close($this->Link_ID); // @mysql...
+	    elseif($this->Link_ID && function_exists("mysqli_close"))
+	       return mysqli_close($this->Link_ID); // @mysql...
+	    else
+	       return false;
 	}
 
 	private function halt($msg)
 	{
 	    if( $this->Link_ID ) {
-	        $this->Error = "* ".@mysql_error($this->Link_ID);
-	        $this->Errno = "* ".@mysql_errno($this->Link_ID);
+	        $this->Error = "* ".@mysqli_error($this->Link_ID);
+	        $this->Errno = "* ".@mysqli_errno($this->Link_ID);
 	    }
 	    else {
-	        $this->Error = "** ".@mysql_error();
+	        $this->Error = "** ".@mysqli_error();
 	        $this->Errno = "** ".@mysql_errno();
 	    }
 	    if( $this->Halt_On_Error == 'no' )
@@ -457,6 +468,12 @@ class DB_Sql
 		}
 		return $ret;
 	}
-
+	
+	function get_stat() {
+	    if($this->Link_ID)
+	        return mysqli_stat ( $this->Link_ID );
+	        
+	        return false;
+	}
+	
 }
-

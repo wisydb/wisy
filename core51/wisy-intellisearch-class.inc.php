@@ -10,9 +10,7 @@ class WISY_INTELLISEARCH_CLASS
 	function __construct(&$framework, $param)
 	{
 		$this->framework	=& $framework;
-		$this->searcher		=& createWisyObject('WISY_SEARCH_CLASS', $framework, $param);
-		
-		
+		$this->searcher		=& createWisyObject('WISY_SEARCH_CLASS', $framework, $param);	
 	}
 	
 	function prepare($queryString)
@@ -36,9 +34,9 @@ class WISY_INTELLISEARCH_CLASS
 		// ... dies geschieht allerdings nur bei _genau_ _einem_ token - andernfalls ist ein leeres Ergebnis sehr wahrscheinlich und
 		// teilweise auch gewollt.
 		$sizeOkay = false;
-		if(count((array) $this->searcher->tokens['cond']) == 1 
-		 || (count((array) $this->searcher->tokens['cond']) == 2 && $this->searcher->tokens['cond'][1]['field']) )
-			$sizeOkay = true;
+		if(  count((array) $this->searcher->tokens['cond']) == 1
+		    || (count((array) $this->searcher->tokens['cond']) == 2 && $this->searcher->tokens['cond'][1]['field']) )
+		    $sizeOkay = true;
 		
 		if( !$sizeOkay
 		 || $this->searcher->tokens['cond'][0]['field'] != 'tag' )
@@ -49,9 +47,8 @@ class WISY_INTELLISEARCH_CLASS
 		// try a nr:-search
 		if( intval($this->framework->iniRead('intellisearch.nr', 0))==1 )
 		{
-			$nrSearcher = createWisyObject('WISY_SEARCH_NR_CLASS', $this->framework);
-			$ids = $nrSearcher->nr2id($this->searcher->tokens['cond'][0]['value']);
-			if( count((array) $ids) )
+		    $ids = $this->searcher->nr2id($this->searcher->tokens['cond'][0]['value']);
+		    if( count((array) $ids) )
 			{
 				$changed_query = 'nr:' . $this->searcher->tokens['cond'][0]['value'];
 				$this->searcher->prepare($changed_query);
@@ -77,6 +74,8 @@ class WISY_INTELLISEARCH_CLASS
 			{
 				$this->changed_query = $changed_query;
 				return; // success with fulltext search :-)
+			} else {
+			    $this->changed_query = $changed_query; // document that query changed even if no result
 			}
 		}
 	}	
@@ -95,6 +94,7 @@ class WISY_INTELLISEARCH_CLASS
 			
 		$ret['suggestions'] = $this->suggestions;
 		$ret['changed_query'] = $this->changed_query;
+		$ret['changed_cnt'] = $this->getKurseCount();
 		
 		return $ret;
 	}
@@ -151,9 +151,9 @@ class WISY_INTELLISEARCH_CLASS
 			
 			default:
 				// most common reason for this: an empty result, suggest easier searches
-				if( $this->searcher->ok() && count((array) $this->searcher->tokens['cond'])>=2 )
+			    if( $this->searcher->ok() && count((array) $this->searcher->tokens['cond'])>=2 )
 				{
-					for( $i = 0; $i < count((array) $this->searcher->tokens['cond']); $i++ )
+				    for( $i = 0; $i < count((array) $this->searcher->tokens['cond']); $i++ )
 					{
 						if( $this->searcher->tokens['cond'][$i]['field'] == 'tag' )
 						{
@@ -175,4 +175,25 @@ class WISY_INTELLISEARCH_CLASS
 		
 		return $ret;
 	}
+	
+	public function getChangedQuery() {
+	    return $this->changed_query;
+	}
+	
+	public function getDoubleTags() {
+	    return $this->searcher->getDoubleTags();
+	}
+	
+	public function getTagHeap() {
+	    return $this->searcher->getTagHeap();
+	}
+	
+	public function getFulltextSelect() {
+	    return $this->searcher->fulltext_select;
+	}
+	
+	public function getAssumedLocation() {
+	    return $this->searcher->getAssumedLocation();
+	}
+	
 };

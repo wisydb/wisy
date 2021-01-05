@@ -1,6 +1,5 @@
 <?php if( !defined('IN_WISY') ) die('!IN_WISY');
 
-
 /*****************************************************************************
  * WISY_MENUCHECK_CLASS
  * automatische Überprüfung der Portal-Menüs auf tote Links
@@ -24,17 +23,20 @@ Zusaetzliche Parameter:
 
  */
 
+require_once('admin/config/codes.inc.php');
+
 loadWisyClass('WISY_SYNC_RENDERER_CLASS');
 loadWisyClass('WISY_MENU_CLASS');
 
 class WISY_MENUCHECK_CLASS
 {
 	function __construct(&$framework, $param)
-	{
+	{   
 		$this->framework		=& $framework;
 		$this->statetable		= new WISY_SYNC_STATETABLE_CLASS($this->framework);
 		$this->menuclass		= new WISY_MENU_CLASS($this->framework, array('prefix'=>''));
 		$this->today_datetime   = strftime("%Y-%m-%d %H:%M:%S");
+		
 	}
 	
 	function render()
@@ -113,8 +115,9 @@ class WISY_MENUCHECK_CLASS
 			$wisyPortalId = $portal_id;
 			$wisyPortalFilter = explodeSettings($db->fs('filter'));
 			
-			$einstellungen_exploded = explodeSettings($einstellungen);
-			$hinweise = "MENUCHECK $this->today_datetime\n";
+			$einstellungen_exploded = array_map("trim", explodeSettings($einstellungen));
+			$hinweise = "++ MENUCHECK $this->today_datetime ++\n";
+			
 
 			$this->log("-------------------- Portal $portal_id überprüfen ----------------------");
 			
@@ -122,6 +125,7 @@ class WISY_MENUCHECK_CLASS
 			$itemsToCheck = ['externalUrl' => [], 'glossar' => [], 'search' => []];
 			
 			// Loop over menus for which placeholders exist
+			$additional_hints = array();
 			preg_match_all('/__MENU[A-Z0-9_]*__/', $bodystart, $menus);
 			foreach($menus[0] as $menu) {
 				$prefix = strtolower(str_replace('_', '', $menu));
@@ -133,6 +137,11 @@ class WISY_MENUCHECK_CLASS
 				
 				// Loop over menu entries
 				foreach($einstellungen_exploded as $key => $value) {
+				    
+				    if($key == "intellisearch.fulltext" && (intval($value) === 1 || intval($value) === 2)) {
+				        $additional_hints['intellisearch'] = "\n\n(HINWEIS: In diesem Portal ist die automatische Weiterleitung auf Volltextsuche aktiv!)\n";
+				    }
+				    
 					if( substr($key, 0, $allPrefixLen)==$allPrefix ) {
 						$items = $this->menuclass->createItems($value, 0);
 						foreach($items as $item) {
@@ -157,6 +166,9 @@ class WISY_MENUCHECK_CLASS
 				}
 			}
 			
+			$this->log( implode("\n", $additional_hints) );
+			$hinweise = str_replace(' ++', ' ++'.implode("\n", $additional_hints), $hinweise);
+			
 			$hinweise .= $this->checkExternalUrls($itemsToCheck['externalUrl']);
 			
 			$hinweise .= $this->checkGlossarEntries($itemsToCheck['glossar']);
@@ -164,7 +176,8 @@ class WISY_MENUCHECK_CLASS
 			$hinweise .= $this->checkSearchRequests($itemsToCheck['search']);
 			
 			// Update einstellungen_hinweise
-			$sql = "UPDATE portale SET einstellungen_hinweise='" . $hinweise . "', date_modified='" . $this->today_datetime . "' WHERE id=" . $portal_id;
+			$journal_entry = date('d.m.y').": ".utf8_decode('Automatische Menü-Prüfung (WISY)'); // prepend to journal
+			$sql = "UPDATE portale SET einstellungen_hinweise='" . $hinweise . "', date_modified='" . $this->today_datetime . "', notizen=CONCAT('".$journal_entry."\n',notizen), user_modified=".USER_MENUCHECK." WHERE id=" . $portal_id; 
 			$db2->query($sql);
 			
 			$this->statetable->updateUpdatestick();
@@ -178,6 +191,7 @@ class WISY_MENUCHECK_CLASS
 	
 	function getMenuType($url) {
 		$url = trim($url);
+
 		if($url == '' || $url == ';' || $url == '/' || $url == 'search' || $url == 'edit') {
 			return 'ignore';
 		}
@@ -195,15 +209,20 @@ class WISY_MENUCHECK_CLASS
 			// External URL
 			return 'externalUrl';
 		
-		} else if(substr($url, 0, 9) == 'search?q=' || substr($url, 0, 10) == '/search?q=') {
-			// Search
-			return 'search';
-		
+		} else if( (substr($url, 0, 7) == 'search?' && strpos($url, 'q=') !== FALSE ) // substr($url, 0, 9) == 'search?q=' || substr($url, 0, 10) == '/search?q=' ||
+		    || ( substr($url, 0, 8) == '/search?' && strpos($url, 'q=') !== FALSE )
+		    || ( substr($url, 0, 7) == 'search?' && strpos($url, 'qs=') !== FALSE ) 
+		    || ( substr($url, 0, 8) == '/search?' && strpos($url, 'qs=') !== FALSE )
+		    || ( substr($url, 0, 7) == 'search?' && strpos($url, 'qf=') !== FALSE ) 
+		    || ( substr($url, 0, 8) == '/search?' && strpos($url, 'qf=') !== FALSE )
+		    ) {
+		    // needs to be treated as External URL
+		    return 'search';
+		    
 		} else if(preg_match('/^\/?g\d+/', $url)) {
 			// Glossar
 			return 'glossar';
 		}
-		
 		return false;
 	}
 	
@@ -223,8 +242,8 @@ class WISY_MENUCHECK_CLASS
 				if($code == '200') continue;
 			}
 			foreach(array_keys($urls, $url) as $key) {
-				$this->log("$key / $url liefert keine Ergebnisse");
-				$hinweise .= "\n - $key / $url liefert keine Ergebnisse";
+				$this->log("$key / ".utf8_encode($url)." liefert keine Ergebnisse.");
+				$hinweise .= "\n - $key / ".$url." liefert keine Ergebnisse.";
 			}
 		}
 		return $hinweise;
@@ -252,8 +271,8 @@ class WISY_MENUCHECK_CLASS
 		foreach($glossar_ids as $glossar_id) {
 			$url = "g" . $glossar_id;
 			foreach(array_keys($urls, $url) as $key) {
-				$this->log("$key / $url liefert keine Ergebnisse");
-				$hinweise .= "\n - $key / $url liefert keine Ergebnisse";
+				$this->log("$key / ".utf8_encode($url)." liefert keine Ergebnisse..");
+				$hinweise .= "\n - $key / ".$url." liefert keine Ergebnisse..";
 			}
 		}
 		return $hinweise;
@@ -267,15 +286,25 @@ class WISY_MENUCHECK_CLASS
 		foreach($urls as $key => $url) {
 			$url = urldecode(trim($url));
 			if(substr($url, 0, 1) == '/') {
-				$search = urldecode(trim(substr($url, 10)));
+				$search = urldecode(trim(substr($url, 8)));
 			} else {
-				$search = urldecode(trim(substr($url, 9)));
+				$search = urldecode(trim(substr($url, 7)));
 			}
-			$searcher->prepare($search);
+			
+			parse_str($search, $params);
+			
+			if(isset($params['q']))
+			 $search_query = $params['q'];
+			elseif(isset($params['qs']))
+			 $search_query = $params['qs'];
+
+			$searcher->prepare($search_query);
+			 
 			$count = $searcher->getKurseCount();
 			if($count == 0) {
-				$this->log("$key / $search liefert keine Ergebnisse");
-				$hinweise .= "\n - $key / $search liefert keine Ergebnisse";
+			    $search = preg_replace("/^q=/i", '', $search);
+			    $this->log("$key / ".utf8_encode($search)." liefert keine Ergebnisse...");
+				$hinweise .= "\n - $key / ".$search." liefert keine Ergebnisse...";
 			}
 		}
 		return $hinweise;
@@ -283,7 +312,7 @@ class WISY_MENUCHECK_CLASS
 	
 	function log($str)
 	{
-		echo $str . "\n";
+	    echo utf8_decode( $str ) . "\n";
 		flush();
 		$this->framework->log('menucheck', $str);
 	}

@@ -172,7 +172,7 @@ class WISY_BILLING_RENDERER_CLASS
 	
 						$soll_amount = 0;
 						$credit_count = 0;
-						for( $i = 0; $i < sizeof($this->allPrices); $i++ )
+						for( $i = 0; $i < sizeof((array) $this->allPrices); $i++ )
 						{
 							if( $this->allPrices[$i][0] == intval($order_no[1]) )
 							{

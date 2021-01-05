@@ -5,8 +5,8 @@
 WISY_SEARCH_CLASS wird verwendet, um genau spezifizierte Suchen zu starten oder
 um Informationen zu Suchen zu erhalten.
 
-WISY_SEARCH_CLASS führt keine alternativen Suchen durch (z.B. eine Volltextsuche,
-wenn die normale Suche keinen Erfolg brachte). Wenn dies gewünscht ist, ist dies 
+WISY_SEARCH_CLASS fuehrt keine alternativen Suchen durch (z.B. eine Volltextsuche,
+wenn die normale Suche keinen Erfolg brachte). Wenn dies gewuenscht ist, ist dies 
 die Aufgabe des Aufrufenden Programmteils.
 
 Beispiele zur Verwendung:
@@ -73,7 +73,7 @@ class WISY_SEARCH_CLASS
 	function prepare($queryString)
 	{
 		// Convert utf-8 input back to ISO-8859-1 because the DB ist still encoded with ISO
-		$queryString = iconv("UTF-8", "ISO-8859-1//IGNORE", $queryString);
+	    $queryString = PHP7 ? $queryString : $queryString = iconv("UTF-8", "ISO-8859-1//IGNORE", $queryString);
 		
 		// first, apply the stdkursfilter
 		global $wisyPortalFilter;
@@ -99,7 +99,7 @@ class WISY_SEARCH_CLASS
 		$max_km = 500;
 		$default_km = $this->framework->iniRead('radiussearch.defaultkm', 2);
 		$km = floatval($default_km);
-		for( $i = 0; $i < sizeof($this->tokens['cond']); $i++ )
+		for( $i = 0; $i < sizeof((array) $this->tokens['cond']); $i++ )
 		{
 			$value = $this->tokens['cond'][$i]['value'];
 			switch( $this->tokens['cond'][$i]['field'] )
@@ -119,21 +119,21 @@ class WISY_SEARCH_CLASS
 				
 		// pass 2: create SQL
 		$abgelaufeneKurseAnzeigen = 'no';
-		for( $i = 0; $i < sizeof($this->tokens['cond']); $i++ )
+		for( $i = 0; $i < sizeof((array) $this->tokens['cond']); $i++ )
 		{
 			// build SQL statements for this part
 			$value = $this->tokens['cond'][$i]['value'];
 			switch( $this->tokens['cond'][$i]['field'] )
 			{
-				case 'tag':
-					$tagNotFound = false;
-					if( strpos($value, ' ODER ') !== false )
-					{
-						// ODER-Suche
-						$subval = explode(' ODER ', $value);
-						$rawOr = '';
-						for( $s = 0; $s < sizeof($subval); $s++ )
-						{	
+			    case 'tag':
+			        $tagNotFound = false;
+			        if( stripos($value, ' ODER ') !== false )
+			        {
+			            // ODER-Suche
+			            $subval = explode(' ODER ', strtoupper($value));
+			            $rawOr = '';
+			            for( $s = 0; $s < sizeof((array) $subval); $s++ )
+			            {
 							$tag_id = $this->lookupTag(trim($subval[$s]));
 							if( $tag_id == 0 )
 								{ $tagNotFound = true; break; }							
@@ -224,18 +224,21 @@ class WISY_SEARCH_CLASS
 					break;
 				
 				case 'id';
+				case 'kid':
+				    $this->rawWhere .= $this->rawWhere? ' AND ' : ' WHERE ';
+				    $this->rawWhere .= "x_kurse.kurs_id =$value";
 				case 'fav':
 				case 'favprint': // favprint is deprecated
 					$ids = array();
 					$temp = $this->tokens['cond'][$i]['field']=='fav'? $_COOKIE['fav'] : $value;
 					$temp = explode(',', strtr($temp, ' /',',,'));
-					for( $j = 0; $j < sizeof($temp); $j++ ) {
+					for( $j = 0; $j < sizeof((array) $temp); $j++ ) {
 						$ids[] = intval($temp[$j]); // safely get the IDs - do not use the Cookie/Request-String directly!
 					}
 					
 					$this->rawCanCache = false;
 					$this->rawWhere .= $this->rawWhere? ' AND ' : ' WHERE ';
-					if( sizeof($ids) >= 1 ) {
+					if( sizeof((array) $ids) >= 1 ) {
 						$this->rawWhere .= "(x_kurse.kurs_id IN (".implode(',', $ids)."))";
 						$abgelaufeneKurseAnzeigen = 'void';
 					}
@@ -250,7 +253,7 @@ class WISY_SEARCH_CLASS
 					$ids = $nrSearcher->nr2id($value);
 					$this->rawCanCache = false; // no caching as we have different results for login/no login
 					$this->rawWhere .= $this->rawWhere? ' AND ' : ' WHERE ';
-					if( sizeof($ids) >= 1 ) {
+					if( sizeof((array) $ids) >= 1 ) {
 						$this->rawWhere .= "(x_kurse.kurs_id IN (".implode(',', $ids)."))";
 						$abgelaufeneKurseAnzeigen = 'void'; // implicitly show expired results if a number was searched
 					}
@@ -284,7 +287,7 @@ class WISY_SEARCH_CLASS
 						$radius_meters = $km * 1000.0;
 						
 						$radius_lat = $radius_meters / 111320.0; // Abstand zwischen zwei Breitengraden: 111,32 km  (weltweit)
-						$radius_lng = $radius_meters /  71460.0; // Abstand zwischen zwei Längengraden :  71,46 km  (im mittel in Deutschland)
+						$radius_lng = $radius_meters /  71460.0; // Abstand zwischen zwei Laengengraden :  71,46 km  (im mittel in Deutschland)
 						
 						$min_lat = intval( ($lat - $radius_lat)*1000000 );
 						$max_lat = intval( ($lat + $radius_lat)*1000000 );
@@ -386,9 +389,9 @@ class WISY_SEARCH_CLASS
 					break;
 				
 				case 'volltext':
-					// volltextsuche, aktuell gibt es ein Volltextindex über kurse.titel und kurse.beschreibung; dieser
+					// volltextsuche, aktuell gibt es ein Volltextindex ueber kurse.titel und kurse.beschreibung; dieser
 					// wird vom core10 *nicht* verwendet und vom redaktionssystem wohl eher selten.
-					// aktuell nehmen wird diesen Index einfach, sollten wir hier aber etwas anderes benötigen, 
+					// aktuell nehmen wird diesen Index einfach, sollten wir hier aber etwas anderes benoetigen, 
 					// kann der alte Volltextindex verworfen werden. ALSO:
 					if( $value != '' )
 					{
@@ -409,7 +412,7 @@ class WISY_SEARCH_CLASS
 			}			
 		}
 		
-		/* -- leere Anfragen sind für "diese kurse beginnen morgen" notwendig, leere Anfragen sind _kein_ Fehler!
+		/* -- leere Anfragen sind fuer "diese kurse beginnen morgen" notwendig, leere Anfragen sind _kein_ Fehler!
 		if( !is_array($this->error) && $this->rawWhere=='' )
 		{
 			$this->error = array('id'=>'empty_query');
@@ -484,7 +487,7 @@ class WISY_SEARCH_CLASS
 					$this->db->query("SET SQL_BIG_SELECTS=1"); // optional
 					$this->db->query($sql);
 					if( $this->db->next_record() )
-						$ret = intval($this->db->f8('cnt'));
+						$ret = intval($this->db->f('cnt'));
 					$this->db->free();
 					
 					// add to cache
@@ -560,7 +563,7 @@ class WISY_SEARCH_CLASS
 						case 'pd':		$orderBy = 'x_kurse.preis DESC';							break;
 						case 'o':		$orderBy = "x_kurse.ort_sortonly='', x_kurse.ort_sortonly";	break;	// sortiere nach ort
 						case 'od':		$orderBy = "x_kurse.ort_sortonly DESC";						break;
-						case 'creat':	$orderBy = 'x_kurse.begmod_date';							break;	// sortiere nach beginnaenderungsdatum (hauptsächlich für die RSS-Feeds interessant)
+						case 'creat':	$orderBy = 'x_kurse.begmod_date';							break;	// sortiere nach beginnaenderungsdatum (hauptsaechlich fuer die RSS-Feeds interessant)
 						case 'creatd':	$orderBy = 'x_kurse.begmod_date DESC';						break;
 						case 'rand':	$orderBy = 'RAND()';										break;
 						default:		$orderBy = 'kurse.id';										die('invalid order!');
@@ -603,7 +606,7 @@ class WISY_SEARCH_CLASS
 				while( $this->db->next_record() )
 				{
 					$this->anbieterIds .= $this->anbieterIds==''? '' :', ';
-					$this->anbieterIds .= intval($this->db->f8('anbieter'));
+					$this->anbieterIds .= intval($this->db->f('anbieter'));
 					$ret++;
 				}
 				$this->db->free();
@@ -650,7 +653,7 @@ class WISY_SEARCH_CLASS
 				case 't':		$orderBy = "anspr_tel";									break;
 				case 'td':		$orderBy = "anspr_tel DESC";							break;
 				
-				// sortiere nach erstellungsdatum (hauptsächlich für die RSS-Feeds interessant)
+				// sortiere nach erstellungsdatum (hauptsaechlich fuer die RSS-Feeds interessant)
 				case 'creat':	$orderBy = 'date_created';								break;
 				case 'creatd':	$orderBy = 'date_created DESC';							break;
 
@@ -702,8 +705,8 @@ class WISY_SEARCH_CLASS
 			'cond'		=>	array(),
 		);
 
-		$queryArr = explode(',', $queryString);
-		for( $i = 0; $i < sizeof($queryArr); $i++ )
+		$queryArr = explode(',', strval( $queryString ));
+		for( $i = 0; $i < sizeof((array) $queryArr); $i++ )
 		{
 			// get initial value to search tags for, remove multiple spaces
 			$field = '';
@@ -747,19 +750,19 @@ class WISY_SEARCH_CLASS
 			$this->db->query("SELECT tag_id, tag_type FROM x_tags WHERE tag_name='".addslashes($tag_name)."';");
 			if( $this->db->next_record() )
 			{
-				$tag_type = $this->db->f8('tag_type');
+			    $tag_type = PHP7 ? $this->db->f('tag_type') : $this->db->fcs8('tag_type');
 				if( $tag_type & 64 )
 				{
 					// synonym - ein lookup klappt nur, wenn es nur _genau_ ein synonym gibt
-					$temp_id   = $this->db->f8('tag_id');
+					$temp_id   = $this->db->f('tag_id');
 					$syn_ids = array();
 					$this->db->query("SELECT t.tag_id FROM x_tags t LEFT JOIN x_tags_syn s ON s.lemma_id=t.tag_id WHERE s.tag_id=$temp_id");
 					while( $this->db->next_record() )
 					{
-						$syn_ids[] = $this->db->f8('tag_id');
+						$syn_ids[] = $this->db->f('tag_id');
 					}
 					
-					if( sizeof( $syn_ids ) == 1 )
+					if( sizeof((array)  $syn_ids ) == 1 )
 					{
 						$tag_id = $syn_ids[0]; /*directly follow 1-dest-only-synonyms*/
 					}
@@ -767,7 +770,7 @@ class WISY_SEARCH_CLASS
 				else
 				{
 					// normales lemma
-					$tag_id   = $this->db->f8('tag_id');
+					$tag_id   = $this->db->f('tag_id');
 				}
 			}
 		}

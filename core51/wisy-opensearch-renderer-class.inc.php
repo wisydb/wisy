@@ -31,8 +31,8 @@ class WISY_OPENSEARCH_RENDERER_CLASS
 		header('Content-type: application/opensearchdescription+xml');
 		echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
 		echo '<OpenSearchDescription xmlns="https:/'.'/a9.com/-/spec/opensearch/1.1/" xmlns:moz="https:/'.'/www.mozilla.org/2006/browser/search/">' . "\n";
-			echo '  <ShortName>' . htmlspecialchars(cs8($wisyPortalKurzname)) . '</ShortName>' . "\n";
-			echo '  <Description>' . htmlspecialchars(cs8($wisyPortalName)) . '</Description>' . "\n";
+		    echo '  <ShortName>' . htmlspecialchars(cs8($wisyPortalKurzname)) . '</ShortName>' . "\n";
+		    echo '  <Description>' . htmlspecialchars(cs8($wisyPortalName)) . '</Description>' . "\n";
 			echo '  <InputEncoding>UTF-8</InputEncoding>' . "\n";
 			echo '  <Image height="16" width="16" type="image/x-icon">' . $absPath . $this->framework->getFaviconFile(). '</Image>' . "\n";
 			

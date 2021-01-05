@@ -28,7 +28,7 @@ class WISY_GLOSSAR_RENDERER_CLASS
 	
 	function render()
 	{
-		$glossar_id = intval($_GET['id']);
+	    $glossar_id = intval( $this->framework->getParam('id') );
 	
 		$db = new DB_Admin;
 
@@ -36,11 +36,11 @@ class WISY_GLOSSAR_RENDERER_CLASS
 		if( !$db->next_record() )
 			$this->framework->error404();
 
-		$begriff 		= $db->f8('begriff');
-		$erklaerung     	= $db->f8('erklaerung');
-		$wikipedia 		= $db->f8('wikipedia');
-		$date_created	= $db->f8('date_created');
-		$date_modified	= $db->f8('date_modified');
+		$begriff 		= $db->fcs8('begriff');
+		$erklaerung 	= $db->fcs8('erklaerung'); // ?
+		$wikipedia 		= $db->fcs8('wikipedia');
+		$date_created	= $db->f('date_created');
+		$date_modified	= $db->f('date_modified');
 
 		// Wenn es keine Erklärung, aber eine Wikipedia-Seite gibt -> Weiterleitung auf die entspr. Wikipedia-Seite
 		if( $erklaerung == '' && $wikipedia != '' )
@@ -89,7 +89,7 @@ class WISY_GLOSSAR_RENDERER_CLASS
 					$isB2b = (substr($wikipedia, 0, 4) == 'b2b:')? true : false;
 				
 					echo '<p>';
-						echo 'Weitere Informationen zu diesem Thema finden Sie <a href="'.htmlspecialchars($this->getWikipediaUrl($wikipedia)).'" target="_blank">';
+						echo 'Weitere Informationen zu diesem Thema finden Sie <a href="'.htmlspecialchars($this->getWikipediaUrl($wikipedia)).'" target="_blank" rel="noopener noreferrer">';
 							echo ' ' . ($isB2b? 'im Weiterbildungs-WIKI' : 'in der Wikipedia');
 						echo '</a>';
 					echo '</p>';
@@ -97,10 +97,18 @@ class WISY_GLOSSAR_RENDERER_CLASS
 				
 			echo '</section><!-- /.wisyr_glossar_infos -->';
 
+			$gerst = $this->framework->iniRead('glossarinfo.erstellt', 1);
+			$gaend = $this->framework->iniRead('glossarinfo.geaendert', 1);
+			
 			echo '<footer class="wisy_glossar_footer">';
-				echo '<div class="wisyr_glossar_meta">';
-					echo 'Information erstellt am ' . $this->framework->formatDatum($date_created);
-					echo ', zuletzt ge&auml;ndert am ' . $this->framework->formatDatum($date_modified);
+			echo '<div class="wisyr_glossar_meta">';
+        			if($gerst || $gaend) {
+        			    echo 'Information: ';
+        			    if($gerst)
+        			        echo 'erstellt am ' . $this->framework->formatDatum($date_created).', ';
+        			        if($gaend)
+        			            echo 'zuletzt ge&auml;ndert am ' . $this->framework->formatDatum($date_modified);
+        			}
 					$copyrightClass =& createWisyObject('WISY_COPYRIGHT_CLASS', $this->framework);
 					$copyrightClass->renderCopyright($db, 'glossar', $glossar_id);
 				echo '</div><!-- /.wisyr_glossar_meta -->';

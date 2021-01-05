@@ -62,7 +62,7 @@
  
 class WISY_SYNC_STATETABLE_CLASS
 {
-	function WISY_SYNC_STATETABLE_CLASS(&$framework)
+	function __construct(&$framework)
 	{
 		$this->framework 	=& $framework;
 		$this->db 			= new DB_Admin;
@@ -134,7 +134,7 @@ class WISY_SYNC_STATETABLE_CLASS
 
 class TAGTABLE_CLASS
 {
-	function TAGTABLE_CLASS()
+	function __construct()
 	{
 		$this->db = new DB_Admin;
 		$this->tags = array();	
@@ -173,7 +173,9 @@ class TAGTABLE_CLASS
 		
 		if( $this->lookup($tag_name) == 0 )
 		{
-			$tag_soundex = soundex($tag_name);
+		    require_once("admin/lib/soundex/x3m_soundex_ger.php");
+		    
+			$tag_soundex = soundex_ger($tag_name);
 			$tag_metaphone = metaphone($tag_name);
 			$this->db->query("INSERT INTO x_tags (tag_name, tag_descr, tag_type, tag_help, tag_soundex, tag_metaphone) VALUES ('".addslashes($tag_name)."', '".addslashes($tag_descr)."', $tag_type, $tag_help, '$tag_soundex', '$tag_metaphone')");
 			$this->tags[ $tag_name ] = array( intval($this->db->insert_id()), $tag_type, $tag_help, $tag_descr );
@@ -224,7 +226,7 @@ class TAGTABLE_CLASS
 
 class ATTR2TAG_CLASS
 {
-	function ATTR2TAG_CLASS(&$tagtable, $table, $field)
+	function __construct(&$tagtable, $table, $field)
 	{
 		$this->db = new DB_Admin;
 		$this->tagtable =& $tagtable;
@@ -350,7 +352,7 @@ class KURS2PORTALTAG_CLASS
 	private $portaltags;
 	private $plzfilter;
 	
-	function KURS2PORTALTAG_CLASS(&$framework, &$tagtable, &$statetable, $alle_kurse_str)
+	function __construct(&$framework, &$tagtable, &$statetable, $alle_kurse_str)
 	{
 		$db = new DB_ADMIN;
 		$db2 = new DB_ADMIN;
@@ -1210,6 +1212,28 @@ class WISY_SYNC_RENDERER_CLASS
 		$this->statetable->writeState('lastsync.kurse.global', $this->today_datetime);
 	}
 	
+	function doDBCleanup() {
+	    $db = new DB_ADMIN;
+	    $file_db_sql_skripte = "db_sql_skripte.inc.php";
+	    require_once($file_db_sql_skripte);
+	    
+	    if( !$db_sql || !is_array($db_sql) ) {
+	        echo "Keine zus&auml;tzlichen DB-Skripte gefunden. (".$file_db_sql_skripte.")"."\n";
+	        return false;
+	    }
+	    
+	    foreach($db_sql AS $query) {
+	        
+	        echo "Ausf&uuml;hren von:\n".$query."\n";
+	        $db->query($query);
+	        echo "\n";
+	    }
+	    
+	    // $db->close();
+	    echo "Zus&auml;tzliche DB-Skripte ausgef&uuml;hrt."."\n\n";
+	    return true;
+	}
+	
 	/* main - see what to do
 	 *************************************************************************/
 	
@@ -1247,6 +1271,8 @@ class WISY_SYNC_RENDERER_CLASS
 		
 		// allocate exclusive access
 		if( !$this->statetable->allocateUpdatestick() ) { $this->log("********** ERROR: $host: cannot sync now, update stick in use, please try again in about 10 minutes."); return; }
+		
+		$this->doDBCleanup();
 		
 					// see what to do ...
 					if( isset($_GET['kurseFast']) )

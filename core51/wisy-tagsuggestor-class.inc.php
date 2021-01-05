@@ -25,7 +25,7 @@ class WISY_TAGSUGGESTOR_CLASS
 		$all = $this->framework->iniRead('tag.'.$tag_name, '');
 		if( $all != '' ) {
 			$all = explode(';', $all);
-			for( $m = 0; $m < count((array) $all); $m++ ) {
+			for( $m = 0; $m < count($all); $m++ ) {
 				$one = trim($all[$m]);
 				if( $one != '' ) {
 					$ret['sug'][] = array('tag_name'=>$one);
@@ -52,7 +52,7 @@ class WISY_TAGSUGGESTOR_CLASS
 		$tag = $this->keyword2tagName($keyword_or_tag_name);
 		$this->db2->query("SELECT tag_id FROM x_tags WHERE tag_name=".$this->db2->quote($tag));
 		if( $this->db2->next_record() ) {
-			return $this->db2->f8('tag_id');
+		    return $this->db2->fcs8('tag_id');
 		}
 		return 0;
 	}
@@ -71,46 +71,49 @@ class WISY_TAGSUGGESTOR_CLASS
 	}
 
 	public function getTagFreq($tag_ids_arr)
-	{	
-		if( count((array) $tag_ids_arr) == 1 )
-		{
-			$portalIdCond = '';
-			if( $GLOBALS['wisyPortalFilter']['stdkursfilter']!='' ) {
-				$portalIdCond = ' AND portal_id=' . $GLOBALS['wisyPortalId'] . ' ';
-			}
-			else {
-				$portalIdCond = ' AND portal_id=0 ';
-			}
-			$this->db2->query("SELECT tag_freq FROM x_tags_freq WHERE tag_id=".intval($tag_ids_arr[0]) . $portalIdCond); // x_tags_freq only contains recent offers, date checking is not required
-			if( $this->db2->next_record() ) {
-				return $this->db2->f8('tag_freq');
-			}
-		}
-		else if( count((array) $tag_ids_arr) > 1 )
-		{
-			$portalTagId = $this->getWisyPortalTagId();
-			if( $portalTagId ) {
-				$tag_ids_arr[] = $portalTagId;
-			}
-
-			$sql = "SELECT DISTINCT t.kurs_id AS cnt 
+	{
+	    
+	    if( count((array) $tag_ids_arr) == 1 )
+	    {
+	            
+	            $portalIdCond = '';
+	            if( $GLOBALS['wisyPortalFilter']['stdkursfilter']!='' ) {
+	                $portalIdCond = ' AND portal_id=' . $GLOBALS['wisyPortalId'] . ' ';
+	            }
+	            else {
+	                $portalIdCond = ' AND portal_id=0 ';
+	            }
+	            $this->db2->query("SELECT tag_freq FROM x_tags_freq WHERE tag_id=".intval($tag_ids_arr[0]) . $portalIdCond); // x_tags_freq only contains recent offers, date checking is not required
+	            if( $this->db2->next_record() ) {
+	                return $this->db2->fcs8('tag_freq');
+	            }
+	    }
+	    // more than one tag id
+	    else if( count((array) $tag_ids_arr) > 1 )
+	    {
+	            $portalTagId = $this->getWisyPortalTagId();
+	            if( $portalTagId ) {
+	                $tag_ids_arr[] = $portalTagId;
+	            }
+	            
+	            $sql = "SELECT DISTINCT t.kurs_id AS cnt
 			          FROM x_kurse_tags t
 			          LEFT JOIN x_kurse k ON t.kurs_id=k.kurs_id
 			         WHERE t.tag_id=" . intval($tag_ids_arr[0]);
-			for( $i = 1; $i < count((array) $tag_ids_arr); $i++ ) {
-				$sql .= " AND t.kurs_id IN(SELECT kurs_id FROM x_kurse_tags WHERE tag_id=".intval($tag_ids_arr[$i]) . ") ";
-			}
-			$sql .= " AND k.beginn>=".$this->db2->quote(strftime("%Y-%m-%d"));
-
-			$freq = 0;
-			$this->db2->query($sql);
-			while( $this->db2->next_record() ) {
-				$freq++;
-			}
-			return $freq;
-		}
-	
-		return 0;
+	            for( $i = 1; $i < count((array) $tag_ids_arr); $i++ ) {
+	                $sql .= " AND t.kurs_id IN(SELECT kurs_id FROM x_kurse_tags WHERE tag_id=".intval($tag_ids_arr[$i]) . ") ";
+	            }
+	            $sql .= " AND k.beginn>=".$this->db2->quote(strftime("%Y-%m-%d"));
+	                
+	                $freq = 0;
+	                $this->db2->query($sql);
+	                while( $this->db2->next_record() ) {
+	                    $freq++;
+	                }
+	                return $freq;
+	    }
+	    
+	    return 0;
 	}
 
 
@@ -155,7 +158,7 @@ class WISY_TAGSUGGESTOR_CLASS
 					for($i=0;$i<count($param['q_tag_type']);$i++)
 					{
 						$COND_TAGTYPE .= "tag_type & " . intval($param['q_tag_type'][$i]);
-						if($i < count((array) $param['q_tag_type']) - 1) $COND_TAGTYPE .= " OR ";
+						if($i < count($param['q_tag_type']) - 1) $COND_TAGTYPE .= " OR ";
 					}
 					$COND_TAGTYPE .= ")";
 				}
@@ -186,28 +189,35 @@ class WISY_TAGSUGGESTOR_CLASS
 			$ret = array();
 			$tags_done  = array();
 			$links_done = array();
+			
+			// Usually only one try - two tries for fuzzy post-search-searches
 			for( $tries = 0; $tries <= 1; $tries ++ )
 			{
+			    // First try: search for tags containing q-string
 				$COND .= $COND_TAGTYPE;
-				$sql = "SELECT t.tag_id, tag_name, tag_descr, tag_type, tag_help, tag_freq 
+                $sql = "SELECT t.tag_id, tag_name, tag_descr, tag_type, tag_help, SUM(tag_freq) AS tag_freq 
 							FROM x_tags t 
 							LEFT JOIN x_tags_freq f ON f.tag_id=t.tag_id $portalIdCond
 							WHERE ( $COND )
 							$portalIdCond
-							ORDER BY LEFT(tag_name,$LEN)<>'$QUERY', tag_name LIMIT 0, $max"; // sortierung alphabetisch, richtiger Wortanfang aber immer zuerst!
+							GROUP BY tag_name 
+							ORDER BY LEFT(tag_name,$LEN)<>'$QUERY', tag_name LIMIT 0, $max"; // sort alphabetically - matching word beginning esp. important! Group By because multiple same tag_name entries
                             
 				$this->db->query($sql); 
 				while( $this->db->next_record() )
 				{
-					// add the tag
-					$tag_id   = intval($this->db->f8('tag_id'));
-					$tag_name = $this->db->f8('tag_name');
-					$tag_descr = $this->db->f8('tag_descr');
-					$tag_type = intval($this->db->f8('tag_type'));
-					$tag_help = intval($this->db->f8('tag_help'));
-					$tag_freq = intval($this->db->f8('tag_freq'));
-					$tag_anbieter_id = '';
-					$tag_groups = array();
+				    // tag matching q-string found...
+				    
+				    // add the tag
+				    $tag_id   = intval($this->db->fcs8('tag_id'));
+				    $tag_name = $this->db->fcs8('tag_name');
+				        
+				    $tag_descr = $this->db->fcs8('tag_descr');
+				    $tag_type = intval($this->db->fcs8('tag_type'));
+				    $tag_help = intval($this->db->fcs8('tag_help'));
+				    $tag_freq = intval($this->db->fcs8('tag_freq'));
+				    $tag_anbieter_id = '';
+				    $tag_groups = array();
 					
 					if( !$tags_done [ $tag_name ]   // kein Tag zweimal ausgeben (koennte passieren, wenn es sowohl durch die buchstabenadditive und duch die fehlertolerante Suche gefunden wuerde)
 					 && !$links_done[ $tag_name ] ) // wenn zuvor auf ein lemma via Synonym verwiesen wurde, dieses Lemma nicht noch einmal einzeln hinzufügen
@@ -216,9 +226,18 @@ class WISY_TAGSUGGESTOR_CLASS
 						$tags_done[ $tag_name ] = 1;
 						$names = array();
 						
-						// get synonyms ...
-						if( $tag_type&64 )
+						// check if found tag (matching q-string) is a synonym ...
+						if($tag_type&64 || $tag_type&262144) //  // 64: Public synonym // 262144: Public Anbieternamensverweisung // 131072 = 65: Invisible Anbieternamensverweisung
 						{
+						    // While it's not useful to add a simple synonym (one destination) an open synonym or Anbieter-Namensverweisung may point to several tags / Anbieter => useful to add to suggestions / search by synonym/Anbieter-Namensverweisung
+						    if($tag_type&64 || $tag_type&262144) {
+						        $names[] = array(	'tag_name'=>$tag_name,
+						            'tag_descr'=>$tag_descr,
+						            'tag_type'=>$tag_type,
+						            'tag_help'=>$tag_help,
+						            'tag_freq'=>$tag_freq);
+						    }
+						    
 							$this->db2->query("SELECT tag_name, tag_descr, tag_type, tag_help, tag_freq
 													FROM x_tags t 
 													LEFT JOIN x_tags_syn s ON s.lemma_id=t.tag_id 
@@ -226,11 +245,11 @@ class WISY_TAGSUGGESTOR_CLASS
 													WHERE s.tag_id=$tag_id $COND_TAGTYPE $portalIdCond");
 							while( $this->db2->next_record() )
 							{
-								$names[] = array(	'tag_name'=>$this->db2->f8('tag_name'), 
-													'tag_descr'=> $this->db2->f8('tag_descr'),
-													'tag_type'=>$this->db2->f8('tag_type'), 
-													'tag_help'=>$this->db2->f8('tag_help'), 
-													'tag_freq'=>$this->db2->f8('tag_freq'));
+							        $names[] = array(	'tag_name'=>$this->db2->fcs8('tag_name'),
+							            'tag_descr'=>$this->db2->fcs8('tag_descr'),
+							            'tag_type'=>$this->db2->fcs8('tag_type'),
+							            'tag_help'=>$this->db2->fcs8('tag_help'),
+							            'tag_freq'=>$this->db2->fcs8('tag_freq'));
 							}
 						}
 						
@@ -239,30 +258,39 @@ class WISY_TAGSUGGESTOR_CLASS
 							// Anbieter-ID abfragen
 							if( $tag_type&256 )
 							{
-								$this->db3->query("SELECT id FROM anbieter WHERE suchname=". $this->db3->quote($tag_name));
+							    $sql = "SELECT id FROM anbieter WHERE REPLACE(suchname, ',', '')=". $this->db3->quote($tag_name);	// Commas are always removed from tag names => ignore in comparison
+							    $this->db3->query($sql);
 								$this->db3->next_record();
-								$tag_anbieter_id = $this->db3->f8('id');
+								$tag_anbieter_id = $this->db3->fcs8('id');
 							}
 					
-							// "Unterbegriff von" ermitteln
+							// Find Ancestor(s)
 							{
-								// 1. Anhand $tag_name in stichwoerter die stichwort-ID ermitteln
-								$this->db4->query("SELECT id FROM stichwoerter WHERE stichwort=". $this->db4->quote($tag_name));
-								if( $this->db4->next_record() )
-								{
-									$stichwort_id = $this->db4->f8('id');
-						
-									// 2. in stichwoerter_verweis2 Oberbegriffe finden
-									$this->db4->query("SELECT id, stichwort, primary_id 
-														FROM stichwoerter_verweis2 
+							    // 1. Anhand $tag_name in stichwoerter die stichwort-ID ermitteln
+							    $sql = "SELECT id FROM stichwoerter WHERE stichwort=". $this->db4->quote($tag_name);
+							    $this->db4->query($sql);
+							    
+							    if( $this->db4->next_record() )
+							    {
+							        // 32 = verstecktes Synonym, 256 = Volltext Titel, 512 = Volltext Beschreibung, 2048 = Verwaltungsstichwort, 8192 = Schlagwort nicht verwenden
+							        $dontdisplay = array(32, 256, 512, 2048, 8192);
+							        
+							        $stichwort_id = $this->db4->fcs8('id');
+							        
+							        // 2. in stichwoerter_verweis2 Oberbegriffe finden
+							        $this->db4->query("SELECT id, stichwort, primary_id, eigenschaften
+														FROM stichwoerter_verweis2
 														LEFT JOIN stichwoerter ON id=primary_id
 														WHERE attr_id = " . intval($stichwort_id) );
-											
-									while( $this->db4->next_record() )
-									{
-										$tag_groups[] = $this->db4->f8('stichwort');
-									}
-								}
+							        
+							        while( $this->db4->next_record() )
+							        {
+							            $tag_type = $this->db4->fcs8('eigenschaften');
+							            
+							            if(!in_array($tag_type, $dontdisplay))
+							                $tag_groups[] = $this->db4->fcs8('stichwort');
+							        }
+							    }
 							}
 						}
 							
@@ -270,11 +298,11 @@ class WISY_TAGSUGGESTOR_CLASS
 						// get manually added suggestions
 						$has_man_sug = false;
 						{
-							$temp = $this->get_manual_suggestions($tag_name);
-							if( count((array) $temp['sug']) )
+						    $temp = $this->get_manual_suggestions($tag_name);
+						    if( count((array) $temp['sug']) )
 							{
 								$has_man_sug = true;
-								for( $n = 0; $n < count((array) $temp['sug']); $n++ )
+								for( $n = 0; $n < count($temp['sug']); $n++ )
 								{
 									$names[] = array(	'tag_name'=>$temp['sug'][$n]['tag_name'],
 														'tag_descr'=>'',
@@ -352,29 +380,36 @@ class WISY_TAGSUGGESTOR_CLASS
 						}
 					}
 				}
+				
+				require_once("admin/lib/soundex/x3m_soundex_ger.php");
 
-				// if there are only very few results, try an additional soundex search
+				// if there are only very few results, try an additional soundex search = has equal word value
 				if( count((array) $ret) < $min && $use_soundex )
-					$COND = "tag_soundex='".soundex($q_tag_name)."'";
+					$COND = "tag_soundex='".soundex_ger($q_tag_name)."'";
 				else
-					break;
+				    break; // stop searching with one try if no tag found containing q
 			}
 
 			// 15.11.2012: Der Vorschlag zur Volltextsuche kann nun ausgeschaltet werden
 			if( $suggest_fulltext )
 			{
-				// 13.02.2010: die folgende Erweiterung bewirkt, das neben den normalen Vorschlägen auch immer die Volltextsuche vorgeschlagen wird -
-				// und zwar in der Ajax-Vorschlagliste und auch unter "Bitte verfeinern Sie Ihren Suchauftrag"
-				// wenn man hier differenzierter Vorgehen möchte, muss man ein paar Ebenen höher ansetzen (bp)
-				$ret[] = array(
-					'tag'	=>	'volltext:' . $q_tag_name,
-					'tag_descr' => '',
-					'tag_type'	=> 0,
-					'tag_help'	=> -3 // to signify "volltext"
-				);
-				// /13.02.2010: 
+			        $searcher_tmp =& createWisyObject('WISY_SEARCH_CLASS', $this->framework);
+			        
+			        // 13.02.2010: die folgende Erweiterung bewirkt, das neben den normalen Vorschl√§gen auch immer die Volltextsuche vorgeschlagen wird -
+			        // und zwar in der Ajax-Vorschlagliste und auch unter "Bitte verfeinern Sie Ihren Suchauftrag"
+			        // wenn man hier differenzierter Vorgehen m√∂chte, muss man ein paar Ebenen h√∂her ansetzen (bp)
+			        if( strlen($q_tag_name) >= $searcher_tmp->getMinChars() ) { // only if long enough for MYSQL actually search in fulltext mode
+			            $ret[] = array(
+			                'tag'	=>	'volltext:' . $q_tag_name,
+			                'tag_descr' => '',
+			                'tag_type'	=> 0,
+			                'tag_help'	=> -3 // to signify "volltext"
+			            );
+			        }
+			        // /13.02.2010:
 			}
 			// /15.11.2012
+			
 
 		}
 		

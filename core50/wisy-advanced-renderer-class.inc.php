@@ -13,7 +13,7 @@ class WISY_ADVANCED_RENDERER_CLASS
 		$this->presets['q'] = array
 			(
 				'type'			=> 'text',
-				'descr'			=> '<strong>Suchwörter:</strong>',
+			    'descr'			=> '<strong>Suchw&ouml;rter:</strong>',
 				'autocomplete'	=>	'ac_keyword',
 			);
 		$this->presets['datum'] = array
@@ -21,23 +21,23 @@ class WISY_ADVANCED_RENDERER_CLASS
 				'type'		=> 'function',
 				'function'	=> 'Datum:',
 				'descr'		=> '<strong>Beginndatum:</strong>',
-				'options' 	=> array(
-					'Alles' 				=> 'auch abgelaufene Angebote berücksichtigen',
-					$dates['vorgestern']	=> 'ab vorgestern',
-					$dates['gestern']		=> 'ab gestern',
-					''						=> 'ab heute',
-					$dates['morgen']		=> 'ab morgen',
-					$dates['uebermorgen']	=> 'ab übermorgen',
-					$dates['montag1']		=> 'nächste Woche &ndash; ab Montag, ' . $dates['montag1'],
-					$dates['montag2']		=> 'übernächste Woche &ndash; ab Montag, ' . $dates['montag2'],
-					$dates['montag3']		=> 'in 3 Wochen &ndash; ab Montag, ' . $dates['montag3'],
-					$dates['montag4']		=> 'in 4 Wochen &ndash; ab Montag, ' . $dates['montag4'],
-					$dates['montag5']		=> 'in 5 Wochen &ndash; ab Montag, ' . $dates['montag5'],
-					$dates['montag6']		=> 'in 6 Wochen &ndash; ab Montag, ' . $dates['montag6'],
-					$dates['montag7']		=> 'in 7 Wochen &ndash; ab Montag, ' . $dates['montag7'],
-					$dates['montag8']		=> 'in 8 Wochen &ndash; ab Montag, ' . $dates['montag8'],
-					$dates['montag9']		=> 'in 9 Wochen &ndash; ab Montag, ' . $dates['montag9'],
-				),
+			    'options' 	=> array(
+			        'Alles' 				=> 'auch abgelaufene Angebote ber&uuml;cksichtigen',
+			        $dates['vorgestern']	=> 'ab vorgestern',
+			        $dates['gestern']		=> 'ab gestern',
+			        ''						=> 'ab heute',
+			        $dates['morgen']		=> 'ab morgen',
+			        $dates['uebermorgen']	=> 'ab &uuml;bermorgen',
+			        $dates['montag1']		=> 'n&auml;chste Woche &ndash; ab Montag, ' . $dates['montag1'],
+			        $dates['montag2']		=> '&uuml;bern&auml;chste Woche &ndash; ab Montag, ' . $dates['montag2'],
+			        $dates['montag3']		=> 'in 3 Wochen &ndash; ab Montag, ' . $dates['montag3'],
+			        $dates['montag4']		=> 'in 4 Wochen &ndash; ab Montag, ' . $dates['montag4'],
+			        $dates['montag5']		=> 'in 5 Wochen &ndash; ab Montag, ' . $dates['montag5'],
+			        $dates['montag6']		=> 'in 6 Wochen &ndash; ab Montag, ' . $dates['montag6'],
+			        $dates['montag7']		=> 'in 7 Wochen &ndash; ab Montag, ' . $dates['montag7'],
+			        $dates['montag8']		=> 'in 8 Wochen &ndash; ab Montag, ' . $dates['montag8'],
+			        $dates['montag9']		=> 'in 9 Wochen &ndash; ab Montag, ' . $dates['montag9'],
+			    ),
 				'decoration' => array(
 					'headline_left' => '',
 				),
@@ -148,18 +148,18 @@ class WISY_ADVANCED_RENDERER_CLASS
 			$decoration = array();
 			
 		$foerderungen = $this->getSpezielleStichw(2);
-		if( sizeof($foerderungen) > 1 )
+		if( sizeof((array) $foerderungen) > 1 )
 		{
 			$this->presets['foerderung'] = array
 				(
 					'type'		=> 'taglist',
-					'descr'		=> 'Förderung:',
+				    'descr'		=> 'F&ouml;rderung:',
 					'options'	=>	$foerderungen
 				);
 		}
 		
 		$zielgruppen = $this->getSpezielleStichw(8);
-		if( sizeof($zielgruppen) > 1 )
+		if( sizeof((array) $zielgruppen) > 1 )
 		{
 			$this->presets['zielgruppe'] = array
 				(
@@ -170,18 +170,18 @@ class WISY_ADVANCED_RENDERER_CLASS
 		}
 
 		$qualitaetszertifikate = $this->getSpezielleStichw(4);
-		if( sizeof($qualitaetszertifikate) > 1 )
+		if( sizeof((array) $qualitaetszertifikate) > 1 )
 		{
 			$this->presets['qualitaetszertifikat'] = array
 				(
 					'type'		=> 'taglist',
-					'descr'		=> 'Qualitätszertifikat:',
+				    'descr'		=> 'Qualit&auml;tszertifikat:',
 					'options'	=>	$qualitaetszertifikate
 				);
 		}
 
 		$unterrichtsarten = $this->getSpezielleStichw(32768);
-		if( sizeof($unterrichtsarten) > 1 )
+		if( sizeof((array) $unterrichtsarten) > 1 )
 		{
 			$this->presets['unterrichtsart'] = array
 				(
@@ -226,7 +226,7 @@ class WISY_ADVANCED_RENDERER_CLASS
 		$db->query("SELECT stichwort FROM stichwoerter WHERE id IN ($ids_str) ORDER BY stichwort_sorted;");
 		while( $db->next_record() )
 		{
-			$stichw = htmlspecialchars($db->f8('stichwort'));
+			$stichw = htmlspecialchars($db->fcs8('stichwort'));
 			$stichw = trim(strtr($stichw, array(': '=>' ', ':'=>' ', ', '=>' ', ','=>' ')));
 			
 			$ret[ $stichw ] = $stichw;
@@ -266,7 +266,7 @@ class WISY_ADVANCED_RENDERER_CLASS
 	 * render, misc.
 	 **********************************************************************/
 
-	function renderForm()
+	function renderForm($q, $records)
 	{
 		
 		// explode the query string to its tokens
@@ -277,7 +277,7 @@ class WISY_ADVANCED_RENDERER_CLASS
 		$q = $this->framework->getParam('q');
 		$searcher =& createWisyObject('WISY_SEARCH_CLASS', $this->framework);
 		$tokens = $searcher->tokenize($q);
-		for( $i = 0; $i < sizeof($tokens['cond']); $i++ )
+		for( $i = 0; $i < sizeof((array) $tokens['cond']); $i++ )
 		{
 			$do_def = true;
 			
@@ -305,12 +305,12 @@ class WISY_ADVANCED_RENDERER_CLASS
 					
 				case 'tag':
 					reset($this->presets);
-					while( list($field_name, $preset) = each($this->presets) )
+					foreach($this->presets as $field_name => $preset)
 					{
 						if( $preset['type'] == 'taglist' && !isset($presets_curr[$field_name]) )
 						{
 							reset($preset['options']);
-							while( list($value) = each($preset['options']) )
+							foreach(array_keys($preset['options']) as $value)
 							{
 								if( strval($tokens['cond'][$i]['value']) == strval($value) )
 								{
@@ -349,7 +349,7 @@ class WISY_ADVANCED_RENDERER_CLASS
 							
 							reset($this->presets);
 							$fieldsets_open = 0;
-							while( list($field_name, $preset) = each($this->presets) )
+							foreach($this->presets as $field_name => $preset)
 							{
 								if( isset($preset['decoration']['headline_left']) )
 								{
@@ -377,7 +377,7 @@ class WISY_ADVANCED_RENDERER_CLASS
 										{
 											echo '<select name="adv_' .$field_name. '">';
 												reset($preset['options']);
-												while( list($value, $descr) = each($preset['options']) )
+												foreach($preset['options'] as $value => $descr)
 												{
 													$selected = strval($presets_curr[$field_name])==strval($value)? ' selected="selected"' : '';
 													echo "<option value=\"$value\"$selected>$descr</option>";
@@ -420,10 +420,10 @@ class WISY_ADVANCED_RENDERER_CLASS
 		 **********************************************************************/
 	
 
-		if( isset($_GET['adv_subseq']) )
-		{
-			if( isset($_GET['adv_cancel']) )
-			{
+	    if( $this->framework->getParam('adv_subseq') )
+	    {
+	        if( $this->framework->getParam('adv_cancel') )
+	        {
 				header('Location: search');
 				exit();
 			}
@@ -431,11 +431,11 @@ class WISY_ADVANCED_RENDERER_CLASS
 			{
 				$q = '';
 				reset($this->presets);
-				while( list($field_name, $preset) = each($this->presets) )
+				foreach($this->presets as $field_name => $preset)
 				{
-					$item = trim($_GET['adv_' . $field_name]);
-					if( $item != '' )
-					{
+				    $item = trim( $this->framework->getParam('adv_' . $field_name, '') );
+				    if( $item != '' )
+				    {
 						if( $preset['comma_to_slash'] )
 						{
 							$item = str_replace(', ', '/', $item);
@@ -449,7 +449,7 @@ class WISY_ADVANCED_RENDERER_CLASS
 					}
 				}
 				
-				if( isset($_GET['adv_searchanb']) )
+				if( $this->framework->getParam('adv_searchanb', false) )
 				{
 					$q .= $q==''? '' : ', ';
 					$q .= 'Zeige:Anbieter';
@@ -466,16 +466,16 @@ class WISY_ADVANCED_RENDERER_CLASS
 		 **********************************************************************/
 		 
 		
-		if( intval($_GET['ajax']) )
+		if( intval( $this->framework->getParam('ajax') ) )
 		{
-			header('Content-type: text/html; charset=utf-8');
-			$this->renderForm();
+		    header('Content-type: text/html; charset=utf-8');
+		    $this->renderForm(null, null);
 		}
 		else
 		{
-			echo $this->framework->getPrologue(array('title'=>'Erweiterte Suche', 'canonical'=>$this->framework->getUrl('advanced'), 'bodyClass'=>'wisyp_search'));
-			$this->renderForm();
-			echo $this->framework->getEpilogue();
+		    echo $this->framework->getPrologue(array('title'=>'Erweiterte Suche', 'canonical'=>$this->framework->getUrl('advanced'), 'bodyClass'=>'wisyp_search'));
+		    $this->renderForm(null, null);
+		    echo $this->framework->getEpilogue();
 		}
 	}
 };

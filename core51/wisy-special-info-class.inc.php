@@ -28,7 +28,7 @@ class WISY_SPECIAL_INFO_CLASS
 		$db->query("SELECT stichwort, id FROM stichwoerter WHERE eigenschaften=$flag;");
 		while( $db->next_record() )
 		{
-			$stichw = $db->f8('stichwort');
+			$stichw = $db->fcs8('stichwort');
 			$stichw = trim(strtr($stichw, array(': '=>' '	,	
 												':'	=>' '	,
 												', '=>' '	,
@@ -39,7 +39,7 @@ class WISY_SPECIAL_INFO_CLASS
 			if( $searcher->getKurseCount() )
 			{
 				$ids_str .= $ids_str == ''? '' : ', ';
-				$ids_str .= intval($db->f8('id'));
+				$ids_str .= intval($db->fcs8('id'));
 			}
 		}
 		

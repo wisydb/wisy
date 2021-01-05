@@ -17,7 +17,7 @@ class WISY_BILLING_RENDERER_CLASS
 		$allPrices = $this->framework->iniRead('useredit.billing.prices', '1000=29.75;');
 		$allPrices = strtr($allPrices, array('='=>';', ','=>'.', ' '=>''));
 		$allPrices = explode(';', $allPrices);
-		for( $a = 0; $a < count((array) $allPrices); $a+=2 )
+		for( $a = 0; $a < count($allPrices); $a+=2 )
 		{	
 			$amount = intval($allPrices[$a]);
 			$price  = floatval($allPrices[$a+1]);
@@ -46,15 +46,17 @@ class WISY_BILLING_RENDERER_CLASS
 		$db = new DB_Admin;
 		$db->query("SELECT user_created, user_grp, user_access FROM portale WHERE id=$wisyPortalId;");
 		$db->next_record();
-		$user_created = intval($db->f8('user_created'));
-		$user_grp     = intval($db->f8('user_grp'));
-		$user_access  = intval($db->f8('user_access'));
+		$user_created = intval($db->fcs8('user_created'));
+		$user_grp     = intval($db->fcs8('user_grp'));
+		$user_access  = intval($db->fcs8('user_access'));
 		
 		// Eintrag in Log schreiben
 		$todayHour     = strftime("%Y-%m-%d %H:%M:%S");
 		$db->query(  "INSERT INTO anbieter_billing
 					 (user_created,  user_modified, user_grp,  user_access,  date_created, date_modified, anbieter_id, portal_id,     bill_type, credits,          eur,      raw_data) VALUES
 					 ($user_created, $user_created, $user_grp, $user_access, '$todayHour', '$todayHour',  $anbieterId, $wisyPortalId, $bill_type, $credits_to_add, '$price', '".addslashes($raw_data)."')");
+		
+		$db->close();
 	}
 	
 	/**************************************************************************
@@ -98,7 +100,7 @@ class WISY_BILLING_RENDERER_CLASS
 
 		// render ....
 		echo '<p>';
-			echo 'Einblendungen können über PayPal gekauft werden. PayPal akzeptiert alle gängigen Kreditkarten und die Bezahlung per Überweisung. Klicken Sie einfach auf das folgende Symbol:';
+		  echo 'Einblendungen k&ouml;nnen &uuml;ber PayPal gekauft werden. PayPal akzeptiert alle g&auml;ngigen Kreditkarten und die Bezahlung per &Uuml;berweisung. Klicken Sie einfach auf das folgende Symbol:';
 		echo '</p>';
 		echo $button;
 	}
@@ -231,5 +233,7 @@ class WISY_BILLING_RENDERER_CLASS
 		{
 			echo 'OK';
 		}
+		
+		$db->close();
 	}
 }

@@ -15,7 +15,7 @@ true),collapseSelection:e(m,true),deleteSelectedText:e(q,true),deleteText:e(l,tr
 // cookie - http://archive.plugins.jquery.com/project/Cookie , http://www.electrictoolbox.com/jquery-cookies/
 (function(e,t,n){function i(e){return e}function s(e){return decodeURIComponent(e.replace(r," "))}var r=/\+/g;var o=e.cookie=function(r,u,a){if(u!==n){a=e.extend({},o.defaults,a);if(u===null){a.expires=-1}
 if(typeof a.expires==="number"){var f=a.expires,l=a.expires=new Date;l.setDate(l.getDate()+f)}u=o.json?JSON.stringify(u):String(u);return t.cookie=[encodeURIComponent(r),"=",o.raw?u:encodeURIComponent(u),
-a.expires?"; expires="+a.expires.toUTCString():"",a.path?"; path="+a.path:"",a.domain?"; domain="+a.domain:"",a.secure?"; secure":""].join("")}var c=o.raw?i:s;var h=t.cookie.split("; ");for(var p=0,d=h.length;p<d;p++)
+a.expires?"; expires="+a.expires.toUTCString():"",a.path?"; path="+a.path:"",a.domain?"; domain="+a.domain:"",a.secure?"; secure":"",a.sameSite?"; sameSite="+a.sameSite:"; sameSite=Strict"].join("")}var c=o.raw?i:s;var h=t.cookie.split("; ");for(var p=0,d=h.length;p<d;p++)
 {var v=h[p].split("=");if(c(v.shift())===r){var m=c(v.join("="));return o.json?JSON.parse(m):m}}return null};o.defaults={};e.removeCookie=function(t,n){if(e.cookie(t)!==null){e.cookie(t,null,n);return true}return false}})(jQuery,document)
 
 
@@ -29,6 +29,9 @@ a.expires?"; expires="+a.expires.toUTCString():"",a.path?"; path="+a.path:"",a.d
  * or if cookie is not blacklisted via cookiebanner.cookies.optout
  *
  */
+
+window.sameSiteDefault = "Strict";
+
 function setCookieSafely(title, value, options) {
 	if (window.cookiebanner && window.cookiebanner.optedOut && window.cookiebanner.optoutCookies && window.cookiebanner.optoutCookies.length) {
 		var blacklist = window.cookiebanner.optoutCookies.split(',');
@@ -146,12 +149,12 @@ function fav_list_functions()
 		}
 		
 		str = '<span class="wisyr_fav_functions">';
-		str += '<span class="wisyr_fav_anzahl">Ihre Merkliste enthält ' + cnt + (cnt==1? ' Eintrag ' : ' Einträge ') + '</span>';
+		str += '<span class="wisyr_fav_anzahl">Ihre Merkliste enth&auml;lt ' + cnt + (cnt==1? ' Eintrag ' : ' Eintr&auml;ge ') + '</span>';
 		if( mailto != '' ) 
 		{
 			str += '<a class="fav_functions_mailsend" href="' + mailto + '" title="Merkliste per E-Mail versenden" class="fav_send">Merkliste per E-Mail versenden</a> ';
 		}
-		str += ' <a class="fav_functions_deleteall" href="javascript:fav_delete_all()" title="Gesamte Merkliste löschen">Gesamte Merkliste löschen</a>';
+		str += ' <a class="fav_functions_deleteall" href="javascript:fav_delete_all()" title="Gesamte Merkliste l&ouml;schen">Gesamte Merkliste l&ouml;schen</a>';
 		str += '</span>';
 		
 		$('.wisyr_angebote_zum_suchauftrag').html(str);
@@ -164,7 +167,7 @@ function fav_update_bar()
 	if( cnt > 0 )
 	{
 		str = '<a href="search?q=Fav%3A" title="Merkliste anzeigen">';
-			str += '<span class="fav_item fav_selected">&#9733;</span> ';
+			str += '<span class="fav_item fav_selected noprint">&#9733;</span> ';
 			str += '<span class="favlistlink_title">Merkliste (' + cnt + ')</span>';
 		str += '</a> ';
 		
@@ -184,6 +187,12 @@ function fav_click(jsObj, id)
 {
 	if (window.cookiebanner && window.cookiebanner.optedOut) {
 		alert(window.cookiebanner.favOptoutMessage);
+		window.cookieconsent.popup.open();
+			return false;
+		} else if($.cookie('cconsent_merkliste') != "allow") {
+		  alert("Um diese Funktion nutzen zu k"+oe+"nnen, m"+ue+"ssen Sie dem Speichern von Cookies f"+ue+"r diese Funktion zustimmen (im Cookie-Hinweisfenster).");
+		  hightlightCookieConsentOption('merkliste');
+		  window.cookieconsent.popup.open();
 		return false;
 	}
 	jqObj = $(jsObj);
@@ -205,7 +214,7 @@ function fav_click(jsObj, id)
 }
 function fav_delete_all()
 {
-	if( !confirm('Gesamte Merkliste löschen?') )
+	if( !confirm('Gesamte Merkliste l'+oe+'schen?') )
 		return false;
 	
 	g_all_fav = {};
@@ -233,7 +242,7 @@ function fav_init()
 	var has_clickable_fav = false;
 	$('.fav_add').each(function() {
 		var id = $(this).attr('data-favid');
-		var cls = fav_is_favourite(id)? 'fav_item fav_selected' : 'fav_item';
+		var cls = fav_is_favourite(id)? 'fav_item fav_selected noprint' : 'fav_item noprint';
 		$(this).parent().append(' <span class="'+cls+'" onclick="fav_click(this, '+id+');" title="Angebot merken">&#9733;</span>');
 		has_clickable_fav = true;
 	});
@@ -267,7 +276,7 @@ function clickAutocompleteHelp(tag_help, tag_name_encoded)
 
 function clickAutocompleteMore(tag_name_encoded)
 {
-	location.href = 'search?ie=UTF-8&show=tags&q=' + tag_name_encoded;
+	location.href = 'search?show=tags&q=' + tag_name_encoded; // ie=UTF-8&
 }
 
 function htmlspecialchars(text)
@@ -325,7 +334,7 @@ function formatItem(row)
 		/* frequency, end base type */
 		if( tag_freq > 0 )
 		{
-			row_postfix = (tag_freq==1? '1 Kurs' : ('' + tag_freq + ' Kurse')) + row_preposition + row_postfix;
+			row_postfix = (tag_freq==1? '1 Angebot' : ('' + tag_freq + ' Angebote')) + row_preposition + row_postfix;
 		}
 
 		if( tag_descr != '' )
@@ -355,7 +364,7 @@ function formatItem(row)
 		{
 			/* note: a single semicolon disturbs the highlighter as well as a single quote! */
 			row_postfix +=
-			 ' <a class="wisy_help" href="" onclick="return clickAutocompleteHelp(' + tag_help + ', &#39;' + encodeURIComponent(tag_name) + '&#39;)" aria-label="Ratgeber zu ' + tag_name + '">&nbsp;i&nbsp;</a>';
+			 ' <a class="wisy_help" href="" onclick="return clickAutocompleteHelp(' + tag_help + ', &#39;' + encodeURIComponent(tag_name) + '&#39;)">&nbsp;i&nbsp;</a>';
 		}
 		
 		tag_name = htmlspecialchars(tag_name);
@@ -426,7 +435,7 @@ if (jQuery.ui)
 		row_class = 'ac_normal';
 		row_type = 'Sachstichwort';
 		row_count = '';
-		row_count_prefix = (tag_freq == 1) ? ' Kurs zum' : ' Kurse zum';
+		row_count_prefix = (tag_freq == 1) ? ' Angebot zum' : ' Angebote zum';
 		row_info = '';
 		row_prefix = '';
 		row_postfix = '';
@@ -443,25 +452,25 @@ if (jQuery.ui)
 			/* add the "more" link */
 			row_class = 'ac_more';
 			row_type = '';
-			tag_name = '<a href="" onclick="return clickAutocompleteMore(&#39;' + encodeURIComponent(tag_name) + '&#39;)">' + tag_descr + '</a>';
+			tag_name = '<a href="" onclick="return clickAutocompleteMore(&#39;' + encodeURIComponent(tag_name).replace('/&/', '%26') + '&#39;)">' + tag_descr + '</a>';
 		}
 		else
 		{
 			/* base type */
 				 if( tag_type &   1 ) { row_class = "ac_abschluss";            row_type = 'Abschluss'; }
-			else if( tag_type &   2 ) { row_class = "ac_foerderung";           row_type = 'F&ouml;rderung'; row_count_prefix = (tag_freq == 1) ? ' Kurs zur' : ' Kurse zur';  }
+			else if( tag_type &   2 ) { row_class = "ac_foerderung";           row_type = 'F&ouml;rderung'; row_count_prefix = (tag_freq == 1) ? ' Angebot zur' : ' Angebote zur';  }
 			else if( tag_type &   4 ) { row_class = "ac_qualitaetszertifikat"; row_type = 'Qualit&auml;tsmerkmal'; }
-			else if( tag_type &   8 ) { row_class = "ac_zielgruppe";           row_type = 'Zielgruppe'; row_count_prefix = (tag_freq == 1) ? ' Kurs zur' : ' Kurse zur'; }
-			else if( tag_type &  16 ) { row_class = "ac_abschlussart";         row_type = 'Abschlussart'; row_count_prefix = (tag_freq == 1) ? ' Kurs zur' : ' Kurse zur'; }
+			else if( tag_type &   8 ) { row_class = "ac_zielgruppe";           row_type = 'Zielgruppe'; row_count_prefix = (tag_freq == 1) ? ' Angebot zur' : ' Angebote zur'; }
+			else if( tag_type &  16 ) { row_class = "ac_abschlussart";         row_type = 'Abschlussart'; row_count_prefix = (tag_freq == 1) ? ' Angebot zur' : ' Angebote zur'; }
 			else if( tag_type & 128 ) { row_class = "ac_thema";                row_type = 'Thema'; }
 			else if( tag_type & 256 ) { row_class = "ac_anbieter";
-										     if( tag_type &  0x20000 )	{ row_type = 'Beratungsstelle';  row_count_prefix = (tag_freq == 1) ? ' Kurs von der' : ' Kurse von der';  }
+										     if( tag_type &  0x20000 )	{ row_type = 'Beratungsstelle';  row_count_prefix = (tag_freq == 1) ? ' Angebot von der' : ' Angebote von der';  }
 										else if( tag_type & 0x400000 )	{ row_type = 'Tr&auml;gerverweis'; }
-										else							{ row_type = 'Tr&auml;ger'; row_count_prefix = (tag_freq == 1) ? ' Kurs vom' : ' Kurse vom'; }
+										else							{ row_type = 'Tr&auml;ger'; row_count_prefix = (tag_freq == 1) ? ' Angebot vom' : ' Angebote vom'; }
 									  }
-			else if( tag_type & 512 ) { row_class = "ac_ort";                  row_type = 'Kursort'; row_count_prefix = (tag_freq == 1) ? ' Kurs am' : ' Kurse am'; }
-			else if( tag_type & 1024) { row_class = "ac_merkmal"; 			   row_type = 'Kursmerkmal'; }
-			else if( tag_type & 32768){ row_class = "ac_unterrichtsart";	   row_type = 'Unterrichtsart'; row_count_prefix = (tag_freq == 1) ? ' Kurs zur' : ' Kurse zur'; }
+			else if( tag_type & 512 ) { row_class = "ac_ort";                  row_type = 'Angebotsort'; row_count_prefix = (tag_freq == 1) ? ' Angebot am' : ' Angebote am'; }
+			else if( tag_type & 1024) { row_class = "ac_merkmal"; 			   row_type = 'Angebotsmerkmal'; }
+			else if( tag_type & 32768){ row_class = "ac_unterrichtsart";	   row_type = 'Unterrichtsart'; row_count_prefix = (tag_freq == 1) ? ' Angebot zur' : ' Angebote zur'; }
 	
 			/* frequency, end base type */
 			if( tag_descr != '' ) row_postfix = ' (' + tag_descr + ')';
@@ -471,7 +480,7 @@ if (jQuery.ui)
 				row_count = tag_freq;
 				if(row_count_prefix == '')
 				{
-					row_count += (tag_freq == 1) ? ' Kurs' : ' Kurse';
+					row_count += (tag_freq == 1) ? ' Angebot' : ' Angebote';
 				} 
 				else
 				{
@@ -492,7 +501,7 @@ if (jQuery.ui)
 			if( tag_help != 0 )
 			{
 				/* note: a single semicolon disturbs the highlighter as well as a single quote! */
-				row_info = ' <a class="wisy_help" href="" onclick="return clickAutocompleteHelp(' + tag_help + ', &#39;' + encodeURIComponent(tag_name) + '&#39;)" aria-label="Ratgeber zu ' + tag_name + '">&nbsp;i&nbsp;</a>';
+				row_info = ' <a class="wisy_help" href="" onclick="return clickAutocompleteHelp(' + tag_help + ', &#39;' + encodeURIComponent(tag_name) + '&#39;)">&nbsp;i&nbsp;</a>';
 			}
 			
 			tag_name = htmlspecialchars(tag_name);
@@ -500,7 +509,7 @@ if (jQuery.ui)
 		
 		// highlight search string
 		var regex = new RegExp("(?![^&;]+;)(?!<[^<>]*)(" + request_term.replace(/([\^\$\(\)\[\]\{\}\*\.\+\?\|\\])/gi, "\\$1") + ")(?![^<>]*>)(?![^&;]+;)", "gi");
-		tag_name = tag_name.replace(regex, "<em>$1</em>");
+		tag_name = tag_name.replace(regex, "<em>$1</em>").replace('&amp;', '&');
 	
 		return '<span class="row '+row_class+'">' + 
 					'<span class="tag_name">' + row_prefix + tag_name + row_postfix + '</span>' + 
@@ -514,7 +523,7 @@ if (jQuery.ui)
 	{	
 		// calculate the new source url
 		var request_term = extractLast(request.term);
-		var url = "/autosuggest?q=" + encodeURIComponent(request_term) + "&limit=512&timestamp=" + new Date().getTime();
+		var url = "autosuggest?q=" + encodeURIComponent(request_term) + "&limit=512&timestamp=" + new Date().getTime();
 	
 		// ask the server for suggestions
 		$.get(url, function(data)
@@ -538,7 +547,7 @@ if (jQuery.ui)
 
 	function ac_selectcallback(event, ui) {
 	
-		// Standardverhalten (Value ins Eingabefeld schreiben) bei Überschrift und Mehrlink der Ergebnisliste ausschalten
+		// Standardverhalten (Value ins Eingabefeld schreiben) bei Ueberschrift und Mehrlink der Ergebnisliste ausschalten
 		// Ebenso bei Klick auf "wisy_help"
 		var $span = $(ui.item.label);
 		var $to = $(event.toElement);
@@ -550,7 +559,7 @@ if (jQuery.ui)
 		else
 		{
 	
-			// Neuen Autocomplete-Wert nach evtl. bereits vorhandenen einfügen
+			// Neuen Autocomplete-Wert nach evtl. bereits vorhandenen einfuegen
 			var terms = split( this.value );
 			// remove the current input
 			terms.pop();
@@ -652,6 +661,44 @@ if (jQuery.ui)
 /*****************************************************************************
  * advanced search stuff
  *****************************************************************************/
+
+//prevent empty search (< 2 chars): on hompage: output message, on other page: search for all courses
+function preventEmptySearch(homepage) {
+ 
+  // only if no other submit event is attached to search submit button:
+  if( Array.isArray($("#wisy_searcharea form[action=search]")) && typeof $._data( $("#wisy_searcharea form[action=search]")[0], "events" ) == 'undefined' ) {
+    
+   $('#wisy_searcharea form[action=search]').on('submit', function(e) {
+    e.preventDefault();
+    var len = $('#wisy_searchinput').val().length;
+    var emptyvalue = $('#wisy_searchinput').data('onemptyvalue');
+    
+       if ($(location).attr('pathname') == homepage) {
+            if (len > 1) {
+                   this.submit(); // default: normal search
+               } else {
+                if( emptyvalue != '' ) {
+                   $('#wisy_searchinput').val(emptyvalue);
+                   this.submit();
+                } else {
+                  alert('Bitte geben Sie einen Suchbegriff an (mindesten 2 Buchstaben)');
+                }
+            }
+       } else {
+           if(len < 2) {
+            if( emptyvalue != '' )
+             $('#wisy_searchinput').val(emptyvalue);
+            else
+             $('#wisy_searchinput').val("zeige:kurse");
+           }
+           
+           // default: normal search on other than homepage
+           this.submit();
+       }
+   });
+   
+  }
+}
 
 function advEmbeddingViaAjaxDone()
 {
@@ -795,6 +842,26 @@ function initPaginateViaAjax()
 }
 
 /*****************************************************************************
+ * dropdown stuff
+ *****************************************************************************/
+
+$.fn.dropdown = function()
+{
+	// needed only for IE6 dropdown menu
+	$(this).hover(function(){
+		$(this).addClass("hover");
+		$('> .dir',this).addClass("open");
+		$('ul:first',this).css('visibility', 'visible');
+	},function(){
+		$(this).removeClass("hover");
+		$('.open',this).removeClass("open");
+		$('ul:first',this).css('visibility', 'hidden');
+	});
+
+}
+
+
+/*****************************************************************************
  * old edit stuff
  *****************************************************************************/
 
@@ -850,10 +917,10 @@ function editDurchfLoeschen(jqObj)
 {
 	if( $('.editDurchfRow').size() == 1 )
 	{
-		alert("Diese Durchführung kann nicht gelöscht werden, da ein Kurs mindestens eine Durchführung haben muss.\n\nWenn Sie den Kurs komplett löschen möchten, verwenden Sie die Option \"Kurs löschen\" ganz unten auf dieser Seite.");
+		alert("Diese Durchf"+ue+"hrung kann nicht gel"+oe+"scht werden, da ein Angebot mindestens eine Durchf"+ue+"hrung haben muss.\n\nWenn Sie den Angebot komplett l"+oe+"schen m"+oe+"chten, verwenden Sie die Option \"Angebot l"+oe+"schen\" ganz unten auf dieser Seite.");
 		return;
 	}
-	else if( confirm("Diese Durchführung löschen?") )
+	else if( confirm("Diese Durchf"+ue+"hrung l"+oe+"schen?") )
 	{
 		editFindDurchfRow(jqObj).remove();
 	}
@@ -870,7 +937,7 @@ function editDurchfKopieren(jqObj)
 
 function editKursLoeschen(jqObj)
 {
-	if( confirm("Wenn Sie einen Kurs löschen möchten, wird zunächst ein Sperrvermerk gesetzt; beim nächsten Index-Update wird der Kurs dann inkl. aller Durchführungen komplett gelöscht. Dieser Vorgang kann nicht rückgängig gemacht werden!\n\nDen kompletten Kurs inkl. ALLER Durchführungen löschen?") )
+	if( confirm("Wenn Sie einen Angebot l"+oe+"schen m"+oe+"chten, wird zun"+ae+"chst ein Sperrvermerk gesetzt; beim n"+ae+"chsten Index-Update wird der Angebot dann inkl. aller Durchf"+ue+"hrungen komplett gel"+oe+"scht. Dieser Vorgang kann nicht r"+ue+"ckg"+ae+"ngig gemacht werden!\n\nDen kompletten Angebot inkl. ALLER Durchf"+ue+"hrungen l"+oe+"schen?") )
 	{
 		return true;
 	}
@@ -879,7 +946,7 @@ function editKursLoeschen(jqObj)
 
 function editWeekdays(jqObj)
 {
-	// jqObj ist der Text; ein click hierauf soll das nebenliegende <input type=hidden> ändern
+	// jqObj ist der Text; ein click hierauf soll das nebenliegende <input type=hidden> aendern
 	var hiddenObj = jqObj.parent().find('input');
 	if( hiddenObj.val() == '1' )
 	{
@@ -893,6 +960,15 @@ function editWeekdays(jqObj)
 		jqObj.addClass   ('wisy_editweekdayssel');
 		jqObj.removeClass('wisy_editweekdaysnorm');
 	}
+}
+
+function resetPassword(aID, pflegeEmail) {
+	$.ajax({
+	type: "POST",
+	url: "/edit",
+	data: { action: "forgotpw", pwsubseq: "1", as: aID },
+	success: function(data) { alert( "Wir haben Ihnen eine E-Mail mit einem Link zur Passwortgenerierung an "+pflegeEmail+" gesandt!\n\nSollte in wenigen Minuten keine E-Mail eintreffen, pruefen Sie bitte die E-Mailadresse bzw. wenden Sie sich bitte an den Portal-Betreiber."); }
+  });
 }
 
 /*****************************************************************************
@@ -921,20 +997,20 @@ function describeFeedback()
 	}
 	else
 	{
-		$('#wisy_feedback_line2').html('<strong style="color: green;">Vielen Dank für Ihren Kommentar!</strong>');
-		ajaxFeedback(0, descr, name, email); // Kommentar zur Bewertung hinzufügen; die Bewertung selbst (erster Parameter) wird an dieser Stelle ignoriert!
+		$('#wisy_feedback_line2').html('<strong style="color: green;">Vielen Dank f'+ue+'r Ihren Kommentar!</strong>');
+		ajaxFeedback(0, descr, name, email); // Kommentar zur Bewertung hinzufuegen; die Bewertung selbst (erster Parameter) wird an dieser Stelle ignoriert!
 	}
 }
 
 function sendFeedback(rating)
 {
-	$('#wisy_feedback_yesno').html('<strong class="wisy_feedback_thanks">Vielen Dank für Ihr Feedback!</strong>');
+	$('#wisy_feedback_yesno').html('<strong class="wisy_feedback_thanks">Vielen Dank f'+ue+'r Ihr Feedback!</strong>');
 	
 	if( rating == 0 )
 	{
 		$('#wisy_feedback').append(
 				'<div id="wisy_feedback_line2">'
-			+		'<p>Bitte schildern Sie uns noch kurz, warum diese Information nicht hilfreich war und was wir besser machen können:</p>'
+			+		'<p>Bitte schildern Sie uns noch kurz, warum diese Seite nicht hilfreich war und was wir besser machen k&ouml;nnen:</p>'
 				+	'<textarea id="wisy_feedback_descr" name="wisy_feedback_descr" rows="2" cols="20"></textarea><br />'
 				+	'<br><b>Wenn Sie eine Antwort w&uuml;nschen</b>, geben Sie bitte auch Ihre E-Mail-Adresse an (optional).<br />Wir verwenden Ihre E-Mailadresse und ggf. Name nur, um Ihr Anliegen zu bearbeiten und l&ouml;schen diese personenbezogenen Daten alle 12 Monate.<br><br>'
 				+	'<label for="wisy_feedback_name">Name (optional): </label><input type="text" id="wisy_feedback_name" name="wisy_feedback_name">&nbsp; <label for="wisy_feedback_email">E-Mailadresse (optional): </label><input type="text" id="wisy_feedback_email" name="wisy_feedback_email"><br><br>'
@@ -963,8 +1039,8 @@ function sendFeedback(rating)
 function initFeedback()
 {
 	$('.wisy_allow_feedback').after(
-			'<div id="wisy_feedback" class="noprint" role="contentinfo">'
-		+		'<span class="wisy_feedback_question">War diese Information hilfreich?</span> '
+			'<div id="wisy_feedback" class="noprint">'
+		+		'<span class="wisy_feedback_question">War diese Seite hilfreich?</span> '
 		+		'<span id="wisy_feedback_yesno"><a href="javascript:sendFeedback(1)">Ja</a> <a href="javascript:sendFeedback(0)">Nein</a></span>'
 		+	'</div>'
 	);
@@ -1000,7 +1076,6 @@ function wisy_glskeyexp()
 	{
 		jqAClick.html('&nbsp;&#9654;');
 		jqAClick.attr('data-glskeyaction', 'expand');
-		jqAClick.attr('aria-label', 'Unterthemen zuklappen');	
 		show = false;
 
 	}
@@ -1032,7 +1107,6 @@ function wisy_glskeyexp()
 		jqACurr = jqTrCurr.find('a.wisy_glskeyexp');
 		jqACurr.html('&nbsp;&#9654;');
 		jqACurr.attr('data-glskeyaction', 'expand');		
-		jqAClick.attr('aria-label', 'Unterthemen aufklappen');	
 		
 		jqTrCurr = jqTrCurr.next();
 	}
@@ -1060,8 +1134,8 @@ function initResponsive()
 		$('body').toggleClass('navshowing');
 	});
 
-	// Navigation Unterpunkte öffnen und schließen mobil
-	$('.nav_menu a').on('click', function() {
+	// Navigation Unterpunkte oeffnen und schliessen mobil
+	$('#themenmenue a').on('click', function() {
 		$firstUl = $(this).siblings('ul').first();
 		if($firstUl.length) {
 			if($firstUl.hasClass('open')) {
@@ -1078,79 +1152,17 @@ function initResponsive()
 }
 
 /*****************************************************************************
- * Accessible Menus: simple and complex
+ * SEO, alternative means for search
  *****************************************************************************/
 
-function initAccessibleMenus() {
-	// Add functionality for "simple" menus, accessible via tab-navigation
-	$(".wisyr_menu_simple_level1").initMenuSimple();
-	
-	// Add functionality for "complex" menus, accessible via WAI-ARIA assisted arrow-navigation
-	// TODO
-}
-
-$.fn.initMenuSimple = function(settings) {
-	
-	settings = jQuery.extend({ menuHoverClass: "wisyr_show_menu" }, settings);
-	
-	// Add tabindex 0 to top level spans because otherwise they can't be tabbed to
-	$(this).find("> li > .nav_no_link").attr("tabIndex", 0);
-	
-	var top_level_links = $(this).find("> li > a, > li > .nav_no_link");
-
-	// Set tabIndex to -1 so that top_level_links can't receive focus until menu is open
-	$(top_level_links)
-		.next("ul")
-		.attr("data-test", "true")
-		.attr({ "aria-hidden": "true" })
-		.find("a")
-		.attr("tabIndex", -1);
-
-	// Show and hide on focus
-	$(this).find('a, .nav_no_link').on('focus', function() {
-		$(this)
-			.closest("ul")
-			.find("." + settings.menuHoverClass)
-			.attr("aria-hidden", "true")
-			.removeClass(settings.menuHoverClass)
-			.find("a, .nav_no_link")
-			.attr("tabIndex", -1);
-
-		$(this)
-			.next("ul")
-			.attr("aria-hidden", "false")
-			.addClass(settings.menuHoverClass)
-			.find("a, .nav_no_link")
-			.attr("tabIndex", 0);
-	});
-
-	// Hide menu if the user tabs out of the navigation
-	$(this)
-		.find("a, .nav_no_link")
-		.last()
-		.keydown(function(e) {
-			if (e.keyCode == 9) {
-				$("." + settings.menuHoverClass)
-					.attr("aria-hidden", "true")
-					.removeClass(settings.menuHoverClass)
-					.find("a, .nav_no_link")
-					.attr("tabIndex", -1);
-			}
-	});
-
-	// Hide menu if click occurs outside of navigation
-	$(document).on('click', function() {
-		$("." + settings.menuHoverClass)
-			.attr("aria-hidden", "true")
-			.removeClass(settings.menuHoverClass)
-			.find("a, .nav_no_link")
-			.attr("tabIndex", -1);
-	});
-
-	$(this).on('click', function(e) {
-		e.stopPropagation();
-	});
-};
+// calculate weighted size (by tag usage within portal)
+$(document).ready(function() {
+ $("#sw_cloud span").each( function(){ 
+  weight = $(this).attr("data-weight"); 
+  fontsize = Math.floor($(this).find("a").css("font-size").replace('px', ''));
+  $(this).find("a").css("font-size", parseInt(fontsize)+parseInt(weight)+'px');
+ });
+});
 
 /*****************************************************************************
  * main entry point
@@ -1165,7 +1177,7 @@ $().ready(function()
 	// check for forwarding
 	var askfwd = $('body').attr('data-askfwd');
 	if( typeof askfwd != 'undefined' ) {
-		if( confirm('Von dieser Webseite gibt es auch eine Mobilversion unter ' + askfwd + '. Möchten Sie jetzt dorthin wechseln?') ) {
+		if( confirm('Von dieser Webseite gibt es auch eine Mobilversion unter ' + askfwd + '. M'+oe+'chten Sie jetzt dorthin wechseln?') ) {
 			window.location = askfwd;
 			return;
 		}
@@ -1181,6 +1193,11 @@ $().ready(function()
 	{
 		initAutocomplete();
 	}
+
+	// init dropdown
+	if ($.browser && $.browser.msie && $.browser.version == '6.0') {
+    	$("ul.dropdown li").dropdown();
+	}	
 	
 	// handle "advanced search" via ajax
 	$("#wisy_advlink").click(advEmbedViaAjax);
@@ -1203,8 +1220,144 @@ $().ready(function()
 	// init responsive stuff
 	initResponsive();
 	
-	// init accessibility stuff
-	initAccessibleMenus();
+	// append parameter for searches triggered by human interaction
+	if($("#wisy_searchbtn")) {
+	  $("#wisy_searchbtn").click(function(event){
+	   if (event.originalEvent === undefined) {
+	    /* robot: console.log(event); */
+	   } else {
+	       event.preventDefault();
+	       $(this).before("<input type=hidden id=qsrc name=qsrc value=s>");
+	       $(this).before("<input type=hidden id=qtrigger name=qtrigger value=h>");
+	       $(this).closest("form").submit();
+	   }
+	  });
+	  
+	  $(".wisyr_filtergroup .filter_submit").click(function(event){
+		   if (event.originalEvent === undefined) {
+		    /* robot: console.log(event); */
+		   } else {
+		       event.preventDefault();
+		       $(this).before("<input type=hidden id=qsrc name=qsrc value=s>");
+		       $(this).before("<input type=hidden id=qtrigger name=qtrigger value=h>");
+		       $(this).closest("form").submit();
+		   }
+	   });
+	 }
+	
+	// Human triggered search, propagate to filter form + pagination
+	 if(window.qtrigger)
+	  $("form[name='filterform']").prepend("<input type=hidden name='qtrigger' value="+window.qtrigger+">");
+	 if(window.force)
+	  $("form[name='filterform']").prepend("<input type=hidden name='force' value="+window.force+">");
 	
 });
 
+function initializeTranslate() {
+	 if($.cookie('cconsent_translate') == "allow") {
+	  console.log("consented");
+	  $.loadScript('//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit', function(){
+	     /* console.log('Loaded Google Translate'); */
+	 });
+	  
+	 } else {
+	  /* Interaction not disirable */
+	  /*
+	  hightlightCookieConsentOption('translate');
+	  window.cookieconsent.popup.open();
+	  return false; */
+	 }
+};
+
+function googleTranslateElementInit() {
+ new google.translate.TranslateElement({pageLanguage: 'de', layout: google.translate.TranslateElement.InlineLayout.SIMPLE}, 'google_translate_element');
+}
+
+$(document).ready(function(){
+ // $('#filter_datum_von').after('<a href="#filter_datum_von" onclick="alleDatenAnzeigen()" id="abgelaufeneAnzeigen">Abgelaufene Angebote anzeigen...</a>'); // noch framework
+ preventEmptySearch(window.homepage); // noch framework
+ consentCookieBeforePageFunction();
+});
+
+
+function hightlightCookieConsentOption(name) {
+ $('.cc-consent-details .'+name+' .consent_option_infos').addClass('highlight');
+}
+
+// check for consent of specific cookie, if page dependant on it being given
+function consentCookieBeforePageFunction() {
+  // Edit page
+ if($(".wisyp_edit").length) {
+	   
+   // only if no other submit event is attached to search submit button:
+   if( typeof $._data( $(".wisyp_edit form[action=edit]"), "events" ) == 'undefined' ) {
+    $('.wisyp_edit form[action=edit]').on('submit', function(e) {
+     e.preventDefault();
+
+     if($.cookie('cconsent_onlinepflege') != "allow") {
+      alert("Um die Onlinepflege nutzen zu k"+oe+"nnen, m"+ue+"ssen Sie dem Speichern von Cookies für diese Funktion zustimmen (im Cookie-Hinweisfenster).");
+      hightlightCookieConsentOption('onlinepflege');
+      window.cookieconsent.popup.open();
+      return false;
+     } else {
+      // default: normal search on other than homepage
+      this.submit();
+     }
+    });
+   }
+ } // end: edit page
+}
+
+function toggle_cookiedetails() {
+ jQuery(".cookies_techdetails").toggleClass("inactive");
+ jQuery(".toggle_cookiedetails").toggleClass("inactive");
+}
+
+
+function openCookieSettings() {
+	 window.cookieconsent.popup.open();
+}
+
+/* Called every time change Cookie consent window initialized or updated */
+function callCookieDependantFunctions() {
+ initializeTranslate();
+}
+
+jQuery.loadScript = function (url, callback) {
+    jQuery.ajax({
+        url: url,
+        dataType: 'script',
+        success: callback,
+        async: true
+    });
+}
+
+
+var ae = unescape("%E4");
+var ue = unescape("%FC");
+var oe = unescape("%F6");
+var ss = unescape("%DF");
+
+/*****************************************************************************
+ * info text popup
+ *****************************************************************************/
+
+ $(window).load(function () {
+    $('.hover_bkgr_fricc').show();
+    $('.popupCloseButton').click(function(){
+        $('.hover_bkgr_fricc').hide();
+
+        if(window.cookieconsent.popup)
+         window.cookieconsent.popup.open();
+    });
+    
+   // if old cookie banner is active: set cookie immediately that msg has been viewed for 3 days
+   jQuery(".hover_bkgr_fricc .popupCloseButton").click(function() {
+     if(jQuery(".cc-consent-details li").length > 0 )
+       ;
+     else {
+      setCookieSafely('cconsent_popuptext', "allow", { expires:3}); 
+     }
+   });                                                 
+ });
+ 

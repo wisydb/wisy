@@ -44,9 +44,10 @@ class WISY_EDIT_FORGOTPW_CLASS
 			// confirmation link
 			// ================================================================
 			
-			$db	= new DB_Admin;
-			$sql = "SELECT id, pflege_email FROM anbieter WHERE pflege_pweinst&1 AND (id=".intval($anbieterSuchname)." OR pflege_email=".$db->quote($anbieterSuchname_utf8dec)." OR suchname=".$db->quote($anbieterSuchname_utf8dec)." OR postname=".$db->quote($anbieterSuchname_utf8dec).");";
-			$db->query($sql);
+		    $db	= new DB_Admin;
+		    $sql = "SELECT id, pflege_email FROM anbieter WHERE pflege_pweinst&1 AND (id=".(is_numeric($anbieterSuchname) ? intval($anbieterSuchname) : -1)." OR pflege_email=".$db->quote($anbieterSuchname_utf8dec)." OR suchname=".$db->quote($anbieterSuchname_utf8dec)." OR postname=".$db->quote($anbieterSuchname_utf8dec).") AND freigeschaltet = 1";
+		    
+		    $db->query($sql);
 			if( $db->next_record() )
 			{
 				$f_id = $db->f8('id');
@@ -71,7 +72,7 @@ class WISY_EDIT_FORGOTPW_CLASS
 						
 						$f_link = "{$protocol}://__HTTP_HOST__/edit?action=forgotpw&c={$f_confirm}";
 						
-						$f_subject  = 'Ihr neues Passwort für __HTTP_HOST__ (__NAME__)';
+						$f_subject  = 'Ihr neues Passwort für '.$_SEERVER['HTTP_HOST'].' ('.$GLOBALS['wisyPortalKurzname'].')';
 						$f_mailbody =
 						"Hallo $f_email -
 						
@@ -84,14 +85,14 @@ Nur WENN Sie ein neues Passwort beantragt haben, klicken Sie bitte auf den folge
 Mit freundlichen Grüßen,
 __NAME__";
 						
-						$f_subject  = utf8_decode($this->replaceForgotPwPlaceholders($f_subject));
-						$f_mailbody = utf8_decode($this->replaceForgotPwPlaceholders($f_mailbody));
+						$f_subject  = $this->replaceForgotPwPlaceholders(mb_encode_mimeheader($f_subject,'UTF-8','Q'));
+						$f_mailbody = $this->replaceForgotPwPlaceholders($f_mailbody);
 						
 						$logwriter->addData('email', $f_email);
 						if( $this->sendMail($f_email, $f_subject, $f_mailbody) )
 						{
-							$msg= 'Wir haben an die bei uns hinterlegte E-Mail-Adresse <b>erfolgreich</b> ein neues Passwort gesandt. 
-								   Bitte überprüfen Sie nun Ihren E-Mail-Account ('.htmlspecialchars($f_email_shortened).') und folgen Sie den dort angegebenen Anweisungen.';
+						    $msg= 'Wir haben an die bei uns hinterlegte E-Mail-Adresse <b>erfolgreich</b> ein neues Passwort gesandt.
+								   Bitte &uuml;berpr&uuml;fen Sie nun Ihren E-Mail-Account ('.htmlspecialchars($f_email_shortened).') und folgen Sie den dort angegebenen Anweisungen.';
 						}
 						else
 						{
@@ -140,9 +141,9 @@ __NAME__";
 				
 				$this->dbCache->insert('forgotpw.'.$_REQUEST['c'], 0);
 				
-				$msg = "Ihr <b>neues Passwort</b> für den Login als Anbieter <i>".htmlspecialchars($anbieterSuchname)."</i> lautet:<br /><br /> 
-					<b style=\"font-size: 14pt;\">$newpassword</b><br /><br />Bitte merken sie sich das Passwort jetzt oder notieren Sie es an einem sicheren Platz. 
-					Danach können Sie sich mit Ihrem neuen Passwort <a href=\"edit?action=login&amp;as=".urlencode($anbieterSuchname)."\"><b>hier einloggen</b></a>.";
+				$msg = "Ihr <b>neues Passwort</b> f&uuml;r den Login als Anbieter <i>".htmlspecialchars($anbieterSuchname)."</i> lautet:<br /><br />
+					<b style=\"font-size: 14pt;\">$newpassword</b><br /><br />Bitte merken sie sich das Passwort jetzt oder notieren Sie es an einem sicheren Platz.
+					Danach k&ouml;nnen Sie sich mit Ihrem neuen Passwort <a href=\"edit?action=login&amp;as=".urlencode($anbieterSuchname)."\"><b>hier einloggen</b></a>.";
 				$showForm = false;
 				
 				$logwriter->log('anbieter', $anbieterId, $this->adminAnbieterUserId, 'resetpw');
@@ -197,6 +198,9 @@ __NAME__";
 		{
 			echo '<p>' . $temp . '</p>';
 		}
+		
+		if(is_object($db))
+		    $db->close();
 					 
 		echo $this->framework->getEpilogue();
 	}

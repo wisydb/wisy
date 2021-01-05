@@ -264,6 +264,10 @@ wisy_list etc.
 	background-color: #FFFFD0;
 }
 
+.wisyr_titel .tag_count {
+  color: white;
+}
+
 span.wisy_promoted_prefix {
 	color: #D60008;
 	font-size: 11px;
@@ -326,6 +330,10 @@ advanced form
 /*******************************************************************************
 edit stuff
 *******************************************************************************/
+
+.wisyp_edit #wisy_contentarea {
+	padding: 5%;
+}
 
 div.wisy_edittoolbar {
 	margin-bottom: 1.5em;
@@ -527,7 +535,6 @@ ul.dropdown li {
   float: left;
   line-height: 1.3em;
   vertical-align: middle;
-  zoom: 1;
 }
 
 ul.dropdown li.hover,
@@ -596,7 +603,6 @@ ul.dropdown a:active  { color: #ffa500; }
 
 ul.dropdown ul *.dir {
   padding-right: 15px;
-  background-image: url('core20/img/nav-arrow-right-black.png');
   background-position: 100% 50%;
   background-repeat: no-repeat;
 }
@@ -704,6 +710,168 @@ Datenschutz
  opacity: 1;
  position: absolute;
  z-index: 99999;
+}
+
+/*******************************************************************************
+Error pages, 404 etc., SEO
+*******************************************************************************/
+
+.wisyp_error .portal_index {
+	margin-top: 2em;
+	background-color: #bffcbf;
+	border: 2px solid white;
+	padding: 1em;
+}
+
+.wisyp_error .portal_index h4 {
+	margin-top: 0;
+}
+
+.wisyp_error .portal_index a {
+	color: darkblue;
+}
+
+#sw_cloud {
+	margin-top: 35px;
+	padding: 5px;
+	background-color: #ddd;
+	border: 1px solid #eee;
+}
+
+#sw_cloud h4 {
+    width: 7.4em;
+    padding: 0.3em;
+    padding-left: 0.3em;
+    margin-top: -1.5em;
+    margin-left: 5px;
+    background-color: #ddd;
+    border-top: 1px solid #eee;
+    padding-left: 0.6em;
+    color: #888;
+    display: none;
+}
+
+/* Cookiebanner */
+.cc-window ul li {
+	list-style: none;
+	padding-left: .2em;
+	margin-top: .5em;
+	font-weight: 600;
+	font-size: 1em;
+}
+
+.cc-window ul li div.consent_option_infos {
+	vertical-align: top;
+	display: inline-block;
+	max-width: 90%;
+}
+
+.cc-window ul li .importance {
+	font-weight: 100;
+	font-size: .8em;
+}
+
+.cc-window .hinweis_abwahl {
+	padding-left: .2em;
+	font-weight: 500;
+	font-size: .7em;
+}
+
+
+.cc-btn.cc-deny {
+	display: none;
+}
+
+.cc-window ul li div.consent_option_infos.highlight {
+	color: darkred;
+}
+
+.cc-window, .cc-window.cc-floating {
+  max-width: initial !important;
+}
+
+.cc-window {
+	padding: 1em;
+	width: 30vW;
+	font-size: 1.6em;
+	border: 2px solid white;
+	position: fixed;
+	z-index: 2000;
+  /* display: none !important; */
+}
+
+.cc-message {
+		font-size: 1em !important;
+}
+
+.cc-btn {
+	padding: .2em;
+  cursor: pointer;
+}
+
+.cc-compliance {
+	margin-top: 1em;
+}
+
+/*******************************************************************************
+Popup window
+*******************************************************************************/
+
+.hover_bkgr_fricc{
+    background:rgba(0,0,0,.4);
+    cursor:pointer;
+    display:none;
+    height:100%;
+    position:fixed;
+    text-align:center;
+    top:0;
+    width:100%;
+    z-index:10000;
+}
+.hover_bkgr_fricc .helper{
+    display:inline-block;
+    height:100%;
+    vertical-align:middle;
+}
+.hover_bkgr_fricc > div {
+    background-color: #fff;
+    box-shadow: 10px 10px 60px #555;
+    display: inline-block;
+    height: auto;
+    max-width: 551px;
+    min-height: 100px;
+    vertical-align: middle;
+    width: 60%;
+    position: relative;
+    border-radius: 8px;
+    padding: 15px 5%;
+}
+.popupCloseButton {
+    background-color: #fff;
+    border: 3px solid #999;
+    border-radius: 50px;
+    cursor: pointer;
+    display: inline-block;
+    font-family: arial;
+    font-weight: bold;
+    position: absolute;
+    top: -20px;
+    right: -20px;
+    font-size: 25px;
+    line-height: 30px;
+    width: 30px;
+    height: 30px;
+    text-align: center;
+}
+.popupCloseButton:hover {
+    background-color: #ccc;
+}
+.trigger_popup_fricc {
+    cursor: pointer;
+    font-size: 20px;
+    margin: 20px;
+    display: inline-block;
+    font-weight: bold;
 }
 
 /*******************************************************************************

@@ -52,7 +52,7 @@ class WISY_TAGSUGGESTOR_CLASS
 		$tag = $this->keyword2tagName($keyword_or_tag_name);
 		$this->db2->query("SELECT tag_id FROM x_tags WHERE tag_name=".$this->db2->quote($tag));
 		if( $this->db2->next_record() ) {
-			return $this->db2->f8('tag_id');
+			return $this->db2->fcs8('tag_id');
 		}
 		return 0;
 	}
@@ -72,7 +72,7 @@ class WISY_TAGSUGGESTOR_CLASS
 
 	public function getTagFreq($tag_ids_arr)
 	{	
-		if( sizeof($tag_ids_arr) == 1 )
+	    if( sizeof((array) $tag_ids_arr) == 1 )
 		{
 			$portalIdCond = '';
 			if( $GLOBALS['wisyPortalFilter']['stdkursfilter']!='' ) {
@@ -83,10 +83,10 @@ class WISY_TAGSUGGESTOR_CLASS
 			}
 			$this->db2->query("SELECT tag_freq FROM x_tags_freq WHERE tag_id=".intval($tag_ids_arr[0]) . $portalIdCond); // x_tags_freq only contains recent offers, date checking is not required
 			if( $this->db2->next_record() ) {
-				return $this->db2->f8('tag_freq');
+			    return $this->db2->fcs8('tag_freq');
 			}
 		}
-		else if( sizeof($tag_ids_arr) > 1 )
+		else if( sizeof((array) $tag_ids_arr) > 1 )
 		{
 			$portalTagId = $this->getWisyPortalTagId();
 			if( $portalTagId ) {
@@ -97,7 +97,7 @@ class WISY_TAGSUGGESTOR_CLASS
 			          FROM x_kurse_tags t
 			          LEFT JOIN x_kurse k ON t.kurs_id=k.kurs_id
 			         WHERE t.tag_id=" . intval($tag_ids_arr[0]);
-			for( $i = 1; $i < sizeof($tag_ids_arr); $i++ ) {
+			for( $i = 1; $i < sizeof((array) $tag_ids_arr); $i++ ) {
 				$sql .= " AND t.kurs_id IN(SELECT kurs_id FROM x_kurse_tags WHERE tag_id=".intval($tag_ids_arr[$i]) . ") ";
 			}
 			$sql .= " AND k.beginn>=".$this->db2->quote(strftime("%Y-%m-%d"));
@@ -157,19 +157,20 @@ class WISY_TAGSUGGESTOR_CLASS
 							FROM x_tags t 
 							LEFT JOIN x_tags_freq f ON f.tag_id=t.tag_id $portalIdCond
 							WHERE ( $COND )
-							$portalIdCond
+							$portalIdCond 
+                            GROUP BY tag_name  
 							ORDER BY LEFT(tag_name,$LEN)<>'$QUERY', tag_name LIMIT 0, $max"; // sortierung alphabetisch, richtiger Wortanfang aber immer zuerst!
 
 				$this->db->query($sql); 
 				while( $this->db->next_record() )
 				{
 					// add the tag
-					$tag_id   = intval($this->db->f8('tag_id'));
-					$tag_name = $this->db->f8('tag_name');
-					$tag_descr = $this->db->f8('tag_descr');
-					$tag_type = intval($this->db->f8('tag_type'));
-					$tag_help = intval($this->db->f8('tag_help'));
-					$tag_freq = intval($this->db->f8('tag_freq'));
+				    $tag_id   = intval($this->db->fcs8('tag_id'));
+				    $tag_name = $this->db->fcs8('tag_name');
+				    $tag_descr = $this->db->fcs8('tag_descr');
+				    $tag_type = intval($this->db->fcs8('tag_type'));
+				    $tag_help = intval($this->db->fcs8('tag_help'));
+				    $tag_freq = intval($this->db->fcs8('tag_freq'));
 					$tag_anbieter_id = '';
 					$tag_groups = array();
 					
@@ -190,11 +191,11 @@ class WISY_TAGSUGGESTOR_CLASS
 													WHERE s.tag_id=$tag_id $portalIdCond");
 							while( $this->db2->next_record() )
 							{
-								$names[] = array(	'tag_name'=>$this->db2->f8('tag_name'), 
-													'tag_descr'=> $this->db2->f8('tag_descr'),
-													'tag_type'=>$this->db2->f8('tag_type'), 
-													'tag_help'=>$this->db2->f8('tag_help'), 
-													'tag_freq'=>$this->db2->f8('tag_freq'));
+							    $names[] = array(	'tag_name'=>$this->db2->fcs8('tag_name'), 
+													'tag_descr'=> $this->db2->fcs8('tag_descr'),
+													'tag_type'=>$this->db2->fcs8('tag_type'), 
+													'tag_help'=>$this->db2->fcs8('tag_help'), 
+													'tag_freq'=>$this->db2->fcs8('tag_freq'));
 							}
 						}
 						
@@ -205,7 +206,7 @@ class WISY_TAGSUGGESTOR_CLASS
 							{
 								$this->db3->query("SELECT id FROM anbieter WHERE suchname=". $this->db3->quote($tag_name));
 								$this->db3->next_record();
-								$tag_anbieter_id = $this->db3->f8('id');
+								$tag_anbieter_id = $this->db3->fcs8('id');
 							}
 					
 							// "Unterbegriff von" ermitteln
@@ -214,7 +215,7 @@ class WISY_TAGSUGGESTOR_CLASS
 								$this->db4->query("SELECT id FROM stichwoerter WHERE stichwort=". $this->db4->quote($tag_name));
 								if( $this->db4->next_record() )
 								{
-									$stichwort_id = $this->db4->f8('id');
+									$stichwort_id = $this->db4->fcs8('id');
 						
 									// 2. in stichwoerter_verweis2 Oberbegriffe finden
 									$this->db4->query("SELECT id, stichwort, primary_id 
@@ -224,7 +225,7 @@ class WISY_TAGSUGGESTOR_CLASS
 											
 									while( $this->db4->next_record() )
 									{
-										$tag_groups[] = $this->db4->f8('stichwort');
+										$tag_groups[] = $this->db4->fcs8('stichwort');
 									}
 								}
 							}
@@ -235,7 +236,7 @@ class WISY_TAGSUGGESTOR_CLASS
 						$has_man_sug = false;
 						{
 							$temp = $this->get_manual_suggestions($tag_name);
-							if( sizeof($temp['sug']) )
+							if(sizeof((array) $temp['sug']) )
 							{
 								$has_man_sug = true;
 								for( $n = 0; $n < sizeof($temp['sug']); $n++ )
@@ -250,7 +251,7 @@ class WISY_TAGSUGGESTOR_CLASS
 						}
 						
 							
-						if( sizeof($names) == 1 && !$has_man_sug /* manual suggestions should always be shown*/ )
+						if( sizeof((array) $names) == 1 && !$has_man_sug /* manual suggestions should always be shown*/ )
 						{
 							// ... only one destination as a simple synonym: directly follow 1-dest-only-synonyms
 							$tag_array = array(	'tag' => $tag_name, 
@@ -266,7 +267,7 @@ class WISY_TAGSUGGESTOR_CLASS
 							}
 							$ret[] = $tag_array;
 						}
-						else if( sizeof($names) >= 1 ) 
+						else if( sizeof((array) $names) >= 1 ) 
 						{
 							// ... more than one destinations
 							$ret[] = array(	'tag' => $tag_name, 'tag_type' => 64 | $fuzzy, 'tag_help' => intval($tag_help) );
@@ -308,9 +309,11 @@ class WISY_TAGSUGGESTOR_CLASS
 					}
 				}
 
-				// if there are only very few results, try an additional soundex search
-				if( sizeof($ret) < $min && $use_soundex )
-					$COND = "tag_soundex='".soundex($q_tag_name)."'";
+				require_once("admin/lib/soundex/x3m_soundex_ger.php");
+				
+				// if there are only very few results, try an additional soundex search = has equal word value
+				if( sizeof((array) $ret) < $min && $use_soundex )
+					$COND = "tag_soundex='".soundex_ger($q_tag_name)."'";
 				else
 					break;
 			}

@@ -38,7 +38,7 @@ class print_plugin_class
 	var $options;			// the options to use
 	var $param;				// parameters from the options
 	
-	function print_plugin_class()
+	function __construct()
 	{
 	}
 	

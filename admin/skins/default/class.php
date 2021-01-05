@@ -94,7 +94,7 @@ usage:
 class SKIN_DEFAULT_CLASS
 {
 	// Texticons:
-	var $ti_sortdesc = '&darr;';	// Alternative: &#9660; ist aber etwas zu auffällig, &darr; passt besser
+	var $ti_sortdesc = '&darr;';	// Alternative: &#9660; ist aber etwas zu auffaellig, &darr; passt besser
 	var $ti_sortasc  = '&uarr;';	// Alternative: &#9650;       - " -
 	var $ti_next     = '&gt;&gt;';	// Alternative: &#9654; ist aber je nach Browser etwas klein
 	var $ti_prev     = '&lt;&lt;';	// Alternative: &#9664;       - " -
@@ -222,13 +222,36 @@ class SKIN_DEFAULT_CLASS
 				echo '</td>';
 				echo '<td class="smr">';
 	}
-	function submenuEnd()
+	function submenuEnd($displayDBLoad = false)
 	{
-				echo '</td>';
-			echo '</tr>';
-		echo '</table>';
-		
-
+	    echo '</td>';
+	    echo '</tr>';
+	    if($displayDBLoad)
+	        echo $this->getDBLoadStatus();
+	        echo '</table>';
+	}
+	
+	function getDBLoadStatus() {
+	    
+	    $additionalLoad = array();
+	    
+	    $display = false;
+	    $dbLoad = new DB_Admin;
+	    $dbLoad->query("SELECT svalue FROM `x_state` WHERE skey = 'what'");
+	    $dbLoad->next_record();
+	    $value = $dbLoad->f("svalue");
+	    if( $value == "kurseSlow" )
+	        $keep = true;
+	        
+	        $dbLoad->query("SELECT svalue FROM `x_state` WHERE skey = 'updatestick' AND (svalue <> '0000-00-00 00:00:00' && svalue <> '')");
+	        $dbLoad->next_record();
+	        if($keep && $dbLoad->f("svalue"))
+	            $additionalLoad[] = "Suchindex-Update";
+	            
+	        if(count($additionalLoad))
+	            return '<tr><td class="additionalload"><span class="blink_me"></span>&nbsp;&nbsp;&nbsp;&nbsp;Besondere Datenbankbelastung: '.$additionalLoad[0].'</td><td></td></tr>';
+	        else
+	            return '';
 	}
 	
 	

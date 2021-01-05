@@ -47,7 +47,7 @@ class WISY_PLZFILTER_CLASS
 	{
 		$ret = array();
 			$temp = explode(',', $plz_list_as_string);
-			for( $i = 0; $i < count((array) $temp); $i++ ) {
+			for( $i = 0; $i < count($temp); $i++ ) {
 				$plz = trim($temp[$i]);
 				if( $plz != '' ) {
 					$ret[ $plz ] = 1;
@@ -77,29 +77,29 @@ class WISY_PLZFILTER_CLASS
 		// check, if a PLU is denied or allowed by default; the latter is the standard setting
 		if( $this->plz_order == 'deny,allow' )
 		{
-			// deny,allow
-			if( count((array) $this->plz_deny ) ) { 
-				if( $this->is_plz_in_array_($plz, $this->plz_deny ) ) { 
-					if( count((array) $this->plz_allow) == 0 || !$this->is_plz_in_array_($plz, $this->plz_allow) ) { 
-						return false; 
-					}
-				} 
-			}
+		    // deny,allow
+		    if( count((array) $this->plz_deny ) ) {
+		        if( $this->is_plz_in_array_($plz, $this->plz_deny ) ) {
+		            if( count((array) $this->plz_allow) == 0 || !$this->is_plz_in_array_($plz, $this->plz_allow) ) {
+		                return false;
+		            }
+		        }
+		    }
 		}
 		else
 		{
-			// allow,deny - standard behaviour
-			if( count((array) $this->plz_allow) ) { 
-				if( !$this->is_plz_in_array_($plz, $this->plz_allow) ) { 
-					return false; 
-				}
-			}
-			
-			if( count((array) $this->plz_deny ) ) { 
-				if(  $this->is_plz_in_array_($plz, $this->plz_deny ) ) {
-					return false;
-				}
-			}
+		    // allow,deny - standard behaviour
+		    if( count((array) $this->plz_allow) ) {
+		        if( !$this->is_plz_in_array_($plz, $this->plz_allow) ) {
+		            return false;
+		        }
+		    }
+		    
+		    if( count((array) $this->plz_deny ) ) {
+		        if(  $this->is_plz_in_array_($plz, $this->plz_deny ) ) {
+		            return false;
+		        }
+		    }
 		}
 		
 		return true;

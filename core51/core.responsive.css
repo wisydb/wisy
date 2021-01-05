@@ -6,15 +6,10 @@
 body { padding: 0; margin: 0; }
 .acclink { display: none; }
 
-#page {
-	max-width: 1024px;
-	margin: 0 auto;
-	padding: 10px;
-	overflow-x: hidden;
-}
+#page { max-width: 1024px; margin: 0 auto; padding: 10px; overflow-x: hidden; }
 
-/* Ehemals #themenmenue -> Umbenannt zu .nav_menu */
-.nav_menu { 
+/* Themenmenue */
+#themenmenue { 
 	background-color: #eee;
 	clear: both;
 }
@@ -61,29 +56,6 @@ body { padding: 0; margin: 0; }
 
 #favlistlink { display: inline-block; padding: 2px; }
 
-ul.dropdown {
-  z-index: auto;
-}
-ul.dropdown ul {
-  width: 16rem;
-}
-ul.dropdown ul:not([aria-hidden="true"]) {
-  visibility: visible;
-}
-ul.dropdown ul.hidden {
-  visibility: hidden;
-}
-ul.dropdown ul li.has-subnav:after {
-	content: '';
-	position: absolute;
-	right: 0;
-	top: 0.1em;
-	width: 1.5em;
-	height: 1.5em;
-	/* https://materialdesignicons.com: chevron-right */
-	background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23787878' d='M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z' /%3E%3C/svg%3E") center center/contain;
-}
-
 /* Contentarea */
 #wisy_contentarea { padding: 0; }
 .wisyr_indent { margin-left: 1em; vertical-align: top; }
@@ -105,7 +77,7 @@ ul.dropdown ul li.has-subnav:after {
 /* Suche: Formular */
 #wisy_searcharea { position: relative; padding: 15px 0 45px 0; }
 #wisy_searcharea .formrow { display: inline; position: relative; }
-#wisy_searcharea label { margin-right: 0.5em; }
+#wisy_searcharea label { display: none; }
 #wisy_searchinput {
 	width: 100%;
 	max-width: 500px;
@@ -116,19 +88,18 @@ ul.dropdown ul li.has-subnav:after {
 #wisy_searchbtn { margin-top: 15px; }
 .wisy_searchhints {
 	position: absolute;
-	bottom: -2rem;
+	bottom: -30px;
 	left: 0;
 }
 
 .wisyr_searchinput { position: relative; }
 .wisyr_searchinput .clear_btn {
 	position: absolute;
-	top: -0.2em;
+	top: 0;
 	right: 1.5em;
-	width: 1.5em;
-	height: 1.5em;
-	/* https://materialdesignicons.com: close */
-	background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23787878' d='M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z' /%3E%3C/svg%3E") no-repeat center center/contain;
+	width: 1em;
+	height: 1em;
+	background: #fff url(/core51/img/close-red.png) no-repeat center center/1em;
 	cursor: pointer;
 }
 
@@ -157,6 +128,11 @@ ul.dropdown ul li.has-subnav:after {
 
 /* Tabellen */
 
+/* --- Anbieter - Detail --- */
+.wisyr_anbieter_firmenportraet {
+	min-height: 300px;
+}
+	 
 /* --- Kursliste / Anbieterliste --- */
 
 .wisyr_anbieter_switch,
@@ -190,15 +166,16 @@ ul.dropdown ul li.has-subnav:after {
 	margin: 0 0 1em 25%;
 }
 
-@media screen and (max-width: 760px), print {
+/* , print */
+@media screen and (max-width: 760px) {
 	
 	#page { padding-top: 50px; }
 	
-	/* Ehemals #themenmenue -> Umbenannt zu .nav_menu */
-	.nav_menu { display: none; }
+	/* Themenmenue */
+	#themenmenue { display: none; }
 	#nav-link { display: block; }
 	
-	.navshowing .nav_menu {
+	.navshowing #themenmenue {
 		display: block;
 		position: absolute;
 		top: 60px;
@@ -207,13 +184,13 @@ ul.dropdown ul li.has-subnav:after {
 		bottom: 0;
 		z-index: 330;
 	}
-	.nav_menu ul, .nav_menu li { position: relative; float: none; visibility: visible!important; }
-	.nav_menu li { padding: 0; border: none; background-color: #eee;}
-	.nav_menu a { display: block; padding: 10px; border-bottom: 1px solid #fff; }
-	.nav_menu li.dir { background-color: #ddd; }
-	.nav_menu ul ul { display: none; }
-	.nav_menu ul.dropdown ul { width: 100%; }
-	.nav_menu ul.dropdown ul ul { left: 0; }
+	#themenmenue ul, #themenmenue li { position: relative; float: none; visibility: visible!important; }
+	#themenmenue li { padding: 0; border: none; background-color: #eee;}
+	#themenmenue a { display: block; padding: 10px; border-bottom: 1px solid #fff; }
+	#themenmenue li.dir { background-color: #ddd; }
+	#themenmenue ul ul { display: none; }
+	#themenmenue ul.dropdown ul { width: 100%; }
+	#themenmenue ul.dropdown ul ul { left: 0; }
 	
 	#favlistlink { width: 100%; }
 	
@@ -298,6 +275,11 @@ ul.dropdown ul li.has-subnav:after {
 	
 	table.wisyr_kursliste .wisyr_termin_weitere a:before {
 		content: '+';
+	}
+	
+	/* Anbieter-Detail */
+	.wisyr_anbieter_firmenportraet {
+		min-height: 300px;
 	}
 	
 	/* Paginierung */
@@ -429,15 +411,15 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 .wisyr_filterform form fieldset.wisyr_filtergroup:after {
 	content: '';
 	position: absolute;
-	right: 0.3em;
+	right: 0.1em;
 	top: 0.3em;
 	width: 1.5em;
 	height: 1.5em;
 	/* https://materialdesignicons.com: chevron-down */
-	background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23787878' d='M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z' /%3E%3C/svg%3E") center center/contain;
+	background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 23 23'%3E%3Cpath fill='%23787878' d='M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z' /%3E%3C/svg%3E") center center/contain;
 }
 
-/* Metagroup: Filtergruppe mit Überschrift und Umbruch danach */
+/* Metagroup: Filtergruppe mit Ueberschrift und Umbruch danach */
 .wisyr_filterform form fieldset.wisyr_filter_metagroup {
 	margin-top: 2em;
 }
@@ -452,7 +434,9 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 .wisyr_filterform form fieldset.filter_weiterekriterien > .wisyr_filtergroup { width: 9rem; }
 .wisyr_filterform form fieldset.filter_weiterekriterien:after {
 	/* https://materialdesignicons.com: plus */
-	background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23787878' d='M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z' /%3E%3C/svg%3E") center center/contain;
+/* fontabhaengig + wird nicht verstanden // background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'%3E%3Cpath fill='%23787878' d='M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z' /%3E%3C/svg%3E") center center/contain; */
+	background-repeat:no-repeat;
+	right: 0.1em;
 }
 
 .wisyr_filterform form fieldset.filter_weiterekriterien .filter_inner {
@@ -509,7 +493,7 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 .wisyr_filterform .ui-selectmenu-button:after {
 	content: '';
 	position: absolute;
-	right: 0.3em;
+	right: 0.1em;
 	top: 0.3em;
 	width: 1.5em;
 	height: 1.5em;
@@ -563,6 +547,11 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 	color: #798D94;
 	font-weight: 700;
 	margin-bottom: 1em;
+}
+
+.wisyr_filterform .filter_inner legend {
+	font-weight: 500;
+	font-size: 1em;
 }
 
 .wisyr_radiowrapper { display: block; white-space: nowrap; }
@@ -740,6 +729,7 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 	float: left;
 	margin-right: 0.5em;
 	margin-bottom: 0.3em;
+	z-index: 9;
 }
 .wisyr_activefilters .wisyr_filter a {
 	color: #fff;
@@ -770,8 +760,121 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 	background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ffffff' d='M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z' /%3E%3C/svg%3E") no-repeat center center/contain;
 }
 
+/* Don't limit filter length */
+.wisyr_activefilters .wisyr_filter a {
+ max-width: none;
+}
+
 /* Nichts gefunden / leergefiltert Seite */
 .wisy_suggestions .wisyr_filterform_header { display: none; }
+
+/* Make filtergroups appear neutral until there are neutral filter metagroups */
+.wisyr_filterform form > fieldset
+{ background-color: transparent; }
+
+.wisyr_filterform_header_titel 
+{ display: none; } 
+
+/* Titel of Metagroup, tmp. don't display */
+.wisyr_filter_metagroup > legend {
+ display: none;	
+}
+
+/* Cookiebanner */
+
+.toggle_cookiedetails.inactive::after {
+ content: " anzeigen..." !important;
+}
+
+.toggle_cookiedetails::after {
+ content: " ausblenden..." !important;
+}
+
+.toggle_cookiedetails {
+    color: #444 !important;
+    text-decoration: underline;
+}
+
+.cc-link {
+ color: rgb(28, 88, 151) !important;
+}
+
+.cookies_techdetails.inactive {
+ display: none;
+}
+
+.cc-allow-all.inactive {
+ display: none;	
+}
+
+.cc-btn.cc-allow {
+  color: rgb(255, 255, 255);
+  background-color: rgb(62, 122, 184);
+}
+
+.cc-btn.cc-allow:hover {
+  background-color: #aaa !important;
+}
+
+.cc-revoke, .cc-window {
+ overflow: scroll !important;
+}
+
+.cc-window.cc-floating {
+ max-width: 40em;
+ border: 2px solid white;
+ max-height: 97vH;
+}
+
+.cc-window ul li.disabled {
+    font-weight: 200;
+    color: #444;
+}
+
+.cc-window ul li {
+ font-size: 1em;
+}
+
+.cc-window ul li .importance {
+ font-size: .8em;
+}
+
+.cc-window ul li {
+	list-style: none;
+	padding-left: .2em;
+	margin-top: .5em;
+	font-weight: 600;
+	font-size: .8em;
+}
+
+.cc-window ul li div.consent_option_infos {
+	vertical-align: top;
+	display: inline-block;
+	max-width: 90%;
+}
+
+.cc-window ul li .importance {
+	font-weight: 100;
+	font-size: .8em;
+}
+
+.cc-window .hinweis_abwahl {
+	padding-left: .2em;
+	font-weight: 500;
+	font-size: .7em;
+	/* color: #666; */
+}
+
+/* don't display, if detailed consent necessary anyway */
+.cc-btn.cc-deny {
+	display: none;
+}
+
+.cc-window ul li div.consent_option_infos.highlight {
+	color: darkred;
+}
+
+/* *************** */ 
 
 @media screen and (min-width: 761px) {
 	.wisyr_filterform .ui-selectmenu-menu .ui-widget.ui-widget-content {
@@ -798,7 +901,7 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 		/* https://materialdesignicons.com: tune */
 		background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23787878' d='M3,17V19H9V17H3M3,5V7H13V5H3M13,21V19H21V17H13V15H11V21H13M7,9V11H3V13H7V15H9V9H7M21,13V11H11V13H21M15,9H17V7H21V5H17V3H15V9Z' /%3E%3C/svg%3E") no-repeat center center/24px;
 	}
-	.wisyr_filternav.wisyr_filters_active #wisy_filterlink {
+	.wisyr_filternav.wisyr_filters_active #wisy_filterlink, body.activefilters #wisy_filterlink {
 		/* https://materialdesignicons.com: tune */
 		background: url("data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill-rule%3D%22evenodd%22%20clip-rule%3D%22evenodd%22%20stroke-linejoin%3D%22round%22%20stroke-miterlimit%3D%222%22%3E%3Cpath%20d%3D%22M3%2017v2h6v-2H3M3%205v2h10V5H3m10%2016v-2h8v-2h-8v-2h-2v6h2M7%209v2H3v2h4v2h2V9H7m14%204v-2H11v2h10m-6-4h2V7h4V5h-4V3h-2v6z%22%20fill-rule%3D%22nonzero%22%2F%3E%3Ccircle%20cx%3D%2217.809%22%20cy%3D%226.108%22%20r%3D%224.163%22%20fill%3D%22%233e7ab8%22%2F%3E%3C%2Fsvg%3E") no-repeat center center/24px;
 	}
@@ -1193,6 +1296,10 @@ textarea + .wisy-form--error {
 }
 .wisyr_align--center {
 	text-align: center;
+}
+
+.redundant_tags, .changed_ort {
+ font-size: 0.8em;
 }
 
 @media screen and (-ms-high-contrast: active) {

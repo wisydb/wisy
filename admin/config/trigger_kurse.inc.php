@@ -1,6 +1,6 @@
 <?php
 
-
+require_once("codes.inc.php");
 
 /*****************************************************************************
  * Tools
@@ -160,28 +160,50 @@ function update_kurs_state($kurs_id, $param)
 		$durchf_ids[] = $db->f('secondary_id');
 	}
 	$anz_durchf = sizeof((array) $durchf_ids);
-
+	
+	
+	global $controlTags;
+	
 	// stichw. holen
 	$anz_stichw = 0;
 	$has_fernunterricht_stichw = false;
+	$has_elearning_stichw = false;
 	$has_bildungsgutschein_stichw  = false;
 	$has_aktivierungsgutschein_stichw  = false;
 	$has_umschulung_stichw  = false;
 	$einstieg_bis_kursende_moeglich = false;
+	$has_orientierungskurs_stichw = false;
+	$has_integrationskurs_intensiv_stichw = false;
+	$has_integrationskurs_speziell_stichw = false;
+	$has_integrationskurs_stichw = false;
+	$has_integrationskurs_alpha_stichw = false;
+	$has_deufoev_stichw = false;
+	$has_integrationskurs_zweitschrift_stichw = false;
+	$has_preiskomplex_stichw = false;
+	
 	$db->query("SELECT attr_id FROM kurse_stichwort WHERE primary_id=$kurs_id;");
 	while ( $db->next_record() )
 	{
-		switch( $db->f('attr_id') )
-		{
-			case 4112: case 7721:	$has_fernunterricht_stichw			= true; break;
-			case 3207: 				$has_bildungsgutschein_stichw		= true; break;
-			case 16311: 			$has_aktivierungsgutschein_stichw	= true; break;
-			case 6013: 				$has_umschulung_stichw				= true; break;
-			case 315:  				$einstieg_bis_kursende_moeglich		= true; break;
-		}
-		$anz_stichw ++;
+	    switch( $db->f('attr_id') )
+	    {
+	        case $controlTags['Fernunterricht']: $has_fernunterricht_stichw			= true; break;
+	        case $controlTags['E-Learning']: $has_elearning_stichw			= true; break;
+	        case ($controlTags['Bildungsgutschein']): $has_bildungsgutschein_stichw		= true; break;
+	        case $controlTags['Aktivierungsgutschein']: $has_aktivierungsgutschein_stichw	= true; break;
+	        case $controlTags['Umschulung']: $has_umschulung_stichw				= true; break;
+	        case $controlTags['Orientierungskurs']: $has_orientierungskurs_stichw		= true; break;
+	        case $controlTags['Integrationskurs (Intensivkurs)']: $has_integrationskurs_intensiv_stichw		= true; break;
+	        case $controlTags['Integrationskurs (zu speziellem Förderbedarf)']: $has_integrationskurs_speziell_stichw		= true; break;
+	        case $controlTags['Integrationskurs']: $has_integrationskurs_stichw		= true; break;
+	        case $controlTags['Integrationskurs (mit Alphabetisierung)']: $has_integrationskurs_alpha_stichw		= true; break;
+	        case $controlTags['DeuFoeV']: $has_deufoev_stichw	= true; break;
+	        case $controlTags['Integrationskurs für Zweitschriftlernende']: $has_integrationskurs_zweitschrift_stichw	= true; break;
+	        case $controlTags['Preis komplex']: $has_preiskomplex_stichw	= true; break;
+	        case $controlTags['Einstieg bis Kursende moeglich']: $einstieg_bis_kursende_moeglich		= true; break;
+	    }
+	    $anz_stichw ++;
 	}
-
+	
 	if( $bu_nummer != '' ) $anz_stichw ++;
 	if( $azwv_knr != '' )  $anz_stichw ++;
 	if( $thema != 0 )	   $anz_stichw ++;
@@ -325,7 +347,7 @@ function update_kurs_state($kurs_id, $param)
 					}
 
 					if( $setmsg )		{ $ret['returnmsg'] .= ($ret['returnmsg']? '<br />' : '') . 'Durchf&uuml;hrung '.($i+1).': '.$setmsg.' anhand von Strasse/Ort gesetzt.'; $ret['returnreload'] = true; }
-					if( $cannotsetmsg )	{ $ret['returnmsg'] .= ($ret['returnmsg']? '<br />' : '') . 'Durchf&uuml;hrung '.($i+1).': Für die gegeben Strasse/Ort sind unterschiedliche Werte für '.$cannotsetmsg.' möglich, die nicht automatisch ermittelt werden konnten.'; }
+					if( $cannotsetmsg )	{ $ret['returnmsg'] .= ($ret['returnmsg']? '<br />' : '') . 'Durchf&uuml;hrung '.($i+1).': F&uuml;r die gegeben Strasse/Ort sind unterschiedliche Werte f&uuml;r '.$cannotsetmsg.' m&ouml;glich, die nicht automatisch ermittelt werden konnten.'; }
 				}
 			}
 			
@@ -339,51 +361,72 @@ function update_kurs_state($kurs_id, $param)
 			}
 			
 			// vollstaendigkeit berechnen
-			if( ($beginn != '' && $beginn != '0000-00-00 00:00:00') 
-			 || ($beginnoptionen >= 1) 
-			 || $has_fernunterricht_stichw )								$baD['beginn']++;
-			if( ($ende != '' && $ende != '0000-00-00 00:00:00') 
-			 || $has_fernunterricht_stichw )								$baD['ende']++;
-			if( $plz != '' || $ort != '' || $has_fernunterricht_stichw )	$baD['plz']++;
-			
-			if( $preis != -1 || $has_bildungsgutschein_stichw || $has_aktivierungsgutschein_stichw || $has_umschulung_stichw )				
-																			$baD['preis']++;
-
-			if( $nr != '' )													$baD['nr']++;
-			if( $strasse != '' || $has_fernunterricht_stichw )				$baD['strasse']++;
-			if( $stunden > 0 )												$baD['stunden']++;
-			if( $teilnehmer > 0 )											$baD['teilnehmer']++;
-			if( $zeit_von != '' )											$baD['zeit_von']++;
-			if( $zeit_bis != '' )											$baD['zeit_bis']++;
+			if( ($beginn != '' && $beginn != '0000-00-00 00:00:00')
+			    || ($beginnoptionen >= 1)
+			    || $has_fernunterricht_stichw )								$baD['beginn']++;
+			    
+			if( ($ende != '' && $ende != '0000-00-00 00:00:00')
+			    || $has_fernunterricht_stichw )								$baD['ende']++;
+			        
+			// if( $plz != '' || $ort != '' || $has_fernunterricht_stichw || $has_elearning_stichw)	$baD['plz']++;
+		    if( $ort != '' || $has_fernunterricht_stichw || $has_elearning_stichw)	$baD['ort']++;
+			        
+			        
+			        
+			        
+			// Wenn Preis vorhanden oder ein SW keinen Preis notwendig macht:
+			if( $preis != -1
+			 || $has_bildungsgutschein_stichw
+			 || $has_aktivierungsgutschein_stichw
+			 || $has_umschulung_stichw
+			 || $has_orientierungskurs_stichw
+			 || $has_integrationskurs_intensiv_stichw
+			 || $has_integrationskurs_speziell_stichw
+			 || $has_integrationskurs_stichw
+			 || $has_integrationskurs_alpha_stichw
+			 || $has_deufoev_stichw
+			 || $has_integrationskurs_zweitschrift_stichw
+			 || $has_preiskomplex_stichw)
+			 $baD['preis']++;
+			            
+			if( $nr != '' )	$baD['nr']++;
+			if( $strasse != '' || $has_fernunterricht_stichw || $has_elearning_stichw) $baD['strasse']++;
+			if( $stunden > 0 ) $baD['stunden']++;
+			if( $teilnehmer > 0 ) $baD['teilnehmer']++;
+			if( $zeit_von != '' ) $baD['zeit_von']++;
+			if( $zeit_bis != '' ) $baD['zeit_bis']++;
 		}
 	}
 	
 	// vollstaendigkeit berechnen
 	$vmsg = '';
 	$punkte_erreicht = 0.0;
-	if( $anz_durchf > 0 )
-	{																	// 50 punkte
-		if( strlen($beschreibung)>strlen($titel) )	{ $punkte_erreicht += 12.5; } else { $vmsg .= "<br />- Um die Mindestvollständigkeit zu erreichen, stellen Sie bitte eine <b>Mindesttextlänge</b> sicher."; }	
-		if( $baD['beginn']	== $anz_durchf )		{ $punkte_erreicht += 12.5; } else { $missing = $anz_durchf-$baD['beginn'];		$vmsg .= "<br />- Um die Mindestvollständigkeit zu erreichen, geben Sie bitte <b>alle Beginndaten</b> ein. Es fehlen aktuell $missing Beginndaten."; }
-		if( $baD['plz'] 	== $anz_durchf )		{ $punkte_erreicht += 12.5; } else { $missing = $anz_durchf-$baD['plz']; 		$vmsg .= "<br />- Um die Mindestvollständigkeit zu erreichen, machen Sie bitte Angaben zu den <b>PLZ in allen Durchführungen</b>. Es fehlen aktuell $missing PLZ."; }
-		if( $baD['preis']	== $anz_durchf ) 		{ $punkte_erreicht += 12.5; } else { $missing = $anz_durchf-$baD['preis']; 		$vmsg .= "<br />- Um die Mindestvollständigkeit zu erreichen, geben Sie bitte <b>alle Preise</b> ein. Es fehlen aktuell $missing Preise."; }
-		if( $punkte_erreicht >= 50 )
-		{																// 45 punkte
-			if( $baD['nr'] 	== $anz_durchf )		{ $punkte_erreicht +=  2.0; } else { $missing = $anz_durchf-$baD['nr'];			$vmsg .= "<br />- Um die Vollständigkeit zu erhöhen, geben Sie bitte <b>alle Kursnummern</b> ein. Es fehlen aktuell $missing Kursnummern."; }
-			if( $baD['stunden'] == $anz_durchf )	{ $punkte_erreicht += 10.0; } else { $missing = $anz_durchf-$baD['stunden'];	$vmsg .= "<br />- Um die Vollständigkeit zu erhöhen, geben Sie bitte <b>alle Stundenanzahlen</b> ein. Es fehlen aktuell $missing Angaben hierzu."; }
-			if( $baD['ende'] == $anz_durchf )		{ $punkte_erreicht += 10.0; } else { $missing = $anz_durchf-$baD['ende'];		$vmsg .= "<br />- Um die Vollständigkeit zu erhöhen, geben Sie bitte <b>alle Enddaten</b> ein. Es fehlen aktuell $missing Daten."; }
-			if( $baD['teilnehmer'] == $anz_durchf )	{ $punkte_erreicht += 10.0; } else { $missing = $anz_durchf-$baD['teilnehmer'];	$vmsg .= "<br />- Um die Vollständigkeit zu erhöhen, geben Sie bitte <b>alle Teilnehmendenanzahlen</b> ein. Es fehlen aktuell $missing Angaben hierzu."; }
-			if( $baD['zeit_von'] == $anz_durchf )	{ $punkte_erreicht +=  5.0; } else { $missing = $anz_durchf-$baD['zeit_von'];	$vmsg .= "<br />- Um die Vollständigkeit zu erhöhen, geben Sie bitte <b>alle Beginnzeiten</b> ein. Es fehlen aktuell $missing Angaben hierzu."; }
-			if( $baD['zeit_bis'] == $anz_durchf )	{ $punkte_erreicht +=  5.0; } else { $missing = $anz_durchf-$baD['zeit_bis'];	$vmsg .= "<br />- Um die Vollständigkeit zu erhöhen, geben Sie bitte <b>alle Endezeiten</b> ein. Es fehlen aktuell $missing Angaben hierzu."; }
-			if( $baD['strasse'] == $anz_durchf )	{ $punkte_erreicht +=  3.0; } else { $missing = $anz_durchf-$baD['strasse'];	$vmsg .= "<br />- Um die Vollständigkeit zu erhöhen, machen Sie bitte Angaben zu den <b>Strassen in allen Durchführungen</b>. Es fehlen aktuell $missing Strassen."; }
-																		
-																		// 5 Punkte nach Freischaltung durch die Redaktion
-			if( $anz_stichw >= 2 )					{ $punkte_erreicht +=  5.0; } else { if($vmsg=='') { $vmsg .= '<br />- Sie haben alle notwendigen Angaben zur Vollständigkeit gemacht; der Kurs wird als 100%-vollständig gelistet, sobald er von der Redaktion freigeschaltet wird.'; }	}
-		}
+	f( $anz_durchf > 0 )
+	{
+	    // 50 punkte
+	    if( strlen($beschreibung)>strlen($titel) )	{ $punkte_erreicht += 12.5; } else { $vmsg .= "<br><span class='missing_textlaenge'>&bull; Um die Mindestvollst&auml;ndigkeit zu erreichen, stellen Sie bitte eine <b>Mindesttextl&auml;nge</b> sicher.</span>"; }
+	    if( $baD['beginn']	== $anz_durchf )		{ $punkte_erreicht += 12.5; } else { $missing = $anz_durchf-$baD['beginn'];		$vmsg .= "<br><span class='missing_beginn'>&bull; Um die Mindestvollst&auml;ndigkeit zu erreichen, geben Sie bitte <b>alle Beginndaten</b> ein. Es fehlen aktuell $missing Beginndaten.</span>"; }
+	    // if( $baD['plz'] 	== $anz_durchf )		{ $punkte_erreicht += 12.5; } else { $missing = $anz_durchf-$baD['plz']; 		$vmsg .= "<br><span class='missing_plz'>&bull; Um die Mindestvollst&auml;ndigkeit zu erreichen, machen Sie bitte Angaben zu den <b>PLZ in allen Durchf&uuml;hrungen</b>. Es fehlen aktuell $missing PLZ.</span>"; }
+	    if( $baD['ort'] 	== $anz_durchf )		{ $punkte_erreicht += 12.5; } else { $missing = $anz_durchf-$baD['ort']; 		$vmsg .= "<br><span class='missing_ort'>&bull; Um die Mindestvollst&auml;ndigkeit zu erreichen, machen Sie bitte Angaben zum <b>Ort in allen Durchf&uuml;hrungen</b>. Es fehlen aktuell $missing Orte.</span>"; }
+	    if( $baD['preis']	== $anz_durchf ) 		{ $punkte_erreicht += 12.5; } else { $missing = $anz_durchf-$baD['preis']; 		$vmsg .= "<br><span class='missing_preis'>&bull;Um die Mindestvollst&auml;ndigkeit zu erreichen, geben Sie bitte <b>alle Preise</b> ein. Es fehlen aktuell $missing Preise.</span>"; }
+	    if( $punkte_erreicht >= 50 )
+	    {
+	        // 45 punkte
+	        if( $baD['nr'] 	== $anz_durchf )		{ $punkte_erreicht +=  2.0; } else { $missing = $anz_durchf-$baD['nr'];			$vmsg .= "<br><span class='missing_nr'>&bull; Um die Vollst&auml;ndigkeit zu erh&ouml;hen, geben Sie bitte <b>alle Kursnummern</b> ein. Es fehlen aktuell $missing Kursnummern.</span>"; }
+	        if( $baD['stunden'] == $anz_durchf )	{ $punkte_erreicht += 10.0; } else { $missing = $anz_durchf-$baD['stunden'];	$vmsg .= "<br><span class='missing_stunden'>&bull; Um die Vollst&auml;ndigkeit zu erh&ouml;hen, geben Sie bitte <b>alle Stundenanzahlen</b> ein. Es fehlen aktuell $missing Angaben hierzu.</span>"; }
+	        if( $baD['ende'] == $anz_durchf )		{ $punkte_erreicht += 10.0; } else { $missing = $anz_durchf-$baD['ende'];		$vmsg .= "<br><span class='missing_ende'>&bull; Um die Vollst&auml;ndigkeit zu erh&ouml;hen, geben Sie bitte <b>alle Enddaten</b> ein. Es fehlen aktuell $missing Daten.</span>"; }
+	        if( $baD['teilnehmer'] == $anz_durchf )	{ $punkte_erreicht += 10.0; } else { $missing = $anz_durchf-$baD['teilnehmer'];	$vmsg .= "<br><span class='missing_teilnehmer'>&bull; Um die Vollst&auml;ndigkeit zu erh&ouml;hen, geben Sie bitte <b>alle Teilnehmendenanzahlen</b> ein. Es fehlen aktuell $missing Angaben hierzu.</span>"; }
+	        if( $baD['zeit_von'] == $anz_durchf )	{ $punkte_erreicht +=  5.0; } else { $missing = $anz_durchf-$baD['zeit_von'];	$vmsg .= "<br><span class='missing_zeit_von'>&bull; Um die Vollst&auml;ndigkeit zu erh&ouml;hen, geben Sie bitte <b>alle Beginnzeiten</b> ein. Es fehlen aktuell $missing Angaben hierzu.</span>"; }
+	        if( $baD['zeit_bis'] == $anz_durchf )	{ $punkte_erreicht +=  5.0; } else { $missing = $anz_durchf-$baD['zeit_bis'];	$vmsg .= "<br><span class='missing_zeit_bis'>&bull; Um die Vollst&auml;ndigkeit zu erh&ouml;hen, geben Sie bitte <b>alle Endezeiten</b> ein. Es fehlen aktuell $missing Angaben hierzu.</span>"; }
+	        if( $baD['strasse'] == $anz_durchf )	{ $punkte_erreicht +=  3.0; } else { $missing = $anz_durchf-$baD['strasse'];	$vmsg .= "<br><span class='missing_strasse'>&bull; Um die Vollst&auml;ndigkeit zu erh&ouml;hen, machen Sie bitte Angaben zu den <b>Strassen in allen Durchf&uuml;hrungen</b>. Es fehlen aktuell $missing Strassen.</span>"; }
+	        
+	        // 5 Punkte nach Freischaltung durch die Redaktion
+	        if( $anz_stichw >= 2 )					{ $punkte_erreicht +=  5.0; } else { if($vmsg=='') { $vmsg .= '<br><span class="alles_vollstaendig">&bull; Sie haben alle notwendigen Angaben zur Vollst&auml;ndigkeit gemacht; der Kurs wird als 100%-vollst&auml;ndig gelistet, sobald er von der Redaktion freigeschaltet wird.</span>'; }	}
+	    }
 	}
 	else
 	{
-		$vmsg .= '<br />- Um die Mindestvollständigkeit zu erreichen, legen Sie bitte eine <b>Durchführung</b> an.';
+	    $vmsg .= '<br><span class="alles_vollstaendig">&bull; Um die Mindestvollst&auml;ndigkeit zu erreichen, legen Sie bitte eine <b>Durchf&uuml;hrung</b> an.</span>';
 	}
 	$ret['vmsg'] = $vmsg;
 	

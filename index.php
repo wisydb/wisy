@@ -1,4 +1,7 @@
 <?php
+
+// die(date("d.m.Y").": Wartungsarbeiten.");
+
 /*******************************************************************************
 WISY
 ********************************************************************************
@@ -9,28 +12,44 @@ Portals Main Entry Point
 
 *******************************************************************************/
 
+header('Referrer-Policy: origin-when-cross-origin');
 header('X-Powered-By: Software');
 
 define('IN_WISY', true);
 
-if(substr(PHP_VERSION_ID, 0, 1) > 6)
-	define('PHP7', true);
-else
-	define('PHP7', false);
+// redirects
+$url = 'https://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'];
 
+if(strpos($url,'https://www.kursportal.info/search?q=requested-term') !== false) {
+    header("Location: https://portalx.kursportal.info/search?q=target-term", true, 301); // permanent URL redirections
+    exit();
+}
+
+
+if(substr(PHP_VERSION_ID, 0, 1) > 6)
+    define('PHP7', true);
+else
+    define('PHP7', false);
+        
 // convert string to UTF-8 or not
 function cs8($string) {
-	if(ini_get("default_charset") == "UTF-8") {
-		if(mb_detect_encoding($string, 'UTF-8', true) === FALSE || mb_detect_encoding($string, 'ISO-8859-1', true))
-			return utf8_encode($string);
-		else
-			return $string;
-	} else {
-		if(mb_detect_encoding($string, 'ISO-8859-1', true) === FALSE || mb_detect_encoding($string, 'UTF-8', true))
-			return utf8_decode($string);
-		else
-			return $string;
-	}
+        
+    if(PHP7)
+        return $string;
+    else
+        return utf8_encode($string);
+                
+ /* if(ini_get("default_charset") == "UTF-8" ||  $defaultoutput == "UTF-8") {
+        if(mb_detect_encoding($string, 'UTF-8', true) === FALSE || mb_detect_encoding($string, 'ISO-8859-1', true))
+            return utf8_encode($string);
+        else
+            return $string;
+    } else {
+        if(mb_detect_encoding($string, 'ISO-8859-1', true) === FALSE || mb_detect_encoding($string, 'UTF-8', true))
+            return utf8_decode($string);
+        else
+            return $string;
+    } */
 }
 
 
@@ -145,6 +164,7 @@ function fwd301($fwdTo)
 	// wenn man nur "Location:" verwendet, wird von PHP der Code 302 versandt
 	header("HTTP/1.1 301 Moved Permanently");
 	header("Location: $fwdTo");
+	header("Cache-Control: max-age=259200"); // 3 days, to be able to change homepage in future
 	header("Connection: close");
 	exit();
 }
@@ -189,9 +209,9 @@ function selectPortalOrFwd301()
 	// some special domain handling
 	if( substr($ist_domain, 0, 7)=='sandbox' ) // remove sandbox prefix
 	{
-	    if(preg_match("/sandbox[0-9]/i", substr($ist_domain, 0, 8)) && !preg_match("/sandbox[10-13]/i", substr($ist_domain, 0, 9)))
+	    if(preg_match("/sandbox[0-9]/i", substr($ist_domain, 0, 8)) && !preg_match("/sandbox[10-18]/i", substr($ist_domain, 0, 9)))
 	        $ist_domain = substr($ist_domain, 8 + 1 /*dot or minus*/ );
-	    elseif(preg_match("/sandbox[10-13]/i", substr($ist_domain, 0, 9)))
+	    elseif(preg_match("/sandbox[10-18]/i", substr($ist_domain, 0, 9)))
 	        $ist_domain = substr($ist_domain, 9 + 1 /*dot or minus*/ );
 		else
 			$ist_domain = substr($ist_domain, 7 + 1 /*dot or minus*/ );
@@ -282,6 +302,7 @@ $wisyPortalBodyStart		= stripslashes($db->f('bodystart'));
 $wisyPortalEinstellungen	= explodeSettings($db->fs('einstellungen'));
 $wisyPortalFilter			= explodeSettings($db->fs('filter'));
 $wisyPortalEinstcache		= explodeSettings($db->fs('einstcache'));
+$wisyPortalUserGrp          = $db->fs('user_grp'); 
 
 define('DEF_STICHWORT_BILDUNGSURLAUB',	1);
 define('DEF_STICHWORTTYP_QZERTIFIKAT',	4);
@@ -312,17 +333,18 @@ if( ($temp=strrpos($wisyRequestedFile, '.')) !== false )
 *******************************************************************************/
 
 $wisyCore = 'core20';
-if( strval($_GET['filecore']) != '' )
+/*if( strval($_GET['filecore']) != '' )
+ {
+ // $wisyCore = 'core' . strval($_GET['filecore']);
+ }
+ else */
+if( strval($_COOKIE['core']) != '' )
 {
-	$wisyCore = 'core' . strval($_GET['filecore']);
-}
-else if( strval($_COOKIE['core']) != '' )
-{
-	$wisyCore = 'core' . strval($_COOKIE['core']);
+    $wisyCore = 'core' . strval($_COOKIE['core']);
 }
 else if( strval($wisyPortalEinstellungen['core']) != '' )
 {
-	$wisyCore = 'core' . strval($wisyPortalEinstellungen['core']);
+    $wisyCore = 'core' . strval($wisyPortalEinstellungen['core']);
 }
 
 
@@ -343,37 +365,57 @@ $wisyMiniMime = array(
 	'txt'	=>	'text/plain',
 );
 
-// Make files in current core /img folder available from CSS files
-$temp = $wisyMiniMime[$wisyRequestedExt];
-if( $temp != '' && $temp != 'require_once' && @file_exists("$wisyCore/img/$wisyRequestedFile"))
+if( @file_exists("$wisyCore/$wisyRequestedFile") )
 {
-	header("Content-type: $temp");
-	header("Content-length: " . @filesize("$wisyCore/img/$wisyRequestedFile"));
-	headerDoCache();
-	readfile("$wisyCore/img/$wisyRequestedFile");
-	exit();
-}
-else if( @file_exists("$wisyCore/$wisyRequestedFile") )
-{
-	$temp = $wisyMiniMime[$wisyRequestedExt];
-	if( $temp == 'require_once' )
-	{
-		require_once("$wisyCore/$wisyRequestedFile");
-		exit();
-	}
-	else if( $temp != '' )
-	{
-		header("Content-type: $temp");
-		header("Content-length: " . @filesize("$wisyCore/$wisyRequestedFile"));
-		headerDoCache();
-		readfile("$wisyCore/$wisyRequestedFile");
-		exit();
-	}
+    $temp = $wisyMiniMime[$wisyRequestedExt];
+    if( $temp == 'require_once' )
+    {
+        require_once("$wisyCore/$wisyRequestedFile");
+        exit();
+    }
+    else if( $temp != '' )
+    {
+        $requested_filepath = "$wisyCore/$wisyRequestedFile";
+        header("Content-type: $temp");
+        
+        
+        if($wisyRequestedExt == "css"
+            || $wisyRequestedExt == "js"
+            ) {
+                $longer_expiration = (20); // 2 weeks // 86400*14
+                headerDoCache($longer_expiration); // $default_expiration
+                
+                $filectime_orig = filectime($requested_filepath);
+                $gzip = (strpos($_SERVER['HTTP_ACCEPT_ENCODING'], 'gzip') !== FALSE);
+                $requested_filepath_tmp = $requested_filepath.".tmp.gz";
+                
+                if(!is_file($requested_filepath_tmp) || ($filectime_orig > filectime($requested_filepath_tmp))) {
+                    $contents = file_get_contents($requested_filepath);
+                    $contents = gzencode($contents, 9, $gzip ? FORCE_GZIP : FORCE_DEFLATE);
+                    file_put_contents($requested_filepath_tmp, $contents);
+                } elseif($filectime_orig < filectime($requested_filepath_tmp) && $gzip) {
+                    header ("Content-Encoding: gzip");
+                    header ('Content-Length: ' . @filesize($requested_filepath_tmp));
+                    readfile($requested_filepath_tmp);
+                    exit(0);
+                }
+            } else {
+                headerDoCache();
+            }
+            
+            header("Content-length: " . @filesize($requested_filepath));
+            
+            // ob_start("ob_gzhandler");
+            readfile($requested_filepath);
+            // ob_end_flush();
+            exit();
+    }
 }
 else if( @file_exists("$wisyCore/main.inc.php") )
 {
-	require_once("$wisyCore/main.inc.php");
-	exit();
+    ini_set("zlib.output_compression", "On");
+    require_once("$wisyCore/main.inc.php");
+    exit(0);
 }
 
 /*******************************************************************************

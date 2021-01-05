@@ -139,10 +139,10 @@ class WISY_GOOGLEMAPS_CLASS
 		{
 			$temp = explode(' ', $str);
 			$str = '';
-			for( $i = 0; $i < count((array) $temp); $i++ )
+			for( $i = 0; $i < count($temp); $i++ )
 			{
 				$str .= $temp[$i] . ' ';
-				if( strlen($str) >= $maxLen && $i!=count((array) $temp)-1 )
+				if( strlen($str) >= $maxLen && $i!=count($temp)-1 )
 				{
 					$str .= '...';
 					break;
@@ -327,7 +327,7 @@ class WISY_GOOGLEMAPS_CLASS
 
 	function hasPoints()
 	{
-		return count((array) $this->adr)>0;
+	    return count((array) $this->adr)>0;
 	}
 	
 	function render()
@@ -355,7 +355,7 @@ class WISY_GOOGLEMAPS_CLASS
 				
 				if( count((array) $this->adr) > 1 )
 				{
-					$this->adr[$i]['descr'] .= '<br /><br /><small><a title="'.htmlentities($nextShortDescr).'" href="javascript:gm_panToNext();">Nächster Ort...</small></a>';
+				    $this->adr[$i]['descr'] .= '<br /><br /><small><a title="'.htmlentities($nextShortDescr).'" href="javascript:gm_panToNext();">N&auml;chster Ort...</small></a>';
 				}
 				
 				$allInfo .= "gm_allAdr[$i]='{$this->adr[$i]['highQ']}';gm_allDescr[$i]='{$this->adr[$i]['descr']}';";
@@ -414,7 +414,7 @@ class WISY_GOOGLEMAPS_CLASS
 		xml_set_element_handler($this->xml_obj, 'geocode_startHandler', 'geocode_endHandler');
 		
 		//$q = "scheplerstr. 4, hamburg";
-        $url = 'https://maps.google.com/maps/geo?q='.urlencode(cs8($q)).'&output=xml&key=' . $this->apiKey;
+		$url = 'https://maps.google.com/maps/geo?q='.urlencode(cs8($q)).'&output=xml&key=' . $this->apiKey;
 		if (!($fp = @fopen($url, "r"))) {
 			return false;
 		}

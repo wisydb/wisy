@@ -46,9 +46,9 @@ class WISY_BILLING_RENDERER_CLASS
 		$db = new DB_Admin;
 		$db->query("SELECT user_created, user_grp, user_access FROM portale WHERE id=$wisyPortalId;");
 		$db->next_record();
-		$user_created = intval($db->f8('user_created'));
-		$user_grp     = intval($db->f8('user_grp'));
-		$user_access  = intval($db->f8('user_access'));
+		$user_created = intval($db->fcs8('user_created'));
+		$user_grp     = intval($db->fcs8('user_grp'));
+		$user_access  = intval($db->fcs8('user_access'));
 		
 		// Eintrag in Log schreiben
 		$todayHour     = strftime("%Y-%m-%d %H:%M:%S");
@@ -98,7 +98,7 @@ class WISY_BILLING_RENDERER_CLASS
 
 		// render ....
 		echo '<p>';
-			echo 'Einblendungen können über PayPal gekauft werden. PayPal akzeptiert alle gängigen Kreditkarten und die Bezahlung per Überweisung. Klicken Sie einfach auf das folgende Symbol:';
+		  echo 'Einblendungen k&ouml;nnen &uuml;ber PayPal gekauft werden. PayPal akzeptiert alle g&auml;ngigen Kreditkarten und die Bezahlung per &Uuml;berweisung. Klicken Sie einfach auf das folgende Symbol:';
 		echo '</p>';
 		echo $button;
 	}
@@ -172,7 +172,7 @@ class WISY_BILLING_RENDERER_CLASS
 	
 						$soll_amount = 0;
 						$credit_count = 0;
-						for( $i = 0; $i < sizeof($this->allPrices); $i++ )
+						for( $i = 0; $i < sizeof((array) $this->allPrices); $i++ )
 						{
 							if( $this->allPrices[$i][0] == intval($order_no[1]) )
 							{

@@ -48,7 +48,7 @@ class WISY_RSS_RENDERER_CLASS
 		global $wisyPortalSpalten;
 
 		$durchfuehrungenIds = $durchfClass->getDurchfuehrungIds($db, $addParam['record']['id']); // $durchfuehrungenIds enthalten bereits nur die relevanten durchfuehrungen
-		if( sizeof($durchfuehrungenIds) == 0 )
+		if( sizeof((array) $durchfuehrungenIds) == 0 )
 			return '';
 		
 		// collect data
@@ -56,10 +56,11 @@ class WISY_RSS_RENDERER_CLASS
 		$all_beginnoptionen = array();
 		$dauer = '';
 		$preis = '';
-		for( $d = 0; $d < sizeof($durchfuehrungenIds); $d++ )
+		$bemerkungen = '';
+		for( $d = 0; $d < sizeof((array) $durchfuehrungenIds); $d++ )
 		{	
 			$durchfuehrungId = $durchfuehrungenIds[$d];
-			$db->query("SELECT beginn, beginnoptionen, dauer, stunden, preis, sonderpreis, sonderpreistage, ort, stadtteil FROM durchfuehrung WHERE id=$durchfuehrungId");
+			$db->query("SELECT beginn, beginnoptionen, bemerkungen, dauer, stunden, preis, sonderpreis, sonderpreistage, ort, stadtteil FROM durchfuehrung WHERE id=$durchfuehrungId");
 			if( $db->next_record() )
 			{
 				// beginn				
@@ -75,6 +76,10 @@ class WISY_RSS_RENDERER_CLASS
 				if( $dauer == '' )
 					$dauer = $durchfClass->formatDauer($db->f('dauer'), $db->f('stunden'));
 				
+			    // bemerkungen
+				if( $bemerkungen == '' )
+					$bemerkungen = $db->f('bemerkungen');
+					
 				// preis
 				if( $preis == '' )
 					$preis = $durchfClass->formatPreis($db->f('preis'), $db->f('sonderpreis'), $db->f('sonderpreistage'), $db->f('beginn'), '', 0);
@@ -114,10 +119,10 @@ class WISY_RSS_RENDERER_CLASS
 		$ret = '';
 		if (($wisyPortalSpalten & 2) > 0)
 		{
-			$temp  = implode(', ', $all_beginn);
-			$temp .= ($temp==''||sizeof($all_beginnoptionen)==0? '' : ', ') . implode(', ', $all_beginnoptionen);
-			
-			$ret .= 'Beginn: ' . ($temp==''? 'k.A.' : $temp);
+		    $temp  = implode(', ', $all_beginn);
+		    $temp .= ($temp==''||sizeof((array) $all_beginnoptionen)==0? '' : ', ') . implode(', ', $all_beginnoptionen);
+		    
+		    $ret .= 'Beginn: ' . ($temp==''? 'k.A.' : $temp);
 		}
 		
 		if (($wisyPortalSpalten & 4) > 0)
@@ -136,6 +141,12 @@ class WISY_RSS_RENDERER_CLASS
 		{
 			$ret .= $ret==''? '' : ' - ';
 			$ret .= "Ort: " . ($ort? $ort : 'k. A.');
+		}
+		
+		if (($wisyPortalSpalten & 128) > 0)
+		{
+		    $ret .= $ret==''? '' : ' - ';
+		    $ret .= "Bemerkungen: " . ($bemerkungen? $bemerkungen : '--');
 		}
 						
 		// done
@@ -170,7 +181,7 @@ class WISY_RSS_RENDERER_CLASS
 			if( $searcher->tokens['show'] == 'anbieter' )
 			{
 				$records = $searcher->getAnbieterRecords(0 /*offset immer 0*/, 10 /*immer 10 eintraege*/, 'creatd' /*sortierung immer nach erstellungsdatum (sonst kommt "nichts neues" bzw. das neue kommt zu spät)*/);
-				while( list($i, $record) = each($records['records']) )
+				foreach($records['records'] as $i => $record)
 				{
 					// beschreibung erstellen
 					$descrHtml  = '';
@@ -195,7 +206,7 @@ class WISY_RSS_RENDERER_CLASS
 				$durchfClass =& createWisyObject('WISY_DURCHF_CLASS', $this->framework);
 				
 				$records = $searcher->getKurseRecords(0 /*offset immer 0*/, 10 /*immer 10 eintraege*/, 'creatd' /*sortierung immer nach "beginnaenderungsdatum" (sonst kommt "nichts neues" bzw. das neue kommt zu spät)*/);
-				while( list($i, $record) = each($records['records']) )
+				foreach($records['records'] as $i => $record)
 				{
 					// beschreibung erstellen
 					$descrHtml = '';

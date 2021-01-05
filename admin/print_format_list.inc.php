@@ -7,7 +7,7 @@ class print_list_class extends print_plugin_class
 	var $options;			// the options to use
 	var $param;				// parameters from the options
 	
-	function print_list_class()
+	function __construct()
 	{
 		$this->options['fontsize']	= array();
 		$this->options['pagebreak'] = array();

@@ -77,29 +77,29 @@ class WISY_PLZFILTER_CLASS
 		// check, if a PLU is denied or allowed by default; the latter is the standard setting
 		if( $this->plz_order == 'deny,allow' )
 		{
-			// deny,allow
-			if( sizeof($this->plz_deny ) ) { 
-				if( $this->is_plz_in_array_($plz, $this->plz_deny ) ) { 
-					if( sizeof($this->plz_allow) == 0 || !$this->is_plz_in_array_($plz, $this->plz_allow) ) { 
-						return false; 
-					}
-				} 
-			}
+		    // deny,allow
+		    if( sizeof((array) $this->plz_deny ) ) {
+		        if( $this->is_plz_in_array_($plz, $this->plz_deny ) ) {
+		            if( sizeof((array) $this->plz_allow) == 0 || !$this->is_plz_in_array_($plz, $this->plz_allow) ) {
+		                return false;
+		            }
+		        }
+		    }
 		}
 		else
 		{
-			// allow,deny - standard behaviour
-			if( sizeof($this->plz_allow) ) { 
-				if( !$this->is_plz_in_array_($plz, $this->plz_allow) ) { 
-					return false; 
-				}
-			}
-			
-			if( sizeof($this->plz_deny ) ) { 
-				if(  $this->is_plz_in_array_($plz, $this->plz_deny ) ) {
-					return false;
-				}
-			}
+		    // allow,deny - standard behaviour
+		    if( sizeof((array) $this->plz_allow) ) {
+		        if( !$this->is_plz_in_array_($plz, $this->plz_allow) ) {
+		            return false;
+		        }
+		    }
+		    
+		    if( sizeof((array) $this->plz_deny ) ) {
+		        if(  $this->is_plz_in_array_($plz, $this->plz_deny ) ) {
+		            return false;
+		        }
+		    }
 		}
 		
 		return true;

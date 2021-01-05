@@ -33,15 +33,15 @@ class WISY_AUTOSUGGESTPLZORT_RENDERER_CLASS
 
 	function render()
 	{
-		$querystring = utf8_decode($_GET["q"]);
+	    $querystring = utf8_decode( strval($this->framework->getParam('q', '')) );
 		$db = new DB_Admin;
 		
 		// collect all PLZ/Ort into an array as ort=>array(plz1, plz2, ...)
 		$orte = array();
 		$db->query("SELECT plz, ort FROM plztool2 WHERE plz LIKE ".$db->quote($querystring.'%')." OR ort LIKE ".$db->quote($querystring.'%'));
 		while( $db->next_record() ) {
-			$plz = $db->f8('plz');
-			$ort = $db->f8('ort');
+			$plz = $db->fcs8('plz');
+			$ort = $db->fcs8('ort');
 			if( $this->plzfilterObj->is_valid_plz($plz) ) {
 				if( isset($orte[$ort]) ) {
 					$orte[$ort][] = $plz;
@@ -63,7 +63,7 @@ class WISY_AUTOSUGGESTPLZORT_RENDERER_CLASS
 				$plzStr = $this->combinePlz($plzArr[0], $plzArr[sizeof($plzArr)-1]);
 			}
 			
-			$tags[$plzStr.'/'.$make_unique] = utf8_encode($plzStr) . '|' . utf8_encode($ort); // add a unique string to the plz to allow multiple ORTs with the same PLZs
+			$tags[$plzStr.'/'.$make_unique] = cs8($plzStr) . '|' . cs8($ort); // add a unique string to the plz to allow multiple ORTs with the same PLZs
 			$make_unique++;
 		}
 

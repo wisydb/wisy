@@ -13,7 +13,7 @@ class WISY_ADVANCED_RENDERER_CLASS
 		$this->presets['q'] = array
 			(
 				'type'			=> 'text',
-				'descr'			=> '<strong>Suchwörter:</strong>',
+				'descr'			=> '<strong>Suchw&ouml;rter:</strong>',
 				'autocomplete'	=>	'ac_keyword',
 			);
 		$this->presets['datum'] = array
@@ -22,14 +22,14 @@ class WISY_ADVANCED_RENDERER_CLASS
 				'function'	=> 'Datum:',
 				'descr'		=> '<strong>Beginndatum:</strong>',
 				'options' 	=> array(
-					'Alles' 				=> 'auch abgelaufene Angebote berücksichtigen',
+					'Alles' 				=> 'auch abgelaufene Angebote ber&uuml;cksichtigen',
 					$dates['vorgestern']	=> 'ab vorgestern',
 					$dates['gestern']		=> 'ab gestern',
 					''						=> 'ab heute',
 					$dates['morgen']		=> 'ab morgen',
-					$dates['uebermorgen']	=> 'ab übermorgen',
-					$dates['montag1']		=> 'nächste Woche &ndash; ab Montag, ' . $dates['montag1'],
-					$dates['montag2']		=> 'übernächste Woche &ndash; ab Montag, ' . $dates['montag2'],
+					$dates['uebermorgen']	=> 'ab &uuml;bermorgen',
+					$dates['montag1']		=> 'n&auml;chste Woche &ndash; ab Montag, ' . $dates['montag1'],
+					$dates['montag2']		=> '&uuml;bern&auml;chste Woche &ndash; ab Montag, ' . $dates['montag2'],
 					$dates['montag3']		=> 'in 3 Wochen &ndash; ab Montag, ' . $dates['montag3'],
 					$dates['montag4']		=> 'in 4 Wochen &ndash; ab Montag, ' . $dates['montag4'],
 					$dates['montag5']		=> 'in 5 Wochen &ndash; ab Montag, ' . $dates['montag5'],
@@ -63,21 +63,40 @@ class WISY_ADVANCED_RENDERER_CLASS
 					'340-380'	=> 'ca. 1 Jahr',
 				),
 			);
-		$this->presets['tageszeit'] = array
+			$this->presets['tageszeit'] = array
 			(
-				'type'		=> 'taglist',
-				'descr'		=> 'Tageszeit/Fernunterr.:',
-				'options'	=> array(
-					''					=> '',
-					'Ganztags'			=> 'Ganztags',
-					'Vormittags'		=> 'Vormittags',
-					'Nachmittags'		=> 'Nachmittags',
-					'Abends'			=> 'Abends',
-					'Wochenende'		=> 'Wochenende',
-					'Fernunterricht'	=> 'nur Fernunterricht',
-					'-Fernunterricht'	=> 'ohne Fernunterricht',
-					'Bildungsurlaub'	=> 'Bildungsurlaub',
-				),
+			    'type'		=> 'taglist',
+			    'descr'		=> 'Tageszeit/Fernunterr.:',
+			    'options'	=> array(
+			        ''					=> '',
+			        'Ganztags'			=> 'Ganztags',
+			        'Vormittags'		=> 'Vormittags',
+			        'Nachmittags'		=> 'Nachmittags',
+			        'Abends'			=> 'Abends',
+			        'Wochenende'		=> 'Wochenende',
+			        'Fernunterricht'	=> 'nur Fernunterricht',
+			        '-Fernunterricht'	=> 'ohne Fernunterricht',
+			        'Bildungsurlaub'	=> 'Bildungsurlaub'
+			    ),
+			);
+			/* Todo: portal setting ! */
+			$this->presets['stadtteil'] = array
+			(
+			    'type'		=> 'taglist',
+			    'descr'		=> 'Stadtteil:',
+			    'options'	=> array(
+			        ''					=> ''
+			    ),
+			);
+			$this->presets['metaabschlussart'] = array
+			(
+			    'type'		=> 'taglist',
+			    'descr'		=> 'Abschlussart:',
+			    'options'	=> array(
+			        ''					=> '',
+			        'Abschluss'			=> 'Abschluss',
+			        'Zertifikate'		=> 'Zertifikate'
+			    ),
 			);
 			
 			// umkreissuche
@@ -153,7 +172,7 @@ class WISY_ADVANCED_RENDERER_CLASS
 			$this->presets['foerderung'] = array
 				(
 					'type'		=> 'taglist',
-					'descr'		=> 'Förderung:',
+				    'descr'		=> 'F&ouml;rderung:',
 					'options'	=>	$foerderungen
 				);
 		}
@@ -175,7 +194,7 @@ class WISY_ADVANCED_RENDERER_CLASS
 			$this->presets['qualitaetszertifikat'] = array
 				(
 					'type'		=> 'taglist',
-					'descr'		=> 'Qualitätszertifikat:',
+				    'descr'		=> 'Qualit&auml;tszertifikat:',
 					'options'	=>	$qualitaetszertifikate
 				);
 		}
@@ -189,6 +208,28 @@ class WISY_ADVANCED_RENDERER_CLASS
 					'descr'		=> 'Unterrichtsart:',
 					'options'	=>	$unterrichtsarten
 				);
+		}
+		
+		$abschluesse = $this->getSpezielleStichw(1);
+		if( count((array) $abschluesse) > 1 )
+		{
+		    $this->presets['abschluesse'] = array
+		    (
+		        'type'		=> 'taglist',
+		        'descr'		=> 'Abschl&uuml;sse:',
+		        'options'	=>	$abschluesse
+		    );
+		}
+		
+		$abschlussarten = $this->getSpezielleStichw(1);
+		if( count((array) $abschlussarten) > 1 )
+		{
+		    $this->presets['abschlussarten'] = array
+		    (
+		        'type'		=> 'taglist',
+		        'descr'		=> 'Abschlussarten:',
+		        'options'	=>	$abschlussarten
+		    );
 		}
 				
 		if( $this->framework->iniRead('search.adv.fulltext', 1)!=0 )
@@ -226,11 +267,14 @@ class WISY_ADVANCED_RENDERER_CLASS
 		$db->query("SELECT stichwort FROM stichwoerter WHERE id IN ($ids_str) ORDER BY stichwort_sorted;");
 		while( $db->next_record() )
 		{
-			$stichw = htmlspecialchars($db->f8('stichwort'));
+			$stichw = htmlspecialchars($db->fcs8('stichwort'));
 			$stichw = trim(strtr($stichw, array(': '=>' ', ':'=>' ', ', '=>' ', ','=>' ')));
 			
 			$ret[ $stichw ] = $stichw;
 		}
+		
+		// $db->close(); // Ressource needed for search list
+		
 		return $ret;
 	}
 
@@ -266,7 +310,7 @@ class WISY_ADVANCED_RENDERER_CLASS
 	 * render, misc.
 	 **********************************************************************/
 
-	function renderForm($q = null, $records = null)
+	function renderForm($q = null, $records = null, $hlevel=1, $number_of_results_string='')
 	{
 		
 		// explode the query string to its tokens
@@ -340,10 +384,10 @@ class WISY_ADVANCED_RENDERER_CLASS
 		<div id="adv_all">
 			<div id="adv_title">
 				Erweiterte Suche
-				<a href="<?php echo $this->framework->getHelpUrl($glossarId); ?>" class="wisy_help" aria-label="Ratgeber zur erweiterten Suche">i</a>
+				<a href="<?php echo $this->framework->getHelpUrl($glossarId); ?>" class="wisy_help">i</a>
 			</div>
 			<div id="adv_body">
-				<form action="advanced" method="get" role="search" aria-label="Erweiterte Suche">
+				<form action="advanced" method="get">
 					<div id="adv_form">
 						<?php
 							
@@ -420,9 +464,9 @@ class WISY_ADVANCED_RENDERER_CLASS
 		 **********************************************************************/
 	
 
-		if( isset($_GET['adv_subseq']) )
+	    if( $this->framework->getParam('adv_subseq') )
 		{
-			if( isset($_GET['adv_cancel']) )
+		    if( $this->framework->getParam('adv_cancel') )
 			{
 				header('Location: search');
 				exit();
@@ -433,7 +477,7 @@ class WISY_ADVANCED_RENDERER_CLASS
 				reset($this->presets);
 				foreach($this->presets as $field_name => $preset)
 				{
-					$item = trim($_GET['adv_' . $field_name]);
+				    $item = trim( $this->framework->getParam('adv_' . $field_name, '') );
 					if( $item != '' )
 					{
 						if( $preset['comma_to_slash'] )
@@ -449,7 +493,7 @@ class WISY_ADVANCED_RENDERER_CLASS
 					}
 				}
 				
-				if( isset($_GET['adv_searchanb']) )
+				if( $this->framework->getParam('adv_searchanb', false) )
 				{
 					$q .= $q==''? '' : ', ';
 					$q .= 'Zeige:Anbieter';
@@ -466,7 +510,7 @@ class WISY_ADVANCED_RENDERER_CLASS
 		 **********************************************************************/
 		 
 		
-		if( intval($_GET['ajax']) )
+		if( intval( $this->framework->getParam('ajax') ) )
 		{
 			header('Content-type: text/html; charset=utf-8');
 			$this->renderForm();

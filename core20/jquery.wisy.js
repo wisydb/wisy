@@ -15,7 +15,7 @@ true),collapseSelection:e(m,true),deleteSelectedText:e(q,true),deleteText:e(l,tr
 // cookie - http://archive.plugins.jquery.com/project/Cookie , http://www.electrictoolbox.com/jquery-cookies/
 (function(e,t,n){function i(e){return e}function s(e){return decodeURIComponent(e.replace(r," "))}var r=/\+/g;var o=e.cookie=function(r,u,a){if(u!==n){a=e.extend({},o.defaults,a);if(u===null){a.expires=-1}
 if(typeof a.expires==="number"){var f=a.expires,l=a.expires=new Date;l.setDate(l.getDate()+f)}u=o.json?JSON.stringify(u):String(u);return t.cookie=[encodeURIComponent(r),"=",o.raw?u:encodeURIComponent(u),
-a.expires?"; expires="+a.expires.toUTCString():"",a.path?"; path="+a.path:"",a.domain?"; domain="+a.domain:"",a.secure?"; secure":""].join("")}var c=o.raw?i:s;var h=t.cookie.split("; ");for(var p=0,d=h.length;p<d;p++)
+a.expires?"; expires="+a.expires.toUTCString():"",a.path?"; path="+a.path:"",a.domain?"; domain="+a.domain:"",a.secure?"; secure":"",a.sameSite?"; sameSite="+a.sameSite:"; sameSite=Strict"].join("")}var c=o.raw?i:s;var h=t.cookie.split("; ");for(var p=0,d=h.length;p<d;p++)
 {var v=h[p].split("=");if(c(v.shift())===r){var m=c(v.join("="));return o.json?JSON.parse(m):m}}return null};o.defaults={};e.removeCookie=function(t,n){if(e.cookie(t)!==null){e.cookie(t,null,n);return true}return false}})(jQuery,document)
 
 
@@ -89,7 +89,7 @@ function fav_update_bar()
 		{
 			str += '<a href="' + mailto + '" title="Favoriten per E-Mail versenden" class="fav_send">&#9993;</a> '; // Unicode #9993 = Letter
 		}
-		str += '<small> <a href="javascript:fav_delete_all()" title="Alle Favoriten löschen">&times;</a></small>';
+		str += '<small> <a href="javascript:fav_delete_all()" title="Alle Favoriten l&ouml;schen">&times;</a></small>';
 		
 		$('.wisy_searchhints').html(str + ' | ' + g_fav_bar_orig);
 		
@@ -106,6 +106,17 @@ function fav_update_bar()
 
 function fav_click(jsObj, id)
 {
+	if (window.cookiebanner && window.cookiebanner.optedOut) {
+		alert(window.cookiebanner.favOptoutMessage);
+		window.cookieconsent.popup.open();
+		return false;
+	} else if($.cookie('cconsent_merkliste') != "allow") {
+		alert("Um diese Funktion nutzen zu k"+oe+"nnen, m"+ue+"ssen Sie dem Speichern von Cookies f"+ue+"r diese Funktion zustimmen (im Cookie-Hinweisfenster).");
+		hightlightCookieConsentOption('merkliste');
+		window.cookieconsent.popup.open();
+		return false;
+	}
+	
 	jqObj = $(jsObj);
 	if( jqObj.hasClass('fav_selected') ) {
 		jqObj.removeClass('fav_selected');
@@ -125,7 +136,7 @@ function fav_click(jsObj, id)
 }
 function fav_delete_all()
 {
-	if( !confirm('Alle gespeicherten Favoriten löschen?') )
+	if( !confirm('Alle gespeicherten Favoriten l'+oe+'schen?') )
 		return false;
 	
 	g_all_fav = {};
@@ -457,7 +468,7 @@ if (jQuery.ui)
 
 	function ac_selectcallback(event, ui) {
 	
-		// Standardverhalten (Value ins Eingabefeld schreiben) bei Überschrift und Mehrlink der Ergebnisliste ausschalten
+		// Standardverhalten (Value ins Eingabefeld schreiben) bei Ueberschrift und Mehrlink der Ergebnisliste ausschalten
 		// Ebenso bei Klick auf "wisy_help"
 		var $span = $(ui.item.label);
 		var $to = $(event.toElement);
@@ -469,7 +480,7 @@ if (jQuery.ui)
 		else
 		{
 	
-			// Neuen Autocomplete-Wert nach evtl. bereits vorhandenen einfügen
+			// Neuen Autocomplete-Wert nach evtl. bereits vorhandenen einfuegen
 			var terms = split( this.value );
 			// remove the current input
 			terms.pop();
@@ -699,6 +710,14 @@ function ed(theAnchor)
  * new edit stuff
  *****************************************************************************/
 
+/* jQuery(document).ready(function(){
+ if( typeof jQuery("textarea[name=beschreibung]") != undefined) {
+  jQuery("textarea[name=beschreibung]").keyup(function(){
+	jQuery("#hinweisedit").remove();  
+	if(jQuery("textarea[name=beschreibung]").val().match(/Webinar/)) { jQuery(".editFoerderungDiv").append("<div id='hinweisedit' style='font-weight: bold;'>Hinweis:<br>Beim Wort 'Webinar' k&ouml;nnte es sich um eine gesch&uuml;tzte Wortmarke handeln. Es w&uuml;rde am n&auml;chsten Tag automatisch durch 'Web-Seminar' ersetzt - au&szlig;er in Links.</div>"); }; });
+ }
+}); */
+
 function editShowHide(jqObj, toShow, toHide)
 {
 	jqObj.parent().parent().find(toShow).show('fast');
@@ -723,10 +742,10 @@ function editDurchfLoeschen(jqObj)
 {
 	if( $('.editDurchfRow').size() == 1 )
 	{
-		alert("Diese Durchführung kann nicht gelöscht werden, da ein Kurs mindestens eine Durchführung haben muss.\n\nWenn Sie den Kurs komplett löschen möchten, verwenden Sie die Option \"Kurs löschen\" ganz unten auf dieser Seite.");
+		alert("Diese Durchf"+ue+"hrung kann nicht gel"+oe+"scht werden, da ein Kurs mindestens eine Durchführung haben muss.\n\nWenn Sie den Kurs komplett l"+oe+"schen m"+oe+"chten, verwenden Sie die Option \"Kurs l"+oe+"schen\" ganz unten auf dieser Seite.");
 		return;
 	}
-	else if( confirm("Diese Durchführung löschen?") )
+	else if( confirm("Diese Durchf"+ue+"hrung l"+oe+"schen?") )
 	{
 		editFindDurchfRow(jqObj).remove();
 	}
@@ -743,7 +762,7 @@ function editDurchfKopieren(jqObj)
 
 function editKursLoeschen(jqObj)
 {
-	if( confirm("Wenn Sie einen Kurs löschen möchten, wird zunächst ein Sperrvermerk gesetzt; beim nächsten Index-Update wird der Kurs dann inkl. aller Durchführungen komplett gelöscht. Dieser Vorgang kann nicht rückgängig gemacht werden!\n\nDen kompletten Kurs inkl. ALLER Durchführungen löschen?") )
+	if( confirm("Wenn Sie einen Kurs l"+oe+"schen m"+oe+"chten, wird zun"+ae+"chst ein Sperrvermerk gesetzt; beim n"+ae+"chsten Index-Update wird der Kurs dann inkl. aller Durchführungen komplett gel"+oe+"scht. Dieser Vorgang kann nicht r"+ue+"ckg"+ae+"ngig gemacht werden!\n\nDen kompletten Kurs inkl. ALLER Durchf"+ue+"hrungen l"+oe+"schen?") )
 	{
 		return true;
 	}
@@ -752,7 +771,7 @@ function editKursLoeschen(jqObj)
 
 function editWeekdays(jqObj)
 {
-	// jqObj ist der Text; ein click hierauf soll das nebenliegende <input type=hidden> ändern
+	// jqObj ist der Text; ein click hierauf soll das nebenliegende <input type=hidden> aendern
 	var hiddenObj = jqObj.parent().find('input');
 	if( hiddenObj.val() == '1' )
 	{
@@ -816,7 +835,7 @@ function sendFeedback(rating)
 	{
 		$('#wisy_feedback_line1').after(
 				'<p id="wisy_feedback_line2">'
-			+		'Bitte schildern Sie uns noch kurz, warum diese Information nicht hilfreich war und was wir besser machen können:<br />'
+			+		'Bitte schildern Sie uns noch kurz, warum diese Information nicht hilfreich war und was wir besser machen k&ouml;nnen:<br />'
 				+	'<textarea id="wisy_feedback_descr" name="wisy_feedback_descr" rows="2" cols="20" style="width: 400px;"></textarea><br />'
 				+	'<br><b>Wenn Sie eine Antwort w&uuml;nschen</b>, geben Sie bitte auch Ihre E-Mail-Adresse an (optional).<br />Wir verwenden Ihre E-Mailadresse und ggf. Name nur, um Ihr Anliegen zu bearbeiten und l&ouml;schen diese personenbezogenen Daten alle 12 Monate.<br><br>'
 				+	'<label for="fname">Name (optional): </label><input type="text" id="wisy_feedback_name" name="wisy_feedback_name">&nbsp; <label for="femail">E-Mailadresse (optional): </label><input type="text" id="wisy_feedback_email" name="wisy_feedback_email"><br><br>'
@@ -924,6 +943,18 @@ function initRatgeber()
 	$("a.wisy_glskeyexp").click(wisy_glskeyexp);
 }
 
+/*****************************************************************************
+ * SEO, alternative means for search
+ *****************************************************************************/
+
+// calculate weighted size (by tag usage within portal)
+$(document).ready(function() {
+ $("#sw_cloud span").each( function(){ 
+  weight = $(this).attr("data-weight"); 
+  fontsize = Math.floor($(this).find("a").css("font-size").replace('px', ''));
+  $(this).find("a").css("font-size", parseInt(fontsize)+parseInt(weight)+'px');
+ });
+});
 
 /*****************************************************************************
  * main entry point
@@ -938,7 +969,7 @@ $().ready(function()
 	// check for forwarding
 	var askfwd = $('body').attr('data-askfwd');
 	if( typeof askfwd != 'undefined' ) {
-		if( confirm('Von dieser Webseite gibt es auch eine Mobilversion unter ' + askfwd + '. Möchten Sie jetzt dorthin wechseln?') ) {
+		if( confirm('Von dieser Webseite gibt es auch eine Mobilversion unter ' + askfwd + '. M'+oe+'chten Sie jetzt dorthin wechseln?') ) {
 			window.location = askfwd;
 			return;
 		}
@@ -974,5 +1005,244 @@ $().ready(function()
 	
 	// init ratgeber stuff
 	initRatgeber();
+	
+	// Suchauswertung #popsearch
+	// Suchfeld: je nach ausloeser menschl. Ursprung vor Absenden kennzeichnen.
+	if($("#wisy_searchbtn")) {
+	 $("#wisy_searchbtn").click(function(event){
+	  if (event.originalEvent === undefined) {
+	   /* robot: console.log(event); */
+	  } else {
+		event.preventDefault();
+		$(this).before("<input type=hidden id=qsrc name=qsrc value=s>");
+		$(this).before("<input type=hidden id=qtrigger name=qtrigger value=h>");
+		$(this).closest("form").submit();
+	  }
+	 });
+	}
 });
 
+// cookie - http://archive.plugins.jquery.com/project/Cookie , http://www.electrictoolbox.com/jquery-cookies/
+(function(e,t,n){function i(e){return e}function s(e){return decodeURIComponent(e.replace(r," "))}var r=/\+/g;var o=e.cookie=function(r,u,a){if(u!==n){a=e.extend({},o.defaults,a);if(u===null){a.expires=-1}
+if(typeof a.expires==="number"){var f=a.expires,l=a.expires=new Date;l.setDate(l.getDate()+f)}u=o.json?JSON.stringify(u):String(u);return t.cookie=[encodeURIComponent(r),"=",o.raw?u:encodeURIComponent(u),
+a.expires?"; expires="+a.expires.toUTCString():"",a.path?"; path="+a.path:"",a.domain?"; domain="+a.domain:"",a.secure?"; secure":"",a.sameSite?"; sameSite="+a.sameSite:"; sameSite=Strict"].join("")}var c=o.raw?i:s;var h=t.cookie.split("; ");for(var p=0,d=h.length;p<d;p++)
+{var v=h[p].split("=");if(c(v.shift())===r){var m=c(v.join("="));return o.json?JSON.parse(m):m}}return null};o.defaults={};e.removeCookie=function(t,n){if(e.cookie(t)!==null){e.cookie(t,null,n);return true}return false}})(jQuery,document)
+
+
+/*****************************************************************************
+ * DSGVO stuff
+ *****************************************************************************/
+
+/* Cookie optout wrapper for $.cookie function
+ *
+ * Passes cookies through to $.cookie function, but only if user has not opted out 
+ * or if cookie is not blacklisted via cookiebanner.cookies.optout
+ *
+ */
+
+window.sameSiteDefault = "Strict";
+
+function setCookieSafely(title, value, options) {
+	if (window.cookiebanner && window.cookiebanner.optedOut && window.cookiebanner.optoutCookies && window.cookiebanner.optoutCookies.length) {
+		var blacklist = window.cookiebanner.optoutCookies.split(',');
+		for (var i = 0; i < blacklist.length; i++) {
+			if (title === $.trim(blacklist[i])) {
+				return false;
+			}
+		}
+	}
+	$.cookie(title, value, options);
+}
+
+/* Update Cookie Settings
+ *
+ * Remove all cookies that are set as optout cookies in portal settings
+ * via cookiebanner.cookies.optout when user opts out of cookies
+ * Dis- / enable Google Analytics and PIWIK
+ */
+function updateCookieSettings() {
+	if (window.cookiebanner) {
+		if (window.cookiebanner.optedOut) {
+			
+			// Disable Google Analytics
+			// Tut das ¸berhaupt irgendwas? -- https://developers.google.com/analytics/devguides/collection/analyticsjs/user-opt-out
+			if(window.cookiebanner.uacct) window['ga-disable-' + window.cookiebanner.uacct] = true;
+			
+			// Remove unwanted cookies
+			if (window.cookiebanner.optoutCookies && window.cookiebanner.optoutCookies.length) {
+				
+				// Portal blacklist
+				var blacklist = window.cookiebanner.optoutCookies.split(',');
+				for (var i = 0; i < blacklist.length; i++) {
+					var cookieName = $.trim(blacklist[i]);
+					if (cookieName !== '') $.removeCookie(cookieName, { path: '/' });
+				}
+				
+				// FAV
+				$.removeCookie('fav', { path: '/' });
+				$.removeCookie('fav_init_hint', { path: '/' });
+				
+				// Piwik
+				if(window.cookiebanner.piwik) {
+					var piwikCookies = document.cookie.match(/\_pk(\_id|\_ses)\.6\..*?=/g);
+					if (piwikCookies !== null) {
+						for(var i=0; i < piwikCookies.length; i++) {
+							$.removeCookie(piwikCookies[i].replace('=', ''), { path: '/' });
+						}
+					}
+				}
+				
+				// Google Analytics
+				if (window.cookiebanner.uacct) {
+					$.removeCookie('_ga', { path: '/' }); 
+					$.removeCookie('_gat', { path: '/' });
+					$.removeCookie('_gid', { path: '/' });
+				}
+			}
+		}
+	}
+}
+
+function initializeTranslate() {
+ if($.cookie('cconsent_translate') == "allow") {
+  console.log("consented");
+  $.loadScript('//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit', function(){
+     /* console.log('Loaded Google Translate'); */
+ });
+  
+ } else {
+  /* Interaction not disirable */
+  /*
+  hightlightCookieConsentOption('translate');
+  window.cookieconsent.popup.open();
+  return false; */
+ }
+};
+
+
+function googleTranslateElementInit() {
+  new google.translate.TranslateElement({pageLanguage: 'de', layout: google.translate.TranslateElement.InlineLayout.SIMPLE}, 'google_translate_element');
+}
+
+$(document).ready(function(){
+ consentCookieBeforePageFunction();
+});
+
+
+function hightlightCookieConsentOption(name) {
+ $('.cc-consent-details .'+name+' .consent_option_infos').addClass('highlight');
+}
+
+// check for consent of specific cookie, if page dependant on it being given
+function consentCookieBeforePageFunction() {
+ 
+  // Edit page
+  if($(".wisyp_edit").length) {
+ 
+   // only if no other submit event is attached to search submit button:
+   if( typeof $._data( $(".wisyp_edit form[action=edit]"), "events" ) == 'undefined' ) {
+    $('.wisyp_edit form[action=edit]').on('submit', function(e) {
+     e.preventDefault();
+     
+     if($.cookie('cconsent_onlinepflege') != "allow" && !window.cookiebanner_zustimmung_onlinepflege_legacy) {
+      alert("Um die Onlinepflege nutzen zu k"+oe+"nnen, m"+ue+"ssen Sie dem Speichern von Cookies f"+ue+"r diese Funktion zustimmen (im Cookie-Hinweisfenster).");
+      hightlightCookieConsentOption('onlinepflege');
+      window.cookieconsent.popup.open();
+      return false;
+     } else {
+	
+      // default: normal search on other than homepage
+      this.submit();
+     }
+    });
+   }
+  } // end: edit page
+}
+
+function toggle_cookiedetails() {
+ jQuery(".cookies_techdetails").toggleClass("inactive");
+ jQuery(".toggle_cookiedetails").toggleClass("inactive");
+}
+
+function openCookieSettings() {
+ window.cookieconsent.popup.open();
+}
+
+/* Called every time change Cookie consent window initialized or updated */
+function callCookieDependantFunctions() {
+ initializeTranslate();
+}
+
+jQuery.loadScript = function (url, callback) {
+    jQuery.ajax({
+        url: url,
+        dataType: 'script',
+        success: callback,
+        async: true
+    });
+}
+
+var ae = unescape("%E4");
+var ue = unescape("%FC");
+var oe = unescape("%F6");
+var ss = unescape("%DF");
+
+
+// ersetzt $.browser
+var matched, browser;
+
+jQuery.uaMatch = function( ua ) {
+    ua = ua.toLowerCase();
+
+    var match = /(chrome)[ \/]([\w.]+)/.exec( ua ) ||
+        /(webkit)[ \/]([\w.]+)/.exec( ua ) ||
+        /(opera)(?:.*version|)[ \/]([\w.]+)/.exec( ua ) ||
+        /(msie) ([\w.]+)/.exec( ua ) ||
+        ua.indexOf("compatible") < 0 && /(mozilla)(?:.*? rv:([\w.]+)|)/.exec( ua ) ||
+        [];
+
+    return {
+        browser: match[ 1 ] || "",
+        version: match[ 2 ] || "0"
+    };
+};
+
+matched = jQuery.uaMatch( navigator.userAgent );
+browser = {};
+
+if ( matched.browser ) {
+    browser[ matched.browser ] = true;
+    browser.version = matched.version;
+}
+
+// Chrome is Webkit, but Webkit is also Safari.
+if ( browser.chrome ) {
+    browser.webkit = true;
+} else if ( browser.webkit ) {
+    browser.safari = true;
+}
+
+jQuery.browser = browser;
+
+/*****************************************************************************
+ * info text popup
+ *****************************************************************************/
+
+ $(window).load(function () {
+    $('.hover_bkgr_fricc').show();
+    $('.popupCloseButton').click(function(){
+        $('.hover_bkgr_fricc').hide();
+
+        if(window.cookieconsent.popup)
+         window.cookieconsent.popup.open();
+    });
+    
+    // if old cookie banner is active: set cookie immediately that msg has been viewed for 3 days
+    jQuery(".hover_bkgr_fricc .popupCloseButton").click(function() {
+      if(jQuery(".cc-consent-details li").length > 0 )
+        ;
+      else {
+       setCookieSafely('cconsent_popuptext', "allow", { expires:3}); 
+      }
+    });
+ });

@@ -75,7 +75,7 @@ class G_GEOCODE
 	    $this->nominatim_explicit_city = $this->framework->iniRead('nominatim.explicit.city', '');
 	    
 	    if(!$alternate_geocoder || !$nominatim_url)
-	        return array('error'=>'err_geocode_missing_good_geocoder', 'url'=>'not called');
+	        return array('error'=>'err_geocode_missing_good_geocoder', 'url'=>'not called', 'alternate_geocoder' => $err_geocode_missing_good_geocoder, 'nominatim_key' => $nominatim_key);
 	        
 	    $this->nominatim_url = $nominatim_url;
 	    $this->nominatim_params .= '&key='.$nominatim_key;
@@ -209,7 +209,7 @@ class WISY_OPENSTREETMAP_CLASS
 			);
 			$temp = $g_countryTransl;
 			reset($temp);
-			while( list($n, $v) = each($temp) )
+			foreach($temp as $n => $v)
 			{
 				$g_countryTransl[ strtolower($v) ] = $v; // also add the english names in lower-case to the table
 			}
@@ -236,7 +236,7 @@ class WISY_OPENSTREETMAP_CLASS
 
 	function hasPoints()
 	{
-		return sizeof($this->points)>0;
+	    return sizeof((array) $this->points)>0;
 	}
 	
 	function render()
@@ -294,7 +294,7 @@ class WISY_OPENSTREETMAP_CLASS
 			}
 		}
 
-		if( $this->framework->iniRead('map.disable', '') || sizeof($markers) == 0 ) {
+		if( $this->framework->iniRead('map.disable', '') || sizeof((array) $markers) == 0 ) {
 			return '';
 		}
 		
@@ -330,7 +330,7 @@ class WISY_OPENSTREETMAP_CLASS
 	*/
 		
 	// strict private, may not be overwritten or used in modules
-	private function geocode2__($adr, $addto, $call_external)
+	protected function geocode2__($adr, $addto, $call_external)
 	{
 		if( !is_array($adr) ) { die('the query must be given as an array!'); }
 

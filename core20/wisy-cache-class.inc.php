@@ -106,7 +106,7 @@ class WISY_CACHE_CLASS
 			@$this->db->query("INSERT INTO $this->table (ckey) VALUES('".addslashes($ckey)."');");
 		}
 		
-		$this->db->query("UPDATE $this->table SET cvalue='".addslashes($cvalue)."', cdateinserted='".strftime("%Y-%m-%d %H:%M:%S")."' WHERE ckey='".addslashes($ckey)."';");
+		@$this->db->query("UPDATE $this->table SET cvalue='".addslashes($cvalue)."', cdateinserted='".strftime("%Y-%m-%d %H:%M:%S")."' WHERE ckey='".addslashes($ckey)."';");
 	}
 	
 	function cleanup()

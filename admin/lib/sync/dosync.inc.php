@@ -31,7 +31,7 @@ class SYNC_DOSYNC_CLASS extends SYNC_FUNCTIONS_CLASS
 		$starting_time = time();
 		
 		// Job informationen holen 
-		$this->_log("Job $this->jobid ausführen ... wenn am Ende nicht 'Fertig' steht, wurde die Aufgabe unterbrochen!");
+		$this->_log("Job $this->jobid ausfï¿½hren ... wenn am Ende nicht 'Fertig' steht, wurde die Aufgabe unterbrochen!");
 		$this->job = new SYNC_JOB_CLASS($this->jobid);
 		if( $this->job->jobid == 0 ) {
 			$this->_log("Kann Job $this->jobid nicht laden.");
@@ -46,7 +46,7 @@ class SYNC_DOSYNC_CLASS extends SYNC_FUNCTIONS_CLASS
 		$query = str_replace('__LAST_DATE__', strftime("%Y-%m-%d", $this->job->lasttime), $query);
 												
 											//  "admin" anstelle von $GLOBALS['site']->adminDir ist hier in Ordnung, da es sich um den entfernten Rechner handelt
-		$requrl_without_key = sprintf('http://%s/admin/exp.php?exp=mix&apikey=<apikey>&table=%s&q=%s', $this->job->host, urlencode($this->job->table), urlencode($query));
+		$requrl_without_key = sprintf('https://%s/admin/exp.php?exp=mix&apikey=<apikey>&table=%s&q=%s', $this->job->host, urlencode($this->job->table), urlencode($query));
 		$requrl_incl_key    = str_replace('<apikey>', urlencode($apikey), $requrl_without_key);
 		
 		// get local destination

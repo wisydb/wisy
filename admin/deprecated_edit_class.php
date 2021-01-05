@@ -913,7 +913,7 @@ class Table_Inst_Class
 						$this->values[$r][] = clone( $this->values[$r][$s] ); // EDIT 18.02.2010: "clone" is needed for php 5.x
 						$this->section = 10000; // get section to select by "justAdded"
 						$this->values[$r][sizeof((array) $this->values[$r])-1]->id = -1;
-						$this->values[$r][sizeof((array) $this->values[$r])-1]->justAdded = 1
+						$this->values[$r][sizeof((array) $this->values[$r])-1]->justAdded = 1;
 						return -1; // done
 					}
 				}

@@ -144,12 +144,12 @@ function fav_list_functions()
 		}
 		
 		str = '<span class="wisyr_fav_functions">';
-		str += '<span class="wisyr_fav_anzahl">Ihre Merkliste enthält ' + cnt + (cnt==1? ' Eintrag ' : ' Einträge ') + '</span>';
+		str += '<span class="wisyr_fav_anzahl">Ihre Merkliste enth&auml;lt ' + cnt + (cnt==1? ' Eintrag ' : ' Eintr&auml;ge ') + '</span>';
 		if( mailto != '' ) 
 		{
 			str += '<a class="fav_functions_mailsend" href="' + mailto + '" title="Merkliste per E-Mail versenden" class="fav_send">Merkliste per E-Mail versenden</a> ';
 		}
-		str += ' <a class="fav_functions_deleteall" href="javascript:fav_delete_all()" title="Gesamte Merkliste löschen">Gesamte Merkliste löschen</a>';
+		str += ' <a class="fav_functions_deleteall" href="javascript:fav_delete_all()" title="Gesamte Merkliste l&ouml;schen">Gesamte Merkliste l&ouml;schen</a>';
 		str += '</span>';
 		
 		$('.wisyr_angebote_zum_suchauftrag').html(str);
@@ -182,8 +182,14 @@ function fav_click(jsObj, id)
 {
 	if (window.cookiebanner && window.cookiebanner.optedOut) {
 		alert(window.cookiebanner.favOptoutMessage);
+  window.cookieconsent.popup.open();
 		return false;
-	}
+	} else if($.cookie('cconsent_merkliste') != "allow") {
+  alert("Um diese Funktion nutzen zu k"+oe+"nnen, m"+ue+"ssen Sie dem Speichern von Cookies f"+ue+"r diese Funktion zustimmen (im Cookie-Hinweisfenster).");
+  hightlightCookieConsentOption('merkliste');
+  window.cookieconsent.popup.open();
+		return false;
+ }
 	jqObj = $(jsObj);
 	if( jqObj.hasClass('fav_selected') ) {
 		jqObj.removeClass('fav_selected');
@@ -299,7 +305,7 @@ function formatItem(row)
 	{
 		/* add the "more" link */
 		row_class = 'ac_more';
-		tag_name = '<a href="" onclick="return clickAutocompleteMore(&#39;' + encodeURIComponent(tag_name) + '&#39;)">' + tag_descr + '</a>';
+		tag_name = '<a href="" onclick="return clickAutocompleteMore(&#39;' + encodeURIComponent(tag_name).replace('/&/', '%26') + '&#39;)">' + tag_descr + '</a>';
 	}
 	else
 	{
@@ -498,7 +504,7 @@ if (jQuery.ui)
 		
 		// highlight search string
 		var regex = new RegExp("(?![^&;]+;)(?!<[^<>]*)(" + request_term.replace(/([\^\$\(\)\[\]\{\}\*\.\+\?\|\\])/gi, "\\$1") + ")(?![^<>]*>)(?![^&;]+;)", "gi");
-		tag_name = tag_name.replace(regex, "<em>$1</em>");
+		tag_name = tag_name.replace(regex, "<em>$1</em>").replace('&amp;', '&');
 	
 		return '<span class="row '+row_class+'">' + 
 					'<span class="tag_name">' + row_prefix + tag_name + row_postfix + '</span>' + 
@@ -512,7 +518,7 @@ if (jQuery.ui)
 	{	
 		// calculate the new source url
 		var request_term = extractLast(request.term);
-		var url = "autosuggest?q=" + encodeURIComponent(request_term) + "&limit=512&timestamp=" + new Date().getTime();
+		var url = "/autosuggest?q=" + encodeURIComponent(request_term) + "&limit=512&timestamp=" + new Date().getTime();
 	
 		// ask the server for suggestions
 		$.get(url, function(data)
@@ -651,6 +657,33 @@ if (jQuery.ui)
  * advanced search stuff
  *****************************************************************************/
 
+// Prevent empty search (<2 chars): on hompage: output message, on other page: search for all courses
+function preventEmptySearch(homepage) {
+  // only if no other submit event is attached to search submit button:
+  if($._data( $("#wisy_searcharea form[action=search]")[0], "events" )['submit'].length < 2) {
+   
+   $('#wisy_searcharea form[action=search]').on('submit', function(e) {
+    e.preventDefault();
+    var len = $('#wisy_searchinput').val().length;
+    
+       if ($(location).attr('pathname') == homepage) {
+            if (len > 1) {
+                   this.submit(); // default: normal search
+               } else {
+                alert('Bitte geben Sie einen Suchbegriff an (mindesten 2 Buchstaben)');
+            }
+       } else {
+           if(len < 2)
+            $('#wisy_searchinput').val("zeige:kurse");
+           
+           // default: normal search on other than homepage
+           this.submit();
+       }
+   });
+   
+  }
+}
+
 function advEmbeddingViaAjaxDone()
 {
 	// Init autocomplete function
@@ -756,6 +789,7 @@ function filterEmbedViaAjax()
 	
 	// create query string
 	var q = $("#wisy_searchinput").val(); // for some reasons, q is UTF-8 encoded, so we use this charset as ie= below
+ 
 	if( $("#wisy_beiinput").length ) {
 		var bei = $("#wisy_beiinput").val(); if( bei != '' ) { q += ', bei:' + bei; }
 		var km  = $("#wisy_kmselect").val(); if( km  != '' ) { q += ', km:'  + km;  }
@@ -843,6 +877,13 @@ function ed(theAnchor)
 /*****************************************************************************
  * new edit stuff
  *****************************************************************************/
+
+jQuery(document).ready(function(){
+ if( typeof jQuery("textarea[name=beschreibung]") != undefined) {
+  jQuery("textarea[name=beschreibung]").keyup(function(){ jQuery("#hinweisedit").remove();  if(jQuery("textarea[name=beschreibung]").val().match(/Webinar/)) { jQuery(".editFoerderungDiv").append("<div id='hinweisedit' style='font-weight: bold;'>Hinweis:<br>Beim Wort 'Webinar' k&ouml;nnte es sich um eine gesch&uuml;tzte Wortmarke handeln. Es w&uuml;rde am n&auml;chsten Tag automatisch durch 'Web-Seminar' ersetzt - au&szlig;er in Links.</div>"); }; });
+ }
+});
+
 
 function editShowHide(jqObj, toShow, toHide)
 {
@@ -948,14 +989,14 @@ function describeFeedback()
 	}
 	else
 	{
-		$('#wisy_feedback_line2').html('<strong style="color: green;">Vielen Dank für Ihren Kommentar!</strong>');
+		$('#wisy_feedback_line2').html('<strong style="color: green;">Vielen Dank f&uuml;r Ihren Kommentar!</strong>');
 		ajaxFeedback(0, descr, name, email); // Kommentar zur Bewertung hinzufügen; die Bewertung selbst (erster Parameter) wird an dieser Stelle ignoriert!
 	}
 }
 
 function sendFeedback(rating)
 {
-	$('#wisy_feedback_yesno').html('<strong class="wisy_feedback_thanks">Vielen Dank für Ihr Feedback!</strong>');
+	$('#wisy_feedback_yesno').html('<strong class="wisy_feedback_thanks">Vielen Dank f&uuml;r Ihr Feedback!</strong>');
 	
 	if( rating == 0 )
 	{
@@ -1102,6 +1143,18 @@ function initResponsive()
 	});
 }
 
+/*****************************************************************************
+ * SEO, alternative means for search
+ *****************************************************************************/
+
+// calculate weighted size (by tag usage within portal)
+$(document).ready(function() {
+ $("#sw_cloud span").each( function(){ 
+  weight = $(this).attr("data-weight"); 
+  fontsize = Math.floor($(this).find("a").css("font-size").replace('px', ''));
+  $(this).find("a").css("font-size", parseInt(fontsize)+parseInt(weight)+'px');
+ });
+});
 
 /*****************************************************************************
  * main entry point
@@ -1158,6 +1211,128 @@ $().ready(function()
 	
 	// init responsive stuff
 	initResponsive();
+ 
+ // Suchauswertung #popsearch
+	// Suchfeld: je nach ausloeser menschl. Ursprung vor Absenden kennzeichnen.
+ if($("#wisy_searchbtn")) {
+  $("#wisy_searchbtn").click(function(event){
+   if (event.originalEvent === undefined) {
+    /* robot: console.log(event); */
+   } else {
+       event.preventDefault();
+       $(this).before("<input type=hidden id=qsrc name=qsrc value=s>");
+       $(this).before("<input type=hidden id=qtrigger name=qtrigger value=h>");
+       $(this).closest("form").submit();
+   }
+  });
+ }
+ 
+ // Human triggered search, propagate to filter form + pagination
+	if(window.qtrigger)
+	 $("form[name='filterform']").prepend("<input type=hidden name='qtrigger' value="+window.qtrigger+">");
+	if(window.force)
+	 $("form[name='filterform']").prepend("<input type=hidden name='force' value="+window.force+">");  
 	
 });
 
+function initializeTranslate() {
+ if($.cookie('cconsent_translate') == "allow") {
+  console.log("consented");
+  $.loadScript('//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit', function(){
+     /* console.log('Loaded Google Translate'); */
+ });
+  
+ } else {
+  /* Interaction not disirable */
+  /*
+  hightlightCookieConsentOption('translate');
+  window.cookieconsent.popup.open();
+  return false; */
+ }
+};
+
+function googleTranslateElementInit() {
+  new google.translate.TranslateElement({pageLanguage: 'de', layout: google.translate.TranslateElement.InlineLayout.SIMPLE}, 'google_translate_element');
+}
+
+$(document).ready(function(){
+ // $('#filter_datum_von').after('<a href="#filter_datum_von" onclick="alleDatenAnzeigen()" id="abgelaufeneAnzeigen">Abgelaufene Angebote anzeigen...</a>'); // noch framework
+ preventEmptySearch(window.homepage); // noch framework
+ consentCookieBeforePageFunction();
+});
+
+
+function hightlightCookieConsentOption(name) {
+ $('.cc-consent-details .'+name+' .consent_option_infos').addClass('highlight');
+}
+
+// check for consent of specific cookie, if page dependant on it being given
+function consentCookieBeforePageFunction() {
+  // Edit page
+  if($(".wisyp_edit").length) {
+   
+   // only if no other submit event is attached to search submit button:
+   if( typeof $._data( $(".wisyp_edit form[action=edit]"), "events" ) == 'undefined' ) {
+    $('.wisyp_edit form[action=edit]').on('submit', function(e) {
+     e.preventDefault();
+
+     if($.cookie('cconsent_onlinepflege') != "allow") {
+      alert("Um die Onlinepflege nutzen zu k√∂nnen, m√ºssen Sie dem Speichern von Cookies f√ºr diese Funktion zustimmen (im Cookie-Hinweisfenster).");
+      hightlightCookieConsentOption('onlinepflege');
+      window.cookieconsent.popup.open();
+      return false;
+     } else {
+      // default: normal search on other than homepage
+      this.submit();
+     }
+    });
+   }
+  } // end: edit page
+}
+
+
+function openCookieSettings() {
+ window.cookieconsent.popup.open();
+}
+
+/* Called every time change Cookie consent window initialized or updated */
+function callCookieDependantFunctions() {
+ initializeTranslate();
+}
+
+jQuery.loadScript = function (url, callback) {
+    jQuery.ajax({
+        url: url,
+        dataType: 'script',
+        success: callback,
+        async: true
+    });
+}
+
+var ae = unescape("%E4");
+var ue = unescape("%FC");
+var oe = unescape("%F6");
+var ss = unescape("%DF");
+
+/*****************************************************************************
+ * info text popup
+ *****************************************************************************/
+
+ $(window).load(function () {
+    $('.hover_bkgr_fricc').show();
+    $('.popupCloseButton').click(function(){
+        $('.hover_bkgr_fricc').hide();
+
+        if(window.cookieconsent.popup)
+         window.cookieconsent.popup.open();
+    });
+    
+    // if old cookie banner is active: set cookie immediately that msg has been viewed for 3 days
+   jQuery(".hover_bkgr_fricc .popupCloseButton").click(function() {
+     if(jQuery(".cc-consent-details li").length > 0 )
+       ;
+     else {
+      setCookieSafely('cconsent_popuptext', "allow", { expires:3}); 
+     }
+   });   
+ });

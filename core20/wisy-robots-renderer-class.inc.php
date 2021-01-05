@@ -55,7 +55,7 @@ class WISY_ROBOTS_RENDERER_CLASS
 
 	function renderHoneypot()
 	{
-		// "/terrapin" ist unser "Honeypot" für Bots, die sich nicht an die Regeln halten; 
+		// "/terrapin" ist unser "Honeypot" fuer Bots, die sich nicht an die Regeln halten; 
 		// derzeit nehmen wir keine Sanktionen vor, einfach nur mal beobachten ...
 		// (log wurde schon in render() geschrieben)
 
@@ -76,15 +76,16 @@ class WISY_ROBOTS_RENDERER_CLASS
 		header("Content-type: text/plain");
 		headerDoCache();
 		
-		if( $_SERVER['HTTPS']=='on' 
-		 || strpos($_SERVER['HTTP_HOST'], 'sandbox')!==false || strpos($_SERVER['HTTP_HOST'], 'backup')!==false )
+		// $_SERVER['HTTPS']=='on' || 
+		if( strpos($_SERVER['HTTP_HOST'], 'sandbox')!==false || strpos($_SERVER['HTTP_HOST'], 'backup')!==false || $this->framework->iniRead('seo.portal_blockieren', false) )
 		{
 			echo "User-agent: *\n";
 			echo "Disallow: /\n";
-			echo "Crawl-delay: 30\n";
 		}
 		else
 		{
+		    $block_specificlink = array_map("trim", explode(",", $this->framework->iniRead('seo.links_blockieren', "")));
+		    
 			// set the sitemap, 
 			// dies steht in keinem zusammenhang mit User-agent, 
 			// siehe http://www.sitemaps.org/protocol.php#submit_robots 
@@ -94,14 +95,37 @@ class WISY_ROBOTS_RENDERER_CLASS
 			echo "User-agent: Mediapartners-Google*\n";
 			echo "Disallow: /terrapin\n";
 			
+			echo "\n";
+			
 			// for all other spiders
 			echo "User-agent: *\n";
 			echo "Disallow: /advanced\n";
 			echo "Disallow: /edit\n";
+			echo "Disallow: /api\n";
+			echo "Disallow: /edit\n";
 			echo "Disallow: /rss\n";
 			echo "Disallow: /terrapin\n";
-			echo "Crawl-delay: 30\n";
+			echo "Disallow: /g151\n";
+			echo "Disallow: /search?q=volltext*\n";
+			foreach($block_specificlink AS $link) {
+			    if(strlen($link) >= 1)
+			        echo "Disallow: ".$link."\n";
+			}
 		}
+		
+		echo "Crawl-delay: 10\n";
+		
+		echo "\n\n";
+		echo "User-agent: ia_archiver\n";
+		echo "Disallow: /\n";
+		
+		echo "\n\n";
+		echo "User-agent: SemrushBot\n";
+		echo "Disallow: /\n";
+		
+		echo "\n\n";
+		echo "User-agent: SemrushBot-SA\n";
+		echo "Disallow: /\n";
 	}
 
 
@@ -111,6 +135,12 @@ class WISY_ROBOTS_RENDERER_CLASS
 
 	function addUrl($url, $lastmod, $changefreq)
 	{
+	    $block_specificlink = array_map("trim", explode(",", $this->framework->iniRead('seo.links_blockieren', "")));
+	    foreach($block_specificlink AS $link) { // $link may be link fragment
+	        if(strlen($link) > 1 && strpos($this->absPath.$url, $link) !== false)
+	            return "";
+	    }
+	    
 		$this->urlsAdded ++;
 		return "<url><loc>{$this->absPath}$url</loc><lastmod>" .strftime("%Y-%m-%d", $lastmod). "</lastmod><changefreq>$changefreq</changefreq></url>\n";
 	}
@@ -120,12 +150,18 @@ class WISY_ROBOTS_RENDERER_CLASS
 		// sitemap start
 		$sitemap =  "<" . "?xml version=\"1.0\" encoding=\"UTF-8\" ?" . ">\n";
 		$sitemap .= "<urlset xmlns=\"http:/" . "/www.sitemaps.org/schemas/sitemap/0.9\">\n";
+		
+		if( $this->framework->iniRead('seo.portal_blockieren', false) ) {
+		    $sitemap .= "</urlset>\n";
+		    return;
+		}
+		
 		$this->urlsAdded = 0;
 		
 		// grenzen fuer sitemaps:
-		// - max. 10 MB für die unkomprimierte Sitemap
+		// - max. 10 MB fuer die unkomprimierte Sitemap
 		// - max. 50000 URLs pro Sitemap		
-		// wir setzen unsere grenzen etwas weiter unten an, damit der Server nicht zu arg belastet wird, für die meisten portale sollten 20000 _aktuelle_ Urls aber absolut ausreichen
+		// wir setzen unsere grenzen etwas weiter unten an, damit der Server nicht zu arg belastet wird, fuer die meisten portale sollten 20000 _aktuelle_ Urls aber absolut ausreichen
 		$maxUrls = 25000;
 
 		// dump homepage
@@ -137,7 +173,7 @@ class WISY_ROBOTS_RENDERER_CLASS
 		if( $searcher->ok() )
 		{
 			$records = $searcher->getAnbieterRecords(0 /*offset*/, intval($maxUrls/2) /*rows*/, 'creatd');
-			for( $r = 0; $r < sizeof($records['records']); $r++ )
+			for( $r = 0; $r < sizeof((array) $records['records']); $r++ )
 			{
 				$sitemap .= $this->addUrl('a'.$records['records'][$r]['id'], strtotime($records['records'][$r]['date_modified']), 'monthly');
 			}
@@ -188,25 +224,25 @@ class WISY_ROBOTS_RENDERER_CLASS
 	
 	function renderSitemapXmlGz()
 	{
-		header('content-type: application/x-gzip');
-		header('Content-Disposition: attachment; filename="sitemap.xml.gz"');
-		headerDoCache();
-
-		$cacheKey = "sitemap.xml.gz." . $this->absPath;
-		if( ($temp=$this->sitemapCache->lookup($cacheKey))!='' )
-		{
-			$sitemap_gz = $temp;
-		}
-		else
-		{
-			$this->createSitemapXml($temp);
-			$sitemap_gz = gzencode($temp, 9);
-			$temp = ''; // free *lots* of data
-			
-			$this->sitemapCache->insert($cacheKey, $sitemap_gz);
-		}
-
-		echo $sitemap_gz;
+	    header('content-type: application/x-gzip');
+	    header('Content-Disposition: attachment; filename="sitemap.xml.gz"');
+	    headerDoCache();
+	    
+	    $cacheKey = "sitemap.xml.gz." . $this->absPath;
+	    /*	if( ($temp=$this->sitemapCache->lookup($cacheKey))!='' )
+	     {
+	     $sitemap_gz = $temp;
+	     }
+	     else
+	     { */
+	    $this->createSitemapXml($temp);
+	    $sitemap_gz = gzencode($temp, 9);
+	    $temp = ''; // free *lots* of data
+	    
+	    $this->sitemapCache->insert($cacheKey, $sitemap_gz);
+	    /* } */
+	    
+	    echo $sitemap_gz;
 	}
 }
 

@@ -45,6 +45,7 @@ class WISY_EDIT_TOOLS_CLASS
 	private function normalizeUrl($url)
 	{
 		$url = str_replace('http://', '', $url);
+		$url = str_replace('https://', '', $url);
 		$url = preg_replace('#/$#', '', $url); // remove trailing slash
 		$url = strtolower($url);
 		return $url;

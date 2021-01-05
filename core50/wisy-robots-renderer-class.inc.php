@@ -76,13 +76,15 @@ class WISY_ROBOTS_RENDERER_CLASS
 		header("Content-type: text/plain");
 		headerDoCache();
 		
-		if( strpos($_SERVER['HTTP_HOST'], 'sandbox')!==false || strpos($_SERVER['HTTP_HOST'], 'backup')!==false )
+		if( strpos($_SERVER['HTTP_HOST'], 'sandbox')!==false || strpos($_SERVER['HTTP_HOST'], 'backup')!==false || $this->framework->iniRead('seo.portal_blockieren', false) )
 		{
 			echo "User-agent: *\n";
 			echo "Disallow: /\n";
 		}
 		else
 		{
+		    $block_specificlink = array_map("trim", explode(",", $this->framework->iniRead('seo.links_blockieren', "")));
+		    
 			// set the sitemap, 
 			// dies steht in keinem zusammenhang mit User-agent, 
 			// siehe https://www.sitemaps.org/protocol.php#submit_robots 
@@ -92,14 +94,40 @@ class WISY_ROBOTS_RENDERER_CLASS
 			echo "User-agent: Mediapartners-Google*\n";
 			echo "Disallow: /terrapin\n";
 			
+			echo "\n";
 			// for all other spiders
 			echo "User-agent: *\n";
 			echo "Disallow: /advanced\n";
+			echo "Disallow: /edit\n";
+			echo "Disallow: /api\n";
 			echo "Disallow: /filter\n";
 			echo "Disallow: /edit\n";
 			echo "Disallow: /rss\n";
 			echo "Disallow: /terrapin\n";
+			echo "Disallow: /g151\n";
+			echo "Disallow: /search?q=volltext*\n";
+			
+			foreach($block_specificlink AS $link) {
+			    if(strlen($link) >= 1)
+			        echo "Disallow: ".$link."\n";
+			}
 		}
+		
+		echo "Crawl-delay: 10\n";
+		
+		echo "\n\n";
+		echo "User-agent: ia_archiver\n";
+		echo "Disallow: /\n";
+		
+		echo "\n\n";
+		echo "User-agent: SemrushBot\n";
+		echo "Disallow: /\n";
+		
+		echo "\n\n";
+		echo "User-agent: SemrushBot-SA\n";
+		echo "Disallow: /\n";
+		
+
 	}
 
 
@@ -109,6 +137,12 @@ class WISY_ROBOTS_RENDERER_CLASS
 
 	function addUrl($url, $lastmod, $changefreq)
 	{
+	    $block_specificlink = array_map("trim", explode(",", $this->framework->iniRead('seo.links_blockieren', "")));
+	    foreach($block_specificlink AS $link) { // $link may be link fragment
+	        if(strlen($link) > 1 && strpos($this->absPath.$url, $link) !== false)
+	            return "";
+	    }
+	    
 		$this->urlsAdded ++;
 		return "<url><loc>{$this->absPath}$url</loc><lastmod>" .strftime("%Y-%m-%d", $lastmod). "</lastmod><changefreq>$changefreq</changefreq></url>\n";
 	}
@@ -118,6 +152,12 @@ class WISY_ROBOTS_RENDERER_CLASS
 		// sitemap start
 		$sitemap =  "<" . "?xml version=\"1.0\" encoding=\"UTF-8\" ?" . ">\n";
 		$sitemap .= "<urlset xmlns=\"https:/" . "/www.sitemaps.org/schemas/sitemap/0.9\">\n";
+		
+		if( $this->framework->iniRead('seo.portal_blockieren', false) ) {
+		    $sitemap .= "</urlset>\n";
+		    return;
+		}
+		
 		$this->urlsAdded = 0;
 		
 		// grenzen fuer sitemaps:
@@ -135,7 +175,7 @@ class WISY_ROBOTS_RENDERER_CLASS
 		if( $searcher->ok() )
 		{
 			$records = $searcher->getAnbieterRecords(0 /*offset*/, intval($maxUrls/2) /*rows*/, 'creatd');
-			for( $r = 0; $r < sizeof($records['records']); $r++ )
+			for( $r = 0; $r < sizeof((array) $records['records']); $r++ )
 			{
 				$sitemap .= $this->addUrl('a'.$records['records'][$r]['id'], strtotime($records['records'][$r]['date_modified']), 'monthly');
 			}
@@ -154,10 +194,10 @@ class WISY_ROBOTS_RENDERER_CLASS
 			$searcher->db->query($sql);
 			while( $searcher->db->next_record() )
 			{
-				$freigeschaltet = intval($searcher->db->f8('freigeschaltet'));
+				$freigeschaltet = intval($searcher->db->fcs8('freigeschaltet'));
 				
 				if(!in_array($freigeschaltet, $freigeschaltet404))
-					$sitemap .= $this->addUrl('k'.$searcher->db->f8('id'), strtotime($searcher->db->f8('date_modified')), 'monthly');
+					$sitemap .= $this->addUrl('k'.$searcher->db->fcs8('id'), strtotime($searcher->db->fcs8('date_modified')), 'monthly');
 				
 				if( $this->urlsAdded >= $maxUrls )
 				{

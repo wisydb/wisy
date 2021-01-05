@@ -41,13 +41,13 @@ class WISY_KEYWORDTABLE_CLASS
 			WISY_KEYWORDTABLE_CLASS::$keywords = array();
 			$this->db->query("SELECT id, stichwort, eigenschaften, zusatzinfo, glossar FROM stichwoerter;");
 			while( $this->db->next_record() ) {
-				WISY_KEYWORDTABLE_CLASS::$keywords[ $this->db->f8('id') ] = $this->db->Record;
+			    WISY_KEYWORDTABLE_CLASS::$keywords[ $this->db->fcs8('id') ] = $this->db->Record;
 			}
 
 			WISY_KEYWORDTABLE_CLASS::$sw_modified = '0000-00-00 00:00:00';
 			$this->db->query("SELECT MAX(date_modified) d FROM stichwoerter;");
 			if( $this->db->next_record() ) {
-				WISY_KEYWORDTABLE_CLASS::$sw_modified = $this->db->f8('d');
+			    WISY_KEYWORDTABLE_CLASS::$sw_modified = $this->db->fcs8('d');
 			}			
 		}		
 	}
@@ -77,33 +77,40 @@ class WISY_KEYWORDTABLE_CLASS
 		/* frequency, end base type */
 		if( $tag_freq > 0 )
 		{
-			$row_postfix = ($tag_freq==1? '1 Kurs' : "$tag_freq Kurse") . $row_preposition . $row_postfix;
+			if( preg_match("/Beratung.$/i", trim($tag_name)) || strpos($tag_name, "Beratungssuche") !== FALSE )
+				$row_postfix = ($tag_freq==1? '1 Angebot' : "$tag_freq Angebote") . $row_preposition . $row_postfix;
+			else
+				$row_postfix = ($tag_freq==1? '1 Kurs' : "$tag_freq Kurse") . $row_preposition . $row_postfix;
+		} else {
+		    return "<small>Z.Z. leider keine Angebote ".$row_preposition . $row_postfix.": ".htmlentities(cs8($tag_name))."</small>";
 		}
-		$row_postfix = cs8($row_postfix);
 
+
+		$row_postfix = PHP7 ? utf8_decode($row_postfix) : $row_postfix;
+		
 		if( $tag_descr )
 		{
-			$tag_descr = cs8($tag_descr);
-			$row_postfix = htmlentities(html_entity_decode($tag_descr)) . ', ' . htmlentities(html_entity_decode($row_postfix));
+		    $tag_descr = cs8($tag_descr);
+		    $row_postfix = htmlentities(html_entity_decode($tag_descr)) . ', ' . htmlentities(html_entity_decode(strip_tags($row_postfix)));
 		}
-
+		
 		if( $row_postfix != '' )
 		{
-			$row_postfix = ' <span class="ac_tag_type">(' . htmlentities(html_entity_decode($row_postfix)) . ')</span> ';
+		    $row_postfix = ' <span class="ac_tag_type">(' . htmlentities(html_entity_decode(strip_tags($row_postfix))) . ')</span> ';
 		}
 
 		/*col1*/
 		$ret .= '<span class="' .$row_class. '">';
-			$ret .= ' <a href="' . $this->framework->getUrl('search', array('q'=>$tag_name)) . '">' . htmlspecialchars($tag_name) . '</a> ';
-			$ret .= $row_postfix;
+		$ret .= ' <a href="' . $this->framework->getUrl('search', array('q'=>cs8($tag_name))). '">' . htmlentities(cs8($tag_name)). '</a> ';
+		$ret .= $row_postfix;
 		$ret .= '</span>';
 		
 		/*col2*/
-		$ret .= '</td><td width="10%" nowrap="nowrap" class="wisyr_align--center">';
+		$ret .= '</td><td class="info_cell">';
 		if( $tag_help != 0 )
 		{
 			$ret .=
-			 "<a class=\"wisy_help\" href=\"" . $this->framework->getUrl('g', array('id'=>$tag_help, 'q'=>$tag_name)) . "\" title=\"Ratgeber\" aria-label=\"Ratgeber zum Stichwort\">&nbsp;i&nbsp;</a>";
+			 "<a class=\"wisy_help\" href=\"" . $this->framework->getUrl('g', array('id'=>$tag_help, 'q'=>$tag_name)) . "\" title=\"Ratgeber\">&nbsp;i&nbsp;</a>";
 		}		
 		
 		return $ret;
@@ -117,7 +124,7 @@ class WISY_KEYWORDTABLE_CLASS
 		$icon_empty = '&nbsp;&bull;&nbsp;';
 				
 		$title = cs8(WISY_KEYWORDTABLE_CLASS::$keywords[ $keywordId ]['stichwort']);
-		$url = 'search?q=' . urlencode(g_sync_removeSpecialChars($title));
+		$url = 'search?q=' . g_sync_removeSpecialChars($title);
 		$zusatzinfo = cs8(WISY_KEYWORDTABLE_CLASS::$keywords[ $keywordId ]['zusatzinfo']);
 		$tag_type = WISY_KEYWORDTABLE_CLASS::$keywords[ $keywordId ]['eigenschaften'];
 		$glossarId = WISY_KEYWORDTABLE_CLASS::$keywords[ $keywordId ]['glossar'];
@@ -126,7 +133,7 @@ class WISY_KEYWORDTABLE_CLASS
 		$tag_id = 0;
 		$this->db->query("SELECT tag_id, tag_type FROM x_tags WHERE tag_name=".$this->db->quote($title));
 		if( $this->db->next_record() ) {
-			$tag_id = $this->db->f8('tag_id');
+		    $tag_id = $this->db->fcs8('tag_id');
 		} 
 		
 		// get row type, class etc.
@@ -142,10 +149,10 @@ class WISY_KEYWORDTABLE_CLASS
 		}
 		
 		$ret = "<tr data-indent=\"$level\" $trstyle>";
-			$ret .= '<td style="padding-left:'.intval($level*2).'em" width="90%">';
+			$ret .= '<td style="padding-left:'.intval($level*2).'em" class="tag_cell">';
 			
 				if( $hasChildren ) {
-					$ret .= "<a href=\"#\" class=\"wisy_glskeyexp\" data-glskeyaction=\"".($expanded? "shrink":"expand")."\" aria-label=\"Unterthemen ".($expanded? "zuklappen" : "aufklappen")."\">";
+					$ret .= "<a href=\"#\" class=\"wisy_glskeyexp\" data-glskeyaction=\"".($expanded? "shrink":"expand")."\">";
 						$ret .= $expanded? $icon_arr_down : $icon_arr_right;
 					$ret .= "</a>";
 				}
@@ -168,7 +175,7 @@ class WISY_KEYWORDTABLE_CLASS
 	protected function getKeywordsDivRecursive($keywordId, $level, $expand, $defhidden = false)
 	{
 		// check for timeout
-		$timeout_after_s = 5.000;
+	    $timeout_after_s = 10.000;
 		if( $this->framework->microtime_float() - $this->start > $timeout_after_s ) {
 			return '<tr><td>Timeout, Erstellung der Tabelle abgebrochen.</td></tr>';
 		}
@@ -177,18 +184,18 @@ class WISY_KEYWORDTABLE_CLASS
 		$child_ids = array();
 		$this->db->query("SELECT attr_id FROM stichwoerter_verweis2 WHERE primary_id=$keywordId ORDER BY structure_pos;");
 		while( $this->db->next_record() ) {
-			$child_ids[] = $this->db->f8('attr_id');
+		    $child_ids[] = $this->db->fcs8('attr_id');
 		}
 
 		$showempty = $this->showempty;
-		if( $level == 0 || (count((array) $child_ids)!=0 && $expand > 0) ) {
+		if( $level == 0 || (count($child_ids)!=0 && $expand > 0) ) {
 			$showempty = true;
 		}
 
 
 		// get HTML code for the children
 		$childrenHTML = '';
-		for( $a = 0; $a < count((array) $child_ids); $a++ ) {
+		for( $a = 0; $a < count($child_ids); $a++ ) {
 			$childrenHTML .= $this->getKeywordsDivRecursive($child_ids[$a], $level+1, $expand-1, $expand > 0? false : true);
 		}
 		
@@ -219,7 +226,7 @@ class WISY_KEYWORDTABLE_CLASS
 
 		// ... pass 1: check for special parameters
 		$this->showempty = false;
-		for( $k = 0; $k < count((array) $temp); $k++ ) 
+		for( $k = 0; $k < count($temp); $k++ ) 
 		{
 			if( $temp[$k] == 'showempty' ) {
 				$this->showempty = true;
@@ -251,8 +258,8 @@ class WISY_KEYWORDTABLE_CLASS
 		$ret = '<table class="wisy_glskey">'
 			.		'<thead>'
 			.			'<tr>'
-			.				'<td width="90%">Rechercheziele</td>'
-			.				'<td width="10%">Ratgeber</td>'	
+			.				'<td class="heading_tagtree">Rechercheziele</td>'
+			.				'<td class="heading_infos">Ratgeber</td>'	
 			.			'</tr>'
 			.		'</thead>'
 			.		'<tbody>'
@@ -265,10 +272,13 @@ class WISY_KEYWORDTABLE_CLASS
 		$ret .= '<div class="wisy_glskeytime">Erstellt '.strftime('%Y-%m-%d %H:%M:%S').' in '.$secneeded_str.' s</div>';
 
 		// add to cache
-		$this->dbCache->insert($cacheKey, $ret);
+		$this->dbCache->insert($cacheKey, $ret);		
 
 		// done
 		return $ret;
 	}
 	
+		
 };
+
+

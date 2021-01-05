@@ -6,7 +6,7 @@ class WISY_DURCHF_CLASS
 {
 	var $framework;
 	
-	protected $plzfilterObj;
+	protected $plzfilterObj;   
 
 	function __construct(&$framework)
 	{
@@ -105,10 +105,10 @@ class WISY_DURCHF_CLASS
 
 	protected function formatArtSpalte($stichwoerter_arr, $details)
 	{
-		// Array Stichwörter/Tags => Bilder/Text erzeugen
-		// (wir verwenden hier die Informationen aus der stichworttabelle anstelle von x_tags, da diese einfacher zur Verfügung stehen und
-		// nicht aktualisiert werden müssen, d.h. Änderungen in der Onlinepflege sind sofort sichtbar.
-		// Nachteil ist, dass einige Stichwörter erst rekonstruiert werden müssen (aus bu_nummer, s. wisy-sync-renderer-class.inc.php))
+		// Array Stichwoerter/Tags => Bilder/Text erzeugen
+		// (wir verwenden hier die Informationen aus der stichworttabelle anstelle von x_tags, da diese einfacher zur Verfuegung stehen und
+		// nicht aktualisiert werden muessen, d.h. Aenderungen in der Onlinepflege sind sofort sichtbar.
+	    // Nachteil ist, dass einige Stichwoerter erst rekonstruiert werden muessen (aus bu_nummer, s. wisy-sync-renderer-class.inc.php))
 		if( !is_array($this->imgTagArr) ) 
 		{
 			// init Array with defaults
@@ -118,11 +118,13 @@ class WISY_DURCHF_CLASS
 					'tc3'	=>	array('&#9681;', 	'Nachmittags'),
 					'tc4'	=>	array('&#9682;', 	'Abends'),
 					'tc5'	=>	array('<i style="font-family: serif;">WE</i>',		'Wochenende'),
-					1		=>	array('<b>BU</b>',	'Bildungsurlaub'),
-					7721	=>	array('<big>&#9993;</big>',	'Fernunterricht'),
-					7639	=>	array('WWW', 'Webinar'),
-					17261	=>  array('<b>P</b>',	'Präsenzunterricht'),
-					806441	=>	array('WWW', 'Webinar') // eigentl. Teleteaching = Webinar
+    			    1		=>	array('<b>BU</b>',	'Bildungsurlaub'),
+    			    7430	=>	array('<b>BL</b>',	'Blended Learning'),
+    			    7721	=>	array('<big>&#9993;</big>',	'Fernunterricht'),
+    			    7639	=>	array('WWW', 'Web-Seminar'),
+    			    17261	=>  array('<b>P</b>',	'Pr&auml;senzunterricht'),
+			    806441	=>	array('WWW', 'Web-Seminar'), // eigentl. Teleteaching = Web-Seminar
+    			    832301 => array('<b>BZ</b>',	'Bildungszeit') // Bremen
 			);
 			
 			// deprecated (2014-11-02 17:46)
@@ -139,10 +141,11 @@ class WISY_DURCHF_CLASS
 				$this->imgTagArr[7721]	= array("{$icons}/tc6.gif",	'Fernunterricht');
 				$this->imgTagArr[7720]	= array("{$icons}/tc7.gif",	'Fernstudium');
 				$this->imgTagArr[7430]	= array("{$icons}/tc8.gif",	'Blended Learning');
-				$this->imgTagArr[7639]	= array("{$icons}/www.gif",	'Webinar');
-				$this->imgTagArr[17261]	= array("{$icons}/P.gif",	'Präsenzunterricht');
+				$this->imgTagArr[7639]	= array("{$icons}/www.gif",	'Web-Seminar');
+				$this->imgTagArr[17261]	= array("{$icons}/P.gif",	'Pr&auml;senzunterricht');
+				// $this->imgTagArr[832301]	= array("{$icons}/B.gif",	'Bildungszeit'); // Bremen
 				$this->imgTagArr[806311]	= array("{$icons}/tc9.gif",	'E-Learning');
-				$this->imgTagArr[806441]	= array("{$icons}/www.gif",	'Webinar');
+				$this->imgTagArr[806441]	= array("{$icons}/www.gif",	'Web-Seminar');
 			}
 			// /deprecated (2014-11-02 17:46)
 
@@ -248,7 +251,7 @@ class WISY_DURCHF_CLASS
 	
 		$c = 0;
 		reset($codes_kurstage_array);
-		while( list($value, $descr) = each($codes_kurstage_array) ) {
+		foreach($codes_kurstage_array as $value => $descr){
 			if( $kurstage & $value ) {
 				$c++;
 			}
@@ -256,7 +259,7 @@ class WISY_DURCHF_CLASS
 	
 		$ret = '';
 		reset($codes_kurstage_array);
-		while( list($value, $descr) = each($codes_kurstage_array) ) {
+		foreach($codes_kurstage_array as $value => $descr) {
 			if( $kurstage & $value ) {
 				$ret .= $ret? ($c==1? ' und ' : ', ') : '';
 				$ret .= $descr;
@@ -365,13 +368,14 @@ class WISY_DURCHF_CLASS
 				switch( $stichwort['id'] ) {
 					case 3207:  $preishinweise_arr[] = 'kostenlos per Bildungsgutschein'; 		break;
 					case 6013:  $preishinweise_arr[] = 'kostenlos durch Umschulung';			break;
-					case 16311: $preishinweise_arr[] = 'kostenlos als Aktivierungsmaßnahme';	break;				
+					case 16311: $preishinweise_arr[] = 'kostenlos als Aktivierungsma&szlig;nahme';	break;				
 				}
 			}
 			
-			if( sizeof($preishinweise_arr) )
+			if( sizeof((array) $preishinweise_arr) )
 			{	
 				$preishinweise_out = implode(', ', $preishinweise_arr);
+				$ret = str_replace(array("k. A.", "k.A."), "", $ret); // can only replaced here, because of autom. preisihinw.
 				if( $html ) {
 					$ret .= '<br /><small>' . isohtmlentities($preishinweise_out) . '</small>';
 				}
@@ -381,7 +385,7 @@ class WISY_DURCHF_CLASS
 			}
 			
 			// Auto link URLs in Preishinweis
-			$replaceURL = (strpos($ret, 'http') === FALSE) ? '<a href="http://$0" target="_blank" title="$0">$0</a>' : '<a href="$0" target="_blank" title="$0">$0</a>';
+			$replaceURL = (strpos($ret, 'http') === FALSE) ? '<a href="http://$0" target="_blank" rel="noopener noreferrer" title="$0">$0</a>' : '<a href="$0" target="_blank" rel="noopener noreferrer" title="$0">$0</a>';
 			$ret = preg_replace('~(?:(https?)://([^\s<]+)|(www\.[^\s<]+?\.[^\s<]+))(?<![\.,:])~i', $replaceURL, $ret);
 		}
 	
@@ -402,13 +406,13 @@ class WISY_DURCHF_CLASS
 					break;
 				
 				case 1:
-					// Stichwort 315/"Einstieg beis kursende Möglich"
+					// Stichwort 315/"Einstieg beis kursende Mï¿½glich"
 					$db->query("SELECT attr_id FROM kurse_stichwort WHERE primary_id=$kursId AND attr_id=315");
 					if( $db->next_record() ) {
 						$where = " AND (ende>='".strftime("%Y-%m-%d 00:00:00")."')";
 					}
 					else {
-						continue;
+						continue 2;
 					}
 					break;
 				
@@ -429,7 +433,7 @@ class WISY_DURCHF_CLASS
 				}
 			}
 			
-			if( sizeof($durchfuehrungenIds) )
+			if( sizeof((array) $durchfuehrungenIds) )
 				break;
 		}
 		
@@ -472,17 +476,17 @@ class WISY_DURCHF_CLASS
 	    	$record = array('preis' => -1); // alle andere felder sind mit "leer" gut bedient
 	    }
 	    
-		// stichwoerter um im sync-process automatisch vergebene Stichwörter ergänzen
+		// stichwoerter um im sync-process automatisch vergebene Stichwoerter ergaenzen
 		//
 		// 2014-11-01 11:26 Anmerkung [1] (vgl. Anmerkungen [1] in wisy-sync-renderer.inc.php):
-		// 		da dies ungefähr dasselbe ist, wie in wisy-sync-renderer-class.inc.php könnte man dies evtl. in eine Klasse wie "auto-stichwort" auslagern,
-		// 		v.a. da im Grunde an dieser Stelle auch die AutoStichwoerter vergeben werden müssten - und wenn man
-		//		ein System etabliert, Stichwörter aus Volltext zu erzeugen, noch mehr.
+		// 		da dies ungefaehr dasselbe ist, wie in wisy-sync-renderer-class.inc.php koennte man dies evtl. in eine Klasse wie "auto-stichwort" auslagern,
+		// 		v.a. da im Grunde an dieser Stelle auch die AutoStichwoerter vergeben werden muessten - und wenn man
+		//		ein System etabliert, Stichwoerter aus Volltext zu erzeugen, noch mehr.
 		//
-		//		Es ist also eine Grundsätzliche Frage, wie mit automatisch vergebenen Stichwörtern verfahren werden soll,
+		//		Es ist also eine Grundsaetzliche Frage, wie mit automatisch vergebenen Stichwoertern verfahren werden soll,
 		//		vll. ist es doch am Einfachsten, diese beim Abspeichern direkt im Redaktionssystem zu hinterlegen,
 		//		auch wenn mal etwas nach core20 folgt ...
-		//		dies müsste allerdings mit Jürgen und Monika besprochen werden (bp)
+		//		dies muesste allerdings mit JV und MP besprochen werden (bp)
 		if( $addParam['record']['bu_nummer'] )	{ if(!$this->stichw_in_array($addParam['stichwoerter'], 1   )) { $addParam['stichwoerter'][] = array('id'=>1   ); } }
 		if( $addParam['record']['fu_knr'] )		{ if(!$this->stichw_in_array($addParam['stichwoerter'], 7721)) { $addParam['stichwoerter'][] = array('id'=>7721); } }
 		if( $addParam['record']['azwv_knr'] ) 	{ if(!$this->stichw_in_array($addParam['stichwoerter'], 3207)) { $addParam['stichwoerter'][] = array('id'=>3207); } }
@@ -502,7 +506,7 @@ class WISY_DURCHF_CLASS
 		// termin abgelaufen?
 		$termin_abgelaufen = false;
 		$heute_datum = strftime("%Y-%m-%d 00:00:00");
-		if( $this->stichw_in_array($addParam['stichwoerter'], 315 /*Einstieg bis Kursende möglich?*/ ) 
+		if( $this->stichw_in_array($addParam['stichwoerter'], 315 /*Einstieg bis Kursende moeglich?*/ ) 
 		 && $endesql > '0000-00-00 00:00:00' )
 		{
 			if( $endesql < $heute_datum ) {
@@ -546,10 +550,7 @@ class WISY_DURCHF_CLASS
 			if( $details && $this->framework->iniRead('details.kurstage', 1)==1 ) {
 			    $temp = $this->formatKurstage(intval($record['kurstage']));
 			    if( $temp ) {
-			        echo '<span class="wotage">'.$temp.'</span>';
-			        
-			        if($zeit_von || $zeit_bis)
-			            echo ':&nbsp;';
+			        $cell .= '<br><span class="wotage">'.$temp.'</span>';
 			    }
 			}
 			
@@ -566,7 +567,15 @@ class WISY_DURCHF_CLASS
 				$cell .= "{$small}$zeit_von Uhr{$smallend}"; 
 			}
 			
-			if( $addText ) // z.B. für "2 weitere Durchführungen ..."
+			if( $addParam['record']['freigeschaltet'] == 4 )
+			{
+			    $small = ''; $smallend = '';
+			    if( $cell != '' ) { $cell .= '<br />'; $small = '<small>'; $smallend = '</small>'; }
+			    
+			    $cell .= "{$small}dauerhaftes Angebot{$smallend}";
+			}
+			
+			if( $addText ) // z.B. fuer "2 weitere Durchfuehrungen ..."
 			{
 				$cell .= $cell!=''? '<br />' : '';
 				$cell .= $addText;
@@ -590,7 +599,7 @@ class WISY_DURCHF_CLASS
 		
 		if (($wisyPortalSpalten & 8) > 0)
 		{
-			// tagescode / bildungsurlaub / teilnehmende
+			// tagescode / bildungsurlaub
 			$tagescodeAttr = $details? '' : ' '.html3('align="center"').' class="type"';
 			echo "    <td$tagescodeAttr>";
 	
@@ -601,13 +610,6 @@ class WISY_DURCHF_CLASS
 				$dfStichw[] = array('id'=>'tc'.$record['tagescode']);
 				
 				$cell .= $this->formatArtSpalte($dfStichw, $details);
-								
-				if( $details ) {
-					if( $record['teilnehmer'] ) {
-						$cell .= $cell? '<br />' : '';
-						$cell .= '<small>max. ' . intval($record['teilnehmer']) . ' Teiln.</small>'; // "Teilnehmende" ist etwas zu lang für die schmale Spalte (zuvor waren die Teilnehmer unter den Bemerkungen, wo die Breite egal war)
-					}
-				}
 				
 				if( $cell == $this->seeAboveArt && $details ) {
 					echo '<span class="noprint">'.$cell.'</span><small class="printonly">s.o.</small>';
@@ -623,32 +625,44 @@ class WISY_DURCHF_CLASS
 		
 		if (($wisyPortalSpalten & 16) > 0)
 		{
-			// preis
-			$preisAttr = '';//($details && $record['preishinweise']!='')? ' align=\"right\"' : ' nowrap="nowrap"';
-			echo "    <td$preisAttr>";
-				$temp = $this->formatPreis($record['preis'],
-					$record['sonderpreis'], $record['sonderpreistage'], 
-					$record['beginn'], $details? $record['preishinweise'] : '',
-					true, /*format as HTML*/
-					array(
-						'showDetails'=>$details,
-						'stichwoerter'=>$addParam['stichwoerter']
-						)
-					);
-				echo $this->shy($temp);
-			echo '</td>' . "\n";
+		    // preis
+		    $preisAttr = '';//($details && $record['preishinweise']!='')? ' align=\"right\"' : ' nowrap="nowrap"';
+		    echo "    <td$preisAttr>";
+		    $temp = $this->formatPreis($record['preis'],
+		        $record['sonderpreis'], $record['sonderpreistage'],
+		        $record['beginn'], $details? $record['preishinweise'] : '',
+		        true, /*format as HTML*/
+		        array(
+		            'showDetails'=>$details,
+		            'stichwoerter'=>$addParam['stichwoerter']
+		        )
+		        );
+		    
+		    if( ($temp == "" || $temp == "k.A." || $temp == "k. A.")
+		        && (strlen($record['preishinweise']) > 3 ||
+		            $this->stichw_in_array($addParam['stichwoerter'], 849451) ||
+		            $this->stichw_in_array($addParam['stichwoerter'], 3207) ||
+		            $this->stichw_in_array($addParam['stichwoerter'], 6013) ||
+		            $this->stichw_in_array($addParam['stichwoerter'], 16311)
+		            )
+		        )
+		        
+		        echo "<small>s.&nbsp;Preishinw.</small>";
+		        else
+		            echo $this->shy($temp);
+		            
+		            echo '</td>' . "\n";
 		}
 		
 		if (($wisyPortalSpalten & 32) > 0)
 		{
-			// ort / bemerkungen
-			$has_bemerkungen = trim($record['bemerkungen'])? true : false;
+			// ort 
 			echo "    <td>";
 			
 			// get ort
 			$strasse	= $record['strasse'];
 			$plz		= $record['plz'];
-			$ort		= $record['ort']; // hier wird noch der Stadtteil angehängt
+			$ort		= $record['ort']; // hier wird noch der Stadtteil angehaengt
 			$stadt		= $ort;
 			$stadtteil	= $record['stadtteil'];
 			$land		= $record['land'];
@@ -694,11 +708,6 @@ class WISY_DURCHF_CLASS
 					$cell .= $cell? '<br />' : '';
 					$cell .= '<i>' . isohtmlentities($land) . '</i>';
 				}
-
-				if( $has_bemerkungen ) {
-					$wiki2html =& createWisyObject('WISY_WIKI2HTML_CLASS', $this->framework);
-					$cell .= '<div style="font-size: 11px;">' . $wiki2html->run($record['bemerkungen']) . '</div>';
-				}
 				
 				if( strip_tags($cell) == $this->seeAboveOrt && $details ) {
 					echo '<div class="noprint">'.$cell.'</div><small class="printonly">s.o.</small>';
@@ -722,12 +731,35 @@ class WISY_DURCHF_CLASS
 		
 		if (($wisyPortalSpalten & 64) > 0)
 		{
+		    $cell .= "..";
 	
 			// nr
 			echo "    <td>";
 			$nr = $record['nr'];
 			echo $nr? isohtmlentities($nr) : 'k. A.';
 			echo '</td>' . "\n";
+		}
+		
+		if (($wisyPortalSpalten & 128) > 0)
+		{
+		    
+		    // maxTN, bemerkungen
+		    echo " <td class=' spalte_maxTN_bemerkungen'>";
+		    
+		    if( $details ) {
+		        if( $record['teilnehmer'] ) {
+		            echo '<small>max. ' . intval($record['teilnehmer']) . ' Teiln.</small>'; // "Teilnehmende" ist etwas zu lang fuer die schmale Spalte (zuvor waren die Teilnehmer unter den Bemerkungen, wo die Breite egal war)
+		        }
+		    }
+		    
+		    $has_bemerkungen = trim($record['bemerkungen'])? true : false;
+		    
+		    if( $has_bemerkungen ) {
+		        $wiki2html =& createWisyObject('WISY_WIKI2HTML_CLASS', $this->framework);
+		        echo '<div style="font-size: 11px;">' . $wiki2html->run($record['bemerkungen']) . '</div>';
+		    }
+		    
+		    echo '</td>' . "\n";
 		}
 	}
 };

@@ -143,7 +143,9 @@ $anbieter->add_row(TABLE_INT|TABLE_EMPTYONNULL|TABLE_NEWSECTION,
 $anbieter->add_row(TABLE_ENUM,								'rechtsform',		'Rechtsform', 0,
 																				 $codes_rechtsform, '', array('layout.join'=>1));
 $anbieter->add_row(TABLE_TEXTAREA|TABLE_WIKI,				'firmenportraet',	'Firmenporträt');
-$anbieter->add_row(TABLE_BLOB,								'logo',				'Logo', '', '', '', array('layout.bg.class'=>'e_bgbottom'));
+$anbieter->add_row(TABLE_BLOB,								'logo',				'Logo / Bild', '', '', '', array('layout.bg.class'=>'e_bgbottom'));
+$anbieter->add_row(TABLE_TEXT|TABLE_URL,					'logo_rechte',			'Bildrechte', '', '', '', array('ctrl.size'=>'10-20-50'));
+$anbieter->add_row(TABLE_FLAG,					            'logo_position',			'Über Inhalt positionieren', '', '', '', array('layout.join'=>1));
 $anbieter->add_row(TABLE_TEXT|TABLE_URL,					'homepage',			'Homepage', '', '', '', array('ctrl.size'=>'10-20-50'));
 $anbieter->add_row(TABLE_DATE|TABLE_DAYMONTHOPT,			'pruefsiegel_seit',	'Prüfsiegel seit');
 $anbieter->add_row(TABLE_TEXT|TABLE_NEWSECTION,				'anspr_name',		'Kundenberater', 0, 0, 'Kundenkontakt', array('ctrl.placeholder'=>'Name', 'layout.section'=>'Kundenkontakt'));
@@ -208,7 +210,7 @@ $anbieter->rows[$use_neweditor? 10 : 2]->addparam = $anbieter;
 
 /*** DURCHFUEHRUNGEN ***/
 $timecheck_reg = 'ss:mm###/^[012]\d:[0123456]\d{1,1}$/######/\./###:###/\s/######/^(\d):/###0\1:###/(\d\d)(\d\d)/###\1:\2###/(\d)(\d\d)/###0\1:\2';
-$durchfuehrung = new Table_Def_Class(TABLE_SYNCABLE,		'durchfuehrung',	'Durchführungen');
+$durchfuehrung = new Table_Def_Class(TABLE_SYNCABLE,		'durchfuehrung',	'Durchführungen', 0, 0, true); // last parameter: delete DF as secondary entry in lookup table (adter deleting in course view)
 $durchfuehrung->add_row(TABLE_TEXT|TABLE_LIST|TABLE_SUMMARY,'nr',				'Durchführungs-Nr.', '', '', '', array('ctrl.size'=>'10-40'));
 if( $use_neweditor )
 {
@@ -313,7 +315,25 @@ $kurse->add_row(TABLE_SATTR|TABLE_LIST|TABLE_TRACKDEFAULTS|TABLE_MUST,
 $kurse->add_row(TABLE_TEXTAREA|TABLE_WIKI|TABLE_NEWSECTION,		'beschreibung',		'Beschreibung', 0, 0, 'Kursporträt');
 $kurse->add_row(TABLE_SATTR|TABLE_TRACKDEFAULTS,				'thema',			'Thema', 0, $themen, '', array());
 $kurse->add_row(TABLE_MATTR|TABLE_TRACKDEFAULTS,				'stichwort',		'Stichwörter', 0, $stichwoerter, '', array('layout.join'=>0));
-$kurse->add_row(TABLE_TEXT,										'msgtooperator',	'Stichwortvorschläge', 0, 0, '', array('layout.join'=>1, 'layout.defhide'=>1, 'help.tooltip'=>'Stichwortvorschläge vom Anbieter', 'ctrl.size'=>'10-20-60'));
+$kurse->add_row(TABLE_TEXT,										'msgtooperator',	'Stichwortvorschläge', 0, 0, '',
+    array('layout.join'=>0, 'layout.defhide'=>0,
+        'help.tooltip'=>'Stichwortvorschläge vom Anbieter',
+        'ctrl.size'=>'10-20-60',
+        'ctrl.class'=>'vorschlag',
+        'layout.descr.class' => 'vorschlag_label'
+    ));
+
+$kurse->add_row(TABLE_TEXT|TABLE_READONLY,		                 'msgtooperator_unterrichtsart',	'Vorschläge Unterrichtsart', 0, 0, '',
+    array('layout.join'=>1, 'layout.defhide'=>0,
+        'help.tooltip'=>'Unterrichtsart-Vorschläge vom Anbieter. Diese sind zur Bearbeitung gesperrt, weil sie bei der Onlinepflege mit existierenden SW abgeglichen werden m¸ssen.',
+        'ctrl.size'=>'60-60-200',
+        'ctrl.class'=>'vorschlag',
+        'layout.descr.class' => 'vorschlag_label',
+        'value.table_key'=>array( 'table' => 'stichwoerter', 'key' => 'id', 'value' => 'stichwort'),
+        'layout.value.aslabel' => 1,
+        'layout.input.hide' => 1
+    ));  //'value.replace'=>array( array('###'), array(',') )
+    
 $kurse->add_row(TABLE_SECONDARY|TABLE_TRACKDEFAULTS,			'durchfuehrung',	'Durchführung', 1, $durchfuehrung);
 if(!$use_neweditor) {
 	$kurse->add_row(TABLE_TEXT|TABLE_NEWSECTION,					'bu_nummer',		'BU-Kursnummer', '','', 'Kurs-IDs', array('layout.join'=>1));
@@ -335,7 +355,7 @@ $feedback->add_row(TABLE_TEXT|TABLE_SUMMARY|TABLE_LIST|TABLE_MUST|TABLE_READONLY
 $feedback->add_row(TABLE_ENUM|TABLE_LIST|TABLE_READONLY,					'rating',			'Wertung', 0, '0###nicht hilfreich###1###hilfreich');
 $feedback->add_row(TABLE_TEXTAREA|TABLE_LIST|TABLE_READONLY,				'descr',			'Kommentar');
 $feedback->add_row(TABLE_TEXT|TABLE_LIST|TABLE_READONLY,					'name',			'Name');
-$feedback->add_row(TABLE_TEXT|TABLE_LIST|TABLE_READONLY,					'email',			'Email');
+$feedback->add_row(TABLE_TEXT|TABLE_LIST|TABLE_READONLY,					'email',			'Email', '', '', '', array('ctrl.size'=>'1-300'));
 $feedback->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION, 						'notizen', 			'Journal', '', '', '', array('layout.section'=>1));
 
 /*** Ticketing-System ***/

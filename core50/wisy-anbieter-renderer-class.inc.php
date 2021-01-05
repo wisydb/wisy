@@ -80,78 +80,83 @@ class WISY_ANBIETER_RENDERER_CLASS
 		
 		// load anbieter
 		$db->query("SELECT * FROM anbieter WHERE id=$anbieterId");
-		if( !$db->next_record() || $db->f8('freigeschaltet')!=1 ) {
+		if( !$db->next_record() || $db->f('freigeschaltet')!=1 ) {
 			return 'Dieser Anbieterdatensatz existiert nicht oder nicht mehr oder ist nicht freigeschaltet.';
 		}
 		
 		$kursId			= intval($kursId);
-		$suchname		= $db->f8('suchname');
-		$postname		= htmlentities($db->f8('postname'));
-		$strasse		= htmlentities($db->f8('strasse'));
-		$plz			= htmlentities($db->f8('plz'));
-		$ort			= htmlentities($db->f8('ort'));
-		$stadtteil		= htmlentities($db->f8('stadtteil'));
-		$land			= htmlentities($db->f8('land'));
-		$anspr_tel		= htmlentities($db->f8('anspr_tel'));
-		$anspr_fax		= htmlentities($db->f8('anspr_fax'));
-		$anspr_name		= htmlentities($db->f8('anspr_name'));
-		$anspr_email	= htmlentities($db->f8('anspr_email'));
-		$anspr_zeit		= htmlentities($db->f8('anspr_zeit'));
-		$homepage		= htmlentities($db->f8('homepage'));
-		$din_nr			= htmlentities($db->f8('din_nr'));
-		$leitung_name   = htmlentities($db->f8('leitung_name'));
-		$gruendungsjahr = intval($db->f8('gruendungsjahr'));
-		$rechtsform     = intval($db->f8('rechtsform'));
-		$pruefsiegel_seit = $db->f8('pruefsiegel_seit');
+		$suchname		= $db->fcs8('suchname');
+		$postname		= htmlentities($db->fcs8('postname'));
+		$strasse		= htmlentities($db->fcs8('strasse'));
+		$plz			= htmlentities($db->fcs8('plz'));
+		$ort			= htmlentities($db->fcs8('ort'));
+		$stadtteil		= htmlentities($db->fcs8('stadtteil'));
+		$land			= htmlentities($db->fcs8('land'));
+		$anspr_tel		= htmlentities($db->fcs8('anspr_tel'));  // Achtung, Bindestrich muss gueltig sein, sonst wird nichts angezeigt
+		$anspr_fax		= htmlentities($db->fcs8('anspr_fax'));
+		$anspr_name		= htmlentities($db->fcs8('anspr_name'));
+		$anspr_email	= htmlentities($db->fcs8('anspr_email'));
+		$anspr_zeit		= htmlentities($db->fcs8('anspr_zeit'));
+		$homepage		= htmlentities($db->fcs8('homepage'));
+		$din_nr			= htmlentities($db->fcs8('din_nr'));
+		$leitung_name   = htmlentities($db->fcs8('leitung_name'));
+		$gruendungsjahr = intval($db->f('gruendungsjahr'));
+		$rechtsform     = intval($db->f('rechtsform'));
+		$pruefsiegel_seit = $db->fcs8('pruefsiegel_seit');
 		
-		$ob = new G_BLOB_CLASS($db->f8('logo'));
+		$ob = new G_BLOB_CLASS(cs8($db->fs('logo')));
 		$logo_name		= $ob->name;
 		$logo_w			= $ob->w;
 		$logo_h			= $ob->h;
 		
 		// Bestandteile der vCard initialisieren
 		$vc = array(
-			'Adresse'  				=> '',
-			'Kontakt'  				=> '',
-			'Telefon'  				=> '',
-			'Fax' 	   				=> '',
-			'Sprechzeiten'			=> '',
-			'E-Mail'				=> '',
-			'Website'				=> '',
-			'Anbieternummer'		=> '',
-			'Logo'					=> '',
-			'Link'					=> '',
-			'Leitung'				=> '',
-			'Rechtsform'			=> '',
-			'Gegründet'				=> '',
-			'Alle Angebote'			=> '',
-			'Qualitätszertifikate'	=> ''
-		);		
+		    'Adresse'  				=> '',
+		    'Kontakt'  				=> '',
+		    'Telefon'  				=> '',
+		    'Fax' 	   				=> '',
+		    'Sprechzeiten'			=> '',
+		    'E-Mail'				=> '',
+		    'Website'				=> '',
+		    'Anbieternummer'		=> '',
+		    'Logo'					=> '',
+		    'Link'					=> '',
+		    'Leitung'				=> '',
+		    'Rechtsform'			=> '',
+		    'Gegr&uuml;ndet'	    => '',
+		    'Alle Angebote'			=> '',
+		    'Qualit&auml;tszertifikate'	=> ''
+		);	
 		
 		// Name und Adresse
 		$vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_name" itemprop="name">'. ($postname? $postname : htmlentities($suchname)) . '</div>';
 		$vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_adresse" itemprop="address" itemscope itemtype="https://schema.org/PostalAddress">';
 
-		$map_URL = 'https://maps.google.com/?q=' . urlencode($strasse . ', ' . $plz . ' ' . $ort . ', ' . $land);
+		$map_strasse = urlencode(PHP7 ? utf8_encode(html_entity_decode($strasse)) : html_entity_decode($strasse));
+		$map_plz = urlencode(PHP7 ? utf8_encode(html_entity_decode($plz)) : html_entity_decode($plz));
+		$map_ort = urlencode(PHP7 ? utf8_encode(html_entity_decode($ort)) : html_entity_decode($ort));
+		$map_land = urlencode(PHP7 ? utf8_encode(html_entity_decode($land)) : html_entity_decode($land));
+		
+		$map_URL = 'https://maps.google.com/?q=' . $map_strasse . ', ' . $map_plz . ' ' . $map_ort . ($map_land ? ', ' . $map_land : '');
 
 		if( $strasse )
 		{
-			if( $steckbrief )
-			{
-				$vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_strasse" itemprop="streetAddress"><a href="' . $map_URL . '">' . $strasse . '</a></div>';
-			} else {
-				$vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_strasse" itemprop="streetAddress">' . $strasse . '</div>';
-			}
+		    if( $steckbrief )
+		    {
+		        $vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_strasse" itemprop="streetAddress"><a title="Adresse in Google Maps ansehen" href="' . $map_URL . '" target="_blank" rel="noopener noreferrer">' . $strasse . '</a></div>';
+		    } else {
+		        $vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_strasse" itemprop="streetAddress">' . $strasse . '</div>';
+		    }
 		}
-
+		
 		if( $plz || $ort || $stadtteil || $land )
 		{
-			if( $steckbrief )
-			{
-				$vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_ort"><a href="' . $map_URL . '">';
-			} else {
-				$vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_ort">';
-			}
+		    if( $steckbrief )
+		    {
+		        $vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_ort"><a title="Adresse in Google Maps ansehen" href="' . $map_URL . '" target="_blank" rel="noopener noreferrer">';
+		    } else {
+		        $vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_ort">';
+		    }
 		}
 			
 		if( $plz )
@@ -161,7 +166,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 			$vc['Adresse'] .= ' <span class="wisyr_anbieter_ort" itemprop="addressLocality">' . $ort . '</span>';
 
 		if( $stadtteil ) {
-			$vc['Adresse'] .= ($plz||$ort)? '-' : '';
+		    $vc['Adresse'] .= ($plz||$ort)? ' - ' : '';
 			$vc['Adresse'] .= ' <span class="wisyr_anbieter_stadtteil">' . $stadtteil . '</span>';
 		}
 
@@ -184,7 +189,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		
 		// Telefonnummer
 		if( $anspr_tel )
-			$vc['Telefon'] .= "\n" . '<div class="wisyr_anbieter_telefon"><a itemprop="telephone" href="tel:' . $anspr_tel . '">'. $anspr_tel . '</a></div>';
+			$vc['Telefon'] .= "\n" . '<div class="wisyr_anbieter_telefon"><a itemprop="telephone" href="tel:' . urlencode($anspr_tel) . '">'. $anspr_tel . '</a></div>';
 
 		if( $anspr_fax )
 			$vc['Fax'] .= "\n" . '<div class="wisyr_anbieter_fax"><span itemprop="faxNumber">'. $anspr_fax . '</span></div>';
@@ -199,10 +204,10 @@ class WISY_ANBIETER_RENDERER_CLASS
 		if( $homepage )
 		{
 			if( substr($homepage, 0, 5) != 'http:' && substr($homepage, 0, 6) != 'https:' ) {
-			 	$homepage = 'http:/'.'/'.$homepage;
+			    $homepage = 'https:/'.'/'.$homepage;
 			}
 			
-			$vc['Website'] .= "\n<div class=\"wisyr_anbieter_homepage\" itemprop=\"url\"><a href=\"$homepage\" target=\"_blank\">" . $this->trimLength($homepage, $MAX_URL_LEN). '</a></div>';
+			$vc['Website'] .= "\n<div class=\"wisyr_anbieter_homepage\" itemprop=\"url\"><a href=\"$homepage\" target=\"_blank\" rel=\"noopener noreferrer\">" . $this->trimLength($homepage, $MAX_URL_LEN). '</a></div>';
 		}
 		
 		/* email*/
@@ -241,26 +246,26 @@ class WISY_ANBIETER_RENDERER_CLASS
 		/* Rechtsform */
 		if( $rechtsform > 0 )
 		{
-			require_once('admin/config/codes.inc.php'); // needed for $codes_rechtsform
-			$codes_array = explode('###', $GLOBALS['codes_rechtsform']);
-			for( $c = 0; $c < sizeof($codes_array); $c += 2 ) {
-				if( $codes_array[$c] == $rechtsform ) {
-					$vc['Rechtsform'] = utf8_encode($codes_array[$c+1]);
-					break;
-				}
-			}
+		    require_once('admin/config/codes.inc.php'); // needed for $codes_rechtsform
+		    $codes_array = explode('###', $GLOBALS['codes_rechtsform']);
+		    for( $c = 0; $c < sizeof($codes_array); $c += 2 ) {
+		        if( $codes_array[$c] == $rechtsform ) {
+		            $vc['Rechtsform'] = cs8($codes_array[$c+1]);
+		            break;
+		        }
+		    }
 		}
 
 		/* Gruendungsjahr */
 		if( $gruendungsjahr > 0 )
 		{
-			$vc['Gegründet'] = intval($gruendungsjahr);
+		    $vc['Gegr&uuml;ndet'] = intval($gruendungsjahr);
 		}
 		
 		/* Alle Angebote */
 		$this->tagsuggestorObj =& createWisyObject('WISY_TAGSUGGESTOR_CLASS', $this->framework); 
 		$tag_suchname = $this->tagsuggestorObj->keyword2tagName($suchname);
-		$this->tag_suchname_id = $this->tagsuggestorObj->getTagId(utf8_decode($tag_suchname));
+		$this->tag_suchname_id = $this->tagsuggestorObj->getTagId($tag_suchname); // ! utf8_decode()
 		$freq = $this->tagsuggestorObj->getTagFreq(array($this->tag_suchname_id)); if( $freq <= 0 ) $freq = '';
 		$vc['Alle Angebote'] = '<a class="wisy_showalloffers" href="' .$this->framework->getUrl('search', array('q' => $suchname)). '">Alle ' . $freq . ' Angebote des Anbieters</a>';
 		
@@ -268,7 +273,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		$seals = $this->renderSealsOverview($anbieterId, $pruefsiegel_seit, true);			
 		if( $seals )
 		{
-			$vc['Qualitätszertifikate'] .= $seals;
+		    $vc['Qualit&auml;tszertifikate'] .= $seals;
 		}
 		
 		$ret = '';
@@ -289,20 +294,20 @@ class WISY_ANBIETER_RENDERER_CLASS
 			}
 			$ret .= '</dl>';
 		} else {
-			foreach($vc as $key => $value) {
-				if(trim($value) != '' && 
-							$key != 'Anbieternummer' &&
-							$key != 'Qualitätszertifikate' &&
-							$key != 'Fax' &&
-							$key != 'Leitung' &&
-							$key != 'Rechtsform' &&
-							$key != 'Gegründet' &&
-							$key != 'Qualitätszertifikate' &&
-							$key != 'Website' &&
-							$key != 'Logo') {
-					$ret .= $value;
-				}
-			}
+		    foreach($vc as $key => $value) {
+		        if(trim($value) != '' &&
+		                $key != 'Anbieternummer' &&
+		                $key != 'Qualit&auml;tszertifikate' &&
+		                $key != 'Fax' &&
+		                $key != 'Leitung' &&
+		                $key != 'Rechtsform' &&
+		                $key != 'Gegr&uuml;ndet' &&
+		                $key != 'Qualit&auml;tszertifikate' &&
+		                // $key != 'Website' &&
+		                $key != 'Logo') {
+		                $ret .= $value;
+		            }
+		    }
 		}
 		
 		return $ret;
@@ -315,15 +320,15 @@ class WISY_ANBIETER_RENDERER_CLASS
 		$db->query(str_replace('__BITS__', $tag_type_bits, $sql));
 		while( $db->next_record() )
 		{
-			$tag_id = $db->f8('tag_id');
-			if( is_array($addparam['filter_tag_ids']) && !in_array($tag_id, $addparam['filter_tag_ids']) ) {
-				continue;
-			}
-			
-			$tag_name = $db->f('tag_name');
-			$tag_type = $db->f8('tag_type');
-			$tag_descr = $db->f8('tag_descr');
-			$tag_help = $db->f8('tag_help');
+		    $tag_id = $db->fcs8('tag_id');
+		    if( is_array($addparam['filter_tag_ids']) && !in_array($tag_id, $addparam['filter_tag_ids']) ) {
+		        continue;
+		    }
+		    
+		    $tag_name = $db->f('tag_name');
+		    $tag_type = cs8($db->fs('tag_type'));
+		    $tag_descr = cs8($db->fs('tag_descr'));
+		    $tag_help = cs8($db->fs('tag_help'));
 			
 			$freq = $this->tagsuggestorObj->getTagFreq(array($this->tag_suchname_id, $tag_id));
 			
@@ -332,6 +337,8 @@ class WISY_ANBIETER_RENDERER_CLASS
 
 			
 		}
+		// $db->close();
+		
 		return $html;
 	}
 	
@@ -358,7 +365,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 												, array('hidetagtypestr'=>1, 'qprefix'=>"$tag_suchname, "));
 		if( $html )
 		{
-			echo '<h3>Abschl&uuml;sse - aktuelle Angebote</h2>';
+			echo '<h3>Abschl&uuml;sse - aktuelle Angebote</h3>';
 			echo '<p>';
 				echo $html;
 			echo '<p>';
@@ -374,16 +381,16 @@ class WISY_ANBIETER_RENDERER_CLASS
 			echo '<p>';
 		}
 		
-		// besondere Kursarten - diese Liste enthält nur eine Auswahl von Stichworten, definiert von einer Liste von Stichwort-IDs
+		// besondere Kursarten - diese Liste enthaelt nur eine Auswahl von Stichworten, definiert von einer Liste von Stichwort-IDs
 		// (die zunächst in Tag-IDs konvertiert werden müssen)
 
 		$db = new DB_Admin;
 		$db->query("SELECT stichwort FROM stichwoerter WHERE id IN (16311,2827,2826,16851,3207,1,6013,7721,7720,810701,810691,810681,810671,810661,810611,810641,810651,806441,5469,1472)");
-		$temp = ''; while( $db->next_record() ) { $temp .= ($temp==''?'':', ') . $db->quote($db->f8('stichwort')); }
+		$temp = ''; while( $db->next_record() ) { $temp .= ($temp==''?'':', ') . $db->quote(cs8($db->fs('stichwort'))); }
 		$filter_tag_ids = array();
-		if( sizeof($temp) ) {
+		if( sizeof((array) $temp) ) { // strlen(trim($temp))
 			$db->query("SELECT tag_id FROM x_tags WHERE tag_name IN(".$temp.")");
-			while( $db->next_record() ) { $filter_tag_ids[] = $db->f8('tag_id'); }
+			while( $db->next_record() ) { $filter_tag_ids[] = $db->f('tag_id'); }
 		}
 
 		
@@ -434,20 +441,20 @@ class WISY_ANBIETER_RENDERER_CLASS
 		$db->query("SELECT a.attr_id AS sealId, s.stichwort AS title, s.glossar AS glossarId FROM anbieter_stichwort a, stichwoerter s WHERE a.primary_id=" . $anbieter_id . " AND a.attr_id=s.id AND s.eigenschaften=" .DEF_STICHWORTTYP_QZERTIFIKAT. " ORDER BY a.structure_pos;");
 		while( $db->next_record() )
 		{
-			$sealId = $db->f8('sealId');
-			$glossarId = $db->f8('glossarId');
+			$sealId = $db->f('sealId');
+			$glossarId = $db->f('glossarId');
 			$glossarLink = $glossarId>0? (' <a href="' . $this->framework->getHelpUrl($glossarId) . '" class="wisy_help" title="Hilfe">i</a>') : '';
-			$title = $db->f8('title');
+			$title = cs8($db->fs('title'));
 
 			$img = "files/seals/$sealId-large.gif";
 			if( @file_exists($img) )
 			{
-				$img_seals .= $img_seals==''? '' : '<br /><br />';
-				$img_seals .= "<img src=\"$img\" border=\"0\" alt=\"Pr&uuml;siegel\" title=\"$title\" /><br />";
-				$img_seals .= $title . $glossarLink;
-				if( $seit ) { $img_seals .= '<br />'  . $seit; $seit = ''; }
-				
-				$seals_steckbrief .= "<img src=\"$img\" border=\"0\" alt=\"Pr&uuml;siegel\" title=\"$title\" />";
+			    $img_seals .= $img_seals==''? '' : '<br /><br />';
+			    $img_seals .= "<img src=\"$img\" class='pruefsiegel' alt=\"Pr&uuml;fsiegel\" title=\"$title\" /><br />";
+			    $img_seals .= $title . $glossarLink;
+			    if( $seit ) { $img_seals .= '<br />'  . $seit; $seit = ''; }
+			    
+			    $seals_steckbrief .= "<img src=\"$img\" class='pruefsiegel' alt=\"Pr&uuml;fsiegel\" title=\"$title\" />";
 			}
 			else
 			{
@@ -499,32 +506,33 @@ class WISY_ANBIETER_RENDERER_CLASS
 	
 	public function render()
 	{
-		$anbieter_id = intval($_GET['id']);
+	    $anbieter_id = intval( $this->framework->getParam('id') );
 
 		$db = new DB_Admin();
 
 		// link to another anbieter?
 		$db->query("SELECT attr_id FROM anbieter_verweis WHERE primary_id=$anbieter_id ORDER BY structure_pos");
 		if( $db->next_record() ) {
-			$anbieter_id = intval($db->f8('attr_id'));
+		    $anbieter_id = intval($db->f('attr_id'));
 		}
-
+		
 		// load anbieter
 		$db->query("SELECT * FROM anbieter WHERE id=$anbieter_id");
-		if( !$db->next_record() || $db->f8('freigeschaltet')!=1 ) {
-			$this->framework->error404(); // record does not exist/is not active, report a normal 404 error, not a "Soft 404", see  http://goo.gl/IKMnm -- fuer nicht-freigeschaltete Datensaetze, s. [here]
+		if( !$db->next_record() || $db->fcs8('freigeschaltet')!=1 ) {
+		    $this->framework->error404(); // record does not exist/is not active, report a normal 404 error, not a "Soft 404", see  https://goo.gl/IKMnm -- fuer nicht-freigeschaltete Datensaetze, s. [here]
 		}
-		$din_nr			= htmlentities($db->f8('din_nr'));
-		$suchname		= $db->f8('suchname');
-		$typ            = intval($db->f8('typ'));
-		$firmenportraet	= trim($db->f8('firmenportraet'));
-		$date_created	= $db->f8('date_created');
-		$date_modified	= $db->f8('date_modified');
+		$din_nr			= htmlentities(cs8($db->fs('din_nr')));
+		$suchname		= $db->fcs8('suchname');
+		$typ            = intval($db->f('typ'));
+		$firmenportraet	= trim($db->fcs8('firmenportraet'));
+		$date_created	= cs8($db->fs('date_created'));
+		$date_modified	= cs8($db->fs('date_modified'));
 		//$stichwoerter	= $this->framework->loadStichwoerter($db, 'anbieter', $anbieter_id);
-		$vollst			= $db->f8('vollstaendigkeit');
-		$anbieter_settings = explodeSettings($db->f8('settings'));
+		$vollst			= cs8($db->fs('vollstaendigkeit'));
+		$anbieter_settings = explodeSettings(cs8($db->fs('settings')));
 		
-		$ob = new G_BLOB_CLASS($db->f8('logo'));
+		$logo = cs8($db->fs('logo'));
+		$ob = new G_BLOB_CLASS($logo);
 		$logo_name		= $ob->name;
 		$logo_w			= $ob->w;
 		$logo_h			= $ob->h;
@@ -535,17 +543,18 @@ class WISY_ANBIETER_RENDERER_CLASS
 		// check for existance, get title, #socialmedia
 		$db->query("SELECT suchname, ort, firmenportraet, freigeschaltet FROM anbieter WHERE id=$anbieter_id");
 		if( !$db->next_record() || in_array($db->f('freigeschaltet'), $freigeschaltet404) ) {
-		    $this->framework->error404(); // record does not exist, reporta normal 404 error, not a "Soft 404", see  http://goo.gl/IKMnm -- für nicht-freigeschaltete Datensätze, s. [here]
+		    $this->framework->error404(); // record does not exist, reporta normal 404 error, not a "Soft 404", see  https://goo.gl/IKMnm -- f√ºr nicht-freigeschaltete Datensaetze, s. [here]
 		}
-		$anbieter_suchname = $db->f8('suchname');
-		$anbieter_ort = $db->f8('ort');
-		$anbieter_portraet = $db->f8('firmenportraet');
+		$anbieter_suchname = cs8($db->fs('suchname'), "UTF-8");
+		
+		$anbieter_ort = cs8($db->fs('ort'), "UTF-8");
+		$anbieter_portraet = cs8($db->fs('firmenportraet'), "UTF-8");
 		
 		// promoted?
-		if( intval($_GET['promoted']) > 0 )
+		if( intval( $this->framework->getParam('promoted') ) > 0 )
 		{
-			$promoter =& createWisyObject('WISY_PROMOTE_CLASS', $this->framework);
-			$promoter->logPromotedRecordClick(intval($_GET['promoted']), $anbieter_id);
+		    $promoter =& createWisyObject('WISY_PROMOTE_CLASS', $this->framework);
+		    $promoter->logPromotedRecordClick(intval( $this->framework->getParam('promoted') ), $anbieter_id);
 		}
 		
 		// page out
@@ -597,7 +606,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		
 		echo "\n\n" . '<section class="wisyr_anbieterinfos clearfix">';
 		echo "\n" . '<article class="wisyr_anbieter_firmenportraet wisy_anbieter_inhalt" data-tabtitle="Über">' . "\n";
-		echo '<h1>Über den Anbieter</h1>';
+		echo '<h1>&Uuml;ber den Anbieter</h1>';
 
 		// firmenportraet
 		if( $firmenportraet != '' ) {
@@ -636,12 +645,21 @@ class WISY_ANBIETER_RENDERER_CLASS
 		
 
 		echo "\n" . '<footer class="wisy_anbieter_footer">';
-			echo "\n" . '<div class="wisyr_anbieter_meta">';
-				echo ' Anbieterinformation erstellt am ' . $this->framework->formatDatum($date_created);
-				echo ', zuletzt ge&auml;ndert am ' . $this->framework->formatDatum($date_modified);
-				echo ', ' . $vollst . '% Vollständigkeit';
-				echo '<div class="wisyr_vollst_info"><span class="info">Hinweise zur förmlichen Vollständigkeit der Kursinfos sagen nichts aus über die Qualität der Kurse selbst. <a href="' . $this->framework->getHelpUrl(3369) . '">Mehr erfahren</a></span></div>';
-				
+		$aerst = $this->framework->iniRead('anbieterinfo.erstellt', 1);
+		$aaend = $this->framework->iniRead('anbieterinfo.geaendert', 1);
+		$avollst = $this->framework->iniRead('anbieterinfo.vollstaendigkeit', 1);
+		echo "\n" . '<div class="wisyr_anbieter_meta">';
+        		if($aerst || $aaend || $avollst) {
+        		    echo ' Anbieterinformation: ';
+        		    if($aerst)
+        		        echo 'erstellt am ' . $this->framework->formatDatum($date_created).', ';
+        		    if($aaend)
+        		        echo 'zuletzt ge&auml;ndert am ' . $this->framework->formatDatum($date_modified).', ';
+        		     if($avollst) {
+        		        echo $vollst . '% Vollst&auml;ndigkeit';
+        		        echo '<div class="wisyr_vollst_info"><span class="info">Hinweise zur f&ouml;rmlichen Vollst&auml;ndigkeit der Kursinfos sagen nichts aus &uuml;ber die Qualit&auml;t der Kurse selbst. <a href="' . $this->framework->getHelpUrl(3369) . '">Mehr erfahren</a></span></div>';
+        		     }
+        		}
 				$copyrightClass =& createWisyObject('WISY_COPYRIGHT_CLASS', $this->framework);
 				$copyrightClass->renderCopyright($db, 'anbieter', $anbieter_id);
 			echo "\n</div><!-- /.wisyr_anbieter_meta -->\n\n";
@@ -651,7 +669,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 				{
 					echo '<br /><div class="wisy_edittoolbar">';
 						if( $vollst >= 1 ) {
-							echo '<p>Hinweis für den Anbieter:</p><p>Die <b>Vollst&auml;ndigkeit</b> Ihrer '.$freq.' aktuellen Angebote liegt durchschnittlich bei <b>'.$vollst.'%</b> ';
+							echo '<p>Hinweis f&uuml;r den Anbieter:</p><p>Die <b>Vollst&auml;ndigkeit</b> Ihrer '.$freq.' aktuellen Angebote liegt durchschnittlich bei <b>'.$vollst.'%</b> ';
 				
 							$min_vollst = intval($anbieter_settings['vollstaendigkeit.min']);
 							$max_vollst = intval($anbieter_settings['vollstaendigkeit.max']);

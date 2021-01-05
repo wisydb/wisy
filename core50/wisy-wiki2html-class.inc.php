@@ -36,7 +36,7 @@ class WISY_WIKI2HTML_CLASS extends WIKI2HTML_CLASS
 		{
 			$this->db->query("SELECT id FROM glossar WHERE begriff='".addslashes($title)."' OR id=".intval($title));
 			$this->db->next_record();
-			return $this->framework->getHelpUrl(intval($this->db->f8('id')));
+			return $this->framework->getHelpUrl(intval($this->db->fcs8('id')));
 		}
 		else
 		{
@@ -56,7 +56,7 @@ class WISY_WIKI2HTML_CLASS extends WIKI2HTML_CLASS
 			$db->query("SELECT begriff, begriff_sorted, id FROM glossar WHERE erklaerung!='' AND freigeschaltet=1 ORDER BY begriff_sorted");
 			while( $db->next_record() )
 			{
-				$thisChar = strtoupper(substr($db->f8('begriff_sorted'), 0, 1));
+				$thisChar = strtoupper(substr($db->fcs8('begriff_sorted'), 0, 1));
 				if( $thisChar >= 'A' && $thisChar != $lastChar )
 				{
 					if( $pStarted ) {$ret .= '</p>'; $pStarted = false;}
@@ -64,8 +64,8 @@ class WISY_WIKI2HTML_CLASS extends WIKI2HTML_CLASS
 					$ret .= '<p><big><b>'.$thisChar.'</b></big></p>';
 					$lastChar = $thisChar;
 				}
-				$begriff = htmlentities($db->f8('begriff'));
-				$idtemp = $db->f8('id');
+				$begriff = htmlentities($db->fcs8('begriff'));
+				$idtemp = $db->fcs8('id');
 				
 				$ret .= $pStarted? '<br />' : '<p>';
 				$ret .= "<a href=\"".$this->framework->getHelpUrl($idtemp)."\">$begriff</a>";
@@ -101,14 +101,14 @@ class WISY_WIKI2HTML_CLASS extends WIKI2HTML_CLASS
 	function renderA($text, $type, $href, $tooltip, $pageExists)
 	{
 		if( $this->forceBlankTarget ) {
-			$blank = " target=\"_blank\"";
+		    $blank = " target=\"_blank\" rel=\"noopener noreferrer\"";
 		}
 			
 		if( $type == 'internal' ) {
 			return	"<a href=\"$href\"$blank>$text</a>";
 		}
 		else if( $type == 'http' || $type == 'https' ) {
-			return	"<a href=\"$href\" target=\"_blank\"><i>$text</i></a>";
+		    return	"<a href=\"$href\" target=\"_blank\" rel=\"noopener noreferrer\"><i>$text</i></a>";
 		}
 		else if( $type == 'mailto' ) {
 			return	"<a href=\"$href\"$blank><i>$text</i></a>";

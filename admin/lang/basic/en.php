@@ -83,6 +83,7 @@ define('_NO',                  "No");
 define('_NOACCESS',            "no access");
 define('_NOGROUP',             "no group");
 define('_NOTACTIVATED',        "inactive");
+define('_NUMLOGINERRORS',      "Incorrect Logins");
 define('_OBJECT',              "Object");
 define('_OFFSET',              "Offset");
 define('_OK',                  "OK");
