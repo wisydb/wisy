@@ -765,7 +765,7 @@ if( isset($_REQUEST['selectobject']) ) {
 		$site->skin->submenuItem('msearchexp', htmlconstant('_OVERVIEW_SEARCHEXPAND'),  '<a href="' . isohtmlentities("$baseurl&searchaddrow=1") . '" onclick="return dbsearch_addrow();">');
 		$site->skin->submenuItem('mall', htmlconstant('_OVERVIEW_ALL'), '<a href="'.isohtmlentities($allurl).'">');
 	$site->skin->submenuBreak();
-		echo 'Bitte einen Datensatz auswählen';
+		echo 'Bitte einen Datensatz ausw&auml;hlen';
 	$site->skin->submenuEnd();
 }
 else {
@@ -838,7 +838,7 @@ if( $select_numrows )
 	$show_bin = regGet('toolbar.bin', 1)? 1 : 0;
 
 	if( isset($_REQUEST['selectobject']) ) {
-		$tr_a_attr = ' class="clicktr" title="Auswählen" ';
+		$tr_a_attr = ' class="clicktr" title="Ausw&auml;hlen" ';
 	}
 	else {
 		$tr_a_attr = ' class="clicktr" title="' .htmlconstant('_OVERVIEW_EDIT'). '" '; // clicktr makes this url open on a click anywhere in the row
@@ -916,7 +916,7 @@ if( $select_numrows )
 
 					if( $action_view_base ) {
 						if( canRead() ) {
-							echo	'<a href="' . isohtmlentities($action_view_base) . $id . '" target="_blank" onclick="setClickConsumed();return true;" title="' .htmlconstant('_VIEW'). '">'  
+							echo	'<a href="' . isohtmlentities($action_view_base) . $id . '" target="_blank" rel="noopener noreferrer" onclick="setClickConsumed();return true;" title="' .htmlconstant('_VIEW'). '">'  
 								.		'&#8599;&nbsp;'
 								.	'</a>';
 						}
@@ -1166,10 +1166,10 @@ if( $select_numrows )
 
 			echo htmlconstant('_OVERVIEW_ROWS') . ' ' . rows_per_page_sel("$baseurl&searchoffset=0&rows=", $rows);
 			if( !isset($_REQUEST['selectobject']) ) {
-				echo " | <a href=\"log.php?table=$table\" target=\"_blank\">" . htmlconstant('_LOG') . '</a>';
+				echo " | <a href=\"log.php?table=$table\" target=\"_blank\" rel=\"noopener noreferrer\">" . htmlconstant('_LOG') . '</a>';
 			}
 
-		$site->skin->submenuEnd();
+	$site->skin->submenuEnd(true);
 		
 	if( !isset($_REQUEST['selectobject']) ) $site->skin->fixedFooterEnd();
 }
@@ -1179,7 +1179,7 @@ else
 	$site->skin->buttonsStart();
 		form_clickbutton(isohtmlentities(($hasError || $searchedButNothingFound)? $allurl : $baseurl), htmlconstant('_CANCEL'));
 	$site->skin->buttonsBreak();
-		echo "<a href=\"log.php?table=$table\" target=\"_blank\">" . htmlconstant('_LOG') . '</a>';
+		echo "<a href=\"log.php?table=$table\" target=\"_blank\" rel=\"noopener noreferrer\">" . htmlconstant('_LOG') . '</a>';
 	$site->skin->buttonsEnd();
 }
 

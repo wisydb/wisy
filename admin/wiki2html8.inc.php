@@ -59,7 +59,7 @@ formatting:
 
 	http://...					these external links are automatically
 	https://...					recognized; external links are converted
-	ftp://...					to <a hef="http://..." target="_blank">...</a>
+	ftp://...					to <a hef="http://..." target="_blank" rel="noopener noreferrer">...</a>
 	nntp://...					using renderA()
 	news://...
 	mailto:...
@@ -697,7 +697,7 @@ class WIKI2HTML_CLASS
                 $this->iframeCnt = intval($this->iframeCnt)+1;
                 $url = trim($param);
                 return	'<iframe src="'.$url.'" width="100%" height="380" name="iframe'.$this->iframeCnt.'" frameborder="1">'
-                    .		'<a href="'.$url.'" target="_blank">'.$url.'</a>'
+                    .		'<a href="'.$url.'" target="_blank" rel="noopener noreferrer">'.$url.'</a>'
                         .	'</iframe>';
                         
             case 'stat':
@@ -793,7 +793,7 @@ class WIKI2HTML_CLASS
         }
         
         if( $type == 'http' || $type == 'https' ) {
-            $a .= ' target="_blank"';
+            $a .= ' target="_blank" rel="noopener noreferrer"';
         }
         $a .= ">";
         

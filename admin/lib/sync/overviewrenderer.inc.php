@@ -29,7 +29,7 @@ class SYNC_OVERVIEWRENDERER_CLASS extends SYNC_FUNCTIONS_CLASS
 					echo 'Anfrage an Quellserver';		
 				$site->skin->cellEnd();
 				$site->skin->cellStart();		
-					echo 'Zuletzt ausgeführt';		
+					echo 'Zuletzt ausgef&uuml;hrt';		
 				$site->skin->cellEnd();
 			$site->skin->headEnd();
 			
@@ -76,7 +76,7 @@ class SYNC_OVERVIEWRENDERER_CLASS extends SYNC_FUNCTIONS_CLASS
 			
 			$site->skin->rowStart();
 				$site->skin->cellStart('colspan="3"');		
-					echo '<a href="sync.php?page=editjob&amp;jobid=0"><i>Synchronisierungsaufgabe hinzufügen...</i></a>';		
+					echo '<a href="sync.php?page=editjob&amp;jobid=0"><i>Synchronisierungsaufgabe hinzuf&uuml;gen...</i></a>';		
 				$site->skin->cellEnd();
 			$site->skin->rowEnd();			
 		
@@ -86,7 +86,7 @@ class SYNC_OVERVIEWRENDERER_CLASS extends SYNC_FUNCTIONS_CLASS
 		$site->skin->buttonsStart();
 			echo '&nbsp;';
 		$site->skin->buttonsBreak();
-			echo "<a href=\"log.php\" target=\"_blank\">" . htmlconstant('_LOG') . '</a>';
+			echo "<a href=\"log.php\" target=\"_blank\" rel=\"noopener noreferrer\">" . htmlconstant('_LOG') . '</a>';
 		$site->skin->buttonsEnd();
 		
 		$this->sync_render_page_end();

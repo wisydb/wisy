@@ -25,7 +25,7 @@ class WISY_TAGSUGGESTOR_CLASS
 		$all = $this->framework->iniRead('tag.'.$tag_name, '');
 		if( $all != '' ) {
 			$all = explode(';', $all);
-			for( $m = 0; $m < count($all); $m++ ) {
+			for( $m = 0; $m < sizeof($all); $m++ ) {
 				$one = trim($all[$m]);
 				if( $one != '' ) {
 					$ret['sug'][] = array('tag_name'=>$one);
@@ -73,7 +73,7 @@ class WISY_TAGSUGGESTOR_CLASS
 	public function getTagFreq($tag_ids_arr)
 	{
 	    
-	    if( count((array) $tag_ids_arr) == 1 )
+	    if( sizeof((array) $tag_ids_arr) == 1 )
 	    {
 	            
 	            $portalIdCond = '';
@@ -89,7 +89,7 @@ class WISY_TAGSUGGESTOR_CLASS
 	            }
 	    }
 	    // more than one tag id
-	    else if( count((array) $tag_ids_arr) > 1 )
+	    else if( sizeof((array) $tag_ids_arr) > 1 )
 	    {
 	            $portalTagId = $this->getWisyPortalTagId();
 	            if( $portalTagId ) {
@@ -100,7 +100,7 @@ class WISY_TAGSUGGESTOR_CLASS
 			          FROM x_kurse_tags t
 			          LEFT JOIN x_kurse k ON t.kurs_id=k.kurs_id
 			         WHERE t.tag_id=" . intval($tag_ids_arr[0]);
-	            for( $i = 1; $i < count((array) $tag_ids_arr); $i++ ) {
+	            for( $i = 1; $i < sizeof((array) $tag_ids_arr); $i++ ) {
 	                $sql .= " AND t.kurs_id IN(SELECT kurs_id FROM x_kurse_tags WHERE tag_id=".intval($tag_ids_arr[$i]) . ") ";
 	            }
 	            $sql .= " AND k.beginn>=".$this->db2->quote(strftime("%Y-%m-%d"));
@@ -299,10 +299,10 @@ class WISY_TAGSUGGESTOR_CLASS
 						$has_man_sug = false;
 						{
 						    $temp = $this->get_manual_suggestions($tag_name);
-						    if( count((array) $temp['sug']) )
+						    if( sizeof((array) $temp['sug']) )
 							{
 								$has_man_sug = true;
-								for( $n = 0; $n < count($temp['sug']); $n++ )
+								for( $n = 0; $n < sizeof($temp['sug']); $n++ )
 								{
 									$names[] = array(	'tag_name'=>$temp['sug'][$n]['tag_name'],
 														'tag_descr'=>'',
@@ -314,7 +314,7 @@ class WISY_TAGSUGGESTOR_CLASS
 						}
 						
 							
-						if( count((array) $names) == 1 && !$has_man_sug /* manual suggestions should always be shown*/ )
+						if( sizeof((array) $names) == 1 && !$has_man_sug /* manual suggestions should always be shown*/ )
 						{
 							// ... only one destination as a simple synonym: directly follow 1-dest-only-synonyms
 							$tag_array = array(	'tag' => $tag_name, 
@@ -333,14 +333,14 @@ class WISY_TAGSUGGESTOR_CLASS
 								$ret[] = $tag_array;
 							}
 						}
-						else if( count((array) $names) >= 1 ) 
+						else if( sizeof((array) $names) >= 1 ) 
 						{
 							// ... more than one destinations
 							if($fuzzy == 0 || $max_suggestions-- > 0)
 							{
 								$ret[] = array(	'tag' => $tag_name, 'tag_type' => 64 | $fuzzy, 'tag_help' => intval($tag_help) );
 							}
-							for( $n = 0; $n < count((array) $names); $n++ )
+							for( $n = 0; $n < sizeof((array) $names); $n++ )
 							{
 								$dest = $names[$n]['tag_name'];
 								$tag_array = array(	'tag' => $dest, 
@@ -384,7 +384,7 @@ class WISY_TAGSUGGESTOR_CLASS
 				require_once("admin/lib/soundex/x3m_soundex_ger.php");
 
 				// if there are only very few results, try an additional soundex search = has equal word value
-				if( count((array) $ret) < $min && $use_soundex )
+				if( sizeof((array) $ret) < $min && $use_soundex )
 					$COND = "tag_soundex='".soundex_ger($q_tag_name)."'";
 				else
 				    break; // stop searching with one try if no tag found containing q

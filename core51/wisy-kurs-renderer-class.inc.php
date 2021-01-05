@@ -79,7 +79,7 @@ class WISY_KURS_RENDERER_CLASS
 		$durchfClass =& createWisyObject('WISY_DURCHF_CLASS', $this->framework);
 		$durchfuehrungenIds = $durchfClass->getDurchfuehrungIds($db, $kursId, $showAllDurchf);	// bereits PLZ-ueberprueft
 		
-		if(count((array) $durchfuehrungenIds) == 0)
+		if(sizeof((array) $durchfuehrungenIds) == 0)
 		    $richtext = false;	// In dem fall kann der Richtext (EducationEvent) nicht vollstaendig sein und kann/sollte so nicht beworben werden.
 		    
 		if(intval(trim($this->framework->iniRead('seo.enrich_titles'))) == 1) {
@@ -213,7 +213,7 @@ class WISY_KURS_RENDERER_CLASS
 			
 				// ... Stichwoerter
 				$stichwoerter = $this->framework->loadStichwoerter($db, 'kurse', $kursId);
-				if( count((array) $stichwoerter) )
+				if( sizeof((array) $stichwoerter) )
 				{
 				    $rows .= $this->framework->writeStichwoerter($db, 'kurse', $stichwoerter);
 				}
@@ -256,14 +256,14 @@ class WISY_KURS_RENDERER_CLASS
 				$durchfClass =& createWisyObject('WISY_DURCHF_CLASS', $this->framework);
 				$durchfuehrungenIds = $durchfClass->getDurchfuehrungIds($db, $kursId, $showAllDurchf);
 				echo '<p>';
-				    if( count((array) $durchfuehrungenIds)==0 ) {
+				    if( sizeof((array) $durchfuehrungenIds)==0 ) {
 						echo $this->framework->iniRead('durchf.msg.keinedf', 'F&uuml;r dieses Angebot ist momentan keine Zeit und kein Ort bekannt.');
 					}
-					else if( count((array) $durchfuehrungenIds) == 1 ) {
+					else if( sizeof((array) $durchfuehrungenIds) == 1 ) {
 						echo 'F&uuml;r dieses Angebot ist momentan eine Zeit bzw. Ort bekannt:';
 					}
 					else {
-					    echo 'F&uuml;r dieses Angebot sind momentan ' .count((array) $durchfuehrungenIds). ' Zeiten bzw. Orte bekannt:';
+					    echo 'F&uuml;r dieses Angebot sind momentan ' .sizeof((array) $durchfuehrungenIds). ' Zeiten bzw. Orte bekannt:';
 					}
 				echo '</p>';
 		
@@ -271,7 +271,7 @@ class WISY_KURS_RENDERER_CLASS
 				$this->framework->map =& createWisyObject('WISY_OPENSTREETMAP_CLASS', $this->framework);
 		
 				// Durchfuehrungen ausgeben
-				if( count((array) $durchfuehrungenIds) )
+				if( sizeof((array) $durchfuehrungenIds) )
 				{
                     
 					echo '<table class="wisy_list wisyr_durchfuehrungen"><thead>';
@@ -292,7 +292,7 @@ class WISY_KURS_RENDERER_CLASS
 						*/
 					
 						$renderedDurchf = 0;
-						for( $d = 0; $d < count((array) $durchfuehrungenIds); $d++ )
+						for( $d = 0; $d < sizeof((array) $durchfuehrungenIds); $d++ )
 						{
 							$class = ($d%2)==1? ' class="wisy_even"' : '';
 							echo "  <tr$class>\n";
@@ -317,7 +317,7 @@ class WISY_KURS_RENDERER_CLASS
 						}
 					echo '</table>';
 				
-					$allAvailDurchfCnt = count((array) $durchfClass->getDurchfuehrungIds($db, $kursId, true));
+					$allAvailDurchfCnt = sizeof((array) $durchfClass->getDurchfuehrungIds($db, $kursId, true));
 					if( $allAvailDurchfCnt > $renderedDurchf )
 					{
 						$missinglDurchfCnt = $allAvailDurchfCnt-$renderedDurchf;

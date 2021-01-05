@@ -143,13 +143,14 @@ class Table_Def_Class
 	var $color;
 	var $trigger_script;
 	
-	function __construct($flags, $name, $descr, $addparam = 0, $acl = 0) 
+	function __construct($flags, $name, $descr, $addparam = 0, $acl = 0, $delete_uponunlink = false)
 	{
 		$this->flags			= $flags;
 		$this->name				= $name;
 		$this->descr			= $descr;
 		$this->rows 			= array();
 		$this->color			= '#aaaaaa';
+		$this->delete_uponunlink = $delete_uponunlink;
 		$this->addparam			= is_array($addparam)? $addparam : array();
 		$this->acl				= $acl;
 		$this->trigger_script	= '';
@@ -170,6 +171,10 @@ class Table_Def_Class
 	function set_trigger($script)
 	{
 		$this->trigger_script = $script;
+	}
+	
+	function is_delete_uponunlink() {
+	    return $this->delete_uponunlink;
 	}
 	
 	// checks if the table is _only_ a secondary table
@@ -704,11 +709,12 @@ function Table_Find_Def($name, $accessCheck = 1)
 
 			// build new table definition regarding the user's access rights
 			$ret = new Table_Def_Class(
-				$Table_Def[$t]->flags,
-				$Table_Def[$t]->name, 
-				$Table_Def[$t]->descr, 
-				$Table_Def[$t]->addparam,
-				$acl
+			    $Table_Def[$t]->flags,
+			    $Table_Def[$t]->name,
+			    $Table_Def[$t]->descr,
+			    $Table_Def[$t]->addparam,
+			    $acl,
+			    $Table_Def[$t]->delete_uponunlink
 			);
 			
 			$ret->set_trigger($Table_Def[$t]->trigger_script);

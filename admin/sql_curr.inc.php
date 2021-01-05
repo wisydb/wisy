@@ -10,20 +10,20 @@ Author:
 ===============================================================================
 
 die Klasse DB_Sql etabliert eine "leichtgewichtige" MySQL-Verbindung:
-es wird für alle Instanzen von DB_Sql (bzw. DB_Admin) nur *eine* echte 
+es wird fuer alle Instanzen von DB_Sql (bzw. DB_Admin) nur *eine* echte 
 mysql_connect() Verbindung aufgebaut.
 
 Achtung: die Klasse liest ein Ergebnis komplett ein, noch bevor query() 
-zurückkehrt.  Für die meisten Aufgaben, die in einer PHP-Seite notwendig werden, 
+zurueckkehrt.  Fuer die meisten Aufgaben, die in einer PHP-Seite notwendig werden, 
 ist dies in Ordnung; bei sehr speicherintensiven Aufgaben, kann dies aber zum 
 Problem werden.
-Lösungen hierfür:
+Loesungen hierfuer:
 - die mysql-funktionen direkt verwenden
-- zusätzliche LIMIT-Anweisungen verwenden
-- use_phys_connection verwenden, bei großen Abfragen (100.000 Datensätze) ist 
-  dies ca. doppelt so schnell wie das Aufteilen in 1000er-LIMIT-Stückchen
+- zusaetzliche LIMIT-Anweisungen verwenden
+- use_phys_connection verwenden, bei grossen Abfragen (100.000 Datensaetze) ist 
+  dies ca. doppelt so schnell wie das Aufteilen in 1000er-LIMIT-Stoeckchen
 
-Achtung: wenn man verschiedene Ableitungen von DB_Sql verwenden möchte, muss man zwischen
+Achtung: wenn man verschiedene Ableitungen von DB_Sql verwenden moechte, muss man zwischen
 verschiedenen globalen Datenbankparametern und Handles unterscheiden
 
 =============================================================================*/

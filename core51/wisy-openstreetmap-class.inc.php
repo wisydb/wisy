@@ -236,7 +236,7 @@ class WISY_OPENSTREETMAP_CLASS
 
 	function hasPoints()
 	{
-	    return count((array) $this->points)>0;
+	    return sizeof((array) $this->points)>0;
 	}
 	
 	function render()
@@ -296,7 +296,7 @@ class WISY_OPENSTREETMAP_CLASS
 			}
 		}
 
-		if( $this->framework->iniRead('map.disable', '') || count((array) $markers) == 0 ) {
+		if( $this->framework->iniRead('map.disable', '') || sizeof((array) $markers) == 0 ) {
 			return '';
 		}
 		

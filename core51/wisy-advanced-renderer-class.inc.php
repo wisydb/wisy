@@ -167,7 +167,7 @@ class WISY_ADVANCED_RENDERER_CLASS
 			$decoration = array();
 			
 		$foerderungen = $this->getSpezielleStichw(2);
-		if( count((array) $foerderungen) > 1 )
+		if( sizeof((array) $foerderungen) > 1 )
 		{
 			$this->presets['foerderung'] = array
 				(
@@ -178,7 +178,7 @@ class WISY_ADVANCED_RENDERER_CLASS
 		}
 		
 		$zielgruppen = $this->getSpezielleStichw(8);
-		if( count((array) $zielgruppen) > 1 )
+		if( sizeof((array) $zielgruppen) > 1 )
 		{
 			$this->presets['zielgruppe'] = array
 				(
@@ -189,7 +189,7 @@ class WISY_ADVANCED_RENDERER_CLASS
 		}
 
 		$qualitaetszertifikate = $this->getSpezielleStichw(4);
-		if( count((array) $qualitaetszertifikate) > 1 )
+		if( sizeof((array) $qualitaetszertifikate) > 1 )
 		{
 			$this->presets['qualitaetszertifikat'] = array
 				(
@@ -200,7 +200,7 @@ class WISY_ADVANCED_RENDERER_CLASS
 		}
 
 		$unterrichtsarten = $this->getSpezielleStichw(32768);
-		if( count((array) $unterrichtsarten) > 1 )
+		if( sizeof((array) $unterrichtsarten) > 1 )
 		{
 			$this->presets['unterrichtsart'] = array
 				(
@@ -211,7 +211,7 @@ class WISY_ADVANCED_RENDERER_CLASS
 		}
 		
 		$abschluesse = $this->getSpezielleStichw(1);
-		if( count((array) $abschluesse) > 1 )
+		if( sizeof((array) $abschluesse) > 1 )
 		{
 		    $this->presets['abschluesse'] = array
 		    (
@@ -222,7 +222,7 @@ class WISY_ADVANCED_RENDERER_CLASS
 		}
 		
 		$abschlussarten = $this->getSpezielleStichw(1);
-		if( count((array) $abschlussarten) > 1 )
+		if( sizeof((array) $abschlussarten) > 1 )
 		{
 		    $this->presets['abschlussarten'] = array
 		    (
@@ -321,7 +321,7 @@ class WISY_ADVANCED_RENDERER_CLASS
 		$q = $this->framework->getParam('q');
 		$searcher =& createWisyObject('WISY_SEARCH_CLASS', $this->framework);
 		$tokens = $searcher->tokenize($q);
-		for( $i = 0; $i < count((array) $tokens['cond']); $i++ )
+		for( $i = 0; $i < sizeof((array) $tokens['cond']); $i++ )
 		{
 			$do_def = true;
 			

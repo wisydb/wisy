@@ -123,7 +123,7 @@ class IMP_OPTIONSRENDERER_CLASS extends IMP_FUNCTIONS_CLASS
 		
 		// dialog
 		$site->skin->submenuStart();
-			echo 'Einstellungen für ' . isohtmlspecialchars($this->mix);
+			echo 'Einstellungen f&uuml;r ' . isohtmlspecialchars($this->mix);
 		$site->skin->submenuEnd();
 
 		$browsing_list = $this->get_browsing_list($showall);
@@ -135,19 +135,19 @@ class IMP_OPTIONSRENDERER_CLASS extends IMP_FUNCTIONS_CLASS
 				$options = IMP_OVERWRITE_OLDER.'###'.htmlconstant('_IMP_OVERWRITEOLDER').'###'.IMP_OVERWRITE_ALWAYS.'###'.htmlconstant('_IMP_OVERWRITEALWAYS').'###'.IMP_OVERWRITE_NEVER.'###'.htmlconstant('_IMP_OVERWRITENEVER');
 				form_control_enum('overwrite', $overwrite, $options, 0, '', 'this.form.submit(); return true;');
 				if( $browsing_list['ovw_cnt'] > 0 && $overwrite == IMP_OVERWRITE_ALWAYS ) {
-					echo '  <b style="color: #E1001A;">!</b> ' . $browsing_list['ovw_cnt'] . ' Datensätze werden im Bestand überschrieben, obwohl sie dort neuer sind';
+					echo '  <b style="color: #E1001A;">!</b> ' . $browsing_list['ovw_cnt'] . ' Datens&auml;tze werden im Bestand &uuml;berschrieben, obwohl sie dort neuer sind';
 				}
 			form_control_end();
 			form_control_start(htmlconstant('_IMP_DELETE'));	
 				$options = IMP_DELETE_DELETED.'###'.htmlconstant('_IMP_DELETEDELETED').'###'.IMP_DELETE_NEVER.'###'.htmlconstant('_IMP_DELETENEVER');
 				form_control_enum('delete', $delete, $options, 0, '', 'this.form.submit(); return true;');
 				if( $browsing_list['del_cnt'] > 0 && $delete == IMP_DELETE_DELETED ) {
-					echo '  <b style="color: #E1001A;">!</b> ' . $browsing_list['del_cnt'] . ' Datensätze werden im Bestand gelöscht';
+					echo '  <b style="color: #E1001A;">!</b> ' . $browsing_list['del_cnt'] . ' Datens&auml;tze werden im Bestand gel&ouml;scht';
 				}
 			form_control_end();
 			form_control_start(htmlconstant('_IMP_FURTHEROPTIONS'));	
 				form_control_text('further_options', $further_options, 60 /*width*/);
-				echo '<br />z.B. <i>kurse.stichwort=protect; anbieter.stichwort=protect;</i> um das Überschreiben eigener Stichwörter zu verhindern';
+				echo '<br />z.B. <i>kurse.stichwort=protect; anbieter.stichwort=protect;</i> um das &Uuml;berschreiben eigener Stichw&ouml;rter zu verhindern';
 			form_control_end();
 			
 			
@@ -186,7 +186,7 @@ class IMP_OPTIONSRENDERER_CLASS extends IMP_FUNCTIONS_CLASS
 					echo 'Datensatz in <b>Mix-Datei</b>';
 				$site->skin->cellEnd();
 				$site->skin->cellStart();
-					echo htmlconstant('_OVERVIEW_MODIFIED'); //. ' ' . $site->skin->ti_sortdesc; -- die sortierung besser nicht anzeigen, da uneindeutig - es wird primär nach Tabellen sortiert, dann nach Änderungsdatum, hinzu kommen die zu löschenden Datensätze
+					echo htmlconstant('_OVERVIEW_MODIFIED'); //. ' ' . $site->skin->ti_sortdesc; -- die sortierung besser nicht anzeigen, da uneindeutig - es wird primaer nach Tabellen sortiert, dann nach Aenderungsdatum, hinzu kommen die zu loeschenden Datensaetze
 				$site->skin->cellEnd();
 				$site->skin->cellStart('style="text-align: center;"');
 					echo 'Aktion';
@@ -315,7 +315,7 @@ class IMP_OPTIONSRENDERER_CLASS extends IMP_FUNCTIONS_CLASS
 			{
 				$site->skin->rowStart();
 					$site->skin->cellStart('colspan="5"');
-						echo '<a href="'.$showurl.'0">[identische Datensätze ausblenden...]</a>';
+						echo '<a href="'.$showurl.'0">[identische Datens&auml;tze ausblenden...]</a>';
 					$site->skin->cellEnd();
 				$site->skin->rowEnd();
 			}
@@ -324,12 +324,12 @@ class IMP_OPTIONSRENDERER_CLASS extends IMP_FUNCTIONS_CLASS
 
 		// page end
 		$site->skin->buttonsStart();
-			form_button('doimport', 'Datensätze importieren', "return confirm('Möchten Sie den Import starten und dabei die markierten Datensätze im Bestand überschreiben und/oder löschen?');");
+		    form_button('doimport', 'Datens&auml;tze importieren', "return confirm('M&ouml;chten Sie den Import starten und dabei die markierten Datens&auml;tze im Bestand &uuml;berschreiben und/oder l&ouml;schen?');");
 			form_button('close', htmlconstant('_CLOSE')); // as we save the settings, we call the button "close" instead of "cancel"
 		$site->skin->buttonsBreak();
 			$title = $this->recreated? 'Vorschau aktualisiert' : 'Vorschau aktualisieren';
 			echo '<a href="imp.php?page=options&amp;mix='.urlencode($this->mix).'&amp;update">'.$title.'</a> | ';
-			echo "<a href=\"log.php\" target=\"_blank\">" . htmlconstant('_LOG') . '</a>';
+			echo "<a href=\"log.php\" target=\"_blank\" rel=\"noopener noreferrer\">" . htmlconstant('_LOG') . '</a>';
 		$site->skin->buttonsEnd();
 
 		echo '</form>';		

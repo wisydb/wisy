@@ -32,7 +32,7 @@ class WISY_DURCHF_CLASS
 				"Nach-mittags",
 			);
 			$g_tr = array();
-			for( $i = 0; $i < count($tr); $i++ )
+			for( $i = 0; $i < sizeof($tr); $i++ )
 				$g_tr[ str_replace('-', '', $tr[$i]) ] = str_replace('-', '&shy;', $tr[$i]);
 		}
 				
@@ -124,7 +124,7 @@ class WISY_DURCHF_CLASS
 			global $codes_beginnoptionen;
 			$codes_beginnoptionen_array = array();
 			$temp = explode('###', $codes_beginnoptionen);
-			for( $i = 0; $i < count($temp); $i+=2 ) {
+			for( $i = 0; $i < sizeof($temp); $i+=2 ) {
 				$codes_beginnoptionen_array[$temp[$i]] = $temp[$i+1];
 			}
 		}
@@ -154,7 +154,7 @@ class WISY_DURCHF_CLASS
 			
 			$codes_kurstage_array = array();
 			$temp = explode('###', $codes_kurstage);
-			for( $i = 0; $i < count($temp); $i+=2 ) {
+			for( $i = 0; $i < sizeof($temp); $i+=2 ) {
 				$codes_kurstage_array[intval($temp[$i])] = trim($temp[$i+1]);
 			}
 		}
@@ -190,7 +190,7 @@ class WISY_DURCHF_CLASS
 			global $codes_dauer;
 			$codes_dauer_array = array();
 			$temp = explode('###', $codes_dauer);
-			for( $i = 0; $i < count($temp); $i+=2 ) {
+			for( $i = 0; $i < sizeof($temp); $i+=2 ) {
 				$codes_dauer_array[$temp[$i]] = $temp[$i+1];
 			}
 		}
@@ -295,7 +295,7 @@ class WISY_DURCHF_CLASS
 		    
 		    if( $preishinweise_str ) $preishinweise_arr[] = $preishinweise_str;
 			
-			if( count((array) $preishinweise_arr) )
+			if( sizeof((array) $preishinweise_arr) )
 			{
 			    $preishinweise_out = implode(', ', $preishinweise_arr);
 			    $ret = str_replace(array("k. A.", "k.A."), "", $ret);
@@ -357,7 +357,7 @@ class WISY_DURCHF_CLASS
 				}
 			}
 			
-			if( count($durchfuehrungenIds) )
+			if( sizeof($durchfuehrungenIds) )
 				break;
 		}
 		

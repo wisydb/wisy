@@ -205,7 +205,7 @@ class WISY_FILTER_CLASS
 			$decoration = array();
 			
 		$foerderungen = $this->getSpezielleStichw(2);
-		if( count((array) $foerderungen) > 1 )
+		if( sizeof((array) $foerderungen) > 1 )
 		{
 			$this->presets['foerderung'] = array
 				(
@@ -217,7 +217,7 @@ class WISY_FILTER_CLASS
 		}
 		
 		$zielgruppen = $this->getSpezielleStichw(8);
-		if( count((array) $zielgruppen) > 1 )
+		if( sizeof((array) $zielgruppen) > 1 )
 		{
 			$this->presets['zielgruppe'] = array
 				(
@@ -229,7 +229,7 @@ class WISY_FILTER_CLASS
 		}
 
 		$qualitaetszertifikate = $this->getSpezielleStichw(4);
-		if( count((array) $qualitaetszertifikate) > 1 )
+		if( sizeof((array) $qualitaetszertifikate) > 1 )
 		{
 			$this->presets['qualitaetszertifikat'] = array
 				(
@@ -241,7 +241,7 @@ class WISY_FILTER_CLASS
 		}
 		
 		$zertifikate = $this->getSpezielleStichw(65536);
-		if( count((array) $zertifikate) > 1 )
+		if( sizeof((array) $zertifikate) > 1 )
 		{
 		    $this->presets['zertifikat'] = array
 		    (
@@ -253,7 +253,7 @@ class WISY_FILTER_CLASS
 		}
 		
 		$sonstigemerkmale = $this->getSpezielleStichw(1024);
-		if( count((array) $sonstigemerkmale) > 1 )
+		if( sizeof((array) $sonstigemerkmale) > 1 )
 		{
 		    $this->presets['sonstigesmerkmal'] = array
 		    (
@@ -265,7 +265,7 @@ class WISY_FILTER_CLASS
 		}
 		
 		$abschluesse = $this->getSpezielleStichw(1);
-		if( count((array) $abschluesse) > 1 )
+		if( sizeof((array) $abschluesse) > 1 )
 		{
 		    $this->presets['abschluesse'] = array
 		    (
@@ -277,7 +277,7 @@ class WISY_FILTER_CLASS
 		}
 		
 		$abschlussarten = $this->getSpezielleStichw(16);
-		if( count((array) $abschlussarten) > 1 )
+		if( sizeof((array) $abschlussarten) > 1 )
 		{
 		    $this->presets['abschlussarten'] = array
 		    (
@@ -289,7 +289,7 @@ class WISY_FILTER_CLASS
 		}
 		
 		$unterrichtsarten = $this->getSpezielleStichw(32768);
-		if( count((array) $unterrichtsarten) > 1 )
+		if( sizeof((array) $unterrichtsarten) > 1 )
 		{
 			$this->presets['unterrichtsart'] = array
 				(
@@ -777,7 +777,7 @@ class WISY_FILTER_CLASS
 		$ret = array();
 
 		$queryArr = $this->stringToArray($string);
-		for( $i = 0; $i < count((array) $queryArr); $i++ )
+		for( $i = 0; $i < sizeof((array) $queryArr); $i++ )
 		{
 			// get initial value to search tags for, remove multiple spaces
 			$field = '';
@@ -886,7 +886,7 @@ class WISY_FILTER_CLASS
 	
 	function getUrlRemoveFilterByValue($tokenconditions, $removevalue) {
 		$query = array();
-		for( $i = 0; $i < count((array) $tokenconditions); $i++ ) {
+		for( $i = 0; $i < sizeof((array) $tokenconditions); $i++ ) {
             if($tokenconditions[$i]['field'] == 'tag') 
             {
 				if($tokenconditions[$i]['value'] != $removevalue)
@@ -904,7 +904,7 @@ class WISY_FILTER_CLASS
 	}
 	function getUrlAddFilter($tokenconditions, $addfilter) {
 		$query = array();
-		for( $i = 0; $i < count((array) $tokenconditions); $i++ ) {
+		for( $i = 0; $i < sizeof((array) $tokenconditions); $i++ ) {
             if($tokenconditions[$i]['field'] == 'tag') 
             {
                 $query[] = $tokenconditions[$i]['value'];
@@ -1073,7 +1073,7 @@ class WISY_FILTER_CLASS
 		foreach($themen as $thema)
 		{
 			$remove = false;
-			for( $i = 0; $i < count((array) $tokenconditions); $i++ ) {
+			for( $i = 0; $i < sizeof((array) $tokenconditions); $i++ ) {
 	            if($tokenconditions[$i]['field'] == 'tag' && $tokenconditions[$i]['value'] == g_sync_removeSpecialChars($thema)) 
 	            {
 					$remove = true;

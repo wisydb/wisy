@@ -9,7 +9,7 @@ an attribute, you can double click the attribute and get directly to the
 edit/view page of the attribute while leaving the original record open. This 
 should be just fine nowadays.
 
-@author Björn Petersen, http://b44t.com
+@author Bjoern Petersen, http://b44t.com
 
 ******************************************************************************/
 
@@ -102,7 +102,7 @@ class CONTROL_ATTR_CLASS extends CONTROL_BASE_CLASS
 					else {
 						// diese Attribute werden aktuell (12:11 05.02.2014) in den Vorschlaglisten angeboten; ich bin mir
 						// nicht sicher, ob dies ein Bug oder ein Feature ist.  Es kann durchaus sinnvoll sein, diese zu "sehen" um eine Liste von Verweisen (nach Doppelklick) zu erhalten.
-						$errors[] = '<a href="edit.php?table='.$this->attr_table.'&amp;id=' .$testv. '" target="_blank"><i>'.isohtmlspecialchars($testa[$testv]['ftitle'])."</i> (ID {$testv})</a> ist nicht referenzierbar. Bitte vergeben Sie ein referenzierbares Attribut.";
+						$errors[] = '<a href="edit.php?table='.$this->attr_table.'&amp;id=' .$testv. '" target="_blank" rel="noopener noreferrer"><i>'.isohtmlspecialchars($testa[$testv]['ftitle'])."</i> (ID {$testv})</a> ist nicht referenzierbar. Bitte vergeben Sie ein referenzierbares Attribut.";
 						$out_arr[] = $testv;
 					}
 				} 
@@ -201,7 +201,7 @@ class CONTROL_ATTR_CLASS extends CONTROL_BASE_CLASS
 			$html .= htmlconstant($title) . ': ';
 						for( $a = 0; $a < sizeof($this->attr_references); $a++ ) {
 							$html .=  $a? ', ' : '';
-							$html .=  '<a href="edit.php?table=' . $this->attr_table . '&id=' . $this->attr_references[$a][0] . '" target="_blank">';
+							$html .=  '<a href="edit.php?table=' . $this->attr_table . '&id=' . $this->attr_references[$a][0] . '" target="_blank" rel="noopener noreferrer">';
 								$html .=  isohtmlentities($this->attr_references[$a][1]);
 							$html .=  '</a>';
 						}

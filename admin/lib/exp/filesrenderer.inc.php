@@ -2,7 +2,7 @@
 
 
 /*
-damit beim Download die Datei gesichert, und nicht im Browser  geöffnet wird, 
+damit beim Download die Datei gesichert, und nicht im Browser  geoeffnet wird, 
 sollte im temp-verzeichnis die folgende .htaccess Datei stehen:
 
 AddType application/octet-stream .csv
@@ -98,7 +98,7 @@ class EXP_FILESRENDERER_CLASS extends EXP_FUNCTIONS_CLASS
 						'<a href="'.isohtmlspecialchars('exp.php?page=files&delete=all'.$addParam).'" title="'.htmlconstant('_EXP_FILESDELETEALL').'" onclick="return confirm(\''.htmlconstant('_EXP_FILESDELETEALLASK', $filesCnt).'\');">',
 						'</a> | ');
 				}
-				echo "<a href=\"log.php\" target=\"_blank\">" . htmlconstant('_LOG') . '</a>';
+				echo "<a href=\"log.php\" target=\"_blank\" rel=\"noopener noreferrer\">" . htmlconstant('_LOG') . '</a>';
 			$site->skin->buttonsEnd();
 
 		$this->exp_render_page_end();

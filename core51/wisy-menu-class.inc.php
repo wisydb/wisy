@@ -39,7 +39,7 @@ class WISY_MENU_ITEM
     function getHtml()
     {
         $liClass = '';
-        if( count((array) $this->children) ) $liClass = ' class="dir '.($this->title == "OhneName" ? "ohneName" : "").'"';
+        if( sizeof((array) $this->children) ) $liClass = ' class="dir '.($this->title == "OhneName" ? "ohneName" : "").'"';
         elseif($this->title == "OhneName") $liClass = ' class="ohneName"';
         
         $ret = "<li$liClass>";
@@ -48,10 +48,10 @@ class WISY_MENU_ITEM
         $ret .= $this->title;
         if( $this->url ) $ret .= '</a>';
         
-        if( count((array) $this->children) )
+        if( sizeof((array) $this->children) )
         {
             $ret .= '<ul>';
-            for( $i = 0; $i < count((array) $this->children); $i++ )
+            for( $i = 0; $i < sizeof((array) $this->children); $i++ )
             {
                 $ret .= $this->children[$i]->getHtml();
             }
@@ -111,7 +111,7 @@ class WISY_MENU_CLASS
         else {
             $startKuerzel = $g_themen[$startIndex]['kuerzel_sorted'];
             $startKuerzelLen = strlen($startKuerzel);
-            for( $i = 0; $i < count((array) $g_themen); $i++ )
+            for( $i = 0; $i < sizeof((array) $g_themen); $i++ )
             {
                 if( substr($g_themen[$i]['kuerzel_sorted'], 0, $startKuerzelLen) == $startKuerzel
                     && strlen($g_themen[$i]['kuerzel_sorted']) == $startKuerzelLen+10 )
@@ -132,7 +132,7 @@ class WISY_MENU_CLASS
         $startIdOrKuerzel = trim($startIdOrKuerzel);
         $startIdOrKuerzel_natsort = $this->framework->normalizeNatsort($startIdOrKuerzel);
         $hasPoint = strpos($startIdOrKuerzel, '.')!==false;
-        for( $i = 0; $i < count((array) $g_themen); $i++ )
+        for( $i = 0; $i < sizeof((array) $g_themen); $i++ )
         {
             if( ( $hasPoint && $g_themen[$i]['kuerzel_sorted'] == $startIdOrKuerzel_natsort)
                 || (!$hasPoint && $g_themen[$i]['id'] == $startIdOrKuerzel) )
@@ -192,8 +192,8 @@ class WISY_MENU_CLASS
                     $nochildren = true;
                     $ret[] = $this->handleLevel($multiThemaIndices, $level, $aparam, $nochildren);
                     
-                    if( $title != '' ) { $ret[count((array) $ret)-1]->title = $title; $title = ''; }
-                    $ret[count((array) $ret)-1]->level = $level;
+                    if( $title != '' ) { $ret[sizeof((array) $ret)-1]->title = $title; $title = ''; }
+                    $ret[sizeof((array) $ret)-1]->level = $level;
                     
                 } else {
                     
@@ -209,8 +209,8 @@ class WISY_MENU_CLASS
                                 $ret[] = $this->handleLevel($i, $level, $aparam, $nochildren);
                             }
                             
-                            if( $title != '' ) { $ret[count((array) $ret)-1]->title = $title; $title = ''; }
-                            $ret[count((array) $ret)-1]->level = $level;
+                            if( $title != '' ) { $ret[sizeof((array) $ret)-1]->title = $title; $title = ''; }
+                            $ret[sizeof((array) $ret)-1]->level = $level;
                         }
                     }
                 }
@@ -237,7 +237,7 @@ class WISY_MENU_CLASS
             $autoTitle = '';
             $url = '';
             $temp = explode('&', $keywordId);
-            for( $i = 0; $i < count($temp); $i++ ) {
+            for( $i = 0; $i < sizeof($temp); $i++ ) {
                 $currKeywordId = intval($temp[$i]);
                 if( $currKeywordId > 0 ) {
                     $autoTitle = cs8($g_keywords[ $keywordId ]);
@@ -254,7 +254,7 @@ class WISY_MENU_CLASS
             $autoTitle = '';
             $url = '';
             $temp = explode('#ODER#', strtoupper($keywordId));
-            for( $i = 0; $i < count($temp); $i++ ) {
+            for( $i = 0; $i < sizeof($temp); $i++ ) {
                 $currKeywordId = intval($temp[$i]);
                 if( $currKeywordId > 0 ) {
                     $autoTitle .= $autoTitle==''? '' : ' ';
@@ -292,7 +292,7 @@ class WISY_MENU_CLASS
                 $attr_ids[] = $this->db->f8('attr_id');
             }
             
-            for( $a = 0; $a < count((array) $attr_ids); $a++ ) {
+            for( $a = 0; $a < sizeof((array) $attr_ids); $a++ ) {
                 $item->children[] =& $this->addKeywordsRecursive('', $attr_ids[$a], $level+1, $addChildren-1);
             }
         }
@@ -305,7 +305,7 @@ class WISY_MENU_CLASS
         if( ($p=strpos($keywordIds, ';'))!==false ) { $keywordIds = substr($keywordIds, 0, $p); } // allow comments after a `;` (this is undocumented stuff!)
         $keywordIds = explode(',', $keywordIds);
         $ret_items = array();
-        for( $k = 0; $k < count($keywordIds); $k++ )
+        for( $k = 0; $k < sizeof($keywordIds); $k++ )
         {
             $addChildren = 0;
             $keywordId = $keywordIds[$k];
@@ -338,14 +338,14 @@ class WISY_MENU_CLASS
         $url = '';
         $aparam = '';
         $param = explode('|', $param);
-        if( count((array) $param) == 3 )
+        if( sizeof((array) $param) == 3 )
         {
             // parameters are in the format "title | url | target='_blank'",  "title | url | onclick='...'" etc.
             $title = cs8(trim($param[0]));
             $url = trim($param[1]);
             $aparam = ' ' . $param[2] . ' ';
         }
-        else if( count((array) $param) == 2 )
+        else if( sizeof((array) $param) == 2 )
         {
             // parameters are in the format "title | url"
             $title = cs8(trim($param[0]));
@@ -433,11 +433,11 @@ class WISY_MENU_CLASS
                     
                     // find the correct parent ...
                     $parent =& $root;
-                    for( $l = 0; $l < count((array) $levels)-1; $l++ )
+                    for( $l = 0; $l < sizeof((array) $levels)-1; $l++ )
                     {
                         $level = intval($levels[$l]);
                         $levelFound = false;
-                        for( $c = 0; $c < count((array) $parent->children); $c++ )
+                        for( $c = 0; $c < sizeof((array) $parent->children); $c++ )
                         {
                             if( $parent->children[$c]->level == $level )
                             { $parent =& $parent->children[$c]; $levelFound = true; break; }
@@ -446,20 +446,20 @@ class WISY_MENU_CLASS
                         if( !$levelFound )
                         {
                             $parent->children[] = new WISY_MENU_ITEM('OhneName', '', '', $level);
-                            $parent =& $parent->children[count($parent->children)-1];;
+                            $parent =& $parent->children[sizeof($parent->children)-1];;
                         }
                     }
                     
                     // add item to parent
-                    $addChildren =& $this->createItems($value, intval($levels[count($levels)-1]));
-                    for( $a = 0; $a < count((array) $addChildren); $a++ )
+                    $addChildren =& $this->createItems($value, intval($levels[sizeof($levels)-1]));
+                    for( $a = 0; $a < sizeof((array) $addChildren); $a++ )
                         $parent->children[] =& $addChildren[$a];
                 }
             }
             
             // get the menu as HTML
             $ret = '<ul class="dropdown dropdown-horizontal">';
-            for( $i = 0; $i < count((array) $root->children); $i++ )
+            for( $i = 0; $i < sizeof((array) $root->children); $i++ )
             {
                 $ret .= $root->children[$i]->getHtml();
             }

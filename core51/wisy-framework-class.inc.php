@@ -885,7 +885,7 @@ class WISY_FRAMEWORK_CLASS
 		    $seals[] = array($db->f('sealId'), $db->f('glossarId'));
 	
 		// no seals? -> done.
-		if( count((array) $seals) == 0 )
+		if( sizeof($seals) == 0 )
 			return '';
 	
 		// get common seal information
@@ -903,30 +903,18 @@ class WISY_FRAMEWORK_CLASS
 		
 		$ret = '';
 		$sealsOut = 0;
-		for( $i = 0; $i < count((array) $seals); $i++ )
+		for( $i = 0; $i < sizeof($seals); $i++ )
 		{
 			$sealId    = $seals[$i][0];
 			$glossarId = $seals[$i][1];
-			$sealTitle = $seals[$i][2];
 	
 			if( $vars['size'] == 'small' )
 			{
-				$img = false;
-				$svg = "files/seals/$sealId.svg";
-				if( @file_exists($svg) )
-				{
-					$img = $svg;
-				} else {
-					$gif = "files/seals/$sealId-small.gif";
-					if( @file_exists($gif) )
-					{
-						$img = $gif;
-					}
-				}
-				if( $img )
+				$img = "files/seals/$sealId-small.gif";
+				if( @file_exists($img) )
 				{
 					$ret .= '<a href="' . $this->getHelpUrl($glossarId) . '" class="help">';
-					$ret .= "<img src=\"/$img\" alt=\"Pr&uuml;fsiegel: $sealTitle\" title=\"$title: $sealTitle\" class=\"seal_small\" width=\"32\" />";
+						$ret .= "<img src=\"$img\" alt=\"Pr&uuml;siegel\" title=\"$title\" class=\"seal_small\"/>";
 					$ret .= '</a>';
 					$sealsOut++;
 					break; // only one logo in small view
@@ -934,22 +922,11 @@ class WISY_FRAMEWORK_CLASS
 			}
 			else
 			{
-				$img = false;
-				$svg = "files/seals/$sealId.svg";
-				if( @file_exists($svg) )
-				{
-					$img = $svg;
-				} else {
-					$gif = "files/seals/$sealId-large.gif";
-					if( @file_exists($gif) )
-					{
-						$img = $gif;
-					}
-				}
-				if( $img )
+				$img = "files/seals/$sealId-large.gif";
+				if( @file_exists($img) )
 				{
 					$ret .= $sealsOut? $vars['break'] : '';
-					$ret .= "<img src=\"$img\" alt=\"Pr&uuml;siegel: $sealTitle\" title=\"$title: $sealTitle\" class=\"seal\" width=\"120\" />";
+					$ret .= "<img src=\"$img\" alt=\"Pr&uuml;siegel\" title=\"$title\" class=\"seal\" />";
 					$sealsOut++;
 				}
 			}
@@ -1052,7 +1029,7 @@ class WISY_FRAMEWORK_CLASS
 		$codes_array = explode('###', $codes_stichwort_eigenschaften);
 		
 		// go through codes and stichwoerter
-		for( $c = 0; $c < count((array) $codes_array); $c += 2 ) 
+		for( $c = 0; $c < sizeof($codes_array); $c += 2 ) 
 		{
 			if( $codes_array[$c] == 0 )
 				continue; // sachstichwoerter nicht darstellen - aenderung vom 30.03.2010 (bp)
@@ -1062,7 +1039,7 @@ class WISY_FRAMEWORK_CLASS
 				
 			$anythingOfThisCode = 0;
 			
-			for( $s = 0; $s < count((array) $tags); $s++ )
+			for( $s = 0; $s < sizeof((array) $tags); $s++ )
 			{
 				$glossarLink = '';
 				$glossarId = $this->glossarDb($db, 'stichwoerter', $tags[$s]['id']);
@@ -1505,7 +1482,7 @@ class WISY_FRAMEWORK_CLASS
 		$ret = '';
 		
 		$css = $this->getCSSFiles();
-		for( $i = 0; $i < count((array) $css); $i++ )
+		for( $i = 0; $i < sizeof((array) $css); $i++ )
 		{	
 			$ret .= '<link rel="stylesheet" type="text/css" href="'.$css[$i].'" />' . "\n";
 		}
@@ -1600,7 +1577,7 @@ class WISY_FRAMEWORK_CLASS
 	    $ret = '';
 	    
 	    $js = $this->getJSFiles();
-	    for( $i = 0; $i < count((array) $js); $i++ )
+	    for( $i = 0; $i < sizeof((array) $js); $i++ )
 	    {
 	        $js[$i] = trim($js[$i]);
 	        $addAttribs = '';
@@ -1627,7 +1604,7 @@ class WISY_FRAMEWORK_CLASS
 	    }
 	    
 	    $js_defered = $this->getDeferedJSFiles();
-	    for( $i = 0; $i < count((array) $js_defered); $i++ )
+	    for( $i = 0; $i < sizeof((array) $js_defered); $i++ )
 	    {
 	        $js_defered[$i] = trim($js_defered[$i]);
 	        $addAttribs = '';
@@ -1973,7 +1950,7 @@ class WISY_FRAMEWORK_CLASS
 		$q = strtr($q, array('ä'=>'ae', 'ö'=>'oe', 'ü'=>'ue', 'ß'=>'ss'));
 		$q = preg_replace('/[^a-z,]/', '', $q);
 		$q = explode(',', $q);
-		for( $i = 0; $i < count($q); $i++ )
+		for( $i = 0; $i < sizeof($q); $i++ )
 		{
 			if( $q[$i] != '' && !$added[ $q[$i] ] )
 			{
@@ -2270,7 +2247,7 @@ class WISY_FRAMEWORK_CLASS
 			$q = '';
 			$bei = '';
 			$km = '';			
-			for( $i = 0; $i < count((array) $tokens['cond']); $i++ ) {
+			for( $i = 0; $i < sizeof((array) $tokens['cond']); $i++ ) {
 				switch( $tokens['cond'][$i]['field'] ) {
 					case 'bei':	
 						$bei = $tokens['cond'][$i]['value']; 

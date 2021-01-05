@@ -1215,7 +1215,7 @@ if( regGet('toolbar.bin', 1) )
 										(
 											$currIdsCount==1? '_SETTINGS_BINNRECORDIN' : '_SETTINGS_BINNRECORDSIN', 
 											$currIdsCount, 
-											"$hiliteEnd<a href=\"index.php?table=$currTable&f0=job&v0=" .urlencode($currName). "&searchreset=2&searchoffset=0&orderby=date_modified+DESC\" target=\"_blank\" onclick=\"return popdown(this);\">$hiliteStart{$tempTableDef->descr}$hiliteEnd</a>$hiliteStart"
+											"$hiliteEnd<a href=\"index.php?table=$currTable&f0=job&v0=" .urlencode($currName). "&searchreset=2&searchoffset=0&orderby=date_modified+DESC\" target=\"_blank\" rel=\"noopener noreferrer\" onclick=\"return popdown(this);\">$hiliteStart{$tempTableDef->descr}$hiliteEnd</a>$hiliteStart"
 										);
 									echo $hiliteEnd;
 								echo '</td></tr>';
@@ -1231,7 +1231,7 @@ if( regGet('toolbar.bin', 1) )
 											table_item();
 												$db->query("SELECT id FROM $tempTableDef->name WHERE id=$currId");
 												if( $db->next_record() ) {
-													echo "<a href=\"edit.php?table=$currTable&id=$currId\" target=\"_blank\" onclick=\"return popdown(this);\">";
+													echo "<a href=\"edit.php?table=$currTable&id=$currId\" target=\"_blank\" rel=\"noopener noreferrer\" onclick=\"return popdown(this);\">";
 														echo isohtmlentities($tempTableDef->get_summary($currId, '; '));
 													echo '</a>';
 												}
@@ -1525,7 +1525,7 @@ $site->skin->sectionStart();
 			*/
 
 			form_control_check('neweditor', regGet('edit.oldeditor', 0)? 0 : 1, '', 0, 1);
-			echo '<label for="neweditor">' . 'Neuer Editor' . '</label> <a href="https://b2b.kursportal.info/index.php?title=Neuer_Editor" target="_blank">weitere Informationen...</a><br />';
+			echo '<label for="neweditor">' . 'Neuer Editor' . '</label> <a href="https://b2b.kursportal.info/index.php?title=Neuer_Editor" target="_blank" rel="noopener noreferrer">weitere Informationen...</a><br />';
 
 			
 

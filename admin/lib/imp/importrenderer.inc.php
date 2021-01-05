@@ -28,11 +28,11 @@ class IMP_IMPORTRENDERER_CLASS extends IMP_FUNCTIONS_CLASS
 		$importer->set_progress_callback(array($this->progress_ob, 'progress_info'));
 		if( $importer->import_do($GLOBALS['g_temp_dir'].'/imp-'.$_SESSION['g_session_userid'].'-'.$this->mix, intval($_REQUEST['overwrite']), intval($_REQUEST['delete']), $_REQUEST['further_options']) )
 		{
-			$GLOBALS['site']->msgAdd(htmlconstant('_IMP_IMPORTDONEMSG', $this->progress_ob->progress_time(), '<a href="log.php" target="_blank">', '</a>'), 'i');
+			$GLOBALS['site']->msgAdd(htmlconstant('_IMP_IMPORTDONEMSG', $this->progress_ob->progress_time(), '<a href="log.php" target="_blank" rel="noopener noreferrer">', '</a>'), 'i');
 		}
 		else
 		{
-			$GLOBALS['site']->msgAdd('Importfehler, s. <a href="log.php" target="_blank">Protokoll</a> für weitere Details', 'e');
+			$GLOBALS['site']->msgAdd('Importfehler, s. <a href="log.php" target="_blank" rel="noopener noreferrer">Protokoll</a> f&uuml;r weitere Details', 'e');
 		}
 
 		// UI end

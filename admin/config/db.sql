@@ -1278,7 +1278,6 @@ CREATE TABLE `x_logins` (
   `id` int(11) NOT NULL,
   `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `ip` varbinary(255) NOT NULL,
-  `login_name` varchar(200) NOT NULL DEFAULT '',
   `freischalten` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00'
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 

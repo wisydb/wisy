@@ -223,7 +223,7 @@ class ADMIN_SITE_CLASS
 				if( $Admin_Logo_Target ) {
 					$logo .= '<a href="' .isohtmlentities($Admin_Logo_Target). '" ';
 					if( $_SESSION['g_session_userid'] ) {
-						$logo .= ' target="_blank"';
+						$logo .= ' target="_blank" rel="noopener noreferrer"';
 					}
 					$logo .= '>';
 				}

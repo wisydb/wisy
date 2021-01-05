@@ -257,27 +257,27 @@ function login_check()
     $sqlstmt = "DELETE FROM x_logins WHERE timestamp < DATE_SUB( NOW( ) , INTERVAL 24 HOUR )";  // alles was aelter als 24 h loeschen
     $db->query($sqlstmt);
     
-    if($_REQUEST['enter_subsequent']) {
-        $sqlstmt = "INSERT INTO x_logins (ip, login_name) VALUES (AES_ENCRYPT('$ip', '$salt'), '')"; // if DEBUG login_name: ".$_REQUEST['enter_loginname']."
-        $db->query($sqlstmt);
-    }
+    /* if( $_REQUEST['enter_subsequent'] && $_REQUEST['enter_loginname'] && !is_array($_REQUEST['enter_loginname']) ) {
+     $sqlstmt = "INSERT INTO x_logins (ip, login_name) VALUES (AES_ENCRYPT('$ip', '$salt'), '".addslashes(strval( $_REQUEST['enter_loginname'] ))."')";
+     $db->query($sqlstmt);
+     } */
     
     $sqlstmt = "SELECT COUNT(*) AS COUNT FROM x_logins WHERE AES_DECRYPT(ip, '$salt') = '$ip' and freischalten > NOW() OR freischalten = '0000-00-00 00:00:00'";
     $db->query($sqlstmt);
     $db->next_record();
     $loginversuche = $db->fs('COUNT');
     if ($loginversuche > 50) {
-        if($_REQUEST['enter_subsequent']) {
-            $sqlstmt = "UPDATE x_logins SET freischalten = now()+ 144000 WHERE AES_DECRYPT(ip, '$salt') = '$ip'";
-            $db->query($sqlstmt);
-        }
-        $denymessage = "Zu viele falsche Login-Versuche. Ihre IP-Adresse wurde f&uuml;r 24 Stunden gesperrt";
+        /* if($_REQUEST['enter_subsequent']) {
+         $sqlstmt = "UPDATE x_logins SET freischalten = now()+ 144000 WHERE AES_DECRYPT(ip, '$salt') = '$ip'";
+         $db->query($sqlstmt);
+         }
+         $denymessage = "Zu viele falsche Login-Versuche. Ihre IP-Adresse wurde f&uuml;r 24 Stunden gesperrt";*/
     } else if ($loginversuche > 10) {
-        if($_REQUEST['enter_subsequent']) {
-            $sqlstmt = "UPDATE x_logins SET freischalten = now()+ 1000 WHERE AES_DECRYPT(ip, '$salt') = '$ip'";
-            $db->query($sqlstmt);
-        }
-        $denymessage = "Zu viele falsche Login-Versuche. Ihre IP-Adresse wurde f&uuml;r 10 Minuten gesperrt";
+        /* if($_REQUEST['enter_subsequent']) {
+         $sqlstmt = "UPDATE x_logins SET freischalten = now()+ 1000 WHERE AES_DECRYPT(ip, '$salt') = '$ip'";
+         $db->query($sqlstmt);
+         }
+         $denymessage = "Zu viele falsche Login-Versuche. Ihre IP-Adresse wurde f&uuml;r 10 Minuten gesperrt"; */
     }
 
 	// if a role-confirmation screen was printed, the user already entered the password successfully; read it from the session in this case
@@ -579,7 +579,7 @@ function login_check()
 	}
 
 		// DEPRECATED
-		// $site->msgAdd("\n\n" . '<b>Neuer Editor:</b> Unter &quot;Einstellungen / Ansicht&quot; steht Ihnen ab sofort ein neuer, modernerer Editor zur Verfuegung. <a href="https://b2b.kursportal.info/index.php?title=Neuer_Editor" target="_blank">Weitere Informationen...</a>' . "\n\n", 'i');
+	// $site->msgAdd("\n\n" . '<b>Neuer Editor:</b> Unter &quot;Einstellungen / Ansicht&quot; steht Ihnen ab sofort ein neuer, modernerer Editor zur Verfuegung. <a href="https://b2b.kursportal.info/index.php?title=Neuer_Editor" target="_blank" rel="noopener noreferrer">Weitere Informationen...</a>' . "\n\n", 'i');
 		// DEPRECATED
 
 	if( regGet('settings.editable', 1) && $db_num_login_errors ) { 

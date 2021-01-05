@@ -31,7 +31,7 @@ class SYNC_DOSYNC_CLASS extends SYNC_FUNCTIONS_CLASS
 		$starting_time = time();
 		
 		// Job informationen holen 
-		$this->_log("Job $this->jobid ausf�hren ... wenn am Ende nicht 'Fertig' steht, wurde die Aufgabe unterbrochen!");
+		$this->_log("Job $this->jobid ausfuehren ... wenn am Ende nicht 'Fertig' steht, wurde die Aufgabe unterbrochen!");
 		$this->job = new SYNC_JOB_CLASS($this->jobid);
 		if( $this->job->jobid == 0 ) {
 			$this->_log("Kann Job $this->jobid nicht laden.");
