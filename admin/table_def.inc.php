@@ -120,7 +120,7 @@ class Row_Def_Class
 	var $addparam; // enum entries, min/max, masks etc.
 	
 	// name and descr must be given in HTML manner
-	function __construct($flags, $name, $descr, $addparam = 0, $acl = 0, $delete_uponunlink = false)
+	function __construct($flags, $name, $descr, $default_value, $addparam, $sectionName, $prop, $acl) 
 	{
 		$this->flags		= intval($flags);
 		$this->name			= $name;

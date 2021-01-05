@@ -147,9 +147,7 @@ class CONTROL_ATTR_CLASS extends CONTROL_BASE_CLASS
 			if( $this->attr_table == 'stichwoerter' ) { // very special handling for this table, we make this more generic some time
 				$actypefield = ', eigenschaften AS actype';
 			}
-			var_dump($this->attr_table);
 			$sql = "SELECT id, $this->attr_ftitle $actypefield FROM $this->attr_table WHERE id IN($this->dbval);";
-			var_dump($sql);
 			$dba->query($sql);
 			while( $dba->next_record() ) {
 				$id = $dba->fs('id');
