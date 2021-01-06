@@ -120,7 +120,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			
 				if( $info > 0 )
 				{
-					echo ' <a href="' . htmlspecialchars($this->framework->getHelpUrl($info)) . '" title="Hilfe" class="wisy_help">i</a>';
+					echo ' <a href="' . htmlspecialchars($this->framework->getHelpUrl($info)) . '" title="Hilfe" aria-label="Ratgeber zum Thema" class="wisy_help">i</a>';
 				}
 			}
 		echo '</th>' . "\n";
@@ -135,13 +135,13 @@ class WISY_SEARCH_RENDERER_CLASS
 			echo '<span class="wisy_paginate_text">Gehe zu Seite</span>';
 		
 			if( $prevurl ) {
-				echo " <a class=\"wisy_paginate_prev\" href=\"" . htmlspecialchars($prevurl) . "\">&laquo;</a> ";
+				echo " <a class=\"wisy_paginate_prev\" aria-label=\"Vorherige Seite\" href=\"" . htmlspecialchars($prevurl) . "\">&laquo;</a> ";
 			}
 	
 			echo $pagesel;
 	
 			if( $nexturl ) {
-				echo " <a class=\"wisy_paginate_next\" href=\"" . htmlspecialchars($nexturl) . "\">&raquo;</a>";
+				echo " <a class=\"wisy_paginate_next\" aria-label=\"Nächste Seite\" href=\"" . htmlspecialchars($nexturl) . "\">&raquo;</a>";
 			}
 		echo '</span>' . "\n";
 	}
@@ -988,7 +988,7 @@ class WISY_SEARCH_RENDERER_CLASS
 	            }
 	            
 	            // render head
-	            echo '<div class="wisyr_list_header">';
+	            echo '<div class="wisyr_list_header" role="region" aria-labelledby="wisy_list_title">';
 	            echo '<div class="wisyr_listnav">';
 	            echo '<span class="active tab_kurse">Angebote</span>';
 	            echo '<a href="' . $baseurl . '?q=' . ($this->changedquery ? urlencode($this->changedquery) : urlencode($queryString)) . '%2C+Zeige:Anbieter' . ( $this->framework->qtrigger ? '&qtrigger='.$this->framework->qtrigger : '') . ( $this->framework->force ? '&force='.$this->framework->force : '') . '" class="tab_anbieter">Anbieter</a>';
@@ -998,10 +998,10 @@ class WISY_SEARCH_RENDERER_CLASS
 	            echo '">';
 	            
 	            if( $queryString == '' ) {
-	                echo '<span class="wisyr_aktuelle_angebote">Aktuelle Angebote</span>';
+					echo '<h' . $hlevel . ' id="wisy_list_title" class="wisyr_seitentitel wisyr_aktuelle_angebote">Aktuelle Angebote</h' . $hlevel . '>';
 	            }
 	            else {
-	                echo '<span class="wisyr_angebote_zum_suchauftrag">';
+					echo '<h' . $hlevel . ' id="wisy_list_title" class="wisyr_seitentitel wisyr_angebote_zum_suchauftrag">';
 	                /* ! actually makes sense: but how? Because of richtext additional output above?
 	                 if($richtext)
 	                 echo "&nbsp;"; // notwendig
@@ -1046,7 +1046,7 @@ class WISY_SEARCH_RENDERER_CLASS
 	                     echo "</span>";
 	                 }
 	                 
-	                 echo '</span>';
+	                 echo '</h' . $hlevel . '>';
 	            }
 	            
 	            // prepare "number of results" string
@@ -1088,7 +1088,7 @@ class WISY_SEARCH_RENDERER_CLASS
 	             echo '<div '.$aggregateOffer.'>'; */
 	            
 	            // render table start
-	            echo "\n".'<table class="wisy_list wisyr_kursliste">' . "\n";
+				echo "\n".'<table class="wisy_list wisyr_kursliste" role="region" aria-label="Angebotsliste">' . "\n";
 	            
 	            // render column titles
 	            echo '  <thead><tr>' . "\n";
@@ -1138,7 +1138,7 @@ class WISY_SEARCH_RENDERER_CLASS
 	                                // render promoted head
 	                                echo '<tr class="wisy_promoted_head"><td colspan="'.$colspan.'">';
 	                                echo 'Schaufenster Weiterbildung ';
-	                                echo '<a href="' .$this->framework->getHelpUrl(3368). '" class="wisy_help" title="Hilfe">i</a>';
+									echo '<a href="' .$this->framework->getHelpUrl(3368). '" class="wisy_help" title="Hilfe" aria-label="Ratgeber zu Schaufenster Weiterbildung">i</a>';
 	                                echo '</td></tr>';
 	                                
 	                                // render promoted records
@@ -1295,7 +1295,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			        }
 			</script>
 
-			<form method="post" action="https://www.iwwb.de/suchergebnis.php" target="IWWB">
+			<form method="post" action="https://www.iwwb.de/suchergebnis.php" target="IWWB" aria-label="Suche bei IWWB">
 			<input type="hidden" name="external" value="true">
   <input type="hidden" name="method" value="iso">
   <input type="hidden" name="feldname1" id="feldname1" value="Freitext" />
@@ -1354,7 +1354,7 @@ class WISY_SEARCH_RENDERER_CLASS
 	        }
 	        
 	        // render head
-	        echo '<div class="wisyr_list_header">';
+	        echo '<div class="wisyr_list_header" role="region" aria-labelledby="wisy_list_title">';
 	        echo '<div class="wisyr_listnav">';
 	        $link_angebote = trim(urlencode(str_replace(array(',,', ', ,'), array(',', ','), str_replace('Zeige:Anbieter', '', $queryString))));
 	        if($link_angebote)
@@ -1364,7 +1364,9 @@ class WISY_SEARCH_RENDERER_CLASS
 	            echo '</div>';
 	            echo '<span class="wisyr_anbieter_zum_suchauftrag">';
 	            echo '<span class="zurAngeboteSuche">&larr; Hier geht\'s <a href="/">zur Angebote-Suche</a></span>';
+				echo '<h1 id="wisy_list_title" class="wisyr_seitentitel wisyr_anbieter_zum_suchauftrag">';
 	            echo '<span class="wisyr_anzahl_anbieter">' . $sqlCount . ' Anbieter</span> zum Suchauftrag';
+				echo '</h1>';
 	            echo '</span>';
 	            
 	            // Show filter / advanced search
@@ -1392,7 +1394,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			flush();
 			
 			// render column titles
-			echo "\n".'<table class="wisy_list wisyr_anbieterliste">' . "\n";
+			echo "\n".'<table class="wisy_list wisyr_anbieterliste" role="region" aria-label="Anbieterliste">' . "\n";
 			echo '  <thead><tr>' . "\n";
 			    $this->renderColumnTitle('Anbieter',	'a', 	$orderBy,	311);
 			
@@ -1473,7 +1475,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			// render tail
 			if( $pagesel )
 			{
-				echo '<div class="wisyr_list_footer clearfix">';
+				echo '<div class="wisyr_list_footer clearfix" role="contentinfo">';
 				    // if( $this->framework->iniRead('rsslink', 0) )
 					 // echo '<div class="wisyr_rss_link_wrapper">' . $this->framework->getRSSLink() . '</div>';
 					$this->renderPagination($prevurl, $nexturl, $pagesel, $this->rows, $offset, $sqlCount, 'wisyr_paginate_bottom');
@@ -1492,14 +1494,14 @@ class WISY_SEARCH_RENDERER_CLASS
 	    $this->classes_changedquery = (($info['changed_query']) ? "changed_query" : "").' '.($info['changed_cnt'] ? 'has_changedresults' : 'no_changedresults');
 	    echo '<div class="wisy_suggestions noresults '.$this->classes_changedquery.'">';
 	    
-	    echo '<span class="wisyr_angebote_zum_suchauftrag"><span class="wisyr_anzahl_angebote">0 Angebote</span> zum eingegebenen Suchauftrag';
+		echo '<h' . $hlevel . ' class="wisyr_seitentitel wisyr_angebote_zum_suchauftrag"><span class="wisyr_anzahl_angebote">0 Angebote</span> zum Suchauftrag';
 	    if(trim($this->framework->QS) != '')
 	    {
-	        echo ' &quot;' . htmlspecialchars($this->framework->QS) . '&quot;</span></span>';
+	        echo ' &quot;' . htmlspecialchars($this->framework->QS) . '&quot;</h' . $hlevel . '>';
 	    }
 	    else
 	    {
-	        echo '</span></span>';
+	        echo '</h' . $hlevel . '>';
 	    }
 	    
 	    echo '<div class="" id="noresults_msg">'.$this->framework->iniRead('search.noresults.msg', "").'</div>';
@@ -1520,7 +1522,7 @@ class WISY_SEARCH_RENDERER_CLASS
 	                // Empty search wihtout active filters
 	                if( sizeof((array) $info['suggestions']) && !(sizeof((array) $info['suggestions']) === 1 && strpos($info['suggestions'][0]['tag'], 'volltext:') !== FALSE))
 	                {
-	                    echo '<h3>Suchvorschl&auml;ge</h3>';
+						echo '<h' . ($hlevel + 1) . '>Suchvorschl&auml;ge</h' . ($hlevel + 1) . '>';
 	                    echo '<ul>';
 	                    for( $i = 0; $i < sizeof((array) $info['suggestions']); $i++ )
 	                    {
@@ -1535,12 +1537,12 @@ class WISY_SEARCH_RENDERER_CLASS
 	                }
 	                
 	                if(stripos($this->framework->QS, 'zeige:anbieter') === FALSE) { // Don't show Anbieter-Search option if already Anbieter-Search
-	                    echo '<h3>Anbietersuche</h3>';
+	                    echo '<h' . ($hlevel + 1) . '>Anbietersuche</h' . ($hlevel + 1) . '>';
 	                    echo '<p>Falls Sie auf der Suche nach einem bestimmten Kursanbieter sind, nutzen Sie bitte unser Anbieterverzeichnis.</p>';
 	                    echo '<a href="/search?qs=' . htmlspecialchars($this->framework->QS) . '%2C+Zeige%3AAnbieter">Eine Anbietersuche nach &quot;' . htmlspecialchars(trim($this->framework->QS)) . '&quot; ausf&uuml;hren</a><br><br>';
 	                } else {
 	                    
-	                    echo '<h3>Angebotesuche</h3>';
+						echo '<h' . ($hlevel + 1) . '>Angebotesuche</h' . ($hlevel + 1) . '>';
 	                    echo '<p>Falls es sich bei Ihrem Suchbegriff nicht um den Namen eines Kursanbieters handelte k&ouml;nnen Sie es auch mit einer Angebote-Suche versuchen:</p>';
 	                    echo '<a href="/search?qs=' . htmlspecialchars(trim(str_ireplace('zeige:anbieter', '', $this->framework->QS), ',')) . '">Eine Angebotesuche nach &quot;' . htmlspecialchars(trim(trim(str_ireplace('zeige:anbieter', '', $this->framework->QS)), ',')) . '&quot; ausf&uuml;hren</a><br><br>';
 	                }
@@ -1551,12 +1553,12 @@ class WISY_SEARCH_RENDERER_CLASS
 	                if($info['changed_query'] && intval($this->framework->iniRead('intellisearch.fulltext', 0)) === 2 || $qs_fulltextReady == "")
 	                    ; // don't display fultext link if automatic fulltext search via intellisearch == 2 has already let to 0 results
 	                    else {
-	                        echo '<h3>Volltextsuche</h3>';
+	                        echo '<h' . ($hlevel + 1) . '>Volltextsuche</h' . ($hlevel + 1) . '>';
 	                        echo '<p>Das Ergebnis der Volltextsuche enth&auml;lt alle Angebote, die den Suchbegriff oder den Wortteil in der Kursbeschreibung enthalten.</p>';
 	                        echo '<a href="/search?q=volltext:' . htmlspecialchars($qs_fulltextReady) . '&force=1">Eine Volltextsuche nach &quot;' . htmlspecialchars($qs_fulltextReady) . '&quot; ausf&uuml;hren</a>';
 	                    }
 	                    
-	                    echo '<h3>M&ouml;glicherweise helfen auch Ver&auml;nderungen an Ihrem Suchbegriff:</h3>';
+						echo '<h' . ($hlevel + 1) . '>M&ouml;glicherweise helfen auch Ver&auml;nderungen an Ihrem Suchbegriff:</h' . ($hlevel + 1) . '>';
 	                    echo '<ul>';
 	                    echo '<li>Pr&uuml;fen Sie Ihren Suchbegriff auf Rechtschreibfehler</li>';
 	                    echo '<li>Nutzen Sie die Suchvorschl&auml;ge, die w&auml;hrend der Eingabe unter dem Eingabefeld angezeigt werden</li>';
@@ -1568,14 +1570,14 @@ class WISY_SEARCH_RENDERER_CLASS
 	                
 	                if( $this->framework->getParam('filter_zeige', '') == "Anbieter" ) {
 	                    // Empty search with active filters
-	                    echo '<h3>Leider keinen Anbieter mit diesem Namen gefunden!</h3><br>';
+						echo '<h' . ($hlevel + 1) . '>Leider keinen Anbieter mit diesem Namen gefunden!</h' . ($hlevel + 1) . '>';
 	                    echo '<ul>';
 	                    echo '<li>Passen Sie Ihre Suche bitte an und achten Sie ggf. auf die Vorschl&auml;ge bzw. w&auml;hlen einen aus.</li>';
 	                    echo '<li>Oder suchen Sie nach Angeboten? Dann bitte hier <a href="/">zur Angebote-Suche...</a></li>';
 	                    echo '</ul>';
 	                } else {
 	                    // Empty search with active filters
-	                    echo '<h3>M&ouml;glicherweise helfen Ver&auml;nderungen an Ihren Filtereinstellungen:</h3>';
+						echo '<h' . ($hlevel + 1) . '>M&ouml;glicherweise helfen auch Ver&auml;nderungen an Ihrem Suchbegriff:</h' . ($hlevel + 1) . '>';
 	                    echo '<ul>';
 	                    echo '<li>&Auml;ndern oder entfernen Sie einzelne Filter, um mehr Angebote f&uuml;r Ihren Suchauftrag zu erhalten</li>';
 	                    echo '<li>Suchen Sie nach &auml;hnlichen Stichw&ouml;rtern oder Kursthemen</li>';
@@ -1614,7 +1616,7 @@ class WISY_SEARCH_RENDERER_CLASS
 	                    case 'inaccurate_location':
 	                    case 'bad_km':
 	                    case 'km_without_bei':
-	                        echo '<h2>Fehler bei Ortssuche</h2>';
+							echo '<h' . ($hlevel + 1) . '>Fehler bei Ortssuche</h' . ($hlevel + 1) . '>';
 	                        echo '<ul>';
 	                        echo '<li>&Uuml;berpr&uuml;fen Sie Ihre Ortsangabe und nutzen Sie die Suchvorschl&auml;ge bei der Ortseingabe</li>';
 	                        echo '<li>&Uuml;berpr&uuml;fen Sie die gew&auml;hlte Umkreis-Einstellung</li>';
@@ -1773,7 +1775,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		            
 		  echo $this->framework->replacePlaceholders( $this->framework->iniRead('spalten.above', '') );
 		            
-		  echo '<div id="wisy_resultarea" class="' .$this->framework->getAllowFeedbackClass(). '">';
+		  echo '<div id="wisy_resultarea" class="' .$this->framework->getAllowFeedbackClass(). '" role="main">';
 		
 		        if( $this->framework->getParam('show') == 'tags' )
 				{

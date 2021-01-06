@@ -8,8 +8,8 @@ body { padding: 0; margin: 0; }
 
 #page { max-width: 1024px; margin: 0 auto; padding: 10px; overflow-x: hidden; }
 
-/* Themenmenue */
-#themenmenue { 
+/* Ehemals #themenmenue -> Umbenannt zu .nav_menu */
+.nav_menu { 
 	background-color: #eee;
 	clear: both;
 }
@@ -56,6 +56,29 @@ body { padding: 0; margin: 0; }
 
 #favlistlink { display: inline-block; padding: 2px; }
 
+ul.dropdown {
+	z-index: auto;
+}
+ul.dropdown ul {
+	width: 16rem;
+}
+ul.dropdown ul:not([aria-hidden="true"]) {
+	visibility: visible;
+}
+ul.dropdown ul.hidden {
+	visibility: hidden;
+}
+ul.dropdown ul li.has-subnav:after {
+	content: '';
+	position: absolute;
+	right: 0;
+	top: 0.1em;
+	width: 1.5em;
+	height: 1.5em;
+	/* https://materialdesignicons.com: chevron-right */
+	background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23787878' d='M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z' /%3E%3C/svg%3E") center center/contain;
+}
+
 /* Contentarea */
 #wisy_contentarea { padding: 0; }
 .wisyr_indent { margin-left: 1em; vertical-align: top; }
@@ -88,18 +111,19 @@ body { padding: 0; margin: 0; }
 #wisy_searchbtn { margin-top: 15px; }
 .wisy_searchhints {
 	position: absolute;
-	bottom: -30px;
+	bottom: -2rem;
 	left: 0;
 }
 
 .wisyr_searchinput { position: relative; }
 .wisyr_searchinput .clear_btn {
 	position: absolute;
-	top: 0;
+	top: -0.2em;
 	right: 1.5em;
-	width: 1em;
-	height: 1em;
-	background: #fff url(/core51/img/close-red.png) no-repeat center center/1em;
+	width: 1.5em;
+	height: 1.5em;
+	/* https://materialdesignicons.com: close */
+	background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23787878' d='M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z' /%3E%3C/svg%3E") no-repeat center center/contain;
 	cursor: pointer;
 }
 
@@ -171,11 +195,11 @@ body { padding: 0; margin: 0; }
 	
 	#page { padding-top: 50px; }
 	
-	/* Themenmenue */
-	#themenmenue { display: none; }
+	/* Ehemals #themenmenue -> Umbenannt zu .nav_menu */
+	.nav_menu { display: none; }
 	#nav-link { display: block; }
 	
-	.navshowing #themenmenue {
+	.navshowing .nav_menu {
 		display: block;
 		position: absolute;
 		top: 60px;
@@ -184,13 +208,13 @@ body { padding: 0; margin: 0; }
 		bottom: 0;
 		z-index: 330;
 	}
-	#themenmenue ul, #themenmenue li { position: relative; float: none; visibility: visible!important; }
-	#themenmenue li { padding: 0; border: none; background-color: #eee;}
-	#themenmenue a { display: block; padding: 10px; border-bottom: 1px solid #fff; }
-	#themenmenue li.dir { background-color: #ddd; }
-	#themenmenue ul ul { display: none; }
-	#themenmenue ul.dropdown ul { width: 100%; }
-	#themenmenue ul.dropdown ul ul { left: 0; }
+	.nav_menu ul, .nav_menu li { position: relative; float: none; visibility: visible!important; }
+	.nav_menu li { padding: 0; border: none; background-color: #eee;}
+	.nav_menu a { display: block; padding: 10px; border-bottom: 1px solid #fff; }
+	.nav_menu li.dir { background-color: #ddd; }
+	.nav_menu ul ul { display: none; }
+	.nav_menu ul.dropdown ul { width: 100%; }
+	.nav_menu ul.dropdown ul ul { left: 0; }
 	
 	#favlistlink { width: 100%; }
 	
@@ -411,12 +435,12 @@ body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell
 .wisyr_filterform form fieldset.wisyr_filtergroup:after {
 	content: '';
 	position: absolute;
-	right: 0.1em;
+	right: 0.3em;
 	top: 0.3em;
 	width: 1.5em;
 	height: 1.5em;
 	/* https://materialdesignicons.com: chevron-down */
-	background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 23 23'%3E%3Cpath fill='%23787878' d='M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z' /%3E%3C/svg%3E") center center/contain;
+	background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23787878' d='M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z' /%3E%3C/svg%3E") center center/contain;
 }
 
 /* Metagroup: Filtergruppe mit Ueberschrift und Umbruch danach */

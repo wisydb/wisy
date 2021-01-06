@@ -907,14 +907,26 @@ class WISY_FRAMEWORK_CLASS
 		{
 			$sealId    = $seals[$i][0];
 			$glossarId = $seals[$i][1];
+			$sealTitle = $seals[$i][2];
 	
 			if( $vars['size'] == 'small' )
 			{
-				$img = "files/seals/$sealId-small.gif";
-				if( @file_exists($img) )
+				$img = false;
+				$svg = "files/seals/$sealId.svg";
+				if( @file_exists($svg) )
+				{
+					$img = $svg;
+				} else {
+					$gif = "files/seals/$sealId-small.gif";
+					if( @file_exists($gif) )
+					{
+						$img = $gif;
+					}
+				}
+				if( $img )
 				{
 					$ret .= '<a href="' . $this->getHelpUrl($glossarId) . '" class="help">';
-						$ret .= "<img src=\"$img\" alt=\"Pr&uuml;siegel\" title=\"$title\" class=\"seal_small\"/>";
+					$ret .= "<img src=\"/$img\" alt=\"Pr&uuml;fsiegel: $sealTitle\" title=\"$title: $sealTitle\" class=\"seal_small\" width=\"32\" />";
 					$ret .= '</a>';
 					$sealsOut++;
 					break; // only one logo in small view
@@ -922,11 +934,22 @@ class WISY_FRAMEWORK_CLASS
 			}
 			else
 			{
-				$img = "files/seals/$sealId-large.gif";
-				if( @file_exists($img) )
+				$img = false;
+				$svg = "files/seals/$sealId.svg";
+				if( @file_exists($svg) )
+				{
+					$img = $svg;
+				} else {
+					$gif = "files/seals/$sealId-large.gif";
+					if( @file_exists($gif) )
+					{
+						$img = $gif;
+					}
+				}
+				if( $img )
 				{
 					$ret .= $sealsOut? $vars['break'] : '';
-					$ret .= "<img src=\"$img\" alt=\"Pr&uuml;siegel\" title=\"$title\" class=\"seal\" />";
+					$ret .= "<img src=\"$img\" alt=\"Pr&uuml;siegel: $sealTitle\" title=\"$title: $sealTitle\" class=\"seal\" width=\"120\" />";
 					$sealsOut++;
 				}
 			}
@@ -1535,6 +1558,9 @@ class WISY_FRAMEWORK_CLASS
 	    
 	    $date_modified = filectime($coreAbsPath.'lib/zebra-datepicker/zebra_datepicker.min.js');
 	    $ret[] = $wisyCore.'/lib/zebra-datepicker/zebra_datepicker.min.js' . '?ver='.date("Y-m-d_h-i-s", $date_modified);
+		
+		$date_modified = filectime($coreAbsPath.'/lib/aria-menubar/aria_menubar_module.min.js');
+		$ret[] = $wisyCore.'/lib/aria-menubar/aria_menubar_module.min.js' . '?ver='.date("Y-m-d_h-i-s", $date_modified);
 	    
 	    if($this->iniRead('cookiebanner', '') == 1) {
 	        $date_modified = filectime($coreAbsPath.'lib/cookieconsent/cookieconsent.min.js');
@@ -2668,6 +2694,9 @@ class WISY_FRAMEWORK_CLASS
 			case 'sitemap-landingpages.xml':
 			case 'sitemap-landingpages.xml.gz':
 			    return createWisyObject('WISY_LANDINGPAGE_RENDERER_CLASS', $this, array('type'=>$wisyRequestedFile));
+			
+			case 'kontakt':
+				return createWisyObject('WISY_CONTACTFORM_RENDERER_CLASS', $this);
 			
 			// deprecated URLs
 			case 'kurse.php':

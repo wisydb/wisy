@@ -213,7 +213,8 @@ wisy_paginate etc.
 
 a.wisy_rss_link {
 	padding-left: 17px;
-	background: white url('/core51/img/feed-icon-12x12.png') 3px center no-repeat !important;
+	/* https://materialdesignicons.com: rss */
+	background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' style='width:24px;height:24px' viewBox='0 0 24 24'%3E%3Cpath fill='%23787878' d='M6.18,15.64A2.18,2.18 0 0,1 8.36,17.82C8.36,19 7.38,20 6.18,20C5,20 4,19 4,17.82A2.18,2.18 0 0,1 6.18,15.64M4,4.44A15.56,15.56 0 0,1 19.56,20H16.73A12.73,12.73 0 0,0 4,7.27V4.44M4,10.1A9.9,9.9 0 0,1 13.9,20H11.07A7.07,7.07 0 0,0 4,12.93V10.1Z' /%3E%3C/svg%3E") 3px center no-repeat;
 }
 
 
@@ -644,7 +645,7 @@ portalmenu styles
 
 /* functionality - do not subclass this if you're not absolutely sure what you're doing ... */
 
-#themenmenue ul {
+.nav_menu ul {
 	z-index: 1200;
 }
 
@@ -664,6 +665,7 @@ ul.dropdown {
 
 ul.dropdown li {
   float: left;
+  position: relative;
   line-height: 1.3em;
   vertical-align: middle;
   zoom: 1; /* IE10 */
@@ -671,7 +673,6 @@ ul.dropdown li {
 
 ul.dropdown li.hover,
 ul.dropdown li:hover {
-  position: relative;
   z-index: 1599;
   cursor: default;
 }
@@ -694,11 +695,12 @@ ul.dropdown ul ul {
   left: 99%;
 }
 
-ul.dropdown li:hover > ul {
+ul.dropdown li:hover > ul,
+ul.dropdown ul.wisyr_show_menu {
   visibility: visible;
 }
 
-/* theme, here you can chage the layout */
+/* theme, here you can change the layout */
 
 ul.dropdown li {
   padding: 2px 6px;

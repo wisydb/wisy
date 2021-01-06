@@ -483,25 +483,35 @@ class WISY_ANBIETER_RENDERER_CLASS
 		{
 			$sealId = $db->f('sealId');
 			$glossarId = $db->f('glossarId');
-			$glossarLink = $glossarId>0? (' <a href="' . $this->framework->getHelpUrl($glossarId) . '" class="wisy_help" title="Hilfe">i</a>') : '';
-			$title = cs8($db->fs('title'));
-
-			$img = "files/seals/$sealId-large.gif";
-			if( @file_exists($img) )
+			$sealTitle = $db->f('sealTitle');
+			$glossarLink = $glossarId>0? (' <a href="' . $this->framework->getHelpUrl($glossarId) . '" class="wisy_help" title="Hilfe" aria-label="Ratgeber zu ' . $sealTitle . '">i</a>') : '';
+			
+			$img = false;
+			$svg = "files/seals/$sealId.svg";
+			if( @file_exists($svg) )
+			{
+				$img = $svg;
+			} else {
+				$gif = "files/seals/$sealId-large.gif";
+				if( @file_exists($gif) )
+				{
+					$img = $gif;
+				}
+			}
+			if( $img )
 			{
 				$img_seals .= $img_seals==''? '' : '<br /><br />';
-				$img_seals .= "<img src=\"$img\" class='pruefsiegel' alt=\"Pr&uuml;fsiegel\" title=\"$title\" /><br />";
-				$img_seals .= $title . $glossarLink;
+				$img_seals .= "<img src=\"$img\" alt=\"Pr&uuml;siegel: $sealTitle\" title=\"$sealTitle\" width=\"120\" /><br />";
+				$img_seals .= $sealTitle . $glossarLink;
 				if( $seit ) { $img_seals .= '<br />'  . $seit; $seit = ''; }
 				
-				$seals_steckbrief .= "<img src=\"$img\" class='pruefsiegel' alt=\"Pr&uuml;fsiegel\" title=\"$title\" />";
+				$seals_steckbrief .= "<img src=\"$img\" alt=\"Pr&uuml;siegel: $sealTitle\" title=\"$sealTitle\" width=\"120\" />";
 			}
 			else
 			{
 				$txt_seals .= $txt_seals==''? '' : '<br />';
-				$txt_seals .= $title . $glossarLink;
+				$txt_seals .= $sealTitle . $glossarLink;
 			}
-						
 		}
 		
 		if($steckbrief) return $seals_steckbrief;
@@ -509,10 +519,8 @@ class WISY_ANBIETER_RENDERER_CLASS
 		$ret = $img_seals;
 
 		if( $txt_seals!= '' ) {
-		    $ret .= '<br />' . $txt_seals;
+			$ret .= '<br />' . $txt_seals;
 		}
-		
-		// $db->close();
 		
 		return $ret;
 	}

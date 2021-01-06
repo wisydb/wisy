@@ -520,21 +520,22 @@ if (jQuery.ui)
 		
 		// highlight search string
 		var regex = new RegExp("(?![^&;]+;)(?!<[^<>]*)(" + request_term.replace(/([\^\$\(\)\[\]\{\}\*\.\+\?\|\\])/gi, "\\$1") + ")(?![^<>]*>)(?![^&;]+;)", "gi");
+		tag_name_highlighted = tag_name.replace(regex, "<em>$1</em>");
 		tag_name = tag_name.replace(regex, "<em>$1</em>").replace('&amp;', '&');
 
-		  // 
-		  if(typeof ajax_infoi != "undefined" && ajax_infoi)
-		   var postfix_help = (tag_help > 0) ? '<span data-tag_help="##g'+tag_help+'##"></span>' : '';
-		   // var postfix_help = (tag_help > 0) ? '<span class="tag_info">' + '<a href="/g'+tag_help+'" class="tag_help">'+'Infos'+'</a>' + '</span>' : '';
-		  
-		  var postfix_text = '<span class="row '+row_class+'">' + 
-							'<span class="tag_name">' + row_prefix + tag_name + '</span>' + 
+		// 
+		if(typeof ajax_infoi != "undefined" && ajax_infoi)
+			var postfix_help = (tag_help > 0) ? '<span data-tag_help="##g'+tag_help+'##"></span>' : '';
+			// var postfix_help = (tag_help > 0) ? '<span class="tag_info">' + '<a href="/g'+tag_help+'" class="tag_help">'+'Infos'+'</a>' + '</span>' : '';
+		
+			var postfix_text = '<span class="row '+row_class+'">' + 
+							'<span class="tag_name">' + row_prefix + tag_name_highlighted + '</span>' + 
 							'<span class="tag_count">' + row_count + '</span></span>';
-		    
-		  if(typeof ajax_infoi != "undefined" && ajax_infoi)
-		   return postfix_text + postfix_help;
-	  
-			return postfix_text;
+		
+		if(typeof ajax_infoi != "undefined" && ajax_infoi)
+			return postfix_text + postfix_help;
+		
+		return postfix_text;
 	}
 	
 	function ac_sourcecallback_anbieter(request, response_callback)
@@ -670,45 +671,49 @@ if (jQuery.ui)
 	}
 
 	function initAutocomplete_v2() {
+		var activeItemId = 'selectedOption';
+		var ac_defaults = {
+					html:		true
+				,	focus:		ac_focuscallback
+				,	appendTo: "#wisy_autocomplete_wrapper"
+				, open: function(event, ui) { $(event.target).attr('aria-expanded', 'true').attr('aria-activedescendant', activeItemId); }
+				,	close: function(event, ui) { $(event.target).attr('aria-expanded', 'false').attr('aria-activedescendant', ''); }
+				, focus: function(event, ui) {
+						$('#wisy_autocomplete_wrapper .ui-menu-item[aria-selected="true"]').attr('aria-selected', 'false').attr('id', '');
+						$('#wisy_autocomplete_wrapper .ui-menu-item [data-value="' + ui.item.value + '"]').parents('.ui-menu-item').attr('aria-selected', 'true').attr('id', activeItemId);
+				}
+		}
 		$(".ac_keyword").each(function()
 		{
 				var jqObj = $(this);
-				jqObj.autocomplete(
-				{
-						source:		ac_sourcecallback
-					,	theinput:	jqObj
-					,	html:		true
+				var ac_options = {
+						theinput:	jqObj
+					, source:		ac_sourcecallback
 					,	select:		ac_selectcallback_autosubmit
-					,	focus:		ac_focuscallback 
-				});
+				};
+				jqObj.autocomplete($.extend({}, ac_defaults, ac_options));
 			}
 		);
 		$(".ac_keyword_ort").each(function()
 		{
-			if($(".ac_keyword_ort").data('autocomplete') == 1) {
 				var jqObj = $(this);
-				jqObj.autocomplete(
-				{
-						source:		ac_sourcecallback_ort
-					,	theinput:	jqObj
-					,	html:		true
+				var ac_options = {
+						theinput:	jqObj
+					, source:		ac_sourcecallback_ort
 					,	select:		ac_selectcallback_ort
-					,	focus:		ac_focuscallback 
-				});
+				};
+				jqObj.autocomplete($.extend({}, ac_defaults, ac_options));
 			}
-		}
 		);
 		$(".ac_keyword_anbieter").each(function()
 		{
 				var jqObj = $(this);
-				jqObj.autocomplete(
-				{
-						source:		ac_sourcecallback_anbieter
-					,	theinput:	jqObj
-					,	html:		true
+				var ac_options = {
+						theinput:	jqObj
+					, source:		ac_sourcecallback_anbieter
 					,	select:		ac_selectcallback_autosubmit
-					,	focus:		ac_focuscallback 
-				});
+				};
+				jqObj.autocomplete($.extend({}, ac_defaults, ac_options));
 			}
 		);
 	}
@@ -720,9 +725,13 @@ if (jQuery.ui)
 			{
 				that._renderItemData( ul, item );
 			});
+			
 			// Streifen
 			$( ul ).addClass('ac_results ac_results_v2').find( "li:odd" ).addClass( "ac_odd" );
 			$( ul ).find( "li:even" ).addClass( "ac_even" );
+			
+			// WAI ARIA
+			$( ul ).find( "li" ).attr('role', 'option').attr('aria-selected', 'false');
 		},
 		_resizeMenu: function()
 		{
@@ -1255,7 +1264,7 @@ function initResponsive()
 	});
 
 	// Navigation Unterpunkte oeffnen und schliessen mobil
-	$('#themenmenue a').on('click', function() {
+	$('.nav_menu a').on('click', function() {
 		$firstUl = $(this).siblings('ul').first();
 		if($firstUl.length) {
 			if($firstUl.hasClass('open')) {
@@ -1347,12 +1356,19 @@ function initFilters() {
 		$('[name="' + $this.attr('name') + '"] [value="' + $this.val() + '"]').val(newVal);
 		
 		// Inputs etc.
-		$('input:not([type="checkbox"])[name="' + $this.attr('name') + '"]').val(newVal);
+		$('input:not([type="checkbox"]):not([type="radio"])[name="' + $this.attr('name') + '"]').val(newVal);
 		
-		// Checkboxes
+		// Checkboxes and radios
 		$('input[type="checkbox"][name="' + $this.attr('name') + '"]').prop('checked', false);
+		$('input[type="radio"][name="' + $this.attr('name') + '"]').prop('checked', false);
 		if(newVal != '') {
 			$('input[type="checkbox"][name="' + $this.attr('name') + '"][value="' + $this.val() + '"]').prop('checked', true);
+			$('input[type="radio"][name="' + $this.attr('name') + '"][value="' + $this.val() + '"]').prop('checked', true);
+		}
+		// Sonderfalls Preis von bis
+		if($this.attr('name') == 'filter_preis[]' && newVal == '') {
+			$('input[name="filter_preis_von[]"]').val(newVal);
+			$('input[name="filter_preis_bis[]"]').val(newVal);
 		}
 	});
 
@@ -1527,6 +1543,116 @@ function initFiltersMobile() {
 }
 
 /*****************************************************************************
+ * Accessible Menus: simple and complex
+ *****************************************************************************/
+
+function initAccessibleMenus() {
+	// Add functionality for "simple" menus, accessible via tab-navigation
+	$(".wisyr_menu_simple > ul").initMenuSimple();
+	
+	// Add functionality for "complex" menus, accessible via WAI-ARIA assisted arrow-navigation
+	$(".wisyr_menu_complex > ul").initMenuComplex();
+}
+
+$.fn.initMenuSimple = function(settings) {
+	settings = jQuery.extend({ menuHoverClass: "wisyr_show_menu" }, settings);
+	
+	// Add tabindex 0 to top level spans because otherwise they can't be tabbed to
+	$(this).find("> li > .nav_no_link").attr("tabIndex", 0);
+	
+	var top_level_links = $(this).find("> li > a, > li > .nav_no_link");
+
+	// Set tabIndex to -1 so that top_level_links can't receive focus until menu is open
+	$(top_level_links)
+		.next("ul")
+		.attr("data-test", "true")
+		.attr({ "aria-hidden": "true" })
+		.find("a")
+		.attr("tabIndex", -1);
+
+	// Show and hide on focus
+	$(this).find('a, .nav_no_link').on('focus', function() {
+		$(this)
+			.closest("ul")
+			.find("." + settings.menuHoverClass)
+			.attr("aria-hidden", "true")
+			.removeClass(settings.menuHoverClass)
+			.find("a, .nav_no_link")
+			.attr("tabIndex", -1);
+
+		$(this)
+			.next("ul")
+			.attr("aria-hidden", "false")
+			.addClass(settings.menuHoverClass)
+			.find("a, .nav_no_link")
+			.attr("tabIndex", 0);
+	});
+
+	// Hide menu if the user tabs out of the navigation
+	$(this)
+		.find("a, .nav_no_link")
+		.last()
+		.keydown(function(e) {
+			if (e.keyCode == 9) {
+				$("." + settings.menuHoverClass)
+					.attr("aria-hidden", "true")
+					.removeClass(settings.menuHoverClass)
+					.find("a, .nav_no_link")
+					.attr("tabIndex", -1);
+			}
+	});
+
+	// Hide menu if click occurs outside of navigation
+	$(document).on('click', function() {
+		$("." + settings.menuHoverClass)
+			.attr("aria-hidden", "true")
+			.removeClass(settings.menuHoverClass)
+			.find("a, .nav_no_link")
+			.attr("tabIndex", -1);
+	});
+
+	$(this).on('click', function(e) {
+		e.stopPropagation();
+	});
+};
+
+$.fn.initMenuComplex = function(settings) {
+	if (typeof ARIAMenuBar !== "undefined") {
+		var myMB = new ARIAMenuBar({
+			topMenuBarSelector: '.wisyr_menu_complex ul[role="menubar"]',
+			hiddenClass: 'hidden',
+
+			// Click handler that executes whenever an A tag that includes role="menuitem" is clicked
+			handleMenuItemClick: function(ev) {
+				top.location.href = this.href;
+			},
+
+			// Handle opening of dynamic submenus
+			openMenu: function(subMenu, menuContainer) {
+				$(subMenu).removeClass('hidden');
+
+				// Focus callback for use when adding animation effect; must be moved into animation callback after animation finishes rendering
+				if (myMB.cb && typeof myMB.cb === 'function'){
+					myMB.cb();
+					myMB.cb = null;
+				}
+			},
+
+			// Handle closing of dynamic submenus
+			closeMenu: function(subMenu) {
+				$(subMenu).addClass('hidden');
+			},
+
+			// Accessible offscreen text to specify necessary keyboard directives for non-sighted users.
+			dualHorizontalTxt: 'Press Enter to navigate to page, or Down to open dropdown',
+			dualVerticalTxt: 'Press Enter to navigate to page, or Right to open dropdown',
+			horizontalTxt: 'Press Down to open dropdown',
+			verticalTxt: 'Press Right to open dropdown'
+		});
+	}
+};
+
+/*****************************************************************************
  * main entry point
  *****************************************************************************/
 
@@ -1570,6 +1696,9 @@ $().ready(function()
 	
 	// init responsive stuff
 	initResponsive();
+	
+	// init accessibility stuff
+	initAccessibleMenus();
 	
 	// init filter stuff
 	initFilters();
