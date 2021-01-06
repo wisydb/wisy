@@ -1768,8 +1768,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		    
 		    $queryString_db = $this->framework->mysql_escape_mimic($queryString);
 		        
-		   if($queryString_db != "")
-		      $searcher->prepare($queryString_db);
+		    $searcher->prepare($queryString_db);
 		            
 		            
 		            
