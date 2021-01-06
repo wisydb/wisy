@@ -95,14 +95,15 @@ class WISY_DURCHF_CLASS
 		    {
 		        $img_icon = $img_arr[0];
 		        $img_text = $img_arr[1];
+				$aria_label = $details? '' : 'aria-label="' . $img_text . '"';
 		        
 		        $ext = substr($img_icon, -4);
 		        if( $ext == '.gif' || $ext == '.png' || $ext == '.jpg' || $ext == '.svg' ) {
 		            $alt = $details? '' : $img_text;
-		            $html .= '<img src="'.$img_icon.'" alt="'.$alt.'" title="'.$img_text.'" data-sw_id="'.$id.'"/>';
+		            $html .= '<img src="'.$img_icon.'" alt="'.$alt.'" title="'.$img_text.'" data-sw_id="'.$id.'" ' . $aria_label . '/>';
 		        }
 		        else {
-		            $html .= '<span title="'.$img_text.'" data-sw_id="'.$id.'"/>'.$img_icon.'</span>';
+		            $html .= '<span title="'.$img_text.'" data-sw_id="'.$id.'" ' . $aria_label . '/>'.$img_icon.'</span>';
 		        }
 		        
 		        if( $details ) {

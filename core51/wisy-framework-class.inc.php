@@ -2369,9 +2369,9 @@ class WISY_FRAMEWORK_CLASS
 		    $hint = $this->iniRead('searcharea.anbieter.hint', $searchinput_placeholder);
 		}
 		
-		echo "\n" . '<div id="wisy_searcharea" class="activefilters_cnt'.(is_object($this->filterer) ? $this->filterer->getActiveFiltersCount() : 0).'">' . "\n";
+		echo "\n" . '<div id="wisy_searcharea" class="activefilters_cnt'.(is_object($this->filterer) ? $this->filterer->getActiveFiltersCount() : 0).'" role="search" aria-labelledby="wisyr_searchinput_label">' . "\n";
 		echo '<div class="inner">' . "\n";
-		echo '<form action="search" method="get" '.$searchAction.'>' . "\n" . $target; // #richtext
+		echo '<form action="search" method="get" '.$searchAction.' aria-label="Suche">' . "\n" . $target; // #richtext
 		echo '<div class="formrow wisyr_searchinput">';
 		echo '<label for="wisy_searchinput">' . $this->iniRead('searcharea.placeholder', $DEFAULT_PLACEHOLDER) . '</label>';
 		if($this->simplified)
@@ -2384,7 +2384,7 @@ class WISY_FRAMEWORK_CLASS
 		        $this->QS = utf8_decode($this->QS);
 		        
 		        $qs = $this->QS;
-		        echo '<input '.$queryinput.' type="text" id="wisy_searchinput" class="' . $autocomplete_class . '" name="qs" value="' .$qs. '" placeholder="' . $searchinput_placeholder . '" data-onemptyvalue="' . $this->iniRead('search.emptyvalue', '') . '"/>' . "\n";
+		        echo '<input '.$queryinput.' type="text" id="wisy_searchinput" class="' . $autocomplete_class . '" name="qs" value="' .$qs. '" placeholder="' . $searchinput_placeholder . '" data-onemptyvalue="' . $this->iniRead('search.emptyvalue', '') . '" aria-label="Suchen nach Suchbegriff oder Kursthema" role="combobox" aria-controls="wisy_autocomplete" aria-owns="wisy_autocomplete" aria-expanded="false" aria-autocomplete="list" autocomplete="off"/>' . "\n";
 		        echo '<input type="hidden" id="wisy_searchinput_q" name="q" value="' . addslashes($this->Q) . '" />' . "\n"; // str_replace(array('"', "'"), '', addslashes( - addslashes not for anti-xss per se but rendering success for problematic chars - str_replace not necessary but better rendering if addslashes applied twice somehow
 		        echo '<input type="hidden" id="wisy_searchinput_qf" name="qf" value="' . addslashes($this->QF) . '" />' . "\n"; // str_replace(array('"', "'"), '', addslashes( - addslashes not for anti-xss per se but rendering success for problematic chars - str_replace not necessary but better rendering if addslashes applied twice somehow
 		        
@@ -2411,7 +2411,7 @@ class WISY_FRAMEWORK_CLASS
 		}
 		else
 		{
-		    echo '<input type="text" id="wisy_searchinput" class="' . $autocomplete_class . '" name="q" value="' .$q. '" placeholder="' . $searchinput_placeholder . '" />' . "\n";
+			echo '<input type="text" id="wisy_searchinput" class="' . $autocomplete_class . '" name="q" value="' .$q. '" placeholder="' . $searchinput_placeholder . '" role="combobox" aria-controls="wisy_autocomplete" aria-owns="wisy_autocomplete" aria-expanded="false" aria-autocomplete="list" autocomplete="off" />' . "\n";
 		}
 		echo '</div>';
 		
@@ -2444,6 +2444,9 @@ class WISY_FRAMEWORK_CLASS
 				
 					echo $this->replacePlaceholders($this->iniRead('searcharea.advlink', $DEFAULT_ADVLINK_HTML)) . "\n";
 					echo $this->replacePlaceholders($this->iniRead('searcharea.html', $DEFAULT_RIGHT_HTML)) . "\n";
+					
+					echo '<div id="wisy_autocomplete_wrapper" aria-live="polite"></div>';
+					
 				echo '</form>' . "\n";
 			echo "\n</div><!-- /.inner -->";
 		echo "\n</div><!-- /#wisy_searcharea -->\n\n";

@@ -137,7 +137,7 @@ class WISY_KURS_RENDERER_CLASS
 		// start the result area
 		// --------------------------------------------------------------------
 		
-		echo '<div id="wisy_resultarea" class="' .$this->framework->getAllowFeedbackClass(). '">';
+		echo '<div id="wisy_resultarea" class="' .$this->framework->getAllowFeedbackClass(). '" role="main">';
 		
 		
 			// headline + flush() (loading the rest may take some seconds)
@@ -201,7 +201,7 @@ class WISY_KURS_RENDERER_CLASS
 			    echo '<div id="readspeaker_button1" class="rs_skip rsbtn rs_preserve"> <a rel="nofollow" class="rsbtn_play" accesskey="L" title="Um den Text anzuh&ouml;ren, verwenden Sie bitte ReadSpeaker webReader" href="'.$readsp_embedurl.'"><span class="rsbtn_left rsimg rspart"><span class="rsbtn_text"> <span>Vorlesen</span></span></span> <span class="rsbtn_right rsimg rsplay rspart"></span> </a> </div>';
 			    
 			    
-			echo '<article class="wisy_kurs_inhalt"><h1 class="inhalt">Inhalt</h1>';
+			echo '<article class="wisy_kurs_inhalt" role="region" aria-labelledby="wisy_kurs_inhalt_title"><h2 class="wisy_kurs_inhalt_title">Inhalt</h2>';
 			
 				if( $beschreibung != '' ) {
 					$wiki2html =& createWisyObject('WISY_WIKI2HTML_CLASS', $this->framework);
@@ -232,7 +232,7 @@ class WISY_KURS_RENDERER_CLASS
 			
 				echo '</article><!-- /.wisy_kurs_inhalt -->';
 			
-				echo '<article class="wisy_kurs_anbieter"><h1>Anbieter</h1>';
+				echo '<article class="wisy_kurs_anbieter" role="region" aria-labelledby="wisy_kurs_anbieter_title"><h2 id="wisy_kurs_anbieter_title">Anbieter</h2>';
 				// visitenkarte des anbieters
 				$anbieterRenderer =& createWisyObject('WISY_ANBIETER_RENDERER_CLASS', $this->framework);
 				echo '<div class="wisy_vcard">';
@@ -244,7 +244,7 @@ class WISY_KURS_RENDERER_CLASS
 				echo '</article><!-- /.wisy_kurs_anbieter -->';
 
 				// Durchfuehrungen vorbereiten
-				echo '<article class="wisy_kurs_durchf"><h1 class="wisy_df_headline">Termine</h1>';
+				echo '<article class="wisy_kurs_durchf" role="region" aria-labelledby="wisy_kurs_durch_title"><h2 id="wisy_kurs_durch_title" class="wisy_df_headline">Termine</h2>';
                 
                 $spalten = $wisyPortalSpalten;
                 if($wisyPortalSpaltenDurchf != '') $spalten = $wisyPortalSpaltenDurchf;

@@ -203,7 +203,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		
 		// Telefonnummer
 		if( $anspr_tel )
-			$vc['Telefon'] .= "\n" . '<div class="wisyr_anbieter_telefon"><a itemprop="telephone" href="tel:' . urlencode($anspr_tel) . '">'. $anspr_tel . '</a></div>';
+			$vc['Telefon'] .= "\n" . '<div class="wisyr_anbieter_telefon"><a itemprop="telephone" href="tel:' . $this->framework->formatTelUrl($anspr_tel) . '">'. $anspr_tel . '</a></div>';
 
 		if( $anspr_fax )
 			$vc['Fax'] .= "\n" . '<div class="wisyr_anbieter_fax"><span itemprop="faxNumber">'. $anspr_fax . '</span></div>';
@@ -240,7 +240,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 			{
 				$vc['Logo'] = "\n" . '<div class="wisyr_anbieter_logo">';
 				$this->fit_to_rect($logo_w, $logo_h, 128, 64, $logo_w, $logo_h);
-				$vc['Logo'] .= "<span itemprop=\"logo\"><img src=\"{$wisyPortal}admin/media.php/logo/anbieter/$anbieterId/".urlencode($logo_name)."\" style=\"width: ".$logo_w."px; height: ".$logo_h."px;\" alt=\"Anbieter Logo\" title=\"\" id=\"anbieterlogo\"/></span>";
+				$vc['Logo'] .= "<span itemprop=\"logo\" aria-hidden=\"true\"><img src=\"{$wisyPortal}admin/media.php/logo/anbieter/$anbieterId/".urlencode($logo_name)."\" style=\"width: ".$logo_w."px; height: ".$logo_h."px;\" alt=\"Anbieter Logo\" title=\"\" id=\"anbieterlogo\"/></span>";
 				$vc['Logo'] .= '</div>';
 			}
 		}
@@ -262,7 +262,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		{
 			require_once('admin/config/codes.inc.php'); // needed for $codes_rechtsform
 			$codes_array = explode('###', $GLOBALS['codes_rechtsform']);
-			for( $c = 0; $c < count($codes_array); $c += 2 ) {
+			for( $c = 0; $c < count((array) $codes_array); $c += 2 ) {
 				if( $codes_array[$c] == $rechtsform ) {
 				    $vc['Rechtsform'] = cs8($codes_array[$c+1]);
 					break;
@@ -394,7 +394,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 			echo '<h3>Zertifikate - aktuelle Angebote</h3>';
 			echo '<p>';
 				echo $html;
-			echo '<p>';
+			echo '</p>';
 		}
 		
 		// besondere Kursarten - diese Liste enthält nur eine Auswahl von Stichworten, definiert von einer Liste von Stichwort-IDs
@@ -658,7 +658,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		    echo "\n" . '<div class="wisyr_anbieter_logo">';
 		    if(!$logo_position) {
 		        $this->fit_to_rect($logo_w, $logo_h, 128, 64, $logo_w, $logo_h);
-		        echo "<div class=\"logo\"><img src=\"{$wisyPortal}admin/media.php/logo/anbieter/$anbieter_id/".urlencode($logo_name)."\" style=\"width: ".$logo_w."px; height: ".$logo_h."px;\" alt=\"Anbieter Logo\" title=\"\" id=\"anbieterlogo\"/></div>";
+		        echo "<div class=\"logo\" aria-hidden=\"true\"><img src=\"{$wisyPortal}admin/media.php/logo/anbieter/$anbieter_id/".urlencode($logo_name)."\" style=\"width: ".$logo_w."px; height: ".$logo_h."px;\" alt=\"Anbieter Logo\" title=\"\" id=\"anbieterlogo\"/></div>";
 		        echo '<div id="logo_bildrechte" style="color: #aaa; font-size:.8em;">'.$logo_rights.'</div>';
 		    }
 		    echo '</div>';
@@ -668,8 +668,9 @@ class WISY_ANBIETER_RENDERER_CLASS
 		flush();
 		
 		echo "\n\n" . '<section class="wisyr_anbieterinfos clearfix">';
-		echo "\n" . '<article class="wisyr_anbieter_firmenportraet wisy_anbieter_inhalt" data-tabtitle="Über">' . "\n";
-		echo '<h1>&Uuml;ber den Anbieter</h1>';
+		echo "\n" . '<article class="wisyr_anbieter_firmenportraet wisy_anbieter_inhalt" data-tabtitle="Über" role="region" aria-labelledby="wisy_anbieter_inhalt_title">' . "\n";
+		echo '<h2 id="wisy_anbieter_inhalt_title">&Uuml;ber den Anbieter</h2>';
+
 		
 		if($logo_position) {
 		    echo "<img src=\"{$wisyPortal}admin/media.php/logo/anbieter/$anbieter_id/".urlencode($logo_name)."\" alt=\"Anbieter Logo: {$anbieter_suchname}\" title=\"{$anbieter_suchname}\" id=\"logo_big\">";
@@ -683,7 +684,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		}
 		
 		echo "\n</article><!-- /.wisyr_anbieter_firmenportraet -->\n\n";
-		echo "\n" . '<article class="wisyr_anbieter_steckbrief" data-tabtitle="Kontakt">' . "\n";
+		echo "\n" . '<article class="wisyr_anbieter_steckbrief" data-tabtitle="Kontakt" role="region" aria-label="Steckbrief">' . "\n";
 		
 		echo "\n" . '<div class="wisy_steckbrief clearfix">';
 			echo '<div class="wisy_steckbriefcontent" itemscope itemtype="https://schema.org/Organization">';
@@ -693,7 +694,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		
 		echo "\n</article><!-- /.wisyr_anbieter_steckbrief -->\n\n";
 		
-		echo "\n\n" . '<article class="wisy_anbieter_kursangebot '.($logo_name? "" : "nologo").'" data-tabtitle="Kurse"><h1>Angebot</h1>' . "\n";
+		echo "\n\n" . '<article class="wisy_anbieter_kursangebot '.($logo_name? "" : "nologo").'" data-tabtitle="Kurse" role="region" aria-labelledby="wisy_anbieter_kursangebot_title"><h2 id="wisy_anbieter_kursangebot_title">Kurs&shy;angebot</h2>' . "\n";
 		
 		// link "show all offers"
 		$freq = $this->tagsuggestorObj->getTagFreq(array($this->tag_suchname_id)); if( $freq <= 0 ) $freq = '';

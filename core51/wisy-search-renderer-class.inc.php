@@ -755,7 +755,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		if( $tag_help > 0 )
 		{
 			$row_postfix .=
-			 " <a class=\"wisy_help\" href=\"" . $this->framework->getUrl('g', array('id'=>$tag_help, 'q'=>$tag_name)) . "\" title=\"Ratgeber\">&nbsp;i&nbsp;</a>";
+			 " <a class=\"wisy_help\" href=\"" . $this->framework->getUrl('g', array('id'=>$tag_help, 'q'=>$tag_name)) . "\" title=\"Ratgeber\" aria-label=\"Ratgeber zu " . $tag_name . "\">&nbsp;i&nbsp;</a>";
 		}
 		
 		return '<span class="' .$row_class. '">' .
@@ -1463,7 +1463,7 @@ class WISY_SEARCH_RENDERER_CLASS
 						    echo '<a href="' . $anbieterRenderer->createMailtoLink($link) . '" target="_blank" rel="noopener noreferrer">E-Mail</a>';
 						    echo ' </td>';
 					echo '<td class="wisyr_telefon" data-title="Telefon">';
-					echo '<a href="tel:' . urlencode( cs8($record['anspr_tel']) ) . '">' . htmlspecialchars( cs8($record['anspr_tel']) ) . '</a>';
+					echo '<a href="tel:' . $this->framework->formatTelUrl( cs8($record['anspr_tel']) ) . '">' . htmlspecialchars( cs8($record['anspr_tel']) ) . '</a>';
 					echo ' </td>';
 				echo '  </tr>' . "\n";
 			}

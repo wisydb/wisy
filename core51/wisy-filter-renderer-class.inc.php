@@ -256,7 +256,8 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 	    echo '<div id="wisyr_filterform" class="wisyr_filterform">';
 	    echo '<div class="wisyr_filterform_header"><h' . ($hlevel + 1) . ' class="wisyr_filterform_header_titel">Suchauftrag anpassen</h' . ($hlevel + 1) . '><h' . ($hlevel + 2) . ' class="wisyr_filterform_header_text">Nutzen Sie Filter, um Ihre Suche weiter einzugrenzen:</h' . ($hlevel + 2) . '></div>';
 	    echo '<form action="search" method="get" name="filterform" role="search" aria-label="Suchauftrag anpassen">';
-	    echo '<input type="hidden" name="qs" value="' . $this->framework->QS . '" />';
+	    echo '<input type="hidden" name="filter_filtered" value="1" />';
+		echo '<input type="hidden" name="qs" value="' . $this->framework->QS . '" />';
 	    echo '<input type="hidden" name="qf" value="' . $this->framework->QF . '" />';
 	    
 	    // Workaround for "Volltext", TODO: optimize
@@ -658,35 +659,35 @@ class WISY_FILTERMENU_ITEM
             break;
             
             case 'foerderungen':
-    		    return $this->getSpezielleStichw(2, $data['datawhitelist']);
+    		    return $this->getSpezielleStichw(2, $data['datawhitelist'], $data['orderbywhitelist']);
             break;
             
             case 'zielgruppen':
-                return $this->getSpezielleStichw(8, $data['datawhitelist']);
+                return $this->getSpezielleStichw(8, $data['datawhitelist'], $data['orderbywhitelist']);
             break;
             
             case 'qualitaetszertifikate':
-                return $this->getSpezielleStichw(4, $data['datawhitelist']);
+                return $this->getSpezielleStichw(4, $data['datawhitelist'], $data['orderbywhitelist']);
             break;
             
             case 'zertifikate':
-                return $this->getSpezielleStichw(65536, $data['datawhitelist']);
+                return $this->getSpezielleStichw(65536, $data['datawhitelist'], $data['orderbywhitelist']);
                 break;
                 
             case 'sonstigemerkmale':
-                return $this->getSpezielleStichw(1024, $data['datawhitelist']);
+                return $this->getSpezielleStichw(1024, $data['datawhitelist'], $data['orderbywhitelist']);
                 break;
                 
             case 'abschluesse':
-                return $this->getSpezielleStichw(1, $data['datawhitelist']);
+                return $this->getSpezielleStichw(1, $data['datawhitelist'], $data['orderbywhitelist']);
                 break;
                 
             case 'abschlussarten':
-                return $this->getSpezielleStichw(16, $data['datawhitelist']);
+                return $this->getSpezielleStichw(16, $data['datawhitelist'], $data['orderbywhitelist']);
                 break;
             
             case 'unterrichtsarten':
-                return $this->getSpezielleStichw(32768, $data['datawhitelist']);
+                return $this->getSpezielleStichw(32768, $data['datawhitelist'], $data['orderbywhitelist']);
                 break;
                 
             case 'sonstigesmerkmal':
