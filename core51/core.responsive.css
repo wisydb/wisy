@@ -134,6 +134,10 @@ ul.dropdown ul li.has-subnav:after {
 .ac_even { background-color: #eee; }
 .ac_odd { background-color: #fff; }
 
+#wisy_autocomplete_wrapper .ui-autocomplete {
+	z-index: 1111;
+}
+
 /* Erweiterte Suche: Formular */
 
 #adv_all {

@@ -497,7 +497,7 @@ class WISY_FILTERMENU_ITEM
                     case 'textfield':
                         
                         if($clearbutton) $ret .= '<div class="filter_clearbutton_wrapper">';
-                        $ret .= '<input type="text" name="filter_' . $fieldname . '[]" id="filter_' . $fieldname . '" class="' . $fieldclass . '" value="' . $fieldvalue . '" placeholder="' . $fieldplaceholder . '" data-autocomplete="'.$autocomplete.'"/>';
+                        $ret .= '<input type="text" name="filter_' . $fieldname . '[]" id="filter_' . $fieldname . '" class="' . $fieldclass . '" value="' . $fieldvalue . '" placeholder="' . $fieldplaceholder . '" data-autocomplete="'.$autocomplete.'" aria-label="'.$fieldname.'"/>';
                         
                         if( isset($input['deletebutton']) ) // only mobile
                             $ret .= '<div class="clear_btn hidden" aria-label="Eingabe l&ouml;schen" onclick=" jQuery(\'#filter_'.$fieldname.'\').val(\'\'); "></div>';

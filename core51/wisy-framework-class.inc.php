@@ -2308,7 +2308,7 @@ class WISY_FRAMEWORK_CLASS
 		}
 
 		// echo the search field
-		$DEFAULT_PLACEHOLDER	= '';
+		$DEFAULT_PLACEHOLDER	= 'Suche';
 		$DEFAULT_ADVLINK_HTML	= '<a href="advanced?q=__Q_URLENCODE__" id="wisy_advlink">Erweitern</a>';
 		$DEFAULT_RIGHT_HTML		= '|&nbsp;<a href="javascript:window.print();">Drucken</a>';
 		$DEFAULT_BOTTOM_HINT	= 'bitte <strong>Suchw&ouml;rter</strong> eingeben - z.B. Englisch, VHS, Bildungsurlaub, ...';
@@ -2373,7 +2373,7 @@ class WISY_FRAMEWORK_CLASS
 		echo '<div class="inner">' . "\n";
 		echo '<form action="search" method="get" '.$searchAction.' aria-label="Suche">' . "\n" . $target; // #richtext
 		echo '<div class="formrow wisyr_searchinput">';
-		echo '<label for="wisy_searchinput">' . $this->iniRead('searcharea.placeholder', $DEFAULT_PLACEHOLDER) . '</label>';
+		echo '<label id="wisyr_searchinput_label" for="wisy_searchinput">' . $this->iniRead('searcharea.placeholder', $DEFAULT_PLACEHOLDER) . '</label>';
 		if($this->simplified)
 		{
 		    // #richtext
