@@ -382,8 +382,7 @@ class WISY_FILTERMENU_ITEM
             $this->getFormfields($data, false);
             $ret .= $this->getFormfields($data, true);
         }
-        
-        if($subsection || (isset($data['no_autosubmit']) && $data['no_autosubmit'] == 1) ) {
+        if(!$data['metagroup'] || $subsection || (isset($data['no_autosubmit']) && $data['no_autosubmit'] == 1) ) {
             $ret .= '<input class="filter_submit" type="submit" value="&Uuml;bernehmen" />';
         }
         $ret .= '</div>';
