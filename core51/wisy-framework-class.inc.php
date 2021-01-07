@@ -1683,7 +1683,7 @@ class WISY_FRAMEWORK_CLASS
 			$ret .= "window.cookiebanner = {};\n";
 			$ret .= "window.cookiebanner.optoutCookies = \"{$this->iniRead('cookiebanner.cookies.optout', '')},fav,fav_init_hint\";\n";
 			$ret .= "window.cookiebanner.optedOut = false;\n";
-			$ret .= "window.cookiebanner.favOptoutMessage = \"{$this->iniRead('cookiebanner.fav.optouthinweis', 'Ihr Favorit konnte auf diesem Computer nicht gespeichert gewerden da Sie die Speicherung von Cookies abgelehnt haben. Sie k&ouml;nnen Ihre Cookie-Einstellungen in den Datenschutzhinweisen anpassen.')}\";\n";
+			$ret .= "window.cookiebanner.favOptoutMessage = \"{$this->iniRead('cookiebanner.fav.optouthinweis', 'Ihr Favorit konnte auf diesem Computer nicht gespeichert werden, da Sie die Speicherung von Cookies abgelehnt haben. Sie koennen Ihre Cookie-Einstellungen in den Datenschutzhinweisen anpassen.')}\";\n";
 			$ret .= "window.cookiebanner.piwik = \"{$this->iniRead('analytics.piwik', '')}\";\n";
 			$ret .= "window.cookiebanner.uacct = \"{$this->iniRead('analytics.uacct', '')}\";\n";
 

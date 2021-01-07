@@ -33,6 +33,7 @@ a.expires?"; expires="+a.expires.toUTCString():"",a.path?"; path="+a.path:"",a.d
 window.sameSiteDefault = "Strict";
 
 function setCookieSafely(title, value, options) {
+	/* optout check makes no sense b/c opt in required anyway
 	if (window.cookiebanner && window.cookiebanner.optedOut && window.cookiebanner.optoutCookies && window.cookiebanner.optoutCookies.length) {
 		var blacklist = window.cookiebanner.optoutCookies.split(',');
 		for (var i = 0; i < blacklist.length; i++) {
@@ -40,7 +41,7 @@ function setCookieSafely(title, value, options) {
 				return false;
 			}
 		}
-	}
+	} */
 	$.cookie(title, value, options);
 }
 
@@ -185,11 +186,15 @@ function fav_update_bar()
 
 function fav_click(jsObj, id)
 {
+	/*
 	if (window.cookiebanner && window.cookiebanner.optedOut) {
 		alert(window.cookiebanner.favOptoutMessage);
 		window.cookieconsent.popup.open();
 			return false;
-		} else if($.cookie('cconsent_merkliste') != "allow") {
+		} else
+	*/
+	 
+	if($.cookie('cconsent_merkliste') != "allow") {
 		  alert("Um diese Funktion nutzen zu k"+oe+"nnen, m"+ue+"ssen Sie dem Speichern von Cookies f"+ue+"r diese Funktion zustimmen (im Cookie-Hinweisfenster).");
 		  hightlightCookieConsentOption('merkliste');
 		  window.cookieconsent.popup.open();
