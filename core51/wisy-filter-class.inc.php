@@ -881,7 +881,7 @@ class WISY_FILTER_CLASS
 	        });
 	    }
 	    
-	    return $this->framework->getUrl('search', array('qs' => $this->framework->QS, 'qf' => $this->stringFromTokens($tokens)));
+	    return $this->framework->getUrl('search', array('qs' => $this->framework->QS, 'qf' => $this->stringFromTokens($tokens), 'qsrc' => 's'));
 	}
 	
 	function getUrlRemoveFilterByValue($tokenconditions, $removevalue) {
