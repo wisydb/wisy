@@ -32,6 +32,7 @@ a.expires?"; expires="+a.expires.toUTCString():"",a.path?"; path="+a.path:"",a.d
 window.sameSiteDefault = "Strict";
 
 function setCookieSafely(title, value, options) {
+	/* optout check makes no sense b/c opt in required anyway
 	if (window.cookiebanner && window.cookiebanner.optedOut && window.cookiebanner.optoutCookies && window.cookiebanner.optoutCookies.length) {
 		var blacklist = window.cookiebanner.optoutCookies.split(',');
 		for (var i = 0; i < blacklist.length; i++) {
@@ -39,7 +40,7 @@ function setCookieSafely(title, value, options) {
 				return false;
 			}
 		}
-	}
+	} */
 	$.cookie(title, value, options);
 }
 
@@ -126,7 +127,7 @@ function fav_save_cookie()
 			str += key;
 		}
 	}
-	setCookieSafely('fav', str, { expires: 30 }); // expires in 30 days
+	setCookieSafely('fav', str, { path: "/", sameSite: "Strict", expires: 30 }); // expires in 30 days // options working?
 }
 
 
@@ -207,7 +208,7 @@ function fav_click(jsObj, id)
 		
 		if( $.cookie('fav_init_hint') != 1 ) {
 			alert('Ihr Favorit wurde auf diesem Computer gespeichert. Um ihre Merkliste anzuzeigen, klicken Sie auf "Merkliste" oben rechts.');
-			setCookieSafely('fav_init_hint', 1, { expires: 30 }); 
+			setCookieSafely('fav_init_hint', 1, { path: "/", sameSite: "Strict", expires: 30 }); 
 		}
 	}
 }
