@@ -955,6 +955,21 @@ class WISY_SEARCH_CLASS
 		);
 			
 	}
+	
+	function getFilterInfo()
+	{
+		$bei = false;
+		$datum = false;
+		foreach($this->tokens['cond'] as $cond) {
+			if($cond['field'] == 'bei') $bei = $cond['value'];
+			if($cond['field'] == 'datum') $datum = $cond['value'];
+		}
+		
+		return array(
+			'bei' => $bei,
+			'datum' => $datum
+		);
+	}
 
 	function getKurseCount()
 	{

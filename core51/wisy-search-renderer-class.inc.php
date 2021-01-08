@@ -12,6 +12,7 @@ class WISY_SEARCH_RENDERER_CLASS
 	var $beschreibung_relevance = -1;
 	var $changedquery = '';
 	var $classes_changedquery = '';
+	var $filterInfo;
 	
 	function __construct(&$framework)
 	{
@@ -587,7 +588,15 @@ class WISY_SEARCH_RENDERER_CLASS
 				
 			$tags = $this->framework->loadStichwoerter($db, 'kurse', $currKursId);
 			array_push($tag_cloud, $tags);
-			$durchfClass->formatDurchfuehrung($db, $currKursId, $durchfuehrungenIds, 0, 0, 1, $addText, array('record'=>$record, 'stichwoerter'=>$tags));
+			
+			$addParam = array('record'=>$record, 'stichwoerter'=>$tags);
+			$addParam['datum'] = $this->filterInfo['datum'];
+			if( $this->framework->iniRead('searcharea.radiussearch', 0))
+			{
+				$addParam['bei'] = $this->filterInfo['bei'];
+			}
+			
+			$durchfClass->formatDurchfuehrung($db, $currKursId, $durchfuehrungenIds, 0, 0, 1, $addText, $addParam);
 				
 			// SPALTE: Entfernung
 			if( $this->hasDistanceColumn )
@@ -935,6 +944,8 @@ class WISY_SEARCH_RENDERER_CLASS
 	{
 	    global $wisyPortalSpalten;
 	    $this->emptymsg_output = false;
+		
+		$this->filterInfo = $searcher->getFilterInfo();
 	    
 	    $richtext = (intval(trim($this->framework->iniRead('meta.richtext'))) === 1); // #richtext
 	    
@@ -1516,10 +1527,10 @@ class WISY_SEARCH_RENDERER_CLASS
 	            
 	            echo '<div class="suggestions">';
 	            
-	            // Change notice depending on wether filter selected
+	            // Change notice depending on whether filter selected
 	            if(count($this->framework->tokensQF) == 0)
 	            {
-	                // Empty search wihtout active filters
+	                // Empty search without active filters
 	                if( sizeof((array) $info['suggestions']) && !(sizeof((array) $info['suggestions']) === 1 && strpos($info['suggestions'][0]['tag'], 'volltext:') !== FALSE))
 	                {
 						echo '<h' . ($hlevel + 1) . '>Suchvorschl&auml;ge</h' . ($hlevel + 1) . '>';

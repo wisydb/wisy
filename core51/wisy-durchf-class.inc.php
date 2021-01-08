@@ -417,6 +417,36 @@ class WISY_DURCHF_CLASS
         if( $db->next_record() )
         {
             $record  = $db->Record;
+            
+            if($addParam['bei'] && $addParam['bei'] != '') {
+                // If list is filtered by place try to find a durchfuehrung with the filtered place
+                $bei = $addParam['bei'];
+                if($bei != $record['ort']) {
+                    while( $db->next_record() )
+                    {
+                        $r = $db->Record;
+                        if($bei == $r['ort']) {
+                            $record  = $r;
+                            break;
+                        }
+                    }
+                }
+            } else if($addParam['datum'] && $addParam['datum'] != '') {
+                // If list is filtered by datum try to find a durchfuehrung with the filtered datum
+                $datum = strtotime($addParam['datum']);
+                $beginn = strtotime($record['beginn']);
+                if($datum > $beginn) {
+                    while( $db->next_record() )
+                    {
+                        $r = $db->Record;
+                        $beginn = strtotime($r['beginn']);
+                        if($datum <= $beginn) {
+                            $record  = $r;
+                            break;
+                        }
+                    }
+                }
+            }
         }
 	    else
 	    {
@@ -691,7 +721,7 @@ class WISY_DURCHF_CLASS
 			    
 			    $ort_a = array_unique($ort_a, SORT_STRING); // make sure each place only once in Array
 			    
-			    // if left places happen to mach place from first DF eliminate it here in add. array to not output redundand event venues
+			    // if left places happen to match place from first DF eliminate it here in add. array to not output redundant event venues
 			    $key = array_search($ort, $ort_a);
 			    if($key !== FALSE)
 			        unset($ort_a[$key]);

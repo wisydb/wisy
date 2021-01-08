@@ -99,6 +99,11 @@ class WISY_INTELLISEARCH_CLASS
 		return $ret;
 	}
 	
+	function getFilterInfo()
+	{
+		return $this->searcher->getFilterInfo();
+	}
+	
 	function getKurseCount()
 	{
 		return $this->kurseCount;
