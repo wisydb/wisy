@@ -863,29 +863,18 @@ class WISY_SEARCH_CLASS
 				            $fulltext_matchall = $this->framework->replaceWords($ignoreWords_DE, $fulltext_excactmatch);
 				            
 				            
-				            // if( stripos($_SERVER['SERVER_NAME'], 'sandbox') !== FALSE) {
-				            // ", MATCH(kurse.titel) AGAINST('\"".addslashes(trim($value))."\"' IN BOOLEAN MODE) AS title_relevance" // .", MATCH(kurse.titel) AGAINST('".addslashes(trim($value))."*' IN BOOLEAN MODE) AS title_relevance_substr"
-				            // .", MATCH(kurse.beschreibung) AGAINST('\"".addslashes(trim($value))."\"' IN BOOLEAN MODE) AS beschreibung_relevance"
-				            
 				            $this->fulltext_select = ", CASE WHEN kurse.titel LIKE '%".addslashes(trim($value))."%' THEN 1 ELSE 0 END AS title_relevance"
 				                .", CASE WHEN kurse.beschreibung LIKE '%".addslashes(trim($value))."%' THEN 1 ELSE 0 END AS beschreibung_relevance"
 				                .", '".addslashes(trim($value))."' AS fulltext_query"
 				                .", beschreibung"
 				                .", '".$this->min_chars."' AS min_chars" // query_string (cleaned of irrelevant words)
 				                .", '".$fulltext_matchall."' AS fulltext_matchall"; // query_string (cleaned of irrelevant words)
-				                // }
 				                            
 				                $this->rawWhere    .= $this->rawWhere? ' AND ' : ' WHERE ';
 				                            
 				                            
-				                // if( stripos($_SERVER['SERVER_NAME'], 'sandbox') !== FALSE)	{
-				                //  "(  MATCH(kurse.titel,kurse.beschreibung) AGAINST('*\"".$fulltext_excactmatch."\"*' IN BOOLEAN MODE) " // part of word: \" = important // MATCH(kurse.titel,kurse.beschreibung) AGAINST('\"".$fulltext_excactmatch."\"' IN BOOLEAN MODE) "	// excact match: \" = important
 				                $this->rawWhere    .= "( kurse.titel LIKE '%".$fulltext_excactmatch."%' OR kurse.beschreibung LIKE '%".$fulltext_excactmatch."%' "
-				                                   ."OR MATCH(kurse.titel,kurse.beschreibung) AGAINST('".$fulltext_matchall."' IN BOOLEAN MODE) )";
-				                // }
-				                // else
-				                // $this->rawWhere    .= "MATCH(kurse.titel, kurse.beschreibung) AGAINST('\"".addslashes(trim($value))."\"' IN BOOLEAN MODE)"; // '"...'" to match exact phrase:https://dev.mysql.com/doc/refman/8.0/en/fulltext-boolean.html // IN BOOLEAN MODE// https://dev.mysql.com/doc/refman/8.0/en/fulltext-query-expansion.html
-				                                
+				                                   ."OR MATCH(kurse.titel,kurse.beschreibung) AGAINST('".$fulltext_matchall."' IN BOOLEAN MODE) )";				                                
 				    }
 				    else
 				    {
