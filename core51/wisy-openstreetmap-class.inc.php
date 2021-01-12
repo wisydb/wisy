@@ -343,11 +343,11 @@ class WISY_OPENSTREETMAP_CLASS
 			$q_arr['free'] = $adr['free'];
 		}
 		else {
-			$strasse	= $adr['strasse'];
-			$plz		= $adr['plz'];		
-			$ort		= $adr['ort'];
-			$stadtteil	= $adr['stadtteil'];
-			$land		= $adr['land'];
+		    $strasse	= trim($adr['strasse']);
+		    $plz		= trim($adr['plz']);		
+		    $ort		= trim($adr['ort']);
+		    $stadtteil	= trim($adr['stadtteil']);
+		    $land		= trim($adr['land']);
 			if( $strasse=='' && $ort=='' ) { return array('error'=>'err_nostreetnocity'); }
 
 			// Remove venue descriptions (i.e. "Ecke ...strasse")

@@ -868,14 +868,14 @@ class WISY_SYNC_RENDERER_CLASS
 		        }
 		        
 		        // ... stadtteil / ort als Tag anlegen
-		        $strasse   		= $db2->fs('strasse');
-		        $plz 			= $db2->fs('plz'); if( $plz == '00000' ) $plz = '';
-		        $bezirk       	= $db2->fs('bezirk');
-		        $ort       		= $db2->fs('ort');
-		        $stadtteil 		= $db2->fs('stadtteil');
-		        $land 			= $db2->fs('land');
-		        $beginn			= $db2->fs('beginn');
-		        $ende			= $db2->fs('ende');
+		        $strasse   		= trim($db2->fs('strasse'));
+		        $plz 			= trim($db2->fs('plz')); if( $plz == '00000' ) $plz = '';
+		        $bezirk       	= trim($db2->fs('bezirk'));
+		        $ort       		= trim($db2->fs('ort'));
+		        $stadtteil 		= trim($db2->fs('stadtteil'));
+		        $land 			= trim($db2->fs('land'));
+		        $beginn			= trim($db2->fs('beginn'));
+		        $ende			= trim($db2->fs('ende'));
 		        $df_id			= $db2->f('did');
 		        $dauer_fix 	= intval($db2->f('dauer_fix'));
 		        

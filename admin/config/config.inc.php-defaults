@@ -1,26 +1,30 @@
 <?php
 
-// for crypting eg. login.inc.php
-global $salt;
-$salt = ""
-
-// Diese Datei kann als Template für eine neue Installation von WISY verwendet werden.
+// Diese Datei kann als Template fuer eine neue Installation von WISY verwendet werden.
 // Kopieren Sie die Datei nach config.inc.php und setzen Sie dort die richtigen Zugangsdaten ein.
 // Der Datei config.inc.php sollte zudem als "Nur Lesen" konfiguriert sein, um sie vorm versehentlichen 
-// Überschreiben zu schützen.
+// ueberschreiben zu schuetzen.
 //
-// ACHTUNG: Das Redaktionssystem verfügt über eine Quellcode-Export-Funktion: 
-// Schreiben Sie in keine anderere Datei als config.inc.php - auch nicht in diese Datei - die Zugangsdaten!
-// Ansonsten würde ihr Passwort u.U. eine weite Verbreitung funden. Die Datei config.inc.php hingegen wird nie exportiert.
+// ACHTUNG: Das Redaktionssystem verfuegt ueber eine Quellcode-Export-Funktion: 
+// Schreiben Sie in keine anderere Datei als config.inc.php - auch nicht in diese Template-Datei - die Zugangsdaten!
+// Ansonsten wuerde ihr Passwort u.U. eine weite Verbreitung funden. Die Datei config.inc.php hingegen wird nie exportiert.
 
+// for crypting eg. login.inc.php
+global $salt, $geocode_errors_file;
+$salt = "";
+$geocode_errors_file = "files/logs/non_geocoded_adresses.dat";
 
+define('LOGO_HTML', "<b style=\"font-size: 26px; color: #E1001A;\">Mein Portal/b>");
+define('INSECURE_HOST', 'example.info');
+define('SECURE_HOST', 'example.info');
+define('FORCE_SECURE_HOST', 1);
 
 class DB_Admin extends DB_Sql 
 {
-	var $Host     = "";
-	var $Database = "";
-	var $User     = "";
-	var $Password = "";
+var $Host     = "";
+var $Database = "";
+var $User     = "";
+var $Password = "";
 }
 
 
@@ -28,9 +32,9 @@ class DB_Admin extends DB_Sql
 $g_sync_data = array(
 	array(	'dbs'=>'*',							'start'=> 800000,	'inc'=>	100,	'offset'=>	0,  	'msg'=> 'Endung -00, Standardwerte, die bei einer neuen, autarken Installation Verwendung finden, Synchronisierung ist mit dieser Einstellung nicht möglich' 	),
 	array(	'dbs'=>'',							'start'=>      1,	'inc'=>	 10,	'offset'=>	1,  	'msg'=> 'Endung -1, WISY-Standard' 			),
-	array(	'dbs'=>'',							'start'=> 800000,	'inc'=>	 10,	'offset'=>	2,  	'msg'=> 'Endung -2, WISY für die Bezirke' 	),
-	array(	'dbs'=>'',							'start'=> 800000,	'inc'=>	100,	'offset'=>	3,  	'msg'=> 'Endung -03, Bildungsurlaub'	 	),
-	array(	'dbs'=>'',							'start'=> 800000,	'inc'=>	100,	'offset'=>	4,  	'msg'=> 'Endung -04, BiPo Allgaeu'	 		),
+	array(	'dbs'=>'',							'start'=> 800000,	'inc'=>	 10,	'offset'=>	2,  	'msg'=> 'Endung -2, WISY2' 	),
+	array(	'dbs'=>'',							'start'=> 800000,	'inc'=>	100,	'offset'=>	3,  	'msg'=> 'Endung -03, Weiteres Portal'	 	),
+	array(	'dbs'=>'',							'start'=> 800000,	'inc'=>	100,	'offset'=>	4,  	'msg'=> 'Endung -04, Noch ein Portal'	 		),
 );
 
 

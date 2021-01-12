@@ -20,8 +20,8 @@ define('IN_WISY', true);
 // redirects
 $url = 'https://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'];
 
-if(strpos($url,'https://www.kursportal.info/search?q=requested-term') !== false) {
-    header("Location: https://portalx.kursportal.info/search?q=target-term", true, 301); // permanent URL redirections
+if(strpos($url,'https://www.example.info/search?q=requested-term') !== false) {
+    header("Location: https://portalx.example.info/search?q=target-term", true, 301); // permanent URL redirections
     exit();
 }
 
@@ -33,23 +33,10 @@ else
         
 // convert string to UTF-8 or not
 function cs8($string) {
-        
     if(PHP7)
         return $string;
     else
         return utf8_encode($string);
-                
- /* if(ini_get("default_charset") == "UTF-8" ||  $defaultoutput == "UTF-8") {
-        if(mb_detect_encoding($string, 'UTF-8', true) === FALSE || mb_detect_encoding($string, 'ISO-8859-1', true))
-            return utf8_encode($string);
-        else
-            return $string;
-    } else {
-        if(mb_detect_encoding($string, 'ISO-8859-1', true) === FALSE || mb_detect_encoding($string, 'UTF-8', true))
-            return utf8_decode($string);
-        else
-            return $string;
-    } */
 }
 
 
