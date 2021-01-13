@@ -79,6 +79,7 @@ class G_SQLITE_CLASS
 			}
 			$drivers = PDO::getAvailableDrivers();
 			if( !in_array('sqlite', $drivers) ) {
+			    echo "<script>alert('pdo_sqlite.so not available')</script>";
 				$this->error_str = 'pdo_sqlite.so not available';
 				return false;
 			}
