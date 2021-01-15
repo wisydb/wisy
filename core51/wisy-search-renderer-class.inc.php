@@ -860,7 +860,13 @@ class WISY_SEARCH_RENDERER_CLASS
 	function renderTagliste($queryString)
 	{
 		$tagsuggestor =& createWisyObject('WISY_TAGSUGGESTOR_CLASS', $this->framework);
-		$suggestions = $tagsuggestor->suggestTags($queryString);
+		$param = array();
+		if($this->framework->getParam('zeige') == 'Anbieter') {
+			$tag_type_anbieter = $this->framework->iniRead('autosuggest_sw_typ_anbieter', array(2, 131328, 256, 262144));
+			$tag_type_anbieter = (is_array($tag_type_anbieter)) ? $tag_type_anbieter : array_map("trim", explode(",", $tag_type_anbieter));
+			$param = array('q_tag_type'=>$tag_type_anbieter, 'q_tag_type_not'=>array(0,1,65536,4,8,32768,16,32,64,128,512,1024,2048,4096,8192,16384,65));
+		}
+		$suggestions = $tagsuggestor->suggestTags($queryString, $param);
 
 		if( sizeof((array) $suggestions) ) 
 		{

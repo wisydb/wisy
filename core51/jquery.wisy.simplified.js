@@ -274,9 +274,13 @@ function clickAutocompleteHelp(tag_help, tag_name_encoded)
 	return false;
 }
 
-function clickAutocompleteMore(tag_name_encoded)
+function clickAutocompleteMore(tag_name_encoded, anbieter=false)
 {
-	location.href = 'search?show=tags&q=' + tag_name_encoded; // ie=UTF-8& 
+	if(anbieter) {
+		location.href = 'search?show=tags&zeige=Anbieter&q=' + tag_name_encoded; // ie=UTF-8& 
+	} else {
+		location.href = 'search?show=tags&q=' + tag_name_encoded; // ie=UTF-8& 
+	}
 }
 
 function htmlspecialchars(text)
@@ -423,7 +427,7 @@ function initAutocomplete()
 
 if (jQuery.ui)
 {
-	function formatItem_v2(row, request_term)
+	function formatItem_v2(row, request_term, formatter='')
 	{
 		var tag_name  = row[0]; // this is plain text, so take care on output! (eg. you may want to strip or escape HTML)
 		var tag_descr = row[1]; // this is already HTML
@@ -468,9 +472,13 @@ if (jQuery.ui)
 		else if( tag_help == 1 )
 		{
 			/* add the "more" link */
-			row_class = 'ac_more';
+			if(formatter == 'anbieter') {
+				row_class = 'ac_more ac_more_anbieter';
+			} else {
+				row_class = 'ac_more';
+			}
 			row_type = '';
-			tag_name = '<a href="" onclick="return clickAutocompleteMore(&#39;' + encodeURIComponent(tag_name) + '&#39;)">' + tag_descr + '</a>';
+			tag_name = '<strong>' + tag_descr + '</strong>';
 		}
 		else
 		{
@@ -545,7 +553,7 @@ if (jQuery.ui)
 		var request_term = extractLast(request.term);
 		var url = "/autosuggest?q=" + encodeURIComponent(request_term) + "&type=anbieter&limit=512&timestamp=" + new Date().getTime();
 		
-		ac_sourcecallback_execute(request_term, url, response_callback);
+		ac_sourcecallback_execute(request_term, url, response_callback, 'anbieter');
 	}
 	
 	function ac_sourcecallback_ort(request, response_callback)
@@ -592,11 +600,11 @@ if (jQuery.ui)
 						{
 							response_data.push({ label: row[0], value: row[1] });
 						}
-					} 
+					}
 					else
 					{
 						var row = data[i].split("|");
-						response_data.push({ label: formatItem_v2(row, request_term), value: row[0] });
+						response_data.push({ label: formatItem_v2(row, request_term, formatter), value: row[0] });
 					}
 				}
 			}
@@ -637,12 +645,14 @@ if (jQuery.ui)
 		var $to = $(event.toElement);
 		if($span.hasClass('ac_noresults') || $span.hasClass('ac_headline') || $span.hasClass('ac_more') || $to.hasClass('wisy_help'))
 		{
-			event.preventDefault();
-			if($span.hasClass('ac_more')) {
+			if($span.hasClass('ac_more_anbieter')) {
+				clickAutocompleteMore(encodeURIComponent(that.value), true);
+				return false;
+			} else if($span.hasClass('ac_more')) {
 				clickAutocompleteMore(encodeURIComponent(that.value));
 				return false;
 			}
-		} 
+		}
 		else
 		{
 	
