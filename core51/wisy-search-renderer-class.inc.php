@@ -794,8 +794,8 @@ class WISY_SEARCH_RENDERER_CLASS
 		else if( $tag_type & 128 ) { $row_class = "ac_thema";		 		 $row_type = 'Thema'; }
 		else if( $tag_type & 256 ) { $row_class = "ac_anbieter";		     
 									      if( $tag_type &  0x20000 ) { $row_type = 'Beratungsstelle'; $row_count_prefix = ($tag_freq == 1) ? ' Angebot von der' : ' Angebote von der'; }
-									 else if( $tag_type & 0x400000 ) { $row_type = 'Tr&auml;gerverweis'; }
-									 else							 { $row_type = 'Tr&auml;ger'; $row_count_prefix = ($tag_freq == 1) ? ' Angebot vom' : ' Angebote vom'; }
+									 else if( $tag_type & 0x400000 ) { $row_type = 'Anbieterverweis'; }
+									 else							 { $row_type = 'Anbieter'; $row_count_prefix = ($tag_freq == 1) ? ' Angebot von' : ' Angebote von'; }
 								   }
 		else if( $tag_type & 512 ) { $row_class = "ac_ort";                  $row_type = 'Kursort'; $row_count_prefix = ($tag_freq == 1) ? ' Angebot am' : ' Angebote am'; }
 		else if( $tag_type & 1024) { $row_class = "ac_merkmal";			 	 $row_type = 'Kursmerkmal'; }
@@ -834,8 +834,8 @@ class WISY_SEARCH_RENDERER_CLASS
 		if( $tag_help )
 		{
 			$row_info = '<a href="' . $this->framework->getUrl('g', array('id'=>$tag_help, 'q'=>$tag_name)) . '">Zeige Erkl&auml;rung</a>';
-		} else if( $tag_type & 256 && $tag_anbieter_id ) {
-			$row_info = '<a href="' . $this->framework->getUrl('a', array('id'=>$tag_anbieter_id)) . '">Zeige Tr&auml;gerprofil</a>';
+		} else if( $tag_anbieter_id ) {
+			$row_info = '<a href="' . $this->framework->getUrl('a', array('id'=>$tag_anbieter_id)) . '">Zeige Anbieterprofil</a>';
 		}
 	
 		$row_class = $row_class . ' ' . $tr_class;
@@ -862,7 +862,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		$tagsuggestor =& createWisyObject('WISY_TAGSUGGESTOR_CLASS', $this->framework);
 		$param = array();
 		if($this->framework->getParam('zeige') == 'Anbieter') {
-			$tag_type_anbieter = $this->framework->iniRead('autosuggest_sw_typ_anbieter', array(2, 131328, 256, 262144));
+			$tag_type_anbieter = $this->framework->iniRead('autosuggest_sw_typ_anbieter', array(131328, 256, 262144));
 			$tag_type_anbieter = (is_array($tag_type_anbieter)) ? $tag_type_anbieter : array_map("trim", explode(",", $tag_type_anbieter));
 			$param = array('q_tag_type'=>$tag_type_anbieter, 'q_tag_type_not'=>array(0,1,65536,4,8,32768,16,32,64,128,512,1024,2048,4096,8192,16384,65));
 		}

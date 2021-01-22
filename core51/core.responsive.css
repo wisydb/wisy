@@ -87,6 +87,15 @@ ul.dropdown ul li.has-subnav:after {
 .wisy_tagtable .tag_count { float: right; }
 .wisy_tagtable .wisyr_tag_name a { display: inline-block; max-width: 70%; }
 
+/* Anbieter */
+.wisy_tagtable .ac_anbieter .tag_count {
+	float: left;
+	margin-right: 0.3rem;
+}
+.wisy_tagtable .ac_anbieter .wisyr_tag_info {
+	font-weight: bold;
+}
+
 /* ART Icons */
 .wisyr_art_icon,
 .wisyr_art .bu,

@@ -80,7 +80,7 @@ class WISY_AUTOSUGGEST_RENDERER_CLASS
 			    }
 			    else if( $this->framework->getParam('type') == 'anbieter')
 			    {
-				    $tag_type_anbieter = $this->framework->iniRead('autosuggest_sw_typ_anbieter', array(2, 131328, 256, 262144));
+				    $tag_type_anbieter = $this->framework->iniRead('autosuggest_sw_typ_anbieter', array(131328, 256, 262144));
 				    $tag_type_anbieter = (is_array($tag_type_anbieter)) ? $tag_type_anbieter : array_map("trim", explode(",", $tag_type_anbieter));
 				    $tags = $tagsuggestor->suggestTags($querystring, array('max'=>10, 'q_tag_type'=>$tag_type_anbieter, 'q_tag_type_not'=>array(0,1,65536,4,8,32768,16,32,64,128,512,1024,2048,4096,8192,16384,65)));
 				}
@@ -90,7 +90,7 @@ class WISY_AUTOSUGGEST_RENDERER_CLASS
 				    $tags = $tagsuggestor->suggestTags($querystring, array('max'=>10, 'q_tag_type_not'=>array(0,32,128,256,2048,4096,131072,262144)));
 				    
 				    if($this->framework->iniRead('search.ajax.combine_angebote_anbieter', false)) {
-				        $tag_type_anbieter = $this->framework->iniRead('autosuggest_sw_typ_anbieter', array(2, 131328, 256, 262144));
+				        $tag_type_anbieter = $this->framework->iniRead('autosuggest_sw_typ_anbieter', array(131328, 256, 262144));
 				        $tag_type_anbieter = (is_array($tag_type_anbieter)) ? $tag_type_anbieter : array_map("trim", explode(",", $tag_type_anbieter));
 				        $tags_anbieter = $tagsuggestor->suggestTags($querystring, array('max'=>10, 'q_tag_type'=>$tag_type_anbieter, 'q_tag_type_not'=>array(0,1,65536,4,8,32768,16,32,64,128,512,1024,2048,4096,8192,16384,65))); // 131072 = 65
 				        
