@@ -599,8 +599,10 @@ class WISY_SEARCH_RENDERER_CLASS
 			if($this->filterInfo['bei']) {
 				$bei[] = $this->filterInfo['bei'];
 			} else {
-				foreach($this->framework->tokensQ as $token) {
-					if($token['field'] == '') $bei[] = $token['value'];
+				if(is_array($this->framework->tokensQ)) {
+					foreach($this->framework->tokensQ as $token) {
+						if($token['field'] == '') $bei[] = $token['value'];
+					}
 				}
 			}
 			$addParam['bei'] = $bei;
