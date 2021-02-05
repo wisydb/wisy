@@ -867,50 +867,114 @@ class WISY_SEARCH_RENDERER_CLASS
 			   '</tr>';
 	}
 	
+	function formatItem_Anbieter($tag_name, $tag_descr, $tag_type, $tag_help, $tag_freq, $tag_anbieter_id=false, $tag_groups='', $tr_class='', $queryString='')
+	{
+		$row_class   = 'ac_anbieter';
+		$row_count = '';
+		
+		if( $tag_freq > 0 ) {
+			$row_count = $tag_freq;
+			$row_count .= ($tag_freq == 1) ? ' Angebot' : ' Angebote';
+		}
+		
+		$row_class = $row_class . ' ' . $tr_class;
+		
+		// highlight search string
+		$tag_name = htmlspecialchars($tag_name);
+		if($queryString != '') {
+			$tag_name_highlighted = preg_replace("/".preg_quote($queryString, "/")."/i", "<em>$0</em>", $tag_name);
+		} else {
+			$tag_name_highlighted = $tag_name;
+		}
+		
+		return '<tr class="' .$row_class. '">' .
+					'<td class="wisyr_tag_name" data-title="Anbieter"><a href="' . $this->framework->getUrl('search', array('q'=>$tag_name)) . '">' . $tag_name_highlighted . '</a></td>' .  
+					'<td class="wisyr_tag_info" data-title="Angebote"><span class="tag_count"><a href="' . $this->framework->getUrl('search', array('q'=>$tag_name)) . '">'. $row_count .'</a></span></td>' .
+			   '</tr>';
+	}
+	
 	function renderTagliste($queryString)
 	{
 		$tagsuggestor =& createWisyObject('WISY_TAGSUGGESTOR_CLASS', $this->framework);
 		$param = array();
-		if($this->framework->getParam('zeige') == 'Anbieter') {
-			$tag_type_anbieter = $this->framework->iniRead('autosuggest_sw_typ_anbieter', array(131328, 256, 262144));
-			$tag_type_anbieter = (is_array($tag_type_anbieter)) ? $tag_type_anbieter : array_map("trim", explode(",", $tag_type_anbieter));
-			$param = array('q_tag_type'=>$tag_type_anbieter, 'q_tag_type_not'=>array(0,1,65536,4,8,32768,16,32,64,128,512,1024,2048,4096,8192,16384,65));
-		}
 		$suggestions = $tagsuggestor->suggestTags($queryString, $param);
 
 		if( sizeof((array) $suggestions) ) 
 		{
-		    if($this->framework->iniRead('search.suggest.v2') == 1)
-		    {
-		        echo '<div class="wisyr_list_header"><h1 class="wisyr_rechercheziele">Suchvorschl&auml;ge zum Stichwort &quot;' . htmlspecialchars(trim($this->framework->QS)) . '&quot;</h1></div>';
-		        echo '<table class="wisy_list wisy_tagtable">';
-		        echo '	<thead>';
-		        echo '		<tr>'.
-		  		        '<th class="wisyr_titel"><span class="title">Rechercheziele</span> <span class="tag_count">Angebote dazu</span></th>'.
-		  		        '<th class="wisyr_art">Kategorie</th>'.
-		  		        '<th class="wisyr_gruppe">Oberbegriffe</th>'.
-		  		        '<th class="wisyr_info">Zusatzinfo</th>'.
-		  		        '</tr>';
-		        echo '	</thead>';
-		        echo '	<tbody>';
-		        for( $i = 0; $i < sizeof((array) $suggestions); $i++ )
-		        {
-		            $tr_class = ($i%2) ? 'ac_even' : 'ac_odd';
-		            echo $this->formatItem_v2($suggestions[$i]['tag'], $suggestions[$i]['tag_descr'], $suggestions[$i]['tag_type'], intval($suggestions[$i]['tag_help']), intval($suggestions[$i]['tag_freq']), $suggestions[$i]['tag_anbieter_id'], $suggestions[$i]['tag_groups'], $tr_class, $queryString);
-		        }
-		        echo '	</tbody>';
-		        echo '</table>';
-		    }
-		    else
-		    {
-		        echo '<h1 class="wisyr_rechercheziele">Ihre Suche nach &quot;' . htmlspecialchars(trim($this->framework->QS)) . '&quot; ergab keine Treffer</h1>';
-		        echo '<ul>';
-		        for( $i = 0; $i < sizeof((array) $suggestions); $i++ )
-		        {
-		            echo '<li>' . $this->formatItem($suggestions[$i]['tag'], $suggestions[$i]['tag_descr'], $suggestions[$i]['tag_type'], intval($suggestions[$i]['tag_help']), intval($suggestions[$i]['tag_freq'])) . '</li>';
-		        }
-		        echo '</ul>';
-		    }
+	        echo '<div class="wisyr_list_header"><h1 class="wisyr_rechercheziele">Suchvorschl&auml;ge zum Stichwort &quot;' . htmlspecialchars(trim($this->framework->QS)) . '&quot;</h1></div>';
+	        echo '<table class="wisy_list wisy_tagtable">';
+	        echo '	<thead>';
+	        echo '		<tr>'.
+	  		        '<th class="wisyr_titel"><span class="title">Rechercheziele</span> <span class="tag_count">Angebote dazu</span></th>'.
+	  		        '<th class="wisyr_art">Kategorie</th>'.
+	  		        '<th class="wisyr_gruppe">Oberbegriffe</th>'.
+	  		        '<th class="wisyr_info">Zusatzinfo</th>'.
+	  		        '</tr>';
+	        echo '	</thead>';
+	        echo '	<tbody>';
+	        for( $i = 0; $i < sizeof((array) $suggestions); $i++ )
+	        {
+	            $tr_class = ($i%2) ? 'ac_even' : 'ac_odd';
+	            echo $this->formatItem_v2($suggestions[$i]['tag'], $suggestions[$i]['tag_descr'], $suggestions[$i]['tag_type'], intval($suggestions[$i]['tag_help']), intval($suggestions[$i]['tag_freq']), $suggestions[$i]['tag_anbieter_id'], $suggestions[$i]['tag_groups'], $tr_class, $queryString);
+	        }
+	        echo '	</tbody>';
+	        echo '</table>';
+		}
+		else
+		{
+			echo 'Keine Treffer.';
+		}
+	}
+	
+	function renderTaglisteAnbieter($queryString)
+	{
+		$tagsuggestor =& createWisyObject('WISY_TAGSUGGESTOR_CLASS', $this->framework);
+		$param = array();
+		$tag_type_anbieter = $this->framework->iniRead('autosuggest_sw_typ_anbieter', array(131328, 256, 262144));
+		$tag_type_anbieter = (is_array($tag_type_anbieter)) ? $tag_type_anbieter : array_map("trim", explode(",", $tag_type_anbieter));
+		$param = array('q_tag_type'=>$tag_type_anbieter, 'q_tag_type_not'=>array(0,1,65536,4,8,32768,16,32,64,128,512,1024,2048,4096,8192,16384,65));
+		$suggestions = $tagsuggestor->suggestTags($queryString, $param);
+
+		if( sizeof((array) $suggestions) ) 
+		{
+			echo '<div class="wisyr_list_header"><h1 class="wisyr_rechercheziele">Suchvorschl&auml;ge zum Stichwort &quot;' . htmlspecialchars(trim($this->framework->QS)) . '&quot;</h1></div>';
+			echo '<table class="wisy_list wisy_tagtable wisy_tagtable_anbieter">';
+			echo '	<thead>';
+			echo '		<tr>'.
+					  '<th class="wisyr_titel"><span class="title">Anbieter</span></th>'.
+					  '<th class="wisyr_info">Angebote</th>'.
+					  '</tr>';
+			echo '	</thead>';
+			echo '	<tbody>';
+			for( $i = 0; $i < sizeof((array) $suggestions); $i++ )
+			{
+				$tr_class = ($i%2) ? 'ac_even' : 'ac_odd';
+				echo $this->formatItem_Anbieter($suggestions[$i]['tag'], $suggestions[$i]['tag_descr'], $suggestions[$i]['tag_type'], intval($suggestions[$i]['tag_help']), intval($suggestions[$i]['tag_freq']), $suggestions[$i]['tag_anbieter_id'], $suggestions[$i]['tag_groups'], $tr_class, $queryString);
+			}
+			echo '	</tbody>';
+			echo '</table>';
+		}
+		else
+		{
+			echo 'Keine Treffer.';
+		}
+	}
+	
+	function renderTaglisteV1($queryString)
+	{
+		$tagsuggestor =& createWisyObject('WISY_TAGSUGGESTOR_CLASS', $this->framework);
+		$param = array();
+		$suggestions = $tagsuggestor->suggestTags($queryString, $param);
+
+		if( sizeof((array) $suggestions) ) 
+		{
+			echo '<h1 class="wisyr_rechercheziele">Ihre Suche nach &quot;' . htmlspecialchars(trim($this->framework->QS)) . '&quot; ergab keine Treffer</h1>';
+			echo '<ul>';
+			for( $i = 0; $i < sizeof((array) $suggestions); $i++ )
+			{
+				echo '<li>' . $this->formatItem($suggestions[$i]['tag'], $suggestions[$i]['tag_descr'], $suggestions[$i]['tag_type'], intval($suggestions[$i]['tag_help']), intval($suggestions[$i]['tag_freq'])) . '</li>';
+			}
+			echo '</ul>';
 		}
 		else
 		{
@@ -1805,7 +1869,15 @@ class WISY_SEARCH_RENDERER_CLASS
 		
 		        if( $this->framework->getParam('show') == 'tags' )
 				{
-					$this->renderTagliste($queryString);
+					if($this->framework->iniRead('search.suggest.v2') == 1) {
+						if($this->framework->getParam('zeige') == 'Anbieter') {
+							$this->renderTaglisteAnbieter($queryString);
+						} else {
+							$this->renderTagliste($queryString);
+						}
+					} else {
+						$this->renderTaglisteV1($queryString);
+					}
 				}
 				else if( $searcher->ok() )
 				{
