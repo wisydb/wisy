@@ -417,15 +417,13 @@ class WISY_DURCHF_CLASS
         if( $db->next_record() )
         {
             $record  = $db->Record;
-            
-            if($addParam['bei'] && $addParam['bei'] != '') {
+            if(is_array($addParam['bei']) && count($addParam['bei'])) {
                 // If list is filtered by place try to find a durchfuehrung with the filtered place
-                $bei = $addParam['bei'];
-                if($bei != $record['ort']) {
+                if(!in_array($record['ort'], $addParam['bei'])) {
                     while( $db->next_record() )
                     {
                         $r = $db->Record;
-                        if($bei == $r['ort']) {
+                        if(in_array($r['ort'], $addParam['bei'])) {
                             $record  = $r;
                             break;
                         }

@@ -590,12 +590,20 @@ class WISY_SEARCH_RENDERER_CLASS
 			array_push($tag_cloud, $tags);
 			
 			$addParam = array('record'=>$record, 'stichwoerter'=>$tags);
+			// Pass "datum" to formatDurchuehrung if set to show relevant Durchfuehrung
 			$addParam['datum'] = $this->filterInfo['datum'];
-			if( $this->framework->iniRead('searcharea.radiussearch', 0))
-			{
-				$addParam['bei'] = $this->filterInfo['bei'];
-			}
 			
+			// Pass "bei" to formatDurchuehrung if set to show relevant Durchfuehrung
+			// If "bei" is not set pass unclassified tokens, they might be places
+			$bei = array();
+			if($this->filterInfo['bei']) {
+				$bei[] = $this->filterInfo['bei'];
+			} else {
+				foreach($this->framework->tokensQ as $token) {
+					if($token['field'] == '') $bei[] = $token['value'];
+				}
+			}
+			$addParam['bei'] = $bei;
 			$durchfClass->formatDurchfuehrung($db, $currKursId, $durchfuehrungenIds, 0, 0, 1, $addText, $addParam);
 				
 			// SPALTE: Entfernung
