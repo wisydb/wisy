@@ -193,14 +193,14 @@ $site->skin->dialogStart();
 					  render_sort_icon('top',	htmlconstant('_EDIT_SORTTOP'),		$a, $a==0);
 					}
 					render_sort_icon('up',		htmlconstant('_EDIT_SORTUP'),		$a, $a==0);
-					render_sort_icon('down',	htmlconstant('_EDIT_SORTDOWN'),		$a, $a==(sizeof($attr_values)-1));
+					render_sort_icon('down',	htmlconstant('_EDIT_SORTDOWN'),		$a, $a==(sizeof((array) $attr_values)-1));
 					if( sizeof((array) $attr_values) > 2 ) {
 					    render_sort_icon('bottom',htmlconstant('_EDIT_SORTBOTTOM'),	$a, $a==(sizeof((array) $attr_values)-1));
 					}
 					
 					// attribute name
 					echo '<td valign="top">';
-						echo '<a href="edit.php?table=' . $attr_table_def->name . '&id=' . $attr_values[$a] . '" target="_blank">';
+						echo '<a href="edit.php?table=' . $attr_table_def->name . '&id=' . $attr_values[$a] . '" target="_blank" rel="noopener noreferrer">';
 							echo isohtmlentities($attr_table_def->get_summary($attr_values[$a], ' / '/*value seperator*/));
 						echo '</a>';
 					echo '</td>';

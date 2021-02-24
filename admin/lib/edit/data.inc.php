@@ -790,7 +790,14 @@ class EDIT_DATA_CLASS
 		                $this->db1->query($sql);
 		                
 		                foreach($old_records AS $key => $value) {
-		                    $sql_deletesecondary = "UPDATE {$row->name} SET nr = '**DELETE**' WHERE id = ".$key;
+		                    $sql_deletesecondary = "DELETE FROM {$row->name} WHERE id = ".$key; // "UPDATE {$row->name} SET nr = '**DELETE**' WHERE id = ".$key;
+		                    $this->db1->query($sql_deletesecondary);
+		                }
+		                
+		            } else { // no new DF... but may one old DF left to delete
+		                
+		                foreach($old_records AS $key => $value) {
+		                    $sql_deletesecondary = "DELETE FROM {$row->name} WHERE id = ".$key; // "UPDATE {$row->name} SET nr = '**DELETE**' WHERE id = ".$key;
 		                    $this->db1->query($sql_deletesecondary);
 		                }
 		                

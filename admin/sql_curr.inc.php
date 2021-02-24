@@ -372,10 +372,6 @@ class DB_Sql
 	    if( $this->Halt_On_Error == 'no' )
 	        return;
 	        
-	        // !
-	        // printf('<p style="border: 2px solid black;"><b>DB_Sql error// :</b> %s<br>MySQL says: Errno %s - %s</p>', $msg, $this->Errno, $this->Error);
-	        
-	        
 	        $error_info = "";
 	        if( strpos($this->Errno, "1203") !== FALSE )
 	            $error_info = "Die Datenbank ist aktuell leider durch zu viele Verbindungen &uuml;berlastet!<br><br>";
@@ -386,7 +382,9 @@ class DB_Sql
 	            else
 	            $error_info = "Aus Sicherheitsgr&uuml;nden hier keine detaillierte Fehlermeldung.";
 	                	                	                
-	            printf('<p style="border: 2px solid black;"><b>DB_Sql errorb> %s<br>MySQL says: Errno %s - %s</p>', "", $this->Errno, "<div style='margin-top: 20px; color:darkred;'>".$error_info."</div>");
+	            // printf('<p style="border: 2px solid black;"><b>DB_Sql errorb> %s<br>MySQL says: Errno %s - %s</p>', "", $this->Errno, "<div style='margin-top: 20px; color:darkred;'>".$error_info."</div>");
+	            
+	            echo '<p style="border: 2px solid black;"><b>DB-Anfrage error:</b>'.$this->Errno.'</b></p>';
 	                
 	            if ($this->Halt_On_Error != "report")
 	               die("Session halted.");

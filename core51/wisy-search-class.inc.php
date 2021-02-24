@@ -724,6 +724,7 @@ class WISY_SEARCH_CLASS
 				        else {
 				            $lat = $gi['lat'];
 				            $lng = $gi['lng'];
+				            $this->foundVenue = $gi['DISPLAY_NAME'];
 				        }
 				    }
 				    
@@ -943,6 +944,10 @@ class WISY_SEARCH_CLASS
 			'lng'		=>	$this->last_lng,
 		);
 			
+	}
+	
+	public function getFoundVenue() {
+	    return $this->foundVenue;
 	}
 
 	function getKurseCount()

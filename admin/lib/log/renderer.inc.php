@@ -79,6 +79,9 @@ class LOG_RENDERER_CLASS
 					$cell = '&nbsp;';
 				}
 
+				// Remove time:
+				$cell = preg_replace("/, [0-9][0-9]:[0-9][0-9]/i", '', $cell); 
+				
 				echo $cell;
 
 			$site->skin->cellEnd();
@@ -313,6 +316,14 @@ class LOG_RENDERER_CLASS
 	
 	private function getParam()
 	{
+	    if( trim($_REQUEST['table']) == "" ) {
+	        die("Aktion nicht zugelassen. Tabelle nicht definiert. ");
+	    }
+	    
+	    if( trim($_REQUEST['id']) == "" || intval($_REQUEST['id']) < 1 ) {
+	        die("Aktion nicht zugelassen. Datensatz-ID nicht definiert. Protokolle nur für spezifische Datens&auml;tze abrufbar. ");
+	    }
+	    
 		// get table to use for filtering, if any
 		$this->filterTable = '';
 		$this->filterId = 0;

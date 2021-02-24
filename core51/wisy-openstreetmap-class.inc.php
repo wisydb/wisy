@@ -42,6 +42,7 @@ class G_GEOCODE
 				$this->geocode_ret = array();
 				$this->geocode_ret['lat'] = $attribs['LAT'];
 				$this->geocode_ret['lng'] = $attribs['LON'];
+				$this->geocode_ret['DISPLAY_NAME'] = $attribs['DISPLAY_NAME'];
 			}
 		}
 		
@@ -340,7 +341,10 @@ class WISY_OPENSTREETMAP_CLASS
 		//      to $q_arr=array('street'=>, 'postalcode'=>, 'city'=>, 'country'=>''), optional $q_arr=array('free'=>)
 		$q_arr = array();
 		if( $adr['free'] ) {
-			$q_arr['free'] = $adr['free'];
+		    if( preg_match("/[0-9]{5}/i",$adr['free']) )
+		        $q_arr['free'] = $adr['free'].", Deutschland"; // PLZ only
+		    else
+		        $q_arr['free'] = $adr['free'];
 		}
 		else {
 		    $strasse	= trim($adr['strasse']);

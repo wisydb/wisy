@@ -1,6 +1,6 @@
 <?php
 
-// Encoding: ISO8859-15, Test:: üäö¸
+// Encoding: ISO8859-15, Test:: üäö
 
 // deprecated
 $use_neweditor = true;
@@ -201,9 +201,10 @@ $anbieter->add_row(TABLE_ENUM,								'aufnahme_durch',	'Aufnahme durch', 0,
 																				.'4###Anbieterwunsch');
 $anbieter->add_row(TABLE_TEXT,								'herkunftsID',		'Herkunfts ID', '', '', '', array('layout.join'=>1, 'layout.defhide'=>2, 'layout.defhide.title'=>'weitere Angaben'));
 $anbieter->add_row(TABLE_INT|TABLE_EMPTYONNULL,				'herkunft',			'Herkunft', 0, '', '', array('layout.join'=>1, 'layout.defhide'=>2));
-if( $use_neweditor ) {
+
+/* if( $use_neweditor ) {
 	$anbieter->add_row(TABLE_SATTR|TABLE_TRACKDEFAULTS,			'thema',			'Thema', 0, $themen, '', array('layout.join'=>1, 'layout.defhide'=>2)); // 1/2014: Verwendung der Anbieter-Themen unklar, wird nur in 88 Kursen verwendet. 
-}
+} */
 
 $anbieter->rows[$use_neweditor? 10 : 2]->addparam = $anbieter;
 

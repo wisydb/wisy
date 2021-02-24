@@ -150,6 +150,10 @@ wisy_searcharea
   padding: 0;
 }
 
+.zurAngeboteSuche {
+ display: block;
+}
+
 #wisy_searchinput { /* ID also used from JS */
   font-size: 19px;
   margin-right: 4px;
@@ -429,6 +433,14 @@ input.wisy_hinted {
 	font-weight: normal;
 }
 
+.edit_hint_enable {
+  color: #0F3B7F;
+  cursor: pointer;
+}
+.edit_hint_disable {
+  color: #888888;
+  cursor: pointer;
+}
 
 /*******************************************************************************
 autocomplete styles v1

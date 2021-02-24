@@ -1067,10 +1067,10 @@ class WISY_FRAMEWORK_CLASS
 						$ret .= '<br />';
 					}
 					
-					if( in_array($stichwoerter[$s]['id'], $strike_tag) && $this->iniRead('sw.aussetzen.text', '') != '')
-					 $ret .= '<small style="display: block;">'.$this->iniRead('sw.aussetzen.text', '').'</small>';
-					elseif( in_array($stichwoerter[$s]['id'], $comment_tag) && $this->iniRead('sw.kommentieren.text', '') != '')
-					 $ret .= '<small style="display: block;">'.$this->iniRead('sw.kommentieren.text', '').'</small>';
+					if( in_array($tags[$s]['id'], $strike_tag) && $this->iniRead('sw.aussetzen.text', '') != '')
+					    $ret .= '<small style="display: block;">'.$this->iniRead('sw.aussetzen.text', '').'</small>';
+					elseif( in_array($tags[$s]['id'], $comment_tag) && $this->iniRead('sw.kommentieren.text', '') != '')
+					    $ret .= '<small style="display: block;">'.$this->iniRead('sw.kommentieren.text', '').'</small>';
 					
 					$writeAend = false;
 					/* 
@@ -1845,7 +1845,12 @@ class WISY_FRAMEWORK_CLASS
 			'.($this->detailed_cookie_settings_merkliste ? "" : "window.cookiebanner_zustimmung_merkliste_legacy = 1;").'
 			'.($this->detailed_cookie_settings_onlinepflege ? "" : "window.cookiebanner_zustimmung_onlinepflege_legacy = 1;").'
 			'.($this->detailed_cookie_settings_translate ? "" : "window.cookiebanner_zustimmung_translate_legacy = 1;").'
-			    
+			
+            jQuery(document).ready(function(){
+			 /* Hide translation optically until approved */
+				if(jQuery("#google_translate_element").length) { jQuery("#google_translate_element").closest("li").hide(); };
+			});
+
 			</script>'."\n"; // end initialization of cookie consent window
 			
 			// already set by script block
@@ -1995,6 +2000,9 @@ class WISY_FRAMEWORK_CLASS
 		
 		// add nojs class
 		$ret .= ' nojs';
+		
+		if($this->filterer->getActiveFiltersCount())
+		  $ret .= ' activefilters';
 		
 		// done
 		return $ret;
@@ -2360,7 +2368,9 @@ class WISY_FRAMEWORK_CLASS
 		        $qs = $this->QS;
 		        echo '<input '.$queryinput.' type="text" id="wisy_searchinput" class="' . $autocomplete_class . '" name="qs" value="' .$qs. '" placeholder="' . $searchinput_placeholder . '" data-onemptyvalue="' . $this->iniRead('search.emptyvalue', '') . '"/>' . "\n";
 		        echo '<input type="hidden" id="wisy_searchinput_q" name="q" value="' . addslashes($this->Q) . '" />' . "\n"; // str_replace(array('"', "'"), '', addslashes( - addslashes not for anti-xss per se but rendering success for problematic chars - str_replace not necessary but better rendering if addslashes applied twice somehow
-		        echo '<input type="hidden" id="wisy_searchinput_qf" name="qf" value="' . addslashes($this->QF) . '" />' . "\n"; // str_replace(array('"', "'"), '', addslashes( - addslashes not for anti-xss per se but rendering success for problematic chars - str_replace not necessary but better rendering if addslashes applied twice somehow
+		        
+		        if( stripos($this->QF, 'fav:') === FALSE) // don't submit q=fav: additionally as qf=fav: b/c will override following manual search
+		          echo '<input type="hidden" id="wisy_searchinput_qf" name="qf" value="' . addslashes($this->QF) . '" />' . "\n"; // str_replace(array('"', "'"), '', addslashes( - addslashes not for anti-xss per se but rendering success for problematic chars - str_replace not necessary but better rendering if addslashes applied twice somehow
 		        
 		        // if(isset( $this->qtrigger )
 		        //    echo '<input type="hidden" id="qtrigger" name="qtrigger" value="' .  $this->qtrigger  . '" />' . "\n";
@@ -2390,7 +2400,21 @@ class WISY_FRAMEWORK_CLASS
 		echo '</div>';
 		
 		if($active_filters != '') {
-		    echo '<ul class="wisyr_activefilters">' . $active_filters . '</ul>';
+		    $addcnt_class = '';
+		    
+		    switch($this->filterer->getActiveFiltersCount()) {
+		        case 1:
+		            $addcnt_class = 'one';
+		            break;
+		        case 2:
+		            $addcnt_class = 'two';
+		            break;
+		        default:
+		            $addcnt_class = 'atleast_three';
+		            break;
+		    }
+		    
+		    echo '<ul class="wisyr_activefilters '.$addcnt_class.'" data-cntActiveFilters="'.$this->filterer->getActiveFiltersCount().'">' . $active_filters . '</ul>';
 		}
 					
 					if( !$this->simplified && $this->iniRead('searcharea.radiussearch', 0) )

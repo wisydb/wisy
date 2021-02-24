@@ -873,6 +873,15 @@ function advEmbedViaAjax()
 	return false;
 }
 
+function strike_doubleTag_filter() {
+ if(typeof(double_tags) != "undefined") {
+  for(i = 0; i < double_tags.length; i++) {
+   label_strike = jQuery("input[value='"+double_tags[i]+"']").next("label");
+   label_strike.html("<strike>"+label_strike.html()+"</strike>");
+  }
+ }
+}
+
 function filterEmbeddingViaAjaxDone()
 {
 	// show filter form
@@ -1455,7 +1464,7 @@ function initFilters() {
 			{
 				format: 'd.m.Y',
 				days: ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'],
-				months: ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'],
+				months: ['Januar', 'Februar', 'M&auml;rz', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'],
 				lang_clear_date: 'Auswahl entfernen',
 				show_icon: false,
 				open_on_focus: true,
@@ -1464,6 +1473,9 @@ function initFilters() {
 			}
 		);
 	}
+ 
+ /* strike tags in filters that are double tags (compared to tags already part of search) */
+ /* strike_doubleTag_filter();  activate? */
 }
 
 function initFiltersMobile() {
@@ -1609,19 +1621,40 @@ $().ready(function()
 });
 
 function initializeTranslate() {
-	 if($.cookie('cconsent_translate') == "allow") {
-	  $.loadScript('//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit', function(){
-	 });
-	  
-	 } else {
-	  /* Interaction not disirable */
-	  /*
-	  hightlightCookieConsentOption('translate');
-	  window.cookieconsent.popup.open();
-	  return false; */
-	 }
+ if($.cookie('cconsent_translate') == "allow") {
+  /* console.log("consented"); */
+  $.loadScript('//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit', function(){
+  /* console.log('Loaded Google Translate'); */
+  if(jQuery("#google_translate_element").length) { jQuery("#google_translate_element").closest("li").show().addClass("translate"); }
+ });
+  
+ // Mobile uses a different menu structure => #google_translate_element exists twice
+ if(windowDims.width < 801) {
+  /* console.log("Mobile width  >"+windowDims.width+"<"); */
+  translateHtml = jQuery("#subnav #google_translate_element").html();
+  jQuery("#subnav #google_translate_element").remove();
+  jQuery("#google_translate_element").html(translateHtml).addClass("mobile");
+  
+  jQuery('.goog-te-menu-frame').contents().find('.goog-te-menu2').css(
+    {
+        'max-width':'100%',
+        'overflow':'scroll',
+        'box-sizing':'border-box',
+        'height':'auto'
+    }
+)
+ } else {
+  /* console.log("Desktop width  >"+windowDims.width+"<"); */
+ }
+  
+ } else {
+  /* Interaction not disirable */
+  /*
+  hightlightCookieConsentOption('translate');
+  window.cookieconsent.popup.open();
+  return false; */
+ }
 };
-
 function googleTranslateElementInit() {
   new google.translate.TranslateElement({pageLanguage: 'de', layout: google.translate.TranslateElement.InlineLayout.SIMPLE}, 'google_translate_element');
 }

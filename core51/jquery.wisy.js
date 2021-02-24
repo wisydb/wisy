@@ -1260,7 +1260,7 @@ $().ready(function()
 
 function initializeTranslate() {
 	 if($.cookie('cconsent_translate') == "allow") {
-	  console.log("consented");
+	  /* console.log("consented"); */
 	  $.loadScript('//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit', function(){
 	     /* console.log('Loaded Google Translate'); */
 	 });

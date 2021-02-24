@@ -120,6 +120,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		
 		$ob = new G_BLOB_CLASS(cs8($db->fs('logo')));
 		$logo_name		= $ob->name;
+		$logo_rights = cs8($db->fs('logo_rechte'));
 		$logo_w			= $ob->w;
 		$logo_h			= $ob->h;
 		
@@ -241,6 +242,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 				$vc['Logo'] = "\n" . '<div class="wisyr_anbieter_logo">';
 				$this->fit_to_rect($logo_w, $logo_h, 128, 64, $logo_w, $logo_h);
 				$vc['Logo'] .= "<span itemprop=\"logo\"><img src=\"{$wisyPortal}admin/media.php/logo/anbieter/$anbieterId/".urlencode($logo_name)."\" style=\"width: ".$logo_w."px; height: ".$logo_h."px;\" alt=\"Anbieter Logo\" title=\"\" id=\"anbieterlogo\"/></span>";
+				$vc['Logo'] .= '<div id="logo_bildrechte" style="color: #aaa; font-size:.8em;">'.$logo_rights.'</div>';
 				$vc['Logo'] .= '</div>';
 			}
 		}

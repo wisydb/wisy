@@ -99,6 +99,10 @@ class WISY_INTELLISEARCH_CLASS
 		return $ret;
 	}
 	
+	public function getFoundVenue() {
+	    return $this->searcher->getFoundVenue();
+	}
+	
 	function getKurseCount()
 	{
 		return $this->kurseCount;

@@ -34,8 +34,13 @@ $controlTags = array(
     'Integrationskurs für Zweitschriftlernende' => 846831,
     'Preis komplex' => 849451,
     'Einstieg bis Kursende moeglich' => 315,
-    'E-Learning' => 806311
+    'E-Learning' => 806311,
+    'rollstuhlgerecht' => 9,
+    'Mit Kinderbetreuung' => 10,
 );
+
+global $nonvenues;
+$nonvenues = array(".*ohne .*", ".*unbekannt.*", ".*E-Learning.*", ".*virtuell.*", ".*Web-Seminar.*", ".*Webinar.*", ".*Online.*", ".*WWW.*", ".*Fernstudium.*", ".*Live", ".*Internet.*", ".*Cloud.*", ".*Zoom.*", "N\.N\.", "--");
 
 global $ignoreWords_DE;
 // don't add operator keywords like "oder", "bei"... ! "in" must be contained otherwise venue may be identified by: in%

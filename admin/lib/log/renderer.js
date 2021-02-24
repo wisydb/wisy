@@ -44,9 +44,9 @@ function log_initLinks()
 	$('.log_dt').click(log_clickDetails).attr('title', 'Details anzeigen/verbergen').removeClass('log_dt');
 	
 	// set title attributes
-	$('td a[href^="edit.php?"]').attr('title', 'Datensatz bearbeiten').attr('target', '_blank');
-	$('td a[href^="log.php?user="]').attr('title', 'Protokolleinträge mit diesem Benutzer suchen');
-	$('td a[href^="log.php?table="]').attr('title', 'Protokolleinträge mit diesem Suchkriterium suchen');
+	$('td a[href^="edit.php?"]').attr('title', 'Datensatz bearbeiten').attr('target', '_blank').attr('rel', 'noopener noreferrer');
+	$('td a[href^="log.php?user="]').attr('title', 'Protokolleintr&auml;ge mit diesem Benutzer suchen');
+	$('td a[href^="log.php?table="]').attr('title', 'Protokolleintr&auml;ge mit diesem Suchkriterium suchen');
 }
 
 

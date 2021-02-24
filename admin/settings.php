@@ -1333,7 +1333,7 @@ if( regGet('toolbar.bin', 1) )
 								if( $tempName != $currName ) {
 									$tempTotal = 0;
 									foreach($tempEntries as $tempTable => $tempIds) {
-										$tempTotal += sizeof($tempIds);
+									    $tempTotal += sizeof((array) $tempIds);
 									}
 									
 									if( $tempTotal ) {
