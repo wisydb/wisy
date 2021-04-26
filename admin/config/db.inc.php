@@ -111,7 +111,7 @@ $anbieter->add_row(TABLE_ENUM|TABLE_SUMMARY|TABLE_LIST|TABLE_NEWSECTION,
     /*.'1###Trainer###' - entfernt, s. WISY_2014_TODO, 4-14*/
     .'2###Beratungsstelle###'
     // .'64###Namensverweisung (ALT)###'
-    .'65###Versteckte Namensverweisung###'
+    .'65###Versteckte Namensverweisung (z.Z. nicht verwenden)###'
     .'262144###Namensverweisung###', 'Allgemein');
 
 if( $use_neweditor ) {
@@ -291,7 +291,7 @@ $portale->add_row(TABLE_TEXTAREA,					'notizen',			'Journal', '', '', '');
 $kurse = new Table_Def_Class(TABLE_PRIMARY|TABLE_SYNCABLE,		'kurse',			$use_neweditor? 'Angebote' : 'Kurse');
 if($use_neweditor) {
 	$kurse->add_row(TABLE_TEXT, 									'azwv_knr', 		'AZAV-Kursnr.', '','', '',		array('ctrl.size'=>'3-10-40', 'layout.defhide'=>1, 'layout.join'=>1, 'layout.defhide.tooltip'=>'weitere Verwaltungsnummern'));
-	$kurse->add_row(TABLE_TEXT|TABLE_NEWSECTION,					'bu_nummer',		'BU-Kursnr.', '','', 'Kurs-IDs',	array('ctrl.size'=>'10-40', 'layout.defhide'=>2, 'layout.join'=>1));
+	$kurse->add_row(TABLE_TEXT|TABLE_NEWSECTION,					'bu_nummer',		'BU-Kursnr.', '','', 'Kurs-IDs',	array('ctrl.size'=>'10-40', 'layout.defhide'=>1, 'layout.join'=>1));
 	//$kurse->add_row(TABLE_TEXT, 									'res_nummer', 		'BU-Kursnr.', '','', '',		array('ctrl.size'=>'10-40', 'layout.defhide'=>2, 'layout.join'=>1));
 	$kurse->add_row(TABLE_TEXT, 									'fu_knr', 		    'FU-Kursnr.', '','', '',		array('ctrl.size'=>'10-40', 'layout.defhide'=>2, 'layout.join'=>1));
 	$kurse->add_row(TABLE_TEXT, 									'foerder_knr', 		'Förder-Kursnr.', '','', '',	array('ctrl.size'=>'10-40', 'layout.defhide'=>2, 'layout.join'=>1));

@@ -289,7 +289,7 @@ function update_kurs_state($kurs_id, $param)
 			if( $neuer_tagescode != 0 && $neuer_tagescode != $alter_tagescode )
 			{
 				$update .= ($update==''? '' : ', ') . " tagescode=$neuer_tagescode ";
-				//if( $alter_tagescode != 0 ) 20:32 30.01.2014: die entsprechende Nachricht wird immer ausgegeben. Warum auch nicht? Man wundert sich sonst, warum ein eigentlich nicht geänderter Datensatz be Klick auf "Übernehmen" tatsächlich gespeichert wird ... [**]
+				//if( $alter_tagescode != 0 ) 20:32 30.01.2014: die entsprechende Nachricht wird immer ausgegeben. Warum auch nicht? Man wundert sich sonst, warum ein eigentlich nicht geaenderter Datensatz be Klick auf "Uebernehmen" tatsaechlich gespeichert wird ... [**]
 					$ret['returnmsg'] .= ($ret['returnmsg']? '<br />' : '') . 'Tagescode anhand Uhrzeit/Wochentage korrigiert. <a href="https://b2b.kursportal.info/index.php?title=Berechnung_des_Tagescode" target="_blank" rel="noopener noreferrer">Weitere Informationen hierzu...</a>';
 				$ret['returnreload'] = true;
 			}

@@ -37,6 +37,17 @@ $controlTags = array(
     'E-Learning' => 806311,
     'rollstuhlgerecht' => 9,
     'Mit Kinderbetreuung' => 10,
+    'Glossar:beginnoptionen' => 14241,
+    'Glossar:tagescode' => 14231,
+    'Glossar:dauer' => 14221,
+    'Glossar:Durchfuehrungen' => 14211,
+    'Glossar:unterrichtsart' => 14181,
+    'Glossar:fu_knr' => 14191,
+    'Glossar:foerderung' => 14171,
+    'Glossar:azwv_knr' => 14161,
+    'Glossar:bu_nummer' => 14141,
+    'Glossar:stichwoerter' => 14251,
+    "Glossar:unterrichtsart_speichern" => 14201
 );
 
 global $nonvenues;
@@ -212,22 +223,33 @@ $codes_dauer =
 	.'660###22 Monate###'
 	.'690###23 Monate###'
 	.'720###24 Monate###'
-	.'365###1 Jahr###' 
-	.'730###2 Jahre###' 
+	.'780###26 Monate###'
+	.'810###27 Monate###'
+	.'840###28 Monate###'
+	.'900###30 Monate###'
+	.'960###32 Monate###'
+	.'1080###36 Monate###'
+	.'1170###39 Monate###'
+	.'1260###42 Monate###'
+	.'1440###48 Monate###'
+	.'1620###54 Monate###'
+	.'365###1 Jahr###'
+	.'730###2 Jahre###'
 	.'1095###3 Jahre###'
 	.'1460###4 Jahre###'
 	.'1825###5 Jahre###'
+	.'2160###6 Jahre###'
 	.'2190###6 Jahre###'
 	.'2555###7 Jahre###'
 	.'2920###8 Jahre###'
-	.'182###1 Semester###' 
+	.'182###1 Semester###'
 	.'364###2 Semester###'
 	.'546###3 Semester###'
-	.'728###4 Semester###' 
+	.'728###4 Semester###'
 	.'910###5 Semester###'
 	.'1092###6 Semester###'
 	.'1274###7 Semester###'
-	.'1456###8 Semester';  
+    .'1456###8 Semester'; 
 				
 
 /******************************************************************************

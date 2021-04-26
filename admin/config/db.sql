@@ -311,6 +311,10 @@ CREATE TABLE IF NOT EXISTS `apikeys_usergrp` (
   KEY `anbieter_stichwort_i1` (`attr_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 
+ALTER TABLE `apikeys_usergrp`
+  ADD KEY `anbieter_stichwort_i0` (`primary_id`),
+  ADD KEY `anbieter_stichwort_i1` (`attr_id`);
+
 -- --------------------------------------------------------
 
 --

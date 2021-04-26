@@ -904,7 +904,7 @@ $("input[name^='f_durchfuehrung_beginn'],input[name^='f_durchfuehrung_ende']").c
 if( jQuery("form[name=edit]").find("input[name=table]").val() == "portale") {
  var portal_id = jQuery("form[name=edit]").find("input[name=id]").val();
  if(portal_id > 0)
-  jQuery("#fheader table.sm td.sml a:last-child").before('<a href="module.php?module=plugin_cache_portale_0&id='+portal_id+'" target="plugin_cache_portale_0" onclick="return popup(this,750,550);"> &nbsp;Cache l&ouml;schen&nbsp; </a></td>');
+  jQuery("#fheader table.sm td.sml a:last-child").before('<a href="module=plugin_portale_0_cacheloeschen&id='+portal_id+'" target="plugin_cache_portale_0" onclick="return popup(this,750,550);"> &nbsp;Cache l&ouml;schen&nbsp; </a></td>');
 }
 
 // Show statistics plugin link

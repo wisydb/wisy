@@ -142,6 +142,7 @@ class Table_Def_Class
 	var $addparam;
 	var $color;
 	var $trigger_script;
+	public $delete_uponunlink;
 	
 	function __construct($flags, $name, $descr, $addparam = 0, $acl = 0, $delete_uponunlink = false)
 	{
