@@ -497,7 +497,7 @@ class WISY_DURCHF_CLASS
 		    }
 		    
 		    if( $zeit_von && $zeit_bis ) {
-		        $cell .= "<span class=\"wisyr_termin_zeit\" data-title=\"Zeit\">{$zeit_von}&nbsp;-&nbsp;{$zeit_bis}&nbsp;Uhr</span>";
+		        $cell .= "&nbsp;<span class=\"wisyr_termin_zeit\" data-title=\"Zeit\">{$zeit_von}&nbsp;-&nbsp;{$zeit_bis}&nbsp;Uhr</span>";
 		    }
 		    else if( $zeit_von ) {
 		        $cell .= "&nbsp;<span class=\"wisyr_termin_zeit\">{$zeit_von}&nbsp;Uhr</span>";

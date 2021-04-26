@@ -496,7 +496,7 @@ class WISY_SEARCH_CLASS
 					        $op = 'not';
 					    }
 					    
-					    $tag_id = intval($this->lookupTag($value));
+					    $tag_id = $this->lookupTag($value);  // here no intval() !! $tag_id may be string containing "#" for 1:n synonyms!
 					    
 					    
 					    if( $tag_id == 0 )
@@ -557,7 +557,7 @@ class WISY_SEARCH_CLASS
 					                        $this->rawWhere .= "(j$i.tag_id=".$tag_ids[$k]." AND k$i.portal_id = ".$GLOBALS['wisyPortalId'].") OR ";	//  AND k$i.tag_freq > 0 -- not necessary -> if in table x_tags_freq must be used at least once
 					                    }
 					                    
-					                    $this->rawWhere = substr($this->rawWhere, 0, count($this->rawWhere)-4); // remove last OR
+					                    $this->rawWhere = substr($this->rawWhere, 0, strlen($this->rawWhere)-4); // remove last OR
 					                    
 					                } else {
 					                    $this->rawWhere .= "j$i.tag_id=$tag_id";
