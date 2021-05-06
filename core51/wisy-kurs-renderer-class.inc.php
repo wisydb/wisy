@@ -213,7 +213,7 @@ class WISY_KURS_RENDERER_CLASS
 			
 				// ... Stichwoerter
 				$stichwoerter = $this->framework->loadStichwoerter($db, 'kurse', $kursId);
-				if( sizeof((array) $stichwoerter) )
+				if( is_array($stichwoerter) && count($stichwoerter) )
 				{
 				    $rows .= $this->framework->writeStichwoerter($db, 'kurse', $stichwoerter);
 				}

@@ -436,7 +436,7 @@ class WISY_DURCHF_CLASS
 	    global $controlTags;
 	    if( $addParam['record']['bu_nummer'] )	{ if(!$this->stichw_in_array($addParam['stichwoerter'], $controlTags['Bildungsurlaub']   )) { $addParam['stichwoerter'][] = array('id'=>$controlTags['Bildungsurlaub']   ); } }
 	    if( $addParam['record']['fu_knr'] )		{ if(!$this->stichw_in_array($addParam['stichwoerter'], $controlTags['Fernunterricht'])) { $addParam['stichwoerter'][] = array('id'=>$controlTags['Fernunterricht']); } }
-	    if( $addParam['record']['azwv_knr'] ) 	{ if(!$this->stichw_in_array($addParam['stichwoerter'], $controlTags['Bildungsgutschein'])) { $addParam['stichwoerter'][] = array('id'=>$controlTags['Bildungsgutschein']); } }
+	    // if( $addParam['record']['azwv_knr'] ) 	{ if(!$this->stichw_in_array($addParam['stichwoerter'], $controlTags['Bildungsgutschein'])) { $addParam['stichwoerter'][] = array('id'=>$controlTags['Bildungsgutschein']); } } // nicht autom. Bildungsgutschein
 	    
 		// termin
 		$beginnsql		= $record['beginn'];
@@ -486,21 +486,21 @@ class WISY_DURCHF_CLASS
 		    }
 		    else if( $beginnoptionen )
 		    {
-		        $cell .= '<span class="wisyr_termin_optionen">' . str_replace(' ', '&nbsp;', $beginnoptionen) . '</span>';
+		        $cell .= '<span class="wisyr_termin_optionen">' . str_replace(' ', '&nbsp;', $beginnoptionen) . '&nbsp;</span>';
 		    }
 		    
 		    if( $details && $this->framework->iniRead('details.kurstage', 1)==1 ) {
 		        $temp = $this->formatKurstage(intval($record['kurstage']));
 		        if( $temp ) {
-		            $cell .= "<div class=\"wisyr_art_kurstage\">$temp</div>";
+		            $cell .= "<div class=\"wisyr_art_kurstage\">".$temp." </div>";
 		        }
 		    }
 		    
 		    if( $zeit_von && $zeit_bis ) {
-		        $cell .= "&nbsp;<span class=\"wisyr_termin_zeit\" data-title=\"Zeit\">{$zeit_von}&nbsp;-&nbsp;{$zeit_bis}&nbsp;Uhr</span>";
+		        $cell .= "<span class=\"wisyr_termin_zeit\" data-title=\"Zeit\">{$zeit_von}&nbsp;-&nbsp;{$zeit_bis}&nbsp;Uhr</span>";
 		    }
 		    else if( $zeit_von ) {
-		        $cell .= "&nbsp;<span class=\"wisyr_termin_zeit\">{$zeit_von}&nbsp;Uhr</span>";
+		        $cell .= "<span class=\"wisyr_termin_zeit\">{$zeit_von}&nbsp;Uhr</span>";
 		    }
 		    
 		    if( $addParam['record']['freigeschaltet'] == 4 )
@@ -717,20 +717,34 @@ class WISY_DURCHF_CLASS
 			
 			$map_URL = 'https://maps.google.com/?q=' . $map_strasse . ',%20' . $map_plz . '%20' . $map_ort . ($map_land ? ', ' . $map_land : '');
 			
+			global $nonvenues;
+			$nonvenue = false;
+			foreach($nonvenues AS $nonvenue_pattern) {
+			    if( preg_match("/".$nonvenue_pattern."/i", $ort) )
+			        $nonvenue = true;
+			    if( preg_match("/".$nonvenue_pattern."/i", $strasse) )
+			        $nonvenue = true;
+			}
+			
 			if( $details )
 			{
-				$cell = '';
-				
-				if( $strasse ) {
-				    $cell .=  '<a title="Adresse in Google Maps ansehen" href="' . $map_URL . '" target="_blank" rel="noopener noreferrer">' . $strasse . '</a>';
-				}
-				
-				if( $ort ) {
-				    $cell .= $cell? '<br />' : '';
-				    $cell .= '<a title="Adresse in Google Maps ansehen" href="' . $map_URL . '" target="_blank" rel="noopener noreferrer">' . "$plz $ort" . '</a>';
-				}
-	
-				if( $land ) {
+			    $cell = '';
+			    
+			    if( $strasse && !$nonvenue ) {
+			        $cell .=  '<a title="Adresse in Google Maps ansehen" href="' . $map_URL . '" target="_blank" rel="noopener noreferrer">' . $strasse . '</a>';
+			    } elseif( $strasse ) {
+			        $cell .=  $strasse;
+			    }
+			    
+			    if( $ort && !$nonvenue ) {
+			        $cell .= $cell? '<br />' : '';
+			        $cell .= '<a title="Adresse in Google Maps ansehen" href="' . $map_URL . '" target="_blank" rel="noopener noreferrer">' . "$plz $ort" . '</a>';
+			    } elseif ( $ort ) {
+			        $cell .= $cell? '<br />' : '';
+			        $cell .= "$plz $ort";
+			    }
+			    
+			    if( $land ) {
 					$cell .= $cell? '<br />' : '';
 					$cell .= '<i>' . $land . '</i>';
 				}

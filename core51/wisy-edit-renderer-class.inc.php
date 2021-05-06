@@ -1248,7 +1248,11 @@ class WISY_EDIT_RENDERER_CLASS
 		if( !$oldData['rights_editTitel'] ) 	{ $newData['titel'] = $oldData['titel']; }
 		if( !$oldData['rights_editAbschluss'] )	{ $newData['abschluss'] = $oldData['abschluss']; $newData['msgtooperator'] = $oldData['msgtooperator']; }
 		
-		$allowed_kfields = array('error', 'info', 'durchf', 'msgtooperator');
+		$allowed_kfields = array('error', 'info', 'durchf', 'msgtooperator', 'unterrichtsart', 'useredit_stichwoerter', 'useredit_allstichwoerter', 'useredit_stichwoerterold');
+		
+		// if( !$this->framework->iniRead('useredit.unterrichtsartenspeichern', '') ) // suggestions are not "changes"
+		//    array_push($allowed_kfields, 'unterrichtsart'); // needs array compare
+		
 		$allowed_dfields = array('id', 'nr', 'stunden', 'teilnehmer', 'preis', 'preishinweise', 'sonderpreis', 'sonderpreistage', 'beginn', 'ende',
 		    'beginnoptionen', 'zeit_von', 'zeit_bis', 'kurstage', 'tagescode', 'stadtteil', 'strasse', 'dauer');
 		
@@ -1876,7 +1880,7 @@ class WISY_EDIT_RENDERER_CLASS
 		        } else {
 		            $hint_Unterrichtsart = $this->getEditHelpText('Unterrichtsart_speichern',$controlTags['Glossar:unterrichtsart_speichern']);
 		        }
-		        echo '<tr><td>Untetrichtsart:</td><td>';
+		        echo '<tr><td>Unterrichtsart:</td><td>';
 		        $this->controlMultiSelect('unterrichtsart', $kurs['unterrichtsart'], $unterrichtsartOptionen);
 		        echo '<small class="edithinweis" style="'.$hintcss.'" >'.$hint_Unterrichtsart.'</small>';
 		        echo '</td></tr>';
@@ -2045,7 +2049,7 @@ class WISY_EDIT_RENDERER_CLASS
 					    echo ' Unterrichtsstunden mit max. ';
 					    $temp = $durchf['teilnehmer'] == 0? '' : $durchf['teilnehmer'];
 					    $this->controlText('teilnehmer[]', $temp, 3, 3, 'Geben Sie hier - soweit bekannt - die maximale Anzahl von Teilnehmenden ein, die insgesamt diese Durchf&uuml;hrung belegen werden', 'k. A.', '[0-9]{1,3}', '', 0);
-					    echo ' Teilnehmende';
+					    echo ' Teilnehmenden';
 					    echo '</td>';
 					    echo '</tr>';
 					    echo '<tr>';

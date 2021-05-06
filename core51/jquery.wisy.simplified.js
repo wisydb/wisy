@@ -53,7 +53,7 @@ function setCookieSafely(title, value, options) {
 function updateCookieSettings() {
 	if (window.cookiebanner) {
 		if (window.cookiebanner.optedOut) {
-			
+			/* console.log("opted out!"); */
 			// Disable Google Analytics
 			// Tut das ueberhaupt irgendwas? -- https://developers.google.com/analytics/devguides/collection/analyticsjs/user-opt-out
 			if(window.cookiebanner.uacct) window['ga-disable-' + window.cookiebanner.uacct] = true;
@@ -127,7 +127,7 @@ function fav_save_cookie()
 			str += key;
 		}
 	}
-	setCookieSafely('fav', str, { path: "/", sameSite: "Strict", expires: 30 }); // expires in 30 days // options working?
+	setCookieSafely('fav', str, { path: "/", sameSite: "Strict", expires: 7 }); // expires in 30 days // options working?
 }
 
 
@@ -185,11 +185,12 @@ function fav_update_bar()
 
 function fav_click(jsObj, id)
 {
-	if (window.cookiebanner && window.cookiebanner.optedOut) {
+	/* if (window.cookiebanner && window.cookiebanner.optedOut) {
 		alert(window.cookiebanner.favOptoutMessage);
 		window.cookieconsent.popup.open();
 		return false;
-	} else if($.cookie('cconsent_merkliste') != "allow" && !window.cookiebanner_zustimmung_merkliste_legacy) {
+	} else */ 
+	if($.cookie('cconsent_merkliste') != "allow" && !window.cookiebanner_zustimmung_merkliste_legacy) {
 		alert("Um diese Funktion nutzen zu k"+oe+"nnen, m"+ue+"ssen Sie dem Speichern von Cookies f"+ue+"r diese Funktion zustimmen (im Cookie-Hinweisfenster).");
 		hightlightCookieConsentOption('merkliste');
 		window.cookieconsent.popup.open();
@@ -208,7 +209,7 @@ function fav_click(jsObj, id)
 		
 		if( $.cookie('fav_init_hint') != 1 ) {
 			alert('Ihr Favorit wurde auf diesem Computer gespeichert. Um ihre Merkliste anzuzeigen, klicken Sie auf "Merkliste" oben rechts.');
-			setCookieSafely('fav_init_hint', 1, { path: "/", sameSite: "Strict", expires: 30 }); 
+			setCookieSafely('fav_init_hint', 1, { path: "/", sameSite: "Strict", expires: 7 }); 
 		}
 	}
 }
@@ -787,7 +788,8 @@ if (jQuery.ui)
 function preventEmptySearch(homepage) {
  
   // only if no other submit event is attached to search submit button:
-  if( Array.isArray($("#wisy_searcharea form[action=search]")) && typeof $._data( $("#wisy_searcharea form[action=search]")[0], "events" ) == 'undefined' ) {
+  // Array.isArray($("#wisy_searcharea form[action=search]")) => why array before?
+  if( $("#wisy_searcharea form[action=search]").length && typeof $._data( $("#wisy_searcharea form[action=search]")[0], "events" ) == 'undefined' ) {
     
    $('#wisy_searcharea form[action=search]').on('submit', function(e) {
     e.preventDefault();

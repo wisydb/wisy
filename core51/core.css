@@ -442,6 +442,14 @@ input.wisy_hinted {
   cursor: pointer;
 }
 
+a.wisy_help_hint {
+ background-color: #FFF7D7;
+ font-family: Arial,sans-serif;   
+ border: 2px solid #FAD163;
+ padding: 1px 8px 1px 8px;
+ font-weight: normal !important;
+}
+
 /*******************************************************************************
 autocomplete styles v1
 *******************************************************************************/

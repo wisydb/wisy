@@ -50,7 +50,7 @@ class WISY_CACHE_CLASS
 		$this->framework			 =& $framework;
 		$this->table				= $param['table'];
 		$this->itemLifetimeSeconds	= intval($param['itemLifetimeSeconds']);
-		$this->storeBlobs			= $param['storeBlobs']? true : false;
+		$this->storeBlobs			= (isset($param['storeBlobs']) && $param['storeBlobs']) ? true : false;
 		$this->db 					= new DB_Admin();
 	}
 	
