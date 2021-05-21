@@ -946,10 +946,14 @@ class WISY_SEARCH_RENDERER_CLASS
 					  '</tr>';
 			echo '	</thead>';
 			echo '	<tbody>';
+			$rowcount = 0;
 			for( $i = 0; $i < sizeof((array) $suggestions); $i++ )
 			{
-				$tr_class = ($i%2) ? 'ac_even' : 'ac_odd';
-				echo $this->formatItem_Anbieter($suggestions[$i]['tag'], $suggestions[$i]['tag_descr'], $suggestions[$i]['tag_type'], intval($suggestions[$i]['tag_help']), intval($suggestions[$i]['tag_freq']), $suggestions[$i]['tag_anbieter_id'], $suggestions[$i]['tag_groups'], $tr_class, $queryString);
+				if(!empty($suggestions[$i]['tag_anbieter_id'])) {
+					$tr_class = ($rowcount%2) ? 'ac_even' : 'ac_odd';
+					$rowcount++;
+					echo $this->formatItem_Anbieter($suggestions[$i]['tag'], $suggestions[$i]['tag_descr'], $suggestions[$i]['tag_type'], intval($suggestions[$i]['tag_help']), intval($suggestions[$i]['tag_freq']), $suggestions[$i]['tag_anbieter_id'], $suggestions[$i]['tag_groups'], $tr_class, $queryString);
+				}
 			}
 			echo '	</tbody>';
 			echo '</table>';
