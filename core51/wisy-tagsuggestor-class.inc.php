@@ -256,7 +256,7 @@ class WISY_TAGSUGGESTOR_CLASS
 						if($this->framework->iniRead('search.suggest.v2') == 1)
 						{
 							// Anbieter-ID abfragen
-							if( $tag_type&256 )
+							if( $tag_type == 0 || $tag_type&256 )
 							{
 							    $sql = "SELECT id FROM anbieter WHERE REPLACE(suchname, ',', '')=". $this->db3->quote($tag_name);	// Commas are always removed from tag names => ignore in comparison
 							    $this->db3->query($sql);
