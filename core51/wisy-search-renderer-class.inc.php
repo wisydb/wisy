@@ -887,7 +887,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			$tag_name_highlighted = $tag_name;
 		}
 		
-		return '<tr class="' .$row_class. '">' .
+		return '<tr class="' .$row_class. '" data-tagtype="' . $tag_type . '">' .
 					'<td class="wisyr_tag_name" data-title="Anbieter"><a href="' . $this->framework->getUrl('a', array('id'=>$tag_anbieter_id)) . '">' . $tag_name_highlighted . '</a></td>' .  
 					'<td class="wisyr_tag_info" data-title="Angebote"><span class="tag_count"><a href="' . $this->framework->getUrl('search', array('q'=>$tag_name)) . '">'. $row_count .'</a></span></td>' .
 			   '</tr>';
