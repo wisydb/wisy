@@ -953,6 +953,8 @@ class WISY_SEARCH_RENDERER_CLASS
 					$tr_class = ($rowcount%2) ? 'ac_even' : 'ac_odd';
 					$rowcount++;
 					echo $this->formatItem_Anbieter($suggestions[$i]['tag'], $suggestions[$i]['tag_descr'], $suggestions[$i]['tag_type'], intval($suggestions[$i]['tag_help']), intval($suggestions[$i]['tag_freq']), $suggestions[$i]['tag_anbieter_id'], $suggestions[$i]['tag_groups'], $tr_class, $queryString);
+				} else {
+					echo '<pre>'; var_dump($suggestions[$i]); echo '</pre>';
 				}
 			}
 			echo '	</tbody>';
