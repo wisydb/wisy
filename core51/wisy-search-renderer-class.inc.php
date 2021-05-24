@@ -597,7 +597,9 @@ class WISY_SEARCH_RENDERER_CLASS
 			// If "bei" is not set pass unclassified tokens, they might be places
 			$bei = array();
 			if($this->filterInfo['bei']) {
-				$bei[] = $this->filterInfo['bei'];
+				// Remove any numbers (PLZ) from filter_bei before passing it on
+				$filter_bei = trim(preg_replace('/[0-9]+/', '', $this->filterInfo['bei']));
+				$bei[] = $filter_bei;
 			} else {
 				if(is_array($this->framework->tokensQ)) {
 					foreach($this->framework->tokensQ as $token) {
