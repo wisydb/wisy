@@ -375,7 +375,7 @@ class WISY_SEARCH_CLASS
 		    $queryString = $this->checkqueryString($queryString);
 		}
 		
-		if( $wisyPortalFilter['stdkursfilter'] != '' )
+		if( isset($wisyPortalFilter['stdkursfilter']) && $wisyPortalFilter['stdkursfilter'] != '' )
 		{
 			$queryString .= ", .portal$wisyPortalId";
 		}
@@ -552,16 +552,18 @@ class WISY_SEARCH_CLASS
 					                    $this->rawJoin  .= " LEFT JOIN x_tags_freq k$i ON k$i.tag_id=j$i.tag_id";
 					                    
 					                    $tag_ids = explode("#", $tag_id);
+					                    $this->rawWhere .= '(';
 					                    
 					                    for($k = 0; $k < count($tag_ids); $k++) {
 					                        $this->rawWhere .= "(j$i.tag_id=".$tag_ids[$k]." AND k$i.portal_id = ".$GLOBALS['wisyPortalId'].") OR ";	//  AND k$i.tag_freq > 0 -- not necessary -> if in table x_tags_freq must be used at least once
 					                    }
-					                    
 					                    $this->rawWhere = substr($this->rawWhere, 0, strlen($this->rawWhere)-4); // remove last OR
+					                    
+					                    $this->rawWhere .= ')'; // brackets necessary, otherwise "AND x_kurse.beginn>=" etc. will only apply to last operand in OR-chain
 					                    
 					                } else {
 					                    $this->rawWhere .= "j$i.tag_id=$tag_id";
-					                }
+					                } 
 					                
 					            }
 					    }

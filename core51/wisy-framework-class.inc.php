@@ -644,7 +644,7 @@ class WISY_FRAMEWORK_CLASS
 	    {
 	        $param = $_GET[$name];
 	        
-	        if( strtoupper( strval($_GET['ie']) )=='UTF-8' )
+	        if( isset($_GET['ie']) && strtoupper( strval($_GET['ie']) )=='UTF-8' )
 	            $param = utf8_decode($param);
 	            
 	            return $param;
@@ -1151,6 +1151,19 @@ class WISY_FRAMEWORK_CLASS
 		$ret['percent'] = $vollstaendigkeit;
 		
 		return $ret;
+	}
+	
+	function getGrpSetting(&$db, $recordId, $scope = '')
+	{
+	    $sql = "SELECT settings s FROM user_grp g, kurse k WHERE k.user_grp=g.id AND k.id=$recordId";
+	    $db->query($sql); if( !$db->next_record() ) return array();
+	    
+	    $settings			= explodeSettings($db->fs('s'));
+	    
+	    if( is_array($settings) )
+	        return $settings[$scope];
+	        else
+	            return '';
 	}
 
 	/******************************************************************************
@@ -2365,7 +2378,8 @@ class WISY_FRAMEWORK_CLASS
 		    if((strpos($_SERVER["HTTP_REFERER"], "google.") !== FALSE) && trim($this->getParam('q', '')) != "" && mb_check_encoding(rawurldecode($this->getParam('q', '')), "ISO-8859-15") && mb_check_encoding(rawurldecode($this->getParam('q', '')), "UTF-8")) // deutsch oder T%C3%B6pfern, nicht (wie es korrekt w√§re ):T%F6pfern (ISO-8859)
 		        $this->QS = utf8_decode($this->QS);
 		        
-		        $qs = $this->QS;
+		        $qs = $this->getParam('suchfeld_leer') == 1 ? '' : $this->QS;
+		        
 		        echo '<input '.$queryinput.' type="text" id="wisy_searchinput" class="' . $autocomplete_class . '" name="qs" value="' .$qs. '" placeholder="' . $searchinput_placeholder . '" data-onemptyvalue="' . $this->iniRead('search.emptyvalue', '') . '"/>' . "\n";
 		        echo '<input type="hidden" id="wisy_searchinput_q" name="q" value="' . addslashes($this->Q) . '" />' . "\n"; // str_replace(array('"', "'"), '', addslashes( - addslashes not for anti-xss per se but rendering success for problematic chars - str_replace not necessary but better rendering if addslashes applied twice somehow
 		        

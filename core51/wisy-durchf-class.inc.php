@@ -196,14 +196,20 @@ class WISY_DURCHF_CLASS
 		}
 	
 		if( $dauer <= 0 ) {
-			$dauer = '';
+		    $dauer = '';
 		}
-		else if( $codes_dauer_array[$dauer] ) {
-			$dauer = $codes_dauer_array[$dauer];
-		}
-		else {
-			$dauer = "$dauer Tage";
-		}
+		else if( $codes_dauer_array[$dauer] && $dauer <= 365 ) {
+		    $dauer = str_replace(' ', '&nbsp;', $codes_dauer_array[$dauer]) . ' ';
+		} else if(
+		    $codes_dauer_array[$dauer] && $dauer > 365
+		    || !isset( $codes_dauer_array[$dauer] ) && $dauer > 90
+		    ) {
+		        $dauer = daysToReadable($dauer) . ' ';
+		    }
+		    else {
+		        $dauer = "$dauer Tage";
+		    }
+		    
 		
 		// stunden
 		if( $stunden > 0 ) {

@@ -50,6 +50,10 @@ $controlTags = array(
     "Glossar:unterrichtsart_speichern" => 14201
 );
 
+global $edit_tagid_blacklist;
+// 827571 = WeGebAU, 7635 = Bildungspaket, 833621 = Bildungsprämie, 7464 = Förderprogramme (der Länder), 9846 = Politische Bildung (Förderung), 827691 = Politische Bildung (HH) Förderung Kurse 2017, 832831 = Politische Bildung (HH) Förderung Kurse 2018, 834371 = Politische Bildung (HH) Förderung Kurse 2019, 847861 = Politische Bildung (HH) Förderung Kurse 2020, 852321 = Politische Bildung (HH) Förderung Kurse 2021
+$edit_tagid_blacklist = array(827571, 7635, 833621, 7464, 9846, 827691, 832831, 834371, 847861, 852321); 
+
 global $nonvenues;
 $nonvenues = array(".*ohne .*", ".*unbekannt.*", ".*E-Learning.*", ".*virtuell.*", ".*Web-Seminar.*", ".*Webinar.*", ".*Online.*", ".*WWW.*", ".*Fernstudium.*", ".*Live", ".*Internet.*", ".*Cloud.*", ".*Zoom.*", "N\.N\.", "--");
 

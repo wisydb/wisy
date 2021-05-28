@@ -393,16 +393,23 @@ class WISY_EDIT_RENDERER_CLASS
 	
 	function controlMultiSelect($name, $value, $values)
 	{
+	    global $edit_tagid_blacklist;
+	    
 	    $values = explode('###', $values);
-	    echo "<select name=\"".$name."[]\" size=\"3\" multiple>";
+	    echo "<select name=\"".$name."[]\" size=\"8\" multiple>";
+	    
 	    for( $v = 0; $v < sizeof($values); $v+=2 ) {
-	        echo '<option value="' .$values[$v]. '"';
-	        if (is_array($value)) {
-	            if(in_array($values[$v],$value) ) {
-	                echo ' selected="selected"';
+	        
+	        if( in_array($values[$v], $edit_tagid_blacklist) ) // global black list of tag ids not to be displayed in selections
+	            continue;
+	            
+	            echo '<option value="' .$values[$v]. '"';
+	            if (is_array($value)) {
+	                if(in_array($values[$v],$value) ) {
+	                    echo ' selected="selected"';
+	                }
 	            }
-	        }
-	        echo '>' .htmlspecialchars(cs8($values[$v+1])).'</option>';
+	            echo '>' .htmlspecialchars(cs8($values[$v+1])).'</option>';
 	    }
 	    echo '</select>';
 	}
@@ -1808,14 +1815,17 @@ class WISY_EDIT_RENDERER_CLASS
 		
 		if( $showForm )
 		{
-		    $hintcss  = " display: inline; ";
+		    $hintcss  = ""; // " display: inline; ";
 		    
 		    if($_COOKIE['hints'] == 2) { $hintcss  = " display: none; "; }
 		    echo '<br />';
 		    echo '<table cellspacing="2" cellpadding="0" width="100%">';
 		    echo '<tr>';
-		    echo '<td colspan="2"><strong>Bearbeitungshinweise: <a class="edit_hint_disable" onClick="document.cookie = \'hints=1\'; $(\'.edithinweis\').css(\'display\',\'inline\'); $(\'.edit_hint_enable\').css(\'color\',\'#888888\'); $(\'.edit_hint_disable\').css(\'color\',\'#0F3B7F\');">einblenden</a> / <a class="edit_hint_enable" onClick="document.cookie=\'hints=2\'; $(\'.edithinweis\').css(\'display\',\'none\');$(\'.edit_hint_enable\').css(\'color\',\'#0F3B7F\'); $(\'.edit_hint_disable\').css(\'color\',\'#888888\');">ausblenden</a> </span></strong></td>';
+		    echo '<td colspan="2"><strong>Bearbeitungshinweise: </strong>';
+		    echo '<a class="edit_hint_a edit_hint_disable" onClick="document.cookie = \'hints=1\'; $(\'.edithinweis\').css(\'display\',\'inline\'); $(\'.edit_hint_a, .edit_hint_b\').removeClass(\'edit_hint_enable\').removeClass(\'edit_hint_disable\'); $(this).removeClass(\'edit_hint_disable\').addClass(\'edit_hint_disable\');">einblenden</a> / ';
+		    echo '<a class="edit_hint_b" onClick="document.cookie=\'hints=2\'; $(\'.edithinweis\').css(\'display\',\'none\'); $(\'.edit_hint_a, .edit_hint_b\').removeClass(\'edit_hint_enable\').removeClass(\'edit_hint_disable\'); $(this).removeClass(\'edit_hint_disable\').addClass(\'edit_hint_disable\');">ausblenden</a> </span><br><br></td>';
 		    echo '</tr>';
+		    
 		    // TITEL
 		    echo '<tr>';
 		    echo '<td width="10%" valign="top"><strong>Kurstitel:</strong></td>';
@@ -1967,6 +1977,7 @@ class WISY_EDIT_RENDERER_CLASS
 					    echo '<td colspan="2" ><p class="edithinweis" style="'.$hintcss.'" >';
 					    echo '<strong>Hinweise</strong>:<br><small>';
 					    echo $this->getEditHelpText('durchfuehrung',$controlTags['Glossar:Durchfuehrungen']);
+					    echo '<br>'.$this->framework->getGrpSetting($db, $kurs['id'], 'useredit.durchfuehrunghinweise');
 					    echo '</small></p></td>';
 					    echo '</tr>';
 					    // DURCHFUEHRUNGS-NR

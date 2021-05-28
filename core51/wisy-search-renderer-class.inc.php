@@ -1419,7 +1419,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			    if($sqlCount == 1 && $this->framework->iniRead('anbietersuche.redirect', false)  && strpos( $this->framework->getParam('q', '') , 'volltext') === FALSE  && strpos( $this->framework->getParam('qs', ''), 'volltext') === FALSE) {
 			        ?>
 						<script>
-							/* redirect to Anbieter if only 1 in search result */
+							// redirect to Anbieter if only 1 in search result
 							window.location.href = '/a<?php echo $record['id']."?qs=".urlencode( $this->framework->getParam('qs', '') )."&q=".urlencode( $this->framework->getParam('q', '') )."&qf=".urlencode( $this->framework->getParam('qf', '') )."&anbieterRedirect=1". ( $this->framework->qtrigger ? '&qtrigger='.$this->framework->check_validTrigger( $this->framework->qtrigger )  : '') . ( $this->framework->force ? '&force='.intval($this->framework->force) : ''); ?>';
 						</script>
 						<?php

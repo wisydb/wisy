@@ -433,13 +433,18 @@ input.wisy_hinted {
 	font-weight: normal;
 }
 
+
+.edit_hint_a, .edit_hint_b {
+  cursor: pointer;
+  text-decoration: none !important;
+}
+	
 .edit_hint_enable {
   color: #0F3B7F;
-  cursor: pointer;
 }
-.edit_hint_disable {
-  color: #888888;
-  cursor: pointer;
+.edit_hint_disable, .edit_hint_a.edit_hint_disable, .edit_hint_b.edit_hint_disable {
+  color: #555;
+  cursor: auto;  
 }
 
 a.wisy_help_hint {
@@ -448,6 +453,27 @@ a.wisy_help_hint {
  border: 2px solid #FAD163;
  padding: 1px 8px 1px 8px;
  font-weight: normal !important;
+}
+
+.wisyp_edit select {
+	min-width: 50%;
+}
+
+.wisyp_edit .editFoerderungDiv table td {
+	vertical-align: top;
+	text-align: left !important;
+}
+
+.wisyp_edit .edithinweis {
+	display: block;
+	margin-bottom: 1em;
+	color: #555;
+	font-size:.8em;
+}
+
+.wisyp_edit  .edithinweis small {
+	color: #555;
+	font-size:.8em;
 }
 
 /*******************************************************************************
