@@ -222,11 +222,14 @@ function g_eql_normalize_natsort($str)
 	$str = preg_replace_callback('/[0-9]+/', 'g_eql_normalize_natsort_callback', $str);  // make sure abc3 -> abc4 -> abc321 and not: abc3 -> abc321 -> abc4
 
 	// strip special characters
-	$str = strtr($str,	'\'\\!°"§$%&/(){}[]=?+*~#,;.:-_<>|@€©®£¥  ',
-						'                                        ');
+	//$str = strtr($str,	'\'\\!°"§$%&/(){}[]=?+*~#,;.:-_<>|@€©®£¥  ',
+	//					'                                        ');
 
 	// remove spaces
-	$str = str_replace(' ', '', $str);
+	//$str = str_replace(' ', '', $str);
+	
+	// strip everything but a-z, A-Z, 0-9
+	$str = preg_replace("([^a-zA-Z0-9])", "", $str);
 
 	// done
 	return $str;
