@@ -334,14 +334,14 @@ class WISY_SEARCH_CLASS
 	        }
 	        
 	        
-	        $this->db->query("SELECT ort, plz FROM plz_ortscron WHERE ort = '".trim($ort)."';");
+	        $this->db->query("SELECT ort, plz FROM plz_ortscron WHERE ort = '".$this->framework->mysql_escape_mimic(trim($ort))."';");
 	        if( $this->db->next_record() ) {
 	            $this->assumedLocation = $ort;
 	            return $ort;
 	        }
 	        
 	        $bezirk_name = str_replace('(Bezirk)', '', $ort); // space can't be part of ort
-	        $this->db->query("SELECT tag_name FROM x_tags WHERE tag_name LIKE '".trim($bezirk_name)."%' AND tag_descr = 'Bezirk'");
+	        $this->db->query("SELECT tag_name FROM x_tags WHERE tag_name LIKE '".$this->framework->mysql_escape_mimic(trim($bezirk_name))."%' AND tag_descr = 'Bezirk'");
 	        if( $this->db->next_record() )
 	            $bezirk = $this->db->fs('tag_name'); // recover Bezirk with " ... (Bezirk)"
 	            
@@ -350,7 +350,7 @@ class WISY_SEARCH_CLASS
 	                return $bezirk;
 	            }
 	            
-	            $this->db->query("SELECT tag_name FROM x_tags WHERE tag_name LIKE '".trim($ort)."%' AND tag_descr = 'Stadtteil'");
+	            $this->db->query("SELECT tag_name FROM x_tags WHERE tag_name LIKE '".$this->framework->mysql_escape_mimic(trim($ort))."%' AND tag_descr = 'Stadtteil'");
 	            if( $this->db->next_record() ) {
 	                $this->assumedLocation = $ort." (Stadtteil)";
 	                return $ort;
