@@ -203,6 +203,11 @@ ul.dropdown ul li.has-subnav:after {
 	margin: 0 0 1em 25%;
 }
 
+.wisyr_kursliste .wisyr_termin_datum,
+.wisyr_kursliste .wisyr_termin_ort {
+	display: block;
+}
+
 /* , print */
 @media screen and (max-width: 760px) {
 	

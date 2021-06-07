@@ -575,17 +575,7 @@ class WISY_SEARCH_RENDERER_CLASS
 				 // #richtext
 				 $anbieterName = $this->renderAnbieterCell2($db, $anbieter_record, array('q'=>$param['q'], 'addPhone'=>true, 'promoted'=>$param['promoted'], 'kurs_id'=>$currKursId));
 			}
-				
-			// SPALTEN: durchfuehrung
-			$addText = '';
-			if( sizeof((array) $durchfuehrungenIds) > 1 )
-			{
-				$addText = ' <span class="wisyr_termin_weitere"><a href="' .$this->framework->getUrl('k', $aparam). '">';
-				    $temp = sizeof((array) $durchfuehrungenIds) - 1;
-				    $addText .= $temp==1? "$temp<span> weiterer...</span>" : "$temp<span> weitere...</span>";
-				$addText .= '</a></span>';
-			}
-				
+			
 			$tags = $this->framework->loadStichwoerter($db, 'kurse', $currKursId);
 			array_push($tag_cloud, $tags);
 			
@@ -608,7 +598,7 @@ class WISY_SEARCH_RENDERER_CLASS
 				}
 			}
 			$addParam['bei'] = $bei;
-			$durchfClass->formatDurchfuehrung($db, $currKursId, $durchfuehrungenIds, 0, 0, 1, $addText, $addParam);
+			$durchfClass->formatDurchfuehrung($db, $currKursId, $durchfuehrungenIds, 0, 0, 1, $addParam);
 				
 			// SPALTE: Entfernung
 			if( $this->hasDistanceColumn )

@@ -180,6 +180,233 @@ class WISY_DURCHF_CLASS
 		
 		return cs8($ret);
 	}
+	
+	function formatTermin($record, $addParam, $addText)
+	{
+		$ret = '';
+		
+		// termin
+		$beginnsql		= $record['beginn'];
+		$beginn			= $this->framework->formatDatum($beginnsql);
+		$beginnoptionen = $this->formatBeginnoptionen($record['beginnoptionen']);
+		$beginnoptionen = (PHP7 ? cs8($beginnoptionen) : $beginnoptionen);
+		$endesql		= $record['ende'];
+		$ende			= $details? $this->framework->formatDatum($endesql) : '';
+		$zeit_von		= $details? $record['zeit_von'] : ''; if( $zeit_von=='00:00' ) $zeit_von = '';
+		$zeit_bis		= $details? $record['zeit_bis'] : ''; if( $zeit_bis=='00:00' ) $zeit_bis = '';
+		
+		// termin abgelaufen?
+		$termin_abgelaufen = false;
+		$heute_datum = strftime("%Y-%m-%d 00:00:00");
+		if( $this->stichw_in_array($addParam['stichwoerter'], 315 /*Einstieg bis Kursende möglich?*/ ) 
+		 && $endesql > '0000-00-00 00:00:00' )
+		{
+			if( $endesql < $heute_datum ) {
+				$termin_abgelaufen = true;
+			}
+		}
+		else if( $beginnsql > '0000-00-00 00:00:00' ) {
+			if( $beginnsql < $heute_datum ) {
+				$termin_abgelaufen = true;	
+			}
+		}
+		
+		if( $beginn )
+		{
+			if( $termin_abgelaufen ) {
+				$ret .= '<span class="wisyr_termin_datum wisy_datum_abgel" data-title="Datum">';
+			} else {
+				$ret .= '<span class="wisyr_termin_datum" data-title="Datum">';
+			}
+			$ret .= ($ende && $beginn!=$ende)? "$beginn - $ende</span>" : $beginn . '</span>';
+			
+			if( $beginnoptionen ) { $ret .= "<span class=\"wisyr_termin_beginn\">".str_replace(' ', '&nbsp;', $beginnoptionen)."</span>"; }
+		}
+		else if( $beginnoptionen )
+		{
+			$ret .= '<span class="wisyr_termin_optionen">' . str_replace(' ', '&nbsp;', $beginnoptionen) . '</span>';
+		}
+		
+		if( $details && $this->framework->iniRead('details.kurstage', 1)==1 ) {
+			$temp = $this->formatKurstage(intval($record['kurstage']));
+			if( $temp ) {
+				$ret .= "<div class=\"wisyr_art_kurstage\">$temp</div>";
+			}
+		}
+		
+		if( $zeit_von && $zeit_bis ) {
+			$ret .= "<span class=\"wisyr_termin_zeit\" data-title=\"Zeit\">{$zeit_von}&nbsp;-&nbsp;{$zeit_bis}&nbsp;Uhr</span>";
+		}
+		else if( $zeit_von ) {
+			$ret .= "&nbsp;<span class=\"wisyr_termin_zeit\">{$zeit_von}&nbsp;Uhr</span>";
+		}
+		
+		if( $addParam['record']['freigeschaltet'] == 4 )
+		{
+			$ret .= '<span class="wisyr_termin_dauerhaft">'.(strlen(trim($ret)) > 1 ? ' ' : '').'dauerhaftes Angebot</span>';
+		}
+		
+		if( $addText ) // z.B. fuer "2 weitere Durchfuehrungen ..."
+		{
+			$ret .= '<span class="wisyr_termin_text">' . $addText . '</span>';
+		}
+		
+		if( $ret == '' )
+		{
+			$ret .= '<span class="wisyr_termin_ka">k. A.</span>';
+		}
+		
+		return $ret;
+	}
+	
+	function formatOrt($record)
+	{
+		$ret = '';
+		
+		// get ort
+		$strasse	= str_replace(" ", "&nbsp;", cs8($record['strasse']));
+		$plz		= $record['plz'];
+		$ort		= htmlentities(cs8($record['ort'])); // hier wird noch der Stadtteil angehaengt
+		$stadt		= $ort;
+		$stadtteil	= cs8($record['stadtteil']);
+		
+		$exclude_ort = trim($this->framework->iniRead('search.hide.ort', ''));
+		if($stadtteil && $exclude_ort && stripos($ort, $exclude_ort) !== FALSE && $this->framework->getPageType() == "suche") {
+			$ort = str_replace($exclude_ort, "", $ort);
+			$stadt = str_replace($exclude_ort, "", $stadt);
+		}
+		
+		$land		= cs8($record['land']);
+		if( $ort && $stadtteil ) {
+			if( strpos($ort, $stadtteil)===false ) {
+				$ort = $ort . ' - ' . $stadtteil;
+			}
+			else {
+				$ort = $ort;
+			}
+		}
+		else if( $ort ) {
+			$ort = $ort;
+		}
+		else if( $stadtteil ) {
+			$ort = $stadtteil;
+			$stadt = $stadtteil;
+		}
+		else {
+			$ort = '';
+		}
+		
+		if( $this->framework->getParam('order') == 'o' ) {
+			
+			$strasse_a = array();
+			$ort_a = array();
+			$plz_a = array();
+			$stadt_a = array();
+			$stadtteil_a = array();
+			
+			for($i = 1; $i < count($durchfuehrungIds); $i++) {
+				$db->next_record();
+				$record = $db->Record;
+				
+				$strasse_a[$i]	= cs8($record['strasse']);
+				$plz_a[$i]		= $record['plz'];
+				$ort_a[$i]		= cs8($record['ort']); // hier wird noch der Stadtteil angehaengt
+				
+				$stadt_a[$i]	= $ort_a[$i];
+				$stadtteil_a[$i]	= cs8($record['stadtteil']);
+				
+				$exclude_ort = trim($this->framework->iniRead('search.hide.ort', ''));
+				if($stadtteil_a[$i] && $exclude_ort && stripos($ort_a[$i], $exclude_ort) !== FALSE && $this->framework->getPageType() == "suche") {
+					$ort_a[$i] = str_replace($exclude_ort, "", $ort_a[$i]);
+					$stadt_a[$i] = str_replace($exclude_ort, "", $stadt_a[$i]);
+				}
+				
+				$land_a[$i]		= cs8($record['land']);
+				if( $ort_a[$i] && $stadtteil_a[$i] ) {
+					if( strpos($ort_a[$i], $stadtteil_a[$i])===false ) {
+						$ort_a[$i] = $ort_a[$i] . ' - ' . $stadtteil_a[$i];
+					}
+					else {
+						$ort_a[$i] = $ort_a[$i];
+					}
+				}
+				else if( $ort_a[$i] ) {
+					$ort_a[$i] = $ort_a[$i];
+				}
+				else if( $stadtteil_a[$i] ) {
+					$ort_a[$i] = $stadtteil_a[$i];
+					$stadt_a[$i] = $stadtteil_a[$i];
+				}
+				else {
+					$ort_a[$i] = '';
+				}
+			}
+			
+			$ort_a = array_unique($ort_a, SORT_STRING); // make sure each place only once in Array
+			
+			// if left places happen to match place from first DF eliminate it here in add. array to not output redundant event venues
+			$key = array_search($ort, $ort_a);
+			if($key !== FALSE)
+				unset($ort_a[$key]);
+				
+				// list event venues comma separated
+				$ort .= (count($ort_a) ? "," : "")."<br>".implode(",<br>", $ort_a);
+				
+				for($i = 0; $i < count($durchfuehrungIds); $i++) {
+					$db->prev_record();
+				}
+				
+		}
+		
+		if( is_object($this->framework->map) )
+		{
+			$this->framework->map->addPoint2($record, $durchfuehrungId);
+		}
+		
+		
+		$map_strasse = urlencode(PHP7 ? utf8_encode(html_entity_decode($strasse)) : html_entity_decode($strasse));
+		$map_plz = urlencode(PHP7 ? utf8_encode(html_entity_decode($plz)) : html_entity_decode($plz));
+		$map_ort = urlencode(PHP7 ? utf8_encode(html_entity_decode($ort)) : html_entity_decode($ort));
+		$map_land = urlencode(PHP7 ? utf8_encode(html_entity_decode($land)) : html_entity_decode($land));
+		
+		$map_URL = 'https://maps.google.com/?q=' . $map_strasse . ',%20' . $map_plz . '%20' . $map_ort . ($map_land ? ', ' . $map_land : '');
+		
+		if( $details )
+		{
+			$cell = '';
+			
+			if( $strasse ) {
+				$cell .=  '<a title="Adresse in Google Maps ansehen" href="' . $map_URL . '" target="_blank" rel="noopener noreferrer">' . $strasse . '</a>';
+			}
+			
+			if( $ort ) {
+				$cell .= $cell? '<br />' : '';
+				$cell .= '<a title="Adresse in Google Maps ansehen" href="' . $map_URL . '" target="_blank" rel="noopener noreferrer">' . "$plz $ort" . '</a>';
+			}
+
+			if( $land ) {
+				$cell .= $cell? '<br />' : '';
+				$cell .= '<i>' . $land . '</i>';
+			}
+			
+			if( strip_tags($cell) == $this->seeAboveOrt && $details ) {
+				$ret .= '<div class="noprint">'.$cell.'</div><span class="printonly">s.o.</span>';
+			}
+			else if( $cell ) {
+				$ret .= $cell;
+				$this->seeAboveOrt = strip_tags($cell); // ignore tags as there are many remarks differung only in the Link-URLs - which are not visible in print
+			}
+			else {
+				$ret .= 'k. A.';
+				$this->seeAboveOrt = '<unset>';
+			}
+		}
+		else
+		{
+			$ret .= $ort? $ort : 'k. A.';
+		}
+		return '<span class="wisyr_termin_ort">' . $ret . '</span>';
+	}
 
 	function formatDauer($dauer, $stunden, $mask2 = '%1 (%2)') // return as HTML
 	{
@@ -381,7 +608,7 @@ class WISY_DURCHF_CLASS
 		$this->seeAboveOrt = '<unset>';
 	}
 
-	function formatDurchfuehrung(&$db, $kursId, $durchfuehrungId, $details = 0, $anbieterId = 0, $showAllDurchf = 1, $addText='', $addParam = 0)
+	function formatDurchfuehrung(&$db, $kursId, $durchfuehrungId, $details = 0, $anbieterId = 0, $showAllDurchf = 1, $addParam = 0)
 	{
 		global $wisyPortalSpalten;
         global $wisyPortalSpaltenDurchf;
@@ -393,12 +620,10 @@ class WISY_DURCHF_CLASS
         
         $durchfuehrungIds = array();
         
-        
         if(is_array($durchfuehrungId) && count($durchfuehrungId) > 0) {
             
             $durchfuehrungIds = $durchfuehrungId;
             $durchfuehrungId = intval($durchfuehrungId[0]);
-            
             
             // this ORDER BY puts durchfuehrungen with beginn = '0000-00-00 00:00:00' at the end(!) and sorts everything else by beginn ASC.
             // using -beginn DESC doesn't work b/c '0000-00-00 00:00:00' seems not to be treated as empty
@@ -407,38 +632,121 @@ class WISY_DURCHF_CLASS
 					  FROM durchfuehrung
 							WHERE id IN (".implode(",", $durchfuehrungIds).") ORDER BY  beginn = '0000-00-00 00:00:00', beginn");
             
-        } elseif(!is_array($durchfuehrungId)) {
+        } else if(!is_array($durchfuehrungId)) {
             
             $db->query("SELECT id, nr, dauer, bemerkungen, preis, teilnehmer, kurstage, sonderpreis, sonderpreistage, plz, strasse,
 						 land, stadtteil, preishinweise, beginn, beginnoptionen, ende, ort, tagescode, stunden, zeit_von, zeit_bis, bg_nummer, bg_nummer_count
 					  FROM durchfuehrung
 							WHERE id=$durchfuehrungId");
         }
+        
         if( $db->next_record() )
         {
+            // Show first Durchfuehrung if list ist not filtered by date or place
             $record  = $db->Record;
-            if(is_array($addParam['bei']) && count($addParam['bei'])) {
-                // If list is filtered by place try to find a durchfuehrung with the filtered place
-                if(!in_array($record['ort'], $addParam['bei'])) {
+            $additional_record = false;
+            
+            // If filtered by place AND place column active -> Display Durchfuehrung with corresponding place
+            $showDurchfuehrungForPlace = false;
+            if(($spalten & 32) > 0 && is_array($addParam['bei']) && count($addParam['bei']))
+            {
+                $showDurchfuehrungForPlace = $addParam['bei'];
+            }
+            
+            // If filtered by date AND date column active -> Display Durchfuehrung with corresponding date
+            $showDurchfuehrungForDate = false;
+            if(($spalten & 2) > 0 && $addParam['datum'] && $addParam['datum'] != '')
+            {
+                $showDurchfuehrungForDate = $addParam['datum'];
+            }
+            
+            // Show Durchfuehrung(en) corresponding to date and / or place filter
+            if($showDurchfuehrungForPlace !== false && $showDurchfuehrungForDate !== false)
+            {
+                // If list ist filtered by place AND date find one DF with the filtered place and date
+                // Fall back to two DF, one for place and one for date if no single one can be found
+                $matchedPlaceRecord = false;
+                $matchedDateRecord = false;
+                $matchingRecords = array();
+                $earliestDate = strtotime($showDurchfuehrungForDate);
+                $durchfuehrungBeginn = strtotime($record['beginn']);
+                
+                if(in_array($record['ort'], $showDurchfuehrungForPlace) && $durchfuehrungBeginn >= $earliestDate)
+                {
+                    $matchingRecords = array($record);
+                    $matchedPlaceRecord = true;
+                    $matchedDateRecord = true;
+                }
+                else
+                {
+                    if($durchfuehrungBeginn >= $earliestDate) {
+                        $matchingRecords[] = $record;
+                        $matchedDateRecord = true;
+                    }
+                    if(in_array($record['ort'], $showDurchfuehrungForPlace))
+                    {
+                        $matchingRecords[] = $record;
+                        $matchedPlaceRecord = true;
+                    }
+                }
+                if(!$matchedPlaceRecord || !$matchedDateRecord) {
                     while( $db->next_record() )
                     {
                         $r = $db->Record;
-                        if(in_array($r['ort'], $addParam['bei'])) {
+                        $durchfuehrungBeginn = strtotime($r['beginn']);
+                        // Try finding a single DF matching both criteria
+                        if(in_array($r['ort'], $showDurchfuehrungForPlace) && $durchfuehrungBeginn >= $earliestDate) {
+                            $matchingRecords = array($r);
+                            $matchedPlaceRecord = true;
+                            $matchedDateRecord = true;
+                            break;
+                        }
+                        else
+                        {
+                            if(!$matchedDateRecord && $durchfuehrungBeginn >= $earliestDate) {
+                                $matchingRecords[] = $r;
+                                $matchedDateRecord = true;
+                            }
+                            if(!$matchedPlaceRecord && in_array($r['ort'], $showDurchfuehrungForPlace))
+                            {
+                                $matchingRecords[] = $r;
+                                $matchedPlaceRecord = true;
+                            }
+                        }
+                    }
+                }
+                if(count($matchingRecords) > 0) {
+                    $record = $matchingRecords[0];
+                }
+                if(count($matchingRecords) > 1) {
+                    $additional_record = $matchingRecords[1];
+                }
+            }
+            else if($showDurchfuehrungForPlace)
+            {
+                // If list is filtered by place try to find a durchfuehrung with the filtered place
+                if(!in_array($record['ort'], $showDurchfuehrungForPlace)) {
+                    while( $db->next_record() )
+                    {
+                        $r = $db->Record;
+                        if(in_array($r['ort'], $showDurchfuehrungForPlace)) {
                             $record  = $r;
                             break;
                         }
                     }
                 }
-            } else if($addParam['datum'] && $addParam['datum'] != '') {
+            }
+            else if($showDurchfuehrungForDate)
+            {
                 // If list is filtered by datum try to find a durchfuehrung with the filtered datum
-                $datum = strtotime($addParam['datum']);
-                $beginn = strtotime($record['beginn']);
-                if($datum > $beginn) {
+                $earliestDate = strtotime($showDurchfuehrungForDate);
+                $durchfuehrungBeginn = strtotime($record['beginn']);
+                if($durchfuehrungBeginn < $earliestDate) {
                     while( $db->next_record() )
                     {
                         $r = $db->Record;
-                        $beginn = strtotime($r['beginn']);
-                        if($datum <= $beginn) {
+                        $durchfuehrungBeginn = strtotime($r['beginn']);
+                        if($durchfuehrungBeginn >= $earliestDate) {
                             $record  = $r;
                             break;
                         }
@@ -466,88 +774,33 @@ class WISY_DURCHF_CLASS
 	    if( $addParam['record']['bu_nummer'] )	{ if(!$this->stichw_in_array($addParam['stichwoerter'], $controlTags['Bildungsurlaub']   )) { $addParam['stichwoerter'][] = array('id'=>$controlTags['Bildungsurlaub']   ); } }
 	    if( $addParam['record']['fu_knr'] )		{ if(!$this->stichw_in_array($addParam['stichwoerter'], $controlTags['Fernunterricht'])) { $addParam['stichwoerter'][] = array('id'=>$controlTags['Fernunterricht']); } }
 	    if( $addParam['record']['azwv_knr'] ) 	{ if(!$this->stichw_in_array($addParam['stichwoerter'], $controlTags['Bildungsgutschein'])) { $addParam['stichwoerter'][] = array('id'=>$controlTags['Bildungsgutschein']); } }
-	    
-		// termin
-		$beginnsql		= $record['beginn'];
-		$beginn			= $this->framework->formatDatum($beginnsql);
-		$beginnoptionen = $this->formatBeginnoptionen($record['beginnoptionen']);
-		$beginnoptionen = (PHP7 ? cs8($beginnoptionen) : $beginnoptionen);
-		$endesql		= $record['ende'];
-		$ende			= $details? $this->framework->formatDatum($endesql) : '';
-		$zeit_von		= $details? $record['zeit_von'] : ''; if( $zeit_von=='00:00' ) $zeit_von = '';
-		$zeit_bis		= $details? $record['zeit_bis'] : ''; if( $zeit_bis=='00:00' ) $zeit_bis = '';
-		$bg_nummer = PHP7 ? $db->f('bg_nummer') : $db->f8('bg_nummer');
-		$bg_nummer_count = PHP7 ? $db->f('bg_nummer_count') : $db->f8('bg_nummer_count');
-		
-		// termin abgelaufen?
-		$termin_abgelaufen = false;
-		$heute_datum = strftime("%Y-%m-%d 00:00:00");
-		if( $this->stichw_in_array($addParam['stichwoerter'], 315 /*Einstieg bis Kursende möglich?*/ ) 
-		 && $endesql > '0000-00-00 00:00:00' )
-		{
-			if( $endesql < $heute_datum ) {
-				$termin_abgelaufen = true;
-			}
-		}
-		else if( $beginnsql > '0000-00-00 00:00:00' ) {
-			if( $beginnsql < $heute_datum ) {
-				$termin_abgelaufen = true;	
-			}
-		}
-
 		
 		if (($spalten & 2) > 0)
 		{
 		    echo '    <td class="wisyr_termin" data-title="Termin">';
-		    
-		    $cell = '';
-		    
-		    if( $beginn )
-		    {
-		        if( $termin_abgelaufen ) {
-		            $cell .= '<span class="wisyr_termin_datum wisy_datum_abgel" data-title="Datum">';
-		        } else {
-		            $cell .= '<span class="wisyr_termin_datum" data-title="Datum">';
-		        }
-		        $cell .= ($ende && $beginn!=$ende)? "$beginn - $ende</span>" : $beginn . '</span>';
-		        
-		        if( $beginnoptionen ) { $cell .= "<span class=\"wisyr_termin_beginn\">".str_replace(' ', '&nbsp;', $beginnoptionen)."</span>"; }
-		    }
-		    else if( $beginnoptionen )
-		    {
-		        $cell .= '<span class="wisyr_termin_optionen">' . str_replace(' ', '&nbsp;', $beginnoptionen) . '</span>';
-		    }
-		    
-		    if( $details && $this->framework->iniRead('details.kurstage', 1)==1 ) {
-		        $temp = $this->formatKurstage(intval($record['kurstage']));
-		        if( $temp ) {
-		            $cell .= "<div class=\"wisyr_art_kurstage\">$temp</div>";
-		        }
-		    }
-		    
-		    if( $zeit_von && $zeit_bis ) {
-		        $cell .= "<span class=\"wisyr_termin_zeit\" data-title=\"Zeit\">{$zeit_von}&nbsp;-&nbsp;{$zeit_bis}&nbsp;Uhr</span>";
-		    }
-		    else if( $zeit_von ) {
-		        $cell .= "&nbsp;<span class=\"wisyr_termin_zeit\">{$zeit_von}&nbsp;Uhr</span>";
-		    }
-		    
-		    if( $addParam['record']['freigeschaltet'] == 4 )
-		    {
-		        $cell .= '<span class="wisyr_termin_dauerhaft">'.(strlen(trim($cell)) > 1 ? ' ' : '').'dauerhaftes Angebot</span>';
-		    }
-		    
-		    if( $addText ) // z.B. fuer "2 weitere Durchfuehrungen ..."
-		    {
-		        $cell .= '<span class="wisyr_termin_text">' . $addText . '</span>';
-		    }
-		    
-		    if( $cell == '' )
-		    {
-		        $cell .= '<span class="wisyr_termin_ka">k. A.</span>';
-		    }
-		    
-		    echo $cell . ' </td>' . "\n";
+			if(!$additional_record) {
+				$addText = '';
+				if( sizeof((array) $durchfuehrungIds) > 1 )
+				{
+					$addText = ' <span class="wisyr_termin_weitere"><a href="' .$this->framework->getUrl('k', $aparam). '">';
+						$temp = sizeof((array) $durchfuehrungIds) - 1;
+						$addText .= $temp==1? "$temp<span> weiterer...</span>" : "$temp<span> weitere...</span>";
+					$addText .= '</a></span>';
+				}
+		    	echo $this->formatTermin($record, $addParam, $addText);
+			} else {
+				$addText = '';
+				if( sizeof((array) $durchfuehrungIds) > 2 )
+				{
+					$addText = ' <span class="wisyr_termin_weitere"><a href="' .$this->framework->getUrl('k', $aparam). '">';
+						$temp = sizeof((array) $durchfuehrungIds) - 2;
+						$addText .= $temp==1? "$temp<span> weiterer...</span>" : "$temp<span> weitere...</span>";
+					$addText .= '</a></span>';
+				}
+				echo $this->formatTermin($record, $addParam, '');
+				echo $this->formatTermin($additional_record, $addParam, $addText);
+			}
+		    echo ' </td>' . "\n";
 		}
 		
 		if (($spalten & 4) > 0)
@@ -637,150 +890,12 @@ class WISY_DURCHF_CLASS
 			// ort
 		    $multiple_orte = count($durchfuehrungIds) > 1 ? "multiple" : false;
 		    echo '    <td class="wisyr_ort '.$multiple_orte.'" data-title="Ort">';
-			
-			// get ort
-		    $strasse	= str_replace(" ", "&nbsp;", cs8($record['strasse']));
-			$plz		= $record['plz'];
-			$ort		= htmlentities(cs8($record['ort'])); // hier wird noch der Stadtteil angehaengt
-			$stadt		= $ort;
-			$stadtteil	= cs8($record['stadtteil']);
-			
-			$exclude_ort = trim($this->framework->iniRead('search.hide.ort', ''));
-			if($stadtteil && $exclude_ort && stripos($ort, $exclude_ort) !== FALSE && $this->framework->getPageType() == "suche") {
-			    $ort = str_replace($exclude_ort, "", $ort);
-			    $stadt = str_replace($exclude_ort, "", $stadt);
+			if(!$additional_record) {
+				echo $this->formatOrt($record);
+			} else {
+				echo $this->formatOrt($record);
+				echo $this->formatOrt($additional_record);
 			}
-			
-			$land		= cs8($record['land']);
-			if( $ort && $stadtteil ) {
-				if( strpos($ort, $stadtteil)===false ) {
-				    $ort = $ort . ' - ' . $stadtteil;
-				}
-				else {
-					$ort = $ort;
-				}
-			}
-			else if( $ort ) {
-				$ort = $ort;
-			}
-			else if( $stadtteil ) {
-				$ort = $stadtteil;
-				$stadt = $stadtteil;
-			}
-			else {
-				$ort = '';
-			}
-			
-			if( $this->framework->getParam('order') == 'o' ) {
-			    
-			    $strasse_a = array();
-			    $ort_a = array();
-			    $plz_a = array();
-			    $stadt_a = array();
-			    $stadtteil_a = array();
-			    
-			    for($i = 1; $i < count($durchfuehrungIds); $i++) {
-			        $db->next_record();
-			        $record = $db->Record;
-			        
-			        $strasse_a[$i]	= cs8($record['strasse']);
-			        $plz_a[$i]		= $record['plz'];
-			        $ort_a[$i]		= cs8($record['ort']); // hier wird noch der Stadtteil angehaengt
-			        
-			        $stadt_a[$i]	= $ort_a[$i];
-			        $stadtteil_a[$i]	= cs8($record['stadtteil']);
-			        
-			        $exclude_ort = trim($this->framework->iniRead('search.hide.ort', ''));
-			        if($stadtteil_a[$i] && $exclude_ort && stripos($ort_a[$i], $exclude_ort) !== FALSE && $this->framework->getPageType() == "suche") {
-			            $ort_a[$i] = str_replace($exclude_ort, "", $ort_a[$i]);
-			            $stadt_a[$i] = str_replace($exclude_ort, "", $stadt_a[$i]);
-			        }
-			        
-			        $land_a[$i]		= cs8($record['land']);
-			        if( $ort_a[$i] && $stadtteil_a[$i] ) {
-			            if( strpos($ort_a[$i], $stadtteil_a[$i])===false ) {
-			                $ort_a[$i] = $ort_a[$i] . ' - ' . $stadtteil_a[$i];
-			            }
-			            else {
-			                $ort_a[$i] = $ort_a[$i];
-			            }
-			        }
-			        else if( $ort_a[$i] ) {
-			            $ort_a[$i] = $ort_a[$i];
-			        }
-			        else if( $stadtteil_a[$i] ) {
-			            $ort_a[$i] = $stadtteil_a[$i];
-			            $stadt_a[$i] = $stadtteil_a[$i];
-			        }
-			        else {
-			            $ort_a[$i] = '';
-			        }
-			    }
-			    
-			    $ort_a = array_unique($ort_a, SORT_STRING); // make sure each place only once in Array
-			    
-			    // if left places happen to match place from first DF eliminate it here in add. array to not output redundant event venues
-			    $key = array_search($ort, $ort_a);
-			    if($key !== FALSE)
-			        unset($ort_a[$key]);
-			        
-			        // list event venues comma separated
-			        $ort .= (count($ort_a) ? "," : "")."<br>".implode(",<br>", $ort_a);
-			        
-			        for($i = 0; $i < count($durchfuehrungIds); $i++) {
-			            $db->prev_record();
-			        }
-			        
-			}
-			
-			if( is_object($this->framework->map) )
-			{
-				$this->framework->map->addPoint2($record, $durchfuehrungId);
-			}
-			
-			
-			$map_strasse = urlencode(PHP7 ? utf8_encode(html_entity_decode($strasse)) : html_entity_decode($strasse));
-			$map_plz = urlencode(PHP7 ? utf8_encode(html_entity_decode($plz)) : html_entity_decode($plz));
-			$map_ort = urlencode(PHP7 ? utf8_encode(html_entity_decode($ort)) : html_entity_decode($ort));
-			$map_land = urlencode(PHP7 ? utf8_encode(html_entity_decode($land)) : html_entity_decode($land));
-			
-			$map_URL = 'https://maps.google.com/?q=' . $map_strasse . ',%20' . $map_plz . '%20' . $map_ort . ($map_land ? ', ' . $map_land : '');
-			
-			if( $details )
-			{
-				$cell = '';
-				
-				if( $strasse ) {
-				    $cell .=  '<a title="Adresse in Google Maps ansehen" href="' . $map_URL . '" target="_blank" rel="noopener noreferrer">' . $strasse . '</a>';
-				}
-				
-				if( $ort ) {
-				    $cell .= $cell? '<br />' : '';
-				    $cell .= '<a title="Adresse in Google Maps ansehen" href="' . $map_URL . '" target="_blank" rel="noopener noreferrer">' . "$plz $ort" . '</a>';
-				}
-	
-				if( $land ) {
-					$cell .= $cell? '<br />' : '';
-					$cell .= '<i>' . $land . '</i>';
-				}
-				
-				if( strip_tags($cell) == $this->seeAboveOrt && $details ) {
-					echo '<div class="noprint">'.$cell.'</div><span class="printonly">s.o.</span>';
-				}
-				else if( $cell ) {
-					echo $cell;
-					$this->seeAboveOrt = strip_tags($cell); // ignore tags as there are many remarks differung only in the Link-URLs - which are not visible in print
-				}
-				else {
-					echo 'k. A.';
-					$this->seeAboveOrt = '<unset>';
-				}
-			}
-			else
-			{
-				echo $ort? $ort : 'k. A.';
-			}
-			
 			echo ' </td>' . "\n";
 		}
 		
