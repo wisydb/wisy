@@ -15,7 +15,7 @@ Author:
 
 
 // changing the CMS version will force reloading of .js and .css files  
-define('CMS_VERSION', '7.0');
+define('CMS_VERSION', '7.1');
 
 
 // PHP 5.0.0 is needed for: __construct(), public, private, protected, microtime($get_as_float), Exceptions, object-copying by reference by default
