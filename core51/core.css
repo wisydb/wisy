@@ -325,6 +325,15 @@ img.seal_small {
  float: right;
 }
 
+.seal_small {
+  display: inline-block;
+  margin-right: 4px;
+}
+
+.wisy_list td a.help {
+	padding: 0px;
+}
+
 .wisyr_termin_weitere  {
   display: block;
 }

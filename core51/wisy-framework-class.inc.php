@@ -14,7 +14,7 @@ require_once('admin/config/codes.inc.php');
 function g_sync_removeSpecialChars($str)
 {
 	$str = strtr($str, ',:', '  ');
-	while( strpos($str, '  ')!==false ) $str = str_replace('  ', ' ', $str);
+	while( strpos($str, '  ')!==false ) $str = str_replace('  ', ' ', $str);seal
 	$str = trim($str);
 	return $str;
 }
@@ -917,7 +917,7 @@ class WISY_FRAMEWORK_CLASS
 						$ret .= "<img src=\"$img\" alt=\"Pr&uuml;siegel\" title=\"$title\" class=\"seal_small\"/>";
 					$ret .= '</a>';
 					$sealsOut++;
-					break; // only one logo in small view
+					// break; // break limits to only one logo
 				}
 			}
 			else
