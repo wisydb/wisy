@@ -313,21 +313,21 @@ class WISY_SEARCH_RENDERER_CLASS
 	            if($volltext_heading && ($record['title_relevance'] && $record['beschreibung_relevance']) ) {
 	                echo '<tr>';
 	                echo '<td colspan="7" class="subheading" id="titel_beschreibung">';
-	                echo '<span class="fulltext_query">"'.$record['fulltext_query'].'"</span> 1:1 in <b>Titel</b> UND <b>Beschreibung</b>:';
+	                echo '<span class="fulltext_query">"'.htmlentities( $record['fulltext_query'] ).'"</span> 1:1 in <b>Titel</b> UND <b>Beschreibung</b>:';
 	                echo '</td>';
 	                echo '<tr>';
 	            }
 	            elseif($volltext_heading && ($record['title_relevance'] && !$record['beschreibung_relevance']) ) {
 	                echo '<tr>';
 	                echo '<td colspan="7" class="subheading" id="nur_titel">';
-	                echo '<span class="fulltext_query">"'.$record['fulltext_query'].'"</span> 1:1 nur im <b>Titel</b>:';
+	                echo '<span class="fulltext_query">"'.htmlentities( $record['fulltext_query'] ).'"</span> 1:1 nur im <b>Titel</b>:';
 	                echo '</td>';
 	                echo '<tr>';
 	            }
 	            elseif($volltext_heading && (!$record['title_relevance'] && $record['beschreibung_relevance']) ) {
 	                echo '<tr>';
 	                echo '<td colspan="7" class="subheading" id="nur_beschreibung">';
-	                echo '<span class="fulltext_query">"'.$record['fulltext_query'].'"</span> 1:1 nur in der <b>Beschreibung</b>:';
+	                echo '<span class="fulltext_query">"'.htmlentities( $record['fulltext_query'] ).'"</span> 1:1 nur in der <b>Beschreibung</b>:';
 	                echo '</td>';
 	                echo '<tr>';
 	            }
@@ -336,12 +336,12 @@ class WISY_SEARCH_RENDERER_CLASS
 	                echo '<td colspan="7" class="subheading" id="einzelne_woerter">';
 	                $words = array_map(
 	                    function($word) {
-	                        return (!in_array($word, $this->ignored_words) ? '<span class="fulltext_query">'.'"'.$word.'"</span> ODER <span class="fulltext_query">' : '');
+	                        return (!in_array($word, $this->ignored_words) ? '<span class="fulltext_query">'.'"'.htmlentities( $word ).'"</span> ODER <span class="fulltext_query">' : '');
 	                    }, explode(' ', $record['fulltext_matchall'] )
 	                    );
 	                $words = implode(' ', $words);
 	                echo 'Einzelne Begriffe in <b>Titel</b> ODER <b>Beschreibung</b> gefunden'.(count($this->ignored_words) ? ' <small>- Folgende Worte wurden einzeln nicht gesucht (da weniger als '.$record['min_chars'].' Buchstaben: <b>"'.implode(',', $this->ignored_words).'"</b>)</small>' : '').':<br>';
-	                echo substr($words, 0, strrpos($words, ' ODER'));
+	                echo substr($words, 0, strrpos($words, ' ODER')); // no htmlentities here (check above)
 	                
 	                echo '</td>';
 	                echo '<tr>';
