@@ -446,7 +446,7 @@ if (jQuery.ui)
 			if( request_term.length >= minChars ) {
 				/* add volltext */
 			    row_class = 'ac_fulltext';
-			    tag_name = 'Volltextsuche nach "' + request_term + '" ausf&uuml;hren?';
+			    tag_name = 'Volltextsuche nach "' + ( jQuery(request_term).text() ? jQuery(request_term).text() : request_term ) + '" ausf&uuml;hren?'; //  if a html tag is detected: text() makes sure only text value output otherwise output request_term (=normal text input)
 			 } else {
 			     row_class = 'ac_ignore';
 			     tag_name = ''; /* too short for fulltext */
