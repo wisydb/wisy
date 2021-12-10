@@ -820,7 +820,7 @@ if( !defined('G_SKIP_LOGIN') )	// do NOT start sessions on "skip login" as this 
 	    $currentCookieParams["lifetime"],
 	    $currentCookieParams["path"],
 	    $currentCookieParams["domain"],
-	    $currentCookieParams["secure"],
+	    true,                               // session cookie will only be sent, when https connection! 
 	    true								// cookies: httponly against xss
 	);
 	
