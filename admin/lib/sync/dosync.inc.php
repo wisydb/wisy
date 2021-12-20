@@ -66,7 +66,7 @@ class SYNC_DOSYNC_CLASS extends SYNC_FUNCTIONS_CLASS
 		
 		if( !$importer->import_do($mix_fullpath, $this->job->overwrite, $this->job->delete, $this->job->further_options) )
 		{
-			$this->_log('Importfehler, s. Protokoll für weitere Details.');
+			$this->_log('Importfehler, s. Protokoll fuer weitere Details.');
 			return false;
 		}
 		

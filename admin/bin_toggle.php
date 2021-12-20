@@ -33,6 +33,7 @@ require_once('functions.inc.php');
 $table = $_REQUEST['table'];
 $id = intval($_REQUEST['id']);
 $img = intval($_REQUEST['img']);
+$bin = $_REQUEST['jobliste'];
 
 if( $_SESSION['g_session_bin']->recordExists($table, $id) ) 
 {
@@ -45,7 +46,7 @@ if( $_SESSION['g_session_bin']->recordExists($table, $id) )
 }
 else 
 {
-	if( $_SESSION['g_session_bin']->recordAdd($table, $id) ) {
+    if( $_SESSION['g_session_bin']->recordAdd($table, $id, $bin) ) {
 		$new_state_img = "{$site->skin->imgFolder}/bin1.gif";
 	}
 	else {

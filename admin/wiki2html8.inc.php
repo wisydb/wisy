@@ -203,6 +203,8 @@ function htmlsmartentities($str, $leave = '', $smartPunctuation = 1)
 		$g_quotentities['(tm)']				= '&#8482;';	// (TM)	=> trademark sign
 		$g_quotentities['---']				= '&#8212;';	// ---	=> m-dash
 		$g_quotentities['--']				= '&#8211;';	// --	=> m-dash
+		$g_quotentities['$[$']				= '&#91;';	// [
+		$g_quotentities['$]$']				= '&#93;';	// ]
 	}
 
 	if( $leave == '' ) {

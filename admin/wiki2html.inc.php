@@ -176,7 +176,7 @@ function htmlsmartentities($str, $leave = '', $smartPunctuation = 1)
 	{
 		$g_transentities1			= array_flip(get_html_translation_table(HTML_ENTITIES, ENT_COMPAT|ENT_HTML401, 'ISO-8859-1'));
 		$g_transentities1['&nbsp;'] = '/NoN-bReAkInG-sPaCe/';
-		$g_transentities1['&euro;'] = '€';
+		$g_transentities1['&euro;'] = 'â‚¬';
 		$g_transentities2			= array_flip($g_transentities1);
 
 		$g_ampentities1 			= $g_transentities1;
@@ -203,6 +203,8 @@ function htmlsmartentities($str, $leave = '', $smartPunctuation = 1)
 		$g_quotentities['(tm)']				= '&#8482;';	// (TM)	=> trademark sign
 		$g_quotentities['---']				= '&#8212;';	// ---	=> m-dash
 		$g_quotentities['--']				= '&#8211;';	// --	=> m-dash
+		$g_quotentities['$[$']				= '&#91;';	    // [
+		$g_quotentities['$]$']				= '&#93;';	    // ]
 	}
 
 	if( $leave == '' ) {

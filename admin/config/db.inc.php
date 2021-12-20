@@ -122,7 +122,7 @@ $anbieter->add_row(TABLE_TEXT|TABLE_ACNESTSTART,			'strasse',			'Straße ', '', '
 $anbieter->add_row(TABLE_TEXT|TABLE_ACNESTSTART|TABLE_ACNEST,'plz',				'PLZ ', '', 5, '', array('layout.after'=>' ', 'layout.descr.hide'=>1, 'ctrl.placeholder'=>1));
 $anbieter->add_row(TABLE_TEXT|TABLE_ACNEST,					'bezirk',			'Bezirk ', '', '', '', array('layout.descr.hide'=>1, 'ctrl.placeholder'=>1, 'ctrl.class'=>'anbieter_bezirk', 'ctrl.size'=>'8-16-48', 'layout.defhide'=>1));
 $anbieter->add_row(TABLE_TEXT|TABLE_ACNEST,					'ort',				'Ort ', '', '', '', array('layout.descr.hide'=>1, 'ctrl.placeholder'=>1, 'ctrl.size'=>'8-16-48'));
-$anbieter->add_row(TABLE_TEXT|TABLE_ACNEST,					'stadtteil',		'Stadtteil ', '', '', '', array('ctrl.size'=>'8-16-48', 'layout.defhide.tooltip'=>'weitere Ortsangaben')); // , 'layout.defhide'=>1
+$anbieter->add_row(TABLE_TEXT|TABLE_ACNEST,					'stadtteil',		'Stadtteil ', '', '', '', array('ctrl.size'=>'8-16-48', 'layout.defhide'=>1, 'layout.defhide.tooltip'=>'weitere Ortsangaben'));
 $anbieter->add_row(TABLE_TEXT|TABLE_ACNEST,					'land',				'Land ', '', 3, '', array('layout.defhide'=>1));
 $anbieter->add_row(TABLE_FLAG,								'rollstuhlgerecht',	'Rollstuhlgerecht', '', '', '', array('layout.defhide'=>1));
 $anbieter->add_row(TABLE_TEXT,								'leitung_name',		'Leitung', '', '', '', array('ctrl.placeholder'=>'Name'));
@@ -251,7 +251,7 @@ $durchfuehrung->add_row(TABLE_TEXT|TABLE_NEWSECTION|TABLE_ACNESTSTART,
 															'strasse',			'Straße ', '', '', 'Veranstaltungsort', array('layout.descr'=>'Veranstaltungsort', 'layout.descr.hide'=>1, 'ctrl.placeholder'=>1, 'ctrl.size'=>'8-16-48'));
 $durchfuehrung->add_row(TABLE_TEXT|TABLE_ACNESTSTART|TABLE_ACNEST,				'plz',				'PLZ ', '', 5, '', array('layout.after'=>' ', 'layout.descr.hide'=>1, 'ctrl.placeholder'=>1));
 $durchfuehrung->add_row(TABLE_TEXT|TABLE_ACNEST,			'ort',				'Ort ', '', '', '', array('ctrl.size'=>'8-16-48', 'layout.descr.hide'=>1, 'ctrl.placeholder'=>1));
-$durchfuehrung->add_row(TABLE_TEXT|TABLE_ACNEST,			'stadtteil',		'Stadtteil ', '', '', '', array('ctrl.size'=>'8-16-48', 'layout.defhide'=>1, 'layout.defhide.tooltip'=>'weitere Ortsangaben'));
+$durchfuehrung->add_row(TABLE_TEXT|TABLE_ACNEST,			'stadtteil',		'Stadtteil ', '', '', '', array('ctrl.size'=>'8-16-48', 'layout.defhide.tooltip'=>'weitere Ortsangaben')); // , 'layout.defhide'=>1
 $durchfuehrung->add_row(TABLE_TEXT|TABLE_ACNEST,			'bezirk',			'Bezirk ', '', '', '', array('layout.descr.hide'=>1, 'ctrl.placeholder'=>1, 'ctrl.class'=>'df_bezirk', 'layout.defhide'=>1));
 $durchfuehrung->add_row(TABLE_TEXT|TABLE_ACNEST,			'land',				'Land ', '', 3, '', array('layout.defhide'=>1));
 $durchfuehrung->add_row(TABLE_FLAG,							'rollstuhlgerecht',	'Rollstuhlgerecht', '', '', '', array('layout.defhide'=>1));

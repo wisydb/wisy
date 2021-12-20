@@ -335,6 +335,17 @@ class DB_Sql
 	{
 		return $this->ResultInsertId;
 	}
+
+	function close() {
+	    $this->free();
+	    
+	    if($this->Link_ID && function_exists("mysql_close"))
+	        return mysql_close($this->Link_ID); // @mysql...
+	        elseif($this->Link_ID && function_exists("mysqli_close"))
+	        return mysqli_close($this->Link_ID); // @mysql...
+	        else
+	            return false;
+	}
 	
 	function free()
 	{
@@ -346,17 +357,6 @@ class DB_Sql
 			@mysql_free_result($this->phys_query_id);
 			$this->phys_query_id = 0;
 		}
-	}
-	
-	function close() {
-	    $this->free();
-	    
-	    if($this->Link_ID && function_exists("mysql_close"))
-	       return mysql_close($this->Link_ID); // @mysql...
-	    elseif($this->Link_ID && function_exists("mysqli_close"))
-	       return mysqli_close($this->Link_ID); // @mysql...
-	    else
-	       return false;
 	}
 
 	private function halt($msg)

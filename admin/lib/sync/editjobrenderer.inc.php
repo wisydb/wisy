@@ -111,7 +111,7 @@ class SYNC_EDITJOBRENDERER_CLASS extends SYNC_FUNCTIONS_CLASS
 															,
 						0, '' );
 					$apikey = regGet('export.apikey', '', 'template');
-					echo " <a href=\"cron.php?apikey=".urlencode($apikey)."&amp;force=sync&amp;forceid={$currJob->jobid}\" target=\"_blank\" rel=\"noopener noreferrer\" onclick=\"return confirm('Das starten einer Aufgabe fuehrt u.U. zum Komplettverlust aller bestehenden Daten.\\n\\nDie Aufgabe jetzt starten?');\">[Aufgabe jetzt starten ...]</a>"; 
+					echo " <a href=\"cron.php?apikey=".urlencode($apikey)."&amp;force=sync&amp;forceid={$currJob->jobid}\" target=\"_blank\" rel=\"noopener noreferrer\" onclick=\"return confirm('Das starten einer Aufgabe f&uuml;hrt u.U. zum Komplettverlust aller bestehenden Daten.\\n\\nDie Aufgabe jetzt starten?');\">[Aufgabe jetzt starten ...]</a>"; 
 				form_control_end();
 
 			$site->skin->dialogEnd();
