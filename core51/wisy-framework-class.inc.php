@@ -1366,27 +1366,6 @@ class WISY_FRAMEWORK_CLASS
 		return $ret;
 	}
 
-	function getOpensearchFile()
-	{
-		// get the OpenSearchDescription file
-		return 'opensearch';
-	}
-
-	function getOpensearchTags()
-	{
-		// get the OpenSearchDescription Tags (if any)
-		global $wisyPortalKurzname;
-		$ret = '';
-		
-		$opensearchFile = $this->getOpensearchFile();
-		if( $opensearchFile )
-		{
-			$ret .= '<link rel="search" type="application/opensearchdescription+xml" href="' . $opensearchFile . '" title="' .htmlspecialchars($wisyPortalKurzname). '" />' . "\n";
-		}
-		
-		return $ret;
-	}
-
 	function getRSSFile()
 	{
 		// get the main RSS file
@@ -2072,7 +2051,7 @@ class WISY_FRAMEWORK_CLASS
 		
 		// replace ALL placeholders
 		// $this->getRSSTags() . 
-		$bodyStart = str_replace('__HEADTAGS__', $this->getTitleTags($param['title'], $param['ort'], $param['anbieter_name']) . $this->getFaviconTags() . $this->getOpensearchTags() . $this->getCSSTags() . $this->getCanonicalTag($param['canonical']) . $this->getMobileAlternateTag($param['canonical']) . $this->getJSHeadTags() . $this->getMetaDescription($param['title'], $param['beschreibung']) . $this->getHreflangTags() . $this->getSocialMediaTags($param['title'], $param['ort'], $param['anbieter_name'], $param['anbieter_id'], $param['beschreibung'], $param['canonical']), $bodyStart);
+		$bodyStart = str_replace('__HEADTAGS__', $this->getTitleTags($param['title'], $param['ort'], $param['anbieter_name']) . $this->getFaviconTags() . $this->getCSSTags() . $this->getCanonicalTag($param['canonical']) . $this->getMobileAlternateTag($param['canonical']) . $this->getJSHeadTags() . $this->getMetaDescription($param['title'], $param['beschreibung']) . $this->getHreflangTags() . $this->getSocialMediaTags($param['title'], $param['ort'], $param['anbieter_name'], $param['anbieter_id'], $param['beschreibung'], $param['canonical']), $bodyStart);
 		$bodyStart = str_replace('__BODYATTR__', ' ' . $this->getJSOnload() . (isset($param['id']) ? ' id="' . $this->getBodyID($param['id']) .'"' : '') . ' class="' . $this->getBodyClasses($param['bodyClass']) . ( $this->editSessionStarted ? ' wisyp_edit' : '') . '" ', $bodyStart);
 		$bodyStart = $this->replacePlaceholders($bodyStart);
 		$i1 = strpos($bodyStart, "<!-- include ");
@@ -2635,9 +2614,6 @@ class WISY_FRAMEWORK_CLASS
 
 			case 'autosuggestplzort':
 				return createWisyObject('WISY_AUTOSUGGESTPLZORT_RENDERER_CLASS', $this);
-				
-			case 'opensearch':
-				return createWisyObject('WISY_OPENSEARCH_RENDERER_CLASS', $this);
 
 			case 'rss':
 			    return false; // return createWisyObject('WISY_RSS_RENDERER_CLASS', $this, array('q'=>$this->simplified ? $this->Q : $this->getParam('q', '')));
@@ -2740,7 +2716,7 @@ class WISY_FRAMEWORK_CLASS
 		
 		/* Don't allow search request parameters to be set, if search isn't valid for page type -> don't let search engines and hackers consume unecessary ressources ! */
 		global $wisyRequestedFile;
-		$valid_searchrequests = array('rss', 'search', 'advanced', 'filter', 'tree', 'geocode', 'autosuggest', 'autosuggestplzort', 'opensearch', 'kurse.php', 'anbieter.php', 'glossar.php');
+		$valid_searchrequests = array('rss', 'search', 'advanced', 'filter', 'tree', 'geocode', 'autosuggest', 'autosuggestplzort', 'kurse.php', 'anbieter.php', 'glossar.php');
 		if(
 		   // direct use of $_GET-parameters ok, too, b/c not being written to DB or output
 		   ( $this->getParam('q', false) || $this->getParam('qs', false) || $this->getParam('qf', false) || $this->getParam('qsrc', false) || $this->getParam('offset', false) )

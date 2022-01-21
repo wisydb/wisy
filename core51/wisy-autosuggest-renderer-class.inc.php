@@ -54,7 +54,8 @@ class WISY_AUTOSUGGEST_RENDERER_CLASS
 
 		switch( $this->framework->getParam('format') )
 		{
-			case 'json':
+			/* deprecated:
+			   case 'json':
 				// return as JSON, used by out OpenSearch implementation
 				$tags = $tagsuggestor->suggestTags($querystring);
 			
@@ -71,7 +72,8 @@ class WISY_AUTOSUGGEST_RENDERER_CLASS
 					}
 				echo ']]';
 				break;
-			
+			*/
+				
 			default:
 			    // return as simple text, one tag per line, used by the site's AutoSuggest
 			    if( $this->framework->getParam('type') == 'ort' )
