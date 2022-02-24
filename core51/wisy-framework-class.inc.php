@@ -14,7 +14,7 @@ require_once('admin/config/codes.inc.php');
 function g_sync_removeSpecialChars($str)
 {
 	$str = strtr($str, ',:', '  ');
-	while( strpos($str, '  ')!==false ) $str = str_replace('  ', ' ', $str);seal
+	while( strpos($str, '  ')!==false ) $str = str_replace('  ', ' ', $str);
 	$str = trim($str);
 	return $str;
 }

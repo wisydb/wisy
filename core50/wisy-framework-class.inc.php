@@ -1396,7 +1396,7 @@ class WISY_FRAMEWORK_CLASS
 		}
 		else
 		{
-			$ret[] = 'jquery-1.4.3.min.js';
+		    $ret[] = 'jquery-1.12.3.min.js'; // jquery-1.4.3.min.js
 			$ret[] = 'jquery.autocomplete.min.js';
 		}
 		$ret[] = 'jquery.wisy.js' . $this->includeVersion;
