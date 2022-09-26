@@ -3,18 +3,17 @@
 /*
 	Hinweise:
 	
-	- für MultiEdit ist das Recht "SYSTEM.MULTIEDIT" erforderlich. Derzeit ist dies
-	  der Einfachheit halber *eine* Einstellung für *alle* Tabellen 
+	- fuer MultiEdit ist das Recht "SYSTEM.MULTIEDIT" erforderlich. Derzeit ist dies
+	  der Einfachheit halber *eine* Einstellung fuer *alle* Tabellen 
 	
-	- Der Menüpunkt "MultiEdit" ergibt sich aus den Systemlokalisierung unter "_INDEX_PLUGIN_<tableName>_0"
+	- Der Menuepunkt "MultiEdit" ergibt sich aus den Systemlokalisierung unter "_INDEX_PLUGIN_<tableName>_0"
 	
 	- Wenn es beim Benutzer "template" die Einstellung "index_plugin_<tableName>_0.access=kurse.MULTIEDIT" gibt, 
-	  wird der Menüpunkt nur angezeigt, wenn der jeweilige Benutzer das Recht "kurse.MULTIEDIT" hat
-	  (sollte sich der Name der Rechte ändern, muss dies natürlich auch im Template angepasst werden)
+	  wird der Menuepunkt nur angezeigt, wenn der jeweilige Benutzer das Recht "kurse.MULTIEDIT" hat
+	  (sollte sich der Name der Rechte aendern, muss dies natuerlich auch im Template angepasst werden)
 	  
-	- "Löschen" bei Nummern-Felder wäre zu "gefährlich", weil bei Preis u. Sonderpreis "Löschen" = "-1" bedeuten würde. Bei Dauer wäre "Löschen" aber "0"m bei Tagescode dagegen "1" etc.
+	- "Loeschen" bei Nummern-Felder waere zu "gefaehrlich", weil bei Preis u. Sonderpreis "Loeschen" = "-1" bedeuten wuerde. Bei Dauer waere "Loeschen" aber "0"m bei Tagescode dagegen "1" etc.
 */
-
 
 require_once('functions.inc.php');
 require_once('eql.inc.php');
@@ -52,45 +51,45 @@ class MULTIEDIT_PLUGIN_CLASS
 			/* if( strlen($rowdescr) > 16) $rowdescr = substr($rowdescr, 0, 14).'..'; */
 			if( !($rowflags & TABLE_READONLY) )
 			{
-				switch( $rowflags & TABLE_ROW )
-				{
-					case TABLE_TEXT:
-					case TABLE_TEXTAREA:
-						if( $rowname != 'notizen' )
-						{
-							$ret .= $cmdPrefix."{$prefix}__{$rowname}__settext###$rowdescr: setze auf 'Parameter2'###";
-							$ret .= $cmdPrefix."{$prefix}__{$rowname}__settext2###$rowdescr: 'Parameter1' durch 'Parameter2' ersetzen###";
-							$ret .= $cmdPrefix."{$prefix}__{$rowname}__settext3###$rowdescr: LÖSCHEN###";
-						}
-						break;
-
-					case TABLE_DATE:
-						$ret .= $cmdPrefix."{$prefix}__{$rowname}__setdate###$rowdescr: setze auf 'Parameter2'###"; 
-						$ret .= $cmdPrefix."{$prefix}__{$rowname}__setdate2###$rowdescr: 'Parameter1' durch 'Parameter2' ersetzen###";
-						$ret .= $cmdPrefix."{$prefix}__{$rowname}__setdate3###$rowdescr: LÖSCHEN###";
-						break;
-						
-					case TABLE_INT:
-						$ret .= $cmdPrefix."{$prefix}__{$rowname}__settext###$rowdescr: setze auf 'Parameter2'###";
-						break;
-						
-					case TABLE_ENUM:
-						$ret .= $cmdPrefix."{$prefix}__{$rowname}__setenum###$rowdescr: setze auf 'Parameter2'###";
-						break;
-					
-					case TABLE_SATTR:
-						$ret .= $cmdPrefix."{$prefix}__{$rowname}__setsattr###$rowdescr: setze auf 'Parameter2'###";
-						break;
-
-					case TABLE_MATTR:
-						$valueName = 'Wert';
-						if( $rowname == 'stichwort' ) $valueName = '';
-						if( $rowname == 'verweis' && $table == 'kurse' ) $valueName = 'Kurs';
-						if( $rowname == 'verweis' && $table == 'anbieter' ) $valueName = 'Anbieter';
-						$ret .= $cmdPrefix."{$prefix}__{$rowname}__addmattr###$rowdescr: $valueName aus 'Parameter2' hinzufügen###";
-						$ret .= $cmdPrefix."{$prefix}__{$rowname}__delmattr###$rowdescr: $valueName aus 'Parameter2' LÖSCHEN###";
-						break;
-				}
+			    switch( $rowflags & TABLE_ROW )
+			    {
+			        case TABLE_TEXT:
+			        case TABLE_TEXTAREA:
+			            if( $rowname != 'notizen' )
+			            {
+			                $ret .= $cmdPrefix."{$prefix}__{$rowname}__settext###$rowdescr: setze auf 'Parameter2'###";
+			                $ret .= $cmdPrefix."{$prefix}__{$rowname}__settext2###$rowdescr: 'Parameter1' durch 'Parameter2' ersetzen###";
+			                $ret .= $cmdPrefix."{$prefix}__{$rowname}__settext3###$rowdescr: L&Ouml;SCHEN###";
+			            }
+			            break;
+			            
+			        case TABLE_DATE:
+			            $ret .= $cmdPrefix."{$prefix}__{$rowname}__setdate###$rowdescr: setze auf 'Parameter2'###";
+			            $ret .= $cmdPrefix."{$prefix}__{$rowname}__setdate2###$rowdescr: 'Parameter1' durch 'Parameter2' ersetzen###";
+			            $ret .= $cmdPrefix."{$prefix}__{$rowname}__setdate3###$rowdescr: L&Ouml;SCHEN###";
+			            break;
+			            
+			        case TABLE_INT:
+			            $ret .= $cmdPrefix."{$prefix}__{$rowname}__settext###$rowdescr: setze auf 'Parameter2'###";
+			            break;
+			            
+			        case TABLE_ENUM:
+			            $ret .= $cmdPrefix."{$prefix}__{$rowname}__setenum###$rowdescr: setze auf 'Parameter2'###";
+			            break;
+			            
+			        case TABLE_SATTR:
+			            $ret .= $cmdPrefix."{$prefix}__{$rowname}__setsattr###$rowdescr: setze auf 'Parameter2'###";
+			            break;
+			            
+			        case TABLE_MATTR:
+			            $valueName = 'Wert';
+			            if( $rowname == 'stichwort' ) $valueName = '';
+			            if( $rowname == 'verweis' && $table == 'kurse' ) $valueName = 'Kurs';
+			            if( $rowname == 'verweis' && $table == 'anbieter' ) $valueName = 'Anbieter';
+			            $ret .= $cmdPrefix."{$prefix}__{$rowname}__addmattr###$rowdescr: $valueName aus 'Parameter2' hinzuf&uuml;gen###";
+			            $ret .= $cmdPrefix."{$prefix}__{$rowname}__delmattr###$rowdescr: $valueName aus 'Parameter2' L&Ouml;SCHEN###";
+			            break;
+			    }
 			}
 		}
 		
@@ -124,54 +123,54 @@ class MULTIEDIT_PLUGIN_CLASS
 					echo "Aktion:";
 				$site->skin->controlBreak();
 				
-					$options = "nop######";
-					
-					// häufige Aktionen (fpr RLP, 12:42 23.08.2013)
-					if( $this->tableName == 'kurse' )
-					{
-						$options .= "nop2###- - - Häufige Aktionen - - -###";
-						$options .= "nop2######";
-						$options .= "field__stichwort__addmattr###Stichwörter:  aus 'Parameter2' hinzufügen###";
-						$options .= "field__stichwort__delmattr###Stichwörter:  aus 'Parameter2' LÖSCHEN###";
-						$options .= "field__thema__setsattr###Thema: setze auf 'Parameter2'###";
-						$options .= "field__anbieter__setsattr###Anbieter: setze auf 'Parameter2'###";
-						$options .= "nop2######";
-						
-						$options .= "field__freigeschaltet__setenum###Status: setze auf 'Parameter2'###";
-						$options .= "add_journal###Journaleintrag hinzufügen###";
-						$options .= "dfield__beginn__setdate###Beginn: setze auf 'Parameter2'###";
-						$options .= "del_old_durchf###Abgelaufene Durchführungen LÖSCHEN###";
-						
-						$options .= "nop2######";
-						$options .= "nop2###- - - Alle Aktionen - - -###";
-						$options .= "nop2######";
-						
-						$options .= "trigger_kurse###PLZ, Stadtteil etc. ergänzen###";
-					}
+				$options = "nop######";
 				
-					// create possible actions list ...
-					$options .= $this->getFieldActions($this->tableName, 'field');
-					
-					if( $this->tableName == 'kurse' )
-					{
-						$options .= "nop2######";
-						$options .= $this->getFieldActions('durchfuehrung', 'dfield');
-						$options .= "del_old_durchf###Abgelaufene Durchführungen LÖSCHEN###";
-					}
-					
-					$options .= "field__user_grp__settext###Benutzergruppe: setze auf 'Parameter2' (nur ID) ###";
-					$options .= "field__user_access__settext###Rechte: setze auf 'Parameter2'###";
-					
-					$options .= "nop2######";
-					$options .= "add_journal###Journaleintrag hinzufügen###";
-					$options .= "nop2######";
-					$options .= "del_sel###{$this->allIdsCount} {$this->tableDescr} LÖSCHEN###";
-					$options .= "nop2###";
-					
-					$sel = isset($_REQUEST['action'])? $_REQUEST['action'] : 'nop';
-					if( $sel == 'nop2' ) $sel = 'nop';
-					
-					form_control_enum('action', $sel, $options);
+				// haeufige Aktionen (fpr RLP, 12:42 23.08.2013)
+				if( $this->tableName == 'kurse' )
+				{
+				    $options .= "nop2###- - - H&auml;ufige Aktionen - - -###";
+				    $options .= "nop2######";
+				    $options .= "field__stichwort__addmattr###Stichw&ouml;rter:  aus 'Parameter2' hinzuf&uuml;gen###";
+				    $options .= "field__stichwort__delmattr###Stichw&ouml;rter:  aus 'Parameter2' L&Ouml;SCHEN###";
+				    $options .= "field__thema__setsattr###Thema: setze auf 'Parameter2'###";
+				    $options .= "field__anbieter__setsattr###Anbieter: setze auf 'Parameter2'###";
+				    $options .= "nop2######";
+				    
+				    $options .= "field__freigeschaltet__setenum###Status: setze auf 'Parameter2'###";
+				    $options .= "add_journal###Journaleintrag hinzuf&uuml;gen###";
+				    $options .= "dfield__beginn__setdate###Beginn: setze auf 'Parameter2'###";
+				    $options .= "del_old_durchf###Abgelaufene Durchf&uuml;hrungen L&Ouml;SCHEN###";
+				    
+				    $options .= "nop2######";
+				    $options .= "nop2###- - - Alle Aktionen - - -###";
+				    $options .= "nop2######";
+				    
+				    $options .= "trigger_kurse###PLZ, Stadtteil etc. erg&auml;nzen###";
+				}
+				
+				// create possible actions list ...
+				$options .= $this->getFieldActions($this->tableName, 'field');
+				
+				if( $this->tableName == 'kurse' )
+				{
+				    $options .= "nop2######";
+				    $options .= $this->getFieldActions('durchfuehrung', 'dfield');
+				    $options .= "del_old_durchf###Abgelaufene Durchf&uuml;hrungen L&Ouml;SCHEN###";
+				}
+				
+				$options .= "field__user_grp__settext###Benutzergruppe: setze auf 'Parameter2' (nur ID) ###";
+				$options .= "field__user_access__settext###Rechte: setze auf 'Parameter2'###";
+				
+				$options .= "nop2######";
+				$options .= "add_journal###Journaleintrag hinzuf&uuml;gen###";
+				$options .= "nop2######";
+				$options .= "del_sel###{$this->allIdsCount} {$this->tableDescr} L&Ouml;SCHEN###";
+				$options .= "nop2###";
+				
+				$sel = isset($_REQUEST['action'])? $_REQUEST['action'] : 'nop';
+				if( $sel == 'nop2' ) $sel = 'nop';
+				
+				form_control_enum('action', $sel, $options);
 				$site->skin->controlEnd();
 				
 				$site->skin->controlStart();
@@ -208,11 +207,11 @@ class MULTIEDIT_PLUGIN_CLASS
 
 			if( $this->allIdsCount > 10 )
 			{
-				$site->skin->submenuStart();
-					echo "<b>Warnung:</b> Durch Klick auf OK Ändern oder Löschen Sie {$this->allIdsCount} Datensätze!";
-				$site->skin->submenuBreak();
-					echo "&nbsp;";
-				$site->skin->submenuEnd();
+			    $site->skin->submenuStart();
+			    echo "<b>Warnung:</b> Durch Klick auf OK &auml;ndern oder L&ouml;chen Sie {$this->allIdsCount} Datens&auml;tze!";
+			    $site->skin->submenuBreak();
+			    echo "&nbsp;";
+			    $site->skin->submenuEnd();
 			}
 			
 			$site->skin->buttonsStart();
@@ -313,9 +312,9 @@ class MULTIEDIT_PLUGIN_CLASS
 		
 		// finally, for table "themen", allow the input of the kurzel as "1.1" (at least one dot is required in the value to distinguish from the ID)
 		if( $linked_table == 'themen' && strpos($value, '.')!==false )
-		{	
-			$sql .= " OR kuerzel='" . addslashes($value) . "' OR kuerzel='" .addslashes($value).  ".'";
-			$sql_descr .= " oder {$linked_table_def->descr}.Kürzel";			
+		{
+		    $sql .= " OR kuerzel='" . addslashes($value) . "' OR kuerzel='" .addslashes($value).  ".'";
+		    $sql_descr .= " oder {$linked_table_def->descr}.K&uuml;rzel";
 		}
 		
 		// try by get_id_from_txt(), allow multiple values ... (changes for RLP, 19.08.2013)
@@ -324,44 +323,44 @@ class MULTIEDIT_PLUGIN_CLASS
 		$ret = array(); $error = '';
 		for( $a = 0; $a < sizeof((array) $sep_arr); $a++ )
 		{
-			$curr_attr = trim($sep_arr[$a]);
-			if( $curr_attr !== '' )
-			{
-				$curr_id = $linked_table_def->get_id_from_txt($curr_attr, $attr_error);
-				if( $curr_id ) {
-					$ret[] = $curr_id;
-				}
-				else {
-					$error = "Unbekannter Wert <i>".isohtmlspecialchars($curr_attr)."</i> in Parameter2. Bitte geben Sie hier einen gültigen Wert aus <i>{$sql_descr}</i> ein.";
-				}
-			}
+		    $curr_attr = trim($sep_arr[$a]);
+		    if( $curr_attr !== '' )
+		    {
+		        $curr_id = $linked_table_def->get_id_from_txt($curr_attr, $attr_error);
+		        if( $curr_id ) {
+		            $ret[] = $curr_id;
+		        }
+		        else {
+		            $error = "Unbekannter Wert <i>".isohtmlspecialchars($curr_attr)."</i> in Parameter2. Bitte geben Sie hier einen g&uuml;ltigen Wert aus <i>{$sql_descr}</i> ein.";
+		        }
+		    }
 		}
 		
 		if( sizeof($ret) ) {
-			if( $error == '' )
-				return $ret;
-			else {
-				$this->renderDefaultPage($error);
-				exit();
-			}
+		    if( $error == '' )
+		        return $ret;
+		        else {
+		            $this->renderDefaultPage($error);
+		            exit();
+		        }
 		}
 		
 		// search!
 		$db->query($sql);
 		if( $db->next_record() )
 		{
-			$ret = $db->f('id');
-			if( $db->next_record() )
-			{
-				$this->renderDefaultPage("Nicht eindeutiger Wert <i>".isohtmlspecialchars($value)."</i> in Parameter2. Bitte geben Sie hier einen gültigen Wert aus <i>{$sql_descr}</i> ein.");
-				exit();
-			}
-			return array($ret);
+		    $ret = $db->f('id');
+		    if( $db->next_record() )
+		    {
+		        $this->renderDefaultPage("Nicht eindeutiger Wert <i>".isohtmlspecialchars($value)."</i> in Parameter2. Bitte geben Sie hier einen g&uuml;ltigen Wert aus <i>{$sql_descr}</i> ein.");
+		        exit();
+		    }
+		    return array($ret);
 		}
 		else
 		{
-			$this->renderDefaultPage("Unbekannter Wert <i>".isohtmlspecialchars($value)."</i> in Parameter2. Bitte geben Sie hier einen gültigen Wert aus <i>{$sql_descr}</i> ein.");
-			exit();
+		    $this->renderDefaultPage("Unbekannter Wert <i>".isohtmlspecialchars($value)."</i> in Parameter2. Bitte geben Sie hier einen g&uuml;ltigen Wert aus <i>{$sql_descr}</i> ein.");
+		    exit();
 		}
 	}
 	
@@ -402,310 +401,330 @@ class MULTIEDIT_PLUGIN_CLASS
 			case 'setdate':
 			case 'setdate2':
 			case 'setdate3':
-				// suchen / ersetzen im Datensatz
-				$param2_org = $param2;
-				if( $action == 'setenum' ) 
-				{
-					if( $param1 != '' ) { $this->renderDefaultPage('Parameter1 wird bei dieser Aktion nicht verwendet, bitte überprüfen Sie Ihre Eingaben.'); exit(); }
-					$param2 = $this->getFieldEnum($table_def->rows[$r], $param2);
-				}
-				else if( $action == 'setsattr' )
-				{
-					if( $param1 != '' ) { $this->renderDefaultPage('Parameter1 wird bei dieser Aktion nicht verwendet, bitte überprüfen Sie Ihre Eingaben.'); exit(); }
-					$temp = $this->getFieldAttrs($table_def->rows[$r], $param2);
-					$param2 = $temp[0];
-				}
-				else if( $action == 'settext' || $action == 'setdate' )
-				{
-					if( $param1 != '' ) { $this->renderDefaultPage('Parameter1 wird bei dieser Aktion nicht verwendet, bitte überprüfen Sie Ihre Eingaben.'); exit(); }
-					if( $param2 == '' ) { $this->renderDefaultPage('Bitte geben Sie den zu setzenden Wert in Parameter2 an.'); exit(); }
-					if( $action == 'setdate' ) { $param2 = sql_date_from_human($param2, 'date'); if($param2=='0000-00-00 00:00:00'){$this->renderDefaultPage('Ungültige Datumsangabe.');exit();} }
-				}
-				else if( $action == 'settext2' || $action == 'setdate2' )
-				{
-					if( $param1 == '' ) { $this->renderDefaultPage('Bitte geben Sie die zu suchende Zeichenkette in Parameter1 an.'); exit(); }
-					if( $action == 'setdate2' ) { $param1 = sql_date_from_human($param1, 'date'); if($param1=='0000-00-00 00:00:00'){$this->renderDefaultPage('Ungültige Datumsangabe.');exit();} }
-					if( $action == 'setdate2' ) { $param2 = sql_date_from_human($param2, 'date'); if($param2=='0000-00-00 00:00:00'){$this->renderDefaultPage('Ungültige Datumsangabe.');exit();} }
-				}
-				else if( $action == 'settext3' || $action == 'setdate3' )
-				{
-					if( $param1 != '' || $param2 != '' ) { $this->renderDefaultPage('Parameter1 und Parameter2 werden bei dieser Aktion nicht verwendet, bitte überprüfen Sie Ihre Eingaben.'); exit(); }
-					if( $action == 'setdate3' ) { $param2='0000-00-00 00:00:00'; }
-				}
-				
-				$all_changes = 0;
-				$sql = "SELECT id, $field FROM {$localTableName} WHERE id IN($allIdsStr) AND $field LIKE '%".addslashes($param1)."%';";
-				$db->query($sql);
-				while( $db->next_record() )
-				{
-					$id = intval($db->f('id'));
-					$content = $db->fs($field);
-					$changes = 0;
-					if( $param1=='' )
-					{
-						if( $content != $param2 )
-							$changes ++;
-						$content = $param2;
-					}
-					else
-					{
-						$content = str_replace($param1, $param2, $content, $changes);
-					}
-					if( $changes > 0 )
-					{
-						$db2->query("UPDATE {$localTableName} SET $field='".addslashes($content)."' WHERE id=$id;");
-						$all_changes += $changes;
-					}
-				}
-				if( $all_changes == 0 )
-				{
-					$this->renderDefaultPage('Keine Änderungen notwendig.', 'i');
-					exit(); // no log
-				}
-				
-				if( $param1=='' )
-					return "Feld $rowdescr wurde auf '".isohtmlspecialchars($param2_org)."' gesetzt; dabei wurden $all_changes Änderungen vorgenommen. ";
-				else
-					return "'".isohtmlspecialchars($param1)."' durch '".isohtmlspecialchars($param2_org)."' im Feld $rowdescr ersetzt; dabei wurden $all_changes Änderungen vorgenommen. ";
-			
+			    // suchen / ersetzen im Datensatz
+			    $param2_org = $param2;
+			    if( $action == 'setenum' )
+			    {
+			        if( $param1 != '' ) { $this->renderDefaultPage('Parameter1 wird bei dieser Aktion nicht verwendet, bitte &uuml;berpr&uuml;fen Sie Ihre Eingaben.'); exit(); }
+			        $param2 = $this->getFieldEnum($table_def->rows[$r], $param2);
+			    }
+			    else if( $action == 'setsattr' )
+			    {
+			        if( $param1 != '' ) { $this->renderDefaultPage('Parameter1 wird bei dieser Aktion nicht verwendet, bitte &uuml;berpr&uuml;fen Sie Ihre Eingaben.'); exit(); }
+			        $temp = $this->getFieldAttrs($table_def->rows[$r], $param2);
+			        $param2 = $temp[0];
+			    }
+			    else if( $action == 'settext' || $action == 'setdate' )
+			    {
+			        if( $param1 != '' ) { $this->renderDefaultPage('Parameter1 wird bei dieser Aktion nicht verwendet, bitte &uuml;berpr&uuml;fen Sie Ihre Eingaben.'); exit(); }
+			        if( $param2 == '' ) { $this->renderDefaultPage('Bitte geben Sie den zu setzenden Wert in Parameter2 an.'); exit(); }
+			        if( $action == 'setdate' ) { $param2 = sql_date_from_human($param2, 'date'); if($param2=='0000-00-00 00:00:00'){$this->renderDefaultPage('Ung&uuml;ltige Datumsangabe.');exit();} }
+			    }
+			    else if( $action == 'settext2' || $action == 'setdate2' )
+			    {
+			        if( $param1 == '' ) { $this->renderDefaultPage('Bitte geben Sie die zu suchende Zeichenkette in Parameter1 an.'); exit(); }
+			        if( $action == 'setdate2' ) { $param1 = sql_date_from_human($param1, 'date'); if($param1=='0000-00-00 00:00:00'){$this->renderDefaultPage('Ung&uuml;ltige Datumsangabe.');exit();} }
+			        if( $action == 'setdate2' ) { $param2 = sql_date_from_human($param2, 'date'); if($param2=='0000-00-00 00:00:00'){$this->renderDefaultPage('Ung&uuml;ltige Datumsangabe.');exit();} }
+			    }
+			    else if( $action == 'settext3' || $action == 'setdate3' )
+			    {
+			        if( $param1 != '' || $param2 != '' ) { $this->renderDefaultPage('Parameter1 und Parameter2 werden bei dieser Aktion nicht verwendet, bitte &uuml;berpr&uuml;fen Sie Ihre Eingaben.'); exit(); }
+			        if( $action == 'setdate3' ) { $param2='0000-00-00 00:00:00'; }
+			    }
+			    
+			    $all_changes = 0;
+			    $sql = "SELECT id, $field FROM {$localTableName} WHERE id IN($allIdsStr) AND $field LIKE '%".addslashes($param1)."%';";
+			    $db->query($sql);
+			    while( $db->next_record() )
+			    {
+			        $id = intval($db->f('id'));
+			        $content = $db->fs($field);
+			        $changes = 0;
+			        if( $param1=='' )
+			        {
+			            if( $content != $param2 )
+			                $changes ++;
+			                $content = $param2;
+			        }
+			        else
+			        {
+			            $content = str_replace($param1, $param2, $content, $changes);
+			        }
+			        if( $changes > 0 )
+			        {
+			            $db2->query("UPDATE {$localTableName} SET $field='".addslashes($content)."' WHERE id=$id;");
+			            $all_changes += $changes;
+			        }
+			    }
+			    if( $all_changes == 0 )
+			    {
+			        $this->renderDefaultPage('Keine &Auml;nderungen notwendig.', 'i');
+			        exit(); // no log
+			    }
+			    
+			    if( $localTableName == 'durchfuehrung' )  {
+			        $sql = "SELECT primary_id FROM kurse_durchfuehrung WHERE secondary_id = $id";   // get course id
+			        $db->query($sql);
+			        if( $db->next_record() ) {
+			            $trigger_param = array( 'action'=>'afterupdate', 'id'=>$id, 'primary_id' => $db->f('primary_id'), 'origin'=>'Multiedit'  );
+			            call_plugin($table_def->trigger_script, $trigger_param);  // DF trigger
+			        }
+			    }
+			    
+			    if( $param1=='' )
+			        return "Feld $rowdescr wurde auf '".isohtmlspecialchars($param2_org)."' gesetzt; dabei wurden $all_changes &Auml;nderungen vorgenommen. ";
+			        else
+			            return "'".isohtmlspecialchars($param1)."' durch '".isohtmlspecialchars($param2_org)."' im Feld $rowdescr ersetzt; dabei wurden $all_changes &Auml;nderungen vorgenommen. ";
+			            
 			case 'addmattr':
-				if( $param1 != '' ) { $this->renderDefaultPage('Parameter1 wird bei dieser Aktion nicht verwendet, bitte überprüfen Sie Ihre Eingaben.'); exit(); }
-				$param2_org = $param2;
-				$param2 = $this->getFieldAttrs($table_def->rows[$r], $param2);
-				$allIdsArr = explode(',', $allIdsStr);
-				$all_changes = 0;
-				for( $a = 0; $a < sizeof($allIdsArr); $a++ )
-				{
-				    for( $param2_i = 0; $param2_i < sizeof((array) $param2); $param2_i++ )
-					{
-						$db->query("SELECT attr_id FROM {$localTableName}_{$table_def->rows[$r]->name} WHERE primary_id=$allIdsArr[$a] AND attr_id=".$param2[$param2_i]);
-						if( !$db->next_record() )
-						{
-							$all_changes++;
-							$db->query("INSERT INTO {$localTableName}_{$table_def->rows[$r]->name} (primary_id, attr_id) VALUES ($allIdsArr[$a], ".$param2[$param2_i].");");
-						}
-					}
-				}
-				if( $all_changes == 0 )
-				{
-					$this->renderDefaultPage('Keine Änderungen notwendig.', 'i');
-					exit(); // no log
-				}
-				return "'".isohtmlspecialchars($param2_org)."' zu Feld $rowdescr hinzugefügt; dabei wurden $all_changes Änderungen vorgenommen. ";
-			
+			    if( $param1 != '' ) { $this->renderDefaultPage('Parameter1 wird bei dieser Aktion nicht verwendet, bitte &uuml;berpr&uuml;fen Sie Ihre Eingaben.'); exit(); }
+			    $param2_org = $param2;
+			    $param2 = $this->getFieldAttrs($table_def->rows[$r], $param2);
+			    $allIdsArr = explode(',', $allIdsStr);
+			    $all_changes = 0;
+			    for( $a = 0; $a < sizeof($allIdsArr); $a++ )
+			    {
+			        for( $param2_i = 0; $param2_i < sizeof((array) $param2); $param2_i++ )
+			        {
+			            $db->query("SELECT attr_id FROM {$localTableName}_{$table_def->rows[$r]->name} WHERE primary_id=$allIdsArr[$a] AND attr_id=".$param2[$param2_i]);
+			            if( !$db->next_record() )
+			            {
+			                $all_changes++;
+			                $db->query("INSERT INTO {$localTableName}_{$table_def->rows[$r]->name} (primary_id, attr_id) VALUES ($allIdsArr[$a], ".$param2[$param2_i].");");
+			            }
+			        }
+			    }
+			    if( $all_changes == 0 )
+			    {
+			        $this->renderDefaultPage('Keine &Auml;nderungen notwendig.', 'i');
+			        exit(); // no log
+			    }
+			    return "'".isohtmlspecialchars($param2_org)."' zu Feld $rowdescr hinzugef&uuml;gt; dabei wurden $all_changes &Auml;nderungen vorgenommen. ";
+			    
 			case 'delmattr':
-				if( $param1 != '' ) { $this->renderDefaultPage('Parameter1 wird bei dieser Aktion nicht verwendet, bitte überprüfen Sie Ihre Eingaben.'); exit(); }
-				$param2_org = $param2;
-				$temp = $this->getFieldAttrs($table_def->rows[$r], $param2);
-				$param2 = implode(',', $temp);
-				
-				$db->query("SELECT attr_id FROM {$localTableName}_{$table_def->rows[$r]->name} WHERE attr_id IN ($param2) AND primary_id IN ($allIdsStr)");
-				if( !$db->next_record() )
-				{
-					$this->renderDefaultPage('Keine Änderungen notwendig.', 'i');
-					exit(); // no log
-				}
-				
-				$db->query("DELETE FROM {$localTableName}_{$table_def->rows[$r]->name} WHERE attr_id IN ($param2) AND primary_id IN ($allIdsStr)");
-				return "'".isohtmlspecialchars($param2_org)."' aus Feld $rowdescr entfernt. ";
-			
-			default:	
-				die('unknown action.');
-				break;
+			    if( $param1 != '' ) { $this->renderDefaultPage('Parameter1 wird bei dieser Aktion nicht verwendet, bitte &uuml;berpr&uuml;fen Sie Ihre Eingaben.'); exit(); }
+			    $param2_org = $param2;
+			    $temp = $this->getFieldAttrs($table_def->rows[$r], $param2);
+			    $param2 = implode(',', $temp);
+			    
+			    $db->query("SELECT attr_id FROM {$localTableName}_{$table_def->rows[$r]->name} WHERE attr_id IN ($param2) AND primary_id IN ($allIdsStr)");
+			    if( !$db->next_record() )
+			    {
+			        $this->renderDefaultPage('Keine &Auml;nderungen notwendig.', 'i');
+			        exit(); // no log
+			    }
+			    
+			    $db->query("DELETE FROM {$localTableName}_{$table_def->rows[$r]->name} WHERE attr_id IN ($param2) AND primary_id IN ($allIdsStr)");
+			    return "'".isohtmlspecialchars($param2_org)."' aus Feld $rowdescr entfernt. ";
+			    
+			default:
+			    die('unknown action.');
+			    break;
 		}
 	}
 	
 	
 	function main($tableName)
 	{
-		$this->tableName = $tableName;
-		$table_def = Table_Find_Def($this->tableName);
-		$this->tableDescr = $table_def->descr;
-	
-		if( !acl_check_access("SYSTEM.MULTIEDIT", -1, ACL_EDIT) )
-		{
-			$this->renderStatusPage('Mit der Funktion &quot;MultiEdit&quot; können Aktionen für mehrere Datensätze '
-							.'gleichzeitig ausgef&uuml;hrt werden. Um diese Funktion zu '
-							.'verwenden muß der Systemadministrator Ihnen zuvor das Recht &quot;SYSTEM.MULTIEDIT&quot; einräumen.');
-			exit();
-		}
-
-		if( substr($_SERVER['HTTP_HOST'], -6)!='.local' 
-		 && intval($_REQUEST['user_answer']) != intval($_REQUEST['correct_answer']) )
-		{
-			$this->renderDefaultPage('Sie haben die Sicherheitsabfrage falsch beantwortet.');
-			exit();
-		}
-		
-		// ignore all aborts
-		ignore_user_abort(1);
-		set_time_limit(0);
-		
-		// IDs der Datensätze laden
-		if( !isset($_SESSION['g_session_index_sql'][$this->tableName]) ) { $this->renderStatusPage("Keine Datensätze ausgewählt?"); exit(); }
-		
-		$eql2sql = new EQL2SQL_CLASS($this->tableName);
-		$eql = $_SESSION['g_session_index_eql'][$this->tableName]==''? '*' : $_SESSION['g_session_index_eql'][$this->tableName];
-		$sql = $eql2sql->eql2sql($eql, 'id', acl_get_sql(ACL_READ, 0, 1, $this->tableName), 'id');
-
-		$allIdsStr = '';
-		$this->allIdsCount = 0;
-		$db = new DB_Admin;
-		$db->query($sql);
-		while( $db->next_record() )
-		{
-			if( $allIdsStr != '' ) $allIdsStr .= ',';
-			$allIdsStr .= $db->f('id');
-			$this->allIdsCount++;
-		}
-
-		if( $this->allIdsCount <= 0 )
-		{
-			$this->renderStatusPage('Bitte wählen Sie zunächst die zu bearbeitenden Datensätze im Hauptfenster aus.');
-			exit();
-		}
-
-		if( $_REQUEST['ok'] != 'OK' )
-		{
-			$this->renderDefaultPage('');
-			exit();
-		}
-
-		// befehl auslesen
-		$action			= trim($_REQUEST['action']);
-		$param1			= $_REQUEST['param1']; // Leerzeichen sind relevant!
-		$param2			= $_REQUEST['param2']; // Leerzeichen sind relevant!
-		$add_msg		= '';
-		$journal_entry	= trim($_REQUEST['journal_entry']);
-		
-		// bei Bedarf die IDs der sekundären Tabelle (Durchführungen) laden
-		if( substr($action, 0, 8) == 'dfield__' ||  $action == 'del_old_durchf'  )
-		{
-			$allDurchfIdsStr = '';
-			$db->query("SELECT secondary_id FROM {$this->tableName}_durchfuehrung WHERE primary_id IN($allIdsStr);");
-			while( $db->next_record() )
-			{
-				if( $allDurchfIdsStr != '' ) $allDurchfIdsStr .= ',';
-				$allDurchfIdsStr .= $db->f('secondary_id');
-			}
-			if( $allDurchfIdsStr == '' )	
-				$this->renderDefaultPage('Keine Durchführungen in der Auswahl.', 'i');
-		}
-
-		// see what to do ...
-		if( substr($action, 0, 8) == 'dfield__' )
-		{
-			$add_msg .= $this->do_field_action('durchfuehrung', $allDurchfIdsStr, $action, $param1, $param2);
-		}
-		else if( substr($action, 0, 7) == 'field__' )
-		{
-			$add_msg .= $this->do_field_action($this->tableName, $allIdsStr, $action, $param1, $param2);
-		}
-		else if( $action == 'del_sel' )
-		{
-			// ... delete a number of records
-			$allIdsArr = explode(',', $allIdsStr);
-			for( $a = 0; $a < sizeof($allIdsArr); $a++ )
-			{
-				$id = $allIdsArr[$a];
-
-				// access?
-				if( !acl_check_access("{$table_def->name}.COMMON", $id, ACL_DELETE) )
-					{ $this->renderStatusPage("Sie haben nicht die Berechtigung, Datensatz #$id zu löschen.", 1 /*1=update main window*/); exit(); }
-			}
-			
-			for( $a = 0; $a < sizeof($allIdsArr); $a++ )
-			{
-				$id = $allIdsArr[$a];
-				
-				// delete in DB
-				$table_def->destroy_record_dependencies($id);
-				$db->query("DELETE FROM {$table_def->name} WHERE id=$id");
-				
-				// trigger?
-				if( $table_def->trigger_script )
-				{
-					$trigger_param = array('action'=>'afterdelete', 'id'=>$id);
-					call_plugin($table_def->trigger_script, $trigger_param);
-				}
-			}
-			$add_msg .= "Insgesamt " . sizeof($allIdsArr) . " Datensätze gelöscht. ";
-		}
-		else if( $action == 'del_old_durchf' )
-		{
-			// alte durchführungen löschen
-			$today = strftime("%Y-%m-%d 00:00:00");
-			$toMod = '';
-			$toModCnt = 0;
-			$db->query("SELECT id FROM durchfuehrung WHERE id IN($allDurchfIdsStr) AND beginnoptionen=0 AND beginn!='0000-00-00' AND beginn<'$today';");
-			while( $db->next_record() ) 
-			{
-				if( $toMod != '' ) $toMod .= ',';
-				$toMod .= $db->f('id');
-				$toModCnt ++;
-			}
-			
-			if( $toModCnt == 0 )
-				{ $this->renderDefaultPage("Keine abgelaufenen Durchführungen in der Auswahl.", 'i'); exit(); }
-
-			$db->query("DELETE FROM durchfuehrung WHERE id IN($toMod);");
-			$db->query("DELETE FROM {$this->tableName}_durchfuehrung WHERE secondary_id IN($toMod);");
-			$add_msg .= "Insgesamt $toModCnt abgelaufene Durchführungen gelöscht. ";
-		}
-		else if( $action == 'trigger_kurse' ) 
-		{
-			require_once('config/trigger_kurse.inc.php');
-			$allIdsArr = explode(',', $allIdsStr);
-			foreach( $allIdsArr as $currId ) {
-				$uks = update_kurs_state($currId, array('set_plz_stadtteil'=>1, 'write'=>1));
-				if( $uks['returnmsg'] ) {	
-					$add_msg .= "<a href=\"edit.php?table=kurse&id={$currId}\" target=\"_blank\">Kurs ID {$currId}</a>: {$uks['returnmsg']}<br />";
-				}
-			}
-			$add_msg .= sizeof($allIdsArr)." Kurse überprüft. ";
-		}
-		else if( $action == 'add_journal' )
-		{
-			// nur journaleintrag hinzufügen
-			if( $param1 != '' || $param2 != '' ) { $this->renderDefaultPage('Parameter1 und Parameter2 werden bei dieser Aktion nicht verwendet, bitte überprüfen Sie Ihre Eingaben.'); exit(); }
-			if( $journal_entry == '' )
-			{
-				$this->renderDefaultPage('Bitte geben Sie den hinzuzufügenden Journaleintrag ein.');
-				exit();
-			}
-		}
-		else
-		{
-			$this->renderDefaultPage('Bitte wählen Sie eine Aktion aus.');
-			exit();
-		}
-
-		// write journal
-		$journal_sql = '';
-		if( $journal_entry != '' )
-		{
-			$journal_sql = ", notizen=CONCAT('".addslashes($journal_entry)."\n',notizen)";
-			$add_msg .= 'Journaleintrag: '.$journal_entry.' ';
-		}
-
-		$sql = "UPDATE {$this->tableName}
+	    $this->tableName = $tableName;
+	    $table_def = Table_Find_Def($this->tableName);
+	    $this->tableDescr = $table_def->descr;
+	    
+	    if( !acl_check_access("SYSTEM.MULTIEDIT", -1, ACL_EDIT) )
+	    {
+	        $this->renderStatusPage('Mit der Funktion &quot;MultiEdit&quot; k&ouml;nnen Aktionen f&uuml;r mehrere Datens&auml;tze '
+	            .'gleichzeitig ausgef&uuml;hrt werden. Um diese Funktion zu '
+	            .'verwenden mu&szlig; der Systemadministrator Ihnen zuvor das Recht &quot;SYSTEM.MULTIEDIT&quot; einr&auml;umen.');
+	        exit();
+	    }
+	    
+	    if( substr($_SERVER['HTTP_HOST'], -6)!='.local'
+	        && intval($_REQUEST['user_answer']) != intval($_REQUEST['correct_answer']) )
+	    {
+	        $this->renderDefaultPage('Sie haben die Sicherheitsabfrage falsch beantwortet.');
+	        exit();
+	    }
+	    
+	    // ignore all aborts
+	    ignore_user_abort(1);
+	    set_time_limit(0);
+	    
+	    // IDs der Datensï¿½tze laden
+	    if( !isset($_SESSION['g_session_index_sql'][$this->tableName]) ) { $this->renderStatusPage("Keine Datens&auml;tze ausgew&auml;hlt?"); exit(); }
+	    
+	    $eql2sql = new EQL2SQL_CLASS($this->tableName);
+	    $eql = $_SESSION['g_session_index_eql'][$this->tableName]==''? '*' : $_SESSION['g_session_index_eql'][$this->tableName];
+	    $sql = $eql2sql->eql2sql($eql, 'id', acl_get_sql(ACL_READ, 0, 1, $this->tableName), 'id');
+	    
+	    $allIdsStr = '';
+	    $this->allIdsCount = 0;
+	    $db = new DB_Admin;
+	    $db->query($sql);
+	    while( $db->next_record() )
+	    {
+	        if( $allIdsStr != '' ) $allIdsStr .= ',';
+	        $allIdsStr .= $db->f('id');
+	        $this->allIdsCount++;
+	    }
+	    
+	    if( $this->allIdsCount <= 0 )
+	    {
+	        $this->renderStatusPage('Bitte w&auml;hlen Sie zun&auml;chst die zu bearbeitenden Datens&auml;tze im Hauptfenster aus.');
+	        exit();
+	    }
+	    
+	    if( $_REQUEST['ok'] != 'OK' )
+	    {
+	        $this->renderDefaultPage('');
+	        exit();
+	    }
+	    
+	    // befehl auslesen
+	    $action			= trim($_REQUEST['action']);
+	    $param1			= $_REQUEST['param1']; // Leerzeichen sind relevant!
+	    $param2			= $_REQUEST['param2']; // Leerzeichen sind relevant!
+	    $add_msg		= '';
+	    $journal_entry	= trim($_REQUEST['journal_entry']);
+	    
+	    // bei Bedarf die IDs der sekundaeren Tabelle (Durchfuehrungen) laden
+	    if( substr($action, 0, 8) == 'dfield__' ||  $action == 'del_old_durchf'  )
+	    {
+	        $allDurchfIdsStr = '';
+	        $db->query("SELECT secondary_id FROM {$this->tableName}_durchfuehrung WHERE primary_id IN($allIdsStr);");
+	        while( $db->next_record() )
+	        {
+	            if( $allDurchfIdsStr != '' ) $allDurchfIdsStr .= ',';
+	            $allDurchfIdsStr .= $db->f('secondary_id');
+	        }
+	        if( $allDurchfIdsStr == '' )
+	            $this->renderDefaultPage('Keine Durchf&uuml;hrungen in der Auswahl.', 'i');
+	    }
+	    
+	    // see what to do ...
+	    if( substr($action, 0, 8) == 'dfield__' )
+	    {
+	        $add_msg .= $this->do_field_action('durchfuehrung', $allDurchfIdsStr, $action, $param1, $param2);
+	    }
+	    else if( substr($action, 0, 7) == 'field__' )
+	    {
+	        $add_msg .= $this->do_field_action($this->tableName, $allIdsStr, $action, $param1, $param2);
+	    }
+	    else if( $action == 'del_sel' )
+	    {
+	        // ... delete a number of records
+	        $allIdsArr = explode(',', $allIdsStr);
+	        for( $a = 0; $a < sizeof($allIdsArr); $a++ )
+	        {
+	            $id = $allIdsArr[$a];
+	            
+	            // access?
+	            if( !acl_check_access("{$table_def->name}.COMMON", $id, ACL_DELETE) )
+	            { $this->renderStatusPage("Sie haben nicht die Berechtigung, Datensatz #$id zu l&ouml;schen.", 1 /*1=update main window*/); exit(); }
+	        }
+	        
+	        for( $a = 0; $a < sizeof($allIdsArr); $a++ )
+	        {
+	            $id = $allIdsArr[$a];
+	            
+	            // delete in DB
+	            $table_def->destroy_record_dependencies($id);
+	            $db->query("DELETE FROM {$table_def->name} WHERE id=$id");
+	            
+	            // trigger?
+	            if( $table_def->trigger_script )
+	            {
+	                $trigger_param = array('action'=>'afterdelete', 'id'=>$id);
+	                call_plugin($table_def->trigger_script, $trigger_param);
+	            }
+	        }
+	        $add_msg .= "Insgesamt " . sizeof($allIdsArr) . " Datens&auml;tze gel&ouml;scht. ";
+	    }
+	    else if( $action == 'del_old_durchf' )
+	    {
+	        // alte durchfuehrungen loeschen
+	        $today = strftime("%Y-%m-%d 00:00:00");
+	        $toMod = '';
+	        $toModCnt = 0;
+	        $dfIDs = array();
+	        $db->query("SELECT id FROM durchfuehrung WHERE id IN($allDurchfIdsStr) AND beginnoptionen=0 AND beginn!='0000-00-00' AND beginn<'$today';");
+	        while( $db->next_record() )
+	        {
+	            if( $toMod != '' ) $toMod .= ',';
+	            $toMod .= $db->f('id');
+	            $dfIDs[] = $db->f('id');
+	            $toModCnt ++;
+	        }
+	        
+	        if( $toModCnt == 0 )
+	        { $this->renderDefaultPage("Keine abgelaufenen Durchf&uuml;hrungen in der Auswahl.", 'i'); exit(); }
+	        
+	        foreach( $dfIDs AS $dfID ) {
+	            $sql = "SELECT primary_id FROM kurse_durchfuehrung WHERE secondary_id = $dfID";   // get course id
+	            $db->query($sql);
+	            
+	            if( $db->next_record() ) {
+	                $trigger_param = array( 'action'=>'afterdelete', 'id'=>8, 'primary_id'=>$db->f('primary_id'), 'origin'=>'Multiedit'  );
+	                $table_defSec = Table_Find_Def('durchfuehrung');
+	                call_plugin($table_defSec->trigger_script, $trigger_param);  // DF trigger
+	            }
+	        }
+	        
+	        $db->query("DELETE FROM durchfuehrung WHERE id IN($toMod);");
+	        $db->query("DELETE FROM {$this->tableName}_durchfuehrung WHERE secondary_id IN($toMod);");
+	        $add_msg .= "Insgesamt $toModCnt abgelaufene Durchf&uuml;hrungen gel&ouml;scht. ";
+	    }
+	    else if( $action == 'trigger_kurse' )
+	    {
+	        require_once('config/trigger_kurse.inc.php');
+	        $allIdsArr = explode(',', $allIdsStr);
+	        foreach( $allIdsArr as $currId ) {
+	            $uks = update_kurs_state($currId, array('set_plz_stadtteil'=>1, 'write'=>1));
+	            if( $uks['returnmsg'] ) {
+	                $add_msg .= "<a href=\"edit.php?table=kurse&id={$currId}\" target=\"_blank\">Kurs ID {$currId}</a>: {$uks['returnmsg']}<br />";
+	            }
+	        }
+	        $add_msg .= sizeof($allIdsArr)." Kurse &uuml;berpr&uuml;ft. ";
+	    }
+	    else if( $action == 'add_journal' )
+	    {
+	        // nur journaleintrag hinzufuegen
+	        if( $param1 != '' || $param2 != '' ) { $this->renderDefaultPage('Parameter1 und Parameter2 werden bei dieser Aktion nicht verwendet, bitte &uuml;berpr&uuml;fen Sie Ihre Eingaben.'); exit(); }
+	        if( $journal_entry == '' )
+	        {
+	            $this->renderDefaultPage('Bitte geben Sie den hinzuzuf&uuml;genden Journaleintrag ein.');
+	            exit();
+	        }
+	    }
+	    else
+	    {
+	        $this->renderDefaultPage('Bitte w&auml;hlen Sie eine Aktion aus.');
+	        exit();
+	    }
+	    
+	    // write journal
+	    $journal_sql = '';
+	    if( $journal_entry != '' )
+	    {
+	        $journal_sql = ", notizen=CONCAT('".addslashes($journal_entry)."\n',notizen)";
+	        $add_msg .= 'Journaleintrag: '.$journal_entry.' ';
+	    }
+	    
+	    $sql = "UPDATE {$this->tableName}
 				   SET date_modified='".strftime("%Y-%m-%d %H:%M:%S")."'
 					 , user_modified=".intval($_SESSION['g_session_userid'])."
 					   $journal_sql
 				   WHERE id IN ($allIdsStr);
 			   ";
-		$db->query($sql);
-
-		$add_msg . " Die Aktion wurde für {$this->allIdsCount} $this->tableDescr durchgeführt.";
-		
-		$logwriter = new LOG_WRITER_CLASS;
-		$logwriter->addData('query', $eql);
-		$logwriter->addData('action', $add_msg);
-		$logwriter->log($this->tableName, $allIdsStr, $_SESSION['g_session_userid'], 'multiedit');
-		
-		$this->renderStatusPage($add_msg, 1 /*1=update main window*/);
-		exit();
+					   $db->query($sql);
+					   
+					   $add_msg . " Die Aktion wurde f&uuml;r {$this->allIdsCount} $this->tableDescr durchgef&uuml;hrt.";
+					   
+					   $logwriter = new LOG_WRITER_CLASS;
+					   $logwriter->addData('query', $eql);
+					   $logwriter->addData('action', $add_msg);
+					   $logwriter->log($this->tableName, $allIdsStr, $_SESSION['g_session_userid'], 'multiedit');
+					   
+					   $this->renderStatusPage($add_msg, 1 /*1=update main window*/);
+					   exit();
 	}
 };
-
-

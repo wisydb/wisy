@@ -4,7 +4,7 @@
 // Do not use any operators for string creation.
 // Do not use other remarks than // at the beginning of a line.
 //
-define('_SETTINGS_ALLOWMINUSPLUSWORD',      "<i>-Wort</i> und <i>+Wort</i> als Shortcut für <i>not(Wort)</i> und <i>exact(Wort)</i> erlauben");
+define('_SETTINGS_ALLOWMINUSPLUSWORD',      "<i>-Wort</i> und <i>+Wort</i> als Shortcut f&uuml;r <i>not(Wort)</i> und <i>exact(Wort)</i> erlauben");
 define('_SETTINGS_BINACTIVEBINHINT',        "Zur Standard-Jobliste k&ouml;nnen Eintr&auml;ge durch einfachen Klick auf die B&uuml;roklammer im Hauptfenster hizugef&uuml;gt/entfernt werden.");
 define('_SETTINGS_BINADDRECORDSFROM',       "Datens&auml;tze hinzuf&uuml;gen aus Jobliste:");
 define('_SETTINGS_BINALLOW',                "Freigabe: andere Benutzer d&uuml;rfen diese Jobliste \$1 (wenn andere Benutzer diese Jobliste mitbenutzen sollen, m&uuml;ssen Sie ihnen den Namen &quot;\$2&quot; mitteilen; der Name kann von anderen Benutzern dann unter &quot;Neue Jobliste...&quot; eingegeben werden)");
@@ -41,7 +41,7 @@ define('_SETTINGS_BINRECORDDOESNOTEXIST',   "ID \$1 - der Datensatz existiert ni
 define('_SETTINGS_BINREMEMBERIN___',        "\$1 merken in Jobliste...");
 // $1 is replaced by "1 record" or by "N records"
 define('_SETTINGS_BINCLICKEDRECORD',        "angeklickten Datensatz");
-define('_SETTINGS_BINRECORDSINVIEW',        "sichtbare Datensätze");
+define('_SETTINGS_BINRECORDSINVIEW',        "sichtbare Datens&auml;tze");
 define('_SETTINGS_BINREMOVENONEXISTANT',    "nicht existierende Datens&auml;tze entfernen");
 define('_SETTINGS_BINREMOVENONEXISTANTASK', "Sollen wiklich alle nicht existierenden Datens&auml;tze der Tabelle &quot;\$2&quot; aus der Jobliste &quot;\$1&quot; entfernt werden?");
 // $1 the job list name -- $2 the table name
@@ -95,6 +95,7 @@ define('_SETTINGS_SEARCHSETTINGSFOR',       "Einstellungen zur Suche in \$1");
 define('_SETTINGS_SEARCHSHOWFUZZYINFO',     "alternative W&ouml;rter bei fehlertoleranter Suche anzeigen");
 define('_SETTINGS_SEARCHSHOWPCODE',         "Interpretation der Suchanfrage anzeigen, falls keine Datens&auml;tze gefunden wurden");
 define('_SETTINGS_SEPERATOR',               "Trennzeichen");
+define('_SETTINGS_SHOWCHANGES',             "Zeige DF-&Auml;nderungen in Kursmaske");
 define('_SETTINGS_SHOWLOGO',                "Logo anzeigen");
 define('_SETTINGS_SKIN',                    "Skin");
 define('_SETTINGS_DIALOGTITLE',             "Ihre pers&ouml;nlichen Einstellungen");

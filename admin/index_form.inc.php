@@ -48,7 +48,8 @@ class DBSEARCH_FORM_CLASS
 						// rows_addrowsoverhead	2, n
 
 	// advanced mode
-	var $fieldNames;	
+	var $fieldNames;
+	var $fieldMsgs;
 	var $fieldHash;		
 	var $fieldDescr;
 	var $rows;
@@ -224,6 +225,7 @@ class DBSEARCH_FORM_CLASS
 
 		// get the fields
 		$this->fieldNames = array();
+		$this->fieldMsgs = array();
 		$this->fieldDescr = array();
 		$this->fieldHash  = array();
 		$this->fieldIsDefault = array();
@@ -272,7 +274,7 @@ class DBSEARCH_FORM_CLASS
 	// DBSEARCH_FORM_CLASS->loadFields()
 	// ----------------------------------
 	//
-	private function _addField__($name, $descr, $indentCnt, $indentFuncs, $loadAll, $isDefaultField /*0=no, 1=default, 2=default+alwaysOn*/ )
+	private function _addField__($name, $descr, $indentCnt, $indentFuncs, $loadAll, $isDefaultField /*0=no, 1=default, 2=default+alwaysOn*/, $msgToSearcher = "")
 	{
 		global $site;
 		
@@ -285,6 +287,7 @@ class DBSEARCH_FORM_CLASS
 		{
 			$fieldNormName					= g_eql_normalize_func_name($name, 1);
 			$this->fieldNames[]				= "$indentFuncs$fieldName";
+			$this->fieldMsgs[]              = $msgToSearcher;
 			$this->fieldHash[$fieldNormName]= $fieldName;
 			
 			$descr = trim(htmlconstant($descr));
@@ -340,6 +343,7 @@ class DBSEARCH_FORM_CLASS
 		{
 			$rowflags	= $tableDef->rows[$r]->flags;
 			$rowtype	= $rowflags&TABLE_ROW;
+			$rowprops   = isset($tableDef->rows[$r]->prop['cmsSearchMsg']) ? $tableDef->rows[$r]->prop['cmsSearchMsg'] : '';
 			
 			// check if the field is a default field
 			$isDefaultField = 0;
@@ -353,8 +357,7 @@ class DBSEARCH_FORM_CLASS
 			}
 			
 			// add field
-			$this->_addField__($tableDef->rows[$r]->name, $tableDef->rows[$r]->descr,
-				$indentCnt, $indentFuncs, $loadAll, $isDefaultField);
+			$this->_addField__($tableDef->rows[$r]->name, $tableDef->rows[$r]->descr, $indentCnt, $indentFuncs, $loadAll, $isDefaultField, $rowprops);
 			
 			// add linked tables
 			if( $rowtype == TABLE_SECONDARY || $rowtype == TABLE_MATTR || $rowtype == TABLE_SATTR )
@@ -540,7 +543,7 @@ class DBSEARCH_FORM_CLASS
 							$ret .= $this->_renderOption('', $this->rows[$rowNum][1], '');
 							$ret .= $this->_renderOption('ANY', $this->rows[$rowNum][1], htmlconstant('_MOD_DBSEARCH_FIELDANY'));
 							for( $i = 0; $i < sizeof((array) $this->fieldNames); $i++ ) {
-								$ret .= $this->_renderOption($this->fieldNames[$i], $this->rows[$rowNum][1], $this->fieldDescr[$i]);
+							    $ret .= $this->_renderOption( $this->fieldNames[$i], $this->rows[$rowNum][1], $this->fieldDescr[$i], $this->fieldMsgs[$i] );
 							}
 							
 							if( $site 
@@ -590,16 +593,16 @@ class DBSEARCH_FORM_CLASS
 		return $ret;
 	}
 	
-	private function _renderOption($istValue, $sollValue, $descr)
+	private function _renderOption($istValue, $sollValue, $descr, $msg = "")
 	{
-		// render option
-		$ret = "<option value=\"$istValue\"";
-		if( $istValue == $sollValue ) {
-			$ret .= ' selected="selected"';
-		}
-		$ret .= ">$descr</option>";
-		
-		return $ret;
+	    // render option
+	    $ret = "<option data-msg=\"$msg\" value=\"$istValue\"";
+	    if( $istValue == $sollValue ) {
+	        $ret .= ' selected="selected"';
+	    }
+	    $ret .= ">$descr</option>";
+	    
+	    return $ret;
 	}
 	
 	//

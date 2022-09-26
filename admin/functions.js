@@ -885,7 +885,16 @@ if($("form[name=dbsearch]") && ($("#fheader .mml .mms").text() == "Angebote" || 
 				$("form[name=dbsearch] select[name^=o]").css("color", "black");
 			 }
 		 });
- });
+ 	});
+	
+	$("form[name=dbsearch] select").each(function() {
+	  $(this).on('change', function() {
+		var s_feld = $("form[name=dbsearch] select option:selected");
+	    
+	    if( s_feld.data('msg') != "" )
+			  alert( unescape( s_feld.data('msg') ).replace(/\\n/g, "\r\n") );
+	 });
+	});
 	
 }
 

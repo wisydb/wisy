@@ -621,3 +621,23 @@ input[name='resetlogin'] {
 .vorschlag {
 	color: #777 !important;;
 }
+
+div[data-descr="Durchführung"] + .e_tb {
+  border-top: 1px solid #eee;
+  margin-bottom: 1em;
+}
+
+.df_lastinsertedDescr,
+.df_lastdeletedDescr,
+.df_lastmodifiedDescr {
+	color: #777;
+	font-size: 1em;
+}
+
+/* div[data-descr="Durchführung"] + .e_tb {
+  line-height: 1em;
+}
+
+div[data-descr="Durchführung"] + .e_tb * {
+	padding: 0px;
+} */

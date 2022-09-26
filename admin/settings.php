@@ -38,6 +38,10 @@ settings are (for values, the first value is the default in most cases):
 	date.global					<dateSetting>
 								"dateSetting" is a comma-separated list with:
 								relative, weekdays, century, time, seconds
+								
+	edit.df.showchanges.use     {0|1}  (global settings)
+	edit.df.showchanges         {0|1}  (user settings)
+	
 	edit.field.<table>.<field>.addvalues
 								{0|1}							old editor only
 	edit.field.<table>.<field>.size
@@ -228,7 +232,7 @@ function edit_fields_in($currTable)
 		{
 			case TABLE_TEXT:
 				{
-					if( $_COOKIE['oldeditor'] ) {
+				    if( isset($_COOKIE['oldeditor']) && $_COOKIE['oldeditor'] ) {
 						$valueName = "text$numText";
 						regSetSize("edit.field.{$currTableDef->name}.{$currTableDef->rows[$r]->name}.size",
 							$_REQUEST[$valueName], "40 x 1");
@@ -261,8 +265,9 @@ function edit_fields_in($currTable)
 				
 			case TABLE_MATTR:
 			case TABLE_SATTR:
-				if( $currTableDef->rows[$r]->acl&ACL_EDIT )
-				{
+			    $rowsACL = isset($currTableDef->rows[$r]->acl) ? $currTableDef->rows[$r]->acl : null;
+			    if( $rowsACL&ACL_EDIT )
+			    {
 					$valueName = "av$numAddValues";
 					regSet("edit.field.{$currTableDef->name}.{$currTableDef->rows[$r]->name}.addvalues", $_REQUEST[$valueName]? 1 : 0, 0); 
 					
@@ -292,9 +297,9 @@ function edit_fields_out($currTable)
 		$rowtype = $rowflags & TABLE_ROW;
 		switch( $rowtype )
 		{
-			case TABLE_TEXT:
-				{
-					if( $currTableDef->rows[$r]->addparam ) {
+		    case TABLE_TEXT:
+		        {
+		            if( isset($currTableDef->rows[$r]->addparam) && $currTableDef->rows[$r]->addparam ) {
 						$rules = explode('###', $currTableDef->rows[$r]->addparam);
 						if( substr($rules[0], -1)!=' ' ) {
 							$numText++;
@@ -373,11 +378,12 @@ function edit_fields_out($currTable)
 			
 			case TABLE_MATTR:
 			case TABLE_SATTR:
-				if( $currTableDef->rows[$r]->acl&ACL_EDIT )
-				{
-					$hasAttr = 1;
-				}
-				break;
+			    $rowsACL = isset($currTableDef->rows[$r]->acl) ? $currTableDef->rows[$r]->acl : null;
+			    if( $rowsACL&ACL_EDIT )
+			    {
+			        $hasAttr = 1;
+			    }
+			    break;
 		}
 	}
 }
@@ -643,6 +649,10 @@ if( isset($settings_ok) || isset($settings_apply) )
 			regSet('login.tipsntricks', $_REQUEST['tbtnt']?1:0, 1);
 		}
 	
+		if( regGet('edit.df.showchanges.use', 1) ) {
+		    regSet('edit.df.showchanges', isset( $_REQUEST['shchng'] ) && $_REQUEST['shchng'] ? 1:0, 1);
+		}
+		
 		// ... store skin
 		$skn_changed = 0;
 		if( regGet('skin.editable', 1) ) {
@@ -666,21 +676,27 @@ if( isset($settings_ok) || isset($settings_apply) )
 		$dateSetting = str_replace(' ', ', ', trim($dateSetting));
 		regSet('date.global',	$dateSetting, 'relative, weekdays');
 		
-		// ...store settings from $g_addsettings_names
-		global $g_addsettings_names;
-		for( $i = 0; $i < sizeof((array) $g_addsettings_names); $i += 2 )
-			regSet($g_addsettings_names[$i+1],  $_REQUEST["addsettings$i"], '');
-	
+		// ...store settings from $g_addsettings_view
+		global $g_addsettings_view;
+		for( $i = 0; $i < sizeof((array) $g_addsettings_view); $i += 2 )
+		    regSet($g_addsettings_view[$i+1],  (isset($_REQUEST["addsettingsView$i"]) ? $_REQUEST["addsettingsView$i"] : ''), '');
+		    
+		    
+		// ...store settings from $g_addsettings_misc
+		global $g_addsettings_misc;
+		for( $i = 0; $i < sizeof((array) $g_addsettings_misc); $i += 2 )
+		  regSet($g_addsettings_misc[$i+1],  (isset($_REQUEST["addsettingsMisc$i"]) ? $_REQUEST["addsettingsMisc$i"] : ''), '');
+		        
 		// store settings: save settings to db
-
+		        
 		$any_setting_changed = regSave();
 		if( $any_setting_changed ) {
-			$_SESSION['g_session_filter_active_hint'] = 0;
+		    $_SESSION['g_session_filter_active_hint'] = 0;
 		}
-		
+		        
 		if( isset($section) ) {
-			regSet($section_setting, $section, 0);
-			regSave();
+		  regSet($section_setting, $section, 0);
+		  regSave();
 		}
 	}
 }
@@ -758,7 +774,8 @@ if( regGet('settings.editable', 1) ) {
 	$sectionCounter++;
 }
 
-
+$site->skin->sectionDeclare(htmlconstant('_MISC'), "$sectionBaseUrl$sectionCounter", $sectionCounter == intval($section) );
+$sectionCounter++;
 
 
 //
@@ -1543,6 +1560,12 @@ $site->skin->sectionStart();
 			}
 
 
+			form_control_check('shchng', regGet('edit.df.showchanges', 1), '', 0, 1);
+			if( regGet('edit.df.showchanges.use', 1) ) {
+			    echo '<label for="shchng">' . htmlconstant('_SETTINGS_SHOWCHANGES') . '</label><br />';
+			    // regSet('edit.df.showchanges', isset( $_REQUEST['shchng'] ) && $_REQUEST['shchng'] ? 1:0, 1);
+			}
+			
 		form_control_end();
 
 		// date
@@ -1572,19 +1595,26 @@ $site->skin->sectionStart();
 				
 			echo '</div>';
 
-		form_control_end();
-		
-		// show settings from $g_addsettings_names
-		global $g_addsettings_names;
-		for( $i = 0; $i < sizeof((array) $g_addsettings_names); $i += 2 )
-		{
-			form_control_start(htmlconstant($g_addsettings_names[$i]));
-				form_control_text("addsettings$i", regGet($g_addsettings_names[$i+1], ''));
 			form_control_end();
-		}
-		
-		
-	$site->skin->dialogEnd();	
+			
+			// show settings from $g_addsettings_view
+			global $g_addsettings_view, $g_addsettings_userTemplateOnly;
+			
+			for( $i = 0; $i < sizeof((array) $g_addsettings_view); $i += 2 )
+			{
+			    // don't display template value if user template is required for this and current user not template
+			    if( isset( $_SESSION['g_session_userloginname'] ) && $_SESSION['g_session_userloginname'] != 'template' && isset($g_addsettings_userTemplateOnly) && is_array($g_addsettings_userTemplateOnly) && in_array($g_addsettings_view[$i+1], $g_addsettings_userTemplateOnly) )
+			        $value = '';
+			        else
+			            $value = regGet($g_addsettings_view[$i+1], '');
+			            
+			            form_control_start(htmlconstant($g_addsettings_view[$i]));
+			            form_control_text("addsettingsView$i", $value);  // if no sepcific value is set for this user it will fall back / show the value of user "template"!
+			            form_control_end();
+			}
+			
+			
+	$site->skin->dialogEnd();
 	
 $site->skin->sectionEnd();
 
@@ -1648,7 +1678,39 @@ if( regGet('settings.editable', 1) )
 	$site->skin->sectionEnd();
 }
 
-
+if( regGet('settings.editable', 1) )
+{
+    $site->skin->sectionStart();
+    
+    // skin
+    $site->skin->submenuStart();
+    echo htmlconstant('_SETTINGS_VIEW');
+    $site->skin->submenuBreak();
+    $site->menuHelpEntry('isettingsview');
+    $site->skin->submenuEnd();
+    $site->skin->dialogStart();
+    
+    // show settings from $g_addsettings_misc
+    global $g_addsettings_misc, $g_addsettings_userTemplateOnly;
+    
+    for( $i = 0; $i < sizeof((array) $g_addsettings_misc); $i += 2 )
+    {
+        // don't display template value if user template is required for this and current user not template
+        if( isset( $_SESSION['g_session_userloginname'] ) && $_SESSION['g_session_userloginname'] != 'template' && isset($g_addsettings_userTemplateOnly) && is_array($g_addsettings_userTemplateOnly) && in_array($g_addsettings_misc[$i+1], $g_addsettings_userTemplateOnly) )
+            $value = '';
+        else
+            $value = regGet($g_addsettings_misc[$i+1], '');
+                
+            form_control_start(htmlconstant($g_addsettings_misc[$i]));
+            form_control_text("addsettingsMisc$i", $value);  // if no sepcific value is set for this user it will fall back / show the value of user "template"!
+            form_control_end();
+                
+    }
+    
+    $site->skin->dialogEnd();
+    
+    $site->skin->sectionEnd();
+}
 
 
 //
@@ -1674,6 +1736,3 @@ $site->skin->buttonsEnd();
 echo '</form>';
 
 $site->pageEnd();
-
-
-

@@ -13,6 +13,7 @@ define('_APPLY',               "Apply");
 define('_AUTO',                "Automatic");
 define('_BACK',                "Back");
 define('_JOBLISTS',            "Job lists");
+define('_MISC',                "Miscellaneous");
 define('_BY',                  "by");
 // Used as column or control headline eg. "by" or "von" in german language.
 define('_CANCEL',              "Cancel");

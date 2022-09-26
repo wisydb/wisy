@@ -266,7 +266,7 @@ if( !$use_neweditor )
 	$durchfuehrung->add_row(TABLE_TEXT, 						'azwv_dnr', 	'AZAV-Durchführungsnummer');
 }
 
-
+$durchfuehrung->set_trigger('config/trigger_durchfuehrung.inc.php');    // make sure changes to DF trigger calculations, like last df change date
 
 /*** PORTALE ***/
 /*** HINWEIS: Einstellungen gehören als INI-Wert in das Feld portale.einstellungen - sonst haben wir hier ganz schnell Chaos! (bp) ***/
@@ -344,6 +344,28 @@ if(!$use_neweditor) {
 	$kurse->add_row(TABLE_TEXT, 									'foerder_knr', 		'Förder-Kursnummer', '','', '', array('layout.join'=>1));
 	$kurse->add_row(TABLE_TEXT, 									'azwv_knr', 		'AZAV-Kursnummer', '','', '', array('layout.join'=>1));
 }
+
+if($use_neweditor) {
+    $kurse->add_row(TABLE_DATETIME|TABLE_DAYMONTHOPT|TABLE_SUMMARY|TABLE_LIST|TABLE_NEWSECTION|TABLE_READONLY,
+        'x_df_lastinserted', 'Letzte DF-Erstellung', '', '', 'Termin', array( 'cmsSearchMsg' => 'Ber%FCcksichtigt:\n-Redaktionssystem (Detail+Multiedit)\n-REST\n-Onlinpflege.\n\nAchtung: Immer auch ein Minimaldatum angeben - nicht nur ein Maximaldatum - um leere Felder auszuschlie%DFen / keine Kurse zu l%F6schen, %FCber die man nichts wei%DF!\n\nAchtung: DBMix-Importe noch nicht ber%FCcksichtigt!\n\nAchtung: GGf. Portale mit aktiven Module bzgl. Onlinepflege-Datum noch nicht ber%FCcksichtigt.', 'showIfSetting' => 'edit.df.showchanges', 'layout.descr'=>'Letzte DF-Erstellung', 'layout.after'=>'', 'layout.bg.class'=>'', 'layout.descr.class'=>'df_lastinsertedDescr', 'ctrl.class'=>'df_lastinsertedCtrl'));
+    
+    $kurse->add_row(TABLE_TEXT|TABLE_READONLY,
+        'x_df_lastinserted_origin', 'Letzte DF-Erstellung Ursache', '', '', 'Termin', array( 'showIfSetting' => 'edit.df.showchanges', 'layout.join' => 1, 'layout.descr.hide'=>1, 'layout.descr'=>'DFInsertedChangeOrigin', 'layout.after'=>'', 'layout.bg.class'=>'', 'layout.descr.class'=>'df_lastinsertedOrigin', 'ctrl.class'=>'df_lastinsertedOriginCtrl'));
+    
+    $kurse->add_row(TABLE_DATETIME|TABLE_DAYMONTHOPT|TABLE_SUMMARY|TABLE_LIST|TABLE_NEWSECTION|TABLE_READONLY,
+        'x_df_lastmodified', 'Letzte DF-&Auml;nderung', '', '', 'Termin', array( 'cmsSearchMsg' => 'Ber%FCcksichtigt:\n-Redaktionssystem (Detail+Multiedit)\n-REST\n-Onlinpflege.\n\nAchtung: Immer auch ein Minimaldatum angeben - nicht nur ein Maximaldatum - um leere Felder auszuschlie%DFen / keine Kurse zu l%F6schen, %FCber die man nichts wei%DF!\n\nAchtung: DBMix-Importe noch nicht ber%FCcksichtigt!\n\nAchtung: GGf. Portale mit aktiven Module bzgl. Onlinepflege-Datum noch nicht ber%FCcksichtigt.', 'showIfSetting' => 'edit.df.showchanges', 'layout.join' => 1, 'layout.descr'=>'Letzte DF-&Auml;nderung', 'layout.after'=>'', 'layout.bg.class'=>'', 'layout.descr.class'=>'df_lastmodifiedDescr', 'ctrl.class'=>'df_lastmodifiedCtrl'));
+    
+    $kurse->add_row(TABLE_TEXT|TABLE_READONLY,
+        'x_df_lastmodified_origin', 'Letzte DF-&Auml;nderung Ursache', '', '', 'Termin', array( 'showIfSetting' => 'edit.df.showchanges', 'layout.join' => 1, 'layout.descr.hide'=>1, 'layout.descr'=>'DFInsertedChangeOrigin', 'layout.after'=>'', 'layout.bg.class'=>'', 'layout.descr.class'=>'df_lastmodifiedOrigin', 'ctrl.class'=>'df_lastmodifiedOriginCtrl'));
+    
+    $kurse->add_row(TABLE_DATETIME|TABLE_DAYMONTHOPT|TABLE_SUMMARY|TABLE_LIST|TABLE_NEWSECTION|TABLE_READONLY,
+        'x_df_lastdeleted',			'Letzte DF-L&ouml;schung', '', '', 'Termin', array( 'cmsSearchMsg' => 'Ber%FCcksichtigt:\n-Redaktionssystem (Detail+Multiedit)\n-REST\n-Onlinpflege.\n\nAchtung: Immer auch ein Minimaldatum angeben - nicht nur ein Maximaldatum - um leere Felder auszuschlie%DFen / keine Kurse zu l%F6schen, %FCber die man nichts wei%DF!\n\nAchtung: DBMix-Importe noch nicht ber%FCcksichtigt!\n\nAchtung: GGf. Portale mit aktiven Module bzgl. Onlinepflege-Datum noch nicht ber%FCcksichtigt.', 'showIfSetting' => 'edit.df.showchanges', 'layout.join' => 1, 'layout.descr'=>'Letzte DF-L&ouml;schung', 'layout.bg.class'=>'', 'layout.descr.class'=>'df_lastdeletedDescr', 'ctrl.class'=>'df_lastdeletedCtrl'));
+    
+    $kurse->add_row(TABLE_TEXT|TABLE_READONLY,
+        'x_df_lastdeleted_origin', 'Letzte DF-L&ouml;schung Ursache', '', '', 'Termin', array( 'showIfSetting' => 'edit.df.showchanges', 'layout.join' => 1, 'layout.descr.hide'=>1, 'layout.descr'=>'DFInsertedChangeOrigin', 'layout.after'=>'', 'layout.bg.class'=>'', 'layout.descr.class'=>'df_lastdeletedOrigin', 'ctrl.class'=>'df_lastdeletedOriginCtrl'));
+}
+
+
 $kurse->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,			'notizen_fix',			'Anmerkungen', '', '', '',  array('layout.section'=>1));
 $kurse->add_row(TABLE_TEXTAREA,				'notizen',			'Journal', '', '', '');
 $kurse->set_trigger('config/trigger_kurse.inc.php');
@@ -459,8 +481,13 @@ Table_Def_Finish(array(
 
 
 
-// zusätzliche Einstellungen
-$g_addsettings_names = array("Domain für 'Ansicht'", 'view.domain');
+// Additional settings ( CMS => Einstellungen => Ansicht)
+// Text fields for settings:
+// Every first value (%1) = Field Name
+// Every second value (%2) = Setting Name in DB
+$g_addsettings_view             = array( "Domain f&uuml;r 'Ansicht'", 'view.domain' );                   // if no sepcific value is set for this user it will fall back / show the value of user "template" in CMS!
+$g_addsettings_misc             = array( "Export.ApiKey f&uml;r Synchronisation<br>Kann nur 'template' setzen", 'export.apikey' );    // if no sepcific value is set for this user it will fall back / show the value of user "template" in CMS!
+$g_addsettings_userTemplateOnly = array( 'export.apikey' );                                         // any of these settings are to be displayed for and can only be set by user "template" only
 
 // in dieses Verzeichnis werden zu exportierende Dateien temporär gelagert; andere Dateien in diesem Verzeichnis werden gelöscht!
 $g_temp_dir = '../temp';

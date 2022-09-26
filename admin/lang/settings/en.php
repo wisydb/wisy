@@ -95,6 +95,7 @@ define('_SETTINGS_SEARCHSETTINGSFOR',       "Search settings for \$1");
 define('_SETTINGS_SEARCHSHOWFUZZYINFO',     "show alternative words on fuzzy search");
 define('_SETTINGS_SEARCHSHOWPCODE',         "show interpretation of the query if no records were found");
 define('_SETTINGS_SEPERATOR',               "Seperator");
+define('_SETTINGS_SHOWCHANGES',             "Show DF changes in mask");
 define('_SETTINGS_SHOWLOGO',                "show logo");
 define('_SETTINGS_SKIN',                    "Skin");
 define('_SETTINGS_DIALOGTITLE',             "Your personal Settings");

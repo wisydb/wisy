@@ -1244,11 +1244,11 @@ class WIKI2HTML_CLASS
 					break;
 
 				case 'table':
-					$out .= $this->indentTo__(0) . $this->renderTable($blocks[$i][1], $blocks[$i][2]);
-					if( $blocks[$i+1][0] == '' && $blocks[$i+2][0] == 'table' ) {
-						$out .= '<br />';
-					}
-					break;
+				    $out .= $this->indentTo__(0) . $this->renderTable($blocks[$i][1], $blocks[$i][2]);
+				    if( (!isset($blocks[$i+1][0]) || $blocks[$i+1][0] == '') && $blocks[$i+2][0] == 'table' ) {
+				        $out .= '<br />';
+				    }
+				    break;
 			}
 		}
 

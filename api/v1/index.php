@@ -438,67 +438,76 @@ class REST_API_CLASS
 		}
 		else if( $method == 'POST' )
 		{
-			if( $scope[0] == 'kurse' && sizeof($scope)==2 )
-			{														// POST kurse.<kursId> -- durchf. hinzufuegen -- die durchf darf einen beliebige gruppe haben, entscheidend ist nur die kursgruppe
-				$this->haltOnBadRecord('kurse', $scope[1], true);
-				echo $this->post('durchfuehrung', $insert_id);		
-				$db = new DB_Admin;
-				$db->Halt_On_Error = 'no';
-				$sql = "INSERT INTO kurse_durchfuehrung (primary_id, secondary_id, structure_pos) VALUES ({$scope[1]}, $insert_id, $insert_id)";
-				$db->query($sql);
-				if( $db->Errno ) $this->halt(400, "search: bad condition, mysql says: ".$db->Error . " -- full sql: " . $sql);
-			}
-			else if( $scope[0] == 'kurse' )
-			{														// POST kurse
-				$this->haltOnBadGrp($_REQUEST['user_grp']);
-				echo $this->post('kurse', $insert_id /*ret*/);		
-			}
-			else
-			{
-				$this->halt(400, "bad scope for $method");
-			}
+		    if( $scope[0] == 'kurse' && sizeof($scope)==2 )         // add durchfuehrung:
+		    {														// POST kurse.<kursId> -- add DF (may have any grp, only course grp of relevance)
+		        $kurs_id = $scope[1];
+		        $this->haltOnBadRecord('kurse', $kurs_id, true);
+		        $result = $this->post('durchfuehrung', $insert_id, array(), $kurs_id);
+		        $db = new DB_Admin;
+		        $db->Halt_On_Error = 'no';
+		        $df_id = $insert_id;
+		        $sql = "INSERT INTO kurse_durchfuehrung (primary_id, secondary_id, structure_pos) VALUES ({$kurs_id}, $df_id, $df_id)";
+		        $db->query($sql);
+		        if( $db->Errno ) $this->halt(400, "search: bad condition, mysql says: ".$db->Error . " -- full sql: " . $sql);
+		        
+		        // if not skip, sonst $result
+		        echo $result;
+		    }
+		    else if( $scope[0] == 'kurse' )
+		    {														// POST kurse
+		        $this->haltOnBadGrp($_REQUEST['user_grp']);
+		        echo $this->post('kurse', $insert_id /*ret*/);
+		    }
+		    else
+		    {
+		        $this->halt(400, "bad scope for $method");
+		    }
 		}
 		else if( $method == 'PUT' || $method == 'UPDATE' ) // UPDATE eigentl. ungueltig, nur f. legacy support
 		{
-			if( $scope[0] == 'kurse' && sizeof($scope)==3 )
-			{	// PUT kurse.<kursId>.<durchfId> -- durchf aktualisieren
-				$this->haltOnBadRecord('kurse', $scope[1], true);
-				echo $this->update('durchfuehrung', $scope[2]);		
-			}
-			else if( $scope[0] == 'kurse' && sizeof($scope)==2 )
-			{
-				$this->haltOnBadRecord('kurse', $scope[1], true);
-				echo $this->update('kurse', $scope[1]);			    // UPDATE kurse.<kursId>
-			}
-			else
-			{
-			    $this->halt(400, "bad scope for $method".' ('.$scope[0].')');
-			}
+		    if( $scope[0] == 'kurse' && sizeof($scope)==3 )
+		    {	// PUT kurse.<kursId>.<durchfId> -- durchf aktualisieren
+		        $kurs_id = $scope[1];
+		        $df_id = $scope[2];
+		        $this->haltOnBadRecord('kurse', $kurs_id, true);
+		        echo $this->update('durchfuehrung', $df_id, array(), $kurs_id); // pass on course id as well for after write actions on course
+		    }
+		    else if( $scope[0] == 'kurse' && sizeof($scope)==2 )
+		    {
+		        $this->haltOnBadRecord('kurse', $scope[1], true);
+		        echo $this->update('kurse', $scope[1]);				// UPDATE kurse.<kursId>
+		    }
+		    else
+		    {
+		        $this->halt(400, "bad scope for $method".' ('.$scope[0].')');
+		    }
 		}
 		else if( $method == 'DELETE' )
 		{
-			if( $scope[0] == 'kurse' && sizeof($scope)==3 )
-			{														// DELETE kurse.<kursId>.<durchfId> -- durchf loeschen -- entscheiden für die Berechtigung ist die Kursgruppe, nicht die Durchfuehrungsgruppe
-				$this->haltOnBadRecord('kurse', $scope[1], true);
-				echo $this->deleteRecord('durchfuehrung', $scope[2]);
-				$db = new DB_Admin;
-				$db->Halt_On_Error = 'no';
-				$sql = "DELETE FROM kurse_durchfuehrung WHERE primary_id=".intval($scope[1])." AND secondary_id=".intval($scope[2]);
-				$db->query($sql);
-			}
-			else if( $scope[0] == 'kurse' && sizeof($scope)==2 )
-			{
-				$this->haltOnBadRecord('kurse', $scope[1], true);
-				echo $this->deleteRecord('kurse', $scope[1]);				// DELETE kurse.<kursId>
-			}
-			else
-			{
-				$this->halt(400, "bad scope for $method");
-			}
+		    if( $scope[0] == 'kurse' && sizeof($scope)==3 )
+		    {														// DELETE kurse.<kursId>.<durchfId> -- durchf loeschen -- entscheiden f√ºr die Berechtigung ist die Kursgruppe, nicht die Durchfuehrungsgruppe
+		        $kurs_id = $scope[1];
+		        $df_id = $scope[2];
+		        $this->haltOnBadRecord('kurse', $kurs_id, true);
+		        echo $this->deleteRecord('durchfuehrung', $df_id, array(), $kurs_id);
+		        $db = new DB_Admin;
+		        $db->Halt_On_Error = 'no';
+		        $sql = "DELETE FROM kurse_durchfuehrung WHERE primary_id=".intval($kurs_id)." AND secondary_id=".intval($df_id);
+		        $db->query($sql);
+		    }
+		    else if( $scope[0] == 'kurse' && sizeof($scope)==2 )
+		    {
+		        $this->haltOnBadRecord('kurse', $scope[1], true);
+		        echo $this->deleteRecord('kurse', $scope[1]);				// DELETE kurse.<kursId>
+		    }
+		    else
+		    {
+		        $this->halt(400, "bad scope for $method");
+		    }
 		}
 		else
 		{
-			$this->halt(400, 'bad method');
+		    $this->halt(400, 'bad method');
 		}
 		
 		// no error - do log the command
@@ -673,25 +682,31 @@ class REST_API_CLASS
 	POST/PUT (UPDATE) records
 	======================================================================== */
 	
-	function post($table, &$insert_id)
+	function post($table, &$insert_id, $additionalReturnFieldsOnWrite = array(), $parent_id = -1 ) // parent id = course id if durchfuehrung is saved
 	{
-		// add a new record to the given table
-		$today     	= strftime("%Y-%m-%d %H:%M:%S");
-		
-		$db = new DB_Admin;
-		$db->Halt_On_Error = 'no';
-		$db->query("INSERT INTO $table (date_created, date_modified, user_access) VALUES('$today', '$today', 508);");
-		
-		if( $db->Errno ) $this->halt(400, "post: bad condition, mysql says: ".$db->Error . " -- full sql: " . $sql);
-		
-		$insert_id = $db->insert_id();
-		if( $insert_id <= 0 ) $this->halt(400, 'bad insert id');
-		
-		// update the record 
-		return $this->update($table, $insert_id);
+	    // add a new record to the given table
+	    $today     	= strftime("%Y-%m-%d %H:%M:%S");
+	    
+	    $db = new DB_Admin;
+	    $db->Halt_On_Error = 'no';
+	    $db->query("INSERT INTO $table (date_created, date_modified, user_access) VALUES('$today', '$today', 508);");
+	    
+	    if( $db->Errno ) $this->halt(400, "post: bad condition, mysql says: ".$db->Error . " -- full sql: " . $sql);
+	    
+	    $insert_id = $db->insert_id();
+	    if( $insert_id <= 0 ) $this->halt(400, 'bad insert id');
+	    
+	    if( $table == 'durchfuehrung' && $parent_id > 0 ) {
+	        $triggerParam = array( 'action' => 'afterinsert', 'primary_id' => $parent_id, 'origin' => 'REST' );
+	        trigger_durchfuehrung($triggerParam);
+	        $skipTrigger = true;                  // b/c post also calls update below
+	    }
+	    
+	    // update the record
+	    return $this->update( $table, $insert_id, $additionalReturnFieldsOnWrite, $parent_id, $skipTrigger );
 	}
 	
-	function update($table, $id)
+	function update($table, $id, $additionalReturnFieldsOnWrite = array(), $parent_id = -1, $skipTrigger = false ) // parent id = course id if durchfuehrung is saved
 	{
 		// validate input
 		if( !isset($this->fields[$table]) ) $this->halt(400, 'bad scope for GET');
@@ -780,16 +795,21 @@ class REST_API_CLASS
 		
 		if( $sql != '' )
 		{
-			$sql = "UPDATE $table SET $sql WHERE id=$id";
-			$db->query($sql);
-			if( $db->Errno ) $this->halt(400, "post: bad condition, mysql says: ".$db->Error . " -- full sql: " . $sql);
+		    $sql = "UPDATE $table SET $sql WHERE id=$id";
+		    $db->query($sql);
+		    if( $db->Errno ) $this->halt(400, "post: bad condition, mysql says: ".$db->Error . " -- full sql: " . $sql);
+		    
+		    if( $table == 'durchfuehrung' && $parent_id > 0 && !$skipTrigger ) {
+		        $triggerParam = array( 'action' => 'afterupdate', 'primary_id' => $parent_id, 'origin' => 'REST' );
+		        trigger_durchfuehrung($triggerParam);
+		    }
 		}
 		
 		if( $this->last_warning != '' ) {
-			return '{"id": ' . $id . ', "warning": "'.$this->utf82Json($this->last_warning).'"}';
+		    return '{"id": ' . $id . ', "warning": "'.$this->utf82Json($this->last_warning).'"}';
 		}
 		else {
-			return '{"id": ' . $id . '}';
+		    return '{"id": ' . $id . '}';
 		}
 	}
 	
@@ -797,39 +817,45 @@ class REST_API_CLASS
 	DELETE records
 	======================================================================== */
 	
-	function deleteRecord($table, $id)
+	function deleteRecord($table, $id, $additionalReturnFieldsOnWrite = array(), $parent_id = -1)
 	{
-		// validate input
-		if( !isset($this->fields[$table]) ) $this->halt(400, 'bad scope for DELETE');
-		$id = intval($id);
-
-		// delete all linked records
-		$db = new DB_Admin;
-		$db->Halt_On_Error = 'no';
-		reset($this->fields[$table]);
-		foreach($this->fields[$table] as $name => $prop)
-		{
-		
-			if( $prop['flags']&REST_MATTR )
-			{
-				$db->query("DELETE FROM {$prop['attr_table']} WHERE primary_id=$id;");
-			}
-			else if( $prop['flags']&REST_SECONDARY )
-			{
-			
-				$db->query("SELECT {$prop['attr_field']} FROM {$prop['attr_table']} WHERE primary_id=$id;");
-				while($db->next_record() )
-					$this->deleteRecord($name, $db->f($prop['attr_field']));
-				$db->query("DELETE FROM {$prop['attr_table']} WHERE primary_id=$id;");
-			}
-		
-		}
-
-		// delete record itself
-		$db->query("DELETE FROM $table WHERE id=$id;");
-		
-		// success
-		return '{"id": ' . $id . '}';
+	    // validate input
+	    if( !isset($this->fields[$table]) ) $this->halt(400, 'bad scope for DELETE');
+	    $id = intval($id);
+	    
+	    // delete all linked records
+	    $db = new DB_Admin;
+	    $db->Halt_On_Error = 'no';
+	    reset($this->fields[$table]);
+	    foreach($this->fields[$table] as $name => $prop)
+	    {
+	        
+	        if( $prop['flags']&REST_MATTR )
+	        {
+	            $db->query("DELETE FROM {$prop['attr_table']} WHERE primary_id=$id;");
+	        }
+	        else if( $prop['flags']&REST_SECONDARY )
+	        {
+	            
+	            $db->query("SELECT {$prop['attr_field']} FROM {$prop['attr_table']} WHERE primary_id=$id;");
+	            while($db->next_record() )
+	                $this->deleteRecord($name, $db->f($prop['attr_field']));
+	                $db->query("DELETE FROM {$prop['attr_table']} WHERE primary_id=$id;");
+	        }
+	        
+	    }
+	    
+	    // delete record itself
+	    $db->query("DELETE FROM $table WHERE id=$id;");
+	    
+	    if( $table == 'durchfuehrung' && $parent_id > 0 ) {
+	        $triggerParam = array( 'action' => 'afterdelete', 'primary_id' => $parent_id, 'origin' => 'REST' );
+	        trigger_durchfuehrung($triggerParam);
+	        $skipTrigger = true;                  // b/c post also calls update below
+	    }
+	    
+	    // success
+	    return '{"id": ' . $id . '}';
 	}
 };
 
@@ -842,6 +868,7 @@ Global Part
 // connect to db
 require('../../admin/sql_curr.inc.php');
 require('../../admin/config/config.inc.php');
+require_once('../../admin/config/trigger_durchfuehrung.inc.php');
 
 // do the REST :-)
 $obj = new REST_API_CLASS();

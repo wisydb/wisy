@@ -277,7 +277,7 @@ function sql_date_to_human($d, $options = 'datetime')
 	{
 		$ret .= ', ' . strval($d[3]) . ':' . strval($d[4]);
 		if( $optionSeconds ) {
-			$ret .= ':' . strval($d[5]);
+		    $ret .= ':' . (isset($d[5]) ? strval($d[5]) : '');
 		}
 	}
 	
@@ -319,7 +319,7 @@ function sql_date_from_human_correctmonth($m)
 						"jul", 7,
 						"jun", 6,
 						"mai", 5,
-						"mär", 3,
+						"mï¿½r", 3,
 						"mar", 3,
 						"may", 5,
 						"n",   11,
