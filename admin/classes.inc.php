@@ -36,8 +36,14 @@ define('CMS_PATH', dirname(__FILE__).'/');
 
 // wrappers for PHP >= 5.4 with changed defaults for some functions
 if( !function_exists('isohtmlspecialchars') ) {
-	function isohtmlspecialchars($a, $f=ENT_COMPAT) { return htmlspecialchars($a, $f, 'ISO-8859-1'); }
-	function isohtmlentities    ($a, $f=ENT_COMPAT) { return htmlentities    ($a, $f, 'ISO-8859-1'); }
+    
+    function isohtmlspecialchars( $a, $f = ENT_COMPAT ) {
+        return htmlspecialchars( strval($a), $f, 'ISO-8859-1');
+    }
+    function isohtmlentities( $a, $f = ENT_COMPAT ) {
+        return htmlentities( strval($a), $f, 'ISO-8859-1');
+    }
+    
 }
 
 

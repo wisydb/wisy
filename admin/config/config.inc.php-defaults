@@ -30,7 +30,7 @@ var $Password = "";
 
 
 $g_sync_data = array(
-	array(	'dbs'=>'*',							'start'=> 800000,	'inc'=>	100,	'offset'=>	0,  	'msg'=> 'Endung -00, Standardwerte, die bei einer neuen, autarken Installation Verwendung finden, Synchronisierung ist mit dieser Einstellung nicht möglich' 	),
+	array(	'dbs'=>'*',							'start'=> 800000,	'inc'=>	100,	'offset'=>	0,  	'msg'=> 'Endung -00, Standardwerte, die bei einer neuen, autarken Installation Verwendung finden, Synchronisierung ist mit dieser Einstellung nicht m&ouml;glich' 	),
 	array(	'dbs'=>'',							'start'=>      1,	'inc'=>	 10,	'offset'=>	1,  	'msg'=> 'Endung -1, WISY-Standard' 			),
 	array(	'dbs'=>'',							'start'=> 800000,	'inc'=>	 10,	'offset'=>	2,  	'msg'=> 'Endung -2, WISY2' 	),
 	array(	'dbs'=>'',							'start'=> 800000,	'inc'=>	100,	'offset'=>	3,  	'msg'=> 'Endung -03, Weiteres Portal'	 	),
