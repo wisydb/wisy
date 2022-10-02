@@ -20,6 +20,7 @@ class WISY_EDIT_RENDERER_CLASS
 		require_once('admin/eql.inc.php');
 		require_once('admin/classes.inc.php');
 		require_once('admin/config/trigger_kurse.inc.php');
+		require_once('admin/config/trigger_durchfuehrung.inc.php');
 
 		// constructor
 		$this->framework	=& $framework;
@@ -29,18 +30,19 @@ class WISY_EDIT_RENDERER_CLASS
 		
 		
 		// find out the "backward" location (where to go to if "OK" or "Cancel" is hit
-		$this->bwd	= $_REQUEST['bwd'];
-		if( $this->bwd == '' )
+		$this->bwd	= isset($_REQUEST['bwd']) ? $_REQUEST['bwd'] : '';
+		if( isset($_SERVER['HTTP_REFERER']) && $_SERVER['HTTP_REFERER'] != '' )
 		{
-			$this->bwd = 'search';
-			if( $_SERVER['HTTP_REFERER'] != '' )
-			{
-				$this->bwd = $_SERVER['HTTP_REFERER'];
-			}
-			else if( $_REQUEST['action'] == 'ek' )
-			{
-				$this->bwd = 'k' . intval($_REQUEST['id']);
-			}
+		    $this->bwd = $_SERVER['HTTP_REFERER'];
+		}
+		else if( isset($_REQUEST['action']) && $_REQUEST['action'] == 'ek' )
+		{
+		    if( isset($_REQUEST['id']) )
+		        $this->bwd = 'k' . intval($_REQUEST['id']);
+		}
+		else if( isset($_REQUEST['action']) && $_REQUEST['action'] == 'ea' )
+		{
+		    $this->bwd = isset($_SESSION['loggedInAnbieterId']) ? 'a' . intval($_SESSION['loggedInAnbieterId']) : '';
 		}
 		
 		
@@ -48,104 +50,109 @@ class WISY_EDIT_RENDERER_CLASS
 		$this->billingRenderer =& createWisyObject('WISY_BILLING_RENDERER_CLASS', $this->framework);
 	}
 
-	private function _anbieter_ini_read($key, $default='')
+	protected function _anbieter_ini_read($key, $default='')
 	{
-		$return_value = $default;
-		
-		if( !isset($this->_anbieter_ini_settings) ) 
-		{
-			$this->_anbieter_ini_settings = array();
-			$db = new DB_Admin;
-			$db->query("SELECT settings x FROM anbieter WHERE id=".intval($_SESSION['loggedInAnbieterId']));
-			if( $db->next_record() )
-			{
-			    $this->_anbieter_ini_settings = explodeSettings($db->fcs8('x'));
-			}
-		}
-		
-		if( isset( $this->_anbieter_ini_settings[ $key ] ) )
-		{
-			$return_value = $this->_anbieter_ini_settings[ $key ];
-		}
-		
-		return $return_value;		
+	    $return_value = $default;
+	    
+	    if( !isset($this->_anbieter_ini_settings) )
+	    {
+	        $this->_anbieter_ini_settings = array();
+	        $db = new DB_Admin;
+	        
+	        if( isset($_SESSION['loggedInAnbieterId']) )
+	            $db->query("SELECT settings x FROM anbieter WHERE id=".intval($_SESSION['loggedInAnbieterId']));
+	            
+	            if( $db->next_record() )
+	            {
+	                $this->_anbieter_ini_settings = explodeSettings($db->fs('x'));
+	            }
+	    }
+	    
+	    if( isset( $this->_anbieter_ini_settings[ $key ] ) )
+	    {
+	        $return_value = $this->_anbieter_ini_settings[ $key ];
+	    }
+	    
+	    return $return_value;
 	}
 	
-	private function _anbieter_ini_write()
+	protected function _anbieter_ini_write()
 	{
-		if( isset($this->_anbieter_ini_settings) ) 
-		{
-			$data = '';
-			ksort($this->_anbieter_ini_settings);
-			reset($this->_anbieter_ini_settings);
-			foreach($this->_anbieter_ini_settings as $regKey => $regValue) 
-			{
-				$regKey		= strval($regKey);
-				$regValue	= strval($regValue);
-				if( $regKey!='' ) {
-					$regValue = strtr($regValue, "\n\r\t", "   ");
-					$data .= "$regKey=$regValue\n";
-				}
-			}
-			
-			$db = new DB_Admin;
-			$db->query("UPDATE anbieter SET settings='" .addslashes($data). "' WHERE id=".intval($_SESSION['loggedInAnbieterId']));
-		}
+	    if( isset($this->_anbieter_ini_settings) )
+	    {
+	        $data = '';
+	        ksort($this->_anbieter_ini_settings);
+	        reset($this->_anbieter_ini_settings);
+	        foreach($this->_anbieter_ini_settings as $regKey => $regValue)
+	        {
+	            $regKey		= strval($regKey);
+	            $regValue	= strval($regValue);
+	            if( $regKey!='' ) {
+	                $regValue = strtr($regValue, "\n\r\t", "   ");
+	                $data .= "$regKey=$regValue\n";
+	            }
+	        }
+	        
+	        $db = new DB_Admin;
+	        
+	        if( isset($_SESSION['loggedInAnbieterId']) )
+	            $db->query("UPDATE anbieter SET settings='" .addslashes($data). "' WHERE id=".intval($_SESSION['loggedInAnbieterId']));
+	    }
 	}
 	
 	function getAdminAnbieterUserIds()
 	{
-		// generische Anbieter ID für "grobe Änderungen" (20) und "Bagatelländerungen" (19)
-		return array($this->getAdminAnbieterUserId20(), $this->getAdminAnbieterUserId19());
+	    // generische Anbieter ID fuer "grobe Aenderungen" (20) und "Bagatellaenderungen" (19)
+	    return array($this->getAdminAnbieterUserId20(), $this->getAdminAnbieterUserId19());
 	}
-	private function getAdminAnbieterUserId20()
+	protected function getAdminAnbieterUserId20()
 	{
-		return 20;
+	    return 20;
 	}
-	private function getAdminAnbieterUserId19()
+	protected function getAdminAnbieterUserId19()
 	{
-		return 19;
-	}	
-
-	private function getAnbieterPwEinst()
-	{
-		if( !isset($this->cachePwEinst) )
-		{
-			$this->cachePwEinst = 0;
-			$anbieter_id = intval($_SESSION['loggedInAnbieterId']);
-			if( $anbieter_id )
-			{
-				$db = new DB_Admin;
-				$db->query("SELECT pflege_pweinst FROM anbieter WHERE id=$anbieter_id;");
-				if( $db->next_record() )
-				{
-				    $this->cachePwEinst = $db->fcs8('pflege_pweinst');
-				}
-			} 
-		}
-
-		return $this->cachePwEinst;
-	}
-
-	private function canPromote()
-	{
-		if( !isset($this->cacheCanPromote) )
-		{
-			$this->cacheCanPromote = false;
-			if( $this->framework->iniRead('useredit.promote', 0) != 0 )
-			{
-				$pw_einst = $this->getAnbieterPwEinst();
-				if( ($pw_einst&1) && ($pw_einst&2) )
-				{
-					$this->cacheCanPromote = true;
-				}
-			}
-		}
-		
-		return $this->cacheCanPromote;
+	    return 19;
 	}
 	
-	private function canEditBagatelleOnly()
+	protected function getAnbieterPwEinst()
+	{
+	    if( !isset($this->cachePwEinst) )
+	    {
+	        $this->cachePwEinst = 0;
+	        $anbieter_id = $_SESSION['loggedInAnbieterId'] ? intval($_SESSION['loggedInAnbieterId']) : null;
+	        if( $anbieter_id )
+	        {
+	            $db = new DB_Admin;
+	            $db->query("SELECT pflege_pweinst FROM anbieter WHERE id=$anbieter_id;");
+	            if( $db->next_record() )
+	            {
+	                $this->cachePwEinst = $db->fcs8('pflege_pweinst');
+	            }
+	        }
+	    }
+	    
+	    return $this->cachePwEinst;
+	}
+	
+	protected function canPromote()
+	{
+	    if( !isset($this->cacheCanPromote) )
+	    {
+	        $this->cacheCanPromote = false;
+	        if( $this->framework->iniRead('useredit.promote', 0) != 0 )
+	        {
+	            $pw_einst = $this->getAnbieterPwEinst();
+	            if( ($pw_einst&1) && ($pw_einst&2) )
+	            {
+	                $this->cacheCanPromote = true;
+	            }
+	        }
+	    }
+	    
+	    return $this->cacheCanPromote;
+	}
+	
+	protected function canEditBagatelleOnly()
 	{
 		$pw_einst = $this->getAnbieterPwEinst();
 		if( !($pw_einst&1) /*check this for security reasons: normally, the user cannot even login without bit #0 set*/ 
@@ -254,22 +261,22 @@ class WISY_EDIT_RENDERER_CLASS
 	
 	function moeglicheAbschluesseUndFoerderungen(&$retAbschluesse, &$retFoerderungen)
 	{
-		// aktuell vom anbieter verwendete Stichwoerter suchen
-		$alleStichw = '';
-		$anbieter_id = intval($_SESSION['loggedInAnbieterId']);
-		$db = new DB_Admin;
-		$db->query("SELECT DISTINCT attr_id FROM kurse_stichwort LEFT JOIN kurse ON id=primary_id WHERE anbieter=$anbieter_id;");
-		while($db->next_record() ) {
-			$alleStichw .= ($alleStichw==''? '' : ', ') .  $db->fcs8('attr_id'); 
-		}
-		
-		// kuerzlich geloeschte stichworte hinzufuegen (falls z.B. der letzte Kurse mit einem best. Abschluss geloescht wurde - dieser Abschluss darf dann dennoch wieder vergeben werden)
-		if( is_array($_SESSION['stockStichw']) ) {
-			reset($_SESSION['stockStichw']); 
-			foreach(array_keys($_SESSION['stockStichw']) as $id) {
-			    $alleStichw .= ($alleStichw==''? '' : ', ') .  $id;
-			}
-		}
+	    // aktuell vom anbieter verwendete Stichwoerter suchen
+	    $alleStichw = '';
+	    $anbieter_id = isset($_SESSION['loggedInAnbieterId']) ? intval($_SESSION['loggedInAnbieterId']) : null;
+	    $db = new DB_Admin;
+	    $db->query("SELECT DISTINCT attr_id FROM kurse_stichwort LEFT JOIN kurse ON id=primary_id WHERE anbieter=$anbieter_id;");
+	    while($db->next_record() ) {
+	        $alleStichw .= ($alleStichw==''? '' : ', ') .  $db->fcs8('attr_id');
+	    }
+	    
+	    // kuerzlich geloeschte stichworte hinzufuegen (falls z.B. der letzte Kurse mit einem best. Abschluss geloescht wurde - dieser Abschluss darf dann dennoch wieder vergeben werden)
+	    if( isset($_SESSION['stockStichw']) && is_array($_SESSION['stockStichw']) ) {
+	        reset($_SESSION['stockStichw']);
+	        foreach(array_keys($_SESSION['stockStichw']) as $id) {
+	            $alleStichw .= ($alleStichw==''? '' : ', ') .  $id;
+	        }
+	    }
 		
 		// liste moeglicher abschluesse/foerderungen erzeigen
 		if( $alleStichw!='' )
@@ -294,19 +301,19 @@ class WISY_EDIT_RENDERER_CLASS
 	
 	function controlHidden($name, $value)
 	{
-		echo "<input type=\"hidden\" name=\"$name\" value=\"" . htmlentities($value) . "\" />";
+	    echo "<input type=\"hidden\" name=\"$name\" value=\"" . isohtmlentities(strval($value)) . "\" />" ;
 	}
 	
 	function controlText($name, $value, $size = 8, $maxlen = 255, $tooltip = '', $valuehint = '')
 	{
 	    $em = intval($size*.6 + .5);
-	    echo "<input style=\"width: {$em}em\" type=\"text\" name=\"$name\" value=\"" . htmlentities($value!=''? $value : $valuehint) . "\" size=\"$size\" maxlength=\"$maxlen\" title=\"{$tooltip}\"";
+	    echo "<input style=\"width: {$em}em\" type=\"text\" name=\"$name\" value=\"" . isohtmlentities(strval( $value!=''? $value : $valuehint )) . "\" size=\"$size\" maxlength=\"$maxlen\" title=\"{$tooltip}\"";
 	    if( $valuehint ) {
-			echo " onfocus=\"if(this.value=='$valuehint'){this.value='';this.className='normal';}return true;\"";
-			echo " onblur=\"if(this.value==''){this.value='$valuehint';this.className='wisy_hinted';}return true;\"";
-			echo ($value==''||$value==$valuehint)? ' class="wisy_hinted"' : ' class="normal"';
-		}
-		echo " />";
+	        echo " onfocus=\"if(this.value=='$valuehint'){this.value='';this.className='normal';}return true;\"";
+	        echo " onblur=\"if(this.value==''){this.value='$valuehint';this.className='wisy_hinted';}return true;\"";
+	        echo ($value==''||$value==$valuehint)? ' class="wisy_hinted"' : ' class="normal"';
+	    }
+	    echo " />";
 	}
 
 	function controlSelect($name, $value, $values)
@@ -326,104 +333,110 @@ class WISY_EDIT_RENDERER_CLASS
 
 	function getToolbar()
 	{
-		$ret = '';
-		
-		$ret .= '<div class="wisy_edittoolbar">';
-		
-			// name / logout link
-			$name = $_SESSION['loggedInAnbieterSuchname'];
-			$maxlen = 30;
-			if(strlen($name) > $maxlen ) $name = trim(substr($name, 0, $maxlen-5)) . '..';
-			$ret .= '<div style="float: right;">eingeloggt als: '
-			     .   '<a href="' .$this->framework->getUrl('a', array('id'=>$_SESSION['loggedInAnbieterId'], 'q'=>$this->framework->getParam('q'))). '?editstart='.date("Y-m-d-h-i-s").'">' . isohtmlspecialchars($name) . '</a>';
-			            
-			     if(strlen($_SESSION['loggedInAnbieterPflegemail']) > 3) {
-			         $ret .= ' | <a href="#" onclick=\'resetPassword('.$_SESSION['loggedInAnbieterId'].', "'.substr($_SESSION['loggedInAnbieterPflegemail'], 0, 3).'...'
-			              .substr($_SESSION['loggedInAnbieterPflegemail'], strlen($_SESSION['loggedInAnbieterPflegemail'])-6).'"); return false;\'>Neues Passwort anfordern!</a>';
-			     }
-			     else {
-			         if($_SESSION['_login_as'])
-			             $ret .= ' <span class="pw_resetinfo">(Redaktionslogin)</span>';
-			         else
-			             $ret .= ' | <span class="pw_resetinfo">(F&uuml;r Passwort&auml;nderungen: Pflege-Email hinterlegen oder Portal-Betreiber schreiben.)</span>';
-			     }
-			            
-			     $ret .= ' | <a href="'.$this->framework->getUrl('edit', array('action'=>'logout')) . '">Logout</a>'
-			          .	'</div>';
-			                
-		
-			$ret .= 'f&uuml;r Anbieter: ';
-
-			// link "meine kurse"		
-			$q = $_SESSION['loggedInAnbieterTag'] . ', Datum:Alles';
-			$ret .=  '<a href="' . $this->framework->getUrl('search', array('q'=>$q)) . '">Alle Kurse</a>';
-			
-			// link "kurs bearbeiten"
-			global $wisyRequestedFile;
-			if( $wisyRequestedFile[0] == 'k' && ($kursId=intval(substr($wisyRequestedFile, 1))) > 0 )
-			{
-				$db = new DB_Admin;
-				$db->query("SELECT anbieter FROM kurse WHERE id=$kursId");
-				if( $db->next_record() )
-				{
-				    if( $this->framework->getEditAnbieterId() == $db->fcs8('anbieter') )
-					{
-						$ret .=  ' | <a href="edit?action=ek&amp;id=' . $kursId . '">Kurs bearbeiten</a>';
-					}
-				}
-			}
-			
-			// link "neuer kurs"
-			$ret .=  ' | <a href="edit?action=ek&amp;id=0">Neuer Kurs</a>';
-			
-			// link "konto"
-			if( $this->canPromote() )
-			{
-				$ret .=  ' | <a href="edit?action=kt">Konto</a>';
-			}
-
-			// link "hilfe"
-			$ret .=  ' | <a href="' .$this->framework->getHelpUrl($this->framework->iniRead('useredit.help', '3371')). '" target="_blank" rel="noopener noreferrer">Hilfe</a>';
-			
-		$ret .=  '</div>';
-
-		if( $_COOKIE['editmsg'] != '' )
-		{
-			$ret .= "<p class=\"wisy_topnote\">" .  $_COOKIE['editmsg'] . "</p>";
-			setcookie('editmsg', '');
-		}
-		
-		return $ret;
+	    $ret = '';
+	    
+	    $ret .= '<div class="wisy_edittoolbar">';
+	    
+	    // name / logout link
+	    $name = isset($_SESSION['loggedInAnbieterSuchname']) ? $_SESSION['loggedInAnbieterSuchname'] : '';
+	    $loggedInAnbieterId = isset($_SESSION['loggedInAnbieterId']) ? $_SESSION['loggedInAnbieterId'] : null;
+	    $maxlen = 30;
+	    if(strlen($name) > $maxlen ) $name = trim(substr($name, 0, $maxlen-5)) . '..';
+	    $ret .= '<div style="float: right;">eingeloggt als: '
+	        .		'<a href="' .$this->framework->getUrl('a', array('id'=>$loggedInAnbieterId, 'q'=>$this->framework->getParam('q'))). '?editstart='.date("Y-m-d-h-i-s").'">' . isohtmlspecialchars($name) . '</a>';
+	        
+	        $loggedInAnbieterPflegemail = isset($_SESSION['loggedInAnbieterPflegemail']) && strlen($_SESSION['loggedInAnbieterPflegemail']) > 3;
+	        if( $loggedInAnbieterPflegemail ) {
+	            $ret .= ' | <a href="#" onclick=\'resetPassword('.$loggedInAnbieterId.', "'.substr($loggedInAnbieterPflegemail, 0, 3).'...'
+	                .substr($loggedInAnbieterPflegemail, strlen($loggedInAnbieterPflegemail)-6).'"); return false;\'>Neues Passwort anfordern!</a>';
+	        }
+	        else {
+	            if( isset($_SESSION['_login_as']) && $_SESSION['_login_as'])
+	                $ret .= ' <span class="pw_resetinfo">(Redaktionslogin)</span>';
+	                else
+	                    $ret .= ' | <span class="pw_resetinfo">(F&uuml;r Passwort&auml;nderungen: Pflege-Email hinterlegen oder Portal-Betreiber schreiben.)</span>';
+	        }
+	        
+	        $ret .= ' | <a href="'.$this->framework->getUrl('edit', array('action'=>'logout')) . '">Logout</a>'
+	            .	'</div>';
+	            
+	            
+	            $ret .= 'f&uuml;r Anbieter: ';
+	            
+	            // link "meine kurse"
+	            $q = (isset($_SESSION['loggedInAnbieterTag']) ? $_SESSION['loggedInAnbieterTag'] : '') . ', Datum:Alles';
+	            $ret .=  '<a href="' . $this->framework->getUrl('search', array('q'=>$q)) . '">Alle Kurse</a>';
+	            
+	            // link "kurs bearbeiten"
+	            global $wisyRequestedFile;
+	            if( $wisyRequestedFile[0] == 'k' && ($kursId=intval(substr($wisyRequestedFile, 1))) > 0 )
+	            {
+	                $db = new DB_Admin;
+	                $db->query("SELECT anbieter FROM kurse WHERE id=$kursId");
+	                if( $db->next_record() )
+	                {
+	                    if( $this->framework->getEditAnbieterId() == $db->f('anbieter') )
+	                    {
+	                        $ret .=  ' | <a href="edit?action=ek&amp;id=' . $kursId . '">Kurs bearbeiten</a>';
+	                    }
+	                }
+	            }
+	            else if( $GLOBALS['wisyRequestedFile'][0] == 'a' && ($_SESSION['loggedInAnbieterId'] == intval(substr($GLOBALS['wisyRequestedFile'], 1))) )
+	            {
+	                $ret .= ' | <a href="edit?action=ea">Profil bearbeiten</a> ';
+	            }
+	            
+	            // link "neuer kurs"
+	            $ret .=  ' | <a href="edit?action=ek&amp;id=0">Neuer Kurs</a>';
+	            
+	            // link "konto"
+	            if( $this->canPromote() )
+	            {
+	                $ret .=  ' | <a href="edit?action=kt">Konto</a>';
+	            }
+	            
+	            // link "hilfe"
+	            $ret .=  ' | <a href="' .$this->framework->getHelpUrl($this->framework->iniRead('useredit.help', '3371')). '" target="_blank" rel="noopener noreferrer">Hilfe</a>';
+	            
+	            $ret .=  '</div>';
+	            
+	            if( isset($_COOKIE['editmsg']) && $_COOKIE['editmsg'] != '' )
+	            {
+	                $ret .= "<p class=\"wisy_topnote\">" .  $_COOKIE['editmsg'] . "</p>";
+	                setcookie('editmsg', '');
+	            }
+	            
+	            return $ret;
 	}
 
-	private function isEditable($kursId) /* returns 'yes', 'no' or 'loginneeded' */
+	protected function isEditable($kursId) /* returns 'yes', 'no' or 'loginneeded' */
 	{
-		if( $kursId == 0 ) 
-		{
-			return 'yes'; // new kurs - this must be editable
-		}
-
-		$db = new DB_Admin;
-		$db->query("SELECT anbieter, freigeschaltet, user_created FROM kurse WHERE id=$kursId;");
-		if( !$db->next_record() )
-		{
-			return 'no'; // bad record ID - not editable
-		}
-			
-		if( $db->fcs8('anbieter')!=$_SESSION['loggedInAnbieterId'] )
-		{
-		    return 'loginneeded'; // may be editable, but bad login data
-		}
-		
-		if( $db->fcs8('freigeschaltet') == 1 /*freigeschaltet*/
-		    || $db->fcs8('freigeschaltet') == 4 /*dauerhaft*/
-		    || $db->fcs8('freigeschaltet') == 3 /*abgelaufen*/
-		    ||	($db->fcs8('freigeschaltet') == 0 /*in Vorbereitung*/ ) ) // Kurse in Vorbereitung sollen √ºber Direktlinks editierbar sein, daher an dieser Stelle keine √úberpr√ºfung, ob der Kurs von getAdminAnbieterUserIds() angelegt wurde, s. https://mail.google.com/mail/#all/132aa92c4ec2cda7
-		{
-		    return 'yes'; // editable
-		}
-		
-		return 'no'; // not editable
+	    if( $kursId == 0 )
+	    {
+	        return 'yes'; // new kurs - this must be editable
+	    }
+	    
+	    $db = new DB_Admin;
+	    $db->query("SELECT anbieter, freigeschaltet, user_created FROM kurse WHERE id=$kursId;");
+	    if( !$db->next_record() )
+	    {
+	        return 'no'; // bad record ID - not editable
+	    }
+	    
+	    if( !isset($_SESSION['loggedInAnbieterId']) || $db->f8('anbieter')!=$_SESSION['loggedInAnbieterId'] )
+	    {
+	        return 'loginneeded'; // may be editable, but bad login data
+	    }
+	    
+	    if( $db->f('freigeschaltet') == 1 /*freigeschaltet*/
+	        || $db->f('freigeschaltet') == 4 /*dauerhaft*/
+	        || $db->f('freigeschaltet') == 3 /*abgelaufen*/
+	        ||	($db->f('freigeschaltet') == 0 /*in Vorbereitung*/ ) ) // Kurse in Vorbereitung sollen ueber Direktlinks editierbar sein, daher an dieser Stelle keine Ueberpruefung, ob der Kurs von getAdminAnbieterUserIds() angelegt wurde, s. https://mail.google.com/mail/#all/132aa92c4ec2cda7
+	    {
+	        return 'yes'; // editable
+	    }
+	    
+	    return 'no'; // not editable
 	}
 	
 	
@@ -431,75 +444,76 @@ class WISY_EDIT_RENDERER_CLASS
 	 * Login / Logout
 	 **************************************************************************/
 
-	private function renderLoginScreen()
+	protected function renderLoginScreen()
 	{
-		// see what to do
-		$db					= new DB_Admin;
-		$fwd				= 'search';
-		$anbieterSuchname	= '';
-		$loginError			= '';
-		
-		if( $_REQUEST['action'] == 'loginSubseq' && isset($_REQUEST['cancel']) )
-		{
-			header('Location: ' . $this->bwd);
-			exit();
-		}
-		else if( $_REQUEST['action'] == 'loginSubseq' )
-		{
-		    // "OK" wurde angeklickt - loginversuch starten
-		    $fwd 				= strval( $_REQUEST['fwd'] );
-		    $anbieterSuchname	= strval( $_REQUEST['as'] );
-		    $anbieterSuchname_utf8dec = (PHP7 ? $anbieterSuchname : utf8_decode($anbieterSuchname));
-		    
-		    $logwriter = new LOG_WRITER_CLASS;
-		    $logwriter->addData('ip', $_SERVER['REMOTE_ADDR']);
-		    $logwriter->addData('browser', $_SERVER['HTTP_USER_AGENT']);
-		    $logwriter->addData('portal', $GLOBALS['wisyPortalId']);
-		    
-		    $loggedInAnbieterId = 0;
-		    $loggedInAnbieterSuchname = 0;
-		    $loggedInAnbieterPflegemail = "";
-		    
-		    // Anbieter ID in name konvertieren
-		    if(is_numeric($anbieterSuchname_utf8dec)) {
-		        $db->query("SELECT suchname FROM anbieter WHERE id=".intval($anbieterSuchname_utf8dec)." AND freigeschaltet = 1");
-		        if( $db->next_record() ) {
-		            $anbieterSuchname = $db->fcs8('suchname');
-		            $anbieterSuchname_utf8dec = (PHP7 ? $anbieterSuchname : utf8_decode($anbieterSuchname));
-		        }
-		    } // end: is_numeric
-		    
-		    $login_as = false;
-		    if( ($p=strpos( strval( $_REQUEST['wepw'] ), '.')) !== false )
-			{
-				// ...Login als registrierter Admin-Benutzer in der Form "<loginname>.<passwort>"
-				// KEINE Fehler für  diesen Bereich loggen - ansonsten würden wir u.U. Teile des Passworts loggen!
-			    $temp[0] = substr( strval( $_REQUEST['wepw'] ), 0, $p);
-			    $temp[1] = substr( strval( $_REQUEST['wepw'] ), $p+1);
-				
-				$sql = "SELECT password, id FROM user WHERE loginname='".addslashes($temp[0])."'";
-				$db->query($sql);
-				if( $db->next_record() )
-				{
-				    $dbPw = $db->fcs8('password');
-				    if( crypt($temp[1], $dbPw) == $dbPw )
-				    {
-				        require_once('admin/acl.inc.php');
-				        if( acl_check_access('kurse.COMMON', -1, ACL_EDIT, $db->fcs8('id')) )
-				        {
-				            $db->query("SELECT id FROM anbieter WHERE suchname='".addslashes($anbieterSuchname_utf8dec)."' AND freigeschaltet = 1");
-				            if( $db->next_record() )
-				            {
-				                $logwriter->addData('loginname', $temp[0] . ' as ' . $anbieterSuchname);
-				                $loggedInAnbieterId = intval($db->fcs8('id'));
-				                $login_as = true;
-				            }
-				        }
-				    }
-				}
-			}
-			
-			if( $loggedInAnbieterId == 0 )
+	    // see what to do
+	    $db					= new DB_Admin;
+	    $fwd				= 'search';
+	    $anbieterSuchname	= '';
+	    $loginError			= '';
+	    
+	    if( isset($_REQUEST['action']) && $_REQUEST['action'] == 'loginSubseq' && isset($_REQUEST['cancel']) )
+	    {
+	        header('Location: ' . $this->bwd);
+	        exit();
+	    }
+	    else if( isset($_REQUEST['action']) && $_REQUEST['action'] == 'loginSubseq' )
+	    {
+	        // "OK" wurde angeklickt - loginversuch starten
+	        $fwd 				= isset($_REQUEST['fwd']) ? strval( $_REQUEST['fwd'] ) : '';
+	        $anbieterSuchname	= isset($_REQUEST['as']) ? strval( $_REQUEST['as'] ) : '';
+	        $anbieterSuchname_utf8dec = (PHP7 ? $anbieterSuchname : $anbieterSuchname);
+	        
+	        $logwriter = new LOG_WRITER_CLASS;
+	        $logwriter->addData('ip', $_SERVER['REMOTE_ADDR']);
+	        $logwriter->addData('browser', $_SERVER['HTTP_USER_AGENT']);
+	        $logwriter->addData('portal', $GLOBALS['wisyPortalId']);
+	        
+	        $loggedInAnbieterId = 0;
+	        $loggedInAnbieterSuchname = 0;
+	        $loggedInAnbieterPflegemail = "";
+	        
+	        // // Anbieter ID in name konvertieren
+	        if(is_numeric($anbieterSuchname_utf8dec)) {
+	            $db->query("SELECT suchname FROM anbieter WHERE id=".intval($anbieterSuchname_utf8dec)." AND freigeschaltet = 1");
+	            if( $db->next_record() ) {
+	                $anbieterSuchname = $db->fs('suchname');
+	                $anbieterSuchname_utf8dec = (PHP7 ? $anbieterSuchname : $anbieterSuchname);
+	            }
+	        } // end: is_numeric
+	        
+	        $login_as = false;
+	        if( ($p=strpos( strval( $_REQUEST['wepw'] ), '.')) !== false )
+	        {
+	            // ...Login als registrierter Admin-Benutzer in der Form "<loginname>.<passwort>"
+	            // KEINE Fehler fuer  diesen Bereich loggen - ansonsten wuerden wir u.U. Teile des Passworts loggen!
+	            $temp[0] = substr( strval( $_REQUEST['wepw'] ), 0, $p);
+	            $temp[1] = substr( strval( $_REQUEST['wepw'] ), $p+1);
+	            
+	            $sql = "SELECT password, id FROM user WHERE loginname='".addslashes($temp[0])."'";
+	            $db->query($sql);
+	            if( $db->next_record() )
+	            {
+	                $dbPw = $db->fs('password');
+	                if( crypt($temp[1], $dbPw) == $dbPw )
+	                {
+	                    require_once('admin/acl.inc.php');
+	                    if( acl_check_access('kurse.COMMON', -1, ACL_EDIT, $db->f('id')) )
+	                    {
+	                        $db->query("SELECT id FROM anbieter WHERE suchname='".addslashes($anbieterSuchname_utf8dec)."' AND freigeschaltet = 1");
+	                        if( $db->next_record() )
+	                        {
+	                            $logwriter->addData('loginname', $temp[0] . ' as ' . $anbieterSuchname);
+	                            $loggedInAnbieterId = intval($db->f('id'));
+	                            $login_as = true;
+	                        }
+	                    }
+	                }
+	            }
+	        }
+	        
+	        
+	        if( $loggedInAnbieterId == 0 )
 			{
 			    // ...Login als normaler Anbieter in der Form "<passwort>"
 			    $logwriter->addData('loginname', $anbieterSuchname);
@@ -535,7 +549,7 @@ class WISY_EDIT_RENDERER_CLASS
 			    
 			    $loginError = 'bad_pw';
 			}
-			else if( $_REQUEST['javascript'] != 'enabled' )
+			else if( !isset($_REQUEST['javascript']) || $_REQUEST['javascript'] != 'enabled' )
 			{
 				$loginError = 'no_js';
 			}
@@ -564,24 +578,26 @@ class WISY_EDIT_RENDERER_CLASS
 		else 
 		{
 		    // erster Aufruf der Seite - initialisieren
-		    if( $_REQUEST['action'] == 'ek' )
+		    if( isset($_REQUEST['action']) && $_REQUEST['action'] == 'ek' )
 		    {
 		        $sql = "SELECT suchname FROM anbieter LEFT JOIN kurse ON kurse.anbieter=anbieter.id WHERE kurse.id=".intval($_REQUEST['id'])." AND anbieter.freigeschaltet = 1";
 		        $db->query($sql);
 		        if( $db->next_record() )
 		        {
-		            $anbieterSuchname = $db->fcs8('suchname');
+		            $anbieterSuchname = $db->fs('suchname');
 		            $anbieterSuchname_utf8dec = (PHP7 ? $anbieterSuchname : utf8_decode($anbieterSuchname));
 		        }
-		        $fwd = "edit?action=ek&id=".intval($_REQUEST['id']);
-		        $secureLogin = $fwd;
+		        
+		        if( isset($_REQUEST['id']) )
+		            $fwd = "edit?action=ek&id=".intval($_REQUEST['id']);
+		            $secureLogin = $fwd;
 		    }
 		    else
 		    {
 		        if( isset($_REQUEST['fwd']) ) {
 		            $fwd 				= $_REQUEST['fwd'];
 		        }
-		        $anbieterSuchname	= $_REQUEST['as'];
+		        $anbieterSuchname = isset($_REQUEST['as']) ? $_REQUEST['as'] : '';
 		        $anbieterSuchname_utf8dec = (PHP7 ? $anbieterSuchname : utf8_decode($anbieterSuchname));
 		        $secureLogin = "edit?action=login&as=".urlencode($anbieterSuchname);
 		    }
@@ -602,7 +618,7 @@ class WISY_EDIT_RENDERER_CLASS
 		echo $this->framework->getPrologue(array('title'=>'Login', 'bodyClass'=>'wisyp_edit'));
 		echo $this->framework->getSearchField();
 		
-			echo '<section id="loginform" class="maxwidth">';
+			echo '<section id="loginform" class="maxwidth">'; // ?
 			echo '<h1>Login</h1>';
 
 			$showLoginForm = true;
@@ -614,7 +630,7 @@ class WISY_EDIT_RENDERER_CLASS
 			{
 			    $url = 'edit?as=' . urlencode($anbieterSuchname) . '&fwd=' .urlencode($fwd). '&bwd=' . urlencode($this->bwd);
 			    echo  '<p class="wisy_topnote">Um alle Funktionen im Login-Bereich nutzen zu k&ouml;nnen, <b>aktivieren Sie bitte jetzt Javascript in Ihrem Browser.</b> '
-			        . 'Danach <a href="'.htmlspecialchars($url).'">melden Sie sich bitte erneut an ...</a></p>';
+			        . 'Danach <a href="'.isohtmlspecialchars($url).'">melden Sie sich bitte erneut an ...</a></p>';
 			        $showLoginForm = false;
 			}
 			else
@@ -624,59 +640,69 @@ class WISY_EDIT_RENDERER_CLASS
 	
 			if( $showLoginForm )
 			{
-				echo '<form action="edit" method="post">';
-					echo '<table>';
-						echo "<input type=\"hidden\" name=\"action\" value=\"loginSubseq\" />";
-						echo "<script type=\"text/javascript\"><!--\ndocument.write('<input type=\"hidden\" name=\"javascript\" value=\"enabled\" />');\n/"."/--></script>";
-						echo "<input type=\"hidden\" name=\"fwd\" value=\"".htmlspecialchars( strval( $fwd ) )."\" />";
-						echo "<input type=\"hidden\" name=\"bwd\" value=\"".htmlspecialchars( strval( $this->bwd ) )."\" />";
-						echo '<tr>';
-							echo '<td nowrap="nowrap">Anbietername oder -ID:</td>';
-							echo "<td><input type=\"text\" name=\"as\" value=\"".htmlspecialchars($anbieterSuchname)."\" size=\"50\" /></td>";
-						echo '</tr>';
-						echo '<tr>';
-							echo '<td align="right">Passwort:</td>';
-							echo '<td nowrap="nowrap">';
-								echo '<input type="password" name="wepw" value="" size="30" />';
-																																// der Anbietername wird _nicht_ weitergegeben, damit ein Missbrauch mehr als nur einen Klick erfordert.
-								echo ' <a href="'.htmlspecialchars($this->framework->getUrl('edit', array('action'=>'forgotpw' /*, 'as'=>$anbieterSuchname*/))).'">Passwort vergessen?</a>';
-								
-							echo '</td>';
-						echo '</tr>';
-						echo '<tr>';
-							echo '<td nowrap="nowrap">';
-							echo '</td>';
-							echo '<td nowrap="nowrap">';
-								echo '<input type="submit" value="OK - Login" /> ';
-								echo '<input type="submit" name="cancel" value="Abbruch" />';
-							echo '</td>';
-						echo '</tr>';
-					echo '</table>';
-				echo '</form>';
-		
-				// additional login message
-				$temp = $this->framework->iniRead('useredit.loginmsg', '');
-				if( $temp != '' )
-				{
-					echo '<p>' . $temp . '</p>';
-				}
+			    $secureaction = "";
+			    
+			    if( $this->framework->iniRead('useredit.secure', 1)==1
+			        && substr($_SERVER['HTTP_HOST'], -6)!='.local'
+			        && $_SERVER['HTTPS'] == "on")
+			    {
+			        $secureaction = 'https://' . $_SERVER['HTTP_HOST'] . '/edit';
+			    }
+			    
+			    $editurl = ($secureaction != "") ? $secureaction : "edit";
+			    
+			    echo '<form action="edit" method="post">'; // '.$editurl.'
+			     echo '<table>';
+			         echo "<input type=\"hidden\" name=\"action\" value=\"loginSubseq\" />";
+			         echo "<script type=\"text/javascript\"><!--\ndocument.write('<input type=\"hidden\" name=\"javascript\" value=\"enabled\" />');\n/"."/--></script>";
+			         echo "<input type=\"hidden\" name=\"fwd\" value=\"".isohtmlspecialchars(strval($fwd))."\" />";
+			         echo "<input type=\"hidden\" name=\"bwd\" value=\"".isohtmlspecialchars(strval($this->bwd))."\" />";
+			         echo '<tr>';
+			             echo '<td nowrap="nowrap">Anbietername oder -ID:</td>';
+			             echo "<td><input type=\"text\" name=\"as\" value=\"".isohtmlspecialchars($anbieterSuchname)."\" size=\"40\" /></td>";
+			         echo '</tr>';
+			         echo '<tr>';
+			             echo '<td align="right">Passwort:</td>';
+			             echo '<td nowrap="nowrap">';
+			                 echo '<input type="password" name="wepw" value="" size="30" />';
+            			    // der Anbietername wird _nicht_ weitergegeben, damit ein Missbrauch mehr als nur einen Klick erfordert.
+			                 echo ' <a href="'.isohtmlspecialchars($this->framework->getUrl('edit', array('action'=>'forgotpw' /*, 'as'=>$anbieterSuchname*/))).'">Passwort vergessen?</a>';
+			    
+			             echo '</td>';
+			         echo '</tr>';
+			         echo '<tr>';
+			             echo '<td nowrap="nowrap">';
+			             echo '</td>';
+			             echo '<td nowrap="nowrap">';
+			                 echo '<input type="submit" value="OK - Login" /> ';
+			                 echo '<input type="submit" name="cancel" value="Abbruch" />';
+			             echo '</td>';
+			         echo '</tr>';
+			     echo '</table>';
+			    echo '</form>';
+			    
+			    // additional login message
+			    $temp = $this->framework->iniRead('useredit.loginmsg', '');
+			    if( $temp != '' )
+			    {
+			        echo '<p class="loginmsg">' . $temp . '</p>';
+			    }
 			}
 			
-			echo '</section><!-- /#loginform -->';
-
-		echo $this->framework->getEpilogue();
+			echo $this->framework->getEpilogue();
 	}
 	
 	function renderLogoutScreen()
 	{
-		$logwriter = new LOG_WRITER_CLASS;
-		$logwriter->log('anbieter', $_SESSION['loggedInAnbieterId'], $this->getAdminAnbieterUserId20(), 'logout');
-	
-		session_destroy();
-		setcookie($this->framework->editCookieName, '', 0, '/'); // remove cookie
-
-		$redirect = "a".$_SESSION['loggedInAnbieterId'];
-		header('Location: '.$redirect);
+	    $loggedInAnbieterId = isset($_SESSION['loggedInAnbieterId']) ? $_SESSION['loggedInAnbieterId'] : null;
+	    $logwriter = new LOG_WRITER_CLASS;
+	    $logwriter->log('anbieter', $loggedInAnbieterId, $this->getAdminAnbieterUserId20(), 'logout');
+	    
+	    session_destroy();
+	    setcookie($this->framework->editCookieName, '', 0, '/'); // remove cookie
+	    
+	    $redirect = "a".$loggedInAnbieterId;
+	    header('Location: '.$redirect);
 	}
 	
 
@@ -688,17 +714,19 @@ class WISY_EDIT_RENDERER_CLASS
 
 	function renderEditKonto()
 	{
-		echo $this->framework->getPrologue(array('title'=>'Ihr Konto', 'bodyClass'=>'wisyp_edit'));
-		// echo $this->framework->getSearchField();
-
-		if( !$this->canPromote() )
-		{
-		    echo '<p class="wisy_topnote">Das Bewerben von Angeboten ist f&uuml;r dieses Portal und/oder diesen Anbieterzugang gesperrt. Bitte wenden Sie sich an den Systemadministrator, der Ihnen den Zugang zu diesem Bereich gew&auml;hrt hat.</p>';
-		    echo $this->framework->getEpilogue();
-		    exit();
-		}
-		
-		$credits = $this->promoter->getCredits( $_SESSION['loggedInAnbieterId'] );
+	    echo $this->framework->getPrologue(array('title'=>'Ihr Konto', 'bodyClass'=>'wisyp_edit'));
+	    // echo $this->framework->getSearchField();
+	    
+	    if( !$this->canPromote() )
+	    {
+	        echo '<p class="wisy_topnote">Das Bewerben von Angeboten ist f&uuml;r dieses Portal und/oder diesen Anbieterzugang gesperrt. Bitte wenden Sie sich an den Systemadministrator, der Ihnen den Zugang zu diesem Bereich gew&auml;hrt hat.</p>';
+	        echo $this->framework->getEpilogue();
+	        exit();
+	    }
+	    
+	    $loggedInAnbieterId = isset($_SESSION['loggedInAnbieterId']) ? $_SESSION['loggedInAnbieterId'] : null;
+	    
+	    $credits = $this->promoter->getCredits( $loggedInAnbieterId );
 		echo "\n\n<h1>Kontostand: $credits Einblendungen</h1>\n";
 		
 		echo "<p>";
@@ -712,12 +740,12 @@ class WISY_EDIT_RENDERER_CLASS
 		
 		echo "\n\n<h1>Einblendungen kaufen</h1>\n";
 
-		$this->billingRenderer->renderButton($_SESSION['loggedInAnbieterId']);
+		$this->billingRenderer->renderButton($loggedInAnbieterId);
 		
 		echo "\n\n<h1>Beworbene Kurse</h1>\n";
 		
 		// WENN es kredite gibt, den Status der Tabelle anbieter_promote auf "aktiv" setzen, damit wieder Kurse geschaltet werden können
-		$this->promoter->setAllPromotionsActive($_SESSION['loggedInAnbieterId'], $credits > 0? 1 : 0);
+		$this->promoter->setAllPromotionsActive( $loggedInAnbieterId , $credits > 0? 1 : 0);
 		
 		
 		echo '<br /><table border="1" cellspacing="0" cellpadding="6">';
@@ -732,7 +760,7 @@ class WISY_EDIT_RENDERER_CLASS
 			$cnt = 0;
 			global $wisyPortalId;
 			$db = new DB_Admin;
-			$db->query("SELECT kurse.id, titel, promote_active, promote_mode, promote_param FROM anbieter_promote LEFT JOIN kurse ON kurse.id=kurs_id WHERE anbieter_id=".$_SESSION['loggedInAnbieterId']. " AND portal_id=$wisyPortalId ORDER BY titel;");
+			$db->query("SELECT kurse.id, titel, promote_active, promote_mode, promote_param FROM anbieter_promote LEFT JOIN kurse ON kurse.id=kurs_id WHERE anbieter_id=".$loggedInAnbieterId. " AND portal_id=$wisyPortalId ORDER BY titel;");
 			while( $db->next_record() )
 			{
 			    $kurs_id = intval($db->fcs8('id'));
@@ -957,7 +985,7 @@ class WISY_EDIT_RENDERER_CLASS
 			// additional data validation
 			if( $kurs['durchf'][$i]['ende']!='0000-00-00 00:00:00' && $kurs['durchf'][$i]['beginn']!='0000-00-00 00:00:00'
 			    && $kurs['durchf'][$i]['ende']<$kurs['durchf'][$i]['beginn'] ) {
-			       $kurs['error'][] = "Fehler: Durchf&uuml;hrung ".($i+1).": Das Enddatum muss vor dem Beginndatum liegen.";
+			       $kurs['error'][] = "Fehler: Durchf&uuml;hrung ".($i+1).": Das Enddatum muss NACH dem Beginndatum liegen.";
 			}
 
 			$today = strftime("%Y-%m-%d %H:%M:%S");
@@ -976,6 +1004,8 @@ class WISY_EDIT_RENDERER_CLASS
 			}
 		}
 
+		$loggedInAnbieterId = isset($_SESSION['loggedInAnbieterId']) ? $_SESSION['loggedInAnbieterId'] : null;
+		
 		// additional data validation
 		if( $kurs['rights_editTitel'] )
 		{
@@ -986,7 +1016,7 @@ class WISY_EDIT_RENDERER_CLASS
 		    else if( $kursId == 0 ) // neuer Kurs?
 		    {
 		        $db = new DB_Admin;
-		        $db->query("SELECT id FROM kurse WHERE freigeschaltet IN (0,1,3,4) AND titel=".$db->quote(trim($kurs['titel']))." AND anbieter=".intval($_SESSION['loggedInAnbieterId']));
+		        $db->query("SELECT id FROM kurse WHERE freigeschaltet IN (0,1,3,4) AND titel=".$db->quote(trim($kurs['titel']))." AND anbieter=".intval($loggedInAnbieterId));
 		        if( $db->next_record() )			// ^^^^^^^^^^^^^^^^^^^^^^^^^^^ otherwise, if there is a deleted and an available offer, we may get the deleted one - which is not editable!
 		        {
 		            $andere_kurs_id = $db->fcs8('id');
@@ -1130,7 +1160,7 @@ class WISY_EDIT_RENDERER_CLASS
 		return $kurs;
 	}
 
-	private function ist_bagatelle($oldData, $newData)
+	protected function ist_bagatelle($oldData, $newData)
 	{
 		/*
 		echo '<table><tr><td width="50%" valign="top"><pre>';
@@ -1158,6 +1188,7 @@ class WISY_EDIT_RENDERER_CLASS
 		    }
 		}
 		
+		$diff_df = "";
 		// nach Aenderungen in den Durchfuehrungen suchen (Loeschen von Df sind Bagatellen)
 		for( $n = 0; $n < sizeof((array) $newData['durchf']); $n++ )
 		{
@@ -1264,6 +1295,8 @@ class WISY_EDIT_RENDERER_CLASS
 		}
 
 		
+		$loggedInAnbieterId = isset($_SESSION['loggedInAnbieterId']) ? $_SESSION['loggedInAnbieterId'] : null;
+		
 		// CREATE A NEW RECORD?
 		if( $kursId == 0 )
 		{
@@ -1324,6 +1357,9 @@ class WISY_EDIT_RENDERER_CLASS
 				$isNew = true;
 				
 				$actions .= ' DURCHF-INSERT ';
+				
+				$triggerParam = array( 'action' => 'afterinsert', 'primary_id' => $kursId, 'origin' => 'Onlinepflege' );
+				trigger_durchfuehrung($triggerParam);
 			}
 			
 			// änderungen überprüfen
@@ -1361,6 +1397,11 @@ class WISY_EDIT_RENDERER_CLASS
 				}
 				
 				$actions .=  ' DURCHF-UPDATE ' ;
+				
+				if( !$isNew ) { // only protocoll updates not simply new DF touched again
+				    $triggerParam = array( 'action' => 'afterupdate', 'primary_id' => $kursId, 'origin' => 'Onlinepflege' );
+				    trigger_durchfuehrung($triggerParam);
+				}
 			}
 		}
 		
@@ -1376,6 +1417,9 @@ class WISY_EDIT_RENDERER_CLASS
 				$delCnt ++;
 				
 				$actions .=  ' DURCHF-DELETE ' ;
+				
+				$triggerParam = array( 'action' => 'afterdelete', 'primary_id' => $kursId, 'origin' => 'Onlinepflege' );
+				trigger_durchfuehrung($triggerParam);
 			}
 		}
 		
@@ -1538,6 +1582,8 @@ class WISY_EDIT_RENDERER_CLASS
 	
 	function renderEditKurs($kursId__ /* may be "0" for "new kurs" */)
 	{
+	    $loggedInAnbieterId = isset($_SESSION['loggedInAnbieterId']) ? $_SESSION['loggedInAnbieterId'] : null;
+	    
 		// check rights, check, if the kursId belongs to the anbieter logged in
 		$db = new DB_Admin;
 		$topnotes = array();
@@ -1587,7 +1633,7 @@ class WISY_EDIT_RENDERER_CLASS
 				$msg .= ($temp? '<br /><br />' : '') . $temp;
 				
 				setcookie('editmsg', $msg);
-				header('Location: ' . $this->bwd);
+				header('Location: '.$this->framework->getUrl('k', array('id'=>$kurs['id'])));
 				// $db->close();
 				exit();
 			}
@@ -1608,9 +1654,9 @@ class WISY_EDIT_RENDERER_CLASS
 		$pageTitle = $kurs['id']==0? 'Neuer Kurs' : 'Kurs bearbeiten';
 		echo $this->framework->getPrologue(array('title'=>$pageTitle, 'bodyClass'=>'wisyp_edit'));
 		
-		if( !$_SESSION['statusMsgShown'] )
+		if( !isset($_SESSION['statusMsgShown']) || !$_SESSION['statusMsgShown'] )
 		{
-			$db->query("SELECT pflege_msg FROM anbieter WHERE id=".$_SESSION['loggedInAnbieterId']);
+		    $db->query("SELECT pflege_msg FROM anbieter WHERE id=".$loggedInAnbieterId);
 			$db->next_record();
 			$msg = trim($db->fcs8('pflege_msg'));
 			if( $msg != '' )
@@ -1634,6 +1680,17 @@ class WISY_EDIT_RENDERER_CLASS
 			$temp = $this->renderVollstMsg($kurs['id'], true);
 			echo $temp? "<p>$temp</p>" : '';
 		}
+		
+		$secureaction = "";
+		
+		if( $this->framework->iniRead('useredit.secure', 1)==1
+		    && substr($_SERVER['HTTP_HOST'], -6)!='.local'
+		    && $_SERVER['HTTPS'] == "on")
+		{
+		    $secureaction = 'https://' . $_SERVER['HTTP_HOST'] . '/edit';
+		}
+		
+		$editurl = ($secureaction != "") ? $secureaction : "edit";
 		
 		echo '<form action="edit" method="post" name="kurs">' . "\n";
 			echo '<input type="hidden" name="action" value="ek" /> ' . "\n";
@@ -1715,7 +1772,7 @@ class WISY_EDIT_RENDERER_CLASS
 							echo "<div class=\"editFoerderungDiv\" $styleFoerderung>";
 								echo '<table cellpadding="0" cellspacing="2" border="0">';
 									echo '<tr><td>Bildungsurlaubs-Nr.:</td><td><input type="text" name="bu_nummer" value="'.htmlspecialchars($kurs['bu_nummer']).'" /> <small>(N&ouml;tig zur Anzeige als Bildungsurlaub/Freistellung)</small></td></tr>';
-									echo '<tr><td>AZAV-Nr.:</td><td><input type="text" name="azwv_knr" value="'.htmlspecialchars($kurs['azwv_knr']).'" />  <small>(N&ouml;tig zur Suche nach Bildungsgutschein)</small></td></tr>';
+									echo '<tr><td>AZAV-Zertifikatsnr.:</td><td><input type="text" name="azwv_knr" value="'.isohtmlspecialchars($kurs['azwv_knr']).'" />  <small>(N&ouml;tig zur Suche nach Bildungs- oder Aktivierungsgutschein)</small></td></tr>';
 									if( $foerderungsOptionen != '' )
 									{
 									    echo '<tr><td>sonstige F&ouml;rderung:</td><td>';
@@ -1999,7 +2056,7 @@ class WISY_EDIT_RENDERER_CLASS
 											
 											echo "<div class=\"editAdvOrtDiv\" $style>";
     											echo $this->renderEditorToolbar(true);
-    											echo "<textarea name=\"bemerkungen[]\" title=\"Geben Sie hier die Kurs-URL oder sonstige Hinweise ein zur Durchf&uuml;hrung ein\" cols=\"40\" rows=\"3\" style=\"width: 90%; border: 1px solid #ddd;\" />" . htmlentities($durchf['bemerkungen']) . '</textarea>';
+    											echo "<textarea name=\"bemerkungen[]\" title=\"Geben Sie hier die Kurs-URL oder sonstige Hinweise ein zur Durchf&uuml;hrung ein\" cols=\"40\" rows=\"3\" style=\"width: 90%; border: 1px solid #ddd;\" />" . htmlentities(strval($durchf['bemerkungen'])) . '</textarea>';
 											echo '<div>';
 											
 											echo '</td>';
@@ -2054,7 +2111,7 @@ class WISY_EDIT_RENDERER_CLASS
 	 * 20.09.2013 new AGB stuff
 	 **************************************************************************/
 
-	private function _agb_get_hash()
+	protected function _agb_get_hash()
 	{
 		$agb_glossar_entry = intval($this->framework->iniRead('useredit.agb', 0));
 		if( $agb_glossar_entry <= 0 ) 
@@ -2075,9 +2132,9 @@ class WISY_EDIT_RENDERER_CLASS
 		return $hash; // AGB-hash to confirm
 	}
 	
-	private function _agb_reading_required()
+	protected function _agb_reading_required()
 	{
-		if( $_SESSION['_agb_ok_for_this_session'] )
+	    if( isset($_SESSION['_agb_ok_for_this_session']) && $_SESSION['_agb_ok_for_this_session'] )
 			return false; // AGB were okay at the beginning of the session, keep this state to avoid annoying AGB popups during editing
 
 		$soll_hash = $this->_agb_get_hash();
@@ -2107,14 +2164,16 @@ class WISY_EDIT_RENDERER_CLASS
 			}
 			
 			$_SESSION['_agb_ok_for_this_session'] = true;
-			header("Location: ".$_REQUEST['fwd']);
+			
+			if( isset($_REQUEST['fwd']) )
+			 header("Location: ".$_REQUEST['fwd']);
 			exit();
 		}
 			
 		return true; // AGB reading required!
 	}
 	
-	private function _render_agb_screen()
+	protected function _render_agb_screen()
 	{
 		$agb_glossar_entry = intval($this->framework->iniRead('useredit.agb', 0));
 		$db = new DB_Admin;
@@ -2147,7 +2206,7 @@ class WISY_EDIT_RENDERER_CLASS
 				echo '<input type="submit" name="agb_not_accepted" value="Abbruch - Ich stimme einigen Bedingungen NICHT ZU" />';
 			echo '</form>';
 			
-			if( $_SESSION['_login_as'] ) {
+			if( !isset($_SESSION['_login_as']) || !$_SESSION['_login_as'] ) {
 				echo '<p style="background:red; color:white; padding:1em; "><b>Achtung:</b> Sie haben sich als Redakteur im Namen eines Anbieters, 
 					der die AGB noch nicht best&auml;tigt hat, eingeloggt. Wenn Sie die AGB jetzt best&auml;tigen, gilt dies nur f&uuml;r die aktuelle Sitzung; 
 					der Anbieter wird die AGB sobald er sich selbst einloggt erneut best&auml;tigen müssen. Dieser Hinweis erscheint nur f&uuml;r Redakteure.</p>';
@@ -2163,7 +2222,7 @@ class WISY_EDIT_RENDERER_CLASS
 	
 	function render()
 	{
-		$action = $_REQUEST['action'];
+	    $action = isset($_REQUEST['action']) ? $_REQUEST['action'] : '';
 	
 		if( $action == 'forgotpw' )
 		{
@@ -2193,9 +2252,10 @@ class WISY_EDIT_RENDERER_CLASS
 					$this->renderLoginScreen();
 					break;
 
-				case 'ek':
-					$this->renderEditKurs(intval($_REQUEST['id']) /*may be "0" for "new kurs"*/ );
-					break;
+				 case 'ek':
+				     $id = isset($_REQUEST['id']) ? $_REQUEST['id'] : 0;
+				     $this->renderEditKurs(intval($id) /*may be "0" for "new kurs"*/ );
+				     break;
 
 				case 'kt':
 					$this->renderEditKonto();
