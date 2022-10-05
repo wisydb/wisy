@@ -5,9 +5,11 @@ class AUTOCOMPLETE_DETAILS_CLASS
 	function handle_request()
 	{
 		// get parameters
-		$temp = explode('.', $_REQUEST['acdata']);
-		$table	= $temp[0];
-		$field	= $temp[1];
+	    if( isset($_REQUEST['acdata']) )
+		  $temp = explode('.', $_REQUEST['acdata']);
+	    
+		$table	= isset($temp) && isset($temp[0]) ? $temp[0] : '';
+		$field	= isset($temp) && isset($temp[1]) ? $temp[1] : '';
 		
 		$acjson = new AUTOCOMPLETE_JSON_CLASS;
 		$fields = $acjson->get_acnest_fields($table, $field);
@@ -28,9 +30,9 @@ class AUTOCOMPLETE_DETAILS_CLASS
 		$db = new DB_Admin;
 		$eql = "";
 		$sql = "SELECT id FROM $table WHERE ";
-		for( $f = 0; $f < sizeof((array) $fields); $f++ )
+		for( $f = 0; $f < sizeof((array) $fields); $f++ ) 
 		{
-			$value = $_REQUEST['v'.$f];
+		    $value = isset($_REQUEST['v'.$f]) ? $_REQUEST['v'.$f] : null;
 			
 			$eql .= $f? ' AND ' : '';
 			$eql .= $index_prefix . $fields[$f] . '("' . strtr($value, array('"'=>"''")) . '")';

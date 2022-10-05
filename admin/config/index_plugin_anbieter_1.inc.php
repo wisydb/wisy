@@ -1,20 +1,19 @@
 <?php
 
-
 require_once('functions.inc.php');
 require_once('eql.inc.php');
 
 
 if( !isset($_SESSION['g_session_index_sql']['anbieter']) )
 {
-	echo "Keine Anbieter ausgewählt?";
+	echo "Keine Anbieter ausgew&auml;hlt?";
 	exit();
 }
 
 
 // get BCC list
 $eql2sql = new EQL2SQL_CLASS('anbieter');
-$eql = $_SESSION['g_session_index_eql']['anbieter']==''? '*' : $_SESSION['g_session_index_eql']['anbieter'];
+$eql = !isset($_SESSION['g_session_index_eql']['anbieter']) || $_SESSION['g_session_index_eql']['anbieter'] == '' ? '*' : $_SESSION['g_session_index_eql']['anbieter'];
 
 $sql = $eql2sql->eql2sql($eql, 'pflege_email', acl_get_sql(ACL_READ, 0, 1, 'anbieter'), 'id');
 
@@ -42,7 +41,7 @@ foreach(array_keys($allEmails) as $email)
 // get TO
 
 $to = "";
-$db->query("SELECT email FROM user WHERE id=".$_SESSION['g_session_userid']);
+$db->query("SELECT email FROM user WHERE id=" . (isset($_SESSION['g_session_userid']) ? $_SESSION['g_session_userid'] : null) );
 if( $db->next_record() )
 {
 	$to = $db->fs('email');
@@ -72,9 +71,6 @@ $site->pageStart(array('popfit'=>1));
 	$site->skin->buttonsEnd();
 		
 $site->pageEnd();
-
-
-
 
 
 ?>

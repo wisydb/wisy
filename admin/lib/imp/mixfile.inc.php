@@ -1,7 +1,5 @@
 <?php
 
-
-
 define('PREPARE_FOR_BROWSING_VERSION', 	2);
 
 define ('GET_UPDATES', 1);
@@ -12,7 +10,7 @@ define('IMP_OVERWRITE_ALWAYS',		1);
 define('IMP_OVERWRITE_OLDER',		2);
 
 define('IMP_DELETE_NEVER',			0);
-define('IMP_DELETE_DELETED',		1); // In Mix-Datei gelöschte Datensätze auch im Bestand löschen
+define('IMP_DELETE_DELETED',		1); // In Mix-Datei geloeschte Datensaetze auch im Bestand loeschen
 
 
 
@@ -38,7 +36,7 @@ class IMP_MIXFILE_CLASS
 		
 		$this->sqliteDb = new G_SQLITE_CLASS;
 		if( !$this->sqliteDb->open($this->full_path) ) {
-			$this->error_str = 'Kann Datei nicht öffnen.' . ($this->sqliteDb->error_str? " ({$this->sqliteDb->error_str})" : "");
+			$this->error_str = 'Kann Datei nicht &ouml;ffnen.' . ($this->sqliteDb->error_str? " ({$this->sqliteDb->error_str})" : "");
 			return false;
 		}
 			
@@ -51,7 +49,7 @@ class IMP_MIXFILE_CLASS
 		$file_version = $this->ini_read('version', 0);
 		$code_version = $this->get_code_version();
 		if( $file_version != $code_version ) {
-			$this->error_str = "Ungültige Versionsnummer ($file_version anstelle von $code_version).";
+			$this->error_str = "Ung&uuml;ltige Versionsnummer ($file_version anstelle von $code_version).";
 			return false; // error, ok() will return false
 		}
 	
@@ -68,13 +66,13 @@ class IMP_MIXFILE_CLASS
 	}
 	function close()
 	{
-		if( is_object($this->sqliteDb) )
+	    if( isset( $this->sqliteDb ) && is_object($this->sqliteDb) )
 		{
 			$this->sqliteDb->close();
 			unset($this->sqliteDb);
 		}
 
-		if( is_object($this->sqliteDb2) )
+		if( isset( $this->sqliteDb2 ) && is_object($this->sqliteDb2) )
 		{
 			$this->sqliteDb2->close();
 			unset($this->sqliteDb2);
@@ -82,7 +80,7 @@ class IMP_MIXFILE_CLASS
 	}	
 	function create_db_object_to_use()
 	{
-		if( !is_object($this->sqliteDb2) ) {
+	    if( !isset( $this->sqliteDb2 ) || !is_object($this->sqliteDb2) ) {
 			$this->sqliteDb2 = new G_SQLITE_CLASS;
 			$this->sqliteDb2->open($this->full_path);
 		}
@@ -95,7 +93,7 @@ class IMP_MIXFILE_CLASS
 	//
 	function prepare_for_browse()
 	{
-		if( intval($this->ini['prepared_for_browsing']) >= PREPARE_FOR_BROWSING_VERSION )
+	    if( isset( $this->ini['prepared_for_browsing'] ) && intval($this->ini['prepared_for_browsing']) >= PREPARE_FOR_BROWSING_VERSION )
 			return; // already done
 	
 		ignore_user_abort(1);
@@ -107,13 +105,14 @@ class IMP_MIXFILE_CLASS
 		for( $t = 0; $t < sizeof((array) $Table_Def); $t++ )
 		{
 			$tableDef = $Table_Def[$t];
-			if( in_array($tableDef->name, $this->all_tables) )
+			if( isset( $tableDef->name ) && isset( $this->all_tables ) && in_array($tableDef->name, $this->all_tables) )
 			{
 				$indexToCreate[] = array($tableDef->name, 'id');
 				$rows  = $tableDef->rows;
 				for( $r = 0; $r < sizeof((array) $rows); $r++ )
 				{
-					switch( $rows[$r]->flags & TABLE_ROW ) 
+				    $flags = isset( $rows[$r]->flags ) ? $rows[$r]->flags : null;
+					switch( $flags & TABLE_ROW ) 
 					{
 						case TABLE_SECONDARY:
 							$indexToCreate[] = array($tableDef->name . '_' . $rows[$r]->name, 'primary_id');
@@ -140,7 +139,7 @@ class IMP_MIXFILE_CLASS
 
 		
 		// done
-		$GLOBALS['site']->msgAdd('Die Mix-Datei <i>'.isohtmlspecialchars($this->full_path).'</i> wurde für die Bearbeitung vorbereitet. Sie können jetzt Ihre Einstellungen vornehmen; diese werden dann direkt in der Datei für einen folgenden Import gespeichert.', 'i');
+		$GLOBALS['site']->msgAdd('Die Mix-Datei <i>'.isohtmlspecialchars($this->full_path).'</i> wurde f&uuml;r die Bearbeitung vorbereitet. Sie k&ouml;nnen jetzt Ihre Einstellungen vornehmen; diese werden dann direkt in der Datei f&uuml;r einen folgenden Import gespeichert.', 'i');
 		$this->ini_write('prepared_for_browsing', PREPARE_FOR_BROWSING_VERSION);
 	}
 	
@@ -170,7 +169,7 @@ class IMP_MIXFILE_CLASS
 	//
 	function ini_read($ini_key, $ini_default = '')
 	{
-		if( !is_array($this->ini) )
+	    if( !isset( $this->ini ) || !is_array($this->ini) )
 		{
 			$this->ini = array();
 			$this->sqliteDb->query("SELECT ini_key, ini_value FROM x_ini;");
@@ -206,7 +205,7 @@ class IMP_MIXFILE_CLASS
 		if( $get_flags & GET_UPDATES )
 		{
 			// INSERT/UPDATE: read source
-			if( in_array($table, $this->all_tables) ) 
+		    if( isset( $this->all_tables ) && in_array($table, $this->all_tables) ) 
 			{
 				$this->sqliteDb->query("SELECT id, date_modified FROM {$table} ORDER BY id;");
 				while( $this->sqliteDb->next_record() ) {
@@ -233,8 +232,8 @@ class IMP_MIXFILE_CLASS
 			$system_sync_src = $sync_tools->get_sync_src();
 			$file_sync_src   = intval($this->ini['sync_src']);
 			if( $file_sync_src==0 || $system_sync_src==0 /*|| $system_sync_src==$file_sync_src*/ ) return $ret;
-														 // ^^^ wenn wir nur unterschiedliche Sync-Sourcen löschen, ist dies zwar sicherer, erlaubt aber bspw. kein Backup mit demselben Sync-Src!
-														 //     man muß nur aufpassen, dann sollte das kein Problem sein
+														 // ^^^ wenn wir nur unterschiedliche Sync-Sourcen loeschen, ist dies zwar sicherer, erlaubt aber bspw. kein Backup mit demselben Sync-Src!
+														 //     man muss nur aufpassen, dann sollte das kein Problem sein
 														 
 			// DELETE: get all records existant in the source
 			$this->sqliteDb->query("SELECT ids FROM x_ids WHERE tble='$table'");
@@ -256,9 +255,5 @@ class IMP_MIXFILE_CLASS
 		return $ret;
 	}
 
-
-	
-
-	
 
 };

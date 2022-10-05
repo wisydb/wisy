@@ -1,6 +1,5 @@
 <?php
 
-
 /*
 damit beim Download die Datei gesichert, und nicht im Browser  geoeffnet wird, 
 sollte im temp-verzeichnis die folgende .htaccess Datei stehen:
@@ -11,9 +10,6 @@ AddType application/octet-stream .zip
 AddType application/octet-stream .mix
 
 */
-
-
-
 
 
 class EXP_FILESRENDERER_CLASS extends EXP_FUNCTIONS_CLASS
@@ -59,21 +55,21 @@ class EXP_FILESRENDERER_CLASS extends EXP_FUNCTIONS_CLASS
 						$site->skin->cellStart('nowrap');
 							$cell = "<a href=\"{$currFile->full_path}\" title=\"".htmlconstant('_EXP_FILESDOWNLOAD')."\" >";
 								
-								if( $this->hilite && substr($currFile->name_wo_scope, 0, strlen($this->hilite))==$this->hilite ) { $cell .= '<b>'; $bold = true; }
+							if( isset( $this->hilite ) && $this->hilite && substr($currFile->name_wo_scope, 0, strlen($this->hilite))==$this->hilite ) { $cell .= '<b>'; $bold = true; }
 								
-								$cell .= isohtmlentities($currFile->file_name);
+							$cell .= isohtmlentities( strval( $currFile->file_name ) );
 								
-								if( $bold ) { $cell .= '</b>'; $bold = false; }
+							if( isset($bold) && $bold ) { $cell .= '</b>'; $bold = false; }
 							$cell .= '</a>';
 							$url = 'exp.php?page=files&delete=' .urlencode($currFile->file_name). $addParam;
-							$cell .= "<a href=\"".isohtmlspecialchars($url)."\" onclick=\"return confirm('" .htmlconstant('_EXP_FILESDELETEASK', isohtmlentities($currFile->file_name)). "');\" title=\"".htmlconstant('_EXP_FILESDELETE')."\">&nbsp;&times;</a>";
+							$cell .= "<a href=\"".isohtmlspecialchars($url)."\" onclick=\"return confirm('" .htmlconstant('_EXP_FILESDELETEASK', isohtmlentities( strval( $currFile->file_name ) ) ). "');\" title=\"".htmlconstant('_EXP_FILESDELETE')."\">&nbsp;&times;</a>";
 							echo $cell;
 						$site->skin->cellEnd();
 						$site->skin->cellStart('nowrap');
 							echo isohtmlspecialchars(smart_size($currFile->size));
 						$site->skin->cellEnd();
 						$site->skin->cellStart('nowrap');
-							echo sql_date_to_human(strftime("%Y-%m-%d %H:%M:%S", $currFile->mtime), 'datetime');
+							echo sql_date_to_human(ftime("%Y-%m-%d %H:%M:%S", $currFile->mtime), 'datetime');
 						$site->skin->cellEnd();
 					$site->skin->rowEnd();
 					$filesCnt++;
@@ -112,10 +108,10 @@ class EXP_FILESRENDERER_CLASS extends EXP_FUNCTIONS_CLASS
 		}
 
 		// get parameters
-		$this->hilite	= $_REQUEST['hilite'];
-		$this->expTime  = $_REQUEST['exptime'];
-		$this->debug    = $_REQUEST['debug'];
-		$delete         = $_REQUEST['delete'];
+		$this->hilite	= isset($_REQUEST['hilite'])    ? $_REQUEST['hilite']   : null;
+		$this->expTime  = isset($_REQUEST['exptime'])   ? $_REQUEST['exptime']  : null;
+		$this->debug    = isset($_REQUEST['debug'])     ? $_REQUEST['debug']    : null;
+		$delete         = isset($_REQUEST['delete'])    ? $_REQUEST['delete']   : null;
 
 		// read all files, delete marked
 		$files = $this->scanner->scan('exp');
@@ -131,6 +127,3 @@ class EXP_FILESRENDERER_CLASS extends EXP_FUNCTIONS_CLASS
 		$this->exp_render_files_overview($files);
 	}
 }
-
-
-

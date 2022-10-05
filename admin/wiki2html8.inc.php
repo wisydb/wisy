@@ -1,7 +1,5 @@
 <?php
 
-
-
 /*=============================================================================
 WIKI to HTML transformation
 ===============================================================================
@@ -203,19 +201,19 @@ function htmlsmartentities($str, $leave = '', $smartPunctuation = 1)
 		$g_quotentities['(tm)']				= '&#8482;';	// (TM)	=> trademark sign
 		$g_quotentities['---']				= '&#8212;';	// ---	=> m-dash
 		$g_quotentities['--']				= '&#8211;';	// --	=> m-dash
-		$g_quotentities['$[$']				= '&#91;';	// [
-		$g_quotentities['$]$']				= '&#93;';	// ]
+		$g_quotentities['$[$']				= '&#91;';	    // [
+		$g_quotentities['$]$']				= '&#93;';	    // ]
 	}
 
-	if( $leave == '' ) {
+	if( !isset($leave) || $leave == '' ) {
 		$str = strtr($str, $g_transentities1);
 		$str = strtr($str, $g_transentities2);
 	}
-	else if( $leave == '&' ) {
+	else if( isset($leave) && $leave == '&' ) {
 		$str = strtr($str, $g_ampentities1);
 		$str = strtr($str, $g_ampentities2);
 	}
-	else if( $leave == '&<>"' ) {
+	else if( isset($leave) && $leave == '&<>"' ) {
 		$str = strtr($str, $g_specentities1);
 		$str = strtr($str, $g_specentities2);
 	}
@@ -224,7 +222,7 @@ function htmlsmartentities($str, $leave = '', $smartPunctuation = 1)
 		exit();
 	}
 
-	if( $smartPunctuation ) {
+	if( isset($smartPunctuation) && $smartPunctuation ) {
 		return strtr($str, $g_quotentities);
 	}
 	else {
@@ -272,653 +270,654 @@ function shortenurl($url, $max_len = 42)
 
 class WIKI2HTML_CLASS
 {
-    //
-    // private: variables
-    //
-    var $charTags;
-    
-    var $content;
-    var $hasContent;
-    var $hasToplinks;
-    
-    var $indentCode;
-    var $indentLevel;
-    
-    var $lineEndsParagraph;
-    var $lineHasHr;
-    var $lineHeadlineLevel;
-    var $lineIndentLevel;
-    var $lineIndentType;
-    var $linePre;
-    var $lineReplacer;
-    var $lineStyle;
-    var $lineAlign;
-    var $lineTable;
-    var $lineTableBorder;
-    var $lineTableCells;
-    
-    //
-    // public: constructor
-    //
-    function __construct()
-    {
-        // create and init line replacer class.
-        // the order of the following rules can be important, since they
-        // are applied to each input line in order. note that each rule
-        // hides the matched text from later rules.
-        $this->lineReplacer = new TXTREPLACER_CLASS;
-        
-        // first, translate 'in text'
-        $this->lineReplacer->addRule(new TRANSL_NOWIKI_CLASS);
-        $this->lineReplacer->addRule(new ADDRESS_PATTERN_CLASS);
-        $this->lineReplacer->addRule(new TRANSL_HTMLREMARK_CLASS);
-        $this->lineReplacer->addRule(new TRANSL_HTML_CLASS);
-        $this->lineReplacer->addRule(new TRANSL_EMPH_CLASS); // should be before img/link so the description text may be formatted
-        $this->lineReplacer->addRule(new TRANSL_SQUAREBRACKET_CLASS);
-        $this->lineReplacer->addRule(new TRANSL_EXTLINK_CLASS);
-        $this->lineReplacer->addRule(new TRANSL_EMAILLINK_CLASS);
-        $this->lineReplacer->addRule(new TRANSL_FOOTNOTEPASS1_CLASS);
-        
-        
-        
-        // translate 'paragraphs'
-        $this->lineReplacer->addRule(new TRANSL_INDENT_CLASS);
-        $this->lineReplacer->addRule(new TRANSL_PARARIGHTALIGN_CLASS);
-        $this->lineReplacer->addRule(new TRANSL_FOOTNOTEPASS2_CLASS);
-        
-        // translate rest
-        $this->lineReplacer->addRestRule(new TRANSL_ENTITIES_CLASS);
-    }
-    
-    //
-    // public: generate and output html for all lines.
-    //
-    function run($in__)
-    {
-        // stop time
-        $profile = $this->getmicrotime__();
-        
-        // set context
-        $this->content			= array();
-        $this->charTags			= array();
-        $this->indentCode		= array();
-        $this->indentLevel		= 0;
-        $this->lineTableCells	= 0;
-        $this->boxOpen			= 0;
-        $this->joinLines		= 0;
-        
-        // get each single line of the input
-        $in = explode("\n", strtr($in__,
-            array(	"\r" => "",
-                $this->lineReplacer->mark2 => $this->lineReplacer->mark2repl
-            ))
-            );
-        
-        // go through all lines and collect all blocks
-        $blocks = array();
-        $cIn = sizeof((array) $in);
-        for( $i = 0; $i < $cIn; $i++ )
-        {
-            // get block from line
-            $this->lineHeadlineLevel	= 0;
-            $this->linePre				= 0;
-            $this->lineSelfPara			= 0;
-            $this->lineTable			= 0;
-            $this->lineHasHr			= 0;
-            $this->lineEndsParagraph	= 0;
-            $this->lineStyle			= '';
-            $this->lineAlign			= 'left';
-            $this->lineIndentLevel		= 0;
-            $block = $this->lineReplacer->run($in[$i], $this) . $this->closeAllCharTags__();
-            
-            // add block...
-            if( $this->lineHasHr )
-            {
-                // ...horizontal ruler (no else for this case!)
-                if( $blocks[sizeof($blocks)-1][0] != 'hr' ) {
-                    $blocks[] = array('hr');
-                }
-            }
-            
-            if( !trim($block) )
-            {
-                // ...empty line
-                if( $blocks[sizeof($blocks)-1][0] == 'pre' )
-                {
-                    if( substr($blocks[sizeof($blocks)-1][1], -2) != "\n\n") {
-                        $blocks[sizeof($blocks)-1][1] .= "\n";
-                    }
-                }
-                else if( $blocks[sizeof($blocks)-1][0] == 'p'
-                    || $blocks[sizeof($blocks)-1][0] == 'table' )
-                {
-                    $blocks[] = array('', ''); // add an empty block to avoid block collapsing
-                    $this->lineTableCells = 0;
-                }
-            }
-            else if( $this->linePre )
-            {
-                // ...preformatted block
-                if( $blocks[sizeof($blocks)-1][0] == 'pre' ) {
-                    $blocks[sizeof($blocks)-1][1] .= rtrim($block) . "\n";
-                }
-                else {
-                    $blocks[] = array('pre', rtrim($block) . "\n");
-                }
-            }
-            else if( $this->lineTable )
-            {
-                // ...table block
-                if( $blocks[sizeof($blocks)-1][0] == 'table' ) {
-                    $blocks[sizeof($blocks)-1][1] .= $block;
-                }
-                else {
-                    $blocks[] = array('table', $block, $this->lineTableBorder);
-                }
-            }
-            else if( $this->lineHeadlineLevel )
-            {
-                // ...headline
-                if( $this->lineHeadlineLevel < 0 ) {
-                    $temp = sizeof($blocks)-1;
-                    if( $blocks[$temp][0] == 'p' ) {
-                        $blocks[$temp][0] = 'h';
-                        $blocks[$temp][2] = $this->lineHeadlineLevel * -1;
-                    }
-                }
-                else {
-                    $blocks[] = array('h', $block, $this->lineHeadlineLevel);
-                }
-            }
-            else if( $this->lineIndentLevel )
-            {
-                // ...indent
-                $blocks[] = array('li', $block, $this->lineIndentLevel, $this->lineIndentType);
-            }
-            else if( $this->lineSelfPara )
-            {
-                // ...self-formatting paragraph
-                $blocks[] = array('self', $block);
-            }
-            else
-            {
-                // ...normal paragraph
-                if( !$this->lineEndsParagraph
-                    && $blocks[sizeof($blocks)-1][0] == 'p' )
-                {
-                    $blocks[sizeof($blocks)-1][1] .= ($this->joinLines? ' ' : '<br />') . trim($block);
-                }
-                else
-                {
-                    $blocks[] = array('p', trim($block), $this->lineAlign, $this->lineStyle);
-                }
-            }
-        }
-        
-        // go through all blocks and collect the output
-        $out = '';
-        $cBlocks = sizeof((array) $blocks);
-        for( $i = 0; $i < $cBlocks; $i++ )
-        {
-            switch( $blocks[$i][0] )
-            {
-                case 'li':
-                    $out .= $this->indentTo__($blocks[$i][2], $blocks[$i][3]) . $blocks[$i][1] . "\n";
-                    break;
-                    
-                case 'p':
-                    $out .= $this->indentTo__(0) . $this->renderP($blocks[$i][1], $blocks[$i][2], $blocks[$i][3]) . "\n";
-                    break;
-                    
-                case 'pre':
-                    $out .= $this->indentTo__(0) . $this->renderPre(rtrim($blocks[$i][1])) . "\n";
-                    break;
-                    
-                case 'h':
-                    $contentCounter = sizeof((array) $this->content)+1;
-                    $this->content[] = array($blocks[$i][2], $blocks[$i][1], $contentCounter);
-                    $out .= $this->indentTo__(0);
-                    if( $this->hasToplinks && $contentCounter > 1 ) {
-                        $out .= $this->renderP($this->renderA('^', 'toplink', '#top', '', 1), 'left', 'toplink');
-                    }
-                    $out .= '<a name="content' .urlencode($blocks[$i][1]). '"></a>' . $this->renderH($blocks[$i][1], $blocks[$i][2]) . "\n";
-                    break;
-                    
-                case 'hr':
-                    $out .= $this->indentTo__(0) . $this->renderHr() . "\n";
-                    break;
-                    
-                case 'self':
-                    $out .= $this->indentTo__(0) . $blocks[$i][1];
-                    break;
-                    
-                case 'table':
-                    $out .= $this->indentTo__(0) . $this->renderTable($blocks[$i][1], $blocks[$i][2]);
-                    if( $blocks[$i+1][0] == '' && $blocks[$i+2][0] == 'table' ) {
-                        $out .= '<br />';
-                    }
-                    break;
-            }
-        }
-        
-        // close any open lists
-        $out .= $this->indentTo__(0);
-        
-        // close any open box
-        if( $this->boxOpen ) {
-            $out .= $this->renderBox($this->boxOpen, 0);
-        }
-        
-        if( $this->hasToplinks ) {
-            $out .= $this->renderP($this->renderA('^', 'toplink', '#top', '', 1), 'left', 'toplink');
-        }
-        
-        
-        // create content if needed
-        if( $this->hasContent )
-        {
-            $content = '';
-            for( $i = 0; $i < sizeof((array) $this->content); $i++ )
-            {
-                $currDepth = $this->content[$i][0];
-                if( $this->hasContent >= $currDepth )
-                {
-                    $content .= '<table class="content_index" cellpadding="0" cellspacing="0" border="0"><tr><td class="l">' . str_repeat('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;', $currDepth-1) . '</td><td class="r">';
-                    $content .= $this->renderA($this->content[$i][1], 'content', "#content".urlencode($this->content[$i][1]), '', 1);
-                    $content .= '</td></tr></table>';
-                }
-            }
-            $out = str_replace(WIKI_MAGIC.'CONTENT', $content, $out);
-        }
-        
-        // create statistics if needed
-        if( $this->hasStat )
-        {
-            $temp = $this->getmicrotime__() - $profile;
-            $temp = sprintf("%01.2f", $temp);
-            $out = str_replace(WIKI_MAGIC.'STATTIME', $temp, $out);
-            
-            $temp = $cIn;
-            $out = str_replace(WIKI_MAGIC.'STATRAWLINES', $temp, $out);
-            
-            $temp = $cBlocks;
-            $out = str_replace(WIKI_MAGIC.'STATBLOCKS', $temp, $out);
-            
-            $temp = sizeof((array) $this->content);
-            $out = str_replace(WIKI_MAGIC.'STATCHAPTERS', $temp, $out);
-            
-            $temp = intval(strlen($in__)/1024); if( $temp <= 0 ) $temp = 1;
-            $out = str_replace(WIKI_MAGIC.'STATRAWSIZE', $temp, $out);
-            
-            $temp = substr_count($out, '<');
-            $out = str_replace(WIKI_MAGIC.'STATTAGS', $temp, $out);
-            
-            $temp = substr_count($out, "\n");
-            $out = str_replace(WIKI_MAGIC.'STATFORMATTEDLINES', $temp, $out); // should be last
-            
-            $temp = intval(strlen($out)/1024); if( $temp <= 0 ) $temp = 1;
-            $out = str_replace(WIKI_MAGIC.'STATFORMATTEDSIZE', $temp, $out); // should be very last
-        }
-        
-        // done
-        return $out;
-    }
-    
-    //
-    // private: paragraph formatting tag handling
-    //
-    function indentTo__($level, $tag = '')
-    {
-        $str = "";
-        
-        while( $this->indentLevel > $level ) {
-            $tag_old = $this->indentCode[$this->indentLevel];
-            $this->indentLevel--;
-            $str .= "</$tag_old>";
-        }
-        
-        while( $this->indentLevel < $level ) {
-            $str .= "<$tag>";
-            $this->indentLevel++;
-            $this->indentCode[$this->indentLevel] = $tag;
-        }
-        
-        if( $this->indentCode[$level] != $tag ) {
-            $tag_old = $this->indentCode[$level];
-            $str .= "</$tag_old>" . "<$tag>";
-            $this->indentCode[$level] = $tag;
-        }
-        
-        return $str;
-    }
-    
-    
-    //
-    // private: character formatting tag handling
-    //
-    function isCharTagOpen__($tag)
-    {
-        return in_array($tag, $this->charTags);
-    }
-    
-    function openCharTag__($tag)
-    {
-        if( !in_array($tag, $this->charTags) )
-        {
-            $this->charTags[] = $tag;
-            return $this->renderEmph($tag, 1); // done
-        }
-        else
-        {
-            return ''; // char tag already opened
-        }
-    }
-    
-    function closeCharTag__($tag)
-    {
-        if( in_array($tag, $this->charTags) )
-        {
-            $ret = '';
-            $openAgain = array();
-            while( $currTag = array_pop($this->charTags) )
-            {
-                $ret .= $this->renderEmph($currTag, 0);
-                if( $currTag == $tag )
-                {
-                    for( $i = sizeof($openAgain)-1; $i >= 0 ; $i-- ) {
-                        $ret .= $this->openCharTag__($openAgain[$i]);
-                    }
-                    
-                    return $ret; // done
-                }
-                else
-                {
-                    $openAgain[] = $currTag;
-                }
-            }
-            
-            return '<h1>ERROR in wiki2html.inc.php</h1>'; // should not happen
-        }
-        else
-        {
-            return ''; // char tag not open
-        }
-    }
-    
-    function closeAllCharTags__()
-    {
-        $ret = '';
-        
-        while( $currTag = array_pop($this->charTags) )
-        {
-            $ret .= $this->renderEmph($currTag, 0);
-        }
-        
-        return $ret;
-    }
-    
-    //
-    // private: the page function
-    //
-    function getmicrotime__()
-    {
-        list($usec, $sec) = explode(" ",microtime());
-        return ((float)$usec + (float)$sec);
-    }
-    function pageFunction__($name, $param, &$state)
-    {
-        switch( $name )
-        {
-            case 'content':
-                if( !$this->hasContent ) {
-                    $this->hasContent = intval($param);
-                    if( $this->hasContent<1 || $this->hasContent>6 ) {
-                        $this->hasContent = 6;
-                    }
-                }
-                $state = 2;
-                return WIKI_MAGIC.'CONTENT';
-                
-            case 'toplinks':
-                $this->hasToplinks = 1;
-                $state  = 1;
-                return '';
-                
-            case 'joinlines':
-                $this->joinLines = 1;
-                $state  = 1;
-                return '';
-                
-            case 'breaklines':
-                $this->joinLines = 0;
-                $state  = 1;
-                return '';
-                
-            case 'iframe':
-                $state = 2;
-                $this->iframeCnt = intval($this->iframeCnt)+1;
-                $url = trim($param);
-                return	'<iframe src="'.$url.'" width="100%" height="380" name="iframe'.$this->iframeCnt.'" frameborder="1">'
-                    .		'<a href="'.$url.'" target="_blank" rel="noopener noreferrer">'.$url.'</a>'
-                        .	'</iframe>';
-                        
-            case 'stat':
-                $this->hasStat = 1;
-                $state = 1;
-                $param = " $param";
-                
-                if( strpos($param, 'rawsize') )			{ return WIKI_MAGIC.'STATRAWSIZE'; }
-                if( strpos($param, 'formattedsize') )	{ return WIKI_MAGIC.'STATFORMATTEDSIZE'; }
-                if( strpos($param, 'rawlines') )		{ return WIKI_MAGIC.'STATRAWLINES'; }
-                if( strpos($param, 'formattedlines') )	{ return WIKI_MAGIC.'STATFORMATTEDLINES'; }
-                if( strpos($param, 'tags') )			{ return WIKI_MAGIC.'STATTAGS'; }
-                if( strpos($param, 'blocks') )			{ return WIKI_MAGIC.'STATBLOCKS'; }
-                if( strpos($param, 'chapters') )		{ return WIKI_MAGIC.'STATCHAPTERS'; }
-                if( strpos($param, 'time') )			{ return WIKI_MAGIC.'STATTIME'; }
-                
-                return '<b>'
-                    .WIKI_MAGIC.'STATTIME seconds</b> needed to format <b>from '
-                        .WIKI_MAGIC.'STATRAWSIZE KB</b>, '
-                            .WIKI_MAGIC.'STATRAWLINES lines, '
-                                .WIKI_MAGIC.'STATBLOCKS blocks and '
-                                    .WIKI_MAGIC.'STATCHAPTERS chapters <b>to '
-                                        .WIKI_MAGIC.'STATFORMATTEDSIZE KB</b>, '
-                                            .WIKI_MAGIC.'STATFORMATTEDLINES lines and '
-                                                .WIKI_MAGIC.'STATTAGS tags';
-        }
-    }
-    
-    
-    //
-    // public user function: check if the page with the given title exists;
-    // the function should return:
-    // 1 if the page exists
-    // an error string if the page does not exist
-    //
-    function pageExists($title)
-    {
-        return 1;
-    }
-    
-    //
-    // public user function: calling a function
-    // the function should return any HTML code and set $state to:
-    //  1	-	the HTML code is text
-    //  2	-	the HTML code is a paragraph
-    //  0	-	function not handled, return value is invalid
-    //
-    function pageFunction($name, $param, &$state)
-    {
-        return $this->pageFunction__($name, $param, $state);
-    }
-    
-    
-    //
-    // public user function: generate the internal URL of any page;
-    // the function should return sth. like "index.php?..."
-    //
-    function pageUrl($title, $pageExists)
-    {
-        return "index.php?pleaseDefineYourOwnInternalLinkHandlerFor" . urlencode($title);
-    }
-    
-    //
-    // public user function: render a simple emphasis tag;
-    // $emph is one of "emph", "strong" or "wild";
-    // $open is one of 1 (open) or 0 (close);
-    // the function should return sth. like "<b>" or "</i>"
-    //
-    function renderEmph($emph, $open)
-    {
-        switch( $emph )
-        {
-            case 'emph':	return $open? '<i>' : '</i>';
-            case 'strong':	return $open? '<b>' : '</b>';
-            case 'wild':	return $open? '<strong style="color:red; font-weight:bold; font-style:normal;">' : '</strong>';
-        }
-        
-        return "<b>ERROR: renderEmph(): unknown emphasis &quot;$emph&quot;.</b>";
-    }
-    
-    
-    //
-    // public user function: render a complete anchor;
-    // $type is one of "content", "footnote", "footref", "toplink", "internal", or any
-    // TCP/IP protocol as "http", "https", "mailto", "ftp" etc.;
-    // the function should return sth. like "<a href=...>...</a>"
-    //
-    function renderA($html, $type, $href, $tooltip, $pageExists)
-    {
-        $a = "<a href=\"$href\"";
-        if( $tooltip ) {
-            $a .= " title=\"$tooltip\"";
-        }
-        
-        if( $type == 'http' || $type == 'https' ) {
-            $a .= ' target="_blank" rel="noopener noreferrer"';
-        }
-        $a .= ">";
-        
-        if( $type == 'footnote' || $type == 'footref' ) {
-            return "{$a}[{$html}]</a>";
-        }
-        else if( $pageExists ) {
-            return "$a$html</a>";
-        }
-        else {
-            return "$html$a???</a>";
-        }
-    }
-    
-    //
-    // public user function: render an image;
-    // $align is one of "", "left" or "right"
-    // the function should return sth. like "<img src=... />"
-    //
-    function renderImg($src, $align, $tooltip)
-    {
-        $style = '';
-        if( $align == 'left' ) {
-            $style = ' align="left" hspace="4"';
-        }
-        else if( $align == 'right' ) {
-            $style = ' align="right" hspace="4"';
-        }
-        return "<img src=\"$src\"$style border=\"0\" alt=\"$tooltip\" title=\"$tooltip\" />";
-    }
-    
-    //
-    // public user function: render a paragraph;
-    // $style is one of "", "left", "right", "center", "footnote", "toplink";
-    // the function should return sth. like "<p>...</p>"
-    //
-    function renderP($html, $align, $style)
-    {
-        if( $style == 'footnote' ) {
-            return "<p><small>$html</small></p>";
-        }
-        else switch( $align ) {
-            case 'right':	return "<p align=\"right\">$html</p>";
-            case 'center':	return "<p align=\"center\">$html</p>";
-            default:		return "<p>$html</p>";
-        }
-    }
-    
-    //
-    // public user function: render preformatted paragraph;
-    // the function should return sth. like "<pre>...</pre>"
-    //
-    function renderPre($html)
-    {
-        return "<pre>$html</pre>";
-    }
-    
-    //
-    // public user function: render a table;
-    // $border is 0 or 1;
-    // the function should return sth. like "<table ...>...</table>"
-    //
-    function renderTable($html, $border)
-    {
-        $cellpadding = $border? 2 : 1;
-        return "<table cellpadding=\"$cellpadding\" cellspacing=\"0\" border=\"$border\">$html</table>";
-    }
-    
-    //
-    // public user function: render a table row;
-    // $numCol is the number of logical columns inkl. column spanning;
-    // the function should return sth. like "<tr>...</tr>"
-    //
-    function renderTr($html, $numCol)
-    {
-        return "<tr>$html</tr>";
-    }
-    
-    //
-    // public user function: render a table data cell;
-    // $align is one of "left", "right", "center";
-    // also regard $colspan if > 1;
-    // the function should return sth. like "<td>...</td>"
-    //
-    function renderTd($html, $align, $colspan)
-    {
-        $td = "<td valign=\"top\" align=\"$align\"";
-        if( $colspan > 1 ) $td .= " colspan=\"$colspan\"";
-        if( strlen($html)<=20 && strpos($html, ' ')===false ) $td .= ' nowrap="nowrap"';
-        $td .= '>';
-        
-        return "$td$html</td>";
-    }
-    
-    //
-    // public user function: render a headline;
-    // the function should return sth. like "<h1>";
-    //
-    function renderH($html, $level)
-    {
-        return "<h$level>$html</h$level>";
-    }
-    
-    //
-    // public user function: render a horizontal ruler;
-    // the function should return sth. like "<hr />";
-    //
-    function renderHr()
-    {
-        return '<hr />';
-    }
-    
-    //
-    // public user function: box functions
-    //
-    function renderBox($level, $open)
-    {
-        switch( $level )
-        {
-            case 1:		return $open? '<table style="margin-bottom:0.8em;" cellpadding="4" cellspacing="0" border="0" width="100%"><tr><td style="border:1px solid #000000;">' : '</td></tr></table>';
-            default:	return $open? '<table style="margin-bottom:0.8em;" cellpadding="4" cellspacing="0" border="0" width="100%"><tr><td bgcolor="#FEFFA1">' : '</td></tr></table>';
-        }
-    }
+	//
+	// private: variables
+	//
+	var $charTags;
+
+	var $content;
+	var $hasContent;
+	var $hasToplinks;
+
+	var $indentCode;
+	var $indentLevel;
+
+	var $lineEndsParagraph;
+	var $lineHasHr;
+	var $lineHeadlineLevel;
+	var $lineIndentLevel;
+	var $lineIndentType;
+	var $linePre;
+	var $lineReplacer;
+	var $lineStyle;
+	var $lineAlign;
+	var $lineTable;
+	var $lineTableBorder;
+	var $lineTableCells;
+
+	//
+	// public: constructor
+	//
+	function __construct()
+	{
+		// create and init line replacer class.
+		// the order of the following rules can be important, since they
+		// are applied to each input line in order. note that each rule
+		// hides the matched text from later rules.
+		$this->lineReplacer = new TXTREPLACER_CLASS;
+
+		// first, translate 'in text'
+		$this->lineReplacer->addRule(new TRANSL_NOWIKI_CLASS);
+		$this->lineReplacer->addRule(new ADDRESS_PATTERN_CLASS);
+		$this->lineReplacer->addRule(new TRANSL_HTMLREMARK_CLASS);
+		$this->lineReplacer->addRule(new TRANSL_HTML_CLASS);
+		$this->lineReplacer->addRule(new TRANSL_EMPH_CLASS); // should be before img/link so the description text may be formatted
+		$this->lineReplacer->addRule(new TRANSL_SQUAREBRACKET_CLASS);
+		$this->lineReplacer->addRule(new TRANSL_EXTLINK_CLASS);
+		$this->lineReplacer->addRule(new TRANSL_EMAILLINK_CLASS);
+		$this->lineReplacer->addRule(new TRANSL_FOOTNOTEPASS1_CLASS);
+
+
+
+		// translate 'paragraphs'
+		$this->lineReplacer->addRule(new TRANSL_INDENT_CLASS);
+		$this->lineReplacer->addRule(new TRANSL_PARARIGHTALIGN_CLASS);
+		$this->lineReplacer->addRule(new TRANSL_FOOTNOTEPASS2_CLASS);
+
+		// translate rest
+		$this->lineReplacer->addRestRule(new TRANSL_ENTITIES_CLASS);
+	}
+
+	//
+	// public: generate and output html for all lines.
+	//
+	function run($in__)
+	{
+		// stop time
+		$profile = $this->getmicrotime__();
+
+		// set context
+		$this->content			= array();
+		$this->charTags			= array();
+		$this->indentCode		= array();
+		$this->indentLevel		= 0;
+		$this->lineTableCells	= 0;
+		$this->boxOpen			= 0;
+		$this->joinLines		= 0;
+
+		// get each single line of the input
+		$in = explode("\n", strtr($in__,
+							array(	"\r" => "",
+									$this->lineReplacer->mark2 => $this->lineReplacer->mark2repl
+								 ))
+					 );
+
+		// go through all lines and collect all blocks
+		$blocks = array();
+		$cIn = sizeof((array) $in);
+		for( $i = 0; $i < $cIn; $i++ )
+		{
+			// get block from line
+			$this->lineHeadlineLevel	= 0;
+			$this->linePre				= 0;
+			$this->lineSelfPara			= 0;
+			$this->lineTable			= 0;
+			$this->lineHasHr			= 0;
+			$this->lineEndsParagraph	= 0;
+			$this->lineStyle			= '';
+			$this->lineAlign			= 'left';
+			$this->lineIndentLevel		= 0;
+			$block = $this->lineReplacer->run($in[$i], $this) . $this->closeAllCharTags__();
+
+			// add block...
+			if( isset( $this->lineHasHr ) && $this->lineHasHr )
+			{
+				// ...horizontal ruler (no else for this case!)
+				if( $blocks[sizeof($blocks)-1][0] != 'hr' ) {
+					$blocks[] = array('hr');
+				}
+			}
+
+			if( !trim($block) )
+			{
+				// ...empty line
+				if( $blocks[sizeof($blocks)-1][0] == 'pre' )
+				{
+					if( substr($blocks[sizeof($blocks)-1][1], -2) != "\n\n") {
+						$blocks[sizeof($blocks)-1][1] .= "\n";
+					}
+				}
+				else if( $blocks[sizeof($blocks)-1][0] == 'p'
+					  || $blocks[sizeof($blocks)-1][0] == 'table' )
+				{
+					$blocks[] = array('', ''); // add an empty block to avoid block collapsing
+					$this->lineTableCells = 0;
+				}
+			}
+			else if( isset($this->linePre) && $this->linePre )
+			{
+				// ...preformatted block
+				if( $blocks[sizeof($blocks)-1][0] == 'pre' ) {
+					$blocks[sizeof($blocks)-1][1] .= rtrim($block) . "\n";
+				}
+				else {
+					$blocks[] = array('pre', rtrim($block) . "\n");
+				}
+			}
+			else if( isset($this->lineTable) && $this->lineTable )
+			{
+				// ...table block
+				if( $blocks[sizeof($blocks)-1][0] == 'table' ) {
+					$blocks[sizeof($blocks)-1][1] .= $block;
+				}
+				else {
+					$blocks[] = array('table', $block, $this->lineTableBorder);
+				}
+			}
+			else if( isset($this->lineHeadlineLevel) && $this->lineHeadlineLevel )
+			{
+				// ...headline
+			    if( isset($this->lineHeadlineLevel) && $this->lineHeadlineLevel < 0 ) {
+					$temp = sizeof($blocks)-1;
+					if( $blocks[$temp][0] == 'p' ) {
+						$blocks[$temp][0] = 'h';
+						$blocks[$temp][2] = $this->lineHeadlineLevel * -1;
+					}
+				}
+				else {
+					$blocks[] = array('h', $block, $this->lineHeadlineLevel);
+				}
+			}
+			else if( isset($this->lineIndentLevel) && $this->lineIndentLevel )
+			{
+				// ...indent
+				$blocks[] = array('li', $block, $this->lineIndentLevel, $this->lineIndentType);
+			}
+			else if( isset($this->lineSelfPara) && $this->lineSelfPara )
+			{
+				// ...self-formatting paragraph
+				$blocks[] = array('self', $block);
+			}
+			else
+			{
+				// ...normal paragraph
+			    if( ( !isset( $this->lineEndsParagraph ) || !$this->lineEndsParagraph ) 
+				 && $blocks[sizeof($blocks)-1][0] == 'p' )
+				{
+				    $blocks[sizeof($blocks)-1][1] .= ( isset($this->joinLines) && $this->joinLines ? ' ' : '<br>') . trim($block);
+				}
+				else
+				{
+				    $blocks[] = array('p', trim($block), isset($this->lineAlign) ? $this->lineAlign : null, isset($this->lineStyle) ? $this->lineStyle : null);
+				}
+			}
+		}
+
+		// go through all blocks and collect the output
+		$out = '';
+		$cBlocks = sizeof((array) $blocks);
+		for( $i = 0; $i < $cBlocks; $i++ )
+		{
+			switch( $blocks[$i][0] )
+			{
+				case 'li':
+					$out .= $this->indentTo__($blocks[$i][2], $blocks[$i][3]) . $blocks[$i][1] . "\n";
+					break;
+
+				case 'p':
+					$out .= $this->indentTo__(0) . $this->renderP($blocks[$i][1], $blocks[$i][2], $blocks[$i][3]) . "\n";
+					break;
+
+				case 'pre':
+					$out .= $this->indentTo__(0) . $this->renderPre(rtrim($blocks[$i][1])) . "\n";
+					break;
+
+				case 'h':
+					$contentCounter = sizeof((array) $this->content)+1;
+					$this->content[] = array($blocks[$i][2], $blocks[$i][1], $contentCounter);
+					$out .= $this->indentTo__(0);
+					if( isset($this->hasToplinks) && $this->hasToplinks && $contentCounter > 1 ) {
+						$out .= $this->renderP($this->renderA('^', 'toplink', '#top', '', 1), 'left', 'toplink');
+					}
+					$out .= '<a name="content' .urlencode($blocks[$i][1]). '"></a>' . $this->renderH($blocks[$i][1], $blocks[$i][2]) . "\n";
+					break;
+
+				case 'hr':
+					$out .= $this->indentTo__(0) . $this->renderHr() . "\n";
+					break;
+
+				case 'self':
+					$out .= $this->indentTo__(0) . $blocks[$i][1];
+					break;
+
+				case 'table':
+					$out .= $this->indentTo__(0) . $this->renderTable($blocks[$i][1], $blocks[$i][2]);
+					if( $blocks[$i+1][0] == '' && $blocks[$i+2][0] == 'table' ) {
+						$out .= '<br />';
+					}
+					break;
+			}
+		}
+
+		// close any open lists
+		$out .= $this->indentTo__(0);
+
+		// close any open box
+		if( isset($this->boxOpen) && $this->boxOpen ) {
+			$out .= $this->renderBox($this->boxOpen, 0);
+		}
+
+		if( isset($this->hasToplinks) && $this->hasToplinks ) {
+			$out .= $this->renderP($this->renderA('^', 'toplink', '#top', '', 1), 'left', 'toplink');
+		}
+
+
+		// create content if needed
+		if( isset($this->hasContent) && $this->hasContent )
+		{
+			$content = '';
+			for( $i = 0; $i < sizeof((array) $this->content); $i++ )
+			{
+				$currDepth = $this->content[$i][0];
+				if( isset($this->hasContent) && $this->hasContent >= $currDepth )
+				{
+					$content .= '<table class="content_index" cellpadding="0" cellspacing="0" border="0"><tr><td class="l">' . str_repeat('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;', $currDepth-1) . '</td><td class="r">';
+						$content .= $this->renderA($this->content[$i][1], 'content', "#content".urlencode($this->content[$i][1]), '', 1);
+					$content .= '</td></tr></table>';
+				}
+			}
+			$out = str_replace(WIKI_MAGIC.'CONTENT', $content, $out);
+		}
+
+		// create statistics if needed
+		if( isset($this->hasStat) && $this->hasStat )
+		{
+			$temp = $this->getmicrotime__() - $profile;
+			$temp = sprintf("%01.2f", $temp);
+			$out = str_replace(WIKI_MAGIC.'STATTIME', $temp, $out);
+
+			$temp = $cIn;
+			$out = str_replace(WIKI_MAGIC.'STATRAWLINES', $temp, $out);
+
+			$temp = $cBlocks;
+			$out = str_replace(WIKI_MAGIC.'STATBLOCKS', $temp, $out);
+
+			$temp = sizeof((array) $this->content);
+			$out = str_replace(WIKI_MAGIC.'STATCHAPTERS', $temp, $out);
+
+			$temp = intval(strlen($in__)/1024); if( $temp <= 0 ) $temp = 1;
+			$out = str_replace(WIKI_MAGIC.'STATRAWSIZE', $temp, $out);
+
+			$temp = substr_count($out, '<');
+			$out = str_replace(WIKI_MAGIC.'STATTAGS', $temp, $out);
+
+			$temp = substr_count($out, "\n");
+			$out = str_replace(WIKI_MAGIC.'STATFORMATTEDLINES', $temp, $out); // should be last
+
+			$temp = intval(strlen($out)/1024); if( $temp <= 0 ) $temp = 1;
+			$out = str_replace(WIKI_MAGIC.'STATFORMATTEDSIZE', $temp, $out); // should be very last
+		}
+
+		// done
+		return $out;
+	}
+
+	//
+	// private: paragraph formatting tag handling
+	//
+	function indentTo__($level, $tag = '')
+	{
+		$str = "";
+
+		while( $this->indentLevel > $level ) {
+			$tag_old = $this->indentCode[$this->indentLevel];
+			$this->indentLevel--;
+			$str .= "</$tag_old>";
+		}
+
+		while( $this->indentLevel < $level ) {
+			$str .= "<$tag>";
+			$this->indentLevel++;
+			$this->indentCode[$this->indentLevel] = $tag;
+		}
+
+		$indentCode = isset( $this->indentCode[$level] ) ? $this->indentCode[$level] : null;
+		if( $indentCode != $tag ) {
+			$tag_old = $this->indentCode[$level];
+			$str .= "</$tag_old>" . "<$tag>";
+			$this->indentCode[$level] = $tag;
+		}
+
+		return $str;
+	}
+
+
+	//
+	// private: character formatting tag handling
+	//
+	function isCharTagOpen__($tag)
+	{
+		return in_array($tag, $this->charTags);
+	}
+
+	function openCharTag__($tag)
+	{
+		if( !in_array($tag, $this->charTags) )
+		{
+			$this->charTags[] = $tag;
+			return $this->renderEmph($tag, 1); // done
+		}
+		else
+		{
+			return ''; // char tag already opened
+		}
+	}
+
+	function closeCharTag__($tag)
+	{
+		if( in_array($tag, $this->charTags) )
+		{
+			$ret = '';
+			$openAgain = array();
+			while( $currTag = array_pop($this->charTags) )
+			{
+				$ret .= $this->renderEmph($currTag, 0);
+				if( $currTag == $tag )
+				{
+					for( $i = sizeof($openAgain)-1; $i >= 0 ; $i-- ) {
+						$ret .= $this->openCharTag__($openAgain[$i]);
+					}
+
+					return $ret; // done
+				}
+				else
+				{
+					$openAgain[] = $currTag;
+				}
+			}
+
+			return '<h1>ERROR in wiki2html.inc.php</h1>'; // should not happen
+		}
+		else
+		{
+			return ''; // char tag not open
+		}
+	}
+
+	function closeAllCharTags__()
+	{
+		$ret = '';
+
+		while( $currTag = array_pop($this->charTags) )
+		{
+			$ret .= $this->renderEmph($currTag, 0);
+		}
+
+		return $ret;
+	}
+
+	//
+	// private: the page function
+	//
+	function getmicrotime__()
+	{
+		list($usec, $sec) = explode(" ",microtime());
+		return ((float)$usec + (float)$sec);
+	}
+	function pageFunction__($name, $param, &$state)
+	{
+		switch( $name )
+		{
+			case 'content':
+			    if( !isset( $this->hasContent ) || !$this->hasContent ) {
+					$this->hasContent = intval($param);
+					if( isset($this->hasContent) && ( $this->hasContent<1 || $this->hasContent>6 ) ) {
+						$this->hasContent = 6;
+					}
+				}
+				$state = 2;
+				return WIKI_MAGIC.'CONTENT';
+
+			case 'toplinks':
+				$this->hasToplinks = 1;
+				$state  = 1;
+				return '';
+
+			case 'joinlines':
+				$this->joinLines = 1;
+				$state  = 1;
+				return '';
+
+			case 'breaklines':
+				$this->joinLines = 0;
+				$state  = 1;
+				return '';
+
+			case 'iframe':
+				$state = 2;
+				$this->iframeCnt = intval($this->iframeCnt)+1;
+				$url = trim($param);
+				return	'<iframe src="'.$url.'" width="100%" height="380" name="iframe'.$this->iframeCnt.'" frameborder="1">'
+					.		'<a href="'.$url.'" target="_blank" rel="noopener noreferrer">'.$url.'</a>'
+					.	'</iframe>';
+
+			case 'stat':
+				$this->hasStat = 1;
+				$state = 1;
+				$param = " $param";
+
+				if( strpos($param, 'rawsize') )			{ return WIKI_MAGIC.'STATRAWSIZE'; }
+				if( strpos($param, 'formattedsize') )	{ return WIKI_MAGIC.'STATFORMATTEDSIZE'; }
+				if( strpos($param, 'rawlines') )		{ return WIKI_MAGIC.'STATRAWLINES'; }
+				if( strpos($param, 'formattedlines') )	{ return WIKI_MAGIC.'STATFORMATTEDLINES'; }
+				if( strpos($param, 'tags') )			{ return WIKI_MAGIC.'STATTAGS'; }
+				if( strpos($param, 'blocks') )			{ return WIKI_MAGIC.'STATBLOCKS'; }
+				if( strpos($param, 'chapters') )		{ return WIKI_MAGIC.'STATCHAPTERS'; }
+				if( strpos($param, 'time') )			{ return WIKI_MAGIC.'STATTIME'; }
+
+				return '<b>'
+					  .WIKI_MAGIC.'STATTIME seconds</b> needed to format <b>from '
+					  .WIKI_MAGIC.'STATRAWSIZE KB</b>, '
+					  .WIKI_MAGIC.'STATRAWLINES lines, '
+					  .WIKI_MAGIC.'STATBLOCKS blocks and '
+					  .WIKI_MAGIC.'STATCHAPTERS chapters <b>to '
+					  .WIKI_MAGIC.'STATFORMATTEDSIZE KB</b>, '
+					  .WIKI_MAGIC.'STATFORMATTEDLINES lines and '
+					  .WIKI_MAGIC.'STATTAGS tags';
+		}
+	}
+
+
+	//
+	// public user function: check if the page with the given title exists;
+	// the function should return:
+	// 1 if the page exists
+	// an error string if the page does not exist
+	//
+	function pageExists($title)
+	{
+		return 1;
+	}
+
+	//
+	// public user function: calling a function
+	// the function should return any HTML code and set $state to:
+	//  1	-	the HTML code is text
+	//  2	-	the HTML code is a paragraph
+	//  0	-	function not handled, return value is invalid
+	//
+	function pageFunction($name, $param, &$state)
+	{
+		return $this->pageFunction__($name, $param, $state);
+	}
+
+
+	//
+	// public user function: generate the internal URL of any page;
+	// the function should return sth. like "index.php?..."
+	//
+	function pageUrl($title, $pageExists)
+	{
+		return "index.php?pleaseDefineYourOwnInternalLinkHandlerFor" . urlencode($title);
+	}
+
+	//
+	// public user function: render a simple emphasis tag;
+	// $emph is one of "emph", "strong" or "wild";
+	// $open is one of 1 (open) or 0 (close);
+	// the function should return sth. like "<b>" or "</i>"
+	//
+	function renderEmph($emph, $open)
+	{
+		switch( $emph )
+		{
+			case 'emph':	return $open? '<i>' : '</i>';
+			case 'strong':	return $open? '<b>' : '</b>';
+			case 'wild':	return $open? '<strong style="color:red; font-weight:bold; font-style:normal;">' : '</strong>';
+		}
+
+		return "<b>ERROR: renderEmph(): unknown emphasis &quot;$emph&quot;.</b>";
+	}
+
+
+	//
+	// public user function: render a complete anchor;
+	// $type is one of "content", "footnote", "footref", "toplink", "internal", or any
+	// TCP/IP protocol as "http", "https", "mailto", "ftp" etc.;
+	// the function should return sth. like "<a href=...>...</a>"
+	//
+	function renderA($html, $type, $href, $tooltip, $pageExists)
+	{
+		$a = "<a href=\"$href\"";
+				if( $tooltip ) {
+					$a .= " title=\"$tooltip\"";
+				}
+
+				if( $type == 'http' || $type == 'https' ) {
+					$a .= ' target="_blank" rel="noopener noreferrer"';
+				}
+		$a .= ">";
+
+		if( $type == 'footnote' || $type == 'footref' ) {
+			return "{$a}[{$html}]</a>";
+		}
+		else if( $pageExists ) {
+			return "$a$html</a>";
+		}
+		else {
+			return "$html$a???</a>";
+		}
+	}
+
+	//
+	// public user function: render an image;
+	// $align is one of "", "left" or "right"
+	// the function should return sth. like "<img src=... />"
+	//
+	function renderImg($src, $align, $tooltip)
+	{
+		$style = '';
+		if( $align == 'left' ) {
+			$style = ' align="left" hspace="4"';
+		}
+		else if( $align == 'right' ) {
+			$style = ' align="right" hspace="4"';
+		}
+		return "<img src=\"$src\"$style border=\"0\" alt=\"$tooltip\" title=\"$tooltip\" />";
+	}
+
+	//
+	// public user function: render a paragraph;
+	// $style is one of "", "left", "right", "center", "footnote", "toplink";
+	// the function should return sth. like "<p>...</p>"
+	//
+	function renderP($html, $align, $style)
+	{
+		if( $style == 'footnote' ) {
+			return "<p><small>$html</small></p>";
+		}
+		else switch( $align ) {
+			case 'right':	return "<p align=\"right\">$html</p>";
+			case 'center':	return "<p align=\"center\">$html</p>";
+			default:		return "<p>$html</p>";
+		}
+	}
+
+	//
+	// public user function: render preformatted paragraph;
+	// the function should return sth. like "<pre>...</pre>"
+	//
+	function renderPre($html)
+	{
+		return "<pre>$html</pre>";
+	}
+
+	//
+	// public user function: render a table;
+	// $border is 0 or 1;
+	// the function should return sth. like "<table ...>...</table>"
+	//
+	function renderTable($html, $border)
+	{
+		$cellpadding = $border? 2 : 1;
+		return "<table cellpadding=\"$cellpadding\" cellspacing=\"0\" border=\"$border\">$html</table>";
+	}
+
+	//
+	// public user function: render a table row;
+	// $numCol is the number of logical columns inkl. column spanning;
+	// the function should return sth. like "<tr>...</tr>"
+	//
+	function renderTr($html, $numCol)
+	{
+		return "<tr>$html</tr>";
+	}
+
+	//
+	// public user function: render a table data cell;
+	// $align is one of "left", "right", "center";
+	// also regard $colspan if > 1;
+	// the function should return sth. like "<td>...</td>"
+	//
+	function renderTd($html, $align, $colspan)
+	{
+		$td = "<td valign=\"top\" align=\"$align\"";
+			if( $colspan > 1 ) $td .= " colspan=\"$colspan\"";
+			if( strlen($html)<=20 && strpos($html, ' ')===false ) $td .= ' nowrap="nowrap"';
+		$td .= '>';
+
+		return "$td$html</td>";
+	}
+
+	//
+	// public user function: render a headline;
+	// the function should return sth. like "<h1>";
+	//
+	function renderH($html, $level)
+	{
+		return "<h$level>$html</h$level>";
+	}
+
+	//
+	// public user function: render a horizontal ruler;
+	// the function should return sth. like "<hr />";
+	//
+	function renderHr()
+	{
+		return '<hr />';
+	}
+
+	//
+	// public user function: box functions
+	//
+	function renderBox($level, $open)
+	{
+		switch( $level )
+		{
+			case 1:		return $open? '<table style="margin-bottom:0.8em;" cellpadding="4" cellspacing="0" border="0" width="100%"><tr><td style="border:1px solid #000000;">' : '</td></tr></table>';
+			default:	return $open? '<table style="margin-bottom:0.8em;" cellpadding="4" cellspacing="0" border="0" width="100%"><tr><td bgcolor="#FEFFA1">' : '</td></tr></table>';
+		}
+	}
 }
 
 
@@ -1007,7 +1006,7 @@ class TXTREPLACER_CLASS
 	{
 		$in = explode($this->mark2, $in);
 		$out = '';
-		foreach($in as $i => $chunk) {
+  foreach($in as $i => $chunk) {
 			if( $i % 2 == 0 ) {
 				// output unmatched substring verbatim
 				if( $runRest && $chunk ) {
@@ -1102,7 +1101,7 @@ class TRANSL_HTML_CLASS extends TXTREPLACERRULE_CLASS
 	function run($matches, &$context)
 	{
 		// normal HTML tag
-		if( $matches[0] == '<br>' ) {
+	    if( isset($matches[0]) && $matches[0] == '<br>' ) {
 			return '<br />';
 		}
 		else {
@@ -1300,13 +1299,13 @@ class TRANSL_SQUAREBRACKET_CLASS extends TXTREPLACERRULE_CLASS
 
 			if( preg_match($imgMatch, $val1) )
 			{
-				// pattern [[img]]
+			    // pattern [[img]]
 				$val1 = $this->getImgAlign($val1, $align);
 				return $context->renderImg(htmlsmartentities($val1, '&'), $align, htmlsmartentities($val1.$valrest));
 			}
 			else
 			{
-				// pattern [[link]]
+			    // pattern [[link]]
 				$param['text']		= htmlsmartentities(shortenurl($val1 . $valrest)); // shyurl() called in getLink() below
 				$param['tooltip']	= htmlsmartentities($val1);
 				$this->getLink($context, $val1, $param);
@@ -1370,7 +1369,7 @@ class TRANSL_SQUAREBRACKET_CLASS extends TXTREPLACERRULE_CLASS
 			$param['href']	= $context->pageUrl($dest, $param['pageExists']);
 		}
 
-		if( $hash ) {
+		if( isset($hash) && $hash ) {
 			$param['href'] .= '#content'.urlencode(htmlentities($hash));
 		}
 	}
@@ -1407,7 +1406,7 @@ class TRANSL_FOOTNOTEPASS1_CLASS extends TXTREPLACERRULE_CLASS
 		$index = strval($matches[2]);
 
 		$ret = " ";
-		if( !$context->footnotes["footref$index"] ) {
+		if( !isset( $context->footnotes["footref$index"] ) || !$context->footnotes["footref$index"] ) {
 			$ret .= "<a name=\"footref$index\"></a>";
 			$context->footnotes["footref$index"] = 1;
 		}
@@ -1432,7 +1431,7 @@ class TRANSL_FOOTNOTEPASS2_CLASS extends TXTREPLACERRULE_CLASS
 		$context->lineEndsParagraph = 1;
 		$context->lineStyle = 'footnote';
 
-		if( !$context->footnotes["footnote$index"] ) {
+		if( !isset( $context->footnotes["footnote$index"] ) || !$context->footnotes["footnote$index"] ) {
 			$ret .= "<a name=\"footnote$index\"></a>";
 			$context->footnotes["footnote$index"] = 1;
 		}
@@ -1452,7 +1451,7 @@ class TRANSL_INDENT_CLASS extends TXTREPLACERRULE_CLASS
 	function run($matches, &$context)
 	{
 		// preformatted text?
-		if( $matches[1]{0} == ' ' )
+	    if( isset($matches[1][0]) && $matches[1][0] == ' ' )
 		{
 	    	$context->linePre = 1;
 	    	return htmlsmartentities(substr($matches[0], 1), '', 0); // first space should not belong to the preformatted text
@@ -1467,7 +1466,7 @@ class TRANSL_INDENT_CLASS extends TXTREPLACERRULE_CLASS
 		if( $level < 1 ) $level = 1;
 
 		// get result
-		switch( $matches[1]{0} )
+		switch( $matches[1][0] )
 		{
 			case '=':
 				if( $text )
@@ -1503,7 +1502,7 @@ class TRANSL_INDENT_CLASS extends TXTREPLACERRULE_CLASS
 					$context->lineIndentType = 'ul';
 					return '<li>' . $text; // closing tag written later
 				}
-				else if( $matches[1]{0} == '-' && $level >= 4 )
+				else if( isset($matches[1][0]) && $matches[1][0] == '-' && $level >= 4 )
 				{
 					// hr
 					$context->lineHasHr = 1;
@@ -1555,7 +1554,7 @@ class TRANSL_INDENT_CLASS extends TXTREPLACERRULE_CLASS
 					$context->lineTable = 1;
 
 					// init global table settings
-					if( $context->lineTableCells == 0 ) {
+					if( !isset( $context->lineTableCells ) || $context->lineTableCells == 0 ) {
 						$context->lineTableCells = sizeof($cells);
 						$context->lineTableBorder = $border;
 					}
@@ -1651,21 +1650,21 @@ class ADDRESS_PATTERN_CLASS extends TXTREPLACERRULE_CLASS
 
 	function run($matches, &$context)
 	{
-	    $arguments = explode("|",$matches[1]);
-	    $sql = "SELECT ";
-	    $sql .= addslashes($arguments[0]);
-	    $sql .= " as ergebnis from anbieter where id = ".intval($arguments[1]).";";
-	    $db = new DB_Admin;
-	    $db->query($sql);
-	    if( $db->next_record() ) {
-	        $ausgabe = $db->f('ergebnis');
-	        return htmlsmartentities($ausgabe, '', 0);
-	    }
-	    else {
-	        return '{'.htmlsmartentities($matches[1]).'}';
-	    }
-	    
-	    
+		$arguments = explode("|",$matches[1]);
+		$sql = "SELECT ";
+		$sql .= addslashes($arguments[0]);
+		$sql .= " as ergebnis from anbieter where id = ".intval($arguments[1]).";";
+		$db = new DB_Admin;
+		$db->query($sql);
+		if( $db->next_record() ) {
+			$ausgabe = $db->f('ergebnis');
+			return htmlsmartentities($ausgabe, '', 0);
+		}
+		else {
+			return '{'.htmlsmartentities($matches[1]).'}';
+		}
+		
+
 	}
 
 }

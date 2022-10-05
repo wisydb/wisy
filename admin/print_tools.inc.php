@@ -62,7 +62,7 @@ function render_embed__search_hash(&$arr, $keyOrValue /* 'key' or 'value' */, $k
 		$currValue = explode('|', $currValue);
 		
 		for( $i = 0; $i < sizeof($currKey); $i++ ) {
-			if( $currKey[$i] == $keyToFind ) {
+		    if( isset($currKey[$i]) && $currKey[$i] == $keyToFind ) {
 				return $currValue[0];
 			}
 		}
@@ -75,7 +75,7 @@ function render_embed__search_hash(&$arr, $keyOrValue /* 'key' or 'value' */, $k
 
 function render_embed_error($embed_w, $embed_h, $file_url, $error)
 {
-	$file_url = isohtmlentities($file_url);
+	$file_url = isohtmlentities( strval( $file_url ) );
 	return	"<table cellpadding=\"0\" cellspacing=\"0\" border=\"1\" width=\"$embed_w\" height=\"$embed_h\">"
 	.			'<tr>'
 	.				'<td align="center" valign="middle">'
@@ -173,11 +173,11 @@ function media_preview($mime, $url, $filename, $bytes, $w, $h, $renderLinks = 1)
 	// media information out
 	$ret = '';
 	
-	$ret .= isohtmlentities($filename);
+	$ret .= isohtmlentities( strval( $filename ) );
 
 	if( $mime ) {
 		if( $ret ) $ret .= ', ';
-		$ret .= isohtmlentities($mime);
+		$ret .= isohtmlentities( strval( $mime ) );
 	}
 
 	if( $bytes ) {
@@ -227,7 +227,7 @@ function user_or_group_preview($datefield, $id, $table, $field1, $field2, $rende
 		$name = $db->fs($field1);
 		if( !$name ) $name = $db->fs($field2);
 		if( !$name ) $name = $id;
-		$ret .= isohtmlentities($name);
+		$ret .= isohtmlentities( strval( $name ) );
 		
 		/*
 		if( $renderLinks && acl_get_access("$table.COMMON", $id) ) {
@@ -254,7 +254,8 @@ function preview_field(&$table_def, $r, &$db, $renderLinks)
 		case TABLE_DATE:
 		case TABLE_DATETIME:
 		case TABLE_PASSWORD:
-			$val = isohtmlentities($db->fs($table_def->rows[$r]->name));
+		    if( isset( $table_def->rows[$r]->name ) )
+		      $val = isohtmlentities( strval( $db->fs($table_def->rows[$r]->name) ) );
 			
 			if( $rowtype == TABLE_INT )
 			{
@@ -283,20 +284,25 @@ function preview_field(&$table_def, $r, &$db, $renderLinks)
 
 		case TABLE_TEXT:
 		case TABLE_TEXTAREA:
-			$val = trim($db->fs($table_def->rows[$r]->name));
+
+		    $val = isset($table_def->rows[$r]->name) && $db->fs($table_def->rows[$r]->name) != null? trim($db->fs($table_def->rows[$r]->name)) : '';
 		
 			if( $val != '' )
 			{
-				$val = nl2br(isohtmlentities($val));
-				$ret .= $val;
+				$val = nl2br(isohtmlentities( strval( $val ) ));
+				
+				if( isset($ret) ) $ret .= $val; else $ret = $val;
+				        
 				return $ret;
 			}
 			break;
 
 		case TABLE_BLOB:
-			$name = $table_def->rows[$r]->name;
+		    $name = isset( $table_def->rows[$r]->name ) ? $table_def->rows[$r]->name : null;
+		    
 			$ob = new G_BLOB_CLASS($db->f($name));
-			$bytes = sizeof($ob->blob);
+			$bytes = isset($ob->blob) && is_countable($ob->blob) ? sizeof($ob->blob) : 0;
+			
 			if( $bytes ) 
 			{
 				$mime = $ob->mime;
@@ -338,7 +344,7 @@ function preview_field(&$table_def, $r, &$db, $renderLinks)
 			return $ret;
 
 		case TABLE_SATTR:
-			$attrid = $db->f($table_def->rows[$r]->name);
+		    $attrid = isset( $table_def->rows[$r]->name ) ? $db->f($table_def->rows[$r]->name) : null;
 			if( $attrid )
 			{
 				$ret = '';
@@ -362,15 +368,16 @@ function preview_field(&$table_def, $r, &$db, $renderLinks)
 			break;
 
 		case TABLE_ENUM:
-			$enumval = $db->f($table_def->rows[$r]->name);
+		    $enumval = isset( $table_def->rows[$r]->name ) ? $db->f($table_def->rows[$r]->name) : null;
 			return isohtmlspecialchars($table_def->get_enum_summary($r, $enumval));
 
 		case TABLE_BITFIELD:
-			$bits = $db->f($table_def->rows[$r]->name);
+		    $bits = isset( $table_def->rows[$r]->name ) ? $db->f($table_def->rows[$r]->name) : null;
 			return $table_def->get_bitfield_summary($r, $bits, $all_bits);
 
 		case TABLE_FLAG:
-			return htmlconstant($db->f($table_def->rows[$r]->name)? '_YES' : '_NO');
+		    if( isset( $table_def->rows[$r]->name ) )
+			 return htmlconstant($db->f($table_def->rows[$r]->name)? '_YES' : '_NO');
 	}
 	
 	return '';
@@ -402,7 +409,7 @@ function preview_do($table, $id, $renderLinks, $view = 'details' /*or 'list'*/,
 	if( $db->next_record() )
 	{
 		// go through all fields (rows)
-	    for( $r = 0; $r < sizeof((array) $table_def->rows); $r++ )
+		for( $r = 0; $r < sizeof((array) $table_def->rows); $r++ )
 		{
 			// parse this field
 			$rowflags	= $table_def->rows[$r]->flags;
@@ -452,6 +459,3 @@ function preview_do($table, $id, $renderLinks, $view = 'details' /*or 'list'*/,
 	
 	return $ret;
 }
-
-
-

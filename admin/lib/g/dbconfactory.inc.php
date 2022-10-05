@@ -6,7 +6,7 @@ class G_DBCONFACTORY_CLASS
 
 	public function create_instance($db_name = '')
 	{
-		$this->db_name = $_REQUEST['db'];
+	    $this->db_name = isset( $_REQUEST['db'] ) ? $_REQUEST['db'] : '';
 		if( $this->db_name == '' ) 
 		{
 			// create instance of default MySQL class
@@ -24,7 +24,7 @@ class G_DBCONFACTORY_CLASS
 			}
 			
 			// ... get full path of the SQLITE file name (SQLITE files are allowed in the temporary directory only)
-			$test = $GLOBALS['g_temp_dir'] . '/' . $this->db_name;
+			$test = ( isset( $GLOBALS['g_temp_dir'] ) ? $GLOBALS['g_temp_dir'] : '' ) . '/' . $this->db_name;
 			if( !@file_exists($test) ) 
 			{
 				$this->error_str = "G_DBCONFACTORY_CLASS: $test does not exist.";

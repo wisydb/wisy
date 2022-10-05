@@ -1,7 +1,5 @@
 <?php
 
-
-
 /*=============================================================================
 Create ZIP-Files
 =============================================================================*/
@@ -51,7 +49,7 @@ class EXP_ZIPWRITER_CLASS
     // time = the current timestamp
     function add_data($data, $name, $time = 0)
     {
-		if( !$this->handle )
+        if( !isset( $this->handle ) || !$this->handle )
 			return false;
 	
         $name     = str_replace('\\', '/', $name);
@@ -151,4 +149,3 @@ class EXP_ZIPWRITER_CLASS
 		return true;
 	}	
 };
-

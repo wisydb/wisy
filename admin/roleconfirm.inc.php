@@ -1,7 +1,5 @@
 <?php
 
-
-
 /*=============================================================================
 confirming (new) role texts, can be used eg. for "AGB"
 ===============================================================================
@@ -45,7 +43,9 @@ function roleconfirm_after_login($user_about_to_log_in)
 	{
 		$email_subject = "Rollentext akzeptiert von ".$user_name;
 		$email_body    = "Der folgende Rollentext wurde akzeptiert von ".$user_name.":\n\n".$text_to_confirm;
-		if( @mail($email_notify, $email_subject, $email_body) ) {
+		$serverName = isset($_SERVER['SERVER_NAME']) ? $_SERVER['SERVER_NAME'] : '';
+		
+		if( @mail($email_notify, $email_subject, $email_body, "From: dont-reply@" . $serverName . "\r\nReply-To: dont-reply@" . $serverName ) ) {
 			$logwriter->addData('notify', $email_notify);
 		}
 		else {
@@ -92,8 +92,10 @@ function roleconfirm_check($user_about_to_log_in)
 		form_tag('form_enter', 'index.php');
 		form_hidden('enter_subsequent', 1);
 		form_hidden('enter_skip_env_tests', 1);
-		form_hidden('enter_loginname', $_REQUEST['enter_loginname']);
-		$_SESSION['g_role_confirm_login_credential_pw'] = $_REQUEST['enter_password']; // For security reasons, do not write the password to an HTML-file.  Instead, read it from the $_SESSION['g_role_confirm_login_credential_pw'] on submit.
+		form_hidden('enter_loginname', isset($_REQUEST['enter_loginname']) ? $_REQUEST['enter_loginname'] : '');
+		
+		// For security reasons, do not write the password to an HTML-file.  Instead, read it from the $_SESSION['g_role_confirm_login_credential_pw'] on submit.
+		$_SESSION['g_role_confirm_login_credential_pw'] = isset($_REQUEST['enter_password']) ? $_REQUEST['enter_password'] : ''; 
 	
 		echo '<div style="padding: 1em;">';
 			echo nl2br($text_to_confirm);
@@ -109,5 +111,3 @@ function roleconfirm_check($user_about_to_log_in)
 	$site->pageEnd();
 	exit();
 }
-
-

@@ -4,9 +4,6 @@ define('IMP_ROWS_PER_PAGE', 15);
 require_once('index_tools.inc.php');
 
 
-
-
-
 class IMP_OPTIONSRENDERER_CLASS extends IMP_FUNCTIONS_CLASS
 {
 	var $arrow_green	= '<img id="impa%s" src="lib/imp/img/agreen%s.gif" />';	
@@ -36,25 +33,28 @@ class IMP_OPTIONSRENDERER_CLASS extends IMP_FUNCTIONS_CLASS
 			reset($records);
 			foreach($records as $id => $currRecord)
 			{	
-				if( $showall || $currRecord['dest_date_modified'] != $currRecord['src_date_modified'] ) {
+			    $srcDateModified = isset($currRecord['src_date_modified']) ? $currRecord['src_date_modified'] : '';
+			    $destDateModified = isset($currRecord['dest_date_modified']) ? $currRecord['dest_date_modified'] : '';
+			    
+				if( $showall || $destDateModified != $srcDateModified ) {
 					$possible_changes[] = array(
 						'table'					=> $tables[$t],
 						'id'					=> $id,
-						'dest_date_modified'	=> $currRecord['dest_date_modified'],
-						'src_date_modified'		=> $currRecord['src_date_modified']
+					    'dest_date_modified'	=> $destDateModified,
+					    'src_date_modified'		=> $srcDateModified
 					);
 					
 					if( !isset($currRecord['src_date_modified']) ) {
 						$del_cnt++;
 					}
-					else if( $currRecord['dest_date_modified'] > $currRecord['src_date_modified'] ) {
+					else if( $destDateModified > $srcDateModified ) {
 						$ovw_cnt ++;
 					}
 				}
 				else {
 					$equal_records ++;
-					if( $currRecord['src_date_modified'] > $equal_date )
-						$equal_date = $currRecord['src_date_modified'];
+					if( $srcDateModified > $equal_date )
+					    $equal_date = $srcDateModified;
 				}
 			}
 		}
@@ -62,7 +62,7 @@ class IMP_OPTIONSRENDERER_CLASS extends IMP_FUNCTIONS_CLASS
 			'equal_records' => $equal_records,
 			'equal_date' => $equal_date,
 			'possible_changes' => $possible_changes,
-			'update_time' => strftime("%Y-%m-%d %H:%M:%S"),
+			'update_time' => ftime("%Y-%m-%d %H:%M:%S"),
 			'del_cnt' => $del_cnt,
 			'ovw_cnt' => $ovw_cnt,
 		);
@@ -87,7 +87,8 @@ class IMP_OPTIONSRENDERER_CLASS extends IMP_FUNCTIONS_CLASS
 				$sql = "SHOW TABLE STATUS LIKE '{$tables[$t]}'"; // this is a much better approch as this also includes deletion or insertion of records with older dates (as usual on imports)
 				$db->query($sql); 
 				if( $db->next_record() ) {
-					if( $db->fs('Update_time') > $_SESSION['mixfile_bl_cache'][$key]['update_time'] ) {
+				    $updateTime = isset($_SESSION['mixfile_bl_cache'][$key]['update_time']) ? $_SESSION['mixfile_bl_cache'][$key]['update_time'] : null;
+					if( $db->fs('Update_time') > $updateTime ) {
 						$recreate = true;
 						break;
 					}
@@ -103,7 +104,7 @@ class IMP_OPTIONSRENDERER_CLASS extends IMP_FUNCTIONS_CLASS
 		}
 		
 		// done
-		return $_SESSION['mixfile_bl_cache'][$key];
+		return (isset($_SESSION['mixfile_bl_cache'][$key]) ? $_SESSION['mixfile_bl_cache'][$key] : null);
 	}
 	
 	function render()
@@ -111,8 +112,8 @@ class IMP_OPTIONSRENDERER_CLASS extends IMP_FUNCTIONS_CLASS
 		global $site;
 		
 		// get settings from mixfile
-		$offset    		= intval($_SESSION['mixfile_offsets'][$this->mix]);
-		$showall   		= intval($_SESSION['mixfile_showall'][$this->mix]);
+		$offset    		= isset($_SESSION['mixfile_offsets'][$this->mix]) ? intval($_SESSION['mixfile_offsets'][$this->mix]) : 0;
+		$showall   		= isset($_SESSION['mixfile_showall'][$this->mix]) ? intval($_SESSION['mixfile_showall'][$this->mix]) : null;
 		$overwrite 		= $this->mixfile->ini_read('option_overwrite', IMP_OVERWRITE_OLDER);
 		$delete    		= $this->mixfile->ini_read('option_delete', IMP_DELETE_NEVER);
 		$further_options= $this->mixfile->ini_read('option_further_options', '');
@@ -167,7 +168,7 @@ class IMP_OPTIONSRENDERER_CLASS extends IMP_FUNCTIONS_CLASS
 
 		// paging
 		$site->skin->mainmenuStart();
-		    $record_cnt = sizeof((array) $browsing_list['possible_changes']);
+			$record_cnt = sizeof((array) $browsing_list['possible_changes']);
 			$baseurl = "imp.php?page=options&mix=".urlencode($this->mix)."&offset=";
 			echo page_sel($baseurl, IMP_ROWS_PER_PAGE, $offset, $record_cnt, 1);
 		$site->skin->mainmenuEnd();
@@ -205,7 +206,8 @@ class IMP_OPTIONSRENDERER_CLASS extends IMP_FUNCTIONS_CLASS
 			$sqliteSummarizer = new G_SUMMARIZER_CLASS($this->mixfile->sqliteDb2);
 			$records_rendered = 0;
 			
-			$sqlite_db_filename = 'imp-'.$_SESSION['g_session_userid'].'-'.$this->mix;
+			$gSessionUserID = isset($_SESSION['g_session_userid']) ? $_SESSION['g_session_userid'] : null;
+			$sqlite_db_filename = 'imp-'.$gSessionUserID.'-'.$this->mix;
 			for( $i = $offset; $i < sizeof((array) $browsing_list['possible_changes']); $i++ )
 			{
 				$record = $browsing_list['possible_changes'][$i];
@@ -239,29 +241,29 @@ class IMP_OPTIONSRENDERER_CLASS extends IMP_FUNCTIONS_CLASS
 						$date_alert = false;
 						if( isset($record['dest_date_modified']) ) {
 							if( !isset($record['src_date_modified']) ) {
-								$arr = $this->arrow_delete;
+							    $arr = isset($this->arrow_delete) ? $this->arrow_delete : null;
 								if( $delete == IMP_DELETE_NEVER ) {
 									$disabled = true;
 								}
 							}
 							else if( $record['dest_date_modified'] == $record['src_date_modified'] ) {
-								$arr = $this->arrow_equal;
+							    $arr = isset($this->arrow_equal) ? $this->arrow_equal : null;
 							}
 							else if( $record['dest_date_modified'] > $record['src_date_modified'] ) {
-								$arr = $this->arrow_red;
+							    $arr = isset($this->arrow_red) ? $this->arrow_red : null;
 								$date_alert = true;
 								if( $overwrite == IMP_OVERWRITE_NEVER || $overwrite == IMP_OVERWRITE_OLDER ) {
 									$disabled = true;
 								}
 							}
 							else {
-								$arr = $this->arrow_green;
+							    $arr = isset($this->arrow_green) ? $this->arrow_green : null;
 								if( $overwrite == IMP_OVERWRITE_NEVER )
 									$disabled = true;
 							}
 						}
 						else {
-							$arr = $this->arrow_green;
+						    $arr = isset($this->arrow_green) ? $this->arrow_green : null;
 						}
 						
 						echo sprintf($arr, $record['id'], $disabled? '-dis' : '');
@@ -324,10 +326,10 @@ class IMP_OPTIONSRENDERER_CLASS extends IMP_FUNCTIONS_CLASS
 
 		// page end
 		$site->skin->buttonsStart();
-		    form_button('doimport', 'Datens&auml;tze importieren', "return confirm('M&ouml;chten Sie den Import starten und dabei die markierten Datens&auml;tze im Bestand &uuml;berschreiben und/oder l&ouml;schen?');");
+			form_button('doimport', 'Datens&auml;tze importieren', "return confirm('M&ouml;chten Sie den Import starten und dabei die markierten Datens&auml;tze im Bestand &uuml;berschreiben und/oder l&ouml;schen?');");
 			form_button('close', htmlconstant('_CLOSE')); // as we save the settings, we call the button "close" instead of "cancel"
 		$site->skin->buttonsBreak();
-			$title = $this->recreated? 'Vorschau aktualisiert' : 'Vorschau aktualisieren';
+		    $title = isset($this->recreated) && $this->recreated ? 'Vorschau aktualisiert' : 'Vorschau aktualisieren';
 			echo '<a href="imp.php?page=options&amp;mix='.urlencode($this->mix).'&amp;update">'.$title.'</a> | ';
 			echo "<a href=\"log.php\" target=\"_blank\" rel=\"noopener noreferrer\">" . htmlconstant('_LOG') . '</a>';
 		$site->skin->buttonsEnd();
@@ -340,7 +342,10 @@ class IMP_OPTIONSRENDERER_CLASS extends IMP_FUNCTIONS_CLASS
 	{
 		// open mixfile
 		$this->mixfile = new IMP_MIXFILE_CLASS;
-		if( !$this->mixfile->open($GLOBALS['g_temp_dir'].'/imp-'.$_SESSION['g_session_userid'].'-'.$this->mix) )
+		
+		$gSessionUserID = isset($_SESSION['g_session_userid']) ? $_SESSION['g_session_userid'] : null;
+		$gTmpDir = isset($GLOBALS['g_temp_dir']) ? $GLOBALS['g_temp_dir'] : '';
+		if( !$this->mixfile->open($gTmpDir.'/imp-'.$gSessionUserID.'-'.$this->mix) )
 		{
 			$GLOBALS['site']->msgAdd($this->mixfile->error_str, 'e');
 			redirect('imp.php?page=files');
@@ -348,19 +353,19 @@ class IMP_OPTIONSRENDERER_CLASS extends IMP_FUNCTIONS_CLASS
 		$this->mixfile->prepare_for_browse();
 		
 		// save settings to Mix-File
-		if( isset($_REQUEST['offset']) )    		{ $_SESSION['mixfile_offsets'][$this->mix] = intval($_REQUEST['offset']); } /*using ini_write() is too slow for paging ... and the offset is not that important */
-		if( isset($_REQUEST['showall']) )  			{ $_SESSION['mixfile_showall'][$this->mix] = intval($_REQUEST['showall']); }
-		if( isset($_REQUEST['overwrite']) ) 		{ $this->mixfile->ini_write('option_overwrite', intval($_REQUEST['overwrite'])); }
-		if( isset($_REQUEST['delete']) )   		 	{ $this->mixfile->ini_write('option_delete', intval($_REQUEST['delete'])); }
-		if( isset($_REQUEST['further_options']) )   { $this->mixfile->ini_write('option_further_options', $_REQUEST['further_options']); }
+		if( isset($_REQUEST['offset']) )    		{ $_SESSION['mixfile_offsets'][$this->mix] = (isset($_REQUEST['offset']) ? intval($_REQUEST['offset']) : 0); } /*using ini_write() is too slow for paging ... and the offset is not that important */
+		if( isset($_REQUEST['showall']) )  			{ $_SESSION['mixfile_showall'][$this->mix] = (isset($_REQUEST['showall']) ? intval($_REQUEST['showall']) : null); }
+		if( isset($_REQUEST['overwrite']) ) 		{ $this->mixfile->ini_write('option_overwrite', (isset($_REQUEST['overwrite']) ? intval($_REQUEST['overwrite']) : null) ); }
+		if( isset($_REQUEST['delete']) )   		 	{ $this->mixfile->ini_write('option_delete', (isset($_REQUEST['delete']) ? intval($_REQUEST['delete']) : null) ); }
+		if( isset($_REQUEST['further_options']) )   { $this->mixfile->ini_write('option_further_options', (isset($_REQUEST['further_options']) ? $_REQUEST['further_options'] : null)); }
 		
 		// set forward or render
 		$fwd = '';
 		if( isset($_REQUEST['doimport']) ) {
 			$fwd = 'imp.php?page=import&mix=' . urlencode($this->mix)
-				.	"&overwrite=" . intval($_REQUEST['overwrite'])
-				.	"&delete=" . intval($_REQUEST['delete'])
-				.	"&further_options=" . urlencode($_REQUEST['further_options']);
+			    .	"&overwrite="  . (isset($_REQUEST['overwrite']) ? intval($_REQUEST['overwrite']) : null)
+			    .	"&delete="     . (isset($_REQUEST['delete']) ? intval($_REQUEST['delete']) : null)
+			    .	"&further_options=" . (isset($_REQUEST['further_options']) ? urlencode($_REQUEST['further_options']) : null);
 		}
 		else if( isset($_REQUEST['close']) ) {
 			$fwd = 'imp.php?page=files';

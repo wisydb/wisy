@@ -10,8 +10,8 @@ $db2 = new DB_Admin;
 
 
 
-echo 'dieses Skript kopiert "Zugehörige Kurse" als Link in die Beschreibung<br />';
-echo 'Hintergrund: Das Feld "Zugehörige Kurse" soll gelöscht werden.<br />';
+echo 'dieses Skript kopiert "Zugeh&ouml;rige Kurse" als Link in die Beschreibung<br />';
+echo 'Hintergrund: Das Feld "Zugeh&ouml;rige Kurse" soll gel&ouml;scht werden.<br />';
 echo '------------------------------------------------------------------<br />';
 
 $cnt = 0;
@@ -43,14 +43,14 @@ while( $db->next_record() )
 		
 		if( $add_beschr!='' )
 		{
-			echo "Fundstelle $cnt: ID $primary_id hat zugehörige Kurse ...<br />";
+			echo "Fundstelle $cnt: ID $primary_id hat zugeh&ouml;rige Kurse ...<br />";
 			flush();
 			$cnt++;
 
-			$add_beschr = "\n\nZugehörige Angebote: ".$add_beschr;
-			if( ($p=strpos($beschreibung, "\n\nZugehörige Angebote: <")) !== false )
+			$add_beschr = "\n\nZugeh&ouml;rige Angebote: ".$add_beschr;
+			if( ($p=strpos($beschreibung, "\n\nZugeh&ouml;rige Angebote: <")) !== false )
 			{
-				echo '<b>TEXT BEREITS ENTSPR. GEÄNDERT! - Entferne alte Änderung</b><br />';
+				echo '<b>TEXT BEREITS ENTSPR. GE&Auml;NDERT! - Entferne alte &Auml;nderung</b><br />';
 				$beschreibung = substr($beschreibung, 0, $p);
 			}
 
@@ -61,4 +61,4 @@ while( $db->next_record() )
 	}
 }
 
-	echo "$cnt Datensätze bearbeitet. Done.<br />";
+	echo "$cnt Datens&auml;tze bearbeitet. Done.<br />";

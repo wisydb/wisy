@@ -51,9 +51,9 @@ class EXP_FORMATCSV_CLASS extends EXP_GENERICTABLE_CLASS
 		$this->options['fileformat']=	array('enum', '_EXP_LINEBREAKS', 'rn', 
 											 'rn###Windows###'		/* 0xD, 0xA */
 											.'n###Linux, Mac'		/* 0xA */
-											//.'r###Mac OS 9###'	/* 0xD */				-- ungängige Formate nicht anbieten - im Zweifelsfall müssten wir das sonst selbst wieder importieren, was ungleich schwerer ist ...
+											//.'r###Mac OS 9###'	/* 0xD */				-- ungaengige Formate nicht anbieten - im Zweifelsfall muessten wir das sonst selbst wieder importieren, was ungleich schwerer ist ...
 											 );
-		//$this->options['noheader']=	array('enum', 'Header schreiben', 0, '0###Ja (Standard)###1###Nein');	//	-- ungängige Formate nicht anbieten - im Zweifelsfall müssten wir das sonst selbst wieder importieren, was ungleich schwerer ist ...
+		//$this->options['noheader']=	array('enum', 'Header schreiben', 0, '0###Ja (Standard)###1###Nein');	//	-- ungaengige Formate nicht anbieten - im Zweifelsfall muessten wir das sonst selbst wieder importieren, was ungleich schwerer ist ...
 		$this->options['fieldlinebreaks']
 									=	array('check', '_EXP_ALLOWLINEBREAKSINFIELDS', 1);
 		$this->options['fieldsep']	=	array('enum', '_EXP_FIELDSEP', 'comma', 
@@ -62,7 +62,7 @@ class EXP_FORMATCSV_CLASS extends EXP_GENERICTABLE_CLASS
 											.'tab###Tab');
 		$this->options['fieldencl']	=	array('enum', '_EXP_FIELDENCL', 'doublequote', 
 											 'doublequote###&quot; (Standard)###'
-											//."singlequote###'###"							-- ungängige Formate nicht anbieten - im Zweifelsfall müssten wir das sonst selbst wieder importieren, was ungleich schwerer ist ...
+											//."singlequote###'###"							-- ungaengige Formate nicht anbieten - im Zweifelsfall muessten wir das sonst selbst wieder importieren, was ungleich schwerer ist ...
 											//."quote###&#180;###"
 											//."backquote###&#96;###"
 											//."backquotequote###&#96;&#180;###"
@@ -70,8 +70,8 @@ class EXP_FORMATCSV_CLASS extends EXP_GENERICTABLE_CLASS
 		$this->options['fieldesc']	=	array('enum', '_EXP_FIELDESC', 'doublequote', 
 											 'doublequote###&quot; (Standard)###'	
 											.'backslash###&#92;###'
-											//."singlequote###'###"							-- ungängige Formate nicht anbieten - im Zweifelsfall müssten wir das sonst selbst wieder importieren, was ungleich schwerer ist ...
-											//."quote###´###"
+											//."singlequote###'###"							-- ungaengige Formate nicht anbieten - im Zweifelsfall muessten wir das sonst selbst wieder importieren, was ungleich schwerer ist ...
+											//."quote######"
 											//."backquote###&#96;###"
 											.'none###_EXP_DONTESCFIELDS');
 	}
@@ -82,7 +82,7 @@ class EXP_FORMATCSV_CLASS extends EXP_GENERICTABLE_CLASS
 	{
 		$tableName = str_replace('_', '-', $tableName);
 		$filename = $this->allocateFileName("$tableName.csv");
-		$this->handle = fopen($filename, 'w+b' /*export binary data, we'll handle the different lineends ourself*/ );
+		$this->handle = fopen($filename, 'w+b' /* export binary data, we'll handle the different lineends ourself */ );
 		if( !$this->handle ) 
 			$this->progress_abort("Cannot open $filename.");
 	}
@@ -96,19 +96,19 @@ class EXP_FORMATCSV_CLASS extends EXP_GENERICTABLE_CLASS
 	
 	function declareStart()
 	{
-		if( !$this->noheader ) {
+	    if( !isset( $this->noheader ) || !$this->noheader ) {
 			$this->recordStart();
 		}
 	}
-	function declareField($name, $rowtype)
+	function declareField($name, $rowtype, $removeIfDuplicate = false)
 	{
-		if( !$this->noheader ) {
+	    if( !isset( $this->noheader ) || !$this->noheader ) {
 			$this->recordField(strtoupper($name));
 		}
 	}
 	function declareEnd()
 	{
-		if( !$this->noheader ) {
+	    if( !isset( $this->noheader ) || !$this->noheader ) {
 			$this->recordEnd();
 		}
 	}
@@ -147,7 +147,7 @@ class EXP_FORMATCSV_CLASS extends EXP_GENERICTABLE_CLASS
 	function export($param)
 	{
 		// write header
-		$this->noheader = $param['noheader'];
+	    $this->noheader = isset($param['noheader']) ? $param['noheader'] : null;
 		
 		// get line end
 		switch( $param['fileformat'] )
@@ -194,7 +194,7 @@ class EXP_FORMATCSV_CLASS extends EXP_GENERICTABLE_CLASS
 			$this->fieldesc[$this->fieldend]	= $temp . $this->fieldend;
 			$this->fieldesc[$temp]				= $temp . $temp;
 			
-			if( !$param['fieldlinebreaks'] )
+			if( !isset( $param['fieldlinebreaks'] ) || !$param['fieldlinebreaks'] )
 			{
 				$this->fieldesc[chr(10)]			= ' ';
 				$this->fieldesc[chr(13)]			= ' ';
@@ -205,7 +205,7 @@ class EXP_FORMATCSV_CLASS extends EXP_GENERICTABLE_CLASS
 			$this->fieldesc[chr(10)]			= ' ';
 			$this->fieldesc[chr(13)]			= ' ';
 			
-			if( $this->fieldstart == '' )
+			if( !isset( $this->fieldstart ) || $this->fieldstart == '' )
 			{
 				$this->fieldesc[$this->fieldsep]	= ' ';
 			}
@@ -221,6 +221,3 @@ class EXP_FORMATCSV_CLASS extends EXP_GENERICTABLE_CLASS
 		parent::export($param);
 	}
 }
-
-
-

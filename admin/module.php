@@ -1,7 +1,5 @@
 <?php
 
-
-
 /*=============================================================================
 Load a Module from the 'config' directory;
 ===============================================================================
@@ -22,7 +20,7 @@ parameters:
 
 
 
-$module = $_REQUEST['module'];
+$module = isset($_REQUEST['module']) ? $_REQUEST['module'] : '';
 if( !preg_match('/^[a-z0-9_\.\-]+$/i', $module) )
 	die('bad module.');
 

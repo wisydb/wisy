@@ -1,4 +1,5 @@
 <?php
+
 /******************************************************************************
 The User Access Control
 ***************************************************************************//**
@@ -43,7 +44,7 @@ class CONTROL_USERACCESS_CLASS extends CONTROL_BASE_CLASS
 	{
 		// normally, we should use x_user_input() (see remarks there), 
 		// however, as there is _always_ exactly one of the user access controls, a simple $_REQUEST will do the job
-		$this->dbval = $_REQUEST['euahidden'];
+	    $this->dbval = isset($_REQUEST['euahidden']) ? $_REQUEST['euahidden'] : null;
 	}
 
 	public function render_html($addparam)
@@ -83,15 +84,19 @@ class CONTROL_USERACCESS_CLASS extends CONTROL_BASE_CLASS
 			$code .= $t? ';' : '';
 			$code .= $Table_Def[$t]->name . ';';
 			for( $r = 0; $r < sizeof((array) $Table_Def[$t]->rows); $r++ ) {
-				$code .= $Table_Def[$t]->rows[$r]->name . ',';
+			    
+			    if( isset( $Table_Def[$t]->rows[$r]->name ) )
+				    $code .= $Table_Def[$t]->rows[$r]->name . ',';
 
-				$transl[$Table_Def[$t]->rows[$r]->name] = $Table_Def[$t]->rows[$r]->descr;
+				if( isset( $Table_Def[$t]->rows[$r]->descr ) ) 
+				    $transl[$Table_Def[$t]->rows[$r]->name] = $Table_Def[$t]->rows[$r]->descr;
 			}
 			
 
 			$code .= 'RIGHTS'.$this->plugin_edit_access_get_add_rules("addrules.{$Table_Def[$t]->name}");
 			
-			$transl[$Table_Def[$t]->name] = $Table_Def[$t]->descr;
+			if( isset( $Table_Def[$t]->descr ) )
+			 $transl[$Table_Def[$t]->name] = $Table_Def[$t]->descr;
 		}
 		
 		
@@ -111,13 +116,11 @@ class CONTROL_USERACCESS_CLASS extends CONTROL_BASE_CLASS
 		$code.= "\";euaRender(\"" . strtr($this->dbval, array("\n"=>";", "\r"=>"", "\t"=>"", "'"=>"", "\""=>"", " "=>"")) . "\");/"."/--></script>"
 		.		"<noscript>"
 		.			"<textarea rows=\"5\" cols=\"40\" name=\"euahidden\">"
-		.				isohtmlentities($this->dbval)
+		.				isohtmlentities( strval( $this->dbval ) )
 		.			"</textarea>"
 		.		"</noscript>";
 
 		return $code;
 	}
 	
-
 };
-

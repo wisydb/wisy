@@ -1,7 +1,5 @@
 <?php 
 
-
-
 class print_list_class extends print_plugin_class
 {
 	var $options;			// the options to use
@@ -66,7 +64,7 @@ class print_list_class extends print_plugin_class
 					$currCells = array();
 					$this->print_table_list_row__($db2, $dummy, $tableDef->rows[$r]->addparam->name, $secondaryIds[$i], $dummy, $currCells, "{$tableDef->rows[$r]->name}.");
 					for( $c = 0; $c < sizeof($currCells); $c++ ) {
-						if( $currCells[$c]!='' && !in_array($currCells[$c], $tempCells[$c]) ) {
+					    if( isset($currCells[$c]) && $currCells[$c]!='' && !in_array($currCells[$c], $tempCells[$c]) ) {
 							$tempCells[$c][] = $currCells[$c];
 						}
 					}
@@ -78,10 +76,10 @@ class print_list_class extends print_plugin_class
 			}
 			else
 			{
-			    if( ($this->columns[$prefix.$tableDef->rows[$r]->name])
-			     || (sizeof((array) $this->columns)==0 && $rowflags&TABLE_LIST) )
+			    if( isset( $this->columns[$prefix.$tableDef->rows[$r]->name] ) && $this->columns[$prefix.$tableDef->rows[$r]->name]
+				 || (sizeof((array) $this->columns)==0 && $rowflags&TABLE_LIST) )
 				{
-					$heads[] = $tableDef->rows[$r]->descr;
+				    $heads[] = isset( $tableDef->rows[$r]->descr ) ? $tableDef->rows[$r]->descr : null;
 					$cells[] = preview_field($tableDef, $r, $db1, 0);
 				}
 			}
@@ -89,37 +87,37 @@ class print_list_class extends print_plugin_class
 		
 		// special rows (2)
 		if( $prefix == '' ) {
-			if( $this->columns['date_created'] ) {
+		    if( isset( $this->columns['date_created'] ) && $this->columns['date_created'] ) {
 				$heads[] = htmlconstant('_OVERVIEW_CREATED');
-				$cells[] = isohtmlentities(sql_date_to_human($db1->f('date_created'), 'datetime'));
+				$cells[] = isohtmlentities( strval( sql_date_to_human($db1->f('date_created'), 'datetime') ) );
 			}
 			
-			if( $this->columns['user_created'] ) {
-				$heads[] = htmlconstant($this->columns['date_created']? '_OVERVIEW_BY' : '_OVERVIEW_CREATEDBY');
+			if( isset( $this->columns['user_created'] ) && $this->columns['user_created'] ) {
+			    $heads[] = htmlconstant( isset($this->columns['date_created']) && $this->columns['date_created'] ? '_OVERVIEW_BY' : '_OVERVIEW_CREATEDBY');
 				$cells[] = user_html_name($db1->f('user_created'));
 			}			
 
-			if( $this->columns['date_modified'] ) {
+			if( isset( $this->columns['date_modified'] ) && $this->columns['date_modified'] ) {
 				$heads[] = htmlconstant('_OVERVIEW_MODIFIED');
-				$cells[] = isohtmlentities(sql_date_to_human($db1->f('date_modified'), 'datetime'));
+				$cells[] = isohtmlentities( strval( sql_date_to_human($db1->f('date_modified'), 'datetime') ) );
 			}
 
-			if( $this->columns['user_modified'] ) {
-				$heads[] = htmlconstant($this->columns['date_modified']? '_OVERVIEW_BY' : '_OVERVIEW_MODIFIEDBY');
+			if( isset( $this->columns['user_modified'] ) && $this->columns['user_modified'] ) {
+			    $heads[] = htmlconstant( isset($this->columns['date_modified']) && $this->columns['date_modified'] ? '_OVERVIEW_BY' : '_OVERVIEW_MODIFIEDBY');
 				$cells[] = user_html_name($db1->f('user_modified'));
 			}
 			
-			if( $this->columns['user_grp'] ) {
+			if( isset( $this->columns['user_grp'] ) && $this->columns['user_grp'] ) {
 				$heads[] = htmlconstant('_GROUP');
 				$cells[] = grp_html_name($db1->f('user_grp'));
 			}
 
-			if( $this->columns['user_access'] ) {
+			if( isset( $this->columns['user_access'] ) && $this->columns['user_access'] ) {
 				$heads[] = htmlconstant('_RIGHTS');
 				$cells[] = access_to_human($db1->f('user_access'));
 			}
 			
-			if( $this->columns['REFERENCES'] ) {
+			if( isset( $this->columns['REFERENCES'] ) && $this->columns['REFERENCES'] ) {
 				$heads[] = htmlconstant('_REFABBR');
 				$cells[] = $tableDef->num_references($id, $dummy);
 			}
@@ -130,7 +128,7 @@ class print_list_class extends print_plugin_class
 	{
 		$heads = array();
 		$cells = array();
-		$row .= $this->print_table_list_row__($db1, $db2, $table, $id, $heads, $cells);
+		$row = $this->print_table_list_row__($db1, $db2, $table, $id, $heads, $cells);
 
 		$ret = '';
 		if( $addHead ) {
@@ -138,7 +136,7 @@ class print_list_class extends print_plugin_class
 			$ret .= '<tr>';
 				for( $i = 0; $i < sizeof($heads); $i++ ) {
 					$head = trim($heads[$i]);
-					if( $Table_Shortnames[$head] ) {
+					if( isset($Table_Shortnames[$head]) && $Table_Shortnames[$head] ) {
 						$head = $Table_Shortnames[$head];
 					}
 					$ret .= '<td class="prhd">' . $head . '</td>';
@@ -189,7 +187,7 @@ class print_list_class extends print_plugin_class
 							echo $this->print_table_list_end($table);
 							echo '<br style="page-break-after:always;" />';
 							echo $this->print_table_list_start($table);
-							$addHead = $this->param['repeathead']? 1 : 0;
+							$addHead = isset($this->param['repeathead']) && $this->param['repeathead'] ? 1 : 0;
 						}
 					}
 					echo $this->print_table_list_row($dbs1, $dbs2, $table, $db->f('id'), $addHead);
@@ -198,9 +196,12 @@ class print_list_class extends print_plugin_class
 				}
 			echo $this->print_table_list_end($table);
 			
-			if( $this->param['cnt']!=1 ) {
-				echo '&nbsp;<br />' . htmlconstant('_PRINT_QUERY', isohtmlentities($this->param['eql']), $this->param['cnt']);
-				if( $this->param['rows'] != $this->param['cnt'] ) {
+			$paramCnt = isset( $this->param['cnt'] ) ? $this->param['cnt'] : null;
+			if( $paramCnt != 1 ) {
+			    echo '&nbsp;<br />' . htmlconstant('_PRINT_QUERY', isohtmlentities( strval( $this->param['eql'] ) ), $this->param['cnt']);
+				
+				$paramRows = isset( $this->param['rows'] ) ? $this->param['rows'] : null;
+				if( $paramRows != $paramCnt ) {
 					echo ' ' . htmlconstant('_PRINT_QUERY_RANGE', $this->param['offset']+1, $this->param['offset']+$this->param['rows']);
 				}
 			}
@@ -208,4 +209,3 @@ class print_list_class extends print_plugin_class
 		$site->pageEnd();
 	}
 }
-

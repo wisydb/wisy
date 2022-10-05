@@ -1,5 +1,6 @@
 <?php
 
+
 /*=============================================================================
 Common Framework and Session Management
 ===============================================================================
@@ -10,12 +11,7 @@ Author:
 =============================================================================*/
 
 
-
 require_once('classes.inc.php');
-
-
-
-
 
 
 /*=============================================================================
@@ -81,11 +77,11 @@ function regInit__() // there is no need to call this function directly
 	}
 	
 	if( !is_array($g_regUser) ) {
-		if( is_array($_SESSION['g_session_reg_temporary']) ) {
+		if( isset( $_SESSION['g_session_reg_temporary'] ) ) {
 			$g_regUser = $_SESSION['g_session_reg_temporary'];
 		}
 		else {
-			$userid = intval($_SESSION['g_session_userid']);
+		    $userid = isset( $_SESSION['g_session_userid'] ) ? intval($_SESSION['g_session_userid']) : null;
 			if( $userid ) {
 				$g_regDb->query("SELECT settings, loginname FROM user WHERE id=" . $userid);
 				if( $g_regDb->next_record() ) {
@@ -103,7 +99,8 @@ function regInit__() // there is no need to call this function directly
 		}
 		else {
 			require_once('genpassword.inc.php');
-			$g_regDb->query("INSERT INTO user (loginname, password) VALUES('template', '" .addslashes(crypt(genpassword())). "')");
+			global $salt;
+			$g_regDb->query("INSERT INTO user (loginname, password) VALUES('template', '" .addslashes(crypt(genpassword(), $salt)). "')");
 		}
 	}
 }
@@ -128,7 +125,7 @@ function regGet($regKey, $defaultValue = '<default value here>', $regOptions = '
 	
 	// check for unset default value
 	if( $defaultValue == '<default value here>' ) {
-		echo '<b>' . isohtmlentities("ERROR: unset default value for: regGet(\"$regKey\", \"$defaultValue\");") . '</b><br />';
+		echo '<b>' . isohtmlentities( "ERROR: unset default value for: regGet(\"$regKey\", \"$defaultValue\");" ) . '</b><br />';
 	}
 	
 	// check if the user _is_ the template
@@ -171,7 +168,7 @@ function regSet($regKey, $newValue, $defaultValue = '<default value here>', $reg
 
 	// check for unset default value
 	if( $defaultValue == '<default value here>' ) {
-		echo '<b>' . isohtmlentities("ERROR: unset default value for: regSet(\"$regKey\", \"$newValue\", \"$defaultValue\");") . '</b><br />';
+		echo '<b>' . isohtmlentities( "ERROR: unset default value for: regSet(\"$regKey\", \"$newValue\", \"$defaultValue\");" ) . '</b><br />';
 	}
 	
 	// check if the user _is_ the template
@@ -240,7 +237,7 @@ function regSave()
 	{
 		if( regGet('settings.editable', 1) )
 		{
-			if( $_SESSION['g_session_userid'] ) {
+		    if( isset( $_SESSION['g_session_userid'] ) && $_SESSION['g_session_userid'] ) {
 				regSaveToDb__($_SESSION['g_session_userid'], $g_regUser);
 				$g_regUserModified = 0;
 				$ret = 1;
@@ -348,9 +345,9 @@ function form_control_end()
 function form_control_textarea( $name, $value, $width, $height, 
 								$addparam = array() )
 {	
-	if( $addparam['readonly'] )
+    if( isset($addparam['readonly'] ) && $addparam['readonly'] )
 	{
-		echo nl2br(isohtmlentities($value));
+	    echo nl2br(isohtmlentities( strval( $value ) ));
 		form_hidden($name, $value);
 	}
 	else
@@ -362,18 +359,18 @@ function form_control_textarea( $name, $value, $width, $height,
 		if( $height <= 0 ) $height = 5;
 	
 		echo '<textarea name="' .$name. '" wrap="virtual" rows="' .$height. '" cols="' .$width. '"';
-			if( $addparam['css_classes'] )	{ echo ' class="'.trim($addparam['css_classes']).'"';		}
-			if( $addparam['onchange'] )		{ echo ' onchange="'.$addparam['onchange'].'"';				}
-		echo '>' . isohtmlentities($value) . '</textarea>';
+		    if( isset($addparam['css_classes']) && $addparam['css_classes'] )	{ echo ' class="'.trim($addparam['css_classes']).'"';		}
+		    if( isset($addparam['onchange']) && $addparam['onchange'] )		    { echo ' onchange="'.$addparam['onchange'].'"';				}
+	    echo '>' . isohtmlentities( strval( $value ) ) . '</textarea>';
 	}	
 }
 
 function form_control_text(	$name, $value, $width = 0, $maxlength = 0,
 							$addparam = array() )
 {
-	if( $addparam['readonly'] ) 
+    if( isset( $addparam['readonly'] ) && $addparam['readonly'] ) 
 	{
-		echo isohtmlentities($value);
+	    echo isohtmlentities( strval( $value ) );
 		form_hidden($name, $value);
 	}
 	else
@@ -384,20 +381,20 @@ function form_control_text(	$name, $value, $width = 0, $maxlength = 0,
 		$maxlength = intval($maxlength);
 		if( $maxlength <= 0 ) $maxlength = 250;
 		
-		echo '<input type="text" size="' .$width. '" maxlength="' .$maxlength. '" name="' .$name. '" value="' . isohtmlentities($value) . '"';
+		echo '<input type="text" size="' .$width. '" maxlength="' .$maxlength. '" name="' .$name. '" value="' . isohtmlentities( strval( $value ) ) . '"';
 		
-			if( $addparam['autocomplete'] ) 
+		    if( isset( $addparam['autocomplete'] ) && $addparam['autocomplete'] ) 
 			{
 				echo ' data-acdata="'.$addparam['autocomplete'].'"';
-				if( $addparam['autocomplete.nest'] ) {
+				if( isset( $addparam['autocomplete.nest'] ) && $addparam['autocomplete.nest'] ) {
 					//echo ' data-acnest="1"';
-					$addparam['css_classes'] = trim('acnest '.$addparam['css_classes']);
+				    $addparam['css_classes'] = trim('acnest '.(isset($addparam['css_classes']) ? $addparam['css_classes'] : ''));
 				}
-				$addparam['css_classes'] = trim('acclass '.$addparam['css_classes']);
+				$addparam['css_classes'] = trim('acclass '.(isset($addparam['css_classes']) ? $addparam['css_classes'] : ''));
 			}
 			
-			if( $addparam['css_classes'] )	{ echo ' class="'.trim($addparam['css_classes']).'"';		}
-			if( $addparam['onchange'] )		{ echo ' onchange="'.$addparam['onchange'].'"';		}
+			if( isset( $addparam['css_classes'] ) && $addparam['css_classes'] )	{ echo ' class="'.trim($addparam['css_classes']).'"';		}
+			if( isset( $addparam['onchange'] ) && $addparam['onchange'] )		{ echo ' onchange="'.$addparam['onchange'].'"';		}
 			
 		echo ' />';
 	}
@@ -469,7 +466,7 @@ function form_control_check($name, $value, $onclick = '', $readonly = 0, $useLab
 
 function form_control_password($name, $value = '', $width = 40, $addattr = '')
 {
-	echo '<input type="password" size="' .$width. '" maxlength="250" name="' .$name. '" value="' . isohtmlentities($value) . '"';
+    echo '<input type="password" size="' .$width. '" maxlength="250" name="' .$name. '" value="' . isohtmlentities( strval( $value ) ) . '"';
 	if( $addattr ) {
 		echo " $addattr ";
 	}
@@ -527,7 +524,7 @@ function form_control_enum($name, $value, $values, $readonly = 0, $style = '', $
 				if( $values[$v] == $value ) {
 					echo ' selected="selected"';
 				}
-				echo '>' .$values[$v+1]. '</option>';
+				echo '>' . (isset($values[$v+1]) ? $values[$v+1] : ''). '</option>';
 			}
 		echo '</select>';
 	}
@@ -560,7 +557,7 @@ function form_clickbutton($url, $descr)
 
 function form_hidden($name, $value)
 {
-	echo '<input type="hidden" name="' .$name. '" value="' . isohtmlentities($value) . '" />';
+    echo '<input type="hidden" name="' .$name. '" value="' . isohtmlentities( strval( $value ) ) . '" />';
 }
 
 
@@ -635,7 +632,7 @@ function call_plugin($phpfile, &$param)
 {
 	global $g_plugins;
 	
-	if( !$g_plugins[$phpfile] ) {
+	if( !isset( $g_plugins[$phpfile] ) || !$g_plugins[$phpfile] ) {
 		$pluginfunc = ''; // will be overwritten by the following require()-statement
 		require_once($phpfile);
 		$g_plugins[$phpfile] = $pluginfunc;
@@ -779,9 +776,9 @@ function bin_render($table, $id)
 	if( !is_array($g_curr_bin_ids) 
 	 || $g_curr_bin_ids_table != $table )
 	{
-		$g_curr_bin_ids			= array_keys($_SESSION['g_session_bin']->getRecords($table));
+	    $g_curr_bin_ids			= isset($_SESSION['g_session_bin']) ? array_keys($_SESSION['g_session_bin']->getRecords($table)) : null;
 		$g_curr_bin_ids_table	= $table;
-		$g_curr_bin_editable	= $_SESSION['g_session_bin']->binIsEditable()? 1 : 0;
+		$g_curr_bin_editable	= isset($_SESSION['g_session_bin']) && $_SESSION['g_session_bin']->binIsEditable() ? 1 : 0;
 	}
 	
 	// get state
@@ -789,7 +786,10 @@ function bin_render($table, $id)
 	
 	// render
 	$html = "<script type=\"text/javascript\"><!--\n";
-	$html .= "binRender('$table',$id,$state" .($g_num_bin_rendered==0? (",'".$_SESSION['g_session_bin']->getName($_SESSION['g_session_bin']->activeBin)."','{$site->skin->imgFolder}',".sizeof((array) $_SESSION['g_session_bin']->getBins()).','.$g_curr_bin_editable) : ""). ");";
+	
+	    if( isset($_SESSION['g_session_bin']) )
+		  $html .= "binRender('$table',$id,$state" .($g_num_bin_rendered==0? (",'".$_SESSION['g_session_bin']->getName($_SESSION['g_session_bin']->activeBin)."','{$site->skin->imgFolder}',".sizeof((array) $_SESSION['g_session_bin']->getBins()).','.$g_curr_bin_editable) : ""). ");";
+	    
 	$html .= "/" . "/--></script>";
 	
 	// prepare for next
@@ -826,7 +826,12 @@ if( !defined('G_SKIP_LOGIN') )	// do NOT start sessions on "skip login" as this 
 	
 	session_name('sj');
 	session_start();
-	if(time()-intval($_SESSION['gc_self'])>SESSION_LIFETIME_SECONDS){$_SESSION=array();}$_SESSION['gc_self']=time(); // why we use our own timout: http://goo.gl/FZhF8
+	$gcself = isset( $_SESSION['gc_self'] ) ? $_SESSION['gc_self'] : null;
+	if( time()-intval($gcself) > SESSION_LIFETIME_SECONDS) {
+	    $_SESSION=array();
+	}
+	
+    $_SESSION['gc_self']=time(); // we use our own timout
 
 	if( !isset($_SESSION['g_session_list_results']) ) {
 		$_SESSION['g_session_list_results'] = array();
@@ -836,8 +841,8 @@ if( !defined('G_SKIP_LOGIN') )	// do NOT start sessions on "skip login" as this 
 		$_SESSION['g_session_track_defaults'] = array();
 	}
 
-	if( $free_object ) {
-		unset( $_SESSION[$free_object] );
+	if( isset($free_object) && isset( $_SESSION[ $free_object ] )) {
+	    unset( $_SESSION[ $free_object ] );
 	}
 }
 
@@ -849,13 +854,13 @@ require_once('config/config.inc.php');
 // set language
 require_once('lang.inc.php');
 
-if( !$_SESSION['g_session_language'] ) {
+if( !isset( $_SESSION['g_session_language'] ) || !$_SESSION['g_session_language'] ) {
 	$wantedLang = '';
-	if( $_COOKIE['g_cookie_login'] ) {
+	if( isset( $_COOKIE['g_cookie_login'] ) && $_COOKIE['g_cookie_login'] ) {
 		$wantedLang = explode('&', $_COOKIE['g_cookie_login']);
 		$wantedLang = urldecode($wantedLang[0]) . ',';
 	}
-	$wantedLang .= $_SERVER['HTTP_ACCEPT_LANGUAGE'];
+	$wantedLang .= isset( $_SERVER['HTTP_ACCEPT_LANGUAGE'] ) ? $_SERVER['HTTP_ACCEPT_LANGUAGE'] : '';
 	$_SESSION['g_session_language'] = check_wanted_lang(get_avail_lang_from_folder(regGet('login.lang', '')), $wantedLang);
 }
 
@@ -877,38 +882,72 @@ $site->initSkin();
 
 
 // check if the user is authorized or prompt for password
-if( !$_SESSION['g_session_userid'] && !defined('G_SKIP_LOGIN') )
+if( ( !isset( $_SESSION['g_session_userid'] ) || !$_SESSION['g_session_userid'] ) && !defined('G_SKIP_LOGIN') )
 {
 	require_once('login.inc.php');
 	login_check();
 }
 
 // init bins
-if( $_SESSION['g_session_userid'] )
+if( isset( $_SESSION['g_session_userid'] ) && $_SESSION['g_session_userid'] )
 {
 	$db = new DB_Admin; // not sure: is this object used anywhere else?
-	$db->query("SELECT remembered FROM user WHERE id=".$_SESSION['g_session_userid']);
+	$db->query( "SELECT remembered FROM user WHERE id=".$_SESSION['g_session_userid'] );
+	
 	if( $db->next_record() )
 	{
-		// load remembered bin
-		if( regGet('settings.editable', 1) ) {
-			$_SESSION['g_session_bin'] = unserialize($db->fs('remembered'));
+	    if( regGet('settings.editable', 1) ) {
+		       try {
+		          if( $db->fs('remembered') != null ) {
+
+		              // if not: remembered will return __PHP_Incomplete_Class, b/c unserialized class needs to be well-known
+		              require_once("lib/g/bin.inc.php");    
+                      
+		              $remembered = $db->fs('remembered');
+		              
+		              // $remembered = preg_replace('/O:6:"mysqli":.*s:6:"userId";s:.{1,25}}$/i', '', $remembered); // backward compatibility
+
+		             $_SESSION['g_session_bin'] = unserialize( $remembered );
+		              
+		          } else {
+		              // echo '<span style="font-size: 2em; color: darkred;">Remembered: leer!</span>\n';
+		          }
+		              
+		          
+		          } catch (\Throwable $e) {
+		        die( "<span style='font-size: 2em; color: darkred;'>Exception abgefangen: " .  $e->getMessage() . "</span>\n" );
+		      }
 		}
 		else {
-			if( !is_object($_SESSION['g_session_bin']) ) {
-				$_SESSION['g_session_bin'] = unserialize($db->fs('remembered'));
+
+		    if( !isset($_SESSION['g_session_bin']) || !is_object($_SESSION['g_session_bin']) ) {
+
+			     try { 
+			         if( $db->fs('remembered') != null ) {
+
+			             // if not: remembered will return __PHP_Incomplete_Class, b/c unserialized class needs to be well-known
+                         require_once("lib/g/bin.inc.php");
+
+			             $remembered = $db->fs('remembered');
+			             
+			             // $remembered = preg_replace('/O:6:"mysqli":.*s:6:"userId";s:.{1,25}}$/i', '', $remembered); // backward compatibility
+			             
+			             $_SESSION['g_session_bin'] = unserialize( $remembered );
+			         } else {
+			             // echo '<span style="font-size: 2em; color: darkred;">Remembered: leer!</span>\n';
+			         }
+			         
+			         
+			     } catch (\Throwable $e) {
+			        die ( "<span style='font-size: 2em; color: darkred;'>Exception abgefangen: " .  $e->getMessage() . "</span>\n" );
+			     }
 			}
 		}
 		
-		if( !is_object($_SESSION['g_session_bin']) ) {
+		if( !isset( $_SESSION['g_session_bin'] ) || !is_object( $_SESSION['g_session_bin'] ) ) {
 			$_SESSION['g_session_bin'] = new G_BIN_CLASS();
 		}
 		
-		$_SESSION['g_session_bin']->userId = $_SESSION['g_session_userid'];
+		$_SESSION['g_session_bin']->userId = isset(  $_SESSION['g_session_userid'] ) ? $_SESSION['g_session_userid'] : null;
 	}
 }
-
-
-
-
-

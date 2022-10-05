@@ -1,11 +1,7 @@
 <?php
 
-
 require_lang('lang/imex');
 require_lang('lang/overview');
-
-
-
 
 function exp_format_compare($a, $b)
 {
@@ -62,7 +58,7 @@ class EXP_FUNCTIONS_CLASS
 			usort($all_exp_plugins, 'exp_format_compare');
 		
 			$options = '';
-			$debugParam = $_REQUEST['debug']? "&debug=".$_REQUEST['debug'] : '';
+			$debugParam = isset($_REQUEST['debug']) && $_REQUEST['debug'] ? "&debug=".$_REQUEST['debug'] : '';
 			for( $i = 0; $i < sizeof($all_exp_plugins); $i++ )
 			{
 				$site->skin->mainmenuItem(htmlconstant('_EXP_'.strtoupper($all_exp_plugins[$i])),
@@ -82,7 +78,5 @@ class EXP_FUNCTIONS_CLASS
 		
 		$site->pageEnd();
 	}
-
-
 
 };

@@ -1,7 +1,5 @@
 <?php
 
-
-
 /*=============================================================================
 table overview, also used as an attribute selector
 ===============================================================================
@@ -68,7 +66,7 @@ function createColumnsHash($table, $prefix = '')
 		if( $rowtype == TABLE_SECONDARY )
 		{
 			$hasSecondary		= 1;
-			$secondaryIsDefault	= $secondaryIsDefault? 1 : $defaultColumn;
+			$secondaryIsDefault	= $secondaryIsDefault ? 1 : $defaultColumn;
 			
 			$secondaryColumnsCount = createColumnsHash(	$tableDef->rows[$r]->addparam->name,
 														$tableDef->rows[$r]->addparam->name . '.');
@@ -126,7 +124,7 @@ function createColumnsHash($table, $prefix = '')
 			{
 				$columnsCount++;
 				$columnsHash[] = 1;
-				if( $test[$r+1] ) {
+				if( isset($test[$r+1]) && $test[$r+1] ) {
 					$sqlFields .= ', ' . $test[$r+1];
 				}
 			}
@@ -209,7 +207,7 @@ function renderTableHeadCell($curr_field, $descr, $def_desc = 0, $sum_field = 0)
 		}
 
 		$descr = trim($descr);
-		if( $Table_Shortnames[$descr] ) {
+		if( isset($Table_Shortnames[$descr]) && $Table_Shortnames[$descr] ) {
 			echo $Table_Shortnames[$descr];
 		}
 		else {
@@ -247,7 +245,7 @@ function renderTableHeadCell($curr_field, $descr, $def_desc = 0, $sum_field = 0)
 
 function getSortField($tableDef)
 {
-    for( $r = 0; $r < sizeof((array) $tableDef->rows); $r++ )
+	for( $r = 0; $r < sizeof((array) $tableDef->rows); $r++ )
 	{
 		$rowflags	= intval($tableDef->rows[$r]->flags);
 		$rowtype	= $rowflags&TABLE_ROW;
@@ -356,7 +354,7 @@ function renderTableHead(&$hi, $table, $prefix = '')
 					
 		for( $r = 0; $r < sizeof($test); $r+=4 ) {
 			if( $columnsHash[$hi++] ) {
-				renderTableHeadCell($test[$r], htmlconstant($test[$r+($lastSet? 2 : 1)]), $test[$r+3]);
+			    renderTableHeadCell( (isset($test[$r]) ? $test[$r] : null), htmlconstant($test[$r+(isset($lastSet) && $lastSet ? 2 : 1)]), (isset($test[$r+3]) ? $test[$r+3] : null));
 				$lastSet = 1;
 			}
 			else {
@@ -404,7 +402,7 @@ function getHtmlContent(&$tableDef, $r, &$db)
 	{
 		case TABLE_BLOB:
 			$value = explode(';', $db->fs($tableDef->rows[$r]->name));
-			if( $value[0] != '' ) {
+			if( isset($value[0]) && $value[0] != '' ) {
 				return isohtmlentities($value[0]);
 			}
 			else {
@@ -471,15 +469,15 @@ require_lang('lang/dbsearch');
 require_lang('lang/overview');
 
 // get table and other paramters
-$table = $_REQUEST['table'];
+$table = isset( $_REQUEST['table'] ) ? $_REQUEST['table'] : null;
 if( !$table ) // may be unset after a call to index.php after a login with the session id already set
 {
 	require_once('login.inc.php');
 	$table = get_first_accecssible_table();
 }
 
-$debug = $_REQUEST['debug'];
-$edit_control = $_REQUEST['edit_control'];
+$debug = isset( $_REQUEST['debug'] ) ? $_REQUEST['debug'] : null;
+$edit_control = isset( $_REQUEST['edit_control'] ) ? $_REQUEST['edit_control'] : null;
 
 // get base URL
 $baseurl = "deprecated_index.php?table=$table";
@@ -523,7 +521,7 @@ if( !isset($_REQUEST['searchoffset']) ) {
 	$searchoffset = intval( regGet("$settingsPrefix.$table.offset", 0) );
 }
 else {
-	$searchoffset = intval( $_REQUEST['searchoffset'] );
+    $searchoffset = isset($_REQUEST['searchoffset']) ? intval($_REQUEST['searchoffset']) : 0;
 	regSet("$settingsPrefix.$table.offset", $searchoffset, 0);
 }
 
@@ -536,7 +534,7 @@ if( !isset($_REQUEST['rows']) ) {
 	$rows = intval( regGet("$settingsPrefix.$table.rows", 10) );
 }
 else {
-	$rows = intval( $_REQUEST['rows'] );
+    $rows = isset($_REQUEST['rows']) ? intval($_REQUEST['rows']) : null;
 	regSet("$settingsPrefix.$table.rows", $rows, 10);
 }
 
@@ -552,7 +550,7 @@ if( !isset($_REQUEST['orderby']) ) {
 	}
 }
 else {
-	$orderby = $_REQUEST['orderby'];
+    $orderby = isset($_REQUEST['orderby']) ? $_REQUEST['orderby'] : null;
 	regSet("$settingsPrefix.$table.orderby", $orderby, 'date_modified DESC');
 }
 
@@ -607,7 +605,7 @@ if( isset($_REQUEST['object']) ) {
 	$addparam .= "<input type=\"hidden\" name=\"object\" value=\"".$_REQUEST['object']."\" />"
 			  .	 "<input type=\"hidden\" name=\"edit_control\" value=\"$edit_control\" />";
 }
-if( $debug ) {
+if( isset($debug) && $debug ) {
 	$addparam .= '<input type="hidden" name="debug" value="' .$debug. '" />';
 }
 $searchForm->setAction('deprecated_index.php', $addparam);
@@ -658,8 +656,8 @@ else
 }
 
 if( !isset($_REQUEST['object']) ) {
-	if( !is_array($_SESSION['g_session_index_sql']) ) $_SESSION['g_session_index_sql'] = array();
-	if( !is_array($_SESSION['g_session_index_eql']) ) $_SESSION['g_session_index_eql'] = array();
+    if( !isset($_SESSION['g_session_index_sql']) || !is_array($_SESSION['g_session_index_sql']) ) $_SESSION['g_session_index_sql'] = array();
+    if( !isset($_SESSION['g_session_index_eql']) || !is_array($_SESSION['g_session_index_eql']) ) $_SESSION['g_session_index_eql'] = array();
 	$_SESSION['g_session_index_sql'][$table] = $sql;
 	$_SESSION['g_session_index_eql'][$table] = $eql;
 }
@@ -679,10 +677,10 @@ $site->menuItem('mmainmenu', $tableDef->descr, "<a href=\"deprecated_index.php?t
 
 // prev / next
 $prevurl = $searchoffset==0? '' : ("$baseurl&searchoffset=" . intval($searchoffset-$rows));
-$site->menuItem('mprev', htmlconstant('_PREVIOUS'), $prevurl? ('<a href="'.isohtmlentities($prevurl).'">') : '');
+$site->menuItem('mprev', htmlconstant('_PREVIOUS'), isset($prevurl) && $prevurl ? ('<a href="'.isohtmlentities($prevurl).'">') : '');
 
 $nexturl = ($searchoffset+$rows<$select_numrows)? ("$baseurl&searchoffset=" . intval($searchoffset+$rows)) : '';
-$site->menuItem('mnext', htmlconstant('_NEXT'), $nexturl? ('<a href="'.isohtmlentities($nexturl).'">') : '');
+$site->menuItem('mnext', htmlconstant('_NEXT'), isset($nexturl) && $nexturl ? ('<a href="'.isohtmlentities($nexturl).'">') : '');
 
 // add rows
 $site->menuItem('msearchexp', htmlconstant('_OVERVIEW_SEARCHEXPAND'), 
@@ -694,20 +692,21 @@ $site->menuItem('mall', htmlconstant('_OVERVIEW_ALL'), '<a href="'.isohtmlentiti
 // new / empty
 $only_secondary = 0;
 if( !isset($_REQUEST['object']) ) {
-	if( $tableDef->acl&ACL_NEW ) {
+    $tableACL = isset($tableDef->acl) ? $tableDef->acl : null;
+	if( $tableACL&ACL_NEW ) {
 		$only_secondary = $tableDef->is_only_secondary($only_secondary_primary_table_name, $dummy);
 		$site->menuItem('mnew', htmlconstant('_NEW'), 
-			$only_secondary? '' : "<a href=\"edit.php?table={$tableDef->name}\">");
+		    isset($only_secondary) && $only_secondary ? '' : "<a href=\"edit.php?table={$tableDef->name}\">");
 		if( $tableDef->uses_track_defaults() ) {
 			$site->menuItem('mempty', htmlconstant('_EMPTY'), 
-				$only_secondary? '' : "<a href=\"edit.php?table={$tableDef->name}&amp;nodefaults=1\">");
+			    isset($only_secondary) && $only_secondary ? '' : "<a href=\"edit.php?table={$tableDef->name}&amp;nodefaults=1\">");
 		}
 	}
 }
 
 // settings / print
 $site->menuSettingsUrl	= "settings.php?table=$tableDef->name&scope=index&reload=" . urlencode($baseurl);
-$site->menuPrintUrl		= $_REQUEST['object']? '' : "print.php?table=$tableDef->name";
+$site->menuPrintUrl		= isset( $_REQUEST['object'] ) && $_REQUEST['object'] ? '' : "print.php?table=$tableDef->name";
 
 // menu link to index plugin(s)
 for( $i = 0; $i <= 3; $i++ ) 
@@ -715,7 +714,7 @@ for( $i = 0; $i <= 3; $i++ )
 	if( @file_exists("config/index_plugin_{$tableDef->name}_{$i}.inc.php") ) 
 	{
 		$test = explode(',', regGet("index_plugin_{$tableDef->name}_{$i}.access", ""));
-		if( trim($test[0]) == '' || acl_check_access(trim($test[0]), -1, intval($test[1])? intval($test[1]) : ACL_EDIT) )
+		if( !isset($test[0]) || trim($test[0]) == '' || acl_check_access(trim($test[0]), -1, isset($test[1]) && intval($test[1]) ? intval($test[1]) : ACL_EDIT) )
 		{
 			$site->menuItem("mplugin$i", htmlconstant(strtoupper("_index_plugin_{$tableDef->name}_{$i}")), 
 				"<a href=\"module.php?module=index_plugin_{$tableDef->name}_{$i}\" target=\"index_plugin_{$tableDef->name}_{$i}\" onclick=\"return popup(this,750,550);\">");
@@ -734,7 +733,7 @@ if( $only_secondary )
 	$site->msgAdd(htmlconstant('_OVERVIEW_ONLYSECONDARYDATA', "<a href=\"deprecated_index.php?table=$only_secondary_primary_table_name\">", '</a>'), 'w');
 }
 
-if( !$_SESSION['g_session_filter_active_hint'] && acl_grp_filter_active() )
+if( ( !isset( $_SESSION['g_session_filter_active_hint'])  || !$_SESSION['g_session_filter_active_hint'] ) && acl_grp_filter_active() )
 {
 	$site->msgAdd(htmlconstant('_OVERVIEW_FILTERACTIVEWARNING', '', ''), 'w');
 	$_SESSION['g_session_filter_active_hint'] = 1;
@@ -745,7 +744,7 @@ if( !$_SESSION['g_session_filter_active_hint'] && acl_grp_filter_active() )
 // start page'n'menu
 
 $site->title = "$tableDef->descr - ";
-if( $_REQUEST['object'] ) {
+if( isset( $_REQUEST['object'] ) && $_REQUEST['object'] ) {
 	$_SESSION[ $_REQUEST['object'] ]->get_ctrl_name(intval($edit_control), $temp);
 	$subtitle = htmlconstant('_OVERVIEW_ATTRSELECTTITLE', $tableDef->descr, $temp);
 	$site->title .= $subtitle;
@@ -783,7 +782,7 @@ if( $select_numrows )
 		echo page_sel("$baseurl&searchoffset=", $rows, $searchoffset, $select_numrows, 1);
 	$site->skin->mainmenuEnd();
 
-	if( $_REQUEST['object']) {
+	if( isset( $_REQUEST['object'] ) && $_REQUEST['object'] ) {
 		// attribute selection hint
 		$site->skin->submenuStart();
 			echo $subtitle;
@@ -850,7 +849,10 @@ if( $select_numrows )
 		}
 		
 		// start row
-		$justedited = $id==$_REQUEST['justedited']? true : false;
+		if( isset( $_REQUEST['justedited'] ) )
+		  $justedited = $id==$_REQUEST['justedited']? true : false;
+		elseif( $id != 0 ) 
+		  $justedited = false;
 		
 		$site->skin->rowStart($justedited? 'class="justedited"' : '');
 	
@@ -889,7 +891,8 @@ if( $select_numrows )
 			{
 				$site->skin->cellStart('nowrap');
 					
-					if( $id == $_REQUEST['justedited'] )
+				    $reqJustedited = isset($_REQUEST['justedited']) ? $_REQUEST['justedited'] : null;
+				    if( $id == $reqJustedited )
 					{
 						echo "<a name=\"id$id\"></a>";
 					}
@@ -943,7 +946,7 @@ if( $select_numrows )
 
 					// get secondary table definition				
 					$sTableDef = Table_Find_Def($tableDef->rows[$r]->addparam->name);
-					if( $show_secondary[$tableDef->rows[$r]->addparam->name] )
+					if( isset($show_secondary[$tableDef->rows[$r]->addparam->name]) && $show_secondary[$tableDef->rows[$r]->addparam->name] )
 					{
 						// go through all secondary rows and collect the HTML contents
 						$hiBak = $hi;
@@ -1000,7 +1003,7 @@ if( $select_numrows )
 					}
 					else
 					{
-					    $hi += sizeof((array) $sTableDef->rows);
+						$hi += sizeof((array) $sTableDef->rows);
 					}
 				}
 				else
@@ -1116,7 +1119,7 @@ if( $select_numrows )
 	$site->skin->tableEnd();
 
 	// any notes?
-	if( $tableDef->addparam['notes'] ) {
+	if( isset($tableDef->addparam['notes']) && $tableDef->addparam['notes'] ) {
 		echo '<p>' . $tableDef->addparam['notes'] . '</p>';
 	}
 	
@@ -1125,7 +1128,7 @@ if( $select_numrows )
 		$site->skin->submenuStart();
 			
 			$eqlShort = $eql;
-			if( strlen($eqlShort) > 40 && !$_REQUEST['eqlfull'] ) {
+			if( strlen($eqlShort) > 40 && ( !isset($_REQUEST['eqlfull']) || !$_REQUEST['eqlfull'] ) ) {
 				$eqlShort = isohtmlspecialchars(substr($eqlShort, 0, 40)) . '<a href="' . isohtmlspecialchars("$baseurl&eqlfull=1") . '">...</a>';
 			}
 			else {
@@ -1181,4 +1184,3 @@ done: end page
 
 
 $site->pageEnd();
-

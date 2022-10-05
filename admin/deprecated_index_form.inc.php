@@ -124,14 +124,14 @@ class DBSEARCH_FORM_CLASS
 	
 	private function _loadStateFromSession($stateName)
 	{
-		$state = $_SESSION['g_session_dbsearch'][$stateName];
+	    $state = isset( $_SESSION['g_session_dbsearch'][$stateName] ) ? $_SESSION['g_session_dbsearch'][$stateName] : null;
 		
-		if( !is_array($state) )
+	    if( !isset( $state ) || !is_array($state) )
 		{
 			$state = @unserialize(regGet("$stateName.lastquery", ''));
 		}
 		
-		if( is_array($state) ) 
+		if( isset( $state ) && is_array($state) ) 
 		{
 			$this->rows			= $state['rows'];
 		}
@@ -146,7 +146,7 @@ class DBSEARCH_FORM_CLASS
 		$state = array();
 		$state['rows']			= $this->rows;
 		
-		if( !is_array($_SESSION['g_session_dbsearch']) )
+		if( !isset( $_SESSION['g_session_dbsearch'] ) || !is_array($_SESSION['g_session_dbsearch']) )
 			$_SESSION['g_session_dbsearch'] = array();
 		
 		$_SESSION['g_session_dbsearch'][$stateName] = $state;
@@ -166,8 +166,10 @@ class DBSEARCH_FORM_CLASS
 		
 		// first, handle $_REQUEST['searchalt'] which may be used as an alternative
 		// to set values normally set by submit-buttons
-		$searchaddrow = $_REQUEST['searchaddrow'];
-		switch( $_REQUEST['searchalt'] ) 
+		$searchaddrow = isset( $_REQUEST['searchaddrow'] ) ? $_REQUEST['searchaddrow'] : null;
+		$searchalt = isset( $_REQUEST['searchalt'] ) ? $_REQUEST['searchalt'] : null;
+		
+		switch( $searchalt ) 
 		{
 			case 'addrow': $searchaddrow = 1; break;
 		}
@@ -176,10 +178,11 @@ class DBSEARCH_FORM_CLASS
 		$this->_loadStateFromSession($stateName);
 		
 		// init?
-		if( $_REQUEST['searchreset'] )
+		$searchreset = isset( $_REQUEST['searchreset'] ) ? $_REQUEST['searchreset'] : null;
+		if( $searchreset )
 		{
 			$this->_initState($stateName);
-			if( $_REQUEST['searchreset'] == 2 ) 
+			if( $searchreset == 2 ) 
 			{
 				// init by URL
 				for( $i = 0; $i < 100; $i++ ) {
@@ -211,13 +214,20 @@ class DBSEARCH_FORM_CLASS
 			if( isset($_REQUEST[$value]) ) 
 			{
 				$_REQUEST[$value] = trim($_REQUEST[$value]);
-				if( $_REQUEST[$value] != '' && ($_REQUEST[$field]=='' || $_REQUEST[$field]=='OPTIONS' || $_REQUEST[$field]=='DUMMY') ) {
+				$reqField = isset( $_REQUEST[$field] ) ? $_REQUEST[$field] : null;
+				
+				if( $_REQUEST[$value] != '' && ( $reqField == '' || $reqField == 'OPTIONS' || $reqField == 'DUMMY') ) {
 					$_REQUEST[$field] = 'ANY';
 				}
-				$newRows[$i] = array($_REQUEST[$and], $_REQUEST[$field], $_REQUEST[$op], $_REQUEST[$value]);
+				
+				$newRows[$i] = array( isset( $_REQUEST[$and] ) ? $_REQUEST[$and] : null, 
+				                      $reqField, 
+				                      isset( $_REQUEST[$op] ) ? $_REQUEST[$op] : null, 
+				                      isset( $_REQUEST[$value] ) ? $_REQUEST[$value] : null
+				                    );
 			}
 			
-			if( !$newRows[$i][3] ) {
+			if( !isset($newRows[$i][3]) || !$newRows[$i][3] ) {
 				$prevEmptyRows++;
 			}
 		}
@@ -232,13 +242,13 @@ class DBSEARCH_FORM_CLASS
 		// remove empty rows
 		$this->rows = array();
 		for( $i = 0; $i < sizeof((array) $newRows); $i++ ) {
-			if( $newRows[$i][3] != '' ) {
+		    if( isset($newRows[$i][3]) && $newRows[$i][3] != '' ) {
 				$this->rows[] = $newRows[$i];
 			}
 		}
 
 		// add one empty rows at end
-		if( $this->settings['rows_autooverhead'] ) {
+		if( isset( $this->settings['rows_autooverhead'] ) && $this->settings['rows_autooverhead'] ) {
 			$this->rows[] = array('', '', '', '');
 			$newEmptyRows = 1;
 		}
@@ -279,7 +289,7 @@ class DBSEARCH_FORM_CLASS
 		$fieldName = g_eql_normalize_func_name($name, 0);
 		
 		if( $loadAll 
-		 || $this->settingsFields["$indentFuncs$fieldName"]
+		 || (isset($this->settingsFields["$indentFuncs$fieldName"]) && $this->settingsFields["$indentFuncs$fieldName"])
 		 || (sizeof((array) $this->settingsFields)==0 && $isDefaultField)
 		 ||	$isDefaultField==2 )
 		{
@@ -291,10 +301,10 @@ class DBSEARCH_FORM_CLASS
 			
 			if( $loadAll )
 			{
-			    // store indent for further usage in index_listattr.php
-			    $this->fieldIndent[]	= $indentCnt;
-			    $this->fieldIsSelected[]= ($this->settingsFields["$indentFuncs$fieldName"] || (sizeof((array) $this->settingsFields)==0 && $isDefaultField) || $isDefaultField==2)? 1 : 0;
-			    $this->fieldIsDefault[]	= $isDefaultField;
+				// store indent for further usage in index_listattr.php
+				$this->fieldIndent[]	= $indentCnt;
+				$this->fieldIsSelected[]= ($this->settingsFields["$indentFuncs$fieldName"] || (sizeof((array) $this->settingsFields)==0 && $isDefaultField) || $isDefaultField==2)? 1 : 0;
+				$this->fieldIsDefault[]	= $isDefaultField;
 			}
 			else
 			{
@@ -303,7 +313,7 @@ class DBSEARCH_FORM_CLASS
 				if( strlen($descr) > 16 ) {
 					$descr = substr($descr, 0, 16) . '...';
 				}
-				$descr = isohtmlentities($descr);
+				$descr = isohtmlentities( strval( $descr ) );
 				
 				if( $indentCnt ) {
 					$descr = "&nbsp; - $descr";
@@ -336,7 +346,7 @@ class DBSEARCH_FORM_CLASS
 		}
 		
 		// add all rows
-		for( $r = 0; $r < sizeof((array) $tableDef->rows); $r++ )
+		for( $r = 0; $r < sizeof((array) $tableDef->rows); $r++ ) 
 		{
 			$rowflags	= $tableDef->rows[$r]->flags;
 			$rowtype	= $rowflags&TABLE_ROW;
@@ -412,7 +422,7 @@ class DBSEARCH_FORM_CLASS
 		$secondaryIsDefault = 0;
 		for( $r = 0; $r < sizeof((array) $tableDef->rows); $r++ ) 
 		{
-			$rowflags	= $tableDef->rows[$r]->flags;
+		    $rowflags	= isset( $tableDef->rows[$r]->flags ) ? $tableDef->rows[$r]->flags : null;
 			$rowtype	= $rowflags&TABLE_ROW;
 			
 			$isDefaultColumn = ($rowflags&TABLE_LIST)? 1 : 0;
@@ -516,12 +526,12 @@ class DBSEARCH_FORM_CLASS
 
 		$ret  = "$formStart<table border=\"0\">";
 		
-		    for( $rowNum = 0; $rowNum < sizeof((array) $this->rows); $rowNum++ )
+			for( $rowNum = 0; $rowNum < sizeof((array) $this->rows); $rowNum++ ) 
 			{
 				$ret .= '<tr>';
 				
 					// and / or
-				    if( sizeof((array) $this->rows) > 1 ) {
+					if( sizeof((array) $this->rows) > 1 ) {
 						$ret .= '<td>';
 							if( $rowNum ) {
 								$ret .= "<select name=\"a{$rowNum}\" size=\"1\">";
@@ -544,7 +554,7 @@ class DBSEARCH_FORM_CLASS
 							}
 							
 							if( $site 
-							 && $this->settings['fieldoptions'] )
+							    && isset($this->settings['fieldoptions']) && $this->settings['fieldoptions'] )
 							{
 								$ret .= $this->_renderOption('DUMMY', '', '');
 								$ret .= $this->_renderOption('OPTIONS', '', htmlconstant('_MOD_DBSEARCH_OPTIONS'));
@@ -570,7 +580,7 @@ class DBSEARCH_FORM_CLASS
 						$ret .= "</select> ";
 
 						// value
-						$ret .= "<input type=\"text\" name=\"v{$rowNum}\" value=\"" .isohtmlentities($this->rows[$rowNum][3]). "\" size=\"30\" maxlength=\"1000\" style=\"width:220pt;\" />";
+						$ret .= "<input type=\"text\" name=\"v{$rowNum}\" value=\"" .isohtmlentities( strval( $this->rows[$rowNum][3] ) ). "\" size=\"30\" maxlength=\"1000\" style=\"width:220pt;\" />";
 					
 					// field/op/value done
 					$ret .= '</td>';
@@ -609,7 +619,7 @@ class DBSEARCH_FORM_CLASS
 	{
 		$eql = '';
 		
-		for( $i = 0; $i < sizeof((array) $this->rows); $i++ )
+		for( $i = 0; $i < sizeof((array) $this->rows); $i++ ) 
 		{
 			$value = trim($this->rows[$i][3]);
 			if( $value!='' ) 
@@ -731,5 +741,3 @@ class DBSEARCH_FORM_CLASS
 		return $eql;
 	}
 }
-
-

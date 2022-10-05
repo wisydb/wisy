@@ -1,16 +1,12 @@
 <?php
 
-
-
 require('config/view_tools.inc.php');
-
-
 
 ?>
 <html>
-<head>
-<meta http-equiv="refresh" content="0; URL=<?php echo $url ?>g<?php echo intval($_REQUEST['id']) ?>"/>
-</head>
-<body>
-</body>
+	<head>
+		<meta http-equiv="refresh" content="0; URL=<?php echo $url ?>g<?php echo (isset($_REQUEST['id']) ? intval($_REQUEST['id']) : null) ?>"/>
+	</head>
+	<body>
+	</body>
 </html>

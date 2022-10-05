@@ -17,12 +17,11 @@ parameters:
 =============================================================================*/
 
 
-
-
 // function generates a random password which is 'readable'
 function genpassword()
 {
-    srand((double)microtime()*1000000); 
+    $seed = (double)microtime()*1000000;
+    srand( (int) $seed ); 
 	$length = rand(6, 9);
     $vowels = array("a", "e", "i", "o", "u"); 
     $cons = array("b", "c", "d", "g", "h", "j", "k", "l", "m", "n", "p", "r", "s", "t", "v", "w", "tr", 
@@ -30,7 +29,8 @@ function genpassword()
      
     $num_vowels = count($vowels); 
     $num_cons = count($cons); 
-     
+    $password = '';
+    
     for($i = 0; $i < $length; $i++){ 
         $password .= $cons[rand(0, $num_cons - 1)] . $vowels[rand(0, $num_vowels - 1)]; 
     } 
@@ -69,6 +69,3 @@ function issimplepassword($password, $loginname)
 	
 	return 0;
 }
-
-
-

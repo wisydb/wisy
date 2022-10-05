@@ -25,15 +25,15 @@ class CONTROL_TEXT_CLASS extends CONTROL_BASE_CLASS
 		$this->dbval = $user_input;
 		
 		// validate must/recommented
-		if( $this->dbval == '' )
+		if( !isset( $this->dbval ) || $this->dbval == '' )
 		{
-			if( $this->row_def->flags&TABLE_MUST ) { $errors[] = htmlconstant('_EDIT_ERREMPTYTEXTFIELD'); }
-			if( $this->row_def->flags&TABLE_RECOMMENTED ) { $warnings[] = htmlconstant('_EDIT_WARNEMPTYTEXTFIELD'); }
+		    if( isset( $this->row_def->flags ) && $this->row_def->flags&TABLE_MUST ) { $errors[] = htmlconstant('_EDIT_ERREMPTYTEXTFIELD'); }
+		    if( isset( $this->row_def->flags ) && $this->row_def->flags&TABLE_RECOMMENTED ) { $warnings[] = htmlconstant('_EDIT_WARNEMPTYTEXTFIELD'); }
 		}
 		
 		// validate against mask "<humanReadable>###<errRule>###<warnRule>###<search1>###<repl1>###<search2>###...
 		$rules = explode('###', $this->row_def->addparam);
-		if( $this->dbval != '' && sizeof($rules)>=2 )
+		if( isset( $this->dbval ) && $this->dbval != '' && sizeof($rules)>=2 )
 		{
 			for( $i = 3; $i < sizeof($rules); $i += 2 )
 			{
@@ -57,12 +57,12 @@ class CONTROL_TEXT_CLASS extends CONTROL_BASE_CLASS
 		}		
 		
 		// error / warning: unique?
-		if( (($this->row_def->flags&TABLE_UNIQUE) || ($this->row_def->flags&TABLE_UNIQUE_RECOMMENTED)) && $this->dbval != '' ) {
+		if( (( isset( $this->row_def->flags ) && $this->row_def->flags&TABLE_UNIQUE) || ($this->row_def->flags&TABLE_UNIQUE_RECOMMENTED)) && $this->dbval != '' ) {
 			$dba = $addparam['dba'];
 			$dba->query("SELECT id FROM " . $this->table_def->name . " WHERE " . $this->row_def->name . "=" . $dba->quote($this->dbval) . " AND id!=".intval($addparam['id']));
 			if( $dba->next_record() ) {
 				$href = '<a href="edit.php?table=' . $this->table_def->name . '&amp;id=' .$dba->f('id'). '" target="_blank" rel="noopener noreferrer">' . $dba->f('id') . '</a>';
-				if( $this->row_def->flags & TABLE_UNIQUE ) {
+				if(  isset( $this->row_def->flags ) && $this->row_def->flags & TABLE_UNIQUE ) {
 					$errors[] = htmlconstant('_EDIT_ERRFIELDNOTUNIQUE', $href);
 				}
 				else {
@@ -78,12 +78,12 @@ class CONTROL_TEXT_CLASS extends CONTROL_BASE_CLASS
 	{
 		// init values
 		$width = -1;
-		if( $this->row_def->prop['ctrl.size'] ) {
+		if( isset( $this->row_def->prop['ctrl.size'] ) && $this->row_def->prop['ctrl.size'] ) {
 			$temp = explode('-', $this->row_def->prop['ctrl.size']);
 			$min_width = intval($temp[0]);
 			$max_width = intval($temp[sizeof($temp)-1]);
 			$def_width = sizeof($temp)==3? intval($temp[1]) : $min_width;
-			if( $this->dbval !== '' ) {
+			if( isset( $this->dbval ) && $this->dbval !== '' ) {
 				$width = $min_width;
 				if( strlen($this->dbval) >= $width ) {
 					$width = strlen($this->dbval);
@@ -112,11 +112,13 @@ class CONTROL_TEXT_CLASS extends CONTROL_BASE_CLASS
 		// render
 		$value = isohtmlspecialchars($this->dbval);
 		
-		if( is_array($this->row_def->prop['value.replace']) ) {
+		if( isset( $this->row_def->prop['value.replace'] ) 
+		 && is_array($this->row_def->prop['value.replace']) ) {
 		    $value = str_replace($this->row_def->prop['value.replace'][0], $this->row_def->prop['value.replace'][1], $value);
 		}
 		
-		if( is_array($this->row_def->prop['value.table_key']) ) { // defines table, key row and value row to look up: e.g. array( 'table' => '...', 'key' => 'id', 'value' => '...')
+		if( isset( $this->row_def->prop['value.table_key'] )
+		 && is_array($this->row_def->prop['value.table_key']) ) { // defines table, key row and value row to look up: e.g. array( 'table' => '...', 'key' => 'id', 'value' => '...')
 		    $dba = $addparam['dba'];
 		    
 		    $table = strval( $this->row_def->prop['value.table_key']['table'] ) ;
@@ -132,7 +134,7 @@ class CONTROL_TEXT_CLASS extends CONTROL_BASE_CLASS
 		            }
 		            
 		            // check if value from displayed table (cell) is present in second table, e.g. tag suggestion in actual tags
-		            $dba->query("SELECT * FROM kurse_stichwort WHERE primary_id=".$addparam['id']." AND attr_id=" . addslashes($val)); 
+		            $dba->query("SELECT * FROM kurse_stichwort WHERE primary_id=".$addparam['id']." AND attr_id=" . addslashes($val));
 		            if( $dba->next_record() ) {
 		                $matched_str = "&#10004; "; // tick
 		                $value_strheap[$val] = $matched_str.$value_strheap[$val]; // converts stored values via key to values from table
@@ -140,26 +142,26 @@ class CONTROL_TEXT_CLASS extends CONTROL_BASE_CLASS
 		        }
 		    }
 		    
-		    if( is_array($value_strheap) && count($value_strheap) && $this->row_def->prop['layout.value.aslabel'] ) // don't output (converted?) values as input values but as lable + hide actual values => no change in CMS
+		    if( isset( $value_strheap ) && is_array($value_strheap) && count($value_strheap) && $this->row_def->prop['layout.value.aslabel'] ) // don't output (converted?) values as input values but as lable + hide actual values => no change in CMS
 		        $label = implode("; ", $value_strheap);
-		        elseif( is_array($value_strheap) && count($value_strheap) )
+		    elseif( isset( $value_strheap ) && is_array($value_strheap) && count($value_strheap) )
 		        $value = implode("; ", $value_strheap);
 		}
 		
-		$html .= ($label ? '<label for="#' . strval( $this->name ) . '" class="'.$this->row_def->prop['layout.descr.class'].'">'.$label.'</label>' : '')
-		.'<input id="#' . strval( $this->name ) . '" name="' . $this->name . '" type="'.( $this->row_def->prop['layout.input.hide'] ? 'hidden' : 'text' ).'" value="'.$value.'"' . $this->tooltip_attr() . $this->readonly_attr();
+		$html .= ( isset( $label ) && $label ? '<label for="#' . strval( $this->name ) . '" class="'.$this->row_def->prop['layout.descr.class'].'">'.$label.'</label>' : '')
+		.'<input id="#' . strval( $this->name ) . '" name="' . $this->name . '" type="'.( isset( $this->row_def->prop['layout.input.hide'] ) && $this->row_def->prop['layout.input.hide'] ? 'hidden' : 'text' ).'" value="'.$value.'"' . $this->tooltip_attr() . $this->readonly_attr();
 		
-		if( ($placeholder=strval($this->row_def->prop['ctrl.placeholder']))!='' ) {
+		if( isset( $this->row_def->prop['ctrl.placeholder'] ) && ($placeholder=strval($this->row_def->prop['ctrl.placeholder'])) != '' ) {
 		    if( $placeholder == '1' ) $placeholder = trim($this->row_def->descr);
 		    $html .= ' placeholder="'.$placeholder.'" ';
 		}
 		
 		$css_classes = '';
 			
-			if( $this->row_def->flags & (TABLE_ACNEST|TABLE_ACNESTSTART|TABLE_ACNORMAL) ) {
+		    if( isset( $this->row_def->flags ) && $this->row_def->flags & (TABLE_ACNEST|TABLE_ACNESTSTART|TABLE_ACNORMAL) ) {
 				$html .= ' data-acdata="'. $this->table_def->name . '.' . $this->row_def->name .'" ';
 				$css_classes = 'acclass';
-				if( $this->row_def->flags & (TABLE_ACNEST|TABLE_ACNESTSTART) ) {
+			    if( isset( $this->row_def->flags ) && $this->row_def->flags & (TABLE_ACNEST|TABLE_ACNESTSTART) ) {
 					$css_classes = 'acnest '.$css_classes;
 				}
 			}

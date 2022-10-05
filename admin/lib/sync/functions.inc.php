@@ -1,13 +1,7 @@
 <?php
 
-
-
-
-
 require_lang('lang/imex');
 require_lang('lang/overview');
-
-
 
 class SYNC_FUNCTIONS_CLASS
 {
@@ -39,8 +33,8 @@ class SYNC_FUNCTIONS_CLASS
 		
 		
 		$site->skin->mainmenuStart();
-			$site->skin->mainmenuItem('Übersicht', "<a href=\"sync.php\">",  $this->page=='overview'? 1 : 0);
-			if( $this->page == 'editjob'  ) {
+			$site->skin->mainmenuItem('&Uuml;bersicht', "<a href=\"sync.php\">",  $this->page=='overview'? 1 : 0);
+			if( isset( $this->page ) && $this->page == 'editjob'  ) {
 				$title = $this->jobid? 'Synchronisierungsaufgabe bearbeiten' : 'Neue Synchronisierungsaufgabe';
 				$site->skin->mainmenuItem($title, "<a href=\"imp.php?page=editjob&amp;job=".$this->jobid."\">",  1);
 			}

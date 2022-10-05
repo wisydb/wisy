@@ -53,7 +53,7 @@ class PLZTOOL_INIT_CLASS
 		if( $strasse_norm == '' || $ort_norm == '' ) echo "FEHLER: Strasse und/oder Ort nicht angegeben fuer add_to_sgv($strasse, $plz, $ort, $stadtteil)<br />";
 	
 		$hash = "$ort_norm/$strasse_norm";
-		if( !is_array( $this->g_plzinfo[ $hash ] ) )
+		if( !isset( $this->g_plzinfo[ $hash ] ) || !is_array( $this->g_plzinfo[ $hash ] ) )
 		{
 			$this->g_plzinfo[ $hash ] = array(
 					'ort_norm'		=>	$ort_norm
@@ -64,14 +64,16 @@ class PLZTOOL_INIT_CLASS
 		}
 		else
 		{
-			if( $this->g_plzinfo[$hash]['plz'] != $plz )
+			$hashPLZ = isset( $this->g_plzinfo[$hash]['plz'] ) ? $this->g_plzinfo[$hash]['plz'] : '';
+			if( $hashPLZ != $plz )
 			{
 				$this->g_plzinfo[$hash]['plz'] = '';
 				$this->g_plzinfo_mehrdeutigkeiten['plz'] ++;
 				//echo "WARNUNG: PLZ mehrdeutig fuer add_to_sgv($strasse, $plz, $ort, $stadtteil)<br />";
 			}
 
-			if( $this->g_plzinfo[$hash]['stadtteil'] != $stadtteil )
+			$hashStadtteil = isset( $this->g_plzinfo[$hash]['stadtteil'] ) ? $this->g_plzinfo[$hash]['stadtteil'] : '';
+			if( $hashStadtteil != $stadtteil )
 			{
 				$this->g_plzinfo[$hash]['stadtteil'] = '';
 				$this->g_plzinfo_mehrdeutigkeiten['stadtteil'] ++;
@@ -148,7 +150,7 @@ class PLZTOOL_INIT_CLASS
 	
 		// daten in tabelle einfügen
 		reset($this->g_plzinfo);
-		foreach($this->g_plzinfo as $hash => $v)
+		foreach($this->g_plzinfo as $hash => $v) 
 		{
 			$ort_norm = addslashes($v['ort_norm']);
 			$strasse_norm = addslashes($v['strasse_norm']);
@@ -203,7 +205,7 @@ class PLZTOOL_INIT_CLASS
 				$buffer = explode("\t", $buffer);
 				$plz	   = trim(strval($buffer[1]));
 				$ort	   = trim(utf8_decode($buffer[4]));
-				if( $plz_added[$plz.$ort] ) {
+				if( isset( $plz_added[$plz.$ort] ) && $plz_added[$plz.$ort] ) {
 					echo "WARNUNG: PLZ $plz ist nicht eindeutig!<br />";
 				}
 				else if( $buffer && intval($plz) > 0 && $ort != '' && $line > 1 /*first line contains column names*/ )

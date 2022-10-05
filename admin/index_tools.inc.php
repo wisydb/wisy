@@ -1,7 +1,5 @@
 <?php
 
-
-
 /*=============================================================================
 Some Tools to create table index and overviews
 ===============================================================================
@@ -23,8 +21,8 @@ parameters:
 // private
 function page_sel_dots($baseUrl, $currRowsPerPage, $currPageNumber, $maxPageNumber, $totalRows, $useSkin)
 {
-	$temp = isohtmlentities($baseUrl) . intval($currPageNumber*$currRowsPerPage);
-	$ahref .= "<a href=\"$temp\" onclick=\"return pageSel('{$baseUrl}',$maxPageNumber,$totalRows,$currRowsPerPage);\">";
+    $temp = isohtmlentities( strval( $baseUrl ) ) . intval($currPageNumber*$currRowsPerPage);
+	$ahref = "<a href=\"$temp\" onclick=\"return pageSel('{$baseUrl}',$maxPageNumber,$totalRows,$currRowsPerPage);\">";
 
 	if( $useSkin ) {
 		global $site;
@@ -38,7 +36,7 @@ function page_sel_dots($baseUrl, $currRowsPerPage, $currPageNumber, $maxPageNumb
 
 function page_sel_link($baseUrl, $currRowsPerPage, $currPageNumber, $hilite, $useSkin)
 {
-	$ahref = '<a href="' . isohtmlentities($baseUrl) . intval($currPageNumber*$currRowsPerPage) . '">';
+    $ahref = '<a href="' . isohtmlentities( strval( $baseUrl ) ) . intval($currPageNumber*$currRowsPerPage) . '">';
 	
 	if( $useSkin )
 	{
@@ -60,7 +58,7 @@ function page_sel_link($baseUrl, $currRowsPerPage, $currPageNumber, $hilite, $us
 
 function rows_per_page_sel_link($baseUrl, $currRowsPerPage, $hilite = 0)
 {
-	$ret = '<a href="' . isohtmlentities($baseUrl) . intval($currRowsPerPage) . '">';
+    $ret = '<a href="' . isohtmlentities( strval( $baseUrl ) ) . intval($currRowsPerPage) . '">';
 		if( $hilite ) { $ret.= '<b class="border">'; }
 		$ret .= $currRowsPerPage;
 		if( $hilite ) { $ret.= '</b>'; }
@@ -77,15 +75,21 @@ function page_sel($baseUrl, $currRowsPerPage, $currOffset, $totalRows, $useSkin 
 {
 	global $page_sel_surround;
 	
+	$currPageNumber = 1;
+	
+	if( !isset($currRowsPerPage) || !$currRowsPerPage)
+	    return '';
+	
 	// find out the current page number (the current page number is zero-based)
 	$currPageNumber = intval($currOffset / $currRowsPerPage);
 
-	// find out the max. page page number (also zero-based)
+    // find out the max. page page number (also zero-based)
 	$maxPageNumber = intval($totalRows / $currRowsPerPage);
 	if( intval($totalRows / $currRowsPerPage) == $totalRows / $currRowsPerPage ) {
-		$maxPageNumber--;
+	  $maxPageNumber--;
 	}
-
+	
+	
 	// find out the first/last page number surrounding the current page (zero-based)
 	$firstPageNumber = $currPageNumber-$page_sel_surround;
 	if( $firstPageNumber < $page_sel_surround ) {
@@ -126,7 +130,7 @@ function rows_per_page_sel($baseUrl, $currRowsPerPage)
 	// get the "number of rows" options string
 	$options = '';
 	$hiliteDone = 0;
-	for( $i = 0; $i < sizeof((array) $rows_per_page_options); $i++ )
+	for( $i = 0; $i < sizeof((array) $rows_per_page_options); $i++ ) 
 	{
 		if( !$hiliteDone 
 		 && $currRowsPerPage<$rows_per_page_options[$i] )
@@ -157,6 +161,3 @@ function rows_per_page_sel($baseUrl, $currRowsPerPage)
 	// done.
 	return trim($options);
 }
-
-
-

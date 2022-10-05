@@ -1,6 +1,5 @@
 <?php
 
-
 /*=============================================================================
 the search formular class - list attributes in a popup window
 ===============================================================================
@@ -80,12 +79,12 @@ function render_options($tableDefName, $scope /* '' for fields or 'columns' */)
 		$settings = array();
 		for( $i = 0; $i < sizeof((array) $fieldNames); $i++ )
 		{
-			if( $_REQUEST["c$i"] && $fieldNames[$i]!='adummyfield' ) {
+		    if( isset($_REQUEST["c$i"]) && $_REQUEST["c$i"] && $fieldNames[$i]!='adummyfield' ) {
 				$settings[$fieldNames[$i]] = 1;
-				if( !$fieldIsDefault[$i] ) $allDefaults = 0;
+				if( !isset($fieldIsDefault[$i]) || !$fieldIsDefault[$i] ) $allDefaults = 0;
 			}
 			else {
-				if( $fieldIsDefault[$i] ) $allDefaults = 0;
+			    if( isset($fieldIsDefault[$i]) && $fieldIsDefault[$i] ) $allDefaults = 0;
 			}
 		}
 
@@ -126,7 +125,7 @@ function render_options($tableDefName, $scope /* '' for fields or 'columns' */)
 		echo '<html><head><title></title></head><body onload="';
 			if( $anythingChanged )
 			{
-				if( $_REQUEST['reloadparentsparent'] ) 
+			    if( isset($_REQUEST['reloadparentsparent']) && $_REQUEST['reloadparentsparent'] ) 
 				{
 					echo	'if( window.opener && !window.opener.closed && window.opener.opener && !window.opener.opener.closed ) {';
 					echo 		"window.opener.opener.location.href='$reload';";
@@ -162,7 +161,7 @@ function render_options($tableDefName, $scope /* '' for fields or 'columns' */)
 	$site->skin->workspaceStart();
 	
 		form_hidden('table',				$tableDef->name);
-		form_hidden('reloadparentsparent',	$_REQUEST['reloadparentsparent']? 1 : 0);
+		form_hidden('reloadparentsparent',	isset($_REQUEST['reloadparentsparent']) && $_REQUEST['reloadparentsparent'] ? 1 : 0);
 		form_hidden('scope',				$scope);
 
 		echo '<table cellpadding="0" cellspacing="0" border="0" title="' .htmlconstant($scope=='columns'? '_MOD_DBSEARCH_COLUMNOPTIONSHINT' : '_MOD_DBSEARCH_OPTIONSHINT', htmlconstant($tableDef->descr)). '"><tr><td nowrap="nowrap">';
@@ -171,10 +170,10 @@ function render_options($tableDefName, $scope /* '' for fields or 'columns' */)
 			$startEnd = array();
 			for( $i = 0; $i < sizeof((array) $fieldNames); $i++ )
 			{
-				if( $fieldIndent[$i] < $fieldIndent[$i+1] ) {
+			    if( isset($fieldIndent[$i]) && isset($fieldIndent[$i+1]) && $fieldIndent[$i] < $fieldIndent[$i+1] ) {
 					$startEnd[$i] = -1;
 				}
-				else if( $fieldIndent[$i] > $fieldIndent[$i+1] ) {
+				else if( isset($fieldIndent[$i]) && isset($fieldIndent[$i+1]) && $fieldIndent[$i] > $fieldIndent[$i+1] ) {
 					$startEnd[$i] = $fieldIndent[$i]-$fieldIndent[$i+1];
 				}
 				else {
@@ -187,9 +186,9 @@ function render_options($tableDefName, $scope /* '' for fields or 'columns' */)
 			{
 				// indent and expand/collapse tree
 				$checkbox = '';
-				if( $startEnd[$i] == -1 ) 
+				if( isset($startEnd[$i]) && $startEnd[$i] == -1 ) 
 				{
-					if( $fieldIndent[$i] ) {
+				    if( isset($fieldIndent[$i]) && $fieldIndent[$i] ) {
 						$checkbox .= '<img src="skins/default/img/1x1.gif" width="' .(24*$fieldIndent[$i]). '" height="13" />';
 					}
 
@@ -201,17 +200,17 @@ function render_options($tableDefName, $scope /* '' for fields or 'columns' */)
 				}
 				
 				// checkbox
-				if( $fieldNames[$i]=='adummyfield' ) 
+				if( isset($fieldNames[$i]) && $fieldNames[$i] == 'adummyfield' ) 
 				{
 					$checkbox .= '&nbsp;';
 				}
 				else
 				{
 					$checkbox .= "<input type=\"checkbox\" name=\"c$i\" id=\"i{$i}\" value=\"1\"";
-					if( $fieldIsSelected[$i] /*|| $fieldIsDefault[$i]==2*/ ) {
+					if( isset($fieldIsSelected[$i]) && $fieldIsSelected[$i] /*|| $fieldIsDefault[$i]==2*/ ) {
 						$checkbox .= ' checked="checked"';
 					}
-					if( $fieldIsDefault[$i]==2 )
+					if( isset($fieldIsDefault[$i]) && $fieldIsDefault[$i] == 2 )
 					{
 						$checkbox .= ' disabled="disabled"';
 					}
@@ -225,10 +224,10 @@ function render_options($tableDefName, $scope /* '' for fields or 'columns' */)
 				$checkbox .= $fieldNames[$i]=='adummyfield'? '<br />' : "</label><br />";
 				
 				// start / end <div>
-				if( $startEnd[$i] == -1 ) {
+				if( isset($startEnd[$i]) && $startEnd[$i] == -1 ) {
 					$checkbox .= "<div id=\"tree$i\" style=\"display:none;\">";
 				}
-				else if( $startEnd[$i] >= 1 ) {
+				else if( isset($startEnd[$i]) && $startEnd[$i] >= 1 ) {
 					for( $j = 0; $j < $startEnd[$i]; $j++ ) {
 						$checkbox .= '</div>';
 					}
@@ -264,5 +263,7 @@ require_lang('lang/dbsearch');
 require_lang('lang/overview');
 require_lang('lang/settings');
 
-render_options($_REQUEST['table'], $_REQUEST['scope']);
+$table = isset($_REQUEST['table']) ? $_REQUEST['table'] : '';
+$scope = isset($_REQUEST['scope']) ? $_REQUEST['scope'] : '';
 
+render_options($table, $scope);

@@ -6,9 +6,7 @@
  *****************************************************************************/
 
 
-
 require_once('functions.inc.php');
-
 
 
 function attr_plugin_render_popup($id)
@@ -16,7 +14,7 @@ function attr_plugin_render_popup($id)
 	global $site;
 	global $db;
 	
-	$site->title = "Verwandte Stichwörter und Themen";
+	$site->title = "Verwandte Stichw&ouml;rter und Themen";
 	$site->pageStart(array('popfit'=>1));
 	form_tag('attr_form', 'print.php', '', '', 'get');
 	
@@ -41,18 +39,18 @@ function attr_plugin_render_popup($id)
 				$scope_note = $db->fs('scope_note');
 				if( $algorithmus == '' )
 				{
-					echo "Keine mit <b>".isohtmlspecialchars($stichwort)."</b> verwandten Stichwörter oder Themen gefunden.";
+					echo "Keine mit <b>".isohtmlspecialchars($stichwort)."</b> verwandten Stichw&ouml;rter oder Themen gefunden.";
 				}
 				else
 				{
-					echo "Mit <b>".isohtmlspecialchars($stichwort)."</b> verwandte Stichwörter oder Themen:<br /><br />";
+					echo "Mit <b>".isohtmlspecialchars($stichwort)."</b> verwandte Stichw&ouml;rter oder Themen:<br><br>";
 					
 					echo $algorithmus; // is already HTML!
 				}
 				
 				if( $scope_note != '' )
 				{
-					echo "<hr /><b>Scope Note</b>:<br /><br />";
+					echo "<hr /><b>Scope Note</b>:<br><br>";
 					echo isohtmlspecialchars($scope_note);
 				}
 			}
@@ -71,7 +69,7 @@ function attr_plugin_render_popup($id)
 
 
 
-if( $_REQUEST['module'] == 'attr_plugin_kurse_stichwort' )
+if( isset($_REQUEST['module']) && $_REQUEST['module'] == 'attr_plugin_kurse_stichwort' )
 	attr_plugin_render_popup(intval($_REQUEST['id']));
 
 
@@ -101,10 +99,9 @@ function attr_plugin_kurse_stichwort(&$in)
 				if( $algorithmus != '' || $scope_note != '' )
 				{
 					$url = 'module.php?module=attr_plugin_kurse_stichwort&id='.$id;
-					echo '<a href="'.isohtmlspecialchars($url).'" title="Verwandte Stichwörter und Themen anzeigen" target="kurst_stichw" onclick="return popup(this,500,420);">&nbsp;?&nbsp;</a>';
+					echo '<a href="'.isohtmlspecialchars($url).'" title="Verwandte Stichw&ouml;rter und Themen anzeigen" target="kurst_stichw" onclick="return popup(this,500,420);">&nbsp;?&nbsp;</a>';
 				}
 			}
 			break;
 	}
 }
-

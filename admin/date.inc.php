@@ -108,11 +108,11 @@ function check_sql_date($d, $mayBeUnset = 0)
 	$d = str_replace(':', '-', $d);
 	$d = explode('-', $d);
 	
-	if( !checkdate($d[1], $d[2], $d[0]) ) {
+	if( !checkdate( (isset($d[1]) ? $d[1] : null) , (isset($d[2]) ? $d[2] : null) , (isset($d[0]) ? $d[0] : null) ) ) {
 		return htmlconstant('_ERRINVALIDDATE');
 	}
 	
-	if( $d[3]<0 || $d[3]>23 || $d[4]<0 || $d[4]>59 || $d[5]<0 || $d[5]>59 ) {
+	if( isset($d[3]) && $d[3]<0 || isset($d[3]) && $d[3]>23 || isset($d[4]) && $d[4]<0 || isset($d[4]) && $d[4]>59 || isset($d[5]) && $d[5]<0 || isset($d[5]) && $d[5]>59 ) {
 		return htmlconstant('_ERRINVALIDTIME');
 	}
 	
@@ -126,7 +126,14 @@ function sql_date_to_timestamp($d)
 	$d = str_replace(':', '-', $d);
 	$d = explode('-', $d);
 	
-	return mktime(intval($d[3]), intval($d[4]), intval($d[5]), intval($d[1]), intval($d[2]), intval($d[0]));
+	
+	return mktime( isset($d[3]) ? intval($d[3]) : 0, 
+	               isset($d[4]) ? intval($d[4]) : 0, 
+	               isset($d[5]) ? intval($d[5]) : 0, 
+	               isset($d[1]) ? intval($d[1]) : 0, 
+	               isset($d[2]) ? intval($d[2]) : 0, 
+	               isset($d[0]) ? intval($d[0]) : 0
+	              );
 }
 
 
@@ -295,7 +302,7 @@ function sql_date_from_human_correctyear($y)
 		$y = date('Y');
 	}
 	else if( strlen($y)==2 ) {
-	    $y = lzerotrim($y) + ($y < 60 ? 2000 : 1900);
+		$y = lzerotrim($y) + ($y < 60 ? 2000 : 1900);
 	}
 	else  {
 		$y = lzerotrim($y);
@@ -461,7 +468,7 @@ function sql_date_from_human_1sttry($s, $type = 'date' /*or datetime or dateopt*
 function sql_date_from_human_2ndtry($s, &$ret2)
 {
 	// convert spacing characters to spaces
-	$s = trim(strtr($s,	"_.:,;/+\\", 
+	$s = trim(strtr( strval($s),	"_.:,;/+\\", 
 			  			"         "));
 	// remove double spaces
 	while( strpos($s, '  ') ) {

@@ -50,11 +50,12 @@ class COLTABLE_CLASS
 	{
 		$ret = '';
 		
-		if( !$this->cellEnded ) {
+		if( !isset( $this->cellEnded ) || !$this->cellEnded ) {
 			$ret .= $this->cellEnd();
 		}
 	
-		if( $this->cells >= $this->cols ) {
+		if( isset( $this->cells ) && isset( $this->cols ) 
+		    && $this->cells >= $this->cols ) {
 			$ret .= '</tr><tr>';
 			$this->cells = 0;
 		}
@@ -75,7 +76,7 @@ class COLTABLE_CLASS
 	function cellEnd()
 	{
 		$ret = '</td>';
-		if( $this->addSpacingCell ) {
+		if( isset( $this->addSpacingCell ) && $this->addSpacingCell ) {
 			$ret .= '<td>&nbsp;</td>';
 		}
 		
@@ -89,7 +90,7 @@ class COLTABLE_CLASS
 	{
 		$ret = '';
 
-		if( !$this->cellEnded ) {
+		if( !isset( $this->cellEnded ) || !$this->cellEnded ) {
 			$ret .= $this->cellEnd();
 		}
 		
@@ -104,6 +105,3 @@ class COLTABLE_CLASS
 		return $ret;
 	}
 }
-
-
-

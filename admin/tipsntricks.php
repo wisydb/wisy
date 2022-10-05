@@ -1,6 +1,5 @@
 <?php
 
-
 /*=============================================================================
 Tips'n'Tricks for the program
 ===============================================================================
@@ -80,7 +79,9 @@ function tipsntricks_get_next()
 		}
 	}
 
-	if( strval($settings[ $_SESSION['g_session_language'] ]) == '' ) {
+	if( !isset($_SESSION['g_session_language']) 
+	 || !isset($settings[ $_SESSION['g_session_language'] ]) 
+	 || strval($settings[ $_SESSION['g_session_language'] ]) == '' ) {
 		$settings[ $_SESSION['g_session_language'] ] = -1;
 	}
 	
@@ -98,13 +99,13 @@ function tipsntricks_get_next()
 	}
 	
 	if( !$nextTip ) {
-	    reset($g_tipsntricks);
-	    $key = array_keys($g_tipsntricks);
-	    $key = $key[0]; // array_key_first() only > php7
-	    $nextTip = array_values($g_tipsntricks);
-	    $nextTip = $nextTip[0];
-	    $settings[ $_SESSION['g_session_language'] ] = $key;
-	    $tipNum = 0;
+		reset($g_tipsntricks);
+		$key = array_keys($g_tipsntricks);
+		$key = $key[0]; // array_key_first() only > php7
+		$nextTip = array_values($g_tipsntricks);
+		$nextTip = $nextTip[0];
+		$settings[ $_SESSION['g_session_language'] ] = $key;
+		$tipNum = 0;
 	}
 	
 	// save settings
@@ -142,8 +143,9 @@ if( isset($_REQUEST['showtip']) )
 		$tipNum = 0;
 		foreach($g_tipsntricks as $key => $value)
 		{
-			if( $tipNum == $_REQUEST['showtip'] 
-			 || ($_REQUEST['showtip']>=100000 && $_REQUEST['showtip']-100000==intval($key)) ) 
+		    $showTip = isset($_REQUEST['showtip']) ? $_REQUEST['showtip'] : null;
+			if( $tipNum == $showTip 
+			    || ( $showTip >= 100000 && $showTip -100000 == intval($key)) ) 
 			{
 				$site->skin->msgStart('i', 'no close');
 					$tipsntricks2html = new WIKI2HTML_CLASS;
@@ -164,5 +166,3 @@ if( isset($_REQUEST['showtip']) )
 		
 	$site->pageEnd();
 }
-
-

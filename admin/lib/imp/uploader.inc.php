@@ -9,13 +9,13 @@ Author:
 
 ===============================================================================
 
-- die max. Uploadgröße wird von upload_max_filesize, post_max_size UND 
+- die max. Uploadgroessee wird von upload_max_filesize, post_max_size UND 
   memory_limit gesteuert. Grob gesprochen, ist der kleinste dieser drei Werte
-  die max. Uploadgröße.
-  post_max_size sollte dabei aber größer als upload_max_filesize sein - ansonsten
-  kann kein vernünftiger Upload-Fehler bei zu großen Dateien ausgegeben werden.
+  die max. Uploadgroesse.
+  post_max_size sollte dabei aber groesser als upload_max_filesize sein - ansonsten
+  kann kein vernuenftiger Upload-Fehler bei zu grossen Dateien ausgegeben werden.
 
-- <input type="file" /> läßt sich nicht vernünftig style, ein Hack ist unter
+- <input type="file" /> l..t sich nicht vernuenftig style, ein Hack ist unter
   http://www.quirksmode.org/dom/inputfile.html beschrieben (verwendet opaque um 
   das eigentliche Element unsichtbar, aber noch klickbar zu machen ...)
 
@@ -73,12 +73,12 @@ class IMP_UPLOADER_CLASS
 	
 	function form_submitted()
 	{
-		return $_REQUEST['uploadsubsequent']? true : false;
+	    return (isset($_REQUEST['uploadsubsequent']) && $_REQUEST['uploadsubsequent'] ? true : false);
 	}
 	
 	function get_uploaded_file()
 	{
-		$ret = $_FILES['uploadfile'];
+	    $ret = isset($_FILES['uploadfile']) ? $_FILES['uploadfile'] : '';
 		
 		if( $ret['error'] == UPLOAD_ERR_INI_SIZE )
 		{

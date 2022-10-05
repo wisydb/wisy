@@ -31,7 +31,7 @@ example URL for a direct dump:
 
 
 
-if( isset($_REQUEST['exp']) && intval($_REQUEST['ui'])==0 )
+if( isset($_REQUEST['exp']) && (!isset($_REQUEST['ui']) || intval($_REQUEST['ui'])==0) )
 {
 	// a dump is requested; force a lazy access check (the apikey password is checked later on)
 	define('G_SKIP_LOGIN', 1);
@@ -47,4 +47,3 @@ else
 // render the pages
 $GLOBALS['g_export_renderer'] = new EXP_EXPORTRENDERER_CLASS; // g_export_renderer is also used form other scopes
 $GLOBALS['g_export_renderer']->handle_request();
-

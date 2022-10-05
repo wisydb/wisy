@@ -1,4 +1,5 @@
 <?php
+
 /******************************************************************************
 Simple SQLite wrapper
 *******************************************************************************
@@ -59,10 +60,11 @@ class G_SQLITE_CLASS
 
 	function open($filename)
 	{
-		if( $this->dbHandle ) die('there is already a file assigned to this sqlite object.');
+	    if( isset( $this->dbHandle ) && $this->dbHandle ) die('there is already a file assigned to this sqlite object.');
 		
 		// file already opened? (we use the same handle in this case)
-		if( $GLOBALS['g_sqlite_handles'][$filename]['usage'] >= 1 )
+		if( isset( $GLOBALS['g_sqlite_handles'] ) && isset( $GLOBALS['g_sqlite_handles'][$filename] ) && isset( $GLOBALS['g_sqlite_handles'][$filename]['usage'] )
+		    && $GLOBALS['g_sqlite_handles'][$filename]['usage'] >= 1 )
 		{
 			$GLOBALS['g_sqlite_handles'][$filename]['usage']++;
 			$this->dbHandle = $GLOBALS['g_sqlite_handles'][$filename]['handle'];
@@ -96,7 +98,7 @@ class G_SQLITE_CLASS
 			$this->error_str = $e->getMessage();
 		}
 		
-		if( !$this->dbHandle )
+		if( !isset( $this->dbHandle ) || !$this->dbHandle )
 		{
 			return false;
 		}
@@ -110,9 +112,9 @@ class G_SQLITE_CLASS
 		
 	function close()
 	{
-		if( $this->dbHandle )
+	    if( isset( $this->dbHandle ) && $this->dbHandle )
 		{
-			if( $this->dbHandle != $GLOBALS['g_sqlite_handles'][$this->filename]['handle'] ) die('bad sqlite handle.');
+		    if( !isset( $GLOBALS['g_sqlite_handles'] ) || $this->dbHandle != $GLOBALS['g_sqlite_handles'][$this->filename]['handle'] ) die('bad sqlite handle.');
 			
 			$GLOBALS['g_sqlite_handles'][$this->filename]['usage']--;
 			if( $GLOBALS['g_sqlite_handles'][$this->filename]['usage'] == 0 )
@@ -140,13 +142,25 @@ class G_SQLITE_CLASS
 	private $currRecord;
 	function query($query)
 	{
-		$this->resultHandle = $this->dbHandle->query($query);
+	    // if( strpos($query, 'FROM ORDER') !== FALSE ) ; // = table missing? That should'nt be! else { // query... }	    
+	    // checking for "$this->resultHandle !== false" later is not enough > PHP 8 if query causes error (like table in import.mix or in query missing) !    
+	    try{ 
+	       $this->resultHandle = $this->dbHandle->query($query);
+	    } catch (Exception $e) {
+	       // Don't display b/c of constant repeat and confusion ?:
+    	   // echo "<script>alert( 'Die folgende Abrage f'+unescape('%FC')+'hrte zu einem Fehler!' + unescape('%0A%0A') + ' \"" . $query . "\"' + unescape('%0A%0A') "
+	       // . " + 'Es kann jedoch seine Richtigkeit haben (Import nicht beeintr'+unescape('%E4')+'chtigt), wenn z.B. eine .mix-Datei importiert wird, die eine Server-spezifische Tabelle, wie \"kurse_stichwort\" nicht aufweist.');</script>";
+	       $this->error_str = $e->getMessage(); // doesn't do much
+	       return false;
+	       
+	    }
+
 		return $this->resultHandle !== false;
 	}
 	
 	function next_record()
 	{
-		if( !$this->resultHandle )
+	    if( !isset( $this->resultHandle ) || !$this->resultHandle )
 			return false;
 
 		$this->currRecord = $this->resultHandle->fetch(PDO::FETCH_ASSOC);		
@@ -155,7 +169,10 @@ class G_SQLITE_CLASS
 	
 	function fs($fieldname) // return the given field, no additional stripslashes() or sth. like that needed!
 	{
-		return $this->currRecord[$fieldname];
+	    if( isset($this->currRecord[$fieldname]) )
+		  return $this->currRecord[$fieldname];
+	    else
+	      return null;
 	}
 	
 	// handle transactions - this is WAY faster than using autocommit!
@@ -190,15 +207,15 @@ class G_SQLITE_CLASS
 	{
 		// quote() should be used for fields in query() (instead of addslashes())
 		// note, that quote() also adds the quotes to the string!
-		return $this->dbHandle->quote($str);
+		return $this->dbHandle->quote( strval($str) );
 	}
 	
 	function get_last_error()
 	{
 		$ret = '';
-		if( $this->dbHandle ) {
+		if( isset( $this->dbHandle ) && $this->dbHandle ) {
 			$code = $this->dbHandle->errorInfo ();
-			if( $code[1] ) {
+			if( isset( $code[1] ) && $code[1] ) {
 				$ret = sprintf('%s (%d)', $code[2], $code[1]);
 			}
 		}
@@ -214,4 +231,3 @@ class G_SQLITE_CLASS
 		return $this->next_record()? 1 : 0;
 	} 	
 };
-

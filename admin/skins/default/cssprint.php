@@ -6,7 +6,7 @@
 	header('Content-type: text/css');
 
 	// calcualte the fontsize
-	$fontsize = $_REQUEST['pt'];
+	$fontsize = isset( $_REQUEST['pt'] ) ? $_REQUEST['pt'] : null;
 	
 	if( $fontsize < 4 || $fontsize > 40 ) {
 		$fontsize = 10;

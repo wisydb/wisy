@@ -1,7 +1,5 @@
 <?php
 
-
-
 /*=============================================================================
 login functions
 ===============================================================================
@@ -42,22 +40,22 @@ function get_first_accecssible_table()
 
 
 function login_screen()
-{
-	global $site;
-	global $denymessage;
-
-	$enter_loginname = strval( $_REQUEST['enter_loginname'] ); 
-	$enter_password = '';  
-	$resetlogin = $_REQUEST['resetlogin'];
-	
-	require_lang('lang/login');
-
-	$db = new DB_Admin;
-
-	if( defined('FORCE_SECURE_HOST') && FORCE_SECURE_HOST && $_SERVER['HTTPS']!='on'
-	 && !$_REQUEST['enter_subsequent'] && !isset($_REQUEST['logout']) ) {
-		redirect('https://' . SECURE_HOST . '/'.$site->adminDir.'/index.php?enter_subsequent=1');
-	}
+{    
+    global $site;
+    global $denymessage;
+    
+    $enter_loginname = isset( $_REQUEST['enter_loginname'] ) ? strval( $_REQUEST['enter_loginname'] ) : '';
+    $enter_password = '';
+    $resetlogin = isset( $_REQUEST['resetlogin'] ) ? $_REQUEST['resetlogin'] : null;
+    
+    require_lang('lang/login');
+    
+    $db = new DB_Admin;
+    
+    if( defined('FORCE_SECURE_HOST') && FORCE_SECURE_HOST && ( !isset( $_SERVER['HTTPS']  ) || $_SERVER['HTTPS']!='on' )
+        && ( !isset( $_REQUEST['enter_subsequent'] ) || !$_REQUEST['enter_subsequent'] ) && !isset($_REQUEST['logout']) ) {
+            redirect('https://' . SECURE_HOST . '/'.$site->adminDir.'/index.php?enter_subsequent=1');
+        }
 
 	//
 	// get login data from cookie
@@ -83,10 +81,10 @@ function login_screen()
 	//
 	// additional message
 	//
-	if( $_REQUEST['logout']=='pwchanged' ) {
+        if( isset( $_REQUEST['logout'] ) && $_REQUEST['logout'] == 'pwchanged' ) {
 		$site->msgAdd(htmlconstant('_LOGIN_PASSWORDCHANGED'), 'i');
 	}
-	else if( $_REQUEST['logout'] && regGet('msg.afterlogout', '') ) {
+	else if(isset( $_REQUEST['logout'] ) && $_REQUEST['logout'] && regGet('msg.afterlogout', '') ) {
 		$msg = regGet('msg.afterlogout', '');
 		if( $msg ) {
 			$site->msgAdd("\n\n$msg\n\n", 'i');
@@ -102,6 +100,7 @@ function login_screen()
 	//
 	// render page...
 	//
+
 	$site->pageStart();
 	
 	if ($denymessage) {
@@ -138,7 +137,7 @@ function login_screen()
 					$db->query("SELECT loginname FROM user WHERE NOT(loginname LIKE 'template%') ORDER BY loginname");
 					while( $db->next_record() ) {
 						$currLoginname = $db->fs('loginname');
-						$opts .= $currLoginname . '###' . isohtmlentities($currLoginname) . '###';
+						$opts .= $currLoginname . '###' . isohtmlentities( strval( $currLoginname ) ) . '###';
 						if( $enter_loginname=='' || $enter_loginname==$currLoginname ) {
 							$isInList = 1;
 						}
@@ -181,20 +180,20 @@ function login_screen()
 			reset($langs);
 			if( sizeof((array) $langs)==1 )
 			{
-			    $abbr = array_keys($langs);
-			    $abbr = $abbr[0]; // array_key_first() only > php7
-			    form_hidden('g_do_session_language_change', $abbr);
+				$abbr = array_keys($langs);
+				$abbr = $abbr[0]; // array_key_first() only > php7
+				form_hidden('g_do_session_language_change', $abbr);
 			}
 			else
 			{
-			    $opts = '';
-			    foreach($langs as $abbr => $name) {
-			        if( $opts ) { $opts .= '###'; }
-			        $opts .= "$abbr###$name ($abbr)";
-			    }
-			    form_control_start(htmlconstant('_LANGUAGE'));
-			    form_control_enum('g_do_session_language_change', $_SESSION['g_session_language'], $opts);
-			    form_control_end();
+				$opts = '';
+				foreach($langs as $abbr => $name) {
+					if( $opts ) { $opts .= '###'; }
+					$opts .= "$abbr###$name ($abbr)";
+				}
+				form_control_start(htmlconstant('_LANGUAGE'));
+				form_control_enum('g_do_session_language_change', ( isset( $_SESSION['g_session_language'] ) ? $_SESSION['g_session_language'] : null ), $opts);
+				form_control_end();
 			}
 			
 			//
@@ -268,31 +267,33 @@ function login_check()
     $loginversuche = $db->fs('COUNT');
     if ($loginversuche > 50) {
         /* if($_REQUEST['enter_subsequent']) {
-         $sqlstmt = "UPDATE x_logins SET freischalten = now()+ 144000 WHERE AES_DECRYPT(ip, '$salt') = '$ip'";
-         $db->query($sqlstmt);
-         }
-         $denymessage = "Zu viele falsche Login-Versuche. Ihre IP-Adresse wurde f&uuml;r 24 Stunden gesperrt";*/
+            $sqlstmt = "UPDATE x_logins SET freischalten = now()+ 144000 WHERE AES_DECRYPT(ip, '$salt') = '$ip'";
+            $db->query($sqlstmt);
+        }
+        $denymessage = "Zu viele falsche Login-Versuche. Ihre IP-Adresse wurde f&uuml;r 24 Stunden gesperrt"; */
     } else if ($loginversuche > 10) {
-        /* if($_REQUEST['enter_subsequent']) {
-         $sqlstmt = "UPDATE x_logins SET freischalten = now()+ 1000 WHERE AES_DECRYPT(ip, '$salt') = '$ip'";
-         $db->query($sqlstmt);
-         }
-         $denymessage = "Zu viele falsche Login-Versuche. Ihre IP-Adresse wurde f&uuml;r 10 Minuten gesperrt"; */
+     /* if($_REQUEST['enter_subsequent']) {
+            $sqlstmt = "UPDATE x_logins SET freischalten = now()+ 1000 WHERE AES_DECRYPT(ip, '$salt') = '$ip'";
+            $db->query($sqlstmt);
+        }
+        $denymessage = "Zu viele falsche Login-Versuche. Ihre IP-Adresse wurde f&uuml;r 10 Minuten gesperrt"; */
     }
+    
 
 	// if a role-confirmation screen was printed, the user already entered the password successfully; read it from the session in this case
 	if( isset($_REQUEST['role_confirm_ok']) ) {
-		$_REQUEST['enter_password'] = strval($_SESSION['g_role_confirm_login_credential_pw']);
+	    $_REQUEST['enter_password'] = isset($_SESSION['g_role_confirm_login_credential_pw']) ? strval($_SESSION['g_role_confirm_login_credential_pw']) : '';
 	}
-	else if( isset($_REQUEST['role_confirm_cancel']) ) {
+	else if( isset($_REQUEST['role_confirm_cancel']) && isset($_REQUEST['enter_subsequent'])  ) {
 		unset($_REQUEST['enter_subsequent']);
 	}
-	unset($_SESSION['g_role_confirm_login_credential_pw']);
+	if( isset( $_SESSION['g_role_confirm_login_credential_pw'] ) )
+	   unset( $_SESSION['g_role_confirm_login_credential_pw'] );
 
 	// get loginname/password from the request
-	$enter_loginname = strval( $_REQUEST['enter_loginname'] );
-	$enter_password = strval( $_REQUEST['enter_password'] );
-	$resetlogin = $_REQUEST['resetlogin'];
+	$enter_loginname = isset( $_REQUEST['enter_loginname'] ) ? strval( $_REQUEST['enter_loginname'] ) : null;
+	$enter_password = isset( $_REQUEST['enter_password'] ) ? strval( $_REQUEST['enter_password'] ) : null;
+	$resetlogin = isset( $_REQUEST['resetlogin'] ) ? $_REQUEST['resetlogin'] : null;
 	
 	require_lang('lang/login');
 
@@ -306,7 +307,7 @@ function login_check()
 	$db->next_record();
 	if( $db->f('cnt') <= 1 /*user 'template' may be created before, so there should exist two users*/ ) 
 	{
-		$today = strftime("%Y-%m-%d %H:%M:%S");
+	    $today = ftime("%Y-%m-%d %H:%M:%S");
 		$db->query("");
 		$logwriter->log('user', $db->insert_id(), 0, 'create');
 	}
@@ -314,7 +315,7 @@ function login_check()
 	//
 	// anything to check?
 	//
-	if( !$_REQUEST['enter_subsequent'] 
+	if( ( !isset( $_REQUEST['enter_subsequent'] ) || !$_REQUEST['enter_subsequent'] ) 
 	 ||  $enter_loginname == '' 
 	 ||  $enter_loginname == ' as ' 
 	 || !isset($enter_password) )
@@ -340,11 +341,11 @@ function login_check()
 			$missing_features[] = 'Cookies';
 		}
 	
-		if( strval($_REQUEST['enter_displaynoneform1'])!='works1'
-		 || strval($_REQUEST['enter_displaynoneform2'])!='works2'
+		if( !isset($_REQUEST['enter_displaynoneform1']) || strval($_REQUEST['enter_displaynoneform1'])!='works1'
+		 || !isset($_REQUEST['enter_displaynoneform2']) || strval($_REQUEST['enter_displaynoneform2'])!='works2'
 		 ||  isset($_REQUEST['enter_displaynoneform3'])
-		 || strval($_REQUEST['enter_displaynoneform4'])!='works4'
-		 || strval($_REQUEST['enter_displaynoneform5'])!='works5' )
+		 || !isset($_REQUEST['enter_displaynoneform4']) || strval($_REQUEST['enter_displaynoneform4'])!='works4'
+		 || !isset($_REQUEST['enter_displaynoneform5']) || strval($_REQUEST['enter_displaynoneform5'])!='works5' )
 		{
 			$missing_features[] = 'SubmitInvisibleFormElements'; //  this feature is missing in some older Opera versions, however, always check this!
 		}
@@ -360,8 +361,8 @@ function login_check()
 	//
 	// get loginname for the user and the loginname to log-in as
 	//
-	$logwriter->addData('ip', $_SERVER['REMOTE_ADDR']);
-	$logwriter->addData('browser', $_SERVER['HTTP_USER_AGENT']);
+	$logwriter->addData('ip', (isset( $_SERVER['REMOTE_ADDR'] ) ? $_SERVER['REMOTE_ADDR'] : '') );
+	$logwriter->addData('browser', ( isset( $_SERVER['HTTP_USER_AGENT'] ) ? $_SERVER['HTTP_USER_AGENT'] : '' ) );
 	$logwriter->addData('loginname', $enter_loginname);
 	
 	if( regGet('login.as', 0) && strlen($enter_loginname) && strpos($enter_loginname, ' as ') ) {
@@ -397,9 +398,9 @@ function login_check()
 	$db_password		= $db->fs('password');
 	$db_last_login		= $db->f('last_login');
 	$db_num_login_errors= $db->f('num_login_errors');
-	$cookie_password	= explode('&', $_COOKIE['g_cookie_login']);
-	$cookie_passwordlen	= $cookie_password[2];
-	$cookie_password	= urldecode($cookie_password[3]);
+	$cookie_password	= isset( $_COOKIE['g_cookie_login'] ) ? explode('&', $_COOKIE['g_cookie_login']) : '';
+	$cookie_passwordlen	= isset( $cookie_password[2] ) ? $cookie_password[2] : 0;
+	$cookie_password	= isset( $cookie_password[3] ) ? urldecode( $cookie_password[3] ) : '';
 	if	(
 			$db_num_login_errors<1000 /* about 500 login errors to lock the accout */
 	 		&&
@@ -426,7 +427,7 @@ function login_check()
 	{
 		// if the password is not yet crypted, crypt it now
 		if( strlen($db_password) < 12 ) {
-			$db_password = crypt($db_password);
+			$db_password = crypt($db_password, $salt);
 			$db->query("UPDATE user SET password='" .addslashes($db_password). "' WHERE id=$db_id");
 		}
 		
@@ -434,7 +435,7 @@ function login_check()
 		/*
 		if( regGet('login.remember', 0) ) {
 			if( isset($_REQUEST['enter_rememberlogin']) ) {
-				setcookie('g_cookie_login', urlencode($_SESSION['g_session_language'])."&".urlencode($enter_loginname)."&".strlen($enter_password)."&".urlencode(crypt($db_password)), time()+(10*24*60*60)); // expires in 10 days
+				setcookie('g_cookie_login', urlencode($_SESSION['g_session_language'])."&".urlencode($enter_loginname)."&".strlen($enter_password)."&".urlencode(crypt($db_password, $salt)), time()+(10*24*60*60)); // expires in 10 days
 			}
 			else if( $_COOKIE['g_cookie_login'] ) {
 				setcookie('g_cookie_login'); // remove cookie
@@ -445,13 +446,15 @@ function login_check()
 		// set last login time, reset login error counter
 		$new_login_errors = $enter_as? 0 : 1;
 		// last_login_id NOT (to be used) for security purposes!
-		$db->query("UPDATE user SET last_login_id='" .berechne_loginid(). "', last_login='" .strftime("%Y-%m-%d %H:%M:%S"). "', num_login_errors=$new_login_errors WHERE id=$db_id");
+		$db->query("UPDATE user SET last_login_id='" .berechne_loginid(). "', last_login='" .ftime("%Y-%m-%d %H:%M:%S"). "', num_login_errors=$new_login_errors WHERE id=$db_id");
+		
+		
 		// setcookie("editor", "yes");
 	}
 	else
 	{
 		// invalid password
-		$db->query("UPDATE user SET last_login_error='" .strftime("%Y-%m-%d %H:%M:%S"). "', num_login_errors=" .($db_num_login_errors+2). " WHERE id=$db_id");
+	    $db->query("UPDATE user SET last_login_error='" .ftime("%Y-%m-%d %H:%M:%S"). "', num_login_errors=" .($db_num_login_errors+2). " WHERE id=$db_id");
 		$site->msgAdd(htmlconstant('_LOGIN_ERR'));
 
 		$logwriter->addData('msg', 'Benutzer "'.$enter_loginnameuser.'" hat ein falsches Passwort eingegeben.');
@@ -521,14 +524,15 @@ function login_check()
 	$_SESSION['g_session_userid'] = $user_about_to_log_in;
 	$_SESSION['g_session_userloginname'] = $db->fs('loginname');
 	
-	$logwriter->log('user', $_SESSION['g_session_userid'], $_SESSION['g_session_userid'], 'login');
+	$userID = isset( $_SESSION['g_session_userid'] ) ? $_SESSION['g_session_userid'] : null;
+	$logwriter->log('user', $userID, $userID, 'login');
 	
 	//
 	// get 'real' user name
 	//
 	$username = $db->fs('name');
 	if( !$username ) {
-		$username = $_SESSION['g_session_userloginname'];
+	    $username = isset( $_SESSION['g_session_userloginname'] ) ? $_SESSION['g_session_userloginname'] : '';
 	}
 	$msg_to_user = $db->fs('msg_to_user');
 
@@ -556,7 +560,7 @@ function login_check()
 	$sqlstmt = "DELETE FROM x_logins WHERE AES_DECRYPT(ip, '$salt') = '$ip'";  // bei erfolgreichem login werden die Versuche geloescht
 	$db->query($sqlstmt);
 	
-	if ($_REQUEST['resetlogin']) {
+	if( isset( $_REQUEST['resetlogin'] ) && $_REQUEST['resetlogin'] ) {
 	    regSet("index.view.kurse.lastquery", '', '');
 	    regSet("index.view.kurse.rows", '20', '');
 	    regSet("index.view.anbieter.lastquery", '', '');
@@ -623,4 +627,3 @@ function login_check()
 	redirect($url);
 	exit();
 }
-

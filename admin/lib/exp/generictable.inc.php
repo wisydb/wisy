@@ -1,11 +1,25 @@
 <?php
 
-
-
 define('TABLE_EXP_TYPE_NORMALDATA',		1);
 define('TABLE_EXP_TYPE_ENUM',			2);
 define('TABLE_EXP_TYPE_EXTRA', 			3);
 
+// > PHP7 !
+define('NO_MANUAL_DECLARATION', array('sync_src', 
+                                      'id', 
+                                      'user_created', 
+                                      'user_modified', 
+                                      'user_grp', 
+                                      'user_access'. 
+                                      'date_created', 
+                                      'date_modified', 
+                                      'primary_id', 
+                                      'structure_pos', 
+                                      'primary_id', 
+                                      'name', 
+                                      'tble', 
+                                      'ids')
+       );
 
 
 
@@ -23,16 +37,14 @@ class EXP_GENERICTABLE_CLASS extends EXP_PLUGIN_CLASS
 	
 	
 	// functions that should be implemented in derived classes
-	function tableStart($name, $type)		{ die('tableStart() missing');	}
-	function tableEnd()						{ die('tableEnd() missing');	}
-
-	function declareStart()					{ die('declareStart() missing');}
-	function declareField($name, $type)		{ die('declareField() missing');}
-	function declareEnd()					{ die('declareEnd() missing');	}
-
-	function recordStart()					{ die('recordStart() missing');	}
-	function recordField($data)				{ die('recordField() missing');	}
-	function recordEnd()					{ die('recordEnd() missing');	}
+	function tableStart($name, $type) { die('tableStart() missing'); }
+	function tableEnd() { die('tableEnd() missing'); }
+	function declareStart() { die('declareStart() missing'); }
+	function declareField($name, $type, $ignoreAsDuplicate = false) { die('declareField() missing'); }
+	function declareEnd() { die('declareEnd() missing'); }
+	function recordStart() { die('recordStart() missing'); }
+	function recordField($data) { die('recordField() missing'); }
+	function recordEnd() { die('recordEnd() missing'); }
 	
 
 	// getTableDefLinks() returns an array with information about how tables are linked with each other
@@ -44,17 +56,27 @@ class EXP_GENERICTABLE_CLASS extends EXP_PLUGIN_CLASS
 			$table = $Table_Def[$t];
 			$rows  = $table->rows;
 			for( $r = 0; $r < sizeof((array) $rows); $r++ ) {
-				$row = $rows[$r];
-				switch( $row->flags&TABLE_ROW ) {
+			
+			    $row = $rows[$r];
+				$rowFlags = isset($row->flags) ? $row->flags : null;
+				$rowName = isset($row->name) ? $row->name : null;
+				$addParamName = isset($row->addparam->name) ? $row->addparam->name : null;
+				$tableName = isset($table->name) ? $table->name : '';
+				
+				switch( $rowFlags&TABLE_ROW ) {
 					case TABLE_SATTR:
-						$tdl[ $table->name ]['fields']  .= ',' . $row->name;
-						$tdl[ $table->name ]['sattr'][] = array($row->addparam->name, '', $row->name);
+					    if( isset($tdl[ $tableName ]['fields']) )
+					       $tdl[ $tableName ]['fields'] .= ',' . $rowName;
+					    else 
+					       $tdl[ $tableName ]['fields'] = ',' . $rowName;
+					    
+					    $tdl[ $tableName ]['sattr'][] = array($addParamName, '', $rowName);
 						break;
 					case TABLE_MATTR:
-						$tdl[ $table->name ]['mattr'][] = array($row->addparam->name, $table->name.'_'.$row->name, 'attr_id');
+					    $tdl[ $tableName ]['mattr'][] = array($addParamName, $tableName.'_'.$rowName, 'attr_id');
 						break;
 					case TABLE_SECONDARY:
-						$tdl[ $table->name ]['mattr'][] = array($row->addparam->name, $table->name.'_'.$row->name, 'secondary_id');
+					    $tdl[ $tableName ]['mattr'][] = array($addParamName, $tableName.'_'.$rowName, 'secondary_id');
 						break;
 				}
 			}
@@ -67,6 +89,7 @@ class EXP_GENERICTABLE_CLASS extends EXP_PLUGIN_CLASS
 	//
 	private function exportNormalTable($table, $select)
 	{
+	    
 		// get table definition
 		$tableDef	= Table_Find_Def($table);
 		$rows		= $tableDef->rows;
@@ -80,19 +103,28 @@ class EXP_GENERICTABLE_CLASS extends EXP_PLUGIN_CLASS
 		$rowtypes = array();
 		$rownames = array();
 		$this->declareStart();
-			$this->declareField('id', TABLE_INT);
+		  $this->declareField('id', TABLE_INT, true);
 		
 			for( $r = 0; $r < $rowsCount; $r++ ) {
-				$rownames[$r] = $rows[$r]->name;
-				$rowflags[$r] = $rows[$r]->flags;
-				$rowtypes[$r] = $rows[$r]->flags & TABLE_ROW;
+			    $rownames[$r] = isset( $rows[$r]->name ) ? $rows[$r]->name : null;
+			    $rowflags[$r] = isset( $rows[$r]->flags ) ? $rows[$r]->flags : null;
+			    $flags = isset( $rows[$r]->flags ) ? $rows[$r]->flags : null;
+				$rowtypes[$r] = $flags & TABLE_ROW;
+				
+				if( in_array($rownames[$r], NO_MANUAL_DECLARATION) ) {
+				        // a field is being declared in db.inc.php, while also being declared in this file => duplicate => add to NO_MANUAL_DECLARATION
+				        $msg = "<br>Das Feld: <b>{$rownames[$r]}</b> in der Tabelle <b>{$table}</b> wurde manuell in db.inc.php deklariert. Deklariere hier noch nicht. <b>&Uuml;berspringe, da sonst doppelt...</b><br>";
+				        // echo $msg;
+				        $this->evenmore_info( strip_tags(html_entity_decode($msg)) );
+				        continue;
+				}
 	
 				switch( $rowtypes[$r] ) 
 				{
 					case TABLE_ENUM:
 					case TABLE_BITFIELD:
-						if( $this->attrasids ) {
-							$this->enums[] = array("{$table}_{$rownames[$r]}", $rows[$r]->addparam); 
+					    if( isset( $this->attrasids ) && $this->attrasids ) {
+					        $this->enums[] = array("{$table}_{$rownames[$r]}", ( isset($rows[$r]->addparam) ? $rows[$r]->addparam : null) ); 
 							$this->declareField($rownames[$r], TABLE_INT);
 						}
 						else {
@@ -101,7 +133,7 @@ class EXP_GENERICTABLE_CLASS extends EXP_PLUGIN_CLASS
 						break;
 					
 					case TABLE_SATTR:
-						if( $this->attrasids )
+					    if( isset( $this->attrasids ) && $this->attrasids )
 						{
 							$this->declareField($rownames[$r], TABLE_INT);
 						}
@@ -112,7 +144,7 @@ class EXP_GENERICTABLE_CLASS extends EXP_PLUGIN_CLASS
 						break;
 					
 					case TABLE_MATTR:
-						if( $this->attrasids )
+					    if( isset( $this->attrasids ) && $this->attrasids )
 						{
 							$this->links[] = array("{$table}_{$rownames[$r]}", 'attr_id');
 						}
@@ -123,7 +155,7 @@ class EXP_GENERICTABLE_CLASS extends EXP_PLUGIN_CLASS
 						break;
 
 					case TABLE_SECONDARY:
-						if( $this->attrasids )
+					    if( isset( $this->attrasids ) && $this->attrasids )
 						{
 							$this->links[] = array("{$table}_{$rownames[$r]}", 'secondary_id');
 						}
@@ -139,16 +171,16 @@ class EXP_GENERICTABLE_CLASS extends EXP_PLUGIN_CLASS
 				}
 			}
 		
-			if( $this->export_sync_src ) {
-				$this->declareField('sync_src', 		TABLE_INT);
-			}
+			if( isset( $this->export_sync_src ) && $this->export_sync_src )
+				$this->declareField('sync_src', 		TABLE_INT, true);
 			
-			$this->declareField('user_created', 	TABLE_INT);
-			$this->declareField('user_modified', 	TABLE_INT);
-			$this->declareField('user_grp', 		TABLE_INT);
-			$this->declareField('user_access', 		TABLE_INT);
-			$this->declareField('date_created', 	TABLE_DATETIME);
-			$this->declareField('date_modified', 	TABLE_DATETIME);
+			$this->declareField('user_created', 	TABLE_INT, true);
+			$this->declareField('user_modified', 	TABLE_INT, true);
+			$this->declareField('user_grp', 		TABLE_INT, true);
+			$this->declareField('user_access', 		TABLE_INT, true);
+			$this->declareField('date_created', 	TABLE_DATETIME, true);
+			$this->declareField('date_modified', 	TABLE_DATETIME, true);
+			
 		$this->declareEnd();
 		
 		// write data
@@ -167,11 +199,20 @@ class EXP_GENERICTABLE_CLASS extends EXP_PLUGIN_CLASS
 					
 					for( $r = 0; $r < $rowsCount; $r++ ) 
 					{
+					    if( in_array($rownames[$r], NO_MANUAL_DECLARATION) ) {
+					        // a field is being declared in db.inc.php, while also being declared in this file => duplicate => add to NO_MANUAL_DECLARATION
+					        $msg = "<br>Speichere das Datum '<b>{$db->f($rownames[$r])}</b>' des Feldes <b>{$rownames[$r]}</b> in der Tabelle <b>{$table}</b> noch nicht, denn <b>{$rownames[$r]}</b> "
+					             . "wurde manuell in db.inc.php deklariert. <b>&Uuml;berspringe, da sonst doppelt...</b><br>";
+					        // echo $msg;
+					        $this->evenmore_info( strip_tags(html_entity_decode($msg)) );
+					        continue;
+					    }
+					    
 						switch( $rowtypes[$r] ) 
 						{
 							case TABLE_ENUM:
-								if( $this->attrasids ) {
-									$this->recordField($db->f($rownames[$r]));
+							    if( isset( $this->attrasids ) && $this->attrasids ) {
+							        $this->recordField($db->f( (isset($rownames[$r]) ? $rownames[$r] : '') ));
 								}
 								else {
 									$this->recordField(trim($tableDef->get_enum_summary($r, $db->f($rownames[$r]))));
@@ -179,8 +220,8 @@ class EXP_GENERICTABLE_CLASS extends EXP_PLUGIN_CLASS
 								break;
 							
 							case TABLE_BITFIELD:
-								if( $this->attrasids ) {
-									$this->recordField($db->f($rownames[$r]));
+							    if( isset( $this->attrasids ) && $this->attrasids ) {
+							        $this->recordField($db->f( (isset($rownames[$r]) ? $rownames[$r] : '') ));
 								}
 								else {
 									$this->recordField( trim( $tableDef->get_bitfield_summary($r, $db->f($rownames[$r]), $dummy) ) );
@@ -188,11 +229,11 @@ class EXP_GENERICTABLE_CLASS extends EXP_PLUGIN_CLASS
 								break;
 							
 							case TABLE_SATTR:
-								if( $this->attrasids ) {
-									$this->recordField($db->f($rownames[$r]));
+							    if( isset( $this->attrasids ) && $this->attrasids ) {
+							        $this->recordField($db->f( (isset($rownames[$r]) ? $rownames[$r] : '') ));
 								}
 								else {
-									$attrid = $db->f($rownames[$r]);
+								    $attrid = $db->f( (isset($rownames[$r]) ? $rownames[$r] : '') );
 									if( $attrid ) {
 										$temp = $tableDef->rows[$r]->addparam->get_summary($attrid, '/' /*value seperator*/);
 									}
@@ -204,26 +245,30 @@ class EXP_GENERICTABLE_CLASS extends EXP_PLUGIN_CLASS
 								break;
 							
 							case TABLE_MATTR:
-								if( !$this->attrasids ) {
+							    if( !isset( $this->attrasids ) || !$this->attrasids ) {
 									$temp = '';
 									$dba->query("SELECT attr_id FROM {$tableDef->name}_{$rownames[$r]} WHERE primary_id=" . $db->f('id'));
 									while( $dba->next_record() ) {
 										$attrid = $dba->f('attr_id');
 										if( $temp != '' ) $temp .= ', ';
-										$temp .= $tableDef->rows[$r]->addparam->get_summary($attrid, '/' /*value seperator*/);
+										
+										if( isset($tableDef->rows[$r]) )
+										  $temp .= $tableDef->rows[$r]->addparam->get_summary($attrid, '/' /*value seperator*/);
 									}
 									$this->recordField($temp);
 								}
 								break;
 
 							case TABLE_SECONDARY:
-								if( !$this->attrasids ) {
+							    if( !isset( $this->attrasids ) || !$this->attrasids ) {
 									$temp = '';
 									$dba->query("SELECT secondary_id FROM {$tableDef->name}_{$rownames[$r]} WHERE primary_id=" . $db->f('id'));
 									while( $dba->next_record() ) {
 										$attrid = $dba->f('secondary_id');
 										if( $temp != '' ) $temp .= ', ';
-										$temp .= $tableDef->rows[$r]->addparam->get_summary($attrid, '/' /*value seperator*/);
+										
+										if( isset($tableDef->rows[$r]) )
+										  $temp .= $tableDef->rows[$r]->addparam->get_summary($attrid, '/' /*value seperator*/);
 									}
 									$this->recordField($temp);
 								}
@@ -241,7 +286,7 @@ class EXP_GENERICTABLE_CLASS extends EXP_PLUGIN_CLASS
 						}
 					}
 					
-					if( $this->export_sync_src ) {
+					if( isset( $this->export_sync_src ) && $this->export_sync_src ) {
 						$this->recordField($db->f('sync_src'));
 					}
 					
@@ -273,13 +318,13 @@ class EXP_GENERICTABLE_CLASS extends EXP_PLUGIN_CLASS
 		$db->query("SELECT * FROM $table_name WHERE primary_id IN ($idsStr) ORDER BY primary_id, structure_pos");
 		while( $db->next_record() )
 		{
-			if( !$table_started )
+		    if( !isset($table_started) || !$table_started )
 			{
 				$this->tableStart($table_name, TABLE_EXP_TYPE_NORMALDATA);
 				$this->declareStart();
-					$this->declareField('primary_id', TABLE_INT);
+				$this->declareField('primary_id', TABLE_INT, true);
 					$this->declareField($attr_name, TABLE_INT);
-					$this->declareField('structure_pos', TABLE_INT);
+					$this->declareField('structure_pos', TABLE_INT, true);
 				$this->declareEnd();
 				$table_started = true;
 			}
@@ -295,7 +340,7 @@ class EXP_GENERICTABLE_CLASS extends EXP_PLUGIN_CLASS
 				$this->progress_info(htmlconstant('_EXP_NRECORDSDONE___', $table_name, $limit_records_this_loop));
 		}
 		
-		if( $table_started ) {
+		if( isset($table_started) && $table_started ) {
 			$this->tableEnd();
 		}
 	}
@@ -308,9 +353,9 @@ class EXP_GENERICTABLE_CLASS extends EXP_PLUGIN_CLASS
 	function export($param)
 	{
 		// initialisation
-		$this->attrasids		= $param['attrasids'];
-		$this->export_passwords	= $param['export_passwords'];
-		$this->export_sync_src	= $param['export_sync_src'];
+	    $this->attrasids		= isset( $param['attrasids'] ) ? $param['attrasids'] : null;
+	    $this->export_passwords	= isset( $param['export_passwords'] ) ? $param['export_passwords'] : null;
+	    $this->export_sync_src	= isset( $param['export_sync_src'] ) ? $param['export_sync_src'] : null;
 		$this->tdl          	= $this->getTableDefLinks();
 		$this->enums			= array();
 		$query_queue 			= array();
@@ -318,11 +363,13 @@ class EXP_GENERICTABLE_CLASS extends EXP_PLUGIN_CLASS
 		
 		// init query queue with the base table
 		$db = $this->db_phys;
-		$table = $param['table']; if( !Table_Find_Def($table, false /*no access checkt*/) ) $this->progress_abort('Ungültige Tabelle.');
+		$table = isset( $param['table'] ) ? $param['table'] : null; 
+		if( !Table_Find_Def($table, false /*no access checkt*/) ) $this->progress_abort('Ung'.ueJS.'ltige Tabelle.');
 		require_once('eql.inc.php'); 
 		require_lang('lang/dbsearch');
 		$eql2sql = new EQL2SQL_CLASS($table);
-		$sql = $eql2sql->eql2sql($param['q'], 'id'.$this->tdl[$table]['fields']);
+		$tableFields = isset( $this->tdl[$table]['fields'] ) ? $this->tdl[$table]['fields'] : '';
+		$sql = $eql2sql->eql2sql( ( isset( $param['q'] ) ? $param['q'] : null ), 'id'.$tableFields);
 		if( $sql == '0' ) {
 			$this->progress_abort($eql2sql->lastError);
 		}
@@ -340,54 +387,66 @@ class EXP_GENERICTABLE_CLASS extends EXP_PLUGIN_CLASS
 					$db->query($sql);
 					while( $db->next_record() ) {
 						$id = $db->f('id');
-						if( !$stuff_to_write[$table][$id] ) {
+						if( !isset($stuff_to_write[$table][$id]) || !$stuff_to_write[$table][$id] ) {
 							$cntAll++;
 							$idsHere[] = $id;
 							$stuff_to_write[$table][$id] = 1;
-							for( $i = 0; $i < sizeof((array) $this->tdl[$table]['sattr']); $i++ ) {
-								$currTable = $this->tdl[$table]['sattr'][$i][0];
-								$currId    = $db->f($this->tdl[$table]['sattr'][$i][2]);
-								if( $currId && !$stuff_to_write[$currTable][$currId] ) {
-									$stuff_to_check[ $currTable ][] = $currId;
-								}
+							
+							if( isset($this->tdl[$table]['sattr']) ) {
+    							for( $i = 0; $i < sizeof((array) $this->tdl[$table]['sattr']); $i++ ) {
+    							    $currTable = isset( $this->tdl[$table]['sattr'][$i][0] ) ? $this->tdl[$table]['sattr'][$i][0] : null;
+    							    $currId    = $db->f( ( isset( $this->tdl[$table]['sattr'][$i][2] ) ? $this->tdl[$table]['sattr'][$i][2] : null ) );
+    							    if( $currId && (!isset($stuff_to_write[$currTable][$currId]) || !$stuff_to_write[$currTable][$currId]) ) {
+    									$stuff_to_check[ $currTable ][] = $currId;
+    								}
+    							}
 							}
 						}
 					}
 					
 					if( sizeof((array) $idsHere) ) {
 					    $idsHere = implode(',', $idsHere);
-					    for( $i = 0; $i < sizeof((array) $this->tdl[$table]['mattr']); $i++ )
-						{
-							$currTable = $this->tdl[$table]['mattr'][$i][0];
-							$field     = $this->tdl[$table]['mattr'][$i][2];
+					    
+					    if( isset($this->tdl[$table]['mattr']) ) {
+					      for( $i = 0; $i < sizeof((array) $this->tdl[$table]['mattr']); $i++ )
+						  {
+						    $currTable = isset( $this->tdl[$table]['mattr'][$i][0] ) ? $this->tdl[$table]['mattr'][$i][0] : null;
+						    $field     = isset( $this->tdl[$table]['mattr'][$i][2] ) ? $this->tdl[$table]['mattr'][$i][2] : null;
 							$db->query("SELECT $field FROM {$this->tdl[$table]['mattr'][$i][1]} WHERE primary_id IN ($idsHere);");
 							while( $db->next_record() ) {
 								$currId = $db->f($field);
-								if( $currId && !$stuff_to_write[$currTable][$currId] ) {
+								if( $currId && (!isset($stuff_to_write[$currTable][$currId]) || !$stuff_to_write[$currTable][$currId]) ) {
 									$stuff_to_check[ $currTable ][] = $currId;
+								}
+							}
+						  }
+					    }
+					}
+					
+					// add queries to the query queue for the new stuff to check
+					if( isset( $this->attrasids ) && $this->attrasids ) {
+						reset($stuff_to_check);
+						foreach($stuff_to_check as $currTable => $currIds) {
+						    if( sizeof((array) $currIds) ) {
+								$currIds = implode(',', $currIds);
+								
+								if( isset($this->tdl[$currTable]['fields']) ) {
+								    $sql = "SELECT id{$this->tdl[$currTable]['fields']} FROM $currTable WHERE id IN ($currIds);";
+								    array_push($query_queue, array($currTable, $sql));
 								}
 							}
 						}
 					}
 					
-					// add queries to the query queue for the new stuff to check
-					if( $this->attrasids ) {
-						reset($stuff_to_check);
-						foreach($stuff_to_check as $currTable => $currIds) {
-						    if( sizeof((array) $currIds) ) {
-								$currIds = implode(',', $currIds);
-								$sql = "SELECT id{$this->tdl[$currTable]['fields']} FROM $currTable WHERE id IN ($currIds);";
-								array_push($query_queue, array($currTable, $sql));
-							}
-						}
-					}
-					
-					$this->progress_info($cntAll . ' Datensätze gesammelt ...');
+					$this->progress_info($cntAll . ' Datens'.aeJS.'tze gesammelt ...');
 		}
 		
 		// write $stuff_to_write
 		$any_records_written = false;
 		reset($stuff_to_write);
+		
+
+		
 		foreach($stuff_to_write as $table => $ids) {
 		    if( sizeof((array) $ids) ) {
 				$any_records_written = true;
@@ -395,7 +454,7 @@ class EXP_GENERICTABLE_CLASS extends EXP_PLUGIN_CLASS
 				$sql = "SELECT * FROM $table WHERE id IN ($ids);";
 				$affected_tables[$table] = 1;
 				$this->exportNormalTable($table, $sql);
-				if( $this->attrasids ) {
+				if( isset( $this->attrasids ) && $this->attrasids && isset($this->tdl[$table]['mattr']) ) {
 				    for( $i = 0; $i < sizeof((array) $this->tdl[$table]['mattr']); $i++ ) {
 						$this->exportAttrTable($this->tdl[$table]['mattr'][$i][1], $this->tdl[$table]['mattr'][$i][2], $ids);
 					}
@@ -405,19 +464,19 @@ class EXP_GENERICTABLE_CLASS extends EXP_PLUGIN_CLASS
 		
 		/* -- continue nevertheless - there may  be records to delete below ...
 		if( !$any_records_written ) {
-			$this->progress_abort("Keine Datensätze zum Exportieren gefunden.");
+			$this->progress_abort("Keine Datensaetze zum Exportieren gefunden.");
 		}
 		*/
 		
 		// write enums
-		if( $param['enums'] )
+		if( isset($param['enums']) && $param['enums'] )
 		{
 		    for( $t = 0; $t < sizeof((array) $this->enums); $t++ )
 			{
 				$this->tableStart($this->enums[$t][0], TABLE_EXP_TYPE_ENUM);
 					$this->declareStart();
-						$this->declareField('id', TABLE_INT);
-						$this->declareField('name',  TABLE_TEXT);
+					    $this->declareField('id', TABLE_INT, true);
+					    $this->declareField('name',  TABLE_TEXT, true);
 					$this->declareEnd();
 					
 					$temp = explode('###', $this->enums[$t][1]);
@@ -434,21 +493,21 @@ class EXP_GENERICTABLE_CLASS extends EXP_PLUGIN_CLASS
 		
 		// export a list id all IDs (needed on the destination to find out deleted records)
 		$sync_tools = new SYNC_TOOLS_CLASS();
-		if( $param['export_ids'] )
+		if( isset($param['export_ids']) && $param['export_ids'] )
 		{
 			$idsOut = 0;
 			$this->tableStart('ids', TABLE_EXP_TYPE_EXTRA);
 				$this->declareStart();
-					$this->declareField('tble',  TABLE_TEXT);
-					$this->declareField('ids',  TABLE_TEXT);
+				    $this->declareField('tble',  TABLE_TEXT, true);
+				    $this->declareField('ids',  TABLE_TEXT, true);
 				$this->declareEnd();
 				global $Table_Def;
 				for( $t = 0; $t < sizeof((array) $Table_Def); $t++ )
 				{
 		
-					$table = $Table_Def[$t]->name;
-					if( ($table==$param['table'] /*always write the IDs of the base table, 
-							this allows deletion of records even if there are no new records*/ || $affected_tables[ $table ]) && !$Table_Def[$t]->is_only_secondary($dummy, $dummy) ) { 
+				    $table = isset($Table_Def[$t]->name) ? $Table_Def[$t]->name : '';
+					if( (isset($param['table']) && $table==$param['table'] /*always write the IDs of the base table, 
+					    this allows deletion of records even if there are no new records*/ || isset($affected_tables[ $table ]) && $affected_tables[ $table ]) && !$Table_Def[$t]->is_only_secondary($dummy, $dummy) ) { 
 						$ids = '';
 						$db->query("SELECT id FROM $table ORDER BY id;");
 						while( $db->next_record() ) 
@@ -472,5 +531,3 @@ class EXP_GENERICTABLE_CLASS extends EXP_PLUGIN_CLASS
 		
 	}
 };
-
-

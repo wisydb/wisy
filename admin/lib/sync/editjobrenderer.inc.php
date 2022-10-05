@@ -34,14 +34,14 @@ class SYNC_EDITJOBRENDERER_CLASS extends SYNC_FUNCTIONS_CLASS
 		// apply changes made by the user
 		if( isset($_REQUEST['subsequent']) )
 		{
-			$currJob->descr				= $_REQUEST['descr'];
-			$currJob->host				= $_REQUEST['host'];
-			$currJob->table				= $_REQUEST['table'];
-			$currJob->query				= $_REQUEST['query'];
-			$currJob->freq				= intval($_REQUEST['freq']);
-			$currJob->overwrite			= intval($_REQUEST['overwrite']);
-			$currJob->delete			= intval($_REQUEST['delete']);
-			$currJob->further_options	= $_REQUEST['further_options'];
+		    $currJob->descr				= isset($_REQUEST['descr'])             ? $_REQUEST['descr'] : '';
+		    $currJob->host				= isset($_REQUEST['host'])              ? $_REQUEST['host'] : '';
+		    $currJob->table				= isset($_REQUEST['table'])             ? $_REQUEST['table'] : '';
+		    $currJob->query				= isset($_REQUEST['query'])             ? $_REQUEST['query'] : '';
+		    $currJob->freq				= isset($_REQUEST['freq'])              ? intval($_REQUEST['freq']) : null;
+		    $currJob->overwrite			= isset($_REQUEST['overwrite'])         ? intval($_REQUEST['overwrite']) : null;
+		    $currJob->delete			= isset($_REQUEST['delete'])            ? intval($_REQUEST['delete']) : null;
+		    $currJob->further_options	= isset($_REQUEST['further_options'])   ? $_REQUEST['further_options'] : null;
 			
 			$currJob->save();
 			
@@ -111,7 +111,7 @@ class SYNC_EDITJOBRENDERER_CLASS extends SYNC_FUNCTIONS_CLASS
 															,
 						0, '' );
 					$apikey = regGet('export.apikey', '', 'template');
-					echo " <a href=\"cron.php?apikey=".urlencode($apikey)."&amp;force=sync&amp;forceid={$currJob->jobid}\" target=\"_blank\" rel=\"noopener noreferrer\" onclick=\"return confirm('Das starten einer Aufgabe f&uuml;hrt u.U. zum Komplettverlust aller bestehenden Daten.\\n\\nDie Aufgabe jetzt starten?');\">[Aufgabe jetzt starten ...]</a>"; 
+					echo " <a href=\"cron.php?apikey=".urlencode($apikey)."&amp;force=sync&amp;forceid={$currJob->jobid}\" target=\"_blank\" rel=\"noopener noreferrer\" onclick=\"return confirm('Das starten einer Aufgabe fuehrt u.U. zum Komplettverlust aller bestehenden Daten.\\n\\nDie Aufgabe jetzt starten?');\">[Aufgabe jetzt starten ...]</a>"; 
 				form_control_end();
 
 			$site->skin->dialogEnd();

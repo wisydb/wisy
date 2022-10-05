@@ -1,7 +1,5 @@
 <?php
 
-
-
 /*=============================================================================
 Check the user access rights
 ===============================================================================
@@ -19,12 +17,6 @@ parameters:
 						is checked
 
 =============================================================================*/
-
-
-
-
-
-
 
 
 /******************************************************************************
@@ -51,9 +43,10 @@ function check_access($path, $id, $user, $descr)
 			echo '<span style="color:' .($access? '#00A000' : '#A00000'). ';">' .acl_get_readable_str($access). '</span>';
 		$site->skin->cellEnd();
 		
-		if( $user != $_SESSION['g_session_userid'] ) {
+		$gSessionUserID = isset($_SESSION['g_session_userid']) ? $_SESSION['g_session_userid'] : null;
+		if( $user != $gSessionUserID ) {
 			$site->skin->cellStart();
-				$access = acl_get_access($path, $id, $_SESSION['g_session_userid']);
+			$access = acl_get_access($path, $id, $gSessionUserID);
 				echo '<span style="color:' .($access? '#00A000' : '#A00000'). ';">' .acl_get_readable_str($access). '</span>';
 			$site->skin->cellEnd();
 		}
@@ -77,7 +70,8 @@ function write_head($name, $user)
 		$site->skin->cellEnd();
 		
 		// foreign user
-		if( $user != $_SESSION['g_session_userid'] ) {
+		$gSessionUserID = isset($_SESSION['g_session_userid']) ? $_SESSION['g_session_userid'] : null;
+		if( $user != $gSessionUserID ) {
 			$site->skin->cellStart('width="25%"');
 				echo user_html_name($user);
 			$site->skin->cellEnd();
@@ -144,7 +138,7 @@ function check_supervisor($user)
 				}
 			}
 			
-			check_access('SUPERVISOR.'.$db->f('id'), -1, $user, 'SUPERVISOR.'.isohtmlentities($name));
+			check_access('SUPERVISOR.'.$db->f('id'), -1, $user, 'SUPERVISOR.'.isohtmlentities( strval( $name ) ));
 		}
 	
 	$site->skin->tableEnd();
@@ -188,9 +182,9 @@ require_lang('lang/overview');
 require_lang('lang/edit');
 
 // get parameters
-$user = intval($_REQUEST['user']);
-$table = $_REQUEST['table'];
-$id = intval($_REQUEST['id']);
+$user = isset( $_REQUEST['user'] )   ? intval($_REQUEST['user']) : null;
+$table = isset( $_REQUEST['table'] ) ? $_REQUEST['table'] : null;
+$id = isset( $_REQUEST['id'] )       ? intval($_REQUEST['id']) : null;
 
 
  
@@ -219,7 +213,7 @@ while( $db->next_record() )
 	}
 }
 
-if( !$user_found ) {
+if( !$user_found && isset( $_SESSION['g_session_userid'] ) ) {
 	$user = $_SESSION['g_session_userid'];
 }
 
@@ -303,6 +297,3 @@ $site->pageStart();
 	}
 
 $site->pageEnd();
-
-
-

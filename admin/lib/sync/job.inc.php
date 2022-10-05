@@ -27,7 +27,7 @@ class SYNC_JOB_CLASS
 	{
 		$ret = '';
 
-		if( $this->host != '' && $this->table != '' )
+		if( isset( $this->host ) && $this->host != '' && $this->table != '' )
 		{
 			$tableDef = Table_Find_Def($this->table, false /*no access check*/);
 			
@@ -35,7 +35,7 @@ class SYNC_JOB_CLASS
 			$ret .= (is_object($tableDef)? $tableDef->descr : $table) . ' von ' . $this->host . ' importieren';
 		}
 
-		if( $this->descr != '' )
+		if( isset( $this->descr ) && $this->descr != '' )
 		{
 			$shortdescr = $this->descr;
 			$maxln = 32;
@@ -56,7 +56,7 @@ class SYNC_JOB_CLASS
 	
 	public function getfinequery()
 	{
-		if( $this->query != '' )
+	    if( isset( $this->query ) && $this->query != '' )
 		{
 			$ret = $this->query;
 			$maxln = 32;
@@ -83,7 +83,7 @@ class SYNC_JOB_CLASS
 		$this->freq	 			= 0;
 		$this->overwrite		= IMP_OVERWRITE_NEVER;
 		$this->delete			= IMP_DELETE_NEVER;
-		$this->defuser			= intval($_SESSION['g_session_userid']);
+		$this->defuser			= isset( $_SESSION['g_session_userid'] ) ? intval($_SESSION['g_session_userid']) : null;
 		$this->defgrp			= acl_get_default_grp();
 		$this->defaccess		= acl_get_default_access();
 		$this->lasttime			= 0;
@@ -119,7 +119,7 @@ class SYNC_JOB_CLASS
 	public function save()
 	{
 		// create a jobid, if not yet done
-		if( $this->jobid == 0 )
+	    if( !isset( $this->jobid ) || $this->jobid == 0 )
 		{
 			$ids = SYNC_JOB_CLASS::_s_get_ids_info();
 			$this->jobid = $ids['first_free'];

@@ -1,6 +1,5 @@
 <?php
 
-
 /*=============================================================================
 the search formular class
 ===============================================================================
@@ -125,7 +124,7 @@ class DBSEARCH_FORM_CLASS
 	
 	private function _loadStateFromSession($stateName)
 	{
-		$state = $_SESSION['g_session_dbsearch'][$stateName];
+	    $state = isset( $_SESSION['g_session_dbsearch'][$stateName] ) ? $_SESSION['g_session_dbsearch'][$stateName] : null;
 		
 		if( !is_array($state) )
 		{
@@ -147,7 +146,7 @@ class DBSEARCH_FORM_CLASS
 		$state = array();
 		$state['rows']			= $this->rows;
 		
-		if( !is_array($_SESSION['g_session_dbsearch']) )
+		if( !isset( $_SESSION['g_session_dbsearch'] ) || !is_array($_SESSION['g_session_dbsearch']) )
 			$_SESSION['g_session_dbsearch'] = array();
 		
 		$_SESSION['g_session_dbsearch'][$stateName] = $state;
@@ -167,8 +166,9 @@ class DBSEARCH_FORM_CLASS
 		
 		// first, handle $_REQUEST['searchalt'] which may be used as an alternative
 		// to set values normally set by submit-buttons
-		$searchaddrow = $_REQUEST['searchaddrow'];
-		switch( $_REQUEST['searchalt'] ) 
+		$searchaddrow = isset( $_REQUEST['searchaddrow'] ) ? $_REQUEST['searchaddrow'] : null;
+		$searchalt = isset( $_REQUEST['searchalt'] ) ? $_REQUEST['searchalt'] : null;
+		switch( $searchalt ) 
 		{
 			case 'addrow': $searchaddrow = 1; break;
 		}
@@ -177,10 +177,11 @@ class DBSEARCH_FORM_CLASS
 		$this->_loadStateFromSession($stateName);
 		
 		// init?
-		if( $_REQUEST['searchreset'] )
+		$searchreset = isset( $_REQUEST['searchreset'] ) ? $_REQUEST['searchreset'] : null;
+		if( $searchreset )
 		{
 			$this->_initState($stateName);
-			if( $_REQUEST['searchreset'] == 2 ) 
+			if( $searchreset == 2 ) 
 			{
 				// init by URL
 				for( $i = 0; $i < 100; $i++ ) {
@@ -205,20 +206,25 @@ class DBSEARCH_FORM_CLASS
 		$newRows = $this->rows;
 		
 		$prevEmptyRows = 0;
-		for( $i = 0; $i < sizeof((array) $newRows); $i++ )
+		for( $i = 0; $i < sizeof((array) $newRows); $i++ ) 
 		{
 			$and="a{$i}"; 	$field="f{$i}";   $op="o{$i}";	$value="v{$i}";
 
 			if( isset($_REQUEST[$value]) ) 
 			{
 				$_REQUEST[$value] = trim($_REQUEST[$value]);
-				if( $_REQUEST[$value] != '' && ($_REQUEST[$field]=='' || $_REQUEST[$field]=='OPTIONS' || $_REQUEST[$field]=='DUMMY') ) {
+				if( $_REQUEST[$value] != '' && ( !isset($_REQUEST[$field]) || $_REQUEST[$field]=='' || $_REQUEST[$field]=='OPTIONS' || $_REQUEST[$field]=='DUMMY') ) {
 					$_REQUEST[$field] = 'ANY';
 				}
-				$newRows[$i] = array($_REQUEST[$and], $_REQUEST[$field], $_REQUEST[$op], $_REQUEST[$value]);
+				$reqAND = isset( $_REQUEST[$and] )      ? $_REQUEST[$and] : null;
+				$reqFIELD = isset( $_REQUEST[$field] )  ? $_REQUEST[$field] : null;
+				$reqOP = isset( $_REQUEST[$op] )        ? $_REQUEST[$op] : null;
+				$reqVAL = isset( $_REQUEST[$value] )    ? $_REQUEST[$value] : null;
+				
+				$newRows[$i] = array($reqAND, $reqFIELD, $reqOP, $reqVAL);
 			}
 			
-			if( !$newRows[$i][3] ) {
+			if( !isset($newRows[$i][3]) || !$newRows[$i][3] ) {
 				$prevEmptyRows++;
 			}
 		}
@@ -240,7 +246,7 @@ class DBSEARCH_FORM_CLASS
 		}
 
 		// add one empty rows at end
-		if( $this->settings['rows_autooverhead'] ) {
+		if( isset( $this->settings['rows_autooverhead'] ) && $this->settings['rows_autooverhead'] ) {
 			$this->rows[] = array('', '', '', '');
 			$newEmptyRows = 1;
 		}
@@ -280,8 +286,9 @@ class DBSEARCH_FORM_CLASS
 		
 		$fieldName = g_eql_normalize_func_name($name, 0);
 		
+		
 		if( $loadAll 
-		 || $this->settingsFields["$indentFuncs$fieldName"]
+		 || ( is_array( $this->settingsFields ) && isset($this->settingsFields["$indentFuncs$fieldName"]) && $this->settingsFields["$indentFuncs$fieldName"] )
 		 || (sizeof((array) $this->settingsFields)==0 && $isDefaultField)
 		 ||	$isDefaultField==2 )
 		{
@@ -294,19 +301,19 @@ class DBSEARCH_FORM_CLASS
 			
 			if( $loadAll )
 			{
-			    // store indent for further usage in index_listattr.php
-			    $this->fieldIndent[]	= $indentCnt;
-			    $this->fieldIsSelected[]= ($this->settingsFields["$indentFuncs$fieldName"] || (sizeof((array) $this->settingsFields)==0 && $isDefaultField) || $isDefaultField==2)? 1 : 0;
-			    $this->fieldIsDefault[]	= $isDefaultField;
+				// store indent for further usage in index_listattr.php
+				$this->fieldIndent[]	= $indentCnt;
+				$this->fieldIsSelected[]= ( isset($this->settingsFields["$indentFuncs$fieldName"]) && $this->settingsFields["$indentFuncs$fieldName"] || ( sizeof((array) $this->settingsFields)==0 && $isDefaultField) || $isDefaultField==2)? 1 : 0;
+				$this->fieldIsDefault[]	= $isDefaultField;
 			}
 			else
 			{
 				// shorten and indent description
 				$descr = $site->htmldeentities($descr);
-				if( strlen($descr) > 16 ) {
-					$descr = substr($descr, 0, 16) . '...';
+				if( strlen($descr) > 40 ) {
+					$descr = substr($descr, 0, 40) . '...';
 				}
-				$descr = isohtmlentities($descr);
+				$descr = isohtmlentities( strval( $descr ) );
 				
 				if( $indentCnt ) {
 					$descr = "&nbsp; - $descr";
@@ -329,7 +336,8 @@ class DBSEARCH_FORM_CLASS
 		
 		// get table definition
 		$tableDef = Table_Find_Def($tableDefName);
-
+		
+		
 		// add fields for ID/Active		
 		if( $indentCnt == 0 )
 		{
@@ -339,8 +347,8 @@ class DBSEARCH_FORM_CLASS
 		}
 		
 		// add all rows
-		for( $r = 0; $r < sizeof((array) $tableDef->rows); $r++ )
-		{
+		for( $r = 0; $r < sizeof((array) $tableDef->rows); $r++ ) 
+		{		    
 			$rowflags	= $tableDef->rows[$r]->flags;
 			$rowtype	= $rowflags&TABLE_ROW;
 			$rowprops   = isset($tableDef->rows[$r]->prop['cmsSearchMsg']) ? $tableDef->rows[$r]->prop['cmsSearchMsg'] : '';
@@ -355,6 +363,7 @@ class DBSEARCH_FORM_CLASS
 					$isDefaultField = 1;
 				}
 			}
+			
 			
 			// add field
 			$this->_addField__($tableDef->rows[$r]->name, $tableDef->rows[$r]->descr, $indentCnt, $indentFuncs, $loadAll, $isDefaultField, $rowprops);
@@ -393,7 +402,7 @@ class DBSEARCH_FORM_CLASS
 		$this->columnNames[]		= $name;
 		$this->columnDescr[]		= htmlconstant($descr);
 		$this->columnIndent[]		= $indentCnt;
-		$this->columnIsSelected[]	= ($this->settingsColumns[$name] || (sizeof($this->settingsColumns)==0 && $isDefaultColumn) || $isDefaultColumn==2)? 1 : 0;
+		$this->columnIsSelected[]	= ( isset($this->settingsColumns[$name]) && $this->settingsColumns[$name] || ( (!isset($this->settingsColumns) || sizeof($this->settingsColumns)==0) && $isDefaultColumn) || $isDefaultColumn==2 ) ? 1 : 0;
 		$this->columnIsDefault[]	= $isDefaultColumn;
 	}
 	
@@ -480,7 +489,7 @@ class DBSEARCH_FORM_CLASS
 		
 		// check if the row exists
 		for( $i = 0; $i < sizeof((array) $rows); $i++ ) {
-			if( $rows[$i][1]==$field && $rows[$i][3]==$value ) {
+		    if( isset( $rows[$i][1] ) && $rows[$i][1] == $field && isset( $rows[$i][3] ) && $rows[$i][3] == $value ) {
 				if( $remove ) {
 					$rows[$i][3] = '';
 				}
@@ -513,18 +522,18 @@ class DBSEARCH_FORM_CLASS
 
 		// advanced mode...
 	
-		if( $site ) {
+		if( isset( $site ) && $site ) {
 			$optionsHref = "index_listattr.php?table={$this->tableDefName}";
 		}
 
 		$ret  = "$formStart<table border=\"0\">";
 		
-		    for( $rowNum = 0; $rowNum < sizeof((array) $this->rows); $rowNum++ )
+			for( $rowNum = 0; $rowNum < sizeof((array) $this->rows); $rowNum++ ) 
 			{
 				$ret .= '<tr>';
 				
 					// and / or
-				    if( sizeof((array) $this->rows) > 1 ) {
+					if( sizeof((array) $this->rows) > 1 ) {
 						$ret .= '<td>';
 							if( $rowNum ) {
 								$ret .= "<select name=\"a{$rowNum}\" size=\"1\">";
@@ -543,10 +552,10 @@ class DBSEARCH_FORM_CLASS
 							$ret .= $this->_renderOption('', $this->rows[$rowNum][1], '');
 							$ret .= $this->_renderOption('ANY', $this->rows[$rowNum][1], htmlconstant('_MOD_DBSEARCH_FIELDANY'));
 							for( $i = 0; $i < sizeof((array) $this->fieldNames); $i++ ) {
-							    $ret .= $this->_renderOption( $this->fieldNames[$i], $this->rows[$rowNum][1], $this->fieldDescr[$i], $this->fieldMsgs[$i] );
+								$ret .= $this->_renderOption( $this->fieldNames[$i], $this->rows[$rowNum][1], $this->fieldDescr[$i], $this->fieldMsgs[$i] );
 							}
 							
-							if( $site 
+							if( isset( $site ) && $site 
 							 && $this->settings['fieldoptions'] )
 							{
 								$ret .= $this->_renderOption('DUMMY', '', '');
@@ -573,7 +582,7 @@ class DBSEARCH_FORM_CLASS
 						$ret .= "</select> ";
 
 						// value
-						$ret .= "<input type=\"text\" name=\"v{$rowNum}\" value=\"" .isohtmlentities($this->rows[$rowNum][3]). "\" size=\"30\" maxlength=\"1000\" style=\"width:220pt;\" class=\"acclass\" data-acdata=\"{$this->tableDefName}.seeselect\" />";
+						$ret .= "<input type=\"text\" name=\"v{$rowNum}\" value=\"" .isohtmlentities( strval( $this->rows[$rowNum][3] ) ). "\" size=\"30\" maxlength=\"1000\" style=\"width:220pt;\" class=\"acclass\" data-acdata=\"{$this->tableDefName}.seeselect\" />";
 					
 					// field/op/value done
 					$ret .= '</td>';
@@ -595,14 +604,14 @@ class DBSEARCH_FORM_CLASS
 	
 	private function _renderOption($istValue, $sollValue, $descr, $msg = "")
 	{
-	    // render option
-	    $ret = "<option data-msg=\"$msg\" value=\"$istValue\"";
-	    if( $istValue == $sollValue ) {
-	        $ret .= ' selected="selected"';
-	    }
-	    $ret .= ">$descr</option>";
-	    
-	    return $ret;
+		// render option
+		$ret = "<option data-msg=\"$msg\" value=\"$istValue\"";
+		if( $istValue == $sollValue ) {
+			$ret .= ' selected="selected"';
+		}
+		$ret .= ">$descr</option>";
+		
+		return $ret;
 	}
 	
 	//
@@ -612,7 +621,7 @@ class DBSEARCH_FORM_CLASS
 	{
 		$eql = '';
 		
-		for( $i = 0; $i < sizeof((array) $this->rows); $i++ )
+		for( $i = 0; $i < sizeof((array) $this->rows); $i++ ) 
 		{
 			$value = trim($this->rows[$i][3]);
 			if( $value!='' ) 
@@ -734,5 +743,3 @@ class DBSEARCH_FORM_CLASS
 		return $eql;
 	}
 }
-
-

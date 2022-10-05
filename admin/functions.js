@@ -795,7 +795,7 @@ function sectd(id, display /*0=off, 1=on, 2=toggle*/)
 }
 
 /* SERER-SPECIFIC ! To be resolved !*/
-/* Leitung ausblenden, wenn Benutzergruppe HH oder HA enthaelt */
+/* Leitung ausblenden, wenn Benutzergruppe HH oder HA oder Fernunterricht enthaelt */
 jQuery(document).ready(function() {
 	jQuery(".e_cll").each(function(){
 		if(jQuery(this).text().match(/Benutzergruppe:/)){ 
@@ -898,9 +898,20 @@ if($("form[name=dbsearch]") && ($("#fheader .mml .mms").text() == "Angebote" || 
 	
 }
 
-//make archived entries css-designable
-$('td:contains("Archiv")').parent().attr("class", "archiv");
-$('td:contains("Gesperrt")').parent().attr("class", "gesperrt");
+// make archived entries css-designable
+$('td:contains("Archiv")').each(function(){
+  var col = $(this).prevAll().length;
+  var headerObj = $(this).parents('table').find('th').eq(col);
+  if( headerObj.text() == "Status")
+    $(this).parent().attr("class", "archiv");
+});
+
+$('td:contains("Gesperrt")').each(function(){
+  var col = $(this).prevAll().length;
+  var headerObj = $(this).parents('table').find('th').eq(col);
+  if( headerObj.text() == "Status")
+    $(this).parent().attr("class", "gesperrt");
+});
 
 $("input[name^='f_durchfuehrung_beginn'],input[name^='f_durchfuehrung_ende']").change(function(){
  /* $(".dauer_fix_label").parent().find("input.e_bitfield_item").prop( "checked", false ); */

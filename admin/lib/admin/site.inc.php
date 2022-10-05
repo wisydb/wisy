@@ -25,7 +25,7 @@ class ADMIN_SITE_CLASS
 		
 		$this->sitePath				= '../';
 		
-		$temp = explode('/', $_SERVER['PHP_SELF']);
+		$temp = explode('/', isset($_SERVER['PHP_SELF']) ? $_SERVER['PHP_SELF'] : '');
 		$this->adminDir				= $temp[sizeof($temp)-2]; // contains eg. 'admin' now
 		
 		$this->menuBinParam			= 'dummy=dummy';
@@ -40,7 +40,7 @@ class ADMIN_SITE_CLASS
 		$this->msg					= array();
 		$this->msgRendered			= 0;
 
-		if( is_array($_SESSION['g_session_msg']) ) {
+		if( isset( $_SESSION['g_session_msg'] ) && is_array($_SESSION['g_session_msg']) ) {
 			$this->msg = $_SESSION['g_session_msg'];
 		}
 	}
@@ -72,6 +72,7 @@ class ADMIN_SITE_CLASS
 		echo "<!DOCTYPE html>\n"; // without a doctype, the Internet Explorer does not support newer features, eg. CSS child selectors; the simple doctype "html" is used eg. by heise, mozilla and others. should be enought.
 		echo "<html>\n\n";
 			echo "<head>\n";
+			
 				echo "<meta http-equiv=\"content-type\" content=\"text/html; charset=iso-8859-1\" />\n";
 				echo '<title>' . ($this->title? $this->title : htmlconstant('_CONST_SYSTEMNAME'))  . "</title>\n";
 				if( ($favicon=regGet('logo.favicon.url', '')) ) {
@@ -96,14 +97,14 @@ class ADMIN_SITE_CLASS
 				for( $i = 0; $i < sizeof((array) $this->scripts); $i++ ) {
 					echo $this->scripts[$i] . "\n";
 				}
-			
+				
 			if(defined('PAGE_CUSTOM_HEADITEMS'))
-			    echo PAGE_CUSTOM_HEADITEMS;
+				echo PAGE_CUSTOM_HEADITEMS;
 				
 			echo "</head>\n\n";
 			
 			echo '<body';
-				if( $param['popfit'] )  {
+			    if( isset( $param['popfit'] ) && $param['popfit'] )  {
 					echo ' onload="popfit();"';
 				}
 			echo '>';
@@ -113,14 +114,14 @@ class ADMIN_SITE_CLASS
 	
 	function pageEnd()
 	{
-			// $this->msgRender(); -- es ist besser, wenn die Nachricht auf der naechsten Seite oben angezeigt wird - vor allem, wenn z.B. beim Export die Seite automatisch neu geladen wird
+				// $this->msgRender(); -- es ist besser, wenn die Nachricht auf der naechsten Seite oben angezeigt wird - vor allem, wenn z.B. beim Export die Seite automatisch neu geladen wird
 				
-		    $this->_poorMansCron();
-		    
-		    if(defined('PAGE_CUSTOM_FOOTER')) {
-		        echo PAGE_CUSTOM_FOOTER;
-		    }
+				$this->_poorMansCron();
 				
+				if(defined('PAGE_CUSTOM_FOOTER')) {
+					echo PAGE_CUSTOM_FOOTER;
+				}
+
 			echo "</body>\n\n";
 		echo '</html>';
 	}
@@ -128,12 +129,12 @@ class ADMIN_SITE_CLASS
 	private function _poorMansCron()
 	{
 		// calling this function makes sure, the cron job is called at least from time to time ...
-		if( $_SESSION['g_session_userid'] )
+	    if( isset( $_SESSION['g_session_userid'] ) && $_SESSION['g_session_userid'] )
 		{
 			$lastcall = regGet('cron.poormanscron', '0000-00-00 00:00:00', 'template');
-			if( $lastcall < strftime("%Y-%m-%d %H:%M:00", time() - 30*60) /*call it about every 30 minutes*/ )
+			if( $lastcall < ftime("%Y-%m-%d %H:%M:00", time() - 30*60) /*call it about every 30 minutes*/ )
 			{
-				regSet('cron.poormanscron', strftime("%Y-%m-%d %H:%M:00"),  '0000-00-00 00:00:00', 'template');
+				regSet('cron.poormanscron', ftime("%Y-%m-%d %H:%M:00"),  '0000-00-00 00:00:00', 'template');
 				regSave();
 				
 				$apikey = regGet('export.apikey', '', 'template');
@@ -157,23 +158,26 @@ class ADMIN_SITE_CLASS
 		$this->skin->fixedHeaderStart();
 		$this->skin->mainmenuStart();
 		
-			if( $_SESSION['g_session_userid'] ) 
+		    if( isset( $_SESSION['g_session_userid'] ) && $_SESSION['g_session_userid'] ) 
 			{
 				$anything_hilited = 0;
 				for( $t = 0; $t < sizeof((array) $Table_Def); $t++ )
 				{
-					if( ($Table_Def[$t]->flags & TABLE_PRIMARY)
-					 && ($Table_Def[$t]->name != 'user')
-					 && acl_get_access($Table_Def[$t]->name.'.COMMON') ) // show only primary tables with user's access in menu
+				    $tableDefFlags = isset( $Table_Def[$t]->flags ) ? $Table_Def[$t]->flags : null;
+				    $tableDefName = isset( $Table_Def[$t]->name ) ? $Table_Def[$t]->name : null;
+				    
+					if( ($tableDefFlags & TABLE_PRIMARY)
+					 && ($tableDefName != 'user')
+					 && acl_get_access( $tableDefName.'.COMMON') ) // show only primary tables with user's access in menu
 					{
 						$hilite = 0;
-						if( strpos($this->menuItems[0][2], "\"index.php?table={$Table_Def[$t]->name}\"") ) {
+						if( isset( $this->menuItems[0] ) && isset( $this->menuItems[0][2] ) && strpos( $this->menuItems[0][2], "\"index.php?table={$Table_Def[$t]->name}\"" ) ) {
 							$anything_hilited = 1;
 							$hilite = 1;
 						}
 						
 						$url = 'index.php?table=' . $Table_Def[$t]->name;
-						if( $this->menuFreeObject ) {
+						if( isset( $this->menuFreeObject ) && $this->menuFreeObject ) {
 							$url .= '&free_object='.$this->menuFreeObject;
 						}
 						
@@ -182,9 +186,9 @@ class ADMIN_SITE_CLASS
 				}
 				
 				$url = 'etc.php';
-				if( $this->menuFreeObject ) { $url .= '?free_object=' . $this->menuFreeObject; }
+				if( isset( $this->menuFreeObject ) && $this->menuFreeObject ) { $url .= '?free_object=' . $this->menuFreeObject; }
 				
-				if( !$anything_hilited && $this->menuItems[0][0]=='mmainmenu' )
+				if( ( !isset( $anything_hilited ) || !$anything_hilited ) && isset( $this->menuItems[0] ) && isset( $this->menuItems[0][0] ) && $this->menuItems[0][0] == 'mmainmenu' )
 				{
 					$this->skin->mainmenuItem(htmlconstant('_ETC').' &gt;', "<a href=\"$url\">", 2 /*select as breadcrumb*/);
 					
@@ -200,8 +204,8 @@ class ADMIN_SITE_CLASS
 			{
 				$loginfile = 'index.php?enter_subsequent=1';
 				if( defined('SECURE_HOST') ) {
-					$this->skin->mainmenuItem(htmlconstant('_LOGIN_SECURE'), '<a href="https://' . SECURE_HOST . "/{$this->adminDir}/" .  $loginfile .  '">', $_SERVER['HTTPS']=='on'? 1 : 0);
-					$this->skin->mainmenuItem(htmlconstant('_LOGIN_INSECURE'), '<a href="http://' . INSECURE_HOST . "/{$this->adminDir}/" . $loginfile .  '">', $_SERVER['HTTPS']!='on'? 1 : 0);
+				    $this->skin->mainmenuItem(htmlconstant('_LOGIN_SECURE'), '<a href="https://' . SECURE_HOST . "/{$this->adminDir}/" .  $loginfile .  '">', ( isset( $_SERVER['HTTPS'] ) && $_SERVER['HTTPS'] ) == 'on'? 1 : 0);
+				    $this->skin->mainmenuItem(htmlconstant('_LOGIN_INSECURE'), '<a href="http://' . INSECURE_HOST . "/{$this->adminDir}/" . $loginfile .  '">', ( isset( $_SERVER['HTTPS'] ) && $_SERVER['HTTPS'] ) != 'on'? 1 : 0);
 				}
 				else {
 					$this->skin->mainmenuItem(htmlconstant('_LOGIN_TITLE'), '<a href="' . $loginfile . '">', 1);
@@ -222,7 +226,7 @@ class ADMIN_SITE_CLASS
 				$Admin_Logo_Target = regGet('logo.image.dest.url', '');
 				if( $Admin_Logo_Target ) {
 					$logo .= '<a href="' .isohtmlentities($Admin_Logo_Target). '" ';
-					if( $_SESSION['g_session_userid'] ) {
+					if( isset( $_SESSION['g_session_userid'] ) && $_SESSION['g_session_userid'] ) {
 						$logo .= ' target="_blank" rel="noopener noreferrer"';
 					}
 					$logo .= '>';
@@ -234,7 +238,7 @@ class ADMIN_SITE_CLASS
 				echo $logo;
 			}
 			
-			echo '&nbsp;<a href="help.php?id='.($_SESSION['g_session_userid']?'isysinfo':'.').'" target="help" title="'.htmlconstant('_SYSINFO').'" onclick="return popup(this,500,380);"><small>V'.CMS_VERSION.'</small></a>&nbsp;';
+			echo '&nbsp;<a href="help.php?id='.( isset( $_SESSION['g_session_userid'] ) && $_SESSION['g_session_userid'] ? 'isysinfo' : '.').'" target="help" title="'.htmlconstant('_SYSINFO').'" onclick="return popup(this,500,380);"><small>V'.CMS_VERSION.'</small></a>&nbsp;';
 		
 		$this->skin->mainmenuEnd();
 
@@ -242,9 +246,9 @@ class ADMIN_SITE_CLASS
 			
 			$submenuItems = 0;
 			
-			if( $_SESSION['g_session_userid'] ) 
+			if( isset( $_SESSION['g_session_userid'] ) && $_SESSION['g_session_userid'] ) 
 			{
-			    for( $i = ($anything_hilited? 1 : 0); $i < sizeof((array) $this->menuItems); $i++ )
+				for( $i = ($anything_hilited? 1 : 0); $i < sizeof((array) $this->menuItems); $i++ )
 				{
 					$this->skin->submenuItem($this->menuItems[$i][0], $this->menuItems[$i][1], $this->menuItems[$i][2]);
 					$submenuItems++;
@@ -257,11 +261,11 @@ class ADMIN_SITE_CLASS
 
 		$this->skin->submenuBreak();								
 
-			if( $_SESSION['g_session_userid'] ) 
+		    if( isset( $_SESSION['g_session_userid'] ) && $_SESSION['g_session_userid'] ) 
 			{
 				// settings
 				$a = '';
-				if( $this->menuSettingsUrl ) {
+				if( isset( $this->menuSettingsUrl ) && $this->menuSettingsUrl ) {
 					$a = '<a href="' . isohtmlspecialchars($this->menuSettingsUrl) . "\" target=\"settings\" onclick=\"return popup(this,600,500);\">";
 				}
 				$this->skin->submenuItem('msettings', htmlconstant('_SETTINGS'), $a);
@@ -280,10 +284,10 @@ class ADMIN_SITE_CLASS
 			}
 			
 			// print
-			if( $_SESSION['g_session_userid'] ) 
+			if( isset( $_SESSION['g_session_userid'] ) && $_SESSION['g_session_userid'] ) 
 			{
 				$a = '';
-				if( $this->menuPrintUrl!='' ) {
+				if( isset( $this->menuPrintUrl ) && $this->menuPrintUrl != '' ) {
 					$a = '<a href="' . isohtmlentities($this->menuPrintUrl) . "\" target=\"prnt\" onclick=\"return popup(this,800,600);\">";
 				}
 				$this->skin->submenuItem('mprint', htmlconstant('_PRINT'), $a);
@@ -293,9 +297,9 @@ class ADMIN_SITE_CLASS
 			$this->menuHelpEntry($this->menuHelpScope);
 			
 			// logout
-			if( $_SESSION['g_session_userid'] ) {
+			if( isset( $_SESSION['g_session_userid'] ) && $_SESSION['g_session_userid'] ) {
 				$this->skin->submenuItem('mlogout', 
-					htmlconstant('_LOGOUTNAME', isohtmlentities($_SESSION['g_session_userloginname']), '', ''), 
+				    htmlconstant('_LOGOUTNAME', isohtmlentities( strval( (isset($_SESSION['g_session_userloginname']) ? $_SESSION['g_session_userloginname'] : null) ) ), '', ''), 
 					  "<a href=\"logout.php?page=".urlencode($this->menuLogoutUrl).'">');
 			}
 
@@ -324,7 +328,7 @@ class ADMIN_SITE_CLASS
 		
 		$cancel_url = 'etc.php';
 		$this->pageStart();
-		if( $_REQUEST['table'] ) {
+		if( isset( $_REQUEST['table'] ) && $_REQUEST['table'] ) {
 			$table_def = Table_Find_Def($_REQUEST['table']);
 			if( $table_def ) {
 				$this->menuItem('mmainmenu', $table_def->descr, "<a href=\"index.php?table=".$_REQUEST['table']."\">");
@@ -339,7 +343,6 @@ class ADMIN_SITE_CLASS
 			form_clickbutton($cancel_url, htmlconstant('_CANCEL'));
 		$this->skin->buttonsEnd();
 		$this->pageEnd();
-	
 		exit();
 	}
 	
@@ -352,7 +355,7 @@ class ADMIN_SITE_CLASS
 			$script = '<script type="text/javascript" src="' . $script . '?iv=' . CMS_VERSION . '"></script>';
 		}
 		
-		if( $this->pageStarted ) {
+		if( isset( $this->pageStarted ) && $this->pageStarted ) {
 			echo $script;
 		}
 		else {
@@ -407,7 +410,7 @@ class ADMIN_SITE_CLASS
 	function msgCount($type = 'e')
 	{
 		if( $type == '' /*all types*/ ) {
-		    return sizeof((array) $this->msg);
+			return sizeof((array) $this->msg);
 		}
 		else {
 			$cnt = 0;
@@ -428,7 +431,7 @@ class ADMIN_SITE_CLASS
 			$currType = substr($this->msg[$m], 0, 1);
 			$currMsg  = substr($this->msg[$m], 2);
 			
-			if( $msg[$currType] ) {
+			if( isset($msg[$currType]) && $msg[$currType] ) {
 				$msg[$currType] .= "\n$currMsg";
 			}
 			else {
@@ -437,17 +440,17 @@ class ADMIN_SITE_CLASS
 		}
 		
 		if( sizeof((array) $msg) ) {
-		    reset($msg);
-		    foreach($msg as $name => $value) {
-		        $value = trim($value);
-		        while(strpos($value, "\n\n\n")) { $value = str_replace("\n\n\n", "\n\n", $value); }
-		        $value = str_replace("\n", "<br />", $value);
-		        $this->skin->msgStart($name);
-		        echo $value;
-		        $this->skin->msgEnd();
-		    }
+			reset($msg);
+			foreach($msg as $name => $value) {
+				$value = trim($value);
+				while(strpos($value, "\n\n\n")) { $value = str_replace("\n\n\n", "\n\n", $value); }
+				$value = str_replace("\n", "<br />", $value);
+				$this->skin->msgStart($name);
+					echo $value;
+				$this->skin->msgEnd();
+			}
 		}
-		
+	
 		$this->msgRendered = sizeof((array) $this->msg); // prepare for future message rendering
 		
 		$_SESSION['g_session_msg'] = array();

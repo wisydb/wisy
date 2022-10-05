@@ -1,6 +1,5 @@
 <?php
 
-
 /*=============================================================================
 Toggle a multiple Attribut in an edit object
 ===============================================================================
@@ -38,7 +37,9 @@ require_once('functions.inc.php');
 //
 $new_state_img = "{$site->skin->imgFolder}/noaccess.gif";
 if( isset($_REQUEST['object']) && is_object($_SESSION[$_REQUEST['object']]) ) {
-	$toggle = $_SESSION[$_REQUEST['object']]->toggle_attr($_REQUEST['tg_control'], $_REQUEST['tg_id']);
+    $tg_control = isset( $_REQUEST['tg_control'] )  ? $_REQUEST['tg_control'] : null;
+    $tg_id = isset( $_REQUEST['tg_id'] )            ? $_REQUEST['tg_id'] : null;
+    $toggle = isset($_SESSION[$_REQUEST['object']]) ? $_SESSION[$_REQUEST['object']]->toggle_attr( $tg_control , $tg_id ) : null;
 	if( $toggle ) {
 		$new_state_img = $toggle==1? "{$site->skin->imgFolder}/check0.gif" : "{$site->skin->imgFolder}/check2.gif";
 	}
@@ -46,7 +47,7 @@ if( isset($_REQUEST['object']) && is_object($_SESSION[$_REQUEST['object']]) ) {
 
 
 
-if( $_REQUEST['img'] ) {
+if( isset( $_REQUEST['img'] ) && $_REQUEST['img'] ) {
 	header('Content-type: image/gif');
 	header('Content-length: ' . filesize($new_state_img));
 	readfile($new_state_img);

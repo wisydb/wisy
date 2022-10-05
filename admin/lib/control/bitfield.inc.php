@@ -13,7 +13,7 @@ class CONTROL_BITFIELD_CLASS extends CONTROL_BASE_CLASS
 		
 		$valid_values = $this->get_attr();
 		for( $bit = 0; $bit < 31; $bit++ ) {
-			if( $this->dbval & (1<<$bit) ) {
+		    if( isset( $this->dbval ) && $this->dbval & (1<<$bit) ) {
 				if( !isset($valid_values[ (1<<$bit) ]) ) {
 					$errors[] = htmlconstant('_EDIT_ERRUNKNOWNVALUE', (1<<$bit));
 				}
@@ -48,7 +48,7 @@ class CONTROL_BITFIELD_CLASS extends CONTROL_BASE_CLASS
 			$html .= '<input type="hidden" name="'.$this->name.'" value="'.$this->dbval.'" />';
 			$out = 0;
 			foreach( $attr as $value=>$descr ) {
-				if( $this->dbval & $value ) {
+			    if( isset( $this->dbval ) && $this->dbval & $value ) {
 					$html .= $out? ', ' : '';
 					$html .= trim($descr);
 					$out ++;
@@ -57,7 +57,7 @@ class CONTROL_BITFIELD_CLASS extends CONTROL_BASE_CLASS
 		}
 		else
 		{
-			$use_checkboxes = $this->row_def->prop['ctrl.checkboxes']? true : false;
+		    $use_checkboxes = isset( $this->row_def->prop['ctrl.checkboxes'] ) && $this->row_def->prop['ctrl.checkboxes'] ? true : false;
 			
 			$class = 'e_bitfield';// the e_bitfield class is only used to keep the items together
 			if( !$use_checkboxes ) $class .= ' e_bitfieldborder';

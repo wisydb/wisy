@@ -1,7 +1,5 @@
 <?php
 
-
-
 class EXP_EXPORTRENDERER_CLASS extends EXP_FUNCTIONS_CLASS
 {
 	private $expFormat;	// the export's name
@@ -24,7 +22,7 @@ class EXP_EXPORTRENDERER_CLASS extends EXP_FUNCTIONS_CLASS
 
 			form_tag('form_export', 'exp.php', '', '', ($this->expFormat=='mix'||$this->expFormat=='csv')? 'GET' : 'POST');
 			form_hidden('exp', $this->expFormat);
-			form_hidden('debug', $_REQUEST['debug']);
+			form_hidden('debug', (isset( $_REQUEST['debug'] ) ? $_REQUEST['debug'] : null));
 			form_hidden('ui', 1); // exp.php called from User Interface (if not set, progress information are not shown, the file is dumped after completion and deleted afterwards)
 			
 
@@ -136,15 +134,23 @@ class EXP_EXPORTRENDERER_CLASS extends EXP_FUNCTIONS_CLASS
 
 	function progress_info($info)
 	{
-		if( $this->ui )
+	    if( isset( $this->ui ) && $this->ui )
 		{
 			$this->progress_ob->progress_info($info);
 		}
 	}
+	
+	function evenmore_info($info)
+	{
+	    if( isset( $this->ui ) && $this->ui )
+	    {
+	        $this->progress_ob->evenmore_info($info);
+	    }
+	}
 
 	function progress_abort($msg)
 	{
-		if( $this->ui )
+	    if( isset( $this->ui ) && $this->ui )
 		{
 			$url =  "exp.php?page=$this->expFormat&experr=".urlencode($msg);
 			$this->progress_ob->js_redirect($url, $msg);
@@ -153,22 +159,24 @@ class EXP_EXPORTRENDERER_CLASS extends EXP_FUNCTIONS_CLASS
 		{
 			$logwriter = new LOG_WRITER_CLASS; // only log the error if there is no user-interface involved - otherwise the error is printed and everything is fine.
 			$logwriter->addData('msg', $msg);
-			$logwriter->addData('ip', $_SERVER['REMOTE_ADDR']);
-			$logwriter->addData('browser', $_SERVER['HTTP_USER_AGENT']);
-			$logwriter->log($_REQUEST['table'], '', 0, 'exportfailed');
+			$logwriter->addData('ip', (isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : null));
+			$logwriter->addData('browser', (isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : null));
+			$logwriter->log( (isset($_REQUEST['table']) ? $_REQUEST['table'] : ''), '', 0, 'exportfailed');
 			die($msg);
 		}
 	}
 
 	function _allocate_file_name($expGrp, $name)
 	{
-		if( !file_exists($GLOBALS['g_temp_dir']) ) {
-			if( !@mkdir($GLOBALS['g_temp_dir']) ) {
+	    $gTmpDir = isset($GLOBALS['g_temp_dir']) ? $GLOBALS['g_temp_dir'] : '';
+		if( !file_exists($gTmpDir) ) {
+		    if( !@mkdir($gTmpDir) ) {
 				$this->progress_abort(htmlconstant('_EXP_ERREXPORT', 'Cannot create directory export directory.'));
 			}
 		}
 
-		$fullname = $GLOBALS['g_temp_dir'] . '/exp-' . intval($_SESSION['g_session_userid']) . '-' . $expGrp . '-' . $name;
+		$gSessionUserID = isset($_SESSION['g_session_userid']) ? $_SESSION['g_session_userid'] : null;
+		$fullname = $gTmpDir . '/exp-' . intval($gSessionUserID) . '-' . $expGrp . '-' . $name;
 		
 		if( file_exists($fullname) ) {
 			$this->progress_abort(htmlconstant('_EXP_ERREXPORT', "File $fullname already exists."));
@@ -183,12 +191,12 @@ class EXP_EXPORTRENDERER_CLASS extends EXP_FUNCTIONS_CLASS
 	{
 		// set $this->expFormat from $wantedExpFormat
 		$oldExpFormat = '';
-		if( $this->ui ) {
+		if( isset( $this->ui ) && $this->ui ) {
 			$oldExpFormat = regGet('export.format', 'csv');
 		}
 		
 		$this->expFormat = $wantedExpFormat;
-		if( $this->expFormat == '' ) {
+		if( !isset( $this->expFormat ) || $this->expFormat == '' ) {
 			$this->expFormat = $oldExpFormat;
 		}
 		
@@ -196,13 +204,14 @@ class EXP_EXPORTRENDERER_CLASS extends EXP_FUNCTIONS_CLASS
 			$this->expFormat = 'csv';
 		}
 		
-		if( $this->ui && $this->expFormat != $oldExpFormat ) {
+		if( isset( $this->ui ) && $this->ui && $this->expFormat != $oldExpFormat ) {
 			regSet('export.format', $this->expFormat, 'csv');
 			regSave();
 		}
 		
 		// create export format and function objects
-		if( $this->expFormat != 'files' )
+		$expFormat = isset( $this->expFormat ) ? $this->expFormat : null;
+		if( $expFormat != 'files' )
 		{
 			$temp = 'EXP_FORMAT'.strtoupper($this->expFormat).'_CLASS';
 			$this->ob = new $temp;
@@ -239,11 +248,11 @@ class EXP_EXPORTRENDERER_CLASS extends EXP_FUNCTIONS_CLASS
 		foreach($this->ob->options as $name => $options) {
 			switch( $options[0] ) {
 				case 'check':
-					$param[$name] = $_REQUEST[$name]? 1 : 0;
+				    $param[$name] = isset($_REQUEST[$name]) && $_REQUEST[$name] ? 1 : 0;
 					break;
 				
 				default:
-					$param[$name] = $_REQUEST[$name];
+				    $param[$name] = isset($_REQUEST[$name]) ? $_REQUEST[$name] : '';
 					break;
 			}
 		}
@@ -252,8 +261,9 @@ class EXP_EXPORTRENDERER_CLASS extends EXP_FUNCTIONS_CLASS
 		{
 			reset($this->ob->options);
 			foreach($this->ob->options as $name => $options) {
-				$temp = strtr($param[$name], array("\r"=>"", "\n"=>"<br>"));
-				regSet("export.$this->expFormat.$name", $temp, $options[2]);
+			    $paramName = isset($param[$name]) ? $param[$name] : '';
+				$temp = strtr($paramName, array("\r"=>"", "\n"=>"<br>"));
+				regSet("export.$this->expFormat.$name", $temp, (isset($options[2]) ? $options[2] : null) );
 			}
 			regSave();
 		}
@@ -282,12 +292,16 @@ class EXP_EXPORTRENDERER_CLASS extends EXP_FUNCTIONS_CLASS
 				$logwriter->addData($name, $value);
 		}
 		//$idsStr = is_array($this->ob->idsForTheProtocol)? implode(',',$this->ob->idsForTheProtocol) : $this->ob->idsForTheProtocol;
-		if( !$this->ui )
+		if( !isset( $this->ui ) || !$this->ui )
 		{
-			$logwriter->addData('ip', $_SERVER['REMOTE_ADDR']);
-			$logwriter->addData('browser', $_SERVER['HTTP_USER_AGENT']);
+		    $logwriter->addData('ip', (isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : ''));
+		    $logwriter->addData('browser', (isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : ''));
 		}
-		$logwriter->log($param['table'], $idsStr, $_SESSION['g_session_userid'], 'export');
+		$logwriter->log(
+		    ( isset($param['table']) ? $param['table'] : ''), 
+		    ( isset($idsStr) ? $idsStr : null ), 
+		    ( isset($_SESSION['g_session_userid']) ? $_SESSION['g_session_userid'] : null ), 
+		    'export');
 		
 	}
 	
@@ -309,7 +323,7 @@ class EXP_EXPORTRENDERER_CLASS extends EXP_FUNCTIONS_CLASS
 	function handle_request()
 	{
 		// see what to do
-		if( isset($_REQUEST['exp']) && intval($_REQUEST['ui'])==0 )
+		if( isset($_REQUEST['exp']) && (!isset($_REQUEST['ui']) || intval($_REQUEST['ui'])==0) )
 		{
 			// start direct export, dump file, delete file 
 			
@@ -317,7 +331,7 @@ class EXP_EXPORTRENDERER_CLASS extends EXP_FUNCTIONS_CLASS
 			$ab->abort_on_bad_apikey();
 	
 			$this->ui = false;
-			$this->initializeExpFormat($_REQUEST['exp']);
+			$this->initializeExpFormat((isset($_REQUEST['exp']) ? $_REQUEST['exp'] : null));
 			set_time_limit(0);
 			
 			$this->do_export();
@@ -333,7 +347,7 @@ class EXP_EXPORTRENDERER_CLASS extends EXP_FUNCTIONS_CLASS
 			readfile($path);	
 			exit();
 		}
-		else if( isset($_REQUEST['exp']) && intval($_REQUEST['ui'])==1 && !isset($_REQUEST['apply_only']) )
+		else if( isset($_REQUEST['exp']) && isset($_REQUEST['ui']) && intval($_REQUEST['ui'])==1 && !isset($_REQUEST['apply_only']) )
 		{
 			// start ui export, save file, go to files page
 			
@@ -354,21 +368,23 @@ class EXP_EXPORTRENDERER_CLASS extends EXP_FUNCTIONS_CLASS
 			$this->_abort_if_no_access();
 			
 			$this->ui = true;
-			$this->initializeExpFormat($_REQUEST['page']);
+			$page = isset($_REQUEST['page']) ? $_REQUEST['page'] : null;
+			$this->initializeExpFormat($page);
 
 			if( isset($_REQUEST['apply_only']) ) {
 				$this->get_options( true /*also save.*/ );
 			}
 			
 			
-			if( $this->expFormat == 'files' )
+			if( isset( $this->expFormat ) && $this->expFormat == 'files' )
 			{
 				$ob = new EXP_FILESRENDERER_CLASS;
 				$ob->handle_request();
 			}
 			else
 			{
-				$GLOBALS['site']->msgAdd($_REQUEST['experr'], 'e');
+			    $experr = isset( $_REQUEST['experr'] ) ? $_REQUEST['experr'] : null;
+				$GLOBALS['site']->msgAdd( $experr , 'e');
 				$this->render_export_dialog();
 			}
 		}

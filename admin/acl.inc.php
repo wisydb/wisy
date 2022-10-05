@@ -1,7 +1,5 @@
 <?php
 
-
-
 /*=============================================================================
 (X)ACL Functions
 ===============================================================================
@@ -16,8 +14,6 @@ parameters:
 	none, only function definitions in this file
 
 =============================================================================*/
-
-
 
 
 //
@@ -106,7 +102,7 @@ function acl_get_access(	$object_path,
 	// get correct user
 	//
 	if( $user <= 0 ) {
-		$user = $_SESSION['g_session_userid'];
+	    $user = isset(  $_SESSION['g_session_userid'] ) ? $_SESSION['g_session_userid'] : null;
 	}
 	$user = intval($user);
 
@@ -306,7 +302,7 @@ function acl_get_access(	$object_path,
 		//
 		$g_acl_instance_grp = intval($g_acl_db->f('user_grp'));
 		
-		if( ($filterpositive? !in_array($g_acl_instance_grp, $filteredgroups) : in_array($g_acl_instance_grp, $filteredgroups)) ) {
+		if( ( isset($filterpositive) && $filterpositive ? !in_array($g_acl_instance_grp, $filteredgroups) : in_array($g_acl_instance_grp, $filteredgroups)) ) {
 			$g_acl_get_rights = 0;
 			return 0; // record filtered - no access
 		}
@@ -478,7 +474,7 @@ function acl_get_all_groups($user = 0)
 
 	// get correct user
 	if( $user <= 0 ) {
-		$user = $_SESSION['g_session_userid'];
+	    $user = isset( $_SESSION['g_session_userid'] ) ? $_SESSION['g_session_userid'] : null;
 	}
 	$user = intval($user);
 
@@ -491,7 +487,7 @@ function acl_get_all_groups($user = 0)
 
 	// get all groups the user has access to
 	$groups = array();
-	for( $i = 0; $i < sizeof((array) $ids); $i++ )
+	for( $i = 0; $i < sizeof((array) $ids); $i++ ) 
 	{
 		$g_acl_db->query("SELECT attr_id FROM user_attr_grp WHERE primary_id=$user AND attr_id={$ids[$i][0]}");
 		if( $g_acl_db->next_record() 
@@ -518,7 +514,7 @@ function acl_get_grp_filter(&$filteredgroups, &$filterpositive, $user = 0)
 	
 	// get correct user
 	if( $user <= 0 ) {
-		$user = $_SESSION['g_session_userid'];
+	    $user = isset( $_SESSION['g_session_userid'] ) ? $_SESSION['g_session_userid'] : null;
 	}
 	$user = intval($user);
 	
@@ -530,7 +526,7 @@ function acl_get_grp_filter(&$filteredgroups, &$filterpositive, $user = 0)
 	}
 	
 	// get the settings for the current user
-	if( $user == $_SESSION['g_session_userid'] ) {
+	if( $user == ( isset( $_SESSION['g_session_userid'] ) ? $_SESSION['g_session_userid'] : null) ) {
 		$filteredgroups = regGet('filter.grp', '');
 	}
 	else {
@@ -610,7 +606,7 @@ function acl_get_sql(	$test = ACL_READ,
 	// get correct user
 	//
 	if( $user <= 0 ) {
-		$user = $_SESSION['g_session_userid'];
+	    $user = isset( $_SESSION['g_session_userid'] ) ? $_SESSION['g_session_userid'] : null;
 	}
 	$user = intval($user);
 	
@@ -619,7 +615,7 @@ function acl_get_sql(	$test = ACL_READ,
 	//
 	$filter = '';
 	
-	if( $useUserFilter ) {
+	if( isset($useUserFilter) && $useUserFilter ) {
 		acl_get_grp_filter($filteredgroups, $filterpositive, $user);
 	}
 	else {
@@ -632,7 +628,7 @@ function acl_get_sql(	$test = ACL_READ,
 		$filter .= $filteredgroups[$i];
 	}
 	
-	if( $filterpositive ) {
+	if( isset($filterpositive) && $filterpositive ) {
 		if( $filter != '' ) {	
 			$filter = strpos($filter, ',')? "{$table}user_grp IN ($filter)" : "{$table}user_grp=$filter";
 		}
@@ -674,11 +670,11 @@ function acl_get_sql(	$test = ACL_READ,
 	
 		for( $i = 0; $i < sizeof((array) $ids); $i++ ) 
 		{
-			if( ($filterpositive? in_array($ids[$i], $filteredgroups) : !in_array($ids[$i], $filteredgroups))
+		    if( ( isset($filterpositive) && $filterpositive ? in_array($ids[$i], $filteredgroups) : !in_array($ids[$i], $filteredgroups))
 			 && acl_get_access("SUPERVISOR.{$ids[$i]}") )
 			{
 				if( $test == ACL_READ ) {
-					if( !$filterpositive ) {
+				    if( !isset($filterpositive) || !$filterpositive ) {
 						$access .= " OR {$table}user_grp={$ids[$i]}";
 					}
 				}
@@ -695,7 +691,7 @@ function acl_get_sql(	$test = ACL_READ,
 		while( $g_acl_db->next_record() ) 
 		{
 			$user_grp = $g_acl_db->f('attr_id');
-			if( ($filterpositive? in_array($user_grp, $filteredgroups) : !in_array($user_grp, $filteredgroups)) ) {
+			if( ( isset($filterpositive) && $filterpositive ? in_array($user_grp, $filteredgroups) : !in_array($user_grp, $filteredgroups)) ) {
 				$access .= " OR ({$table}user_grp=$user_grp AND {$table}user_access&" .($test==ACL_READ? 32 : 8). ')';
 			}
 		}
@@ -727,5 +723,3 @@ function acl_get_sql(	$test = ACL_READ,
 		return $access;
 	}
 }
-
-

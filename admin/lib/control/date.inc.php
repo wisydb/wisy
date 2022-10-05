@@ -1,9 +1,10 @@
 <?php
+
 /******************************************************************************
 Implementing a date/datetime control
 *******************************************************************************
 				
-@author Björn Petersen
+@author Bjoern Petersen
 
 ******************************************************************************/
 
@@ -26,14 +27,15 @@ class CONTROL_DATE_CLASS extends CONTROL_BASE_CLASS
 
 	public function get_default_dbval($use_tracked_defaults)
 	{	
-		if( $table_def->rows[$r]->default_value == 'today' )
+	    /* unreachable: $table_def and $r not defined!
+	    if( isset($table_def->rows[$r]) && is_object( $table_def->rows[$r] ) && $table_def->rows[$r]->default_value == 'today' )
 		{
-			return strftime("%Y-%m-%d %H:%M:%S");
+			return ftime("%Y-%m-%d %H:%M:%S");
 		}
 		else
-		{
+		{ */
 			return '0000-00-00 00:00:00';	
-		}
+		// ! }
 	}
 
 	// Cave: $user_input ist not always the same as $_REQUEST[$this->name] - esp. for secondary tables, the caller regards the index!
@@ -70,12 +72,10 @@ class CONTROL_DATE_CLASS extends CONTROL_BASE_CLASS
 		$tttext = parent::get_tooltip_text();
 		if( $tttext )
 			$tttext .= ' - ';
-		$tttext .= htmlconstant($type=='dateopt'? '_DATEFORMATOPTHINT' : '_DATEFORMATHINT');
-		if( $this->datetype == 'datetime' ) {
+			$tttext .= htmlconstant( isset( $type ) && $type=='dateopt' ? '_DATEFORMATOPTHINT' : '_DATEFORMATHINT' );
+			if( isset( $this->datetype ) && $this->datetype == 'datetime' ) {
 			$tttext .= ', ' . htmlconstant('_TIMEFORMATHINT');
 		}
 		return $tttext;
 	}
 };
-
-

@@ -1,12 +1,5 @@
 <?php
 
-
-
-
-
-
-
-
 class G_CRON_CLASS
 {
 	function __construct()
@@ -19,14 +12,14 @@ class G_CRON_CLASS
 
 	public function write_to_cron_debug_log($msg)
 	{
-		$fullfilename = CMS_PATH . $GLOBALS['g_logs_dir'] . '/' . strftime("%Y-%m-%d") . '-crondbg-' . $this->db->Database . '.txt';
+		$fullfilename = CMS_PATH . $GLOBALS['g_logs_dir'] . '/' . ftime("%Y-%m-%d") . '-crondbg-' . $this->db->Database . '.txt';
 
 		// open the logging file
 		$handle = @fopen($fullfilename, 'a');
 		if( !$handle ) { return; }
 				
 		// append the line to the logging file and close it
-		$line = strftime("%Y-%m-%d %H:%M:%S") . "\t" . $msg;
+		$line = ftime("%Y-%m-%d %H:%M:%S") . "\t" . $msg;
 		
 		@fwrite($handle, $line . "\n");
 		@fclose($handle);
@@ -37,7 +30,7 @@ class G_CRON_CLASS
 	
 	public function yield_func($msg='', $force_output = false) // "yield" alone is a reserved in PHP
 	{
-		if( $this->last_yield != time() || $force_output )
+	    if( !isset($this->last_yield) || $this->last_yield != time() || $force_output )
 		{
 			echo ' &nbsp; <i>' . $msg . '</i><br />'; flush();
 			$this->_updateUpdatestick();
@@ -59,9 +52,9 @@ class G_CRON_CLASS
 	{
 		if( !$this->_lock(true) ) { return false; }
 					$updatestick = regGet('cron.updatestick', '0000-00-00 00:00:00', 'template');
-					if( $updatestick > strftime("%Y-%m-%d %H:%M:00", time() - 3*60) /*wait 3 minutes*/ )
+					if( $updatestick > ftime("%Y-%m-%d %H:%M:00", time() - 3*60) /*wait 3 minutes*/ )
 						{ $this->_lock(false); return false; }
-					$this->updatestick_datetime = strftime("%Y-%m-%d %H:%M:00");
+					$this->updatestick_datetime = ftime("%Y-%m-%d %H:%M:00");
 					regSet('cron.updatestick', $this->updatestick_datetime, '0000-00-00 00:00:00', 'template');
 					regSave();
 		$this->_lock(false);
@@ -69,9 +62,10 @@ class G_CRON_CLASS
 	}
 	private function _updateUpdatestick()
 	{
-		if( $this->updatestick_datetime != strftime('%Y-%m-%d %H:%M:00') )
+	    $updateStickDateTime = isset( $this->updatestick_datetime ) ? $this->updatestick_datetime : null;
+	    if( $updateStickDateTime != ftime('%Y-%m-%d %H:%M:00') )
 		{
-			$this->updatestick_datetime = strftime('%Y-%m-%d %H:%M:00');
+			$this->updatestick_datetime = ftime('%Y-%m-%d %H:%M:00');
 			$this->_lock(true);
 						regSet('cron.updatestick', $this->updatestick_datetime, '0000-00-00 00:00:00', 'template');
 						regSave();
@@ -117,24 +111,25 @@ class G_CRON_CLASS
 	// check, if a cron should be run	
 	// ------------------------------------------------------------------------
 	
-	private function _get_hour_nr($timestamp)	{ return intval(strftime("%H", $timestamp), 10); }
-	private function _get_day_nr($timestamp)	{ return intval(strftime("%d", $timestamp), 10); }
-	private function _get_week_nr($timestamp)	{ return intval(strftime("%W", $timestamp), 10); }
-	private function _get_month_nr($timestamp)	{ return intval(strftime("%m", $timestamp), 10); }
+	private function _get_hour_nr($timestamp)	{ return intval(ftime("%H", $timestamp), 10); }
+	private function _get_day_nr($timestamp)	{ return intval(ftime("%d", $timestamp), 10); }
+	private function _get_week_nr($timestamp)	{ return intval(ftime("%W", $timestamp), 10); }
+	private function _get_month_nr($timestamp)	{ return intval(ftime("%m", $timestamp), 10); }
+	
 	private function _do_start_now($last_runtime, $freq)
 	{
 		$just_now = time();
-		if( $freq == 3600 /*stündlich*/ ) {
+		if( $freq == 3600 /*stuendlich*/ ) {
 			if( $this->_get_hour_nr($last_runtime) != $this->_get_hour_nr($just_now)) {
 				return true;
 			}
 		}
-		else if( $freq == 86400 /*täglich*/ ) {
+		else if( $freq == 86400 /*taeglich*/ ) {
 			if( $this->_get_day_nr($last_runtime) != $this->_get_day_nr($just_now)) {
 				return true;
 			}
 		}
-		else if( $freq == 604800 /*wöchentlich*/ ) {
+		else if( $freq == 604800 /*woechentlich*/ ) {
 			if( $this->_get_week_nr($last_runtime) != $this->_get_week_nr($just_now)) {
 				return true;
 			}
@@ -157,11 +152,12 @@ class G_CRON_CLASS
 		for( $j = 0; $j < sizeof((array) $ids); $j++ )
 		{
 			$test = new SYNC_JOB_CLASS($ids[$j]);
-			if( $test->jobid )
+			if( isset( $test->jobid ) && $test->jobid )
 			{
 				$do_sync = false;
 				if( isset($_REQUEST['force']) ) {
-					if( $_REQUEST['force']=='sync' && intval($_REQUEST['forceid'])==intval($test->jobid) ) {
+				    $forceid = isset($_REQUEST['forceid'] ) ? $_REQUEST['forceid'] : null;
+					if( $_REQUEST['force']=='sync' && intval($forceid)==intval($test->jobid) ) {
 						$do_sync = true;
 					}
 				}

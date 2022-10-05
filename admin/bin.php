@@ -1,7 +1,5 @@
 <?php
 
-
-
 /*=============================================================================
 Rembemer a given Record in any list
 ===============================================================================
@@ -19,19 +17,20 @@ parameters:
 =============================================================================*/
 
 
-
 require_once('functions.inc.php');
-require_lang('lang/settings');
 
+require_lang('lang/settings');
 
 
 function render_bin_overview()
 {
 	global $site;
 	
-	$table = $_REQUEST['table'];
-	$id = intval($_REQUEST['id']);
-	$what = $_REQUEST['what']; if( $what!='inview' && $what!='clicked' ) $what = 'clicked';
+	$table = isset( $_REQUEST['table'] )   ? $_REQUEST['table'] : null;
+	$id = isset( $_REQUEST['id'] )         ? intval($_REQUEST['id']) : null;
+	$what = isset( $_REQUEST['what'] )     ? $_REQUEST['what'] : null; 
+	if( ( !isset($what) || $what!='inview' )  &&  ( !isset($what) || $what!='clicked' )  ) 
+	    $what = 'clicked';
 
 	$table_def = Table_Find_Def($table);
 	$color = $table_def->color;
@@ -55,33 +54,33 @@ function render_bin_overview()
 	
 		$imgsize = GetImageSize("{$site->skin->imgFolder}/bin0.gif");
 		$i = 0;	
-		$bins = $_SESSION['g_session_bin']->getBins();
+		$bins = isset($_SESSION['g_session_bin']) ? $_SESSION['g_session_bin']->getBins() : null;
 		
 		echo '<table cellpadding="3" cellspacing="0" border="0">';
 		
-		for( $i = 0; $i < sizeof((array) $bins); $i++ )
+			for( $i = 0; $i < sizeof((array) $bins); $i++ )
 			{
 				echo '<tr><td valign="top">';
 				
-					$state = $_SESSION['g_session_bin']->recordExists($table, $id, $bins[$i]);
-					$editable = $_SESSION['g_session_bin']->binIsEditable($bins[$i]);
+				    $state = isset($_SESSION['g_session_bin']) ? $_SESSION['g_session_bin']->recordExists($table, $id, $bins[$i]) : null;
+				    $editable = isset($_SESSION['g_session_bin']) ? $_SESSION['g_session_bin']->binIsEditable($bins[$i]) : null;
 					
 					echo $editable? "<a href=\"bin.php?list=" . urlencode($bins[$i]) . "&table=$table&id=$id&what=$what&toggle=1\">" : '';
 		
-						echo '<img name="bin_' . ($bins[$i]==$_SESSION['g_session_bin']->activeBin? 'scope' : $i) . '" src="' .$site->skin->imgFolder. '/bin' . ($state?'1':'0') . '.gif" width="' .$imgsize[0]. '" height="' .$imgsize[1]. '" border="0" alt="" />';
+					echo '<img name="bin_' . ($bins[$i] == (isset($_SESSION['g_session_bin']) ? $_SESSION['g_session_bin']->activeBin : null) ? 'scope' : $i) . '" src="' .$site->skin->imgFolder. '/bin' . ($state?'1':'0') . '.gif" width="' .$imgsize[0]. '" height="' .$imgsize[1]. '" border="0" alt="" />';
 						echo '<img src="skins/default/img/1x1.gif" width="6" height="13" border="0" alt="" />';
 						
 					echo $editable? '</a>' : '';
 				
 				echo '</td><td>';
 	
-					echo $_SESSION['g_session_bin']->getName($bins[$i]);
+				    echo ( isset($_SESSION['g_session_bin']) ? html_entity_decode($_SESSION['g_session_bin']->getName($bins[$i])) : '' );
 					
 					if( !$editable ) {
 						echo ' ' . htmlconstant('_SETTINGS_BINREADONLY');
 					}
 					
-					if( sizeof((array) $bins) > 1 && $bins[$i]==$_SESSION['g_session_bin']->activeBin ) {
+					if( sizeof((array) $bins) > 1 && $bins[$i] == ( isset($_SESSION['g_session_bin']) ? $_SESSION['g_session_bin']->activeBin : null ) ) {
 						echo ' ' . htmlconstant('_SETTINGS_BINISACTIVEBIN');
 					}
 
@@ -102,16 +101,19 @@ function render_bin_overview()
 
 
 $site->title = htmlconstant('_SETTINGS');
-$site->pageStart(array('popfit'=>$_REQUEST['toggle']? 0 : 1));
+$toggle = isset( $_REQUEST['toggle'] ) ? $_REQUEST['toggle'] : null;
+$site->pageStart( array( 'popfit' => $toggle ? 0 : 1) );
 
-$table = $_REQUEST['table'];
+$table = isset( $_REQUEST['table'] ) ? $_REQUEST['table'] : null;
 if( !Table_Find_Def($table) ) die('bin.php: Bad table given.');
 	
-if( $_REQUEST['toggle'] ) 
+if( isset( $_REQUEST['toggle'] ) && $_REQUEST['toggle'] ) 
 {
+    $reqList = isset($_REQUEST['list']) ? $_REQUEST['list'] : null;
+    
 	// collect the IDs to add/remove
 	$ids = array();
-	if( $_REQUEST['what'] == 'inview' ) {
+	if( isset($what) && $what == 'inview' ) {
 		$printSelectedSql = '';
 		if( isset($_SESSION['g_session_index_sql'][$table]) ) {
 			$printSelectedSql = $_SESSION['g_session_index_sql'][$table];
@@ -125,7 +127,7 @@ if( $_REQUEST['toggle'] )
 		while( $db->next_record() ) { 
 			$id = intval($db->f('id'));
 			$ids[$id] = 1;
-			if( !$_SESSION['g_session_bin']->recordExists($table, $id, $_REQUEST['list']) ) {
+			if( !isset($_SESSION['g_session_bin']) || !$_SESSION['g_session_bin']->recordExists($table, $id, $reqList) ) {
 				$action = 'add';
 			}
 		}		
@@ -133,24 +135,25 @@ if( $_REQUEST['toggle'] )
 		//print_r($ids);
 	}
 	else {
-		$ids    = array($_REQUEST['id']=>1);
-		$action = $_SESSION['g_session_bin']->recordExists($table, $_REQUEST['id'], $_REQUEST['list'])? 'remove' : 'add';
+		$ids    = array($_REQUEST['id'] => 1);
+		$reqID  = isset($_REQUEST['id']) ? $_REQUEST['id'] : null;
+		$action = isset($_SESSION['g_session_bin']) && $_SESSION['g_session_bin']->recordExists($table, $reqID, $reqList) ? 'remove' : 'add';
 	}
 	
 	// add/remove all given IDs
 	reset($ids);
 	foreach($ids as $id => $dummy) {
-		if( $action == 'add' )  {
-			$_SESSION['g_session_bin']->recordAdd($table, $id, $_REQUEST['list']);
+	    if( isset($action) && $action == 'add' && isset($_SESSION['g_session_bin']) )  {
+		    $_SESSION['g_session_bin']->recordAdd($table, $id, $reqList);
 		}
-		else if( $action == 'remove' ) {
-			$_SESSION['g_session_bin']->recordDelete($table, $id, $_REQUEST['list']);
+		else if( isset($action) && $action == 'remove' && isset($_SESSION['g_session_bin']) ) {
+		    $_SESSION['g_session_bin']->recordDelete($table, $id, $reqList);
 		}
 	}
 	
 	render_bin_overview();
 	
-	if( $_REQUEST['list'] == $_SESSION['g_session_bin']->activeBin ) {
+	if( isset($_SESSION['g_session_bin']) && $reqList == $_SESSION['g_session_bin']->activeBin ) {
 		$_SESSION['g_session_bin']->updateOpener();
 	}
 }
@@ -160,6 +163,3 @@ else
 }
 
 $site->pageEnd();
-
-
-

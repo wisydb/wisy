@@ -4,7 +4,7 @@ class EDIT_PAGING_CLASS
 {
 	public function search_id($table_name, $id, $dir)
 	{
-		if( is_array($_SESSION['g_session_list_results'][$table_name]) )
+	    if( isset($_SESSION['g_session_list_results'][$table_name]) && is_array($_SESSION['g_session_list_results'][$table_name]) )
 		{
 			if( ($i=array_search($id, $_SESSION['g_session_list_results'][$table_name])) !== false )
 			{
@@ -52,4 +52,3 @@ class EDIT_PAGING_CLASS
 		return $fwd_id;
 	}
 };
-

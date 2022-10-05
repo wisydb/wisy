@@ -1,7 +1,5 @@
 <?php
 
-
-
 /*=============================================================================
 Language Stuff
 ===============================================================================
@@ -16,8 +14,6 @@ parameters:
 	none, only function definitions in this file
 
 =============================================================================*/
-
-
 
 
 // returns an array with language ID / language name pairs found in the
@@ -124,6 +120,7 @@ function check_wanted_lang($availLang, $wantedLang)
 			}
 			else {
 				reset($availLang);
+				
 				$wantedLang = array_keys($availLang);
 				$wantedLang = $wantedLang[0]; // array_key_first() only > php7
 				$dummy = array_values($availLang);
@@ -137,14 +134,15 @@ function check_wanted_lang($availLang, $wantedLang)
 
 function require_lang_file($folder)
 {
-	if( file_exists("$folder/" . $_SESSION['g_session_language'] . ".php") ) {
-		return "$folder/" . $_SESSION['g_session_language'] . ".php";
+    $gSessionLanguage = isset($_SESSION['g_session_language']) ? $_SESSION['g_session_language'] : '';
+    if( file_exists("$folder/" . $gSessionLanguage . ".php") ) {
+        return "$folder/" . $gSessionLanguage . ".php";
 	}
 	else if( file_exists("$folder/en.php") ) {
 		return "$folder/en.php";
 	}
-	else if( file_exists("$folder/" . $_SESSION['g_session_language'] . ".js") ) {
-		return "$folder/" . $_SESSION['g_session_language'] . ".js";
+	else if( file_exists("$folder/" . $gSessionLanguage . ".js") ) {
+	    return "$folder/" . $gSessionLanguage . ".js";
 	}
 	else if( file_exists("$folder/en.js") ) {
 		return "$folder/en.js";
@@ -169,7 +167,7 @@ function require_lang($folder)
 // converts $str to the output character set and returns the new string.
 function htmlwrite($str, $strCharset = '')
 {
-	return isohtmlentities($str);
+    return isohtmlentities(  strval( $str ) );
 }
 
 
@@ -197,7 +195,3 @@ function htmlconstant($constant)
 
 	return $ret;
 }
-
-
-
-

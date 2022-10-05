@@ -32,29 +32,30 @@ require_once('deprecated_edit_class.php');		// must be included BEFORE the sessi
 									// started in functions.inc.php as the edit
 									// instances may be stored in the session
 
-
 require_once('functions.inc.php');
 
 require_lang('lang/edit');
-
-
 
  
 //
 // get or create object - the table instance
 //
-$ob_reqname = $_REQUEST['object'];
+$ob_reqname = isset( $_REQUEST['object'] )  ? $_REQUEST['object'] : null;
+$table = isset( $_REQUEST['table'] )        ? $_REQUEST['table'] : null;
+$id = isset($_REQUEST['id'])                ? $_REQUEST['id'] : -1;
+$nodefaults = isset( $_REQUEST['nodefaults'] ) && $_REQUEST['nodefaults'] ? 0 : 1; /* 1 = use defaults */
+
 if( !isset($_REQUEST['object']) || !isset($_SESSION[ $ob_reqname ]) )
 {
 	// create object
-	if( isset($_REQUEST['id']) ) {
-		$ob_reqname = 'object_'.$_REQUEST['table'].'_'.$_REQUEST['id'];
+    if( $id > -1 && $table ) {
+        $ob_reqname = 'object_'.$table.'_'.$id;
 	}
-	else {
-		$ob_reqname = 'object_'.$_REQUEST['table'].'_new_'.time();
+	elseif( $table ) {
+	    $ob_reqname = 'object_'.$table.'_new_'.time();
 	}
 	
-	$_SESSION[ $ob_reqname ] = new Table_Inst_Class($ob_reqname, $_REQUEST['table'], isset($_REQUEST['id'])? $_REQUEST['id'] : -1, $_REQUEST['nodefaults']? 0 : 1 /*use defaults*/);
+	$_SESSION[ $ob_reqname ] = new Table_Inst_Class( $ob_reqname, $table, $id, $nodefaults );
 	$_SESSION[ $ob_reqname ]->verify_data(0 /* show alert */);
 	
 }
@@ -67,6 +68,5 @@ else
 //
 // render whole page
 //
-$_SESSION[ $ob_reqname ]->render();
-
-
+if( isset($_SESSION[ $ob_reqname ]) )
+    $_SESSION[ $ob_reqname ]->render();

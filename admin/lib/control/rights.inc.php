@@ -38,9 +38,9 @@ class CONTROL_RIGHTS_CLASS extends CONTROL_BASE_CLASS
 				}
 			}
 
-			if( $this->dbval & 0300 ) { $this->dbval |= 0400; }
-			if( $this->dbval & 0030 ) { $this->dbval |= 0040; }
-			if( $this->dbval & 0003 ) { $this->dbval |= 0004; }			
+			if( isset( $this->dbval ) && $this->dbval & 0300 ) { $this->dbval |= 0400; }
+			if( isset( $this->dbval ) && $this->dbval & 0030 ) { $this->dbval |= 0040; }
+			if( isset( $this->dbval ) && $this->dbval & 0003 ) { $this->dbval |= 0004; }			
 		}
 	}
 
@@ -64,20 +64,20 @@ class CONTROL_RIGHTS_CLASS extends CONTROL_BASE_CLASS
 		{
 			$anythingWritten = 0;
 			
-			if( $this->dbval & (1<<$grantBit) ) {
+			if( isset( $this->dbval ) && $this->dbval & (1<<$grantBit) ) {
 				$html .= htmlconstant('_READ');
 				$anythingWritten = 1;
 			}
 			$grantBit--;
 
-			if( $this->dbval & (1<<$grantBit) ) {
+			if( isset( $this->dbval ) && $this->dbval & (1<<$grantBit) ) {
 				if( $anythingWritten ) $html .= ', ';
 				$html .= htmlconstant('_EDIT') . '/' . htmlconstant('_DELETE');
 				$anythingWritten = 1;
 			}
 			$grantBit--;
 
-			if( $this->dbval & (1<<$grantBit) ) {
+			if( isset( $this->dbval ) && $this->dbval & (1<<$grantBit) ) {
 				if( $anythingWritten ) $html .= ', ';
 				$html .= htmlconstant('_EDIT_GRANTREF');
 			}

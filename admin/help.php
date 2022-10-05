@@ -1,7 +1,5 @@
 <?php
 
-
-
 /*=============================================================================
 Help to the Program
 ===============================================================================
@@ -207,7 +205,7 @@ function render_sysinfo()
 	$ret .= '<table cellpadding="0" cellspacing="0" border="0">';
 		
 		// program 
-		$temp = CMS_VERSION.', ' . sql_date_to_human(strftime('%Y-%m-%d %H:%M:%S', render_sysinfo_scan__()), 'datetime');
+		$temp = CMS_VERSION.', ' . sql_date_to_human(ftime('%Y-%m-%d %H:%M:%S', render_sysinfo_scan__()), 'datetime');
 		$changelogurl = htmlconstant('_CONST_CHANGELOGURL');
 		if( $changelogurl ) $temp .= ' - <a href="'.$changelogurl.'" target="_blank" rel="noopener noreferrer">changelog...</a>';
 		render_sysinfo_item__($ret, htmlconstant('_SYSINFO_XVERSION', $systemname), $temp);
@@ -282,14 +280,14 @@ class HELP_WIKI2HTML_CLASS extends WIKI2HTML_CLASS
 	{
 		global $help_title2id;
 		global $help_id2title;
-		return ($help_title2id[$title] || $help_id2title[$title])? 1 : '???';
+		return ( isset($help_title2id[$title]) && $help_title2id[$title] || isset($help_id2title[$title]) && $help_id2title[$title] ) ? 1 : '???';
 	}
 	
 	function pageUrl($title, $pageExists)
 	{
 		if( $pageExists ) {
 			global $help_title2id;
-			return "help.php?back=1&id=" . ($help_title2id[$title]? $help_title2id[$title] : $title);
+			return "help.php?back=1&id=" . ( isset($help_title2id[$title]) && $help_title2id[$title] ? $help_title2id[$title] : $title );
 		}
 		else {
 			return "help.php?back=1";
@@ -306,7 +304,7 @@ class HELP_WIKI2HTML_CLASS extends WIKI2HTML_CLASS
 					$this->boxStyle = '';
 				}
 				else {
-					$this->boxStyle = $_REQUEST['print']? ' style="border:1px solid #000000; padding:6px;"' : ' style="background-color:#DDDDDD; padding:6px;"';
+				    $this->boxStyle = isset($_REQUEST['print']) && $_REQUEST['print'] ? ' style="border:1px solid #000000; padding:6px;"' : ' style="background-color:#DDDDDD; padding:6px;"';
 				}
 				return '<table width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td valign="top"'.$this->boxStyle.'>';
 
@@ -323,28 +321,28 @@ class HELP_WIKI2HTML_CLASS extends WIKI2HTML_CLASS
 				return render_sysinfo();
 			
 			case 'toplinks':
-				if( $_REQUEST['print'] ) {
+			    if( isset( $_REQUEST['print'] ) && $_REQUEST['print'] ) {
 					$state = 1;
 					return ''; // no toplinks in print
 				}
 				break; // default processing
 
 			case 'iframe':				
-				if( $_REQUEST['print'] ) {
+			    if( isset( $_REQUEST['print'] ) && $_REQUEST['print'] ) {
 					$state = 1;
 					return '...'; // no iframes in print
 				}
 				break; // default processing
 				
 			case 'content':
-				if( $_REQUEST['print'] ) {
+			    if( isset( $_REQUEST['print'] ) && $_REQUEST['print'] ) {
 					$state = 1;
 					return ''; // no content in print
 				}
 				break;
 			
 			case 'menu':
-				if( !$_REQUEST['print'] )
+			    if( !isset( $_REQUEST['print'] ) || !$_REQUEST['print'] )
 				{
 					global $site;
 					$ret = '';
@@ -352,7 +350,7 @@ class HELP_WIKI2HTML_CLASS extends WIKI2HTML_CLASS
 					echo $site->skin->submenuStart();
 					for( $i = 0; $i < sizeof($param); $i+=2 ) {
 						$temp = trim($param[$i]);
-				 		echo $site->skin->submenuItem('mlink', trim($param[$i+1]), $_REQUEST['id']==$temp? '' : "<a href=\"help.php?id=$temp&amp;back=1\">");
+						echo $site->skin->submenuItem('mlink', trim($param[$i+1]), isset($_REQUEST['id']) && $_REQUEST['id'] == $temp ? '' : "<a href=\"help.php?id=$temp&amp;back=1\">");
 					}
 					echo $site->skin->submenuBreak();
 						echo "&nbsp;";
@@ -365,7 +363,7 @@ class HELP_WIKI2HTML_CLASS extends WIKI2HTML_CLASS
 
 	function renderA($text, $type, $href, $tooltip, $pageExists)
 	{
-		if( $_REQUEST['print'] ) {
+	    if( isset( $_REQUEST['print'] ) && $_REQUEST['print'] ) {
 			if( $type == 'footnote' || $type == 'footref' ) {
 				return "[$text]";
 			}
@@ -384,7 +382,7 @@ class HELP_WIKI2HTML_CLASS extends WIKI2HTML_CLASS
 
 	function renderH($html, $level)
 	{	
-		if( $this->h1AltText ) {
+	    if( isset( $this->h1AltText ) && $this->h1AltText ) {
 			global $site;
 			$html = $this->h1AltText;	
 			$this->h1AltText = '';
@@ -394,7 +392,7 @@ class HELP_WIKI2HTML_CLASS extends WIKI2HTML_CLASS
 	
 	function renderPre($text)
 	{
-		$style = $_REQUEST['print']? ' style="border:1px solid #000000; padding:6px;"' : ' style="background-color:#DDDDDD; padding:6px;"';
+	    $style = isset($_REQUEST['print']) && $_REQUEST['print'] ? ' style="border:1px solid #000000; padding:6px;"' : ' style="background-color:#DDDDDD; padding:6px;"';
 		return "<pre$style>$text</pre>";
 	}
 }
@@ -407,16 +405,16 @@ class HELP_WIKI2HTML_CLASS extends WIKI2HTML_CLASS
 
 
 // get parameters
-$id = $_REQUEST['id'];
-$idlast = $_REQUEST['idlast'];
-$chapter = $_REQUEST['chapter'];
-$back = $_REQUEST['back'];
-$printdlg = $_REQUEST['printdlg'];
-$print  = $_REQUEST['print'];
-$printchapter = $_REQUEST['printchapter'];
+$id = isset( $_REQUEST['id'] )              ? $_REQUEST['id'] : null;
+$idlast = isset( $_REQUEST['idlast'] )      ? $_REQUEST['idlast'] : null;
+$chapter = isset( $_REQUEST['chapter'] )    ? $_REQUEST['chapter'] : null;
+$back = isset( $_REQUEST['back'] )          ? $_REQUEST['back'] : null;
+$printdlg = isset( $_REQUEST['printdlg'] )  ? $_REQUEST['printdlg'] : null;
+$print  = isset( $_REQUEST['print'] )       ? $_REQUEST['print'] : null;
+$printchapter = isset( $_REQUEST['printchapter'] ) ? $_REQUEST['printchapter'] : null;
 
 // render login help screen - should be first to avoid a login screen
-if( $id == '.' )
+if( isset($id) && $id == '.' )
 {
 	define('G_SKIP_LOGIN', 1);
 	require_once('functions.inc.php');
@@ -462,7 +460,11 @@ require_lang('config/lang/help');
 ksort($help_sort2id);
 
 // check given id
-$ids = explode('.', $id);
+if( isset($id) )
+    $ids = explode('.', (string) $id);
+else
+    $ids = array();
+
 for( $i = 0; $i < sizeof($ids); $i++ ) {
 	$id = $ids[$i];
 	find_id($id, $idprev, $idnext);
@@ -471,7 +473,7 @@ for( $i = 0; $i < sizeof($ids); $i++ ) {
 	}
 }
 
-if( $id ) {
+if( isset($id) && $id ) {
 	$index = 0;
 }
 else {
@@ -479,14 +481,14 @@ else {
 	$id = $idlast;
 	find_id($id, $idprev, $idnext);
 	if( !$id ) {
-	    reset($help_sort2id);
-	    
-	    $dummy = array_keys($help_sort2id);
-	    $dummy = $dummy[0]; // array_key_first() only > php7
-	    $id = array_values($help_sort2id);
-	    $id = $id[0];
-	    
-	    find_id($id, $idprev, $idnext);
+		reset($help_sort2id);
+		
+		$dummy = array_keys($help_sort2id);
+		$dummy = $dummy[0]; // array_key_first() only > php7
+		$id = array_values($help_sort2id);
+		$id = $id[0];
+		
+		find_id($id, $idprev, $idnext);
 	}
 }
 
@@ -547,23 +549,23 @@ if( $print )
 	$site->pageStart(array('css'=>'print', 'pt'=>$pagefontsize));
 		if( $printchapter == 'page' )
 		{
-			$wiki2html->h1AltText = isohtmlentities(strtoupper($help_id2title[$print]));
+		    $wiki2html->h1AltText = isohtmlentities( strval( strtoupper($help_id2title[$print]) ) );
 			echo render_page($print);
 		}
 		else
 		{
-			echo '<h1>'.isohtmlentities(strtoupper($site->htmldeentities(htmlconstant('_CONST_SYSTEMNAME'))))." V$g_version</h1>";
-			echo '<h1>'.isohtmlentities(strtoupper($site->htmldeentities(htmlconstant("_SYSINFO_HELP_CHAPTER".$printchapter)))).'</h1>';
+		    echo '<h1>'.isohtmlentities( strval( strtoupper($site->htmldeentities(htmlconstant('_CONST_SYSTEMNAME'))) ) )." V$g_version</h1>";
+		    echo '<h1>'.isohtmlentities( strval( strtoupper($site->htmldeentities(htmlconstant("_SYSINFO_HELP_CHAPTER".$printchapter))) ) ).'</h1>';
 			echo '<table cellpadding="0" cellspacing="0" border="0">';
 				$i = 1;
 				reset($help_sort2id);
 				foreach($help_sort2id as $currSort => $currId)
 				{
-					if( $help_id2chapter[$currId] == $printchapter )
+				    if( isset($help_id2chapter[$currId]) && $help_id2chapter[$currId] == $printchapter )
 					{
 						echo '<tr>';
 							echo '<td nowrap="nowrap" valign="top">'.arabic2roman($i++).'.&nbsp;&nbsp;</td>';
-							echo '<td>'.isohtmlentities(strtoupper($help_id2title[$currId])).'</td>';
+							echo '<td>'.isohtmlentities( strval( strtoupper($help_id2title[$currId]) ) ).'</td>';
 						echo '</tr>';
 					}
 				}
@@ -573,7 +575,7 @@ if( $print )
 			reset($help_sort2id);
 			foreach($help_sort2id as $currSort => $currId)
 			{
-				if( $help_id2chapter[$currId] == $printchapter )
+			    if( isset($help_id2chapter[$currId]) && $help_id2chapter[$currId] == $printchapter )
 				{
 					if( $pagebreak ) {
 						echo '<div style="page-break-after:always;"></div>';
@@ -582,7 +584,7 @@ if( $print )
 						echo '<p style="page-break-after:avoid;">&nbsp;</p>';
 					}
 
-					$wiki2html->h1AltText = arabic2roman($i++).'.&nbsp;&nbsp;'.isohtmlentities(strtoupper($help_id2title[$currId]));
+					$wiki2html->h1AltText = arabic2roman($i++).'.&nbsp;&nbsp;'.isohtmlentities( strval( strtoupper($help_id2title[$currId]) ) );
 					echo render_page($currId);
 				}
 			}
@@ -601,7 +603,7 @@ if( isset($_REQUEST['phpinfo']) ) {
 }
 
 // render normal help screen
-$site->title = htmlconstant('_HELP') . ($index? '' : (' - '.isohtmlentities($help_id2title[$id])));
+$site->title = htmlconstant('_HELP') . ($index? '' : (' - '.isohtmlentities( strval( $help_id2title[$id])) ) );
 $site->pageStart(array('popfit'=>1));
 	echo '<br />';
 
@@ -612,16 +614,16 @@ $site->pageStart(array('popfit'=>1));
 	
 	echo '<a name="top"></a>';
 	$site->skin->mainmenuStart();
-	for( $i = 0; $i < sizeof((array) $help_chapters); $i++ )  {
+		for( $i = 0; $i < sizeof((array) $help_chapters); $i++ )  {
 			$descr = $site->htmldeentities(htmlconstant("_SYSINFO_HELP_CHAPTER{$help_chapters[$i]}"));
 			$title = '';
 			if( $chapter!=$help_chapters[$i] && strlen($descr)>10 && $i != sizeof($help_chapters)-1 ) {
-				$title = ' title="'.isohtmlentities($descr).'"';
-				$descr = isohtmlentities(substr($descr, 0, 8)) . '..';
+			    $title = ' title="'.isohtmlentities( strval( $descr ) ).'"';
+			    $descr = isohtmlentities( strval( substr($descr, 0, 8) ) ) . '..';
 			}
 			else {
 				$title = '';
-				$descr = isohtmlentities($descr);
+				$descr = isohtmlentities( strval( $descr ) );
 			}
 			$site->skin->mainmenuItem($descr, "<a href=\"help.php?back=1&idlast=$id&chapter={$help_chapters[$i]}\"$title>", $chapter==$help_chapters[$i]? 1 : 0);
 		}
@@ -662,7 +664,7 @@ $site->pageStart(array('popfit'=>1));
 						if( $chapter == 0
 						 || $help_id2chapter[$currId] == $chapter )
 						{
-							if( $last_char != '' && $last_char != $currSort{0} ) {
+							if( $last_char != '' && $last_char != $currSort[0] ) {
 								if( !$break_done && $item_count >= $num_themes/2 ) {
 									echo '</td><td>&nbsp;&nbsp;&nbsp;</td><td valign="top">';
 									$break_done = 1;
@@ -674,12 +676,12 @@ $site->pageStart(array('popfit'=>1));
 							
 							$title = $help_id2title[$currId];
 							echo '<a href="help.php?back=1&id=' .$currId. '">';
-								if( $last_char != $currSort{0} ) {
-									$last_char = $currSort{0};
-									echo '<big><b>'.isohtmlentities(substr($title, 0, 1)) .'</b></big>'.isohtmlentities(substr($title, 1));
+								if( $last_char != $currSort[0] ) {
+									$last_char = $currSort[0];
+									echo '<big><b>'.isohtmlentities( strval( substr($title, 0, 1) ) ) .'</b></big>'.isohtmlentities( strval( substr($title, 1) ) );
 								}
 								else {
-									echo isohtmlentities($title);
+								    echo isohtmlentities( strval( $title ) );
 								}
 							echo '</a>';
 							echo '<br />';

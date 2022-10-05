@@ -17,7 +17,8 @@ class SYNC_DOSYNC_CLASS extends SYNC_FUNCTIONS_CLASS
 
 	private function _copy_remote_to_local($remote, $local)
 	{
-		if( !copy($remote, $local) ) {
+	    // @ suppresses "Failed to open stream: Connection refused" ! ok, b/c logging
+	    if( !@copy($remote, $local) ) { 
 			$this->_log('copy error!');
 			return false;
 		}
@@ -31,9 +32,9 @@ class SYNC_DOSYNC_CLASS extends SYNC_FUNCTIONS_CLASS
 		$starting_time = time();
 		
 		// Job informationen holen 
-		$this->_log("Job $this->jobid ausfuehren ... wenn am Ende nicht 'Fertig' steht, wurde die Aufgabe unterbrochen!");
+		$this->_log("Job $this->jobid ausf&uuml;hren ... wenn am Ende nicht 'Fertig' steht, wurde die Aufgabe unterbrochen!");
 		$this->job = new SYNC_JOB_CLASS($this->jobid);
-		if( $this->job->jobid == 0 ) {
+		if( !isset( $this->job->jobid ) || $this->job->jobid == 0 ) {
 			$this->_log("Kann Job $this->jobid nicht laden.");
 			return false;
 		}
@@ -43,7 +44,7 @@ class SYNC_DOSYNC_CLASS extends SYNC_FUNCTIONS_CLASS
 		if( $apikey == '' ) $apikey = regGet('export.apikey', '', 'template');
 		
 		$query = $this->job->query;
-		$query = str_replace('__LAST_DATE__', strftime("%Y-%m-%d", $this->job->lasttime), $query);
+		$query = str_replace('__LAST_DATE__', ftime("%Y-%m-%d", $this->job->lasttime), $query);
 												
 											//  "admin" anstelle von $GLOBALS['site']->adminDir ist hier in Ordnung, da es sich um den entfernten Rechner handelt
 		$requrl_without_key = sprintf('https://%s/admin/exp.php?exp=mix&apikey=<apikey>&table=%s&q=%s', $this->job->host, urlencode($this->job->table), urlencode($query));
@@ -66,7 +67,7 @@ class SYNC_DOSYNC_CLASS extends SYNC_FUNCTIONS_CLASS
 		
 		if( !$importer->import_do($mix_fullpath, $this->job->overwrite, $this->job->delete, $this->job->further_options) )
 		{
-			$this->_log('Importfehler, s. Protokoll fuer weitere Details.');
+			$this->_log('Importfehler, s. Protokoll f�r weitere Details.');
 			return false;
 		}
 		

@@ -10,6 +10,7 @@ class EXP_PROGRESS_CLASS
 			.		'<br /><br />'
 			.		'&nbsp;<img src="skins/default/img/ajaxload-16x11.gif " width="16" height="11" alt="" />&nbsp; &nbsp;'
 			.		'<span id="progress_info"></span>'
+			.		'<span id="evenmore_info"></span>'
 			.	'</p>';
 		flush();
 	}
@@ -35,24 +36,34 @@ class EXP_PROGRESS_CLASS
 		
 		// make sure, we write at least some KB per second
 		$bytesPerSecond = 4*1024;
+		$this->bytesWritten = isset($this->bytesWritten) ? $this->bytesWritten : 0;
 		$this->bytesWritten += strlen($htmlcode);
-		if( $this->lastWritten != time() && $this->bytesWritten < $bytesPerSecond )
+		$lastWritten = isset( $this->lastWritten ) ? $this->lastWritten : null;
+		if( $lastWritten != time() && $this->bytesWritten < $bytesPerSecond )
 		{
 			$dummyText = "<!-- just some text to keep the browser awake -->\n";
-			echo str_repeat($dummyText, ($bytesPerSecond - $this->bytesWritten)/strlen($dummyText));
+			echo str_repeat($dummyText, intval( ((int) $bytesPerSecond - (int) $this->bytesWritten) / (int) strlen($dummyText) ));
 			$this->bytesWritten = 0;
 		}
 		$this->lastWritten = time();
 		
 		flush();
 	}
+	
+	function evenmore_info($info, $force_update = false)
+	{
+	    $htmlcode = "<script>\$('#progress_info').text( $('#progress_info').text()+'$info' );</script>\n";
+	    echo $htmlcode;
+	    
+	    flush();
+	}
 
 	function js_redirect($url, $msg)
 	{
-		$url .= $_REQUEST['debug']? "&debug=".$_REQUEST['debug'] : '';
+	    $url .= isset($_REQUEST['debug']) && $_REQUEST['debug'] ? "&debug=".$_REQUEST['debug'] : '';
 		
 		$redirect = "<script type=\"text/javascript\"><!--\nwindow.location='".$url."';\n/"."/--></script>\n";
-		if( $_REQUEST['debug'] )
+		if( isset($_REQUEST['debug']) && $_REQUEST['debug'] )
 			echo isohtmlspecialchars($redirect);
 		else
 			echo $redirect;

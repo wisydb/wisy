@@ -1,6 +1,5 @@
 <?php
 
-
 /*=============================================================================
 Print Handler
 ===============================================================================
@@ -22,8 +21,6 @@ subsequent parameters:
 	ok				-	start print now
 
 =============================================================================*/
-
-
 
 
 
@@ -73,7 +70,7 @@ function render_print_dialog($id, $printArea, $view, $printViewCnt, $printSelect
 		$site->skin->dialogStart();
 			// area
 			form_control_start(htmlconstant('_PRINT_AREA'));
-				$viewopt = 'view###'.htmlconstant($cntView==1? '_PRINT_AREA_ONLYRECORDINVIEW' : '_PRINT_AREA_ONLYRECORDSINVIEW', $printViewCnt);
+			$viewopt = 'view###'.htmlconstant( isset($cntView) && $cntView == 1 ? '_PRINT_AREA_ONLYRECORDINVIEW' : '_PRINT_AREA_ONLYRECORDSINVIEW', $printViewCnt);
 				
 				if( $printSelectedCnt ) {	
 					$viewopt .= '###selected###'.htmlconstant('_PRINT_AREA_ALLSELECTEDRECORDS', $printSelectedCnt);
@@ -131,14 +128,14 @@ function render_print_dialog($id, $printArea, $view, $printViewCnt, $printSelect
 					else switch( $optionParam[0] )
 					{
 						case 'check':
-							form_control_start($optionParam[3]? htmlconstant($optionParam[3]) : 0);
+						    form_control_start( isset($optionParam[3]) && $optionParam[3] ? htmlconstant($optionParam[3]) : 0);
 								form_control_check($optionName, $module->param[$optionName], '', 0, 1);
 								echo "<label for=\"$optionName\">" . htmlconstant($optionParam[1]) . '</label>';
 							form_control_end();
 							break;
 						
 						case 'remark':
-							form_control_start($optionParam[3]? htmlconstant($optionParam[3]) : 0);
+						    form_control_start( isset($optionParam[3]) && $optionParam[3] ? htmlconstant($optionParam[3]) : 0);
 								echo htmlconstant($optionParam[1]);
 							form_control_end();
 							break;
@@ -160,8 +157,6 @@ function render_print_dialog($id, $printArea, $view, $printViewCnt, $printSelect
 /*=============================================================================
 Global Part
 =============================================================================*/
-
-
 
 
 // common includes
@@ -196,11 +191,11 @@ for( $i = 0; $i <= 1; $i++ )
 asort($all_print_plugins);
 
 // get parameters
-$printArea	= $_REQUEST['printArea']; 
-$view		= $_REQUEST['view']; 
-$table		= $_REQUEST['table'];
-$id 		= intval($_REQUEST['id']);
-$prevview	= $_REQUEST['prevview'];
+$printArea	= isset($_REQUEST['printArea'])  ? $_REQUEST['printArea'] : ''; 
+$view		= isset($_REQUEST['view'])       ? $_REQUEST['view'] : ''; 
+$table		= isset($_REQUEST['table'])      ? $_REQUEST['table'] : '';
+$id 		= isset($_REQUEST['id'])         ? intval($_REQUEST['id']) : null;
+$prevview	= isset($_REQUEST['prevview'])   ? $_REQUEST['prevview'] : '';
 
 // check basic parameters: get table def
 $tableDef = $id? Table_Find_Id($table, $id) : Table_Find_Def($table);
@@ -218,7 +213,7 @@ else {
 	$view = regGet("print.$temp.$table", $id? 'details' : 'list');
 }
 
-if( !$all_print_plugins[$view] ) {
+if( !isset($all_print_plugins[$view]) || !$all_print_plugins[$view] ) {
 	$view = $id? 'details' : 'list';
 }
 
@@ -271,14 +266,15 @@ if( is_array($module->options) && (!$prevview || $prevview==$view) )
 	reset($module->options);
 	foreach($module->options as $optionName => $optionParam)
 	{
-		if( $optionName!='pagebreak' && $optionName!='fontsize' && $optionParam[0]!='remark') 
+	    if( $optionName!='pagebreak' && $optionName!='fontsize' && (!isset($optionParam[0]) || $optionParam[0]!='remark') ) 
 		{
 			if( $prevview ) {
-				$module->param[$optionName] = $options[0]=='check'? ($_REQUEST[$optionName]? 1 : 0) : $_REQUEST[$optionName];
-				regSet("print.$view.$optionName", $module->param[$optionName], $optionParam[2]);
+			    $optionsCheck = isset($options[0]) ? $options[0] : '';
+			    $module->param[$optionName] = $optionsCheck=='check'? (isset($_REQUEST[$optionName]) && $_REQUEST[$optionName] ? 1 : 0) : (isset($_REQUEST[$optionName]) ? $_REQUEST[$optionName] : '');
+			    regSet("print.$view.$optionName", (isset($module->param[$optionName]) ? $module->param[$optionName] : null), (isset($optionParam[2]) ? $optionParam[2] : null) );
 			}
 			else {
-				$module->param[$optionName] = regGet("print.$view.$optionName", $optionParam[2]);
+			    $module->param[$optionName] = regGet("print.$view.$optionName", isset($optionParam[2]) ? $optionParam[2] : null);
 			}
 		}
 	}
@@ -304,8 +300,8 @@ $printSelectedEql = '';
 $printSelectedSql = '';
 $printSelectedCnt = 0;
 if( isset($_SESSION['g_session_index_sql'][$tableDef->name]) ) {
-	$printSelectedEql = $_SESSION['g_session_index_eql'][$tableDef->name]==''? '*' : $_SESSION['g_session_index_eql'][$tableDef->name];
-	$printSelectedSql = $_SESSION['g_session_index_sql'][$tableDef->name];
+    $printSelectedEql = !isset($_SESSION['g_session_index_eql'][$tableDef->name]) || $_SESSION['g_session_index_eql'][$tableDef->name] == '' ? '*' : $_SESSION['g_session_index_eql'][$tableDef->name];
+    $printSelectedSql = isset($_SESSION['g_session_index_sql'][$tableDef->name]) ? $_SESSION['g_session_index_sql'][$tableDef->name] : null;
 	$printSelectedCnt = $eql2sql->sqlCount($printSelectedSql);
 }
 
@@ -335,7 +331,7 @@ else if( $printSelectedSql ) {
 
 // invoke dialog or print?
 
-if( !$_REQUEST['ok'] )
+if( !isset($_REQUEST['ok']) || !$_REQUEST['ok'] )
 {
 	render_print_dialog($id, $printArea, $view, $printViewCnt, $printSelectedCnt, $printAllCnt);
 }
@@ -365,4 +361,3 @@ else
 	
 	$module->printdo();
 }
-

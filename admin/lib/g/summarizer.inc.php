@@ -31,9 +31,10 @@ class G_SUMMARIZER_CLASS
 
 		$list_or_summary = TABLE_LIST; // if no summary rows are specified, TABLE_LIST is used
 		if( !$force_TABLE_LIST ) {
-		    for( $r = 0; $r < sizeof((array) $tableDef->rows); $r++ )
+			for( $r = 0; $r < sizeof((array) $tableDef->rows); $r++ )
 			{
-				if( $tableDef->rows[$r]->flags & TABLE_SUMMARY ) {
+			    $rowFlags = isset( $tableDef->rows[$r]->flags ) ? $tableDef->rows[$r]->flags : null;
+				if( $rowFlags & TABLE_SUMMARY ) {
 					$list_or_summary = TABLE_SUMMARY;
 					break;
 				}
@@ -42,9 +43,10 @@ class G_SUMMARIZER_CLASS
 		
 		for( $r = 0; $r < sizeof((array) $tableDef->rows); $r++ )
 		{
-			if( $tableDef->rows[$r]->flags & $list_or_summary )
+		    $rowFlags = isset( $tableDef->rows[$r]->flags ) ? $tableDef->rows[$r]->flags : null;
+		    if( $rowFlags & $list_or_summary )
 			{
-				switch( $tableDef->rows[$r]->flags & TABLE_ROW )
+			    switch( $rowFlags & TABLE_ROW )
 				{
 					case TABLE_SECONDARY:
 						$temp = array();
@@ -59,7 +61,7 @@ class G_SUMMARIZER_CLASS
 							$curr = $this->get_summary($tableDef->rows[$r]->addparam->name, $temp[$t], '/');
 							if( trim($curr) )
 							{
-								if( $ret ) $ret .= $sep;
+							    if( isset( $ret ) && $ret ) $ret .= $sep;
 								$ret .= $curr;
 								if( !$sep ) {
 									return $ret; // we only want the first value
@@ -81,7 +83,7 @@ class G_SUMMARIZER_CLASS
 							$curr = $this->get_summary($tableDef->rows[$r]->addparam->name, $temp[$t], ' / '/*value seperator*/);
 							if( trim($curr) )
 							{
-								if( $ret ) $ret .= $sep;
+							    if( isset( $ret ) && $ret ) $ret .= $sep;
 								$ret .= $curr;
 								if( !$sep ) {
 									return $ret; // we only want the first value
@@ -108,7 +110,7 @@ class G_SUMMARIZER_CLASS
 						if( trim($curr) )
 						{
 							$curr = smart_truncate($curr);
-							if( $ret ) $ret .= $sep;
+							if( isset( $ret ) && $ret ) $ret .= $sep;
 							$ret .= $curr;
 						}
 						break;
@@ -117,7 +119,7 @@ class G_SUMMARIZER_CLASS
 						$curr = explode(';', $this->get_text($table, $id, $tableDef->rows[$r]->name));
 						if( trim($curr[0]) )
 						{
-							if( $ret ) $ret .= $sep;
+						    if( isset( $ret ) && $ret ) $ret .= $sep;
 							$ret .= $curr[0];
 						}
 						break;
@@ -127,19 +129,19 @@ class G_SUMMARIZER_CLASS
 						if( $curr!='' )
 						{
 							$curr = $tableDef->formatField($tableDef->rows[$r]->name, $curr);
-							if( $curr ) /*may be emptied by format*/
+							if( isset( $ret ) && $curr ) /*may be emptied by format*/
 								$ret .= ($ret? $sep : '') . $curr;
 						}
 						break;
 				}
 				
-				if( $ret && !$sep ) {
+				if( isset( $ret ) && $ret && !$sep ) {
 					return $ret; // we want only the first value
 				}
 			}
 		}
 		
-		if( !$ret && !$force_TABLE_LIST ) {	
+		if( ( !isset( $ret ) || !$ret ) && !$force_TABLE_LIST ) {	
 			// nothing found for TABLE_SUMMARY, use TABLE_LIST instead
 			$ret = $this->get_summary($table, $id, $sep /*value seperator*/, 1 /*force_TABLE_LIST*/);
 		}

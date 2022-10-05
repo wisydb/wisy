@@ -42,7 +42,7 @@ class IMP_FILESRENDERER_CLASS extends IMP_FUNCTIONS_CLASS
 			foreach($files as $key => $currFile)
 			{
 				$ob = new IMP_MIXFILE_CLASS;
-				$ok = $ob->open($GLOBALS['g_temp_dir'].'/imp-'.$_SESSION['g_session_userid'].'-'.$currFile->name_wo_scope);
+				$ok = $ob->open( (isset($GLOBALS['g_temp_dir']) ? $GLOBALS['g_temp_dir'] : '') . '/imp-'. (isset($_SESSION['g_session_userid']) ? $_SESSION['g_session_userid'] : '') .'-'.$currFile->name_wo_scope );
 			
 					$site->skin->rowStart();
 						$site->skin->cellStart('nowrap');
@@ -54,7 +54,7 @@ class IMP_FILESRENDERER_CLASS extends IMP_FUNCTIONS_CLASS
 							$cell .= 			$hilite==$currFile->name_wo_scope? '</b>' : '';
 							$cell .= $ok? '</a>' : '';
 							
-							$url = 'imp.php?page=files&delete=' .urlencode($currFile->name_wo_scope). $addParam;
+							$url = 'imp.php?page=files&delete=' .urlencode($currFile->name_wo_scope) . (isset($addParam) ? $addParam : '');
 							$cell .= "<a href=\"".isohtmlspecialchars($url)."\" onclick=\"return confirm('" .htmlconstant('_EXP_FILESDELETEASK', isohtmlentities($currFile->name_wo_scope)). "');\" title=\"".htmlconstant('_EXP_FILESDELETE')."\">&nbsp;&times;</a>";
 							echo $cell;
 						$site->skin->cellEnd();
@@ -83,7 +83,7 @@ class IMP_FILESRENDERER_CLASS extends IMP_FUNCTIONS_CLASS
 							echo isohtmlspecialchars(smart_size($currFile->size));
 						$site->skin->cellEnd();
 						$site->skin->cellStart('nowrap');
-							echo sql_date_to_human(strftime("%Y-%m-%d %H:%M:%S", $currFile->mtime), 'datetime');
+							echo sql_date_to_human(ftime("%Y-%m-%d %H:%M:%S", $currFile->mtime), 'datetime');
 						$site->skin->cellEnd();
 					$site->skin->rowEnd();
 					$filesCnt++;
@@ -109,7 +109,7 @@ class IMP_FILESRENDERER_CLASS extends IMP_FUNCTIONS_CLASS
 		$site->skin->buttonsBreak();
 			if( $filesCnt ) {
 				echo htmlconstant('_EXP_FILESAREDELETEDAFTERNDAYS', $this->scanner->get_expire_days(),
-					'<a href="'.isohtmlspecialchars('imp.php?page=files&delete=all'.$addParam).'" title="'.htmlconstant('_EXP_FILESDELETEALL').'" onclick="return confirm(\''.htmlconstant('_EXP_FILESDELETEALLASK', $filesCnt).'\');">',
+				    '<a href="'.isohtmlspecialchars('imp.php?page=files&delete=all'.(isset($addParam) ? $addParam : '')).'" title="'.htmlconstant('_EXP_FILESDELETEALL').'" onclick="return confirm(\''.htmlconstant('_EXP_FILESDELETEALLASK', $filesCnt).'\');">',
 					'</a>') . ' | ';
 			}
 			echo "<a href=\"log.php\" target=\"_blank\" rel=\"noopener noreferrer\">" . htmlconstant('_LOG') . '</a>';
@@ -127,12 +127,12 @@ class IMP_FILESRENDERER_CLASS extends IMP_FUNCTIONS_CLASS
 		if( $this->uploader->form_submitted() )
 		{
 			$file = $this->uploader->get_uploaded_file();
-			if( $file['error_msg'] ) {
+			if( isset( $file['error_msg'] ) && $file['error_msg'] ) {
 				$site->msgAdd($file['error_msg'], 'e');
 			}
 			else {
 				$src  = $file['tmp_name'];
-				$dest = $GLOBALS['g_temp_dir'] . '/imp-' . $_SESSION['g_session_userid'] .'-' . $file['name'];
+				$dest = (isset($GLOBALS['g_temp_dir']) ? $GLOBALS['g_temp_dir'] : '') . '/imp-' . (isset($_SESSION['g_session_userid']) ? $_SESSION['g_session_userid'] : '') .'-' . $file['name'];
 				if( @file_exists($dest) ) {
 					$site->msgAdd(htmlconstant('_IMP_UPLOADFILEEXISTS', '<i>'.isohtmlspecialchars($file['name']).'</i>'), 'e');
 				}

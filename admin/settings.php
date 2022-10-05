@@ -1,6 +1,5 @@
 <?php
 
-
 /*=============================================================================
 Edit the user-defined settings
 ===============================================================================
@@ -38,10 +37,9 @@ settings are (for values, the first value is the default in most cases):
 	date.global					<dateSetting>
 								"dateSetting" is a comma-separated list with:
 								relative, weekdays, century, time, seconds
-								
 	edit.df.showchanges.use     {0|1}  (global settings)
 	edit.df.showchanges         {0|1}  (user settings)
-	
+		
 	edit.field.<table>.<field>.addvalues
 								{0|1}							old editor only
 	edit.field.<table>.<field>.size
@@ -181,12 +179,15 @@ function regGetSize($regKey, &$retWidth, &$retHeight)
 
 function regSetSize($regKey, $newValue, $def = '40 x 5')
 {
-	if( preg_match('/[^\d]*(\d{1,3})[^\d]+(\d{1,3}).*/', $newValue, $matches) ) {
+    $regWidth = 0;
+    $regHeight = 0;
+    
+    if( $newValue != null && preg_match('/[^\d]*(\d{1,3})[^\d]+(\d{1,3}).*/', $newValue, $matches) ) {
 		// width and height given
 		$regWidth = intval($matches[1]);
 		$regHeight = intval($matches[2]);
 	}
-	else if( preg_match('/[^\d]*(\d{1,3}).*/', $newValue, $matches) ) {
+	else if( $newValue != null && preg_match('/[^\d]*(\d{1,3}).*/', $newValue, $matches) ) {
 		if( strpos($def, 'x 1')!==false ) {
 			// width given
 			$regWidth  = intval($matches[1]);
@@ -211,7 +212,7 @@ function regSetSize($regKey, $newValue, $def = '40 x 5')
 function get_default_rows($currTableRow)
 {
 	$rows = 5;
-	if( !$_COOKIE['oldeditor'] && $currTableRow->prop['ctrl.rows'] ) {
+	if( (!isset($_COOKIE['oldeditor']) || !$_COOKIE['oldeditor']) && isset($currTableRow->prop['ctrl.rows']) && $currTableRow->prop['ctrl.rows'] ) {
 		$rows = intval($currTableRow->prop['ctrl.rows']); 
 		if( $rows < 1 ) $rows = 1;
 		if( $rows > 99 ) $rows = 99;
@@ -235,7 +236,8 @@ function edit_fields_in($currTable)
 				    if( isset($_COOKIE['oldeditor']) && $_COOKIE['oldeditor'] ) {
 						$valueName = "text$numText";
 						regSetSize("edit.field.{$currTableDef->name}.{$currTableDef->rows[$r]->name}.size",
-							$_REQUEST[$valueName], "40 x 1");
+						    isset($_REQUEST[$valueName]) ? $_REQUEST[$valueName] : null, 
+						    "40 x 1");
 					}
 					
 					$numText++;
@@ -248,7 +250,8 @@ function edit_fields_in($currTable)
 
 					$valueName = "text$numText";
 					regSetSize("edit.field.{$currTableDef->name}.{$currTableDef->rows[$r]->name}.size", 
-						$_REQUEST[$valueName], "40 x $height");
+					   isset($_REQUEST[$valueName]) ? $_REQUEST[$valueName] : null, 
+					   "40 x $height");
 					
 					if( $rowflags & TABLE_HTML ) {
 						global $hasHtmlEditor;
@@ -267,9 +270,9 @@ function edit_fields_in($currTable)
 			case TABLE_SATTR:
 			    $rowsACL = isset($currTableDef->rows[$r]->acl) ? $currTableDef->rows[$r]->acl : null;
 			    if( $rowsACL&ACL_EDIT )
-			    {
+				{
 					$valueName = "av$numAddValues";
-					regSet("edit.field.{$currTableDef->name}.{$currTableDef->rows[$r]->name}.addvalues", $_REQUEST[$valueName]? 1 : 0, 0); 
+					regSet("edit.field.{$currTableDef->name}.{$currTableDef->rows[$r]->name}.addvalues", isset($_REQUEST[$valueName]) && $_REQUEST[$valueName] ? 1 : 0, 0); 
 					
 					$numAddValues++;
 				}
@@ -297,9 +300,9 @@ function edit_fields_out($currTable)
 		$rowtype = $rowflags & TABLE_ROW;
 		switch( $rowtype )
 		{
-		    case TABLE_TEXT:
-		        {
-		            if( isset($currTableDef->rows[$r]->addparam) && $currTableDef->rows[$r]->addparam ) {
+			case TABLE_TEXT:
+				{
+				    if( isset($currTableDef->rows[$r]->addparam) && $currTableDef->rows[$r]->addparam ) {
 						$rules = explode('###', $currTableDef->rows[$r]->addparam);
 						if( substr($rules[0], -1)!=' ' ) {
 							$numText++;
@@ -307,7 +310,7 @@ function edit_fields_out($currTable)
 						}
 					}
 
-					if( !$_COOKIE['oldeditor'] ) {
+					if( !isset($_COOKIE['oldeditor']) || !$_COOKIE['oldeditor'] ) {
 						$numText++;
 						break; // for the new editor, single-line text fields are always of 100% width, no need to edit sth.
 					}
@@ -331,8 +334,8 @@ function edit_fields_out($currTable)
 					echo $ob->cellStart('nowrap="nowrap" align="right"');
 					
 					// name
-					$descr = trim($currTableDef->rows[$r]->descr);
-					if( $namesUsed[$descr] )  {
+					$descr = isset($currTableDef->rows[$r]->descr) ? trim($currTableDef->rows[$r]->descr) : '';
+					if( isset($namesUsed[$descr]) && $namesUsed[$descr] )  {
 						$descr = "$descr ($currTableDef->descr)";
 					}
 					else {
@@ -361,7 +364,7 @@ function edit_fields_out($currTable)
 
 					regGetSize("edit.field.{$currTableDef->name}.{$currTableDef->rows[$r]->name}.size", $width, $height);
 					
-					if( $_COOKIE['oldeditor'] ) {
+					if( isset($_COOKIE['oldeditor']) && $_COOKIE['oldeditor'] ) {
 						form_control_text("text$numText", "$width x $height", 8 /*width*/, 8 /*maxlen*/);
 					} else {
 						form_control_text("text$numText", "$height", 3 /*width*/, 3 /*maxlen*/);
@@ -380,10 +383,10 @@ function edit_fields_out($currTable)
 			case TABLE_SATTR:
 			    $rowsACL = isset($currTableDef->rows[$r]->acl) ? $currTableDef->rows[$r]->acl : null;
 			    if( $rowsACL&ACL_EDIT )
-			    {
-			        $hasAttr = 1;
-			    }
-			    break;
+				{
+					$hasAttr = 1;
+				}
+				break;
 		}
 	}
 }
@@ -398,16 +401,19 @@ function addvalues_fields_out($currTable)
 	$currTableDef = Table_Find_Def($currTable);
 	for( $r = 0; $r < sizeof((array) $currTableDef->rows); $r++ )
 	{
-		$rowtype = intval($currTableDef->rows[$r]->flags) & TABLE_ROW;
+	    $flags = isset($currTableDef->rows[$r]->flags) ? $currTableDef->rows[$r]->flags : null;
+		$rowtype = intval($flags) & TABLE_ROW;
 		switch( $rowtype )
 		{
 			case TABLE_SECONDARY:
-				addvalues_fields_out($currTableDef->rows[$r]->addparam->name);
+			    $addParamName = isset($currTableDef->rows[$r]->addparam->name) ? $currTableDef->rows[$r]->addparam->name : '';
+			    addvalues_fields_out($addParamName);
 				break;
 			
 			case TABLE_MATTR:
 			case TABLE_SATTR:
-				if( $currTableDef->rows[$r]->acl&ACL_EDIT )
+			    $rowACL = isset($currTableDef->rows[$r]->acl) ? $currTableDef->rows[$r]->acl : null;
+				if( $rowACL&ACL_EDIT )
 				{
 					echo $ob->cellStart('nowrap="nowrap"');
 						// control
@@ -416,8 +422,8 @@ function addvalues_fields_out($currTable)
 							'', 0, 1 /*label*/);
 						
 						// name
-						$descr = $currTableDef->rows[$r]->descr;
-						if( $namesUsed[$descr] )  {
+					   $descr = isset($currTableDef->rows[$r]->descr) ? $currTableDef->rows[$r]->descr : '';
+						if( isset($namesUsed[$descr]) && $namesUsed[$descr] )  {
 							$descr = "$descr ($currTableDef->descr)";
 						}
 						else {
@@ -464,22 +470,21 @@ require_once('functions.inc.php');
 require_once('coltable.inc.php');
 require_lang('lang/settings');
 
+global $salt;
 
 // get parameters
-$table = $_REQUEST['table'];
-$scope = $_REQUEST['scope'];
-$section = $_REQUEST['section'];
-$settings_ok = $_REQUEST['settings_ok'];
-$settings_apply = $_REQUEST['settings_apply'];
-$settings_cancel = $_REQUEST['settings_cancel'];
-$any_setting_changed = $_REQUEST['any_setting_changed'];
-$jobname = $_REQUEST['jobname'];
-$jobtable = $_REQUEST['jobtable'];
-$pwoldpw = $_REQUEST['pwoldpw'];
-$pwnewpw1 = $_REQUEST['pwnewpw1'];
-$pwnewpw2 = $_REQUEST['pwnewpw2'];
-
-
+$table = isset( $_REQUEST['table'] )                            ? $_REQUEST['table'] : null;
+$scope = isset( $_REQUEST['scope'] )                            ? $_REQUEST['scope'] : null;
+$section = isset( $_REQUEST['section'])                         ? $_REQUEST['section'] : null;
+$settings_ok = isset( $_REQUEST['settings_ok'] )                ? $_REQUEST['settings_ok'] : null;
+$settings_apply = isset( $_REQUEST['settings_apply'] )          ? $_REQUEST['settings_apply'] : null;
+$settings_cancel = isset( $_REQUEST['settings_cancel'] )        ? $_REQUEST['settings_cancel'] : null;
+$any_setting_changed = isset( $_REQUEST['any_setting_changed'] ) ? $_REQUEST['any_setting_changed'] : null;
+$jobname = isset( $_REQUEST['jobname'] )                        ? $_REQUEST['jobname'] : null;
+$jobtable = isset( $_REQUEST['jobtable'] )                      ? $_REQUEST['jobtable'] : null;
+$pwoldpw = isset( $_REQUEST['pwoldpw'] )                        ? $_REQUEST['pwoldpw'] : null;
+$pwnewpw1 = isset( $_REQUEST['pwnewpw1'] )                      ? $_REQUEST['pwnewpw1'] : null;
+$pwnewpw2 = isset( $_REQUEST['pwnewpw2'] )                      ? $_REQUEST['pwnewpw2'] : null;
 
 
 // get table definition
@@ -501,7 +506,7 @@ else {
 
 if( isset($settings_ok) || isset($settings_apply) )
 {
-	if( $_REQUEST['jobnew'] != '' || $_REQUEST['jobadd'] != '' || $_REQUEST['jobaccess'] != '' )
+    if( isset( $_REQUEST['jobnew'] ) && $_REQUEST['jobnew'] != '' || isset( $_REQUEST['jobadd'] ) && $_REQUEST['jobadd'] != '' || isset( $_REQUEST['jobaccess'] ) && $_REQUEST['jobaccess'] != '' )
 	{
 		// store settings: job-stuff
 		
@@ -512,7 +517,8 @@ if( isset($settings_ok) || isset($settings_apply) )
 		// store settings: password
 		
 		$db = new DB_Admin;
-		$db->query("SELECT password FROM user WHERE id=" . $_SESSION['g_session_userid']);
+		$gSessionUserID = isset($_SESSION['g_session_userid']) ? $_SESSION['g_session_userid'] : null;
+		$db->query( "SELECT password FROM user WHERE id=" . $gSessionUserID );
 		$db->next_record();
 		if( crypt($pwoldpw, $db->fs('password')) == $db->fs('password') )
 		{
@@ -521,7 +527,7 @@ if( isset($settings_ok) || isset($settings_apply) )
 					if( !strpos(' '.$pwnewpw1, '"') && !strpos(' '.$pwnewpw1, "'") ) {
 						if( trim($pwnewpw1) == $pwnewpw1 )
 						{
-							$db->query("UPDATE user SET password='" .addslashes(crypt($pwnewpw1)). "' WHERE id=" . $_SESSION['g_session_userid']);
+						    $db->query("UPDATE user SET password='" .addslashes(crypt($pwnewpw1, $salt)). "' WHERE id=" . $gSessionUserID);
 							closeAndReloadParent('logout.php?logout=pwchanged');
 						}
 						else
@@ -557,9 +563,9 @@ if( isset($settings_ok) || isset($settings_apply) )
 		{
 			// store settings: table: search
 			
-			regSet('index.searchplusminusword', $_REQUEST['otherallowplusminusword']? 1 : 0, 0);
-			regSet('index.searchshowpcode', $_REQUEST['othershowpcode']? 1 : 0, 1);
-			regSet('index.searchfuzzyinfo2', $_REQUEST['otherfuzzyinfo']? 1 : 0, 1);
+		    regSet('index.searchplusminusword', isset($_REQUEST['otherallowplusminusword']) && $_REQUEST['otherallowplusminusword'] ? 1 : 0, 0);
+		    regSet('index.searchshowpcode', isset($_REQUEST['othershowpcode'])              && $_REQUEST['othershowpcode'] ? 1 : 0, 1);
+		    regSet('index.searchfuzzyinfo2', isset($_REQUEST['otherfuzzyinfo'])             && $_REQUEST['otherfuzzyinfo'] ? 1 : 0, 1);
 		}
 		else if( $table_def && $scope == 'edit' )
 		{
@@ -572,24 +578,24 @@ if( isset($settings_ok) || isset($settings_apply) )
 			
 			edit_fields_in($table);
 			
-			if( $hasTextarea ) {
+			if( $hasTextarea && isset( $_REQUEST['edtcss'] ) ) {
 				regSet("edit.textarea.$table.css", $_REQUEST['edtcss'], '');
 				//regSet("edit.textarea.$table.editor", $_REQUEST['edteditor']? 1 : 0, 1);
 			}
 
-			if( $hasHtmlEditor ) {
+			if( $hasHtmlEditor && isset( $_REQUEST['edthtml'] ) ) {
 				regSet("edit.textarea.$table.html", $_REQUEST['edthtml'], '');
 			}
 			
-			$othersep = $_REQUEST['othersep'];
+			$othersep = isset( $_REQUEST['othersep'] ) ? $_REQUEST['othersep'] : null;
 			if( $othersep == 'hash' ) $othersep = '#';
 			regSet("edit.seperator.$table", $othersep, ';');
 			
 			// ...store tab usage
-			regSet('edit.rowrider', $_REQUEST['usetabs']? 1 : 0, 1);
+			regSet('edit.rowrider', isset($_REQUEST['usetabs']) && $_REQUEST['usetabs'] ? 1 : 0, 1);
 			
 		}
-		else if( $scope == 'syslocedit' )
+		else if( $scope == 'syslocedit' && isset( $_REQUEST['textsysloc'] ) )
 		{
 			// store settings: sysloc: edit
 
@@ -606,7 +612,7 @@ if( isset($settings_ok) || isset($settings_apply) )
 		$filteredgroups = '';
 		for( $g = 0; $g < sizeof($allgroups); $g++ ) {
 			$groupname = "fgrp{$allgroups[$g][0]}";
-			if( !($_REQUEST[$groupname]) ) {
+			if( !isset( $_REQUEST[$groupname] ) || !$_REQUEST[$groupname] ) {
 				$filteredgroups .= ($filteredgroups!=''? ', ' : '') . $allgroups[$g][0];
 			}
 		}
@@ -624,7 +630,7 @@ if( isset($settings_ok) || isset($settings_apply) )
 		*/
 
 			// DEPRECATED 13:23 26.09.2013
-			$temp = $_POST['neweditor']? 0 : 1; // if we use $_REQUEST[], this would get the setting from the cookie ...
+		    $temp = isset($_POST['neweditor']) && $_POST['neweditor'] ? 0 : 1; // if we use $_REQUEST[], this would get the setting from the cookie ...
 			setcookie('oldeditor', $temp, time()+60*60*24*100);
 			$_COOKIE['oldeditor'] = $temp;
 			regSet('edit.oldeditor', intval($temp), 0); // just to make the changes visible at once
@@ -632,7 +638,7 @@ if( isset($settings_ok) || isset($settings_apply) )
 		
 		
 		// ... store bin settings
-		$tbbin = $_REQUEST['tbbin']? 1 : 0;
+		$tbbin = isset( $_REQUEST['tbbin'] ) && $_REQUEST['tbbin'] ? 1 : 0;
 		$tbbinold = regGet('toolbar.bin', 1);
 		if( $tbbin != $tbbinold ) {
 			regSet('toolbar.bin', $tbbin, 1);
@@ -646,29 +652,29 @@ if( isset($settings_ok) || isset($settings_apply) )
 	
 		// ... store tips'n'tricks
 		if( regGet('login.tipsntricks.use', 1) ) {
-			regSet('login.tipsntricks', $_REQUEST['tbtnt']?1:0, 1);
+		    regSet('login.tipsntricks', isset( $_REQUEST['tbtnt'] ) && $_REQUEST['tbtnt'] ? 1:0, 1);
 		}
-	
+		
 		if( regGet('edit.df.showchanges.use', 1) ) {
 		    regSet('edit.df.showchanges', isset( $_REQUEST['shchng'] ) && $_REQUEST['shchng'] ? 1:0, 1);
 		}
-		
+	
 		// ... store skin
 		$skn_changed = 0;
 		if( regGet('skin.editable', 1) ) {
-			$skn_changed = regSet('skin.folder', $_REQUEST['edtskin'], 'skins/default');
+		    $skn_changed = regSet('skin.folder', ( isset( $_REQUEST['edtskin'] ) ? $_REQUEST['edtskin'] : null ), 'skins/default');
 		}
 
 
 		// ...store date settings
 		$dateSetting = '';
-		$dateSetting .= $_REQUEST['otherrelative']?	'relative '	: 'absolute ';
-		$dateSetting .= $_REQUEST['otherweekdays']?	'weekdays '	: '';
-		$dateSetting .= $_REQUEST['othercentury']?	'century '	: '';
+		$dateSetting .= isset( $_REQUEST['otherrelative'] ) && $_REQUEST['otherrelative'] ?	'relative '	: 'absolute ';
+		$dateSetting .= isset( $_REQUEST['otherweekdays'] ) && $_REQUEST['otherweekdays'] ?	'weekdays '	: '';
+		$dateSetting .= isset( $_REQUEST['othercentury'] ) && $_REQUEST['othercentury'] ?	'century '	: '';
 		
-		if ( $_REQUEST['othertime'] ) {
+		if ( isset( $_REQUEST['othertime'] ) && $_REQUEST['othertime'] ) {
 			$dateSetting .= 'time ';
-			if( $_REQUEST['otherseconds'] ) {
+			if( isset( $_REQUEST['otherseconds'] ) && $_REQUEST['otherseconds'] ) {
 				$dateSetting .= 'seconds ';
 			}
 		}
@@ -680,40 +686,38 @@ if( isset($settings_ok) || isset($settings_apply) )
 		global $g_addsettings_view;
 		for( $i = 0; $i < sizeof((array) $g_addsettings_view); $i += 2 )
 		    regSet($g_addsettings_view[$i+1],  (isset($_REQUEST["addsettingsView$i"]) ? $_REQUEST["addsettingsView$i"] : ''), '');
-		    
-		    
-		// ...store settings from $g_addsettings_misc
+		
+			
+	    // ...store settings from $g_addsettings_misc
 		global $g_addsettings_misc;
 		for( $i = 0; $i < sizeof((array) $g_addsettings_misc); $i += 2 )
-		  regSet($g_addsettings_misc[$i+1],  (isset($_REQUEST["addsettingsMisc$i"]) ? $_REQUEST["addsettingsMisc$i"] : ''), '');
-		        
+		    regSet($g_addsettings_misc[$i+1],  (isset($_REQUEST["addsettingsMisc$i"]) ? $_REQUEST["addsettingsMisc$i"] : ''), '');
+	
 		// store settings: save settings to db
-		        
+
 		$any_setting_changed = regSave();
 		if( $any_setting_changed ) {
-		    $_SESSION['g_session_filter_active_hint'] = 0;
+			$_SESSION['g_session_filter_active_hint'] = 0;
 		}
-		        
+		
 		if( isset($section) ) {
-		  regSet($section_setting, $section, 0);
-		  regSave();
+			regSet($section_setting, $section, 0);
+			regSave();
 		}
 	}
 }
-
-
 
 // reload opening window and/or close settings window?
 
 
 
 if( isset($settings_ok) || isset($settings_cancel) ) {
-	closeAndReloadParent($any_setting_changed? $_REQUEST['reload'] : '');
+    closeAndReloadParent($any_setting_changed ? (isset($_REQUEST['reload']) ? $_REQUEST['reload'] : null) : '');
 }
 
-$sectionBaseUrl	= "settings.php?table=$table&scope=$scope&reload=" .urlencode($_REQUEST['reload']). "&section=";
+$sectionBaseUrl	= "settings.php?table=$table&scope=$scope&reload=" .urlencode( (isset($_REQUEST['reload']) ? $_REQUEST['reload'] : null) ). "&section=";
 
-if( $skn_changed ) {
+if( isset($skn_changed) && $skn_changed ) {
 	redirect("$sectionBaseUrl$section&any_setting_changed=1");
 }
 
@@ -727,56 +731,58 @@ if( $skn_changed ) {
 
 $site->title = htmlconstant('_SETTINGS_DIALOGTITLE');
 $site->pageStart(array('popfit'=>1));
-echo '<br />';
+echo '<br>';
 
-if( $any_setting_changed ) {
-	reloadParent($_REQUEST['reload']);
+if( isset($any_setting_changed) && $any_setting_changed ) {
+    reloadParent( (isset($_REQUEST['reload']) ? $_REQUEST['reload'] : null) );
 }
 
 $section		= isset($section)? $section : regGet($section_setting, 0);
 $sectionCounter	= 0;
 
+
 form_tag('settings_form', 'settings.php');
 form_hidden('table', $table);
 form_hidden('scope', $scope);
-form_hidden('reload', $_REQUEST['reload']);
+form_hidden('reload', (isset($_REQUEST['reload']) ? $_REQUEST['reload'] : null) );
 form_hidden('section', $section);
 
-if( $scope == 'index' && $table_def )
+// careful: PHP >= 8:
+// $sectionCount is int, $section is String (i.e.: $section is "1=") => no implicit cast to 1
+
+if( $scope == 'index' && isset($table_def) && $table_def )
 {
-	$site->skin->sectionDeclare(htmlconstant('_SETTINGS_SEARCH'),
-		 "$sectionBaseUrl$sectionCounter", $sectionCounter==$section);
+	$site->skin->sectionDeclare(htmlconstant('_SETTINGS_SEARCH'), "$sectionBaseUrl$sectionCounter", $sectionCounter == intval($section) );
 	$sectionCounter++;
 }
-else if( ($scope == 'edit' && $table_def) || $scope == 'syslocedit' ) 
+else if( ($scope == 'edit' && isset($table_def) && $table_def) || $scope == 'syslocedit' ) 
 {
-	$site->skin->sectionDeclare(htmlconstant('_SETTINGS_INPUTFIELDS'),
-		 "$sectionBaseUrl$sectionCounter", $sectionCounter==$section);
+    $site->skin->sectionDeclare(htmlconstant('_SETTINGS_INPUTFIELDS'), "$sectionBaseUrl$sectionCounter", $sectionCounter == intval($section) );
 	$sectionCounter++;
 }
 
 if( regGet('toolbar.bin', 1) )
 {
-	$jobBaseUrl = "$sectionBaseUrl$sectionCounter=";
-	$site->skin->sectionDeclare(htmlconstant('_JOBLISTS'), $jobBaseUrl, $sectionCounter==$section);
-	$sectionCounter++;
+	$jobBaseUrl = "$sectionBaseUrl$sectionCounter="; 
+	$site->skin->sectionDeclare(htmlconstant('_JOBLISTS'), $jobBaseUrl, $sectionCounter == intval($section) );
+	
+	$sectionCounter++;	
 }
 
-$site->skin->sectionDeclare(htmlconstant('_SETTINGS_FILTER'), "$sectionBaseUrl$sectionCounter", $sectionCounter==$section);
+$site->skin->sectionDeclare(htmlconstant('_SETTINGS_FILTER'), "$sectionBaseUrl$sectionCounter", $sectionCounter == intval($section) );
 $sectionCounter++;
 
-$site->skin->sectionDeclare(htmlconstant('_SETTINGS_VIEW'), "$sectionBaseUrl$sectionCounter", $sectionCounter==$section);
+$site->skin->sectionDeclare(htmlconstant('_SETTINGS_VIEW'), "$sectionBaseUrl$sectionCounter", $sectionCounter == intval($section) );
 $sectionCounter++;
 
 if( regGet('settings.editable', 1) ) {
 	$sectionPasswordUrl = "$sectionBaseUrl$sectionCounter";
-	$site->skin->sectionDeclare(htmlconstant('_PASSWORD'), $sectionPasswordUrl, $sectionCounter==$section);
+	$site->skin->sectionDeclare(htmlconstant('_PASSWORD'), $sectionPasswordUrl, $sectionCounter == intval($section) );
 	$sectionCounter++;
 }
 
 $site->skin->sectionDeclare(htmlconstant('_MISC'), "$sectionBaseUrl$sectionCounter", $sectionCounter == intval($section) );
 $sectionCounter++;
-
 
 //
 // section: table
@@ -1003,56 +1009,66 @@ if( regGet('toolbar.bin', 1) )
 	$updateOpener = 0;
 	$reloadOpener = 0;
 	
-	$oldNumberOfBins = sizeof($_SESSION['g_session_bin']->getBins());
+	$oldNumberOfBins = isset($_SESSION['g_session_bin']) ? sizeof($_SESSION['g_session_bin']->getBins()) : null;
 	
 	$jobmsg = '';
 	$joberr = '';
 	
-	if( $_REQUEST['jobactive'] )
+	$jobActive = isset($_REQUEST['jobactive']) ? $_REQUEST['jobactive'] : null;
+	$jobEmpty = isset($_REQUEST['jobempty']) ? $_REQUEST['jobempty'] : null;
+	$jobDelete = isset($_REQUEST['jobdelete']) ? $_REQUEST['jobdelete'] : null;
+	$jobremoveNonexistant = isset($_REQUEST['jobremovenonexistant']) ? $_REQUEST['jobremovenonexistant'] : null;
+	$jobAdd = isset($_REQUEST['jobadd']) ? $_REQUEST['jobadd'] : null;
+	
+	if( $jobActive )
 	{
 		// define default job-list
-		$_SESSION['g_session_bin']->binSetActive($_REQUEST['jobactive']);
+	    if( isset($_SESSION['g_session_bin']) )
+	        $_SESSION['g_session_bin']->binSetActive($jobActive);
+	    
 		$updateOpener = 1;
 		if( !isset($jobname) ) {
-			$jobname = $_REQUEST['jobactive'];
+		    $jobname = $jobActive;
 			$jobtable = 'OPTIONS';
 		}
 	}
-	else if( $_REQUEST['jobempty'] != '' )
+	else if( $jobEmpty != '' )
 	{
 		// empty bin list
-		if( $_SESSION['g_session_bin']->binExists($_REQUEST['jobempty']) ) 
+	    if( isset($_SESSION['g_session_bin']) && $_SESSION['g_session_bin']->binExists($jobEmpty) ) 
 		{
-			$_SESSION['g_session_bin']->binEmpty($_REQUEST['jobempty']);
+			$_SESSION['g_session_bin']->binEmpty($jobEmpty);
+		    
 			$updateOpener = 1;
 
-			$jobname = $_REQUEST['jobempty'];
+			$jobname = $jobEmpty;
 			$jobtable = 'OPTIONS';
 			
-			$jobmsg = htmlconstant('_SETTINGS_BINMSGEMPTYED', $_SESSION['g_session_bin']->getName($_REQUEST['jobempty']));
+			$jobmsg = htmlconstant('_SETTINGS_BINMSGEMPTYED', $_SESSION['g_session_bin']->getName($jobEmpty));
 		}
 	}
-	else if( $_REQUEST['jobdelete'] != '' )
+	else if( $jobDelete != '' )
 	{
 		// delete bin list
-		if( $_SESSION['g_session_bin']->binExists($_REQUEST['jobdelete']) ) 
+	    if( isset($_SESSION['g_session_bin']) && $_SESSION['g_session_bin']->binExists($jobDelete) ) 
 		{
-			$_SESSION['g_session_bin']->binDelete($_REQUEST['jobdelete']);			
+		    $_SESSION['g_session_bin']->binDelete($jobDelete);
+		    
 			$updateOpener = 1;
 			
-			$jobmsg = htmlconstant('_SETTINGS_BINMSGDELETED', $_SESSION['g_session_bin']->getName($_REQUEST['jobdelete']));
+			$jobmsg = htmlconstant('_SETTINGS_BINMSGDELETED', $_SESSION['g_session_bin']->getName($jobDelete));
 		}
 	}
-	else if( $_REQUEST['jobremovenonexistant'] != '' ) 
+	else if( $jobremoveNonexistant != '' ) 
 	{
 		// remove non existant records from a bin 
-		if( $_SESSION['g_session_bin']->binExists($jobname) ) 
+	    if( isset($_SESSION['g_session_bin']) && $_SESSION['g_session_bin']->binExists($jobname) ) 
 		{
-			$jobtable	= $_REQUEST['jobremovenonexistant'];
+		    $jobtable	= $jobremoveNonexistant;
 			$currIds	= $_SESSION['g_session_bin']->getRecords($jobtable, $jobname);
 			
 			reset($currIds);
-			foreach(array_keys($currIds) as $currId) {
+            foreach(array_keys($currIds) as $currId) {
 				$db->query("SELECT id FROM $jobtable WHERE id=$currId");
 				if( !$db->next_record() ) {
 					$_SESSION['g_session_bin']->recordDelete($jobtable, $currId, $jobname);
@@ -1060,20 +1076,21 @@ if( regGet('toolbar.bin', 1) )
 			}
 		}
 	}
-	else if( $_REQUEST['jobadd'] != '' )
+	else if( $jobAdd != '' )
 	{
 		// add records from another job list
-		if( $_SESSION['g_session_bin']->binExists($_SESSION['g_session_jobname']) 
-		 && $_SESSION['g_session_bin']->binExists($_REQUEST['jobadd']) )
+	    if( isset($_SESSION['g_session_jobname']) && isset($_SESSION['g_session_bin']) 
+	     && $_SESSION['g_session_bin']->binExists($_SESSION['g_session_jobname']) 
+		 && $_SESSION['g_session_bin']->binExists($jobAdd) )
 		{
 			$jobname		= $_SESSION['g_session_jobname'];
 			$jobtable		= 'OPTIONS';
 			$recordsAdded	= 0;
 
-			$source = $_SESSION['g_session_bin']->getRecords('', $_REQUEST['jobadd']);
-			foreach($source as $currTable => $currIds) {
-			    reset($currIds);
-			    foreach(array_keys($currIds) as $currId) {
+			$source = $_SESSION['g_session_bin']->getRecords('', $jobAdd);
+            foreach($source as $currTable => $currIds) {
+				reset($currIds);
+                 foreach(array_keys($currIds) as $currId) {
 					if( !$_SESSION['g_session_bin']->recordExists($currTable, $currId, $jobname) ) {
 						$_SESSION['g_session_bin']->recordAdd($currTable, $currId, $jobname);
 						$recordsAdded ++;
@@ -1084,7 +1101,7 @@ if( regGet('toolbar.bin', 1) )
 			$jobmsg = htmlconstant('_SETTINGS_BINMSGRECORDSADDED', $recordsAdded, $_SESSION['g_session_bin']->getName($_REQUEST['jobadd']), $_SESSION['g_session_bin']->getName($jobname));
 		}
 	}
-	else if( $_REQUEST['jobnew'] != '' )
+	else if( isset( $_REQUEST['jobnew'] ) && $_REQUEST['jobnew'] != '' && isset($_SESSION['g_session_bin']) )
 	{
 		// new job list / create link to a job list of another user
 		// correct bin name
@@ -1097,20 +1114,22 @@ if( regGet('toolbar.bin', 1) )
 				break;
 				
 			case 1:
-				$joberr = htmlconstant('_SETTINGS_BINERRNAMEEXISTS', isohtmlentities($jobnew));
+				$joberr = htmlconstant('_SETTINGS_BINERRNAMEEXISTS', isohtmlentities( strval( $jobnew ) ) );
 				$jobname = '@NEW';
 				break;
 				
 			case 2:
-				$joberr = htmlconstant('_SETTINGS_BINERRLISTNOTFOUND', isohtmlentities($jobnew));
+			    $joberr = htmlconstant('_SETTINGS_BINERRLISTNOTFOUND', isohtmlentities( strval( $jobnew ) ) );
 				$jobname = '@NEW';
 				break;
 		}
 	}
-	else if( $_REQUEST['jobaccess'] != '' )
+	else if( isset( $_REQUEST['jobaccess'] ) && $_REQUEST['jobaccess'] != '' )
 	{
 		// set access for a job list
-		if( $_SESSION['g_session_bin']->binExists($_SESSION['g_session_jobname']) )
+	    if( isset( 
+	           $_SESSION['g_session_bin'] ) && isset($_SESSION['g_session_jobname'])
+	        && $_SESSION['g_session_bin']->binExists($_SESSION['g_session_jobname']) )
 		{
 			$_SESSION['g_session_bin']->binSetAccess($_REQUEST['jobaccess'], $_SESSION['g_session_jobname']);
 			
@@ -1123,7 +1142,12 @@ if( regGet('toolbar.bin', 1) )
 	
 	// check the number of bin and if we have to reload the whole page 
 	// to reflect the options "..." right of the paper-clip
-	$bins = $_SESSION['g_session_bin']->getBins();
+	if( isset($_SESSION['g_session_bin']) ) 
+	   $bins = $_SESSION['g_session_bin']->getBins();
+	else
+	   $bins = null;
+	
+	
 	if( $oldNumberOfBins != sizeof($bins) 
 	 && ($oldNumberOfBins == 1 || sizeof($bins)==1) ) {
 	 	$reloadOpener = 1;
@@ -1133,10 +1157,10 @@ if( regGet('toolbar.bin', 1) )
 	// update or reload opener?
 	//
 	
-	if( $reloadOpener ) {
+	if( $reloadOpener && isset( $_REQUEST['reload'] ) ) {
 		reloadParent($_REQUEST['reload']);
 	}
-	else if( $updateOpener ) {
+	else if( $updateOpener && isset( $_SESSION['g_session_bin'] ) ) {
 		$_SESSION['g_session_bin']->updateOpener();
 	}
 	
@@ -1144,15 +1168,18 @@ if( regGet('toolbar.bin', 1) )
 	// render page
 	//
 	
-	
 	$site->skin->sectionStart();
 	
 		$site->skin->submenuStart();
-			echo htmlconstant('_JOBLISTS'); 
+    
+			echo htmlconstant('_JOBLISTS');
+	
 		$site->skin->submenuBreak();
+    
 			$site->menuHelpEntry('isettingsjobs');
+    
 		$site->skin->submenuEnd();
-		
+    
 		if( $jobmsg || $joberr ) {
 			$site->skin->msgStart($joberr? 'e' : 'i');
 				echo $joberr? $joberr : $jobmsg;
@@ -1161,17 +1188,26 @@ if( regGet('toolbar.bin', 1) )
 
 		$site->skin->workspaceStart();
 
+		
+		
+		
+		
+		
 		// dump all bins
 		table_start();
 		for( $i = 0; $i < sizeof((array) $bins); $i++ )
 		{
+		    
 			$currName = $bins[$i];
-			$currEntries = $_SESSION['g_session_bin']->getRecords('', $currName);
 			
+			if( isset($_SESSION['g_session_bin']) ) 
+			 $currEntries = $_SESSION['g_session_bin']->getRecords('', $currName);
+			 
 			// render list name
 			echo '<tr><td>';
 			
-			$currDescr = html_entity_decode($_SESSION['g_session_bin']->getName($currName));
+			    if( isset($_SESSION['g_session_bin']) ) 
+				    $currDescr = html_entity_decode($_SESSION['g_session_bin']->getName($currName));
 			
 				echo '<a href="' . isohtmlentities("$jobBaseUrl&jobname=".urlencode($currName==$jobname? '@0' : $currName)) . '">';
 					echo "<img src=\"skins/default/img/tree" .($jobname==$currName? 'c' : 'e'). "1.gif\" width=\"13\" height=\"13\" border=\"0\" alt=\"[+]\" title=\"\" />";
@@ -1181,22 +1217,22 @@ if( regGet('toolbar.bin', 1) )
 				
 				echo $jobname==$currName? "<b>$currDescr</b>" : $currDescr;
 				
-				if( $_SESSION['g_session_bin']->access[$currName] == 'r' 
-				 || $_SESSION['g_session_bin']->access[$currName] == 'e' ) {
+				if( isset($_SESSION['g_session_bin']->access[$currName]) && $_SESSION['g_session_bin']->access[$currName] == 'r' 
+				 || isset($_SESSION['g_session_bin']->access[$currName]) && $_SESSION['g_session_bin']->access[$currName] == 'e' ) {
 					echo ' ' . htmlconstant('_SETTINGS_BINALLOWSHORT', htmlconstant('_SETTINGS_BINALLOW'.strtoupper($_SESSION['g_session_bin']->access[$currName])));
 				}
 				
-				if( !$_SESSION['g_session_bin']->binIsEditable($currName) ) {
+				if( !isset($_SESSION['g_session_bin']) || !$_SESSION['g_session_bin']->binIsEditable($currName) ) {
 					echo ' ' . htmlconstant('_SETTINGS_BINREADONLY');
 				}
 				
 				if( sizeof((array) $bins) > 1 ) {
-					if( $currName==$_SESSION['g_session_bin']->activeBin ) {
+				    if( isset($_SESSION['g_session_bin']) && $currName==$_SESSION['g_session_bin']->activeBin ) {
 						echo " <img src=\"{$site->skin->imgFolder}/bin1.gif\" width=\"15\" height=\"13\" border=\"0\" alt=\"[X]\" title=\"\" />";
 						echo ' ' . htmlconstant('_SETTINGS_BINISACTIVEBIN');
 					}
 					else {
-						echo " <a href=\"" .isohtmlentities("$jobBaseUrl&jobname=".urlencode($jobname)."&jobtable=".urlencode($jobtable)."&jobactive=".urlencode($currName)). "\">";
+					    echo " <a href=\"" .isohtmlentities("$jobBaseUrl&jobname=" . urlencode( (string) $jobname )."&jobtable=" . urlencode( (string) $jobtable ) . "&jobactive=" . urlencode( (string) $currName) ) .  "\">";
 							echo "<img src=\"{$site->skin->imgFolder}/bin0.gif\" width=\"15\" height=\"13\" border=\"0\" alt=\"[ ]\" title=\"\" />";
 						echo '</a>';
 					}
@@ -1212,16 +1248,17 @@ if( regGet('toolbar.bin', 1) )
 					// render list content overview
 					reset($currEntries);
 					$currTotalCount = 0;
-					foreach($currEntries as $currTable => $currIds)
+					
+                    foreach($currEntries as $currTable => $currIds)
 					{
-					    $currIdsCount = sizeof((array) $currIds);
+						$currIdsCount = sizeof((array) $currIds);
 						if( $currIdsCount )
 						{
 							$tempTableDef = Table_Find_Def($currTable);
 							if( $tempTableDef ) 
 							{
 								echo '<tr><td>';
-									echo '<a href="' . isohtmlentities("$jobBaseUrl&jobname=".urlencode($currName)."&jobtable=".urlencode($currTable==$jobtable? '0' : $currTable)) . '">';
+									echo '<a href="' . isohtmlentities("$jobBaseUrl&jobname=" . urlencode( (string) $currName ) . "&jobtable=".urlencode($currTable==$jobtable? '0' : $currTable)) . '">';
 										echo "<img src=\"skins/default/img/tree" .($jobtable==$currTable? 'c' : 'e'). "2.gif\" width=\"37\" height=\"13\" border=\"0\" alt=\"[+]\" title=\"\" />";
 									echo "</a>";
 								echo '</td><td>';
@@ -1232,7 +1269,7 @@ if( regGet('toolbar.bin', 1) )
 										(
 											$currIdsCount==1? '_SETTINGS_BINNRECORDIN' : '_SETTINGS_BINNRECORDSIN', 
 											$currIdsCount, 
-											"$hiliteEnd<a href=\"index.php?table=$currTable&f0=job&v0=" .urlencode($currName). "&searchreset=2&searchoffset=0&orderby=date_modified+DESC\" target=\"_blank\" rel=\"noopener noreferrer\" onclick=\"return popdown(this);\">$hiliteStart{$tempTableDef->descr}$hiliteEnd</a>$hiliteStart"
+											"$hiliteEnd<a href=\"index.php?table=$currTable&f0=job&v0=" . urlencode( (string) $currName ) . "&searchreset=2&searchoffset=0&orderby=date_modified+DESC\" target=\"_blank\" rel=\"noopener noreferrer\" onclick=\"return popdown(this);\">$hiliteStart{$tempTableDef->descr}$hiliteEnd</a>$hiliteStart"
 										);
 									echo $hiliteEnd;
 								echo '</td></tr>';
@@ -1244,12 +1281,13 @@ if( regGet('toolbar.bin', 1) )
 									
 										$hasNonExistantRecords = 0;
 										reset($currIds);
-										foreach($currIds as $currId => $active) {
+										
+                                        foreach($currIds as $currId => $active) {
 											table_item();
 												$db->query("SELECT id FROM $tempTableDef->name WHERE id=$currId");
 												if( $db->next_record() ) {
 													echo "<a href=\"edit.php?table=$currTable&id=$currId\" target=\"_blank\" rel=\"noopener noreferrer\" onclick=\"return popdown(this);\">";
-														echo isohtmlentities($tempTableDef->get_summary($currId, '; '));
+													echo isohtmlentities(  strval( $tempTableDef->get_summary($currId, '; ') ) );
 													echo '</a>';
 												}
 												else {
@@ -1259,9 +1297,9 @@ if( regGet('toolbar.bin', 1) )
 											table_item_end();
 										}
 										
-										if( $hasNonExistantRecords && !$_SESSION['g_session_bin']->binIsExt($currName) ) {
+										if( $hasNonExistantRecords && ( !isset($_SESSION['g_session_bin']) || !$_SESSION['g_session_bin']->binIsExt($currName) ) ) {
 											table_item();
-												echo '<a href="' . isohtmlentities("$jobBaseUrl&jobname=".urlencode($currName)."&jobremovenonexistant=".urlencode($jobtable)) . "\" onclick=\"return confirm('" .htmlconstant('_SETTINGS_BINREMOVENONEXISTANTASK', $currDescr, $tempTableDef->descr). "');\">";
+												echo '<a href="' . isohtmlentities("$jobBaseUrl&jobname=" . urlencode( (string) $currName ) . "&jobremovenonexistant=" . urlencode( (string) $jobtable) ) . "\" onclick=\"return confirm('" .htmlconstant('_SETTINGS_BINREMOVENONEXISTANTASK', $currDescr, $tempTableDef->descr). "');\">";
 													echo htmlconstant('_SETTINGS_BINREMOVENONEXISTANT');
 												echo '</a>';
 											table_item_end();
@@ -1287,7 +1325,7 @@ if( regGet('toolbar.bin', 1) )
 					
 					// options...
 					echo '<tr><td>';
-						echo '<a href="' . isohtmlentities("$jobBaseUrl&jobname=".urlencode($currName)."&jobtable=".($jobtable=='OPTIONS'? '0' : 'OPTIONS')) . '">';
+						echo '<a href="' . isohtmlentities("$jobBaseUrl&jobname=" . urlencode( (string) $currName ) . "&jobtable=".($jobtable=='OPTIONS'? '0' : 'OPTIONS')) . '">';
 							echo "<img src=\"skins/default/img/tree" .($jobtable=='OPTIONS'? 'c' : 'e'). "2.gif\" width=\"37\" height=\"13\" border=\"0\" alt=\"[+]\" title=\"\" />";
 						echo '</a>';
 					echo '</td><td>';
@@ -1302,14 +1340,14 @@ if( regGet('toolbar.bin', 1) )
 						table_start();
 
 						// use as active bin
-						if( $currName!=$_SESSION['g_session_bin']->activeBin )
+						if( !isset($_SESSION['g_session_bin']) || $currName!=$_SESSION['g_session_bin']->activeBin )
 						{
 							table_item();
-								echo "<a href=\"" .isohtmlentities("$jobBaseUrl&jobactive=".urlencode($currName)). "\" title=\"" .htmlconstant('_SETTINGS_BINACTIVEBINHINT'). "\">" . htmlconstant('_SETTINGS_BINUSEASDEFAULTLIST') . '</a>';
+								echo "<a href=\"" .isohtmlentities("$jobBaseUrl&jobactive=" . urlencode( (string) $currName) ) . "\" title=\"" .htmlconstant('_SETTINGS_BINACTIVEBINHINT'). "\">" . htmlconstant('_SETTINGS_BINUSEASDEFAULTLIST') . '</a>';
 							table_item_end();
 						}
 
-						if( $_SESSION['g_session_bin']->binIsExt($currName) )
+						if( isset($_SESSION['g_session_bin']) && $_SESSION['g_session_bin']->binIsExt($currName) )
 						{
 							// external list options
 							table_item();
@@ -1317,7 +1355,8 @@ if( regGet('toolbar.bin', 1) )
 							table_item_end();
 
 							table_item();
-								echo "<a href=\"" .isohtmlentities("{$jobBaseUrl}0&jobdelete=".urlencode($currName)). "\" onclick=\"return confirm('" .htmlconstant('_SETTINGS_BINUSENOLONGERASK', $currDescr). "')\">" . htmlconstant('_SETTINGS_BINUSENOLONGER') . '</a>';
+							
+								echo "<a href=\"" .isohtmlentities("{$jobBaseUrl}0&jobdelete=" . urlencode( (string) $currName) ) . "\" onclick=\"return confirm('" .htmlconstant('_SETTINGS_BINUSENOLONGERASK', $currDescr). "')\">" . htmlconstant('_SETTINGS_BINUSENOLONGER') . '</a>';
 							table_item_end();
 						}
 						else
@@ -1328,9 +1367,12 @@ if( regGet('toolbar.bin', 1) )
 								$permoptions = '<select name="jobaccess" size="1">';
 									$temp = array('n', 'r', 'e');
 									for( $j = 0; $j < sizeof($temp); $j++ ) {
-										$tempChecked = ($_SESSION['g_session_bin']->access[$currName]==$temp[$j] || ($temp[$j]=='n' && $_SESSION['g_session_bin']->access[$currName]==''))? 1 : 0;
-										$permoptions .= '<option value="' .($tempChecked? '' : $temp[$j]). '"';
-										$permoptions .= $tempChecked? ' selected="selected"' : '';
+									    $nameStr = isset($_SESSION['g_session_bin']->access[$currName]) ? $_SESSION['g_session_bin']->access[$currName] : '';
+									    $tempJ = isset($temp[$j]) ? $temp[$j] : '';
+									    $tempChecked = ( $nameStr == $tempJ || ($tempJ == 'n' && $nameStr == '') ) ? 1 : 0;
+									        		    
+									    $permoptions .= '<option value="' .( isset($tempChecked) && $tempChecked ? '' : $temp[$j]). '"';
+									    $permoptions .= isset($tempChecked) && $tempChecked ? ' selected="selected"' : '';
 										$permoptions .= '>';
 											 $permoptions .= htmlconstant('_SETTINGS_BINALLOW'.strtoupper($temp[$j]));
 										$permoptions .= '</option>';
@@ -1346,15 +1388,15 @@ if( regGet('toolbar.bin', 1) )
 							for( $j = 0; $j < sizeof((array) $bins); $j++ )
 							{
 								$tempName = $bins[$j];
-								$tempEntries = $_SESSION['g_session_bin']->getRecords('', $tempName);
+								$tempEntries = isset($_SESSION['g_session_bin']) ? $_SESSION['g_session_bin']->getRecords('', $tempName) : null;
 								if( $tempName != $currName ) {
 									$tempTotal = 0;
-									foreach($tempEntries as $tempTable => $tempIds) {
-									    $tempTotal += sizeof((array) $tempIds);
+                                    foreach($tempEntries as $tempTable => $tempIds) {
+										$tempTotal += sizeof((array) $tempIds);
 									}
 									
 									if( $tempTotal ) {
-										$nonEmptyLists .= "###$tempName###" . $_SESSION['g_session_bin']->getName($tempName);
+									    $nonEmptyLists .= "###$tempName###" . (isset($_SESSION['g_session_bin']) ? $_SESSION['g_session_bin']->getName($tempName) : null);
 									}
 								}
 							}		
@@ -1368,14 +1410,14 @@ if( regGet('toolbar.bin', 1) )
 							// empty
 							if( $currTotalCount ) {
 								table_item();
-									echo "<a href=\"" .isohtmlentities("$jobBaseUrl&jobempty=".urlencode($currName)). "\" onclick=\"return confirm('" .htmlconstant('_SETTINGS_BINEMPTYASK', $currDescr, $currTotalCount). "')\">" . htmlconstant('_SETTINGS_BINEMPTY') . '</a>';
+									echo "<a href=\"" .isohtmlentities("$jobBaseUrl&jobempty=" . urlencode( (string) $currName) ) . "\" onclick=\"return confirm('" .htmlconstant('_SETTINGS_BINEMPTYASK', $currDescr, $currTotalCount). "')\">" . htmlconstant('_SETTINGS_BINEMPTY') . '</a>';
 								table_item_end();
 							}
 							
 							// delete
-							if( sizeof($bins) > 1 || $_SESSION['g_session_bin']->activeBin != 'default' ) {
+							if( sizeof($bins) > 1 || !isset($_SESSION['g_session_bin']) || $_SESSION['g_session_bin']->activeBin != 'default' ) {
 								table_item();
-									echo "<a href=\"" .isohtmlentities("{$jobBaseUrl}0&jobdelete=".urlencode($currName)). "\" onclick=\"return confirm('" .htmlconstant('_SETTINGS_BINDELETEASK', $currDescr, $currTotalCount). "')\">" . htmlconstant('_SETTINGS_BINDELETE') . '</a>';
+									echo "<a href=\"" .isohtmlentities("{$jobBaseUrl}0&jobdelete=" . urlencode( (string) $currName) ) . "\" onclick=\"return confirm('" .htmlconstant('_SETTINGS_BINDELETEASK', $currDescr, $currTotalCount). "')\">" . htmlconstant('_SETTINGS_BINDELETE') . '</a>';
 								table_item_end();
 							}
 						}
@@ -1394,7 +1436,7 @@ if( regGet('toolbar.bin', 1) )
 		// new
 		
 		echo '<tr><td>';
-			echo '<a href="' . isohtmlentities("$jobBaseUrl&jobname=".urlencode($jobname=='@NEW'? '@0' : '@NEW')) . '">';
+			echo '<a href="' . isohtmlentities("$jobBaseUrl&jobname=" . urlencode($jobname=='@NEW'? '@0' : '@NEW')) . '">';
 				echo "<img src=\"skins/default/img/tree" .($jobname=='@NEW'? 'c' : 'e'). "1.gif\" width=\"13\" height=\"13\" border=\"0\" alt=\"[+]\" title=\"\" />";
 			echo '</a>';
 		echo '</td><td>';
@@ -1459,7 +1501,7 @@ $site->skin->sectionStart();
 					form_control_check("fgrp{$allgroups[$g][0]}", 
 						in_array($allgroups[$g][0], $filteredgroups)? 0 : 1, 
 						'', 0, 1);
-					echo "<label for=\"fgrp{$allgroups[$g][0]}\">" . isohtmlentities($allgroups[$g][1]) . '</label>';
+						echo "<label for=\"fgrp{$allgroups[$g][0]}\">" . isohtmlentities( strval( $allgroups[$g][1] ) ) . '</label>';
 			}
 	
 			if( sizeof($allgroups) >= 3  ) 
@@ -1470,7 +1512,7 @@ $site->skin->sectionStart();
 		
 		echo $ob->tableEnd();
 
-		if( $debug ) {
+		if( isset($debug) && $debug ) {
 			acl_get_grp_filter($filteredgroups, $filterpositive);
 			echo $filterpositive? '<hr /><b>groups to <i>show:</i></b> ' : '<b>groups to <i>hide:</i></b> '; 
 			for( $i = 0; $i < sizeof((array) $filteredgroups); $i++ ) echo ($i? ', ' : '') . $filteredgroups[$i];
@@ -1558,14 +1600,14 @@ $site->skin->sectionStart();
 				form_control_check('tbtnt', regGet('login.tipsntricks', 1), '', 0, 1);
 				echo '<label for="tbtnt">' . htmlconstant('_SETTINGS_TIPSNTRICKS') . '</label><br />';
 			}
-
-
+			
 			form_control_check('shchng', regGet('edit.df.showchanges', 1), '', 0, 1);
 			if( regGet('edit.df.showchanges.use', 1) ) {
 			    echo '<label for="shchng">' . htmlconstant('_SETTINGS_SHOWCHANGES') . '</label><br />';
 			    // regSet('edit.df.showchanges', isset( $_REQUEST['shchng'] ) && $_REQUEST['shchng'] ? 1:0, 1);
 			}
-			
+
+
 		form_control_end();
 
 		// date
@@ -1595,26 +1637,26 @@ $site->skin->sectionStart();
 				
 			echo '</div>';
 
+		form_control_end();
+		
+		// show settings from $g_addsettings_view
+		global $g_addsettings_view, $g_addsettings_userTemplateOnly;
+		
+		for( $i = 0; $i < sizeof((array) $g_addsettings_view); $i += 2 )
+		{
+		    // don't display template value if user template is required for this and current user not template
+		    if( isset( $_SESSION['g_session_userloginname'] ) && $_SESSION['g_session_userloginname'] != 'template' && isset($g_addsettings_userTemplateOnly) && is_array($g_addsettings_userTemplateOnly) && in_array($g_addsettings_view[$i+1], $g_addsettings_userTemplateOnly) )
+		        $value = '';
+		    else
+		        $value = regGet($g_addsettings_view[$i+1], '');
+		    
+			form_control_start(htmlconstant($g_addsettings_view[$i]));
+			form_control_text("addsettingsView$i", $value);  // if no sepcific value is set for this user it will fall back / show the value of user "template"!
 			form_control_end();
-			
-			// show settings from $g_addsettings_view
-			global $g_addsettings_view, $g_addsettings_userTemplateOnly;
-			
-			for( $i = 0; $i < sizeof((array) $g_addsettings_view); $i += 2 )
-			{
-			    // don't display template value if user template is required for this and current user not template
-			    if( isset( $_SESSION['g_session_userloginname'] ) && $_SESSION['g_session_userloginname'] != 'template' && isset($g_addsettings_userTemplateOnly) && is_array($g_addsettings_userTemplateOnly) && in_array($g_addsettings_view[$i+1], $g_addsettings_userTemplateOnly) )
-			        $value = '';
-			        else
-			            $value = regGet($g_addsettings_view[$i+1], '');
-			            
-			            form_control_start(htmlconstant($g_addsettings_view[$i]));
-			            form_control_text("addsettingsView$i", $value);  // if no sepcific value is set for this user it will fall back / show the value of user "template"!
-			            form_control_end();
-			}
-			
-			
-	$site->skin->dialogEnd();
+		}
+		
+		
+	$site->skin->dialogEnd();	
 	
 $site->skin->sectionEnd();
 
@@ -1636,7 +1678,7 @@ if( regGet('settings.editable', 1) )
 			$site->menuHelpEntry('isettingspassword');
 		$site->skin->submenuEnd();
 	
-		if( $pwerr ) 
+		if( isset($pwerr) && $pwerr ) 
 		{
 			$site->skin->msgStart('e');
 				echo $pwerr;
@@ -1646,7 +1688,7 @@ if( regGet('settings.editable', 1) )
 		$site->skin->dialogStart();
 	
 			form_control_start(htmlconstant('_LOGINNAME'));
-				echo isohtmlentities($_SESSION['g_session_userloginname']);
+			echo isohtmlentities( strval( isset( $_SESSION['g_session_userloginname'] ) ? $_SESSION['g_session_userloginname'] : '' ) );
 			form_control_end();
 			
 			form_control_start(htmlconstant('_SETTINGS_PWCURRPASSWORD'));
@@ -1670,7 +1712,7 @@ if( regGet('settings.editable', 1) )
 
 			form_control_start(htmlconstant('_SETTINGS_PWSUGGESTION'));
 				form_hidden('pwsug', $pwsug);
-				echo isohtmlentities($pwsug) . ' <a href="' . isohtmlentities($sectionPasswordUrl) . '">' . htmlconstant('_OTHERSUGGESTION___') . '</a>';
+				echo isohtmlentities( strval( $pwsug ) ) . ' <a href="' . isohtmlentities( strval( $sectionPasswordUrl ) ) . '">' . htmlconstant('_OTHERSUGGESTION___') . '</a>';
 			form_control_end();
 			
 		$site->skin->dialogEnd();
@@ -1698,19 +1740,21 @@ if( regGet('settings.editable', 1) )
         // don't display template value if user template is required for this and current user not template
         if( isset( $_SESSION['g_session_userloginname'] ) && $_SESSION['g_session_userloginname'] != 'template' && isset($g_addsettings_userTemplateOnly) && is_array($g_addsettings_userTemplateOnly) && in_array($g_addsettings_misc[$i+1], $g_addsettings_userTemplateOnly) )
             $value = '';
-        else
+        else 
             $value = regGet($g_addsettings_misc[$i+1], '');
-                
-            form_control_start(htmlconstant($g_addsettings_misc[$i]));
-            form_control_text("addsettingsMisc$i", $value);  // if no sepcific value is set for this user it will fall back / show the value of user "template"!
-            form_control_end();
-                
+        
+        form_control_start(htmlconstant($g_addsettings_misc[$i]));
+        form_control_text("addsettingsMisc$i", $value);  // if no sepcific value is set for this user it will fall back / show the value of user "template"!
+        form_control_end();
+       
     }
     
     $site->skin->dialogEnd();
     
     $site->skin->sectionEnd();
 }
+
+
 
 
 //

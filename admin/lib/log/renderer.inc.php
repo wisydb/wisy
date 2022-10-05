@@ -17,18 +17,18 @@ used on subsequent calls:
 	showall (hidden, for debugging only)
 
 ===============================================================================
-Änderungen, die direkt nach Anlegen eines Datensatzes vom Ersteller selbst 
-erfolgen, werden nur im Protokoll für den Datensatz selbst angezeigt.
-Eine Überlegung war, diese Änderungen gar nicht erst zu erfassen, aber manchmal
-können auch diese wichtig sein (wenn z.B. ein Datensatz schon online ist).
-Abgesehen davon belegen diese Änderungen nur ca. 10% des Protokolls und
+Aenderungen, die direkt nach Anlegen eines Datensatzes vom Ersteller selbst 
+erfolgen, werden nur im Protokoll fuer den Datensatz selbst angezeigt.
+Eine Ueberlegung war, diese Aenderungen gar nicht erst zu erfassen, aber manchmal
+koennen auch diese wichtig sein (wenn z.B. ein Datensatz schon online ist).
+Abgesehen davon belegen diese Aenderungen nur ca. 10% des Protokolls und
 das Einlesen/Parsen von ca. 1 MB dauert nur 0.002/0.020 Sekunden.
 ===============================================================================
 TODO: 
-- Zeilen mit "Keine Änderung" werden ebenfalls nicht ausgegeben; diese sollten
+- Zeilen mit "Keine Aenderung" werden ebenfalls nicht ausgegeben; diese sollten
   mittelfristig aber auch gar nicht erst erfasst werden - stattdessen
   sollte eine Warnung beim Abspeichern ausgegeben werden.
-- evtl. sollte man den "Ältere Einträge"-Link auch schon nach weniger als 
+- evtl. sollte man den "aeltere Eintraege"-Link auch schon nach weniger als 
   einen Tag einblenden, mal sehen wieviele Daten da in der Praxis 
   zusammen kommen.
 - Gibt es noch Probleme mit dem diff? 
@@ -57,7 +57,7 @@ class LOG_RENDERER_CLASS
 		global $site;
 		$site->skin->rowStart();
 
-			$action = $record[4];
+		$action = isset($record[4]) ? $record[4] : '';
 		
 			// date / stat
 			$site->skin->cellStart('nowrap');
@@ -66,13 +66,13 @@ class LOG_RENDERER_CLASS
 				{
 					$cell = $record[6];
 				}
-				else if( is_array($record[0]) ) 
+				else if( isset($record[0]) && is_array($record[0]) ) 
 				{
 					$cell = sql_date_to_human($record[0][0], 'date -weekdays') . ' - ' . sql_date_to_human($record[0][1], 'date -weekdays');
 				}
-				else if( $record[0]!='' ) 
+				else if( isset($record[0]) && $record[0] != '' ) 
 				{
-				    $cell = sql_date_to_human($record[0], 'datetime').(isset($_GET['debug']) && $_GET['debug'] == "time" ? ' ('.date("H:i:s", strtotime($record[0])).')' : '');
+					$cell = sql_date_to_human($record[0], 'datetime').(isset($_GET['debug']) && $_GET['debug'] == "time" ? ' ('.date("H:i:s", strtotime($record[0])).')' : '');
 				}
 				else 
 				{
@@ -92,7 +92,7 @@ class LOG_RENDERER_CLASS
 
 			$site->skin->cellStart();
 				$cell = '';
-				if( !$this->filterTable && $record[1] )
+				if( ( !isset( $this->filterTable ) || !$this->filterTable ) && $record[1] )
 				{
 					$name = $record[1];
 					if( $tableDef ) $name = $tableDef->descr;
@@ -100,9 +100,9 @@ class LOG_RENDERER_CLASS
 						.		$name
 						.	'</b></a>';
 				}
-				if( sizeof((array) $record[2])==1 )
+				if( isset($record[2]) && sizeof((array) $record[2])==1 )
 				{
-					if( $record[2][0] )
+				    if( isset($record[2][0]) && $record[2][0] )
 					{	
 						$name = $record[2][0];
 						if( $tableDef ) $name = isohtmlspecialchars($tableDef->get_summary($record[2][0]));
@@ -115,7 +115,7 @@ class LOG_RENDERER_CLASS
 					}
 					else
 					{
-						$cell .= '&nbsp;'; // nichts ausgeben, da dies auch für die Zeile "weitere Datensätze verwendet wird"
+						$cell .= '&nbsp;'; // nichts ausgeben, da dies auch fuer die Zeile "weitere Datensaetze verwendet wird"
 					}
 				}
 				else
@@ -124,7 +124,7 @@ class LOG_RENDERER_CLASS
 					$cell .= htmlconstant('_LOG_N_RECORDS', sizeof((array) $record[2]));
 				}
 				
-				if( $cell == $this->lastRecordCell ) {
+				if( isset($this->lastRecordCell) && $cell == $this->lastRecordCell ) {
 					echo '&nbsp; &quot;';
 					$wasSameRecord = true;
 				}
@@ -148,12 +148,16 @@ class LOG_RENDERER_CLASS
 
 					case 'edit':
 						// details out
-						if( !$this->showAll )
+					    if( !isset( $this->showAll ) || !$this->showAll )
 							$fieldFormatter->combineDoubleFields($record);
 						for( $i = 5, $cnt = 0; $i < sizeof((array) $record); $i += 3 )
 						{
-							$prefix = substr($record[$i], 0, strrpos($record[$i], '.')) . '.';
-							if( $record[$i] && !$fieldFormatter->deletedSecondary[$prefix] ) {
+						    $prefix = '';
+						        
+						    if( isset($record[$i]) )
+							 $prefix = substr($record[$i], 0, strrpos($record[$i], '.')) . '.';
+						    
+							if( isset($record[$i]) && $record[$i] && ( !isset($fieldFormatter->deletedSecondary[$prefix]) || !$fieldFormatter->deletedSecondary[$prefix] ) ) {
 								echo $cnt? '<br />' : '';
 								echo $fieldFormatter->formatField($i, $action, $tableDef, 
 									$record[$i], $record[$i+1], $record[$i+2]);
@@ -180,7 +184,7 @@ class LOG_RENDERER_CLASS
 						if( $action == 'import' ) $moreAfter = 1;
 						for( $i = 5, $cnt = 0; $i < sizeof((array) $record); $i += 3 )
 						{
-							if( $record[$i] ) {
+						    if( isset($record[$i]) && $record[$i] ) {
 								if( $moreAfter == $cnt ) {																			
 									echo ' <a href="log.php?l='.$currLineNum.'&amp;date='.$currDay.'" class="log_dt">[...]</a>';
 									break;
@@ -198,10 +202,10 @@ class LOG_RENDERER_CLASS
 			$site->skin->cellEnd();
 				
 			// user
-			if( !$this->filterUser )
+			if( !isset( $this->filterUser ) || !$this->filterUser )
 			{
 				$site->skin->cellStart('nowrap');
-					if( $record[3] )
+				    if( isset($record[3]) && $record[3] )
 					{
 						$cell =	'<a href="'.isohtmlspecialchars($this->getUrl(array('user'=>$record[3]))).'">'
 							.		user_html_name($record[3])
@@ -211,7 +215,7 @@ class LOG_RENDERER_CLASS
 						$cell = '&nbsp;';
 					}
 					
-					if( $this->lastUserCell == $cell && $wasSameRecord ) {
+					if( isset( $this->lastUserCell ) && $this->lastUserCell == $cell && $wasSameRecord ) {
 						echo '&nbsp; &quot;';
 					}
 					else {
@@ -257,7 +261,7 @@ class LOG_RENDERER_CLASS
 		while( 1 )
 		{
 			// calculate the day to handle
-			$currDay = strftime("%Y-%m-%d", $timestamp - $fileDaysScanned*86400);
+			$currDay = ftime("%Y-%m-%d", $timestamp - $fileDaysScanned*86400);
 
 			// check this file
 			$fileRowsOut = 0;
@@ -292,7 +296,7 @@ class LOG_RENDERER_CLASS
 		}
 
 		// render "more ..." link
-		$record = array('', '', 0, 0, 'more___', $this->getUrl(array('date'=>strftime("%Y-%m-%d", $timestamp - $fileDaysScanned*86400))), 
+		$record = array('', '', 0, 0, 'more___', $this->getUrl(array('date'=>ftime("%Y-%m-%d", $timestamp - $fileDaysScanned*86400))), 
 			"<small title=\"$stats\" style=\"color: #bbb;\">&nbsp; ".sprintf('%1.3f s', $time3)."</small>");
 		$this->dumpRow($currDay, 0, $record);
 	}
@@ -316,32 +320,37 @@ class LOG_RENDERER_CLASS
 	
 	private function getParam()
 	{
-	    if( trim($_REQUEST['table']) == "" ) {
+	    $reqID = isset($_REQUEST['id']) ? $_REQUEST['id'] : null;
+	    $reqTable = isset($_REQUEST['table']) ? $_REQUEST['table'] : '';
+	    
+	    if( trim($reqTable) == "" ) {
 	        die("Aktion nicht zugelassen. Tabelle nicht definiert. ");
 	    }
 	    
-	    if( trim($_REQUEST['id']) == "" || intval($_REQUEST['id']) < 1 ) {
-	        die("Aktion nicht zugelassen. Datensatz-ID nicht definiert. Protokolle nur für spezifische Datens&auml;tze abrufbar. ");
+	    if( !isset($_REQUEST['id']) || trim($reqID) == "" || intval($reqID) < 1 ) {
+	        die("Aktion nicht zugelassen. Datensatz-ID nicht definiert. Protokolle nur f&uuml;r spezifische Datens&auml;tze abrufbar. ");
 	    }
 	    
 		// get table to use for filtering, if any
 		$this->filterTable = '';
 		$this->filterId = 0;
-		if( isset($_REQUEST['table']) && Table_Find_Def($_REQUEST['table'], 0 /*no access check*/)) {
-			$this->filterTable = $_REQUEST['table'];
-			$this->filterId = intval($_REQUEST['id']); // only set the ID filter if the table filter is valid
+		if( Table_Find_Def($reqTable, 0 /*no access check*/)) {
+		    $this->filterTable = $reqTable;
+		    $this->filterId = intval($reqID); // only set the ID filter if the table filter is valid
 		}
-		$this->filterUser = intval($_REQUEST['user']);
+		$this->filterUser = isset($_REQUEST['user']) ? intval($_REQUEST['user']) : null;
 
 		// get start date to use for filtering (we go to the past from this date)
-		$this->dateStart = strftime("%Y-%m-%d");
-		if( strlen($_REQUEST['date']) == 10 ) 
+		$this->dateStart = ftime("%Y-%m-%d");
+		if( isset($_REQUEST['date']) && strlen($_REQUEST['date']) == 10 ) // if date has right format
 		{
 			$this->dateStart = $_REQUEST['date'];
 		}
-		else if( $this->filterTable 
-		      && $this->filterId /*without an ID we cannot guess the last modification date eg. using "SELECT MAX(date_modified) AS dm FROM {$this->filterTable};" - we'll forget deleted records this way ...*/
-		      && $this->filterTable != 'user' && $this->filterTable != 'anbieter' /*these tables contain login information that do not affect date_modified! */ )
+		else if( isset( $this->filterTable ) && $this->filterTable 
+		      && isset( $this->filterId ) && $this->filterId /* without an ID we cannot guess the last modification date eg. using "SELECT MAX(date_modified) AS dm FROM {$this->filterTable};" - we'll forget deleted records this way ... */
+		      && isset( $this->filterTable ) && $this->filterTable != 'user' 
+		      && isset( $this->filterTable ) && $this->filterTable != 'anbieter' /* these tables contain login information that do not affect date_modified! */ 
+		       )
 		{
 			$db = new DB_Admin;
 			$db->query("SELECT date_modified AS dm FROM {$this->filterTable} WHERE id={$this->filterId};");
@@ -351,8 +360,8 @@ class LOG_RENDERER_CLASS
 		}
 		
 		// misc.
-		$this->showAll = ($_REQUEST['showall'] || $this->filterId)? 1 : 0;
-		$this->ajax    = $_REQUEST['ajax']? 1 : 0;
+		$this->showAll = ( isset($_REQUEST['showall']) && $_REQUEST['showall'] || $this->filterId) ? 1 : 0;
+		$this->ajax    = isset($_REQUEST['ajax']) && $_REQUEST['ajax'] ? 1 : 0;
 	}
 
 	function renderAjaxDetails($line)
@@ -377,7 +386,7 @@ class LOG_RENDERER_CLASS
 		{
 			$prefix = substr($record[$i], 0, strrpos($record[$i], '.')) . '.';		
 			
-			if( $record[$i] ) 
+			if( isset($record[$i]) && $record[$i] ) 
 			{
 				$field = $fieldFormatter->formatField($i, $action, $tableDef, 
 					$record[$i], $record[$i+1], $record[$i+2]);
@@ -416,7 +425,7 @@ class LOG_RENDERER_CLASS
 		ob_start("ob_gzhandler");
 		
 		// page start
-		if( !$this->ajax )
+		if( !isset( $this->ajax ) || !$this->ajax )
 		{
 			$site->title = htmlconstant('_LOG_TITLE');
 			$site->addScript('lib/log/renderer.js');
@@ -424,19 +433,19 @@ class LOG_RENDERER_CLASS
 				
 				$site->skin->workspaceStart();
 					echo htmlconstant('_LOG_FILTER').': ';
-					if( $this->filterTable || $this->filterUser )
+					if( isset( $this->filterTable ) && $this->filterTable || isset( $this->filterUser ) && $this->filterUser )
 					{
 						$filtertitle = htmlconstant('_LOG_FILTER_REMOVE_CRITERION');
 						$close = '&nbsp;&times;&nbsp;';
-						if( $this->filterTable ) {
-							$tableDef = Table_Find_Def($this->filterTable, 0 /*no access check*/);
+						if( isset( $this->filterTable ) && $this->filterTable ) {
+							$tableDef = Table_Find_Def($this->filterTable, 0 /* no access check */);
 							$name = $this->filterTable;
 							if( $tableDef ) $name = $tableDef->descr;
-							if( !$this->filterId ) $name = "<b>$name</b>";
+							if( !isset( $this->filterId ) || !$this->filterId ) $name = "<b>$name</b>";
 							echo htmlconstant('_LOG_TABLE') . '=' . $name 
 									.	'<a href="'.isohtmlspecialchars($this->getUrl(array('table'=>'', 'id'=>0))).'" title="'.$filtertitle.'">'.$close.'</a>';
 						}
-						if( $this->filterId ) {
+						if( isset( $this->filterId ) && $this->filterId ) {
 							$name = $this->filterId;
 							if( $tableDef) $name = isohtmlspecialchars($tableDef->get_summary($this->filterId));
 							$name = "<b>$name</b>";
@@ -444,7 +453,7 @@ class LOG_RENDERER_CLASS
 							echo htmlconstant('_LOG_RECORD') . '=' . $name 
 									.	'<a href="'.isohtmlspecialchars($this->getUrl(array('id'=>0))).'" title="'.$filtertitle.'">'.$close.'</a>';
 						}
-						if( $this->filterUser ) {
+						if( isset( $this->filterUser ) && $this->filterUser ) {
 							echo $this->filterTable? ', ' : '';
 							$name = user_html_name($this->filterUser);
 							$name = "<b>$name</b>";
@@ -484,7 +493,7 @@ class LOG_RENDERER_CLASS
 								echo htmlconstant('_LOG_ACTION');	
 							$site->skin->cellEnd();
 						
-						if( !$this->filterUser ) 
+					    if( !isset( $this->filterUser ) || !$this->filterUser ) 
 						{
 							$site->skin->cellStart(); // 'width="150"'
 								echo htmlconstant('_LOG_USER');		
@@ -503,10 +512,10 @@ class LOG_RENDERER_CLASS
 		$this->dumpProtocol();
 		
 		// page end
-		if( !$this->ajax )
+		if( !isset( $this->ajax ) || !$this->ajax )
 		{
 				$site->skin->tableEnd();
-				echo '<br /><br /><br /><br /><br /><br />'; // some space abottom, this makes clicking the "more link..." smarter.
+				echo '<br><br><br><br><br><br>'; // some space abottom, this makes clicking the "more link..." smarter.
 			$site->pageEnd();
 		}
 

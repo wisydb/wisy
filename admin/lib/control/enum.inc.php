@@ -23,7 +23,8 @@ class CONTROL_ENUM_CLASS extends CONTROL_BASE_CLASS
 		$ret = array();
 		$temp = explode('###', $this->row_def->addparam);
 		for( $t = 0; $t < sizeof($temp); $t += 2 ) {
-			$ret[ $temp[$t] ] = $temp[$t+1];
+		    if( isset( $temp[$t] ) ) 
+		      $ret[ $temp[$t] ] = isset( $temp[$t+1] ) ? $temp[$t+1] : null;
 		}
 		return $ret;
 	}
@@ -33,7 +34,7 @@ class CONTROL_ENUM_CLASS extends CONTROL_BASE_CLASS
 		$html = '';
 		
 		$descr_hide = false;
-		if( $this->row_def->prop['layout.descr.hide'] ) {
+		if( isset( $this->row_def->prop['layout.descr.hide'] ) && $this->row_def->prop['layout.descr.hide'] ) {
 			$descr_hide = true; // if the descripion is hidden, we'll add a tooltip or sth. like that
 		}
 
@@ -63,7 +64,7 @@ class CONTROL_ENUM_CLASS extends CONTROL_BASE_CLASS
 			
 			if( !$sth_selected )
 			{
-				$html .= '<option value="' . $this->get_default_dbval(false). '" selected="selected">Ungültiger Wert: ' . $this->dbval . '</option>';
+				$html .= '<option value="' . $this->get_default_dbval(false). '" selected="selected">Ung&uuml;ltiger Wert: ' . $this->dbval . '</option>';
 			}
 			
 		$html .= '</select>';

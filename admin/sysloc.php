@@ -1,7 +1,5 @@
 <?php
 
-
-
 /*=============================================================================
 System Localisation
 ===============================================================================
@@ -22,13 +20,9 @@ parameters (for subsequent calls only):
 =============================================================================*/
 
 
-
-
 /*****************************************************************************
  *  class to handle the system localisation
  *****************************************************************************/
-
-
 
 
 class SYS_LOC_CLASS
@@ -41,7 +35,7 @@ class SYS_LOC_CLASS
 	var $string_remarks;
 	var $file_remark;
 
-	function SYS_LOC_CLASS($folder)
+	function __construct($folder)
 	{
 		// store folder, init type and languages
 		$this->folder		= $folder;
@@ -65,14 +59,14 @@ class SYS_LOC_CLASS
 			 		if( $dot ) {
 				 		// set type if not yet done
 				 		$ext = strtolower(substr($folderentry, $dot+1));
-					 	if( !$this->type ) {
+				 		if( !isset( $this->type ) || !$this->type ) {
 					 		if( $ext == 'php' || $ext == 'js' ) {
 					 			$this->type = $ext;
 					 		}
 					 	}
 
 					 	// add languages if type is known
-					 	if( $this->type && $ext == $this->type ) {
+					 	if( isset( $this->type ) && $this->type && $ext == $this->type ) {
 					 		$this->languages[] = strtolower(substr($folderentry, 0, $dot));
 					 	}
 					 }
@@ -143,7 +137,8 @@ class SYS_LOC_CLASS
 			{
 				// write entry remark, if any
 				if( $entry_remark ) {
-					if( strlen($entry_remark) > strlen($this->string_remarks[$lastKey]) ) {
+				    $lKey = isset($this->string_remarks[$lastKey]) ? $this->string_remarks[$lastKey] : '';
+				    if( strlen($entry_remark) > strlen($lKey) ) {
 						$this->string_remarks[$lastKey] = $entry_remark;
 					}
 					$entry_remark = '';
@@ -173,7 +168,8 @@ class SYS_LOC_CLASS
 				}
 
 				// get key'n'value
-				$p = strpos($line, $this->type == 'php'? ',' : '=');
+				$thisType = isset($this->type) ? $this->type : '';
+				$p = strpos($line, $thisType == 'php'? ',' : '=');
 				if( $p ) {
 					$key = trim(substr($line, 0, $p));
 					$key = strtr($key, " ('\"", '    ');
@@ -203,8 +199,9 @@ class SYS_LOC_CLASS
 		$this->max_key_len		= 0;
 
 		// get all strings
+		$thisType = isset($this->type) ? $this->type : '';
 		for( $lc = 0; $lc < sizeof((array) $this->languages); $lc++ ) {
-			$filename = $this->folder . '/' . $this->languages[$lc] . '.' . $this->type;
+		    $filename = (isset($this->folder) ? $this->folder : '') . '/' . (isset($this->languages[$lc]) ? $this->languages[$lc] : '') . '.' . $thisType;
 			if( file_exists($filename) ) {
 				$curr_strings = $this->load_lang_strings($filename, $curr_file_remark);
 				if( strlen($curr_file_remark) > strlen($this->file_remark) ) {
@@ -216,7 +213,7 @@ class SYS_LOC_CLASS
 					if( strlen($key) > $this->max_key_len ) {
 						$this->max_key_len = strlen($key);
 					}
-					if( $this->strings[$key] ) {
+					if( isset( $this->strings[$key] ) && $this->strings[$key] ) {
 						$this->strings[$key][$this->languages[$lc]] = $value;
 					}
 					else {
@@ -233,13 +230,14 @@ class SYS_LOC_CLASS
 	function save_lang_strings($lang)
 	{
 		// open file
-		$filehandle = fopen("$this->folder/$lang.$this->type", 'w+');
+	    $folder = isset($this->folder) ? $this->folder : '';
+		$filehandle = fopen("$folder/$lang.$this->type", 'w+');
 		if( !$filehandle ) {
 			return 0; // error
 		}
 		
 		// init file
-		if( $this->type == 'php' ) {
+		if( isset( $this->type ) && $this->type == 'php' ) {
 			fwrite($filehandle, "<"."?"."php");  // do not add the trailing "? >" - this only creates errors with too much spaces
 		}
 
@@ -250,14 +248,14 @@ class SYS_LOC_CLASS
 		fwrite($filehandle, "\n/"."/ - Do not use other remarks than /"."/ at the beginning of a line.");
 		fwrite($filehandle, "\n/"."/");
 
-		if( $this->file_remark ) {
+		if( isset( $this->file_remark ) && $this->file_remark ) {
 			$currValue = str_replace('/'.'/', '/', $this->file_remark);
 			fwrite($filehandle, "\n/".'/ ' . $currValue);
 			fwrite($filehandle, "\n/"."/");
 		}
 
 		// write all strings
-		if( $this->type == 'php' ) {
+		if( isset( $this->type ) && $this->type == 'php' ) {
 			$keyMask = $this->subtype == 'help_define'? "\nhelp_define('%s',%s %s);" : "\ndefine('%s',%s %s);";
 		}
 		else {
@@ -282,7 +280,7 @@ class SYS_LOC_CLASS
 			fwrite($filehandle, sprintf($keyMask, $currKey, $spaces, $currValue));
 			
 			// write remark
-			if( $this->string_remarks[$currKey] ) {
+			if( isset( $this->string_remarks[$currKey] ) && $this->string_remarks[$currKey] ) {
 				fwrite($filehandle, "\n/"."/ " . $this->string_remarks[$currKey]);
 			}
 		}
@@ -354,8 +352,8 @@ class SYS_LOC_CLASS
 
 	function lang_exists($lang)
 	{
-	    for( $i = 0; $i < sizeof((array) $this->languages); $i++ ) {
-			if( $this->languages[$i]==$lang ) {
+		for( $i = 0; $i < sizeof((array) $this->languages); $i++ ) {
+		    if( isset( $this->languages[$i] ) && $this->languages[$i] == $lang ) {
 				return 1;
 			}
 		}
@@ -386,7 +384,7 @@ class SYS_LOC_CLASS
 		}
 		
 		if( sizeof($out) == 0 ) {
-		    for( $i = 0; $i < min(SYSLOC_MAX_LANG_COLS,sizeof((array) $this->languages)); $i++ ) {
+			for( $i = 0; $i < min(SYSLOC_MAX_LANG_COLS,sizeof((array) $this->languages)); $i++ ) {
 				$out[] = $this->languages[$i];
 			}
 		}
@@ -449,17 +447,23 @@ function sysloc_overview($f)
 {
 	global $site;
 
-	$rows = $_REQUEST['rows'];
-	$langcol = $_REQUEST['langcol'];
+	$rows = isset( $_REQUEST['rows'] ) ? $_REQUEST['rows'] : null;
+	$langcol = isset( $_REQUEST['langcol'] ) ? $_REQUEST['langcol'] : null;
 	
 	// store "offset" and "rows"
 	if( isset($_REQUEST['offset']) ) { $_SESSION['g_session_sysloc_offset'] = $_REQUEST['offset']; }
-	$_SESSION['g_session_sysloc_offset'] = intval($_SESSION['g_session_sysloc_offset']);
-	if( $_SESSION['g_session_sysloc_offset'] < 0 ) { $_SESSION['g_session_sysloc_offset'] = 0; }
-
+	
+	if( isset($_SESSION['g_session_sysloc_offset']) ) {
+	   $_SESSION['g_session_sysloc_offset'] = intval($_SESSION['g_session_sysloc_offset']);
+	   if( $_SESSION['g_session_sysloc_offset'] < 0 ) { $_SESSION['g_session_sysloc_offset'] = 0; }
+	}
+	
 	if( isset($rows) ) { $_SESSION['g_session_sysloc_rows'] = $rows; }
-	$_SESSION['g_session_sysloc_rows'] = intval($_SESSION['g_session_sysloc_rows']);
-	if( $_SESSION['g_session_sysloc_rows'] < 1 || $_SESSION['g_session_sysloc_rows'] > 1000) { $_SESSION['g_session_sysloc_rows'] = 20; }
+	
+	if( isset($_SESSION['g_session_sysloc_rows']) ) {
+	   $_SESSION['g_session_sysloc_rows'] = intval($_SESSION['g_session_sysloc_rows']);
+	   if( $_SESSION['g_session_sysloc_rows'] < 1 || $_SESSION['g_session_sysloc_rows'] > 1000) { $_SESSION['g_session_sysloc_rows'] = 20; }
+	}
 
 	// get all folders
 	sysloc_overview_search_folders('.', $folders);
@@ -472,7 +476,7 @@ function sysloc_overview($f)
 			break;
 		}
 	}
-	if( !$folder_found ) {
+	if( !$folder_found && isset($folders[0]) ) {
 		$f = $folders[0];
 	}
 
@@ -485,33 +489,38 @@ function sysloc_overview($f)
 		$_SESSION['g_session_sysloc_langcol'] = $info->check_langcol($langcol);
 	}
 	else {
-		$_SESSION['g_session_sysloc_langcol'] = $info->check_langcol($_SESSION['g_session_sysloc_langcol']);
+	    if( isset($_SESSION['g_session_sysloc_langcol']) )
+		  $_SESSION['g_session_sysloc_langcol'] = $info->check_langcol($_SESSION['g_session_sysloc_langcol']);
 	}
 
 	// start page
-	$site->menuItem('mmainmenu', htmlconstant('_SYSLOC'), '<a href="sysloc.php?f=' . urlencode($f) . '">');
+	$site->menuItem('mmainmenu', htmlconstant('_SYSLOC'), '<a href="sysloc.php?f=' . (isset($f) && $f ? urlencode($f) : '') . '">');
 
-	$prevurl = $_SESSION['g_session_sysloc_offset']==0? '' : ('<a href="sysloc.php?f='.urlencode($f).'&amp;offset='.intval($_SESSION['g_session_sysloc_offset']-$_SESSION['g_session_sysloc_rows']).'">');
+	$syslocOffset = isset($_SESSION['g_session_sysloc_offset'])    ? $_SESSION['g_session_sysloc_offset'] : 0;
+	$syslocRows = isset($_SESSION['g_session_sysloc_rows'])        ? $_SESSION['g_session_sysloc_rows'] : 0;
+	
+	$prevurl = $syslocOffset == 0 ? '' : ('<a href="sysloc.php?f='.(isset($f) && $f ? urlencode($f) : '').'&amp;offset='.intval($syslocOffset-$syslocRows).'">');
 	$site->menuItem('mprev', htmlconstant('_PREVIOUS'), $prevurl);
 
-	$nexturl = ($_SESSION['g_session_sysloc_offset']+$_SESSION['g_session_sysloc_rows'] < sizeof($info->strings))? ('<a href="sysloc.php?f='.urlencode($f).'&amp;offset='.intval($_SESSION['g_session_sysloc_offset']+$_SESSION['g_session_sysloc_rows']).'">') : '';
+	$infoString = isset($info->strings) ? $info->strings : null;
+	$nexturl = ($syslocOffset+$syslocRows < sizeof($infoString))? ('<a href="sysloc.php?f='.(isset($f) && $f ? urlencode($f) : '').'&amp;offset='.intval($syslocOffset+$syslocRows).'">') : '';
 	$site->menuItem('mnext', htmlconstant('_NEXT'), $nexturl);
 
 	if( acl_check_access('SYSTEM.LOCALIZELANG', -1, ACL_NEW) ) {
 		$site->menuItem('mnew', htmlconstant('_SYSLOC_NEWLANG'), 
-			'<a href="sysloc.php?f='.urlencode($f).'&amp;scope=lang&amp;op=new">');
+		    '<a href="sysloc.php?f='.(isset($f) && $f ? urlencode($f) : '').'&amp;scope=lang&amp;op=new">');
 	}
 
 	if( acl_check_access('SYSTEM.LOCALIZEENTRIES', -1, ACL_NEW) ) {
 		$site->menuItem('mnewentry', htmlconstant('_SYSLOC_NEWENTRY'), 
-			'<a href="sysloc.php?f='.urlencode($f).'&amp;scope=entry&amp;op=new">');
+		    '<a href="sysloc.php?f='.(isset($f) && $f ? urlencode($f) : '').'&amp;scope=entry&amp;op=new">');
 	}
 
-	if( substr($f,-5)=='/help' ) {
+	if( isset($f) && substr($f,-5)=='/help' ) {
 		$site->menuItem('mview', htmlconstant('_VIEW'), "<a href=\"help.php\" target=\"help\" onclick=\"return popup(this,500,380);\">");
 		$site->menuItem('meditfromview', htmlconstant('_SYSLOC_EDITFROMVIEW'), '<a href="sysloc.php?editfromview">');
 	}
-	else if( substr($f,-12)=='/tipsntricks' ) {
+	else if( isset($f) && substr($f,-12)=='/tipsntricks' ) {
 		$site->menuItem('mview', htmlconstant('_VIEW'), "<a href=\"tipsntricks.php?showtip=0\" target=\"tntall\" onclick=\"return popup(this,500,300);\">");
 	}
 
@@ -520,7 +529,7 @@ function sysloc_overview($f)
 	
 	$site->menuHelpScope	= 'isysloc';
 	$site->menuLogoutUrl	= 'sysloc.php';
-	$site->menuSettingsUrl	= 'settings.php?reload=' . urlencode('sysloc.php?f='.urlencode($f));
+	$site->menuSettingsUrl	= 'settings.php?reload=' . urlencode('sysloc.php?f='.(isset($f) && $f ? urlencode($f) : ''));
 	$site->menuOut();
 
 	
@@ -534,7 +543,7 @@ function sysloc_overview($f)
 
 					echo htmlconstant('_SYSLOC_MODULE') . ' = ';
 					echo '<select name="f" size="1" onchange="this.form.offset.value=0; submit();">';
-					   for( $fc = 0; $fc < sizeof((array) $folders); $fc++ ) {
+						for( $fc = 0; $fc < sizeof((array) $folders); $fc++ ) {
 							echo '<option value="' . $folders[$fc] . '"';
 							if( $folders[$fc] == $f ) {
 								echo ' selected="selected"';
@@ -548,14 +557,14 @@ function sysloc_overview($f)
 					{
 						echo "<select name=\"langcol[$i]\" size=\"1\">";
 							echo '<option value=""';
-							if( !$_SESSION['g_session_sysloc_langcol'][$i] ) {
+							if( !isset( $_SESSION['g_session_sysloc_langcol'][$i] ) || !$_SESSION['g_session_sysloc_langcol'][$i] ) {
 								echo ' selected="selected"';
 							}
 							echo '></option>';
 							for( $lc = 0; $lc < sizeof((array) $info->languages); $lc++ ) 
 							{
 								echo '<option value="' . $info->languages[$lc] . '"';
-								if( $_SESSION['g_session_sysloc_langcol'][$i] == $info->languages[$lc] ) {
+								if( isset($_SESSION['g_session_sysloc_langcol'][$i]) && $_SESSION['g_session_sysloc_langcol'][$i] == $info->languages[$lc] ) {
 									echo ' selected="selected"';
 								}
 								echo '>' .$info->languages[$lc]. '</option>';
@@ -563,7 +572,7 @@ function sysloc_overview($f)
 						echo '</select>&nbsp;';
 					}
 
-					form_hidden('offset', $_SESSION['g_session_sysloc_offset']); // needed to reset on module selection
+					form_hidden('offset', $syslocOffset); // needed to reset on module selection
 
 					echo '&nbsp;&nbsp;<input class="button" type="submit" name="ok" value="' . htmlconstant('_OK') . '" />';
 
@@ -571,7 +580,7 @@ function sysloc_overview($f)
 			echo '</tr>';
 		echo '</form>';
 		echo '</table>';
-			if( $info->file_remark ) {
+		if( isset($info->file_remark) && $info->file_remark ) {
 				echo '<p>'.isohtmlspecialchars($info->file_remark) . '</p>';
 			}
 		
@@ -580,7 +589,7 @@ function sysloc_overview($f)
 	$site->skin->mainmenuStart();
 		require_once('index_tools.inc.php');
 		require_lang('lang/overview');
-		echo page_sel("sysloc.php?f=".urlencode($f)."&offset=", $_SESSION['g_session_sysloc_rows'], $_SESSION['g_session_sysloc_offset'], sizeof($info->strings), 1);
+		echo page_sel("sysloc.php?f=".(isset($f) && $f ? urlencode($f) : '')."&offset=", $syslocRows, $syslocOffset, sizeof($info->strings), 1);
 	$site->skin->mainmenuEnd();
 
 
@@ -590,10 +599,12 @@ function sysloc_overview($f)
 			$site->skin->cellStart();
 				echo htmlconstant('_ID');
 			$site->skin->cellEnd();
-			for( $lc = 0; $lc < sizeof((array) $_SESSION['g_session_sysloc_langcol']); $lc++ ) {
-				$site->skin->cellStart();
-					echo htmlconstant('_LANGUAGE') . ': ' . $_SESSION['g_session_sysloc_langcol'][$lc];
-				$site->skin->cellEnd();
+			if( isset($_SESSION['g_session_sysloc_langcol']) ) {
+    			for( $lc = 0; $lc < sizeof((array) $_SESSION['g_session_sysloc_langcol']); $lc++ ) {
+    				$site->skin->cellStart();
+    				echo htmlconstant('_LANGUAGE') . ': ' . (isset($_SESSION['g_session_sysloc_langcol'][$lc]) ? $_SESSION['g_session_sysloc_langcol'][$lc] : '');
+    				$site->skin->cellEnd();
+    			}
 			}
 		$site->skin->headEnd();
 
@@ -603,51 +614,55 @@ function sysloc_overview($f)
 		$access_edit = acl_check_access('SYSTEM.LOCALIZEENTRIES', -1, ACL_EDIT);
 		foreach($info->strings as $key => $value)
 		{
-			if( $offset >= $_SESSION['g_session_sysloc_offset'] )
+		    if( $offset >= $syslocOffset )
 			{
 				$site->skin->rowStart();
 
 					$site->skin->cellStart();
 						$any_empty_lang = 0;
-						for( $lc = 0; $lc < sizeof((array) $_SESSION['g_session_sysloc_langcol']); $lc++ ) {
-							if( !$value[$_SESSION['g_session_sysloc_langcol'][$lc]] ) {
-								$any_empty_lang = htmlconstant('_SYSLOC_TRANSLMISSING');
-								break;
-							}
+						if( isset($_SESSION['g_session_sysloc_langcol']) ) {
+    						for( $lc = 0; $lc < sizeof((array) $_SESSION['g_session_sysloc_langcol']); $lc++ ) {
+    						    if( !isset( $value[$_SESSION['g_session_sysloc_langcol'][$lc]] ) || !$value[$_SESSION['g_session_sysloc_langcol'][$lc]] ) {
+    								$any_empty_lang = htmlconstant('_SYSLOC_TRANSLMISSING');
+    								break;
+    							}
+    						}
 						}
 						hint_start($any_empty_lang);
-							echo isohtmlentities($key);
+							echo isohtmlentities( strval( $key ) );
 						hint_end();
 						if( $any_empty_lang ) {
 							echo '<br />&nbsp;'; // make sure, th hint is visible
 						}
 					$site->skin->cellEnd();
 
-					for( $lc = 0; $lc < sizeof((array) $_SESSION['g_session_sysloc_langcol']); $lc++ ) {
-						$site->skin->cellStart();
-							$str = $value[$_SESSION['g_session_sysloc_langcol'][$lc]];
-							if( $str ) { 
-								$str=smart_truncate($str); 
-							} 
-							else { 
-								$str = htmlconstant('_NA');
-							}
-							
-							if( $access_edit ) {
-								echo '<a href="sysloc.php?f=' .urlencode($f). '&id=' .urlencode($key . '.' . $_SESSION['g_session_sysloc_langcol'][$lc]). '">';
-									echo isohtmlentities($str);
-								echo '</a>';
-							}
-							else {
-								echo isohtmlentities($str);
-							}
-						$site->skin->cellEnd();
+					if( isset($_SESSION['g_session_sysloc_langcol']) ) {
+    					for( $lc = 0; $lc < sizeof((array) $_SESSION['g_session_sysloc_langcol']); $lc++ ) {
+    						$site->skin->cellStart();
+    						    $str = isset($value[$_SESSION['g_session_sysloc_langcol'][$lc]]) ? $value[$_SESSION['g_session_sysloc_langcol'][$lc]] : null;
+    							if( $str ) { 
+    								$str=smart_truncate($str); 
+    							} 
+    							else { 
+    								$str = htmlconstant('_NA');
+    							}
+    							
+    							if( $access_edit ) {
+    							    echo '<a href="sysloc.php?f=' .(isset($f) && $f ? urlencode($f) : ''). '&id=' .urlencode($key . '.' . (isset($_SESSION['g_session_sysloc_langcol'][$lc]) ? $_SESSION['g_session_sysloc_langcol'][$lc] : '')) . '">';
+    								echo isohtmlentities( strval( $str ) );
+    								echo '</a>';
+    							}
+    							else {
+    							    echo isohtmlentities( strval( $str ) );
+    							}
+    						$site->skin->cellEnd();
+    					}
 					}
 
 				$site->skin->rowEnd();
 
 				$rows++;
-				if( $rows >= $_SESSION['g_session_sysloc_rows']) {
+				if( $rows >= $syslocRows) {
 					break;
 				}
 			}
@@ -658,9 +673,9 @@ function sysloc_overview($f)
 	$site->skin->tableEnd();
 
 	$site->skin->submenuStart();
-	echo htmlconstant('_SYSLOC_NUMREC', sizeof((array) $info->strings), sizeof((array) $info->languages));
+		echo htmlconstant('_SYSLOC_NUMREC', sizeof((array) $info->strings), sizeof((array) $info->languages));
 	$site->skin->submenuBreak();
-		echo htmlconstant('_OVERVIEW_ROWS') . ' ' . rows_per_page_sel("sysloc.php?f=".urlencode($f)."&offset=0&rows=", $_SESSION['g_session_sysloc_rows']);
+	echo htmlconstant('_OVERVIEW_ROWS') . ' ' . rows_per_page_sel("sysloc.php?f=".(isset($f) && $f ? urlencode($f) : '')."&offset=0&rows=", $syslocRows);
 	$site->skin->submenuEnd();
 		
 
@@ -680,10 +695,10 @@ function sysloc_editentry($f, $id)
 {
 	global $site;
 
-	$str 						= $_REQUEST['str'];
-	$sysloc_canceleditentry		= $_REQUEST['sysloc_canceleditentry'];
-	$sysloc_okeditentry			= $_REQUEST['sysloc_okeditentry'];
-	$sysloc_subsequenteditentry	= $_REQUEST['sysloc_subsequenteditentry'];
+	$str 						= isset( $_REQUEST['str'] )                         ? $_REQUEST['str'] : null;
+	$sysloc_canceleditentry		= isset( $_REQUEST['sysloc_canceleditentry'] )      ? $_REQUEST['sysloc_canceleditentry'] : null;
+	$sysloc_okeditentry			= isset( $_REQUEST['sysloc_okeditentry'] )          ? $_REQUEST['sysloc_okeditentry'] : null;
+	$sysloc_subsequenteditentry	= isset( $_REQUEST['sysloc_subsequenteditentry'] )  ? $_REQUEST['sysloc_subsequenteditentry'] : null;
 
 	// back to overview?
 	if( isset($sysloc_canceleditentry) ) {
@@ -702,19 +717,20 @@ function sysloc_editentry($f, $id)
 
 	// get information, on errors invoke folder overview
 	$info = new SYS_LOC_CLASS($f);
-	if( !$info->type ) {
+	if( !isset( $info->type ) || !$info->type ) {
 		sysloc_overview($f);
 		return; // error
 	}
 
 	$info->load_all_strings();
-	if( !$info->strings[$id] ) {
+	if( !isset( $info->strings[$id] ) || !$info->strings[$id] ) {
 		sysloc_overview($f);
 		return;
 	}
 	$write_access = $info->check_write_access($lang, $write_access_err);
 
-	$_SESSION['g_session_sysloc_langcol'] = $info->check_langcol($_SESSION['g_session_sysloc_langcol']);
+	$syslocLangcol = isset( $_SESSION['g_session_sysloc_langcol'] ) ? $_SESSION['g_session_sysloc_langcol'] : null;
+	$_SESSION['g_session_sysloc_langcol'] = $info->check_langcol($syslocLangcol);
 
 	// save settings
 	if( isset($sysloc_subsequenteditentry) && $write_access ) {
@@ -729,29 +745,29 @@ function sysloc_editentry($f, $id)
 	}
 
 	// start page
-	$site->menuItem('mmainmenu', htmlconstant('_SYSLOC'), '<a href="sysloc.php?f='.urlencode($f).'">');
+	$site->menuItem('mmainmenu', htmlconstant('_SYSLOC'), '<a href="sysloc.php?f='.(isset($f) && $f ? urlencode($f) : '').'">');
 
 	$info->get_next_prev_key($id, $prevurl, $nexturl);
-	$prevurl = $prevurl? ('<a href="sysloc.php?f='.urlencode($f)."&amp;id=$prevurl.$lang\">") : '';
-	$nexturl = $nexturl? ('<a href="sysloc.php?f='.urlencode($f)."&amp;id=$nexturl.$lang\">") : '';
+	$prevurl = isset($prevurl) && $prevurl ? ('<a href="sysloc.php?f='.(isset($f) && $f ? urlencode($f) : '')."&amp;id=$prevurl.$lang\">") : '';
+	$nexturl = isset($nexturl) && $nexturl ? ('<a href="sysloc.php?f='.(isset($f) && $f ? urlencode($f) : '')."&amp;id=$nexturl.$lang\">") : '';
 	$site->menuItem('mprev', htmlconstant('_PREVIOUS'), $prevurl);
 	$site->menuItem('mnext', htmlconstant('_NEXT'), $nexturl);
 
-	$site->menuItem('msearch', htmlconstant('_OVERVIEW'), '<a href="sysloc.php?f='.urlencode($f).'">');
+	$site->menuItem('msearch', htmlconstant('_OVERVIEW'), '<a href="sysloc.php?f='.(isset($f) && $f ? urlencode($f) : '').'">');
 
 	if( acl_check_access('SYSTEM.LOCALIZEENTRIES', -1, ACL_NEW) ) {
 		$site->menuItem('mnew', htmlconstant('_SYSLOC_NEWENTRY'), 
-			'<a href="sysloc.php?f='.urlencode($f).'&amp;scope=entry&amp;op=new">');
+		    '<a href="sysloc.php?f='.(isset($f) && $f ? urlencode($f) : '').'&amp;scope=entry&amp;op=new">');
 	}
 	
 	if( acl_check_access('SYSTEM.LOCALIZELANG', -1, ACL_DELETE) ) {
 		$site->menuItem('mdel', htmlconstant('_SYSLOC_DELLANG'), 
-			"<a href=\"sysloc.php?f=".urlencode($f)."&amp;scope=lang&amp;op=delete&amp;id=$lang\" onclick=\"return confirm('".htmlconstant('_SYSLOC_DELLANGHINT', isohtmlentities($lang))."');\">");
+		    "<a href=\"sysloc.php?f=".(isset($f) && $f ? urlencode($f) : '')."&amp;scope=lang&amp;op=delete&amp;id=$lang\" onclick=\"return confirm('".htmlconstant('_SYSLOC_DELLANGHINT', isohtmlentities( strval( $lang ) ))."');\">");
 	}
 
 	if( acl_check_access('SYSTEM.LOCALIZEENTRIES', -1, ACL_DELETE) ) {
 		$site->menuItem('mdelentry', htmlconstant('_SYSLOC_DELENTRY'), 
-			"<a href=\"sysloc.php?f=".urlencode($f)."&amp;scope=entry&amp;op=delete&amp;id=$id\" onclick=\"return confirm('".htmlconstant('_SYSLOC_DELENTRYHINT', isohtmlentities($id))."');\">");
+		    "<a href=\"sysloc.php?f=".(isset($f) && $f ? urlencode($f) : '')."&amp;scope=entry&amp;op=delete&amp;id=$id\" onclick=\"return confirm('".htmlconstant('_SYSLOC_DELENTRYHINT', isohtmlentities( strval( $id ) ))."');\">");
 	}
 	
 	if( substr($f,-5)=='/help' ) {
@@ -785,7 +801,7 @@ function sysloc_editentry($f, $id)
 		form_control_start(htmlconstant('_SYSLOC_MODULE'));
 			echo str_replace('../', '', $info->folder);
 		form_control_end();
-		if( $info->file_remark ) {
+		if( isset($info->file_remark) && $info->file_remark ) {
 			form_control_start('');
 				echo isohtmlspecialchars($info->file_remark);
 			form_control_end();
@@ -797,22 +813,22 @@ function sysloc_editentry($f, $id)
 		form_control_end();
 
 		// add language to edit
-		$str = $info->strings[$id][$lang];
+		$str = isset($info->strings[$id][$lang]) ? $info->strings[$id][$lang] : '';
 		form_control_start(htmlconstant('_LANGUAGE') . ': ' . $lang, ($write_access_err?$write_access_err:($str?'':htmlconstant('_SYSLOC_TRANSLMISSING'))));
 			form_control_textarea('str', $str, SYSLOC_EDIT_WIDTH, SYSLOC_EDIT_HEIGHT);
-			if( $info->string_remarks[$id] ) {
-				echo '<br />'.isohtmlentities($info->string_remarks[$id]);
+			if( isset($info->string_remarks[$id]) && $info->string_remarks[$id] ) {
+			    echo '<br />'.isohtmlentities( strval( $info->string_remarks[$id] ) );
 			}
 		form_control_end();
 
 		// add languages explicitly selected in the overview
-		for( $lc = 0; $lc < sizeof((array) $_SESSION['g_session_sysloc_langcol']); $lc++ ) {
-			if( $_SESSION['g_session_sysloc_langcol'][$lc] != $lang ) {
-				$str = $info->strings[$id][$_SESSION['g_session_sysloc_langcol'][$lc]];
-				form_control_start(htmlconstant('_LANGUAGE') . ': ' . $_SESSION['g_session_sysloc_langcol'][$lc], $str?'':htmlconstant('_SYSLOC_TRANSLMISSING'));
+		for( $lc = 0; $lc < sizeof((array) $syslocLangcol); $lc++ ) {
+		    if( $syslocLangcol[$lc] != $lang ) {
+		        $str = $info->strings[$id][$syslocLangcol[$lc]];
+		        form_control_start(htmlconstant('_LANGUAGE') . ': ' . $syslocLangcol[$lc], $str?'':htmlconstant('_SYSLOC_TRANSLMISSING'));
 					if( !$str ) { $str = htmlconstant('_NA'); }
-					echo nl2br(isohtmlentities($str));
-					echo '<br /><a href="sysloc.php?f='.urlencode($f).'&id=' .$id. '.' .$_SESSION['g_session_sysloc_langcol'][$lc]. '">' . htmlconstant('_EDIT___') . '</a>';
+					echo nl2br(isohtmlentities( strval( $str ) ));
+					echo '<br /><a href="sysloc.php?f='.(isset($f) && $f ? urlencode($f) : '').'&id=' .$id. '.' .$syslocLangcol[$lc]. '">' . htmlconstant('_EDIT___') . '</a>';
 				form_control_end();
 			}
 		}
@@ -822,7 +838,7 @@ function sysloc_editentry($f, $id)
 		
 		for( $lc = 0; $lc < sizeof((array) $info->languages); $lc++ ) 
 		{
-			if( $info->languages[$lc] != $lang && !in_array($info->languages[$lc], $_SESSION['g_session_sysloc_langcol']) ) 
+		    if( $info->languages[$lc] != $lang && !in_array($info->languages[$lc], $syslocLangcol) ) 
 			{
 				if( $further_lang == 0 ) {
 					form_control_start(htmlconstant('_SYSLOC_FURTHERLANGUAGES'));
@@ -830,7 +846,7 @@ function sysloc_editentry($f, $id)
 				else {
 					echo ', ';
 				}
-				echo '<a href="sysloc.php?f='.urlencode($f).'&id=' .$id. '.' .$info->languages[$lc]. '">' . $info->languages[$lc] . '</a>';
+				echo '<a href="sysloc.php?f='.(isset($f) && $f ? urlencode($f) : '').'&id=' .$id. '.' .$info->languages[$lc]. '">' . $info->languages[$lc] . '</a>';
 				$further_lang++;
 			}
 		}
@@ -871,11 +887,11 @@ function sysloc_new($f, $scope, $op)
 {
 	global $site;
 
-	$id 					= $_REQUEST['id'];
-	$init					= $_REQUEST['init'];
-	$sysloc_cancelnew		= $_REQUEST['sysloc_cancelnew'];
-	$sysloc_oknew			= $_REQUEST['sysloc_oknew'];
-	$sysloc_subsequentnew	= $_REQUEST['sysloc_subsequentnew'];
+	$id 					= isset( $_REQUEST['id'] )                   ? $_REQUEST['id'] : null;
+	$init					= isset( $_REQUEST['init'] )                 ? $_REQUEST['init'] : null;
+	$sysloc_cancelnew		= isset( $_REQUEST['sysloc_cancelnew'] )     ? $_REQUEST['sysloc_cancelnew'] : null;
+	$sysloc_oknew			= isset( $_REQUEST['sysloc_oknew'] )         ? $_REQUEST['sysloc_oknew'] : null;
+	$sysloc_subsequentnew	= isset( $_REQUEST['sysloc_subsequentnew'] ) ? $_REQUEST['sysloc_subsequentnew'] : null;
 
 	$error_id = '';
 	$error_module = '';
@@ -888,7 +904,7 @@ function sysloc_new($f, $scope, $op)
 
 	// get information, on errors invoke folder overview
 	$info = new SYS_LOC_CLASS($f);
-	if( !$info->type ) {
+	if( !isset( $info->type ) || !$info->type ) {
 		sysloc_overview($f);
 		return; // error
 	}
@@ -917,7 +933,7 @@ function sysloc_new($f, $scope, $op)
 			}
 		}
 		else {
-		    foreach($info->strings as $currKey => $currValue) {
+			foreach($info->strings as $currKey => $currValue) {
 				if( $currKey == $id ) {
 					$error_id = htmlconstant('_SYSLOC_ERRIDINUSE');
 					break;
@@ -941,7 +957,7 @@ function sysloc_new($f, $scope, $op)
 				}
 			}
 			else {
-			    for( $lc = 0; $lc < sizeof((array) $info->languages); $lc++ ) {
+				for( $lc = 0; $lc < sizeof((array) $info->languages); $lc++ ) {
 					if( !$info->check_write_access($info->languages[$lc], $error_module) ) {
 						break;
 					}
@@ -987,9 +1003,9 @@ function sysloc_new($f, $scope, $op)
 	$site->title = htmlconstant('_SYSLOC');
 	$site->pageStart();
 
-	$site->menuItem('mmainmenu', htmlconstant('_SYSLOC'), '<a href="sysloc.php?f='.urlencode($f).'">');
+	$site->menuItem('mmainmenu', htmlconstant('_SYSLOC'), '<a href="sysloc.php?f='.(isset($f) && $f ? urlencode($f) : '').'">');
 	$site->menuHelpScope	= 'isysloc';
-	$site->menuSettingsUrl	= 'settings.php?scope=syslocedit&reload=' . urlencode('sysloc.php?f='.urlencode($f)."&scope=$scope&op=$op");
+	$site->menuSettingsUrl	= 'settings.php?scope=syslocedit&reload=' . urlencode('sysloc.php?f='.(isset($f) && $f ? urlencode($f) : '')."&scope=$scope&op=$op");
 	$site->menuLogoutUrl	= 'sysloc.php';
 	$site->menuOut();
 
@@ -1004,7 +1020,7 @@ function sysloc_new($f, $scope, $op)
 		form_control_start(htmlconstant('_SYSLOC_MODULE'), $error_module);
 			echo str_replace('../', '', $info->folder);
 			if( $info->file_remark ) {
-				echo '<br />' . isohtmlentities($info->file_remark);
+			    echo '<br />' . isohtmlentities( strval( $info->file_remark ) );
 			}
 		form_control_end();
 
@@ -1057,7 +1073,7 @@ function sysloc_delete($f, $scope, $op, $id)
 
 	// get information, on errors invoke folder overview
 	$info = new SYS_LOC_CLASS($f);
-	if( !$info->type ) {
+	if( !isset( $info->type ) || !$info->type ) {
 		sysloc_overview($f);
 		return; // error
 	}
@@ -1119,10 +1135,10 @@ define('SYSLOC_EDIT_HEIGHT', $height);
 define('SYSLOC_MAX_LANG_COLS', 3);
 
 // get parameters
-$req_f 		= $_REQUEST['f'];
-$req_id		= $_REQUEST['id'];
-$req_scope	= $_REQUEST['scope'];
-$req_op		= $_REQUEST['op'];
+$req_f 		= isset( $_REQUEST['f'] )      ?   $_REQUEST['f'] : null;
+$req_id		= isset( $_REQUEST['id'] )     ?   $_REQUEST['id'] : null;
+$req_scope	= isset( $_REQUEST['scope'] )  ?   $_REQUEST['scope'] : null;
+$req_op		= isset( $_REQUEST['op'] )     ?   $_REQUEST['op'] : null;
 
 
 
@@ -1134,9 +1150,9 @@ if( isset($_REQUEST['editfromview']) ) // edit topic currently in help view?
 	{
 		$req_f = $i? '../'.$site->adminDir.'/lang/help' : '../'.$site->adminDir.'/config/lang/help';
 		$test = new SYS_LOC_CLASS($req_f);
-		if( $test->type ) {
+		if( $test->type && isset($_SESSION['g_session_help_last_id']) ) {
 			$test->load_all_strings();
-			if( isset($test->strings[$_SESSION['g_session_help_last_id']]) ) {
+			if(  isset($test->strings[$_SESSION['g_session_help_last_id']]) ) {
 				$req_id = $_SESSION['g_session_help_last_id'];
 				break;
 			}
@@ -1151,7 +1167,7 @@ if( isset($_REQUEST['editfromview']) ) // edit topic currently in help view?
 		}
 	}
 	
-	if( $req_id ) {
+	if( $req_id && isset( $_SESSION['g_session_language'] ) ) {
 		$req_id .= "." . $_SESSION['g_session_language'];
 	}
 }
@@ -1183,6 +1199,3 @@ else
 {
 	sysloc_overview($req_f);
 }
-
-
-

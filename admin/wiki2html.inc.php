@@ -1,7 +1,5 @@
 <?php
 
-
-
 /*=============================================================================
 WIKI to HTML transformation
 ===============================================================================
@@ -207,15 +205,15 @@ function htmlsmartentities($str, $leave = '', $smartPunctuation = 1)
 		$g_quotentities['$]$']				= '&#93;';	    // ]
 	}
 
-	if( $leave == '' ) {
+	if( !isset($leave) || $leave == '' ) {
 		$str = strtr($str, $g_transentities1);
 		$str = strtr($str, $g_transentities2);
 	}
-	else if( $leave == '&' ) {
+	else if( isset($leave) && $leave == '&' ) {
 		$str = strtr($str, $g_ampentities1);
 		$str = strtr($str, $g_ampentities2);
 	}
-	else if( $leave == '&<>"' ) {
+	else if( isset($leave) && $leave == '&<>"' ) {
 		$str = strtr($str, $g_specentities1);
 		$str = strtr($str, $g_specentities2);
 	}
@@ -224,7 +222,7 @@ function htmlsmartentities($str, $leave = '', $smartPunctuation = 1)
 		exit();
 	}
 
-	if( $smartPunctuation ) {
+	if( isset($smartPunctuation) && $smartPunctuation ) {
 		return strtr($str, $g_quotentities);
 	}
 	else {
@@ -445,7 +443,7 @@ class TRANSL_HTML_CLASS extends TXTREPLACERRULE_CLASS
 	function run($matches, &$context)
 	{
 		// normal HTML tag
-		if( $matches[0] == '<br>' ) {
+	    if( isset($matches[0]) && $matches[0] == '<br>' ) {
 			return '<br />';
 		}
 		else {
@@ -584,7 +582,7 @@ class TRANSL_SQUAREBRACKET_CLASS extends TXTREPLACERRULE_CLASS
 
 		// check pattern
 		$param = array();
-		if( $val3 )
+		if( isset($val3) && $val3 )
 		{
 			// pattern [[img|link|descr]] and [[link|img|descr]]
 			if( preg_match($imgMatch, $val1) ) {
@@ -596,7 +594,7 @@ class TRANSL_SQUAREBRACKET_CLASS extends TXTREPLACERRULE_CLASS
 			$param['tooltip'] = htmlsmartentities($descr);
 			$this->getLink($context, $val1, $param);
 		}
-		else if( $val2 )
+		else if( isset($val2) && $val2 )
 		{
 			if( preg_match($imgMatch, $val1) )
 			{
@@ -713,7 +711,7 @@ class TRANSL_SQUAREBRACKET_CLASS extends TXTREPLACERRULE_CLASS
 			$param['href']	= $context->pageUrl($dest, $param['pageExists']);
 		}
 
-		if( $hash ) {
+		if( isset($hash) && $hash ) {
 			$param['href'] .= '#content'.urlencode(isohtmlentities($hash));
 		}
 	}
@@ -750,7 +748,7 @@ class TRANSL_FOOTNOTEPASS1_CLASS extends TXTREPLACERRULE_CLASS
 		$index = strval($matches[2]);
 
 		$ret = " ";
-		if( !$context->footnotes["footref$index"] ) {
+		if( !isset( $context->footnotes["footref$index"]) || !$context->footnotes["footref$index"] ) {
 			$ret .= "<a name=\"footref$index\"></a>";
 			$context->footnotes["footref$index"] = 1;
 		}
@@ -775,7 +773,7 @@ class TRANSL_FOOTNOTEPASS2_CLASS extends TXTREPLACERRULE_CLASS
 		$context->lineEndsParagraph = 1;
 		$context->lineStyle = 'footnote';
 
-		if( !$context->footnotes["footnote$index"] ) {
+		if( !isset( $context->footnotes["footnote$index"] ) || !$context->footnotes["footnote$index"] ) {
 			$ret .= "<a name=\"footnote$index\"></a>";
 			$context->footnotes["footnote$index"] = 1;
 		}
@@ -795,7 +793,7 @@ class TRANSL_INDENT_CLASS extends TXTREPLACERRULE_CLASS
 	function run($matches, &$context)
 	{
 		// preformatted text?
-		if( $matches[1]{0} == ' ' )
+	    if( isset($matches[1][0]) && $matches[1][0] == ' ' )
 		{
 	    	$context->linePre = 1;
 	    	return htmlsmartentities(substr($matches[0], 1), '', 0); // first space should not belong to the preformatted text
@@ -810,7 +808,7 @@ class TRANSL_INDENT_CLASS extends TXTREPLACERRULE_CLASS
 		if( $level < 1 ) $level = 1;
 
 		// get result
-		switch( $matches[1]{0} )
+		switch( $matches[1][0] )
 		{
 			case '=':
 				if( $text )
@@ -846,7 +844,7 @@ class TRANSL_INDENT_CLASS extends TXTREPLACERRULE_CLASS
 					$context->lineIndentType = 'ul';
 					return '<li>' . $text; // closing tag written later
 				}
-				else if( $matches[1]{0} == '-' && $level >= 4 )
+				else if( isset($matches[1][0]) && $matches[1][0] == '-' && $level >= 4 )
 				{
 					// hr
 					$context->lineHasHr = 1;
@@ -994,21 +992,21 @@ class ADDRESS_PATTERN_CLASS extends TXTREPLACERRULE_CLASS
 
 	function run($matches, &$context)
 	{
-	    $arguments = explode("|",$matches[1]);
-	    $sql = "SELECT ";
-	    $sql .= addslashes($arguments[0]);
-	    $sql .= " as ergebnis from anbieter where id = ".intval($arguments[1]).";";
-	    $db = new DB_Admin;
-	    $db->query($sql);
-	    if( $db->next_record() ) {
-	        $ausgabe = $db->f('ergebnis');
-	        return htmlsmartentities($ausgabe, '', 0);
-	    }
-	    else {
-	        return '{'.htmlsmartentities($matches[1]).'}';
-	    }
-	    
-	    
+		$arguments = explode("|",$matches[1]);
+		$sql = "SELECT ";
+		$sql .= addslashes($arguments[0]);
+		$sql .= " as ergebnis from anbieter where id = ".intval($arguments[1]).";";
+  $db = new DB_Admin;
+		$db->query($sql);
+		if( $db->next_record() ) {
+			$ausgabe = $db->f('ergebnis');
+			return htmlsmartentities($ausgabe, '', 0);
+		}
+		else {
+			return '{'.htmlsmartentities($matches[1]).'}';
+		}
+		
+
 	}
 
 }
@@ -1123,7 +1121,7 @@ class WIKI2HTML_CLASS
 			$block = $this->lineReplacer->run($in[$i], $this) . $this->closeAllCharTags__();
 
 			// add block...
-			if( $this->lineHasHr )
+			if( isset( $this->lineHasHr ) && $this->lineHasHr )
 			{
 				// ...horizontal ruler (no else for this case!)
 				if( $blocks[sizeof($blocks)-1][0] != 'hr' ) {
@@ -1147,7 +1145,7 @@ class WIKI2HTML_CLASS
 					$this->lineTableCells = 0;
 				}
 			}
-			else if( $this->linePre )
+			else if( isset( $this->linePre ) && $this->linePre )
 			{
 				// ...preformatted block
 				if( $blocks[sizeof($blocks)-1][0] == 'pre' ) {
@@ -1157,7 +1155,7 @@ class WIKI2HTML_CLASS
 					$blocks[] = array('pre', rtrim($block) . "\n");
 				}
 			}
-			else if( $this->lineTable )
+			else if( isset( $this->lineTable ) && $this->lineTable )
 			{
 				// ...table block
 				if( $blocks[sizeof($blocks)-1][0] == 'table' ) {
@@ -1167,10 +1165,10 @@ class WIKI2HTML_CLASS
 					$blocks[] = array('table', $block, $this->lineTableBorder);
 				}
 			}
-			else if( $this->lineHeadlineLevel )
+			else if( isset( $this->lineHeadlineLevel ) && $this->lineHeadlineLevel )
 			{
 				// ...headline
-				if( $this->lineHeadlineLevel < 0 ) {
+			    if( isset( $this->lineHeadlineLevel ) && $this->lineHeadlineLevel < 0 ) {
 					$temp = sizeof($blocks)-1;
 					if( $blocks[$temp][0] == 'p' ) {
 						$blocks[$temp][0] = 'h';
@@ -1181,12 +1179,12 @@ class WIKI2HTML_CLASS
 					$blocks[] = array('h', $block, $this->lineHeadlineLevel);
 				}
 			}
-			else if( $this->lineIndentLevel )
+			else if( isset( $this->lineIndentLevel ) && $this->lineIndentLevel )
 			{
 				// ...indent
 				$blocks[] = array('li', $block, $this->lineIndentLevel, $this->lineIndentType);
 			}
-			else if( $this->lineSelfPara )
+			else if( isset( $this->lineSelfPara ) && $this->lineSelfPara )
 			{
 				// ...self-formatting paragraph
 				$blocks[] = array('self', $block);
@@ -1194,10 +1192,10 @@ class WIKI2HTML_CLASS
 			else
 			{
 				// ...normal paragraph
-				if( !$this->lineEndsParagraph
-				 && $blocks[sizeof($blocks)-1][0] == 'p' )
+			    if( ( !isset( $this->lineEndsParagraph ) || !$this->lineEndsParagraph )
+			        && isset( $blocks[sizeof($blocks)-1][0] ) && $blocks[sizeof($blocks)-1][0] == 'p' )
 				{
-					$blocks[sizeof($blocks)-1][1] .= ($this->joinLines? ' ' : '<br />') . trim($block);
+				    $blocks[sizeof($blocks)-1][1] .= ( isset($this->joinLines) && $this->joinLines ? ' ' : '<br />') . trim($block);
 				}
 				else
 				{
@@ -1226,10 +1224,10 @@ class WIKI2HTML_CLASS
 					break;
 
 				case 'h':
-				    $contentCounter = sizeof((array) $this->content)+1;
+					$contentCounter = sizeof((array) $this->content)+1;
 					$this->content[] = array($blocks[$i][2], $blocks[$i][1], $contentCounter);
 					$out .= $this->indentTo__(0);
-					if( $this->hasToplinks && $contentCounter > 1 ) {
+					if( isset( $this->hasToplinks ) && $this->hasToplinks && $contentCounter > 1 ) {
 						$out .= $this->renderP($this->renderA('^', 'toplink', '#top', '', 1), 'left', 'toplink');
 					}
 					$out .= '<a name="content' .urlencode($blocks[$i][1]). '"></a>' . $this->renderH($blocks[$i][1], $blocks[$i][2]) . "\n";
@@ -1244,11 +1242,11 @@ class WIKI2HTML_CLASS
 					break;
 
 				case 'table':
-				    $out .= $this->indentTo__(0) . $this->renderTable($blocks[$i][1], $blocks[$i][2]);
-				    if( (!isset($blocks[$i+1][0]) || $blocks[$i+1][0] == '') && $blocks[$i+2][0] == 'table' ) {
-				        $out .= '<br />';
-				    }
-				    break;
+					$out .= $this->indentTo__(0) . $this->renderTable($blocks[$i][1], $blocks[$i][2]);
+					if( (!isset($blocks[$i+1][0]) || $blocks[$i+1][0] == '') && $blocks[$i+2][0] == 'table' ) {
+						$out .= '<br />';
+					}
+					break;
 			}
 		}
 
@@ -1256,23 +1254,23 @@ class WIKI2HTML_CLASS
 		$out .= $this->indentTo__(0);
 
 		// close any open box
-		if( $this->boxOpen ) {
+		if( isset( $this->boxOpen ) && $this->boxOpen ) {
 			$out .= $this->renderBox($this->boxOpen, 0);
 		}
 
-		if( $this->hasToplinks ) {
+		if( isset( $this->hasToplinks ) && $this->hasToplinks ) {
 			$out .= $this->renderP($this->renderA('^', 'toplink', '#top', '', 1), 'left', 'toplink');
 		}
 
 
 		// create content if needed
-		if( $this->hasContent )
+		if( isset( $this->hasContent ) && $this->hasContent )
 		{
 			$content = '';
 			for( $i = 0; $i < sizeof((array) $this->content); $i++ )
 			{
 				$currDepth = $this->content[$i][0];
-				if( $this->hasContent >= $currDepth )
+				if( isset( $this->hasContent ) && $this->hasContent >= $currDepth )
 				{
 					$content .= '<table class="content_table" cellpadding="0" cellspacing="0" border="0"><tr><td class="l">' . str_repeat('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;', $currDepth-1) . '</td><td class="r">';
 						$content .= $this->renderA($this->content[$i][1], 'content', "#content".urlencode($this->content[$i][1]), '', 1);
@@ -1283,7 +1281,7 @@ class WIKI2HTML_CLASS
 		}
 
 		// create statistics if needed
-		if( $this->hasStat )
+		if( isset( $this->hasStat ) && $this->hasStat )
 		{
 			$temp = $this->getmicrotime__() - $profile;
 			$temp = sprintf("%01.2f", $temp);
@@ -1334,7 +1332,8 @@ class WIKI2HTML_CLASS
 			$this->indentCode[$this->indentLevel] = $tag;
 		}
 
-		if( $this->indentCode[$level] != $tag ) {
+		$indentCode = isset( $this->indentCode[$level] ) ? $this->indentCode[$level] : null;
+		if( $indentCode != $tag ) {
 			$tag_old = $this->indentCode[$level];
 			$str .= "</$tag_old>" . "<$tag>";
 			$this->indentCode[$level] = $tag;
@@ -1421,9 +1420,9 @@ class WIKI2HTML_CLASS
 		switch( $name )
 		{
 			case 'content':
-				if( !$this->hasContent ) {
+			    if( !isset( $this->hasContent ) || !$this->hasContent ) {
 					$this->hasContent = intval($param);
-					if( $this->hasContent<1 || $this->hasContent>6 ) {
+					if( isset( $this->hasContent ) && ( $this->hasContent<1 || $this->hasContent>6 ) ) {
 						$this->hasContent = 6;
 					}
 				}
@@ -1671,6 +1670,3 @@ class WIKI2HTML_CLASS
 		}
 	}
 }
-
-
-

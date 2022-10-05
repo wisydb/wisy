@@ -47,7 +47,19 @@ if( !@function_exists('mysql_connect') )
 
 	function mysql_query($query, $link_obj)
 	{
-		return mysqli_query($link_obj, $query); // returns result_obj of class mysqli_result
+	    try {
+	        if( !$result = mysqli_query($link_obj, $query) ) {
+	            throw new Exception( mysqli_error($link_obj) );
+	        }
+	    }
+	    catch (Exception $e) {
+	        $e_msg = is_object($e) ? $e->getMessage(). "<br><br>" : '';
+	        
+	        die( "Fehler: " . $e_msg . "<b>" . $query . "</b>" );
+	    }
+	    
+	    
+		return $result; // returns result_obj of class mysqli_result
 	}
 
 	function mysql_affected_rows($link_obj)
@@ -67,12 +79,14 @@ if( !@function_exists('mysql_connect') )
 
 	function mysql_fetch_assoc($result_obj)
 	{
-		return mysqli_fetch_assoc($result_obj);
+	    if( !is_bool($result_obj) )
+		  return mysqli_fetch_assoc($result_obj);
 	}
 
 	function mysql_free_result($result_obj)
 	{
-		mysqli_free_result($result_obj);
+	    if( !is_bool($result_obj) )
+		  mysqli_free_result($result_obj);
 	}
 
 	function mysql_error($link_obj=null)
@@ -82,17 +96,17 @@ if( !@function_exists('mysql_connect') )
 
 	function mysql_errno($link_obj=null)
 	{
-	    if(function_exists("mysqli_connect_errno"))
-	        return $link_obj? mysqli_errno($link_obj) : mysqli_connect_errno();
-	    else
-	        return $link_obj? $link_obj->connect_error : '<unknown error no>';
+		if(function_exists("mysqli_connect_errno"))
+			return $link_obj? mysqli_errno($link_obj) : mysqli_connect_errno();
+		else
+			return $link_obj? $link_obj->connect_error : '<unknown error no>';
 	}
 }
 
 
 // PHP 7 changes the default characters set to UTF-8; we still prefer ISO-8859-1
 if(substr(PHP_VERSION, 0, 1) > 6)
-    @ini_set('default_charset', 'ISO-8859-1');
+	@ini_set('default_charset', 'ISO-8859-1');
 
 
 class DB_Sql
@@ -102,6 +116,7 @@ class DB_Sql
 	public $Database			= "";
 	public $User     			= "";
 	public $Password			= "";
+	public $PasswordPreset	    = "";
 	public $Halt_On_Error		= "yes"; // "yes" (halt with message), "no" (ignore errors quietly), "report" (ignore error, but spit a warning)
 	
 	// settings, readable by the user - however, we recommend to use the appropriate functions instead
@@ -127,12 +142,13 @@ class DB_Sql
 	private function log($file, $msg)
 	{
 		// open the file
-		$fullfilename = '../files/logs/' . strftime("%Y-%m-%d") . '-' . $file . '.txt';
+		$fullfilename = '../files/logs/' . ftime("%Y-%m-%d") . '-' . $file . '.txt';
+		
 		$fd = @fopen($fullfilename, 'a');
 		if( $fd )
 		{
-			$GLOBALS['sql_log_cnt']++;
-			$line = strftime("%Y-%m-%d %H:%M:%S") . ': #' . $GLOBALS['sql_log_cnt'] . ': ' . $msg . "\n";	
+		    $GLOBALS['sql_log_cnt'] = isset($GLOBALS['sql_log_cnt']) ? $GLOBALS['sql_log_cnt'] + 1 : 1;
+		    $line = ftime("%Y-%m-%d %H:%M:%S") . ': #' . $GLOBALS['sql_log_cnt'] . ': ' . $msg . "\n";	
 			@fwrite($fd, $line);
 			@fclose($fd);
 		}
@@ -144,14 +160,19 @@ class DB_Sql
 	
 	private function phys_connect()
 	{
-		$GLOBALS['g_total_db_count'] += 1;
-		if( $GLOBALS['g_total_db_count'] > 3 )
+	    if( isset( $GLOBALS['g_total_db_count'] ) )
+		 $GLOBALS['g_total_db_count'] += 1;
+	    
+		 if( isset( $GLOBALS['g_total_db_count'] ) && $GLOBALS['g_total_db_count'] > 3 )
 		{
 			$this->halt("max_user_connections error precaution: This page will produce too many database connections.");
 			return 0;
 		}
-
-		$link_id = @mysql_connect($this->Host, $this->User, $this->Password, true /*force new*/); // using connect() instead of pconnect() - this is a little bit slower, but safer when using locks()
+		
+		if( strlen ($this->PasswordPreset) > 3 )
+		    $this->Password = $this->PasswordPreset;
+		
+			$link_id = @mysql_connect($this->Host, $this->User, $this->Password, true /*force new*/); // using connect() instead of pconnect() - this is a little bit slower, but safer when using locks()
 		if( !$link_id ) {
 			$this->halt("pconnect($this->Host, $this->User, <i>password</i>) failed.");
 			return 0;
@@ -162,6 +183,11 @@ class DB_Sql
 			return 0;
 		}
 		
+		// Do use the following settings if database/server only allows for UTF-8 connections! (instead of iso8859-* etc)
+		// mysql_query('SET character_set_client=latin1;', $link_id);
+		// mysql_query('SET character_set_connection=latin1;', $link_id);
+		// mysql_query('SET character_set_results=latin1;', $link_id);
+		
 		@mysql_query('SET MAX_JOIN_SIZE=128000000;', $link_id);	// sollte ausreichen, sehr komplexe Abfragen im Red.System werden einen Fehler erzeugen, aber das ist dann auch i.O.
 		@mysql_query('SET SQL_BIG_SELECTS=0;', $link_id);		// joins>MAX_JOIN_SIZE erlauben?
 		return $link_id;
@@ -170,9 +196,9 @@ class DB_Sql
 	private function lazy_connect()
 	{
 		if( !isset($GLOBALS['g_link_id']) ) {
-			
 			$GLOBALS['g_link_id'] = $this->phys_connect();
 		}
+		
 		return $GLOBALS['g_link_id'];
 	}
 
@@ -194,9 +220,9 @@ class DB_Sql
 
 		//$this->log('sql', $query_string);
 		
-		if( $this->use_phys_connection )
+		if( isset( $this->use_phys_connection ) && $this->use_phys_connection )
 		{
-			if( !$this->Link_ID ) {
+		    if( !isset( $this->Link_ID ) || !$this->Link_ID ) {
 				$this->Link_ID = $this->phys_connect();									// connect
 				if( !$this->Link_ID ) return 0; 
 			}
@@ -204,30 +230,43 @@ class DB_Sql
 			$this->phys_query_id = @mysql_query($query_string, $this->Link_ID);			// do the query
 			if( !$this->phys_query_id )  { $this->halt("Invalid SQL OR connection closed before Query: " . $query_string); return 0; }
 			
-			$this->ResultAffectedRows	= @mysql_affected_rows($this->Link_ID); 		// fetch some result information
-			$this->ResultInsertId		= @mysql_insert_id($this->Link_ID);
-			$this->ResultNumRows		= @mysql_num_rows($this->phys_query_id);
+			$affectedRows = @mysql_affected_rows($this->Link_ID);                       // fetch some result information
+			$this->ResultAffectedRows	= $affectedRows ? $affectedRows : 0; 		
+			
+			$insertID = @mysql_insert_id($this->Link_ID);
+			$this->ResultInsertId		= $insertID ? $insertID : 0;
+			
+			$physQueryID = @mysql_num_rows($this->phys_query_id);
+			$this->ResultNumRows		= $physQueryID ? $physQueryID : 0;
+			
 			return 1; // done
 		}
 		else
 		{
-		    
-		    $this->Link_ID = $this->lazy_connect();										// connect
-		    $mysqli = is_object($this->Link_ID);
-		    
-		    if( !$this->Link_ID )
-		      return 0;
-		        
-		    if(!$mysqli)
-		      $lazy_query_id = mysql_query($query_string, $this->Link_ID);				// do the query
-		    else
-		      $lazy_query_id = mysql_query($query_string, $this->Link_ID);				// do the query
-		                
-		                
-		    if( !$lazy_query_id )  { $this->halt("Invalid SQL OR connection closed before Query: " . $query_string); return 0; }
-		                
-		    $this->ResultAffectedRows	= @mysql_affected_rows($this->Link_ID); 		// fetch some result information
-			$this->ResultInsertId		= @mysql_insert_id($this->Link_ID);
+			$this->Link_ID = $this->lazy_connect();										// connect
+			$mysqli = is_object($this->Link_ID);
+			
+			if( !$this->Link_ID )
+				return 0; 
+
+			if( !$mysqli ) {
+			    $noMySqli = mysql_query($query_string, $this->Link_ID);
+			    $lazy_query_id = $noMySqli ? $noMySqli : 0;				
+		    }
+		    else {
+		        $yesMySqli = mysql_query($query_string, $this->Link_ID);
+		        $lazy_query_id = $yesMySqli ? $yesMySqli : 0;
+		    }
+			
+			
+			if( !$lazy_query_id )  { $this->halt("Invalid SQL OR connection closed before Query: " . $query_string); return 0; }
+			
+			$affectedRows = @mysql_affected_rows($this->Link_ID);
+			$this->ResultAffectedRows	= $affectedRows ? $affectedRows : 0;
+			
+			$insertID = @mysql_insert_id($this->Link_ID);
+			$this->ResultInsertId		= $insertID ? $insertID : 0;
+			
 			$this->ResultNumRows		= 0;
 			$this->ResultI 				= 0;
 
@@ -247,7 +286,7 @@ class DB_Sql
 	
 	function next_record()
 	{
-		if( $this->use_phys_connection )
+	    if( isset( $this->use_phys_connection ) && $this->use_phys_connection )
 		{
 			$this->Record = @mysql_fetch_assoc($this->phys_query_id);
 			if( is_array($this->Record) ) {
@@ -261,7 +300,7 @@ class DB_Sql
 		}
 		else
 		{
-			if( $this->ResultI >= $this->ResultNumRows ) {
+		    if( isset( $this->ResultI ) && $this->ResultI >= $this->ResultNumRows ) {
 				return 0;  // no more records - this is no error
 			}
 			$this->Record =& $this->Result[ $this->ResultI ];
@@ -273,7 +312,7 @@ class DB_Sql
 	function prev_record()
 	{
 	    // correct?
-	    if( $this->use_phys_connection )
+	    if( isset( $this->use_phys_connection ) && $this->use_phys_connection )
 	    {
 	        $this->Record = @mysql_fetch_assoc($this->phys_query_id);
 	        if( is_array($this->Record) ) {
@@ -287,7 +326,7 @@ class DB_Sql
 	    }
 	    else
 	    {
-	        if( $this->ResultI < 1 ) {
+	        if( isset( $this->ResultI ) && $this->ResultI < 1 ) {
 	            return 0;  // no more records - this is no error
 	        }
 	        $this->Record =& $this->Result[ $this->ResultI ];
@@ -298,27 +337,29 @@ class DB_Sql
 	
 	function quote($str)
 	{
-		return "'" . addslashes($str) . "'";		// you should prefer quote() instead of calling addslashes() directly - this makes stuff compatible to SQLite
+		return "'" . addslashes(strval($str)) . "'";		// you should prefer quote() instead of calling addslashes() directly - this makes stuff compatible to SQLite
 	}
 	
 	function f($Name)
 	{
-		return $this->Record[$Name];
+	    return ( isset( $this->Record[$Name] ) ? $this->Record[$Name] : null );
 	}
 	function fs($Name)
 	{
-		return $this->Record[$Name];	// if possible, always use fs() instead of f() - this makes stuff compatible to SQLite
-										// stripslashes() is no longer needed, mysql_fetch_assoc() does _not_ add slashes (and has never done before)
+	    return ( isset( $this->Record[$Name] ) ? $this->Record[$Name] : null );	// if possible, always use fs() instead of f() - this makes stuff compatible to SQLite
+										                                    // stripslashes() is no longer needed, mysql_fetch_assoc() does _not_ add slashes (and has never done before)
 	}
 	
 	function f8($Name)
 	{
-		return utf8_encode($this->Record[$Name]);	// UTF-8 encode because the DB is still ISO-encoded. Used in core50
+	    return ( isset( $this->Record[$Name] ) ? utf8_encode($this->Record[$Name]) : null );;	// UTF-8 encode because the DB is still ISO-encoded. Used in core50
 	}
 	
 	function fcs8($Name)
 	{
-	    return (substr(PHP_VERSION_ID, 0, 1) > 6) ? $this->Record[$Name] : utf8_encode($this->Record[$Name]);	// UTF-8 only if not > PHP7
+	    return $this->fs($Name);
+	    
+		// ! return (substr(PHP_VERSION_ID, 0, 1) > 6) ? $this->Record[$Name] : utf8_encode($this->Record[$Name]);	// UTF-8 only if not > PHP7
 	}
 
 	function affected_rows() 
@@ -335,17 +376,26 @@ class DB_Sql
 	{
 		return $this->ResultInsertId;
 	}
-
+	
 	function close() {
-	    $this->free();
-	    
-	    if($this->Link_ID && function_exists("mysql_close"))
-	        return mysql_close($this->Link_ID); // @mysql...
-	        elseif($this->Link_ID && function_exists("mysqli_close"))
-	        return mysqli_close($this->Link_ID); // @mysql...
-	        else
-	            return false;
+		$this->free();
+		
+		if( isset( $this->Link_ID ) && $this->Link_ID && function_exists("mysql_close") )
+			return mysql_close($this->Link_ID); // @mysql...
+	    elseif( isset( $this->Link_ID ) && $this->Link_ID && function_exists("mysqli_close") )
+			return mysqli_close($this->Link_ID); // @mysql...
+		else
+			return false;
 	}
+	
+	/* function close() {
+		$this->free();
+		
+		if( isset( $this->Link_ID ) &&  $this->Link_ID )
+			return true; // mysql_close($this->Link_ID); // @mysql... #PHP7
+		else
+			return false;
+	} */
 	
 	function free()
 	{
@@ -353,41 +403,33 @@ class DB_Sql
 		$this->ResultNumRows = 0;
 		$this->ResultAffectedRows = 0;
 		$this->ResultInsertId = 0;
-		if( $this->phys_query_id ) {
+		if( isset( $this->phys_query_id ) && $this->phys_query_id ) {
 			@mysql_free_result($this->phys_query_id);
 			$this->phys_query_id = 0;
 		}
 	}
 
-	private function halt($msg)
+	private function halt($msg) 
 	{
-	    if( $this->Link_ID ) {
-	        $this->Error = "* ".@mysqli_error($this->Link_ID);
-	        $this->Errno = "* ".@mysqli_errno($this->Link_ID);
-	    }
-	    else {
-	        $this->Error = "** ".@mysqli_error();
-	        $this->Errno = "** ".@mysql_errno();
-	    }
-	    if( $this->Halt_On_Error == 'no' )
-	        return;
-	        
-	        $error_info = "";
-	        if( strpos($this->Errno, "1203") !== FALSE )
-	            $error_info = "Die Datenbank ist aktuell leider durch zu viele Verbindungen &uuml;berlastet!<br><br>";
-	            elseif( strpos($this->Errno, "1153") !== FALSE )
-	            $error_info = "Diese Datenbank-Abfrage f&uuml;hrte zu einem zu gro&szlig;en Ergebnis - abgebrochen!<br><br>";
-	            elseif( strpos($this->Errno, "1062") !== FALSE )
-	            $error_info = "Diese Datenbank-Abfrage f&uuml;hrte zu einem unzul&auml;ssigen, uneindeutigen Ergebnis! Evtl. hat sich der Suchindex gleichzeitig ver&auml;ndert und muss aktualisiert werden. Bitte versuchen Sie gleich oder etwas sp&auml;ter nochmals.<br><br>";
-	            else
-	            $error_info = "Aus Sicherheitsgr&uuml;nden hier keine detaillierte Fehlermeldung.";
-	                	                	                
-	            // printf('<p style="border: 2px solid black;"><b>DB_Sql errorb> %s<br>MySQL says: Errno %s - %s</p>', "", $this->Errno, "<div style='margin-top: 20px; color:darkred;'>".$error_info."</div>");
-	            
-	            echo '<p style="border: 2px solid black;"><b>DB-Anfrage error:</b>'.$this->Errno.'</b></p>';
-	                
-	            if ($this->Halt_On_Error != "report")
-	               die("Session halted.");
+	    if( isset( $this->Link_ID ) && $this->Link_ID ) {
+			$this->Error = @mysql_error($this->Link_ID);
+			$this->Errno = @mysql_errno($this->Link_ID);
+		}
+		else {
+			$this->Error = @mysql_error();
+			$this->Errno = @mysql_errno();
+		}
+		if( isset( $this->Halt_On_Error ) && $this->Halt_On_Error == 'no' )
+			return;
+
+		echo '<p style="border: 2px solid black;"><b>DB-Anfrage error:</b>'.$this->Errno.'</b></p>';
+		
+		// ! printf('<p style="border: 2px solid black;"><b>DB_Sql error:</b> %s<br>MySQL says: Errno %s - %s</p>', $msg, $this->Errno, $this->Error);
+		
+		// file_put_contents("error.sql", $msg);
+		
+		if ($this->Halt_On_Error != "report")
+			die("Session halted.");
 	}
 
 	/**************************************************************************
@@ -452,26 +494,30 @@ class DB_Sql
 		{
 			$info =& $this->Record;
 			$fulltext = 0;
-			if( !(strpos(strtoupper($info['Comment']), 'FULLTEXT')===false)
-			 || !(strpos(strtoupper($info['Index_type']), 'FULLTEXT')===false) ) 
+			$infoComment = isset( $info['Comment'] ) ? $info['Comment'] : null;
+			$infoIndexType = isset( $info['Index_type'] ) ? $info['Index_type'] : null;
+			
+			if( !(strpos(strtoupper($infoComment), 'FULLTEXT')===false)
+			 || !(strpos(strtoupper($infoIndexType), 'FULLTEXT')===false) ) 
 			{
 				$fulltext = 1;
 			}
   	
 			$ret[$info['Key_name']]['fulltext']							= $fulltext;
-			$ret[$info['Key_name']]['primary']							= $info['Key_name']=='PRIMARY'? 1 : 0;
-			$ret[$info['Key_name']]['unique']							= $info['Non_unique']? 0 : 1;
-			$ret[$info['Key_name']]['cardinality']						= intval($info['Cardinality']);
-			$ret[$info['Key_name']]['fields'][$info['Seq_in_index']-1]	= $info['Column_name'];
+			$ret[$info['Key_name']]['primary']							= isset($info['Key_name']) && $info['Key_name']=='PRIMARY' ? 1 : 0;
+			$ret[$info['Key_name']]['unique']							= isset($info['Non_unique']) && $info['Non_unique'] ? 0 : 1;
+			$ret[$info['Key_name']]['cardinality']						= isset($info['Cardinality']) ? intval($info['Cardinality']) : null;
+			$ret[$info['Key_name']]['fields'][$info['Seq_in_index']-1]	= isset($info['Column_name']) ? $info['Column_name'] : null;
 		}
 		return $ret;
 	}
 	
 	function get_stat() {
-	    if($this->Link_ID)
-	        return mysqli_stat ( $this->Link_ID );
-	        
-	        return false;
-	}
+	    if( isset( $this->Link_ID ) && $this->Link_ID )
+			return mysqli_stat ( $this->Link_ID );
 	
+		return false;
+	}
+
 }
+

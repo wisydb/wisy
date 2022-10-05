@@ -24,4 +24,3 @@ require('functions.inc.php');
 
 $GLOBALS['g_cron'] = new G_CRON_CLASS;
 $GLOBALS['g_cron']->handle_request();
-

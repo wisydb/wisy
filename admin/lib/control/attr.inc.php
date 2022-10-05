@@ -1,4 +1,5 @@
 <?php
+
 /******************************************************************************
 Implementing single and multiple attribute selections
 ***************************************************************************//**
@@ -31,7 +32,8 @@ class CONTROL_ATTR_CLASS extends CONTROL_BASE_CLASS
 			$this->attr_ftitle = $this->row_def->prop['ctrl.attr.ftitle'];
 		}
 		else for( $r = 0; $r < sizeof((array) $this->row_def->addparam->rows); $r++ ) {
-			if( $this->row_def->addparam->rows[$r]->flags & TABLE_SUMMARY ) {
+		    $flags = isset( $this->row_def->addparam->rows[$r]->flags ) ? $this->row_def->addparam->rows[$r]->flags : null;
+			if( $flags & TABLE_SUMMARY ) {
 				$this->attr_ftitle = $this->row_def->addparam->rows[$r]->name;
 				break;
 			}
@@ -42,11 +44,11 @@ class CONTROL_ATTR_CLASS extends CONTROL_BASE_CLASS
 	{
 		$arr = array(intval($this->row_def->default_value));
 		if( $use_tracked_defaults && ($this->row_def->flags&TABLE_TRACKDEFAULTS) && isset($_SESSION['g_session_track_defaults'][$this->attr_table]) ) {
-			if( $this->mattr &&  is_array($_SESSION['g_session_track_defaults'][$this->attr_table]) ) {
+		    if( isset( $this->mattr ) && $this->mattr &&  is_array($_SESSION['g_session_track_defaults'][$this->attr_table]) ) {
 				$arr = $_SESSION['g_session_track_defaults'][$this->attr_table];
 			}
 			else {
-				$arr = array(intval($_SESSION['g_session_track_defaults'][$this->attr_table]));
+			    $arr = isset($_SESSION['g_session_track_defaults'][$this->attr_table]) ? array(intval($_SESSION['g_session_track_defaults'][$this->attr_table])) : array();
 			}
 		}
 		
@@ -87,7 +89,7 @@ class CONTROL_ATTR_CLASS extends CONTROL_BASE_CLASS
 			$dba->query("SELECT id, user_access, {$this->attr_ftitle} FROM {$this->attr_table} WHERE id IN (".implode(',', $in_arr).");");
 			while( $dba->next_record() ) {
 				$user_access = $dba->fs('user_access');
-				if( $this->attr_table == 'user' || $this->attr_table == 'user_grp' ) {
+				if( isset( $this->attr_table ) && $this->attr_table == 'user' || isset( $this->attr_table ) && $this->attr_table == 'user_grp' ) {
 					$user_access |= 0111; // assume users/user groups to be always referencable
 				}
 				$testa[ intval($dba->fs('id')) ] = array('user_access'=>$user_access, 'ftitle'=>$dba->fs($this->attr_ftitle));
@@ -115,8 +117,9 @@ class CONTROL_ATTR_CLASS extends CONTROL_BASE_CLASS
 		
 		// check for must-have values
 		if( sizeof($out_arr) == 0 ) {
-			if( $this->row_def->flags&TABLE_MUST ) { $errors[] = htmlconstant('_EDIT_ERREMPTYTEXTFIELD'); }
-			if( $this->row_def->flags&TABLE_RECOMMENTED ) { $warnings[] = htmlconstant('_EDIT_WARNEMPTYTEXTFIELD'); }
+		    $flags = isset( $this->row_def->flags ) ? $this->row_def->flags : null;
+			if( $flags&TABLE_MUST ) { $errors[] = htmlconstant('_EDIT_ERREMPTYTEXTFIELD'); }
+			if( $flags&TABLE_RECOMMENTED ) { $warnings[] = htmlconstant('_EDIT_WARNEMPTYTEXTFIELD'); }
 		}
 		
 		// track defaults
@@ -141,10 +144,10 @@ class CONTROL_ATTR_CLASS extends CONTROL_BASE_CLASS
 
 		$titles = array();
 		$actypes = array();
-		if( $this->dbval != '' )
+		if( isset( $this->dbval ) && $this->dbval != '' )
 		{
 			$actypefield  = '';
-			if( $this->attr_table == 'stichwoerter' ) { // very special handling for this table, we make this more generic some time
+			if( isset( $this->attr_table ) && $this->attr_table == 'stichwoerter' ) { // very special handling for this table, we make this more generic some time
 				$actypefield = ', eigenschaften AS actype';
 			}
 			
@@ -163,23 +166,39 @@ class CONTROL_ATTR_CLASS extends CONTROL_BASE_CLASS
 		$html = '';
 		
 		$class = 'e_attr';
-		if( $this->row_def->prop['ctrl.class'] ) $class .= ' ' . $this->row_def->prop['ctrl.class'];
+		if( isset( $this->row_def->prop['ctrl.class'] ) && $this->row_def->prop['ctrl.class'] ) $class .= ' ' . $this->row_def->prop['ctrl.class'];
 		$html .= '<span class="' . $class . '" data-table="'.$this->row_def->addparam->name.'" data-mattr="'.$this->mattr.'">';
 		
-			$html .= '<input name="' . $this->name . '" type="hidden" value="' . isohtmlspecialchars($this->dbval) . '" />';
+		    $name = isset($this->name) ? $this->name : '';
+		    $newEntryForm = false;
+		    
+		    if( $this->dbval == 1 && !isset($id) ) {// new entry form
+		        $this->dbval = 0;
+		        $newEntryForm = true;
+		    }
+		        
+		    $html .= '<input name="' . $name . '" type="hidden" value="' . ( $this->dbval > 0 ? isohtmlspecialchars($this->dbval) : '' ) . '" />';
 			
 			$ids = $this->dbval==''? array() : explode(',', $this->dbval);
 			for( $i = 0; $i < sizeof($ids); $i++ ) 
 			{
 				$actype_class = '';
-				if( $actypes[$ids[$i]] ) {
+				if( isset( $actypes[$ids[$i]] ) && $actypes[$ids[$i]] ) {
 					$actype_class = ' e_attractype'.$actypes[$ids[$i]];
 				}
 				
-				$html .=	'<span class="e_attritem" data-attrid="'.$ids[$i].'"><span class="e_attrinner'.$actype_class.'">' 
-						.		($titles[$ids[$i]]? isohtmlspecialchars($titles[$ids[$i]]) : $ids[$i]) 
-						.		'<span class="e_attrdel">&nbsp;&times;&nbsp;</span>'
-						.	'</span></span>'; // should be same as [*] in edit.js
+				if( $newEntryForm ) // new entry form
+				    ;
+				else {
+				$html .=	'<span class="e_attritem" data-attrid="'.$ids[$i].'"><span class="e_attrinner'.$actype_class.'">';
+			     
+				
+				    $html .=	( isset( $titles[$ids[$i]]) && $titles[$ids[$i]] ? isohtmlspecialchars($titles[$ids[$i]]) : $ids[$i] ); 
+				    $html .=	'<span class="e_attrdel">&nbsp;&times;&nbsp;</span>';
+				
+				
+			    $html .=	'</span></span>'; // should be same as [*] in edit.js
+				}
 			}
 			
 			
@@ -196,12 +215,13 @@ class CONTROL_ATTR_CLASS extends CONTROL_BASE_CLASS
 			//$html .= $this->row_def->prop['layout.join']? ' ' : '<br />';
 			$html .= ' <span class="e_attrref">';
 			
-			$title = $this->row_def->prop['ref.name']; if( $title == '' ) $title = '_REF';
+			$title = isset($this->row_def->prop['ref.name']) ? $this->row_def->prop['ref.name'] : ''; 
+			if( $title == '' ) $title = '_REF';
 			$html .= htmlconstant($title) . ': ';
 						for( $a = 0; $a < sizeof($this->attr_references); $a++ ) {
 							$html .=  $a? ', ' : '';
 							$html .=  '<a href="edit.php?table=' . $this->attr_table . '&id=' . $this->attr_references[$a][0] . '" target="_blank" rel="noopener noreferrer">';
-								$html .=  isohtmlentities($this->attr_references[$a][1]);
+							$html .=  isohtmlentities( strval( $this->attr_references[$a][1] ) );
 							$html .=  '</a>';
 						}
 			$html .= '</span>';
@@ -218,12 +238,16 @@ class CONTROL_ATTR_CLASS extends CONTROL_BASE_CLASS
 	
 	private function load_attrref($addparam)
 	{
-		if( !is_array($this->attr_references) )
+	    if( !isset( $this->attr_references )  || !is_array($this->attr_references) )
 		{
 			$this->attr_references = array();
-			if( $this->table_def->name == $this->attr_table 
-			 && $addparam['id']
-			 && $this->row_def->flags&TABLE_SHOWREF )
+			$tableDefName = isset( $this->table_def->name ) ? $this->table_def->name : null;
+			$attrTable = isset( $this->attr_table ) ? $this->attr_table : null;
+			$flags = isset( $this->row_def->flags ) ? $this->row_def->flags : null;
+			
+			if( $tableDefName == $attrTable 
+			 && isset( $addparam['id'] ) && $addparam['id']
+			 && $flags&TABLE_SHOWREF )
 			{
 			    $dba = new DB_Admin;
 			    $dba->query("SELECT primary_id FROM {$this->table_def->name}_{$this->row_def->name} WHERE attr_id=".intval($addparam['id'])." ORDER BY structure_pos");
@@ -249,5 +273,3 @@ class CONTROL_ATTR_CLASS extends CONTROL_BASE_CLASS
 		return $is_default;
 	}
 };
-
-

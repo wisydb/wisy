@@ -1,4 +1,5 @@
 <?php
+
 /*******************************************************************************
 Go - Stripslashes
 ****************************************************************************//**
@@ -29,7 +30,7 @@ using the following line in .htaccess
 As an alternative, you can modify the belonging php.ini, however, on shared
 hosts, there is not always access to it.
 
-@author Björn Petersen
+@author Bjoern Petersen
 
 *******************************************************************************/
 

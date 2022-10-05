@@ -17,9 +17,9 @@ $db2 = new DB_Admin;
 
 
 
-$today = strftime("%Y-%m-%d %H:%M:%S");
-$datum = strftime("%d.%m.%Y");
-$adkid = '[' . strftime("ADK%y%m%d") . ']';
+$today = ftime("%Y-%m-%d %H:%M:%S");
+$datum = ftime("%d.%m.%Y");
+$adkid = '[' . ftime("ADK%y%m%d") . ']';
 
 echo "# fuege Anbietern ohne Angebote ein Dummy-Angebot hinzu (im Journal mit $adkid markiert) ...\n";
 $cnt = 0;

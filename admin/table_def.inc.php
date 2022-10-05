@@ -1,6 +1,5 @@
 <?php
 
-
 /*=============================================================================
 Table Class Definition
 ===============================================================================
@@ -146,15 +145,15 @@ class Table_Def_Class
 	
 	function __construct($flags, $name, $descr, $addparam = 0, $acl = 0, $delete_uponunlink = false)
 	{
-		$this->flags			= $flags;
-		$this->name				= $name;
-		$this->descr			= $descr;
-		$this->rows 			= array();
-		$this->color			= '#aaaaaa';
-		$this->delete_uponunlink = $delete_uponunlink;
-		$this->addparam			= is_array($addparam)? $addparam : array();
-		$this->acl				= $acl;
-		$this->trigger_script	= '';
+	    $this->flags			= $flags;
+	    $this->name				= $name;
+	    $this->descr			= $descr;
+	    $this->rows 			= array();
+	    $this->color			= '#aaaaaa';
+	    $this->delete_uponunlink = $delete_uponunlink;
+	    $this->addparam			= is_array($addparam)? $addparam : array();
+	    $this->acl				= $acl;
+	    $this->trigger_script	= '';
 	}
 
 	// name and descr must not be given in HTML manner
@@ -178,6 +177,7 @@ class Table_Def_Class
 	    return $this->delete_uponunlink;
 	}
 	
+	
 	// checks if the table is _only_ a secondary table
 	function is_only_secondary(&$primary_table_name, &$primary_table_field)
 	{
@@ -187,7 +187,8 @@ class Table_Def_Class
 		$primary_table_field = '';
 		
 		// a primary table is not only a secondary table
-		if( $this->flags & TABLE_PRIMARY ) {
+		$flags = isset( $this->flags ) ? $this->flags : null;
+		if( $flags & TABLE_PRIMARY ) {
 			return 0; // okay, not only a secondary table
 		}
 		
@@ -195,19 +196,21 @@ class Table_Def_Class
 		$is_secondary = 0;
 		for( $t = 0; $t < sizeof((array) $Table_Def); $t++ )
 		{
-		    for( $r = 0; $r < sizeof((array) $Table_Def[$t]->rows); $r++ )
+			for( $r = 0; $r < sizeof((array) $Table_Def[$t]->rows); $r++ )
 			{
-				$row_type = $Table_Def[$t]->rows[$r]->flags & TABLE_ROW;
+			    $rowsFlags = isset( $Table_Def[$t]->rows[$r]->flags ) ? $Table_Def[$t]->rows[$r]->flags : null;
+				$row_type = $rowsFlags & TABLE_ROW;
 				
 				if( ($row_type == TABLE_MATTR || $row_type == TABLE_SATTR)
 				 &&  $Table_Def[$t]->rows[$r]->addparam->name == $this->name ) {
 				 	return 0; // okay, not only a secondary table
 				}
 
+				$addParamName = isset( $Table_Def[$t]->rows[$r]->addparam->name ) ? $Table_Def[$t]->rows[$r]->addparam->name : null;
 				if( ($row_type == TABLE_SECONDARY)
-				 &&  $Table_Def[$t]->rows[$r]->addparam->name == $this->name ) {
-				 	$primary_table_name = $Table_Def[$t]->name;
-				 	$primary_table_field = $Table_Def[$t]->rows[$r]->name;
+				 &&  $addParamName == $this->name ) {
+				    $primary_table_name = isset( $Table_Def[$t]->name ) ? $Table_Def[$t]->name : '';
+				    $primary_table_field = isset( $Table_Def[$t]->rows[$r]->name ) ? $Table_Def[$t]->rows[$r]->name : '';
 				 	$is_secondary = 1; 
 				}
 			}
@@ -219,8 +222,9 @@ class Table_Def_Class
 	// function checks if the table uses TABLE_TRACKDEFAULTS for any row
 	function uses_track_defaults()
 	{
-	    for( $r = 0; $r < sizeof((array) $this->rows); $r++ ) {
-			if( intval($this->rows[$r]->flags) & TABLE_TRACKDEFAULTS ) {
+		for( $r = 0; $r < sizeof((array) $this->rows); $r++ ) {
+		    $rowsFlags = isset( $this->rows[$r]->flags ) ? $this->rows[$r]->flags : null;
+			if( intval($rowsFlags) & TABLE_TRACKDEFAULTS ) {
 				return 1;
 			}
 		}
@@ -286,19 +290,18 @@ class Table_Def_Class
 					for( $i = 0; $i < sizeof($secondary_ids); $i++ ) {
 						$this->rows[$r]->addparam->destroy_record_n_dependencies($db, $secondary_ids[$i], $addparam);
 					}
-					if( !$addparam['leave_secondary_records'] ) {
+					if( !isset( $addparam['leave_secondary_records'] ) || !$addparam['leave_secondary_records'] ) {
 						$db->query("DELETE FROM " . $this->rows[$r]->addparam->name . " WHERE id IN(" . implode(',', $secondary_ids) . ");");
 					}
 				}
 				
-				if( !$addparam['leave_secondary_relations'] ) {
+				if( !isset( $addparam['leave_secondary_relations'] ) || !$addparam['leave_secondary_relations'] ) {
 					$db->query("DELETE FROM " . $this->name . '_' . $this->rows[$r]->name . " WHERE primary_id=$id");
 				}
 			}
 		}
 		
-		if( !$addparam['leave_primary_record'] )
-		{
+		if( !isset($addparam['leave_primary_record']) || !$addparam['leave_primary_record'] ) {
 			$db->query("DELETE FROM $this->name WHERE id=$id;");
 		}
 	}
@@ -313,10 +316,11 @@ class Table_Def_Class
 		
 		for( $t = 0; $t < sizeof((array) $Table_Def); $t++ )
 		{
-		    for( $r = 0; $r < sizeof((array) $Table_Def[$t]->rows); $r++ )
+			for( $r = 0; $r < sizeof((array) $Table_Def[$t]->rows); $r++ )
 			{
-				$row_type		= $Table_Def[$t]->rows[$r]->flags&TABLE_ROW;
-				$row_addparam	= $Table_Def[$t]->rows[$r]->addparam->name;
+			    $rowsFlags      = isset( $Table_Def[$t]->rows[$r]->flags ) ? $Table_Def[$t]->rows[$r]->flags : null;
+				$row_type		= $rowsFlags&TABLE_ROW;
+				$row_addparam	= isset( $Table_Def[$t]->rows[$r]->addparam ) && is_object( $Table_Def[$t]->rows[$r]->addparam ) ? $Table_Def[$t]->rows[$r]->addparam->name : '';
 				$query			= '';
 				$primary_id		= '';
 				
@@ -442,9 +446,10 @@ class Table_Def_Class
 
 		$list_or_summary = TABLE_LIST; // if no summary rows are specified, TABLE_LIST is used
 		if( !$force_TABLE_LIST ) {
-		    for( $r = 0; $r < sizeof((array) $this->rows); $r++ )
+			for( $r = 0; $r < sizeof((array) $this->rows); $r++ )
 			{
-				if( $this->rows[$r]->flags & TABLE_SUMMARY ) {
+			    $flags = isset( $this->rows[$r] ) && isset( $this->rows[$r]->flags ) ? $this->rows[$r]->flags : null;
+				if( $flags & TABLE_SUMMARY ) {
 					$list_or_summary = TABLE_SUMMARY;
 					break;
 				}
@@ -453,9 +458,11 @@ class Table_Def_Class
 
 		for( $r = 0; $r < sizeof((array) $this->rows); $r++ )
 		{
-			if( $this->rows[$r]->flags & $list_or_summary )
+		    $flags = isset( $this->rows[$r] ) && isset( $this->rows[$r]->flags ) ? $this->rows[$r]->flags : null;
+		    if( $flags & $list_or_summary )
 			{
-				switch( $this->rows[$r]->flags & TABLE_ROW )
+			    $rowsFlags = isset( $this->rows[$r]->flags ) ? $this->rows[$r]->flags : null;
+			    switch( $rowsFlags & TABLE_ROW )
 				{
 					case TABLE_SECONDARY:
 						$temp = array();
@@ -597,15 +604,16 @@ class Table_Def_Class
 				return intval($txt);
 			}
 			else {
-				$ret_error_txt = htmlconstant('_UNKNOWNVALUE', isohtmlentities($txt));
+				$ret_error_txt = htmlconstant('_UNKNOWNVALUE', isohtmlentities( strval( $txt ) ));
 				return intval(0); // not found
 			}
 		}
 		else
 		{
-		    for( $r = 0; $r < sizeof((array) $this->rows); $r++ )
+			for( $r = 0; $r < sizeof((array) $this->rows); $r++ )
 			{
-				if( $this->rows[$r]->flags & TABLE_LIST )
+			    $flags = isset( $this->rows[$r] ) && isset( $this->rows[$r]->flags ) ? $this->rows[$r]->flags : null;
+			    if( $flags & TABLE_LIST )
 				{
 					switch( $this->rows[$r]->flags & TABLE_ROW ) 
 					{
@@ -624,7 +632,7 @@ class Table_Def_Class
 			}
 		}
 
-		$ret_error_txt = htmlconstant('_UNKNOWNVALUE', isohtmlentities($txt));
+		$ret_error_txt = htmlconstant('_UNKNOWNVALUE', isohtmlentities( strval( $txt ) ));
 		return intval(0); // not found
 	}
 	
@@ -644,7 +652,8 @@ class Table_Def_Class
 		}
 		else for( $r = 0; $r < sizeof((array) $this->rows); $r++ )
 		{
-			if( $this->rows[$r]->name == $fieldName )
+		    $flags = isset( $this->rows[$r] ) && isset( $this->rows[$r]->name ) ? $this->rows[$r]->name : null;
+		    if( $flags == $fieldName )
 			{
 				$rowflags = $this->rows[$r]->flags;
 				switch( $rowflags&TABLE_ROW )
@@ -695,8 +704,7 @@ function Table_Find_Def($name, $accessCheck = 1)
 	{
 		if( $Table_Def[$t]->name == $name ) 
 		{
-			if( !$_SESSION['g_session_userid'] || $accessCheck == 0) {
-				// table found by name
+		    if( !isset( $_SESSION['g_session_userid'] ) || !$_SESSION['g_session_userid'] || $accessCheck == 0) {
 				return $Table_Def[$t]; 
 			}
 			
@@ -710,10 +718,10 @@ function Table_Find_Def($name, $accessCheck = 1)
 
 			// build new table definition regarding the user's access rights
 			$ret = new Table_Def_Class(
-			    $Table_Def[$t]->flags,
-			    $Table_Def[$t]->name,
-			    $Table_Def[$t]->descr,
-			    $Table_Def[$t]->addparam,
+				$Table_Def[$t]->flags,
+				$Table_Def[$t]->name, 
+				$Table_Def[$t]->descr, 
+				$Table_Def[$t]->addparam,
 			    $acl,
 			    $Table_Def[$t]->delete_uponunlink
 			);
@@ -821,8 +829,8 @@ function Table_Def_Finish($prop=0)
 		$roles = new Table_Def_Class(0, 					'user_roles',			'Benutzerrollen');
 		$roles->add_row(TABLE_TEXT|TABLE_LIST|TABLE_SUMMARY|TABLE_MUST|TABLE_UNIQUE_RECOMMENTED,
 															'name',					'Name der Rolle', '', '', '', array('ctrl.size'=>'30-80', 'layout.bg.class'=>'e_bglite', 'layout.descr.class'=>'e_bolder', 'ctrl.class'=>'e_bolder'));
-		$roles->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,	'text_to_confirm',		'Zu bestätigender Text', 0, 0, 0, array('ctrl.rows'=>20));
-		$roles->add_row(TABLE_TEXT|TABLE_LIST|TABLE_URL,	'email_notify',			'E-Mail&nbsp;für&nbsp;Bestätigungen', '', '', '', array('ctrl.size'=>'40-80', 'help.tooltip'=>'Wenn ein Benutzer den angezeigten Text bestätigt hat, wird eine Nachricht an diese E-Mail-Addresse gesandt.'));
+		$roles->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,	'text_to_confirm',		'Zu best&auml;tigender Text', 0, 0, 0, array('ctrl.rows'=>20));
+		$roles->add_row(TABLE_TEXT|TABLE_LIST|TABLE_URL,	'email_notify',			'E-Mail&nbsp;f&uuml;r&nbsp;Best&auml;tigungen', '', '', '', array('ctrl.size'=>'40-80', 'help.tooltip'=>'Wenn ein Benutzer den angezeigten Text best&auml;tigt hat, wird eine Nachricht an diese E-Mail-Addresse gesandt.'));
 	}
 		
 
@@ -848,7 +856,7 @@ function Table_Def_Finish($prop=0)
 	$user->add_row(TABLE_TEXTAREA,					'msg_to_user',		'Nachricht an den Benutzer', 0, 0, '', array('ctrl.rows'=>3, 'help.tooltip'=>'die Nachricht wird dem Benutzer immer angezeigt, wenn er sich im Redaktionssystem einloggt'));
 	$user->add_row(TABLE_DATETIME|TABLE_NEWSECTION,	'last_login',		htmlconstant('_LASTLOGIN'), 0, 0, htmlconstant('_STATE'));
 	$user->add_row(TABLE_DATETIME,					'last_login_error',	htmlconstant('_LASTLOGINERROR'), '', '', '', array('layout.join'=>1));
-	$user->add_row(TABLE_INT,                       'num_login_errors',        htmlconstant('_NUMLOGINERRORS'), '', '', '', array('layout.join'=>1));
+	$user->add_row(TABLE_INT,      'num_login_errors',        htmlconstant('_NUMLOGINERRORS'), '', '', '', array('layout.join'=>1));
 	$user->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,	'settings',			htmlconstant('_SETTINGS'), 0, 0, 0, array('layout.defhide'=>2, 'layout.join'=>1, 'help.url'=>$prop['user.settings.help.url']));
 	//$user->add_row(TABLE_TEXTAREA,					'remembered',		htmlconstant('_JOBLISTS')); -- this field may be several MB in size; do not make it editable, eg. diff is very time consuming completely useless
 	$user->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,	'notizen',			'Journal', '', '', '', array('layout.section'=>1));
@@ -863,7 +871,7 @@ function Table_Def_Finish($prop=0)
 	// convert linked table names to objects
 	for( $t = 0; $t < sizeof((array) $Table_Def); $t++ )
 	{
-	    for( $r = 0; $r < sizeof((array) $Table_Def[$t]->rows); $r++ )
+		for( $r = 0; $r < sizeof((array) $Table_Def[$t]->rows); $r++ )
 		{
 			$row_type = $Table_Def[$t]->rows[$r]->flags & TABLE_ROW;
 			
@@ -878,5 +886,3 @@ function Table_Def_Finish($prop=0)
 
 // needed for the including of 'db.inc.php'
 global $Table_Def;
-
-

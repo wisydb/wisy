@@ -1,7 +1,5 @@
 <?php
 
-
-
 /*=============================================================================
 table overview, also used as an attribute selector
 ===============================================================================
@@ -57,7 +55,7 @@ function createColumnsHash($table, $prefix = '')
 	
 	// "direct" columns
 	$tableDef = Table_Find_Def($table);
-	for( $r = 0; $r < sizeof((array) $tableDef->rows); $r++ )
+	for( $r = 0; $r < sizeof((array) $tableDef->rows); $r++ ) 
 	{
 		$rowflags		= intval($tableDef->rows[$r]->flags);
 		$rowtype		= $rowflags&TABLE_ROW;
@@ -141,6 +139,7 @@ function createColumnsHash($table, $prefix = '')
 
 function renderTableHeadCell($curr_field, $descr, $def_desc = 0, $sum_field = 0)
 {
+
 	global $site;
 	global $columnsCount;
 	global $tableHeadCellsRendered;
@@ -203,11 +202,11 @@ function renderTableHeadCell($curr_field, $descr, $def_desc = 0, $sum_field = 0)
 	
 		// render action'n'description
 		if( $action ) {
-			echo '<a href="'.isohtmlentities($action)."\" title=\"$title\">";
+		    echo '<a href="'.isohtmlentities( strval( $action ) )."\" title=\"$title\">";
 		}
 
 		$descr = trim($descr);
-		if( $Table_Shortnames[$descr] ) {
+		if( isset( $Table_Shortnames[$descr] ) && $Table_Shortnames[$descr] ) {
 			echo $Table_Shortnames[$descr];
 		}
 		else {
@@ -245,7 +244,7 @@ function renderTableHeadCell($curr_field, $descr, $def_desc = 0, $sum_field = 0)
 
 function getSortField($tableDef)
 {
-    for( $r = 0; $r < sizeof((array) $tableDef->rows); $r++ )
+	for( $r = 0; $r < sizeof((array) $tableDef->rows); $r++ )
 	{
 		$rowflags	= intval($tableDef->rows[$r]->flags);
 		$rowtype	= $rowflags&TABLE_ROW;
@@ -354,7 +353,7 @@ function renderTableHead(&$hi, $table, $prefix = '')
 					
 		for( $r = 0; $r < sizeof($test); $r+=4 ) {
 			if( $columnsHash[$hi++] ) {
-				renderTableHeadCell($test[$r], htmlconstant($test[$r+($lastSet? 2 : 1)]), $test[$r+3]);
+			    renderTableHeadCell($test[$r], htmlconstant($test[ $r+( isset($lastSet) && $lastSet ? 2 : 1) ]), $test[$r+3]);
 				$lastSet = 1;
 			}
 			else {
@@ -403,7 +402,7 @@ function getHtmlContent(&$tableDef, $r, &$db)
 		case TABLE_BLOB:
 			$value = explode(';', $db->fs($tableDef->rows[$r]->name));
 			if( $value[0] != '' ) {
-				return isohtmlentities($value[0]);
+			    return isohtmlentities( strval( $value[0] ) );
 			}
 			else {
 				return '&nbsp;';
@@ -413,7 +412,7 @@ function getHtmlContent(&$tableDef, $r, &$db)
 		case TABLE_TEXTAREA:
 			$value = smart_truncate($db->fs($tableDef->rows[$r]->name));
 			if( $value != '' ) {
-				return isohtmlentities($value);
+			    return isohtmlentities( strval( $value ) );
 			}
 			else {
 				return '&nbsp;';
@@ -433,14 +432,14 @@ function getHtmlContent(&$tableDef, $r, &$db)
 			}
 			
 			if( $value ) {
-				return isohtmlentities($value);
+			    return isohtmlentities( strval( $value ) );
 			}
 			else {
 				return '&nbsp;';
 			}
 
 		case TABLE_SATTR:
-			$value = isohtmlentities($tableDef->rows[$r]->addparam->get_summary($db->f($tableDef->rows[$r]->name), '; ' /*value seperator*/));
+		    $value = isohtmlentities( strval( $tableDef->rows[$r]->addparam->get_summary($db->f($tableDef->rows[$r]->name), '; ' /*value seperator*/) ) );
 			return $value==''? '&nbsp;' : $value;
 
 		case TABLE_INT:
@@ -482,18 +481,18 @@ require_lang('lang/dbsearch');
 require_lang('lang/overview');
 
 // get table and other paramters
-$table = $_REQUEST['table'];
+$table = isset( $_REQUEST['table'] ) ? $_REQUEST['table'] : null;
 if( !$table ) // may be unset after a call to index.php after a login with the session id already set
 {
 	require_once('login.inc.php');
 	$table = get_first_accecssible_table();
 }
 
-$debug = $_REQUEST['debug'];
+$debug = isset( $_REQUEST['debug'] ) ? $_REQUEST['debug'] : null;
 
 // get base URL
 $baseurl = "index.php?table=$table";
-if( isset($_REQUEST['selectobject']) )
+if( isset( $_REQUEST['selectobject'] ) )
 {
 	$baseurl .= "&selectobject";
 	$settingsPrefix = 'index.select';
@@ -533,7 +532,7 @@ if( !isset($_REQUEST['searchoffset']) ) {
 	$searchoffset = intval( regGet("$settingsPrefix.$table.offset", 0) );
 }
 else {
-	$searchoffset = intval( $_REQUEST['searchoffset'] );
+    $searchoffset = isset( $_REQUEST['searchoffset'] ) ? intval( $_REQUEST['searchoffset'] ) : null;
 	regSet("$settingsPrefix.$table.offset", $searchoffset, 0);
 }
 
@@ -546,7 +545,7 @@ if( !isset($_REQUEST['rows']) ) {
 	$rows = intval( regGet("$settingsPrefix.$table.rows", 10) );
 }
 else {
-	$rows = intval( $_REQUEST['rows'] );
+    $rows = isset( $_REQUEST['rows'] ) ? intval( $_REQUEST['rows'] ) : null;
 	regSet("$settingsPrefix.$table.rows", $rows, 10);
 }
 
@@ -562,7 +561,7 @@ if( !isset($_REQUEST['orderby']) ) {
 	}
 }
 else {
-	$orderby = $_REQUEST['orderby'];
+    $orderby = isset( $_REQUEST['orderby'] ) ? $_REQUEST['orderby'] : null;
 	regSet("$settingsPrefix.$table.orderby", $orderby, 'date_modified DESC');
 }
 
@@ -591,7 +590,7 @@ $sqlFields = 'id' . $sqlFields;
 
 // select records
 
-if( !isset($_REQUEST['object']) ) {
+if( !isset( $_REQUEST['object'] ) ) {
 	$_SESSION['g_session_list_results'][$table] = array(); // needed to move in result from the editor
 }
 
@@ -667,10 +666,12 @@ else
 }
 
 if( !isset($_REQUEST['object']) ) {
-	if( !is_array($_SESSION['g_session_index_sql']) ) $_SESSION['g_session_index_sql'] = array();
-	if( !is_array($_SESSION['g_session_index_eql']) ) $_SESSION['g_session_index_eql'] = array();
-	$_SESSION['g_session_index_sql'][$table] = $sql;
-	$_SESSION['g_session_index_eql'][$table] = $eql;
+    if( !isset( $_SESSION['g_session_index_sql'] ) || !is_array($_SESSION['g_session_index_sql']) ) $_SESSION['g_session_index_sql'] = array();
+    if( !isset( $_SESSION['g_session_index_eql'] ) || !is_array($_SESSION['g_session_index_eql']) ) $_SESSION['g_session_index_eql'] = array();
+    
+    if( isset($sql) ) $_SESSION['g_session_index_sql'][$table] = $sql;
+    if( isset($eql) ) $_SESSION['g_session_index_eql'][$table] = $eql;
+    
 }
 
 regSave();
@@ -688,17 +689,17 @@ $site->menuItem('mmainmenu', $tableDef->descr, "<a href=\"index.php?table=$table
 
 // prev / next
 $prevurl = $searchoffset==0? '' : ("$baseurl&searchoffset=" . intval($searchoffset-$rows));
-$site->menuItem('mprev', htmlconstant('_PREVIOUS'), $prevurl? ('<a href="'.isohtmlentities($prevurl).'">') : '');
+$site->menuItem('mprev', htmlconstant('_PREVIOUS'), $prevurl? ('<a href="'.isohtmlentities( strval( $prevurl ) ).'">') : '');
 
 $nexturl = ($searchoffset+$rows<$select_numrows)? ("$baseurl&searchoffset=" . intval($searchoffset+$rows)) : '';
-$site->menuItem('mnext', htmlconstant('_NEXT'), $nexturl? ('<a href="'.isohtmlentities($nexturl).'">') : '');
+$site->menuItem('mnext', htmlconstant('_NEXT'), $nexturl? ('<a href="'.isohtmlentities( strval( $nexturl ) ).'">') : '');
 
 // add rows
 $site->menuItem('msearchexp', htmlconstant('_OVERVIEW_SEARCHEXPAND'), 
 	'<a href="' . isohtmlentities("$baseurl&searchaddrow=1") . '" onclick="return dbsearch_addrow();">');
 
 // all
-$site->menuItem('mall', htmlconstant('_OVERVIEW_ALL'), '<a href="'.isohtmlentities($allurl).'">');
+$site->menuItem('mall', htmlconstant('_OVERVIEW_ALL'), '<a href="'.isohtmlentities( strval( $allurl ) ).'">');
 
 // new / empty
 $only_secondary = 0;
@@ -716,7 +717,7 @@ if( !isset($_REQUEST['object']) ) {
 
 // settings / print
 $site->menuSettingsUrl	= "settings.php?table=$tableDef->name&scope=index&reload=" . urlencode($baseurl);
-$site->menuPrintUrl		= $_REQUEST['object']? '' : "print.php?table=$tableDef->name";
+$site->menuPrintUrl		= isset($_REQUEST['object']) && $_REQUEST['object']? '' : "print.php?table=$tableDef->name";
 
 // menu link to index plugin(s)
 for( $i = 0; $i <= 3; $i++ ) 
@@ -724,7 +725,8 @@ for( $i = 0; $i <= 3; $i++ )
 	if( @file_exists("config/index_plugin_{$tableDef->name}_{$i}.inc.php") ) 
 	{
 		$test = explode(',', regGet("index_plugin_{$tableDef->name}_{$i}.access", ""));
-		if( trim($test[0]) == '' || acl_check_access(trim($test[0]), -1, intval($test[1])? intval($test[1]) : ACL_EDIT) )
+		$test1 = isset( $test[1] ) ? intval($test[1]) : null;
+		if( trim($test[0]) == '' || acl_check_access( (null !== trim($test[0]) ? trim($test[0]) : ''), -1, $test1 ? $test1 : ACL_EDIT ) )
 		{
 			$site->menuItem("mplugin$i", htmlconstant(strtoupper("_index_plugin_{$tableDef->name}_{$i}")), 
 				"<a href=\"module.php?module=index_plugin_{$tableDef->name}_{$i}\" target=\"index_plugin_{$tableDef->name}_{$i}\" onclick=\"return popup(this,750,550);\">");
@@ -743,7 +745,7 @@ if( $only_secondary )
 	$site->msgAdd(htmlconstant('_OVERVIEW_ONLYSECONDARYDATA', "<a href=\"index.php?table=$only_secondary_primary_table_name\">", '</a>'), 'w');
 }
 
-if( !$_SESSION['g_session_filter_active_hint'] && acl_grp_filter_active() )
+if( ( !isset( $_SESSION['g_session_filter_active_hint'] ) || !$_SESSION['g_session_filter_active_hint'] ) && acl_grp_filter_active() )
 {
 	$site->msgAdd(htmlconstant('_OVERVIEW_FILTERACTIVEWARNING', '', ''), 'w');
 	$_SESSION['g_session_filter_active_hint'] = 1;
@@ -760,10 +762,10 @@ $site->pageStart();
 
 if( isset($_REQUEST['selectobject']) ) {
 	$site->skin->submenuStart();
-		$site->skin->submenuItem('mprev', htmlconstant('_PREVIOUS'), $prevurl? ('<a href="'.isohtmlentities($prevurl).'">') : '');$site->menuItem('mnext', htmlconstant('_NEXT'), $nexturl? ('<a href="'.isohtmlentities($nexturl).'">') : '');
-		$site->skin->submenuItem('mnext', htmlconstant('_NEXT'), $nexturl? ('<a href="'.isohtmlentities($nexturl).'">') : '');
+	    $site->skin->submenuItem('mprev', htmlconstant('_PREVIOUS'), $prevurl? ('<a href="'.isohtmlentities( strval( $prevurl ) ).'">') : '');$site->menuItem('mnext', htmlconstant('_NEXT'), $nexturl? ('<a href="'.isohtmlentities( strval( $nexturl ) ).'">') : '');
+	    $site->skin->submenuItem('mnext', htmlconstant('_NEXT'), $nexturl? ('<a href="'.isohtmlentities( strval( $nexturl ) ).'">') : '');
 		$site->skin->submenuItem('msearchexp', htmlconstant('_OVERVIEW_SEARCHEXPAND'),  '<a href="' . isohtmlentities("$baseurl&searchaddrow=1") . '" onclick="return dbsearch_addrow();">');
-		$site->skin->submenuItem('mall', htmlconstant('_OVERVIEW_ALL'), '<a href="'.isohtmlentities($allurl).'">');
+		$site->skin->submenuItem('mall', htmlconstant('_OVERVIEW_ALL'), '<a href="'.isohtmlentities( strval( $allurl ) ).'">');
 	$site->skin->submenuBreak();
 		echo 'Bitte einen Datensatz ausw&auml;hlen';
 	$site->skin->submenuEnd();
@@ -796,7 +798,7 @@ if( $select_numrows )
 		echo page_sel("$baseurl&searchoffset=", $rows, $searchoffset, $select_numrows, 1);
 	$site->skin->mainmenuEnd();
 
-	if( $_REQUEST['object']) {
+	if( isset( $_REQUEST['object'] ) && $_REQUEST['object'] ) {
 		// attribute selection hint
 		$site->skin->submenuStart();
 			echo $subtitle;
@@ -830,8 +832,9 @@ if( $select_numrows )
 	}
 
 	// get selected objects
-	if( isset($_SESSION[$_REQUEST['object']]) ) {
-		$_SESSION[$_REQUEST['object']]->getset_attrtable($edit_control, $attr_values, $dummy, $attr_flags, $dummy);
+	$reqObject = isset( $_REQUEST['object'] ) ? $_REQUEST['object'] : null;
+	if( isset($_SESSION[ $reqObject ]) ) {
+	    $_SESSION[ $reqObject ]->getset_attrtable($edit_control, $attr_values, $dummy, $attr_flags, $dummy);
 	}
 	$checkimgsize = GetImageSize("{$site->skin->imgFolder}/check0.gif");
 	$noaccessimgsize = GetImageSize("{$site->skin->imgFolder}/noaccess.gif");
@@ -870,7 +873,8 @@ if( $select_numrows )
 		}
 		
 		// start row
-		$justedited = $id==$_REQUEST['justedited']? true : false;
+		$reqJustedited = isset( $_REQUEST['justedited'] ) ? $_REQUEST['justedited'] : null;
+		$justedited = $id==$reqJustedited? true : false;
 		
 		$site->skin->rowStart($justedited? 'class="justedited"' : '');
 	
@@ -908,21 +912,21 @@ if( $select_numrows )
 			if( $columnsHash[$hi++] )
 			{
 				$site->skin->cellStart('nowrap');
-					
-					if( $id == $_REQUEST['justedited'] )
+				    $reqJustedited = isset( $_REQUEST['justedited'] ) ? $_REQUEST['justedited'] : null;
+				    if( $id == $reqJustedited )
 					{
 						echo "<a name=\"id$id\"></a>";
 					}
 
 					if( $action_view_base ) {
 						if( canRead() ) {
-							echo	'<a href="' . isohtmlentities($action_view_base) . $id . '" target="_blank" rel="noopener noreferrer" onclick="setClickConsumed();return true;" title="' .htmlconstant('_VIEW'). '">'  
+						    echo	'<a href="' . isohtmlentities( strval( $action_view_base ) ) . $id . '" target="_blank" rel="noopener noreferrer" onclick="setClickConsumed();return true;" title="' .htmlconstant('_VIEW'). '">'  
 								.		'&#8599;&nbsp;'
 								.	'</a>';
 						}
 					}
 
-					echo 	'<a href="' . isohtmlentities($actionUri) . '"'.$tr_a_attr.'>'
+					echo 	'<a href="' . isohtmlentities( strval( $actionUri ) ) . '"'.$tr_a_attr.'>'
 						.		$id											
 						.	'</a>';
 
@@ -945,7 +949,7 @@ if( $select_numrows )
 				{
 					// get secondary summary
 					if( $show_summary
-					 || $show_secondary[$tableDef->rows[$r]->addparam->name] )
+					 || (isset($show_secondary[$tableDef->rows[$r]->addparam->name]) && $show_secondary[$tableDef->rows[$r]->addparam->name])  )
 					{
 						$secondaryIds = array();
 						$dba->query("SELECT secondary_id FROM {$table}_{$tableDef->rows[$r]->name} WHERE primary_id=$id ORDER BY structure_pos");
@@ -963,7 +967,7 @@ if( $select_numrows )
 
 					// get secondary table definition				
 					$sTableDef = Table_Find_Def($tableDef->rows[$r]->addparam->name);
-					if( $show_secondary[$tableDef->rows[$r]->addparam->name] )
+					if( isset($show_secondary[$tableDef->rows[$r]->addparam->name]) && $show_secondary[$tableDef->rows[$r]->addparam->name] )
 					{
 						// go through all secondary rows and collect the HTML contents
 						$hiBak = $hi;
@@ -997,7 +1001,7 @@ if( $select_numrows )
 									{
 										$valuesOut = 0;
 										
-										if( is_array($secondaryHash[$sTableDef->rows[$sr]->name]) )
+										if( isset($secondaryHash[$sTableDef->rows[$sr]->name]) && is_array($secondaryHash[$sTableDef->rows[$sr]->name]) )
 										{
 											reset($secondaryHash[$sTableDef->rows[$sr]->name]);
 											foreach(array_keys($secondaryHash[$sTableDef->rows[$sr]->name]) as $value) {
@@ -1020,7 +1024,7 @@ if( $select_numrows )
 					}
 					else
 					{
-					    $hi += sizeof((array) $sTableDef->rows);
+						$hi += sizeof((array) $sTableDef->rows);
 					}
 				}
 				else
@@ -1048,7 +1052,7 @@ if( $select_numrows )
 						}
 						
 						if( $summary ) {
-							echo isohtmlentities($summary);
+						    echo isohtmlentities( strval( $summary ) );
 						}
 						else {
 							echo '&nbsp;';
@@ -1062,7 +1066,7 @@ if( $select_numrows )
 				$site->skin->cellStart();
 					if( canRead() ) 
 					{
-						echo isohtmlentities(sql_date_to_human($db->f('date_created'), 'datetime'));
+					    echo isohtmlentities( strval( sql_date_to_human($db->f('date_created')  , 'datetime') ) );
 					}
 				$site->skin->cellEnd();
 			}
@@ -1082,7 +1086,7 @@ if( $select_numrows )
 				$site->skin->cellStart();
 					if( canRead() )
 					{
-						echo isohtmlentities(sql_date_to_human($db->f('date_modified'), 'datetime'));
+					    echo isohtmlentities( strval( sql_date_to_human($db->f('date_modified') , 'datetime') )  );
 					}
 				$site->skin->cellEnd();
 			}
@@ -1136,7 +1140,7 @@ if( $select_numrows )
 	$site->skin->tableEnd();
 
 	// any notes?
-	if( $tableDef->addparam['notes'] ) {
+	if( isset( $tableDef->addparam['notes'] ) && $tableDef->addparam['notes'] ) {
 		echo '<p>' . $tableDef->addparam['notes'] . '</p>';
 	}
 	
@@ -1145,7 +1149,7 @@ if( $select_numrows )
 		$site->skin->submenuStart();
 			
 			$eqlShort = $eql;
-			if( strlen($eqlShort) > 40 && !$_REQUEST['eqlfull'] ) {
+			if( strlen($eqlShort) > 40 && ( !isset($_REQUEST['eqlfull']) || !$_REQUEST['eqlfull'] ) ) {
 				$eqlShort = isohtmlspecialchars(substr($eqlShort, 0, 40)) . '<a href="' . isohtmlspecialchars("$baseurl&eqlfull=1") . '">...</a>';
 			}
 			else {
@@ -1169,7 +1173,7 @@ if( $select_numrows )
 				echo " | <a href=\"log.php?table=$table\" target=\"_blank\" rel=\"noopener noreferrer\">" . htmlconstant('_LOG') . '</a>';
 			}
 
-	$site->skin->submenuEnd(true);
+		$site->skin->submenuEnd(true);
 		
 	if( !isset($_REQUEST['selectobject']) ) $site->skin->fixedFooterEnd();
 }
@@ -1177,7 +1181,9 @@ else
 {
 	// cancel button to show all
 	$site->skin->buttonsStart();
-		form_clickbutton(isohtmlentities(($hasError || $searchedButNothingFound)? $allurl : $baseurl), htmlconstant('_CANCEL'));
+	$hasError = isset($hasError) ? $hasError : false;
+	$searchedButNothingFound = isset($searchedButNothingFound) ? $searchedButNothingFound : false;
+	form_clickbutton(isohtmlentities( strval( ($hasError || $searchedButNothingFound)? $allurl : $baseurl ) ), htmlconstant('_CANCEL'));
 	$site->skin->buttonsBreak();
 		echo "<a href=\"log.php?table=$table\" target=\"_blank\" rel=\"noopener noreferrer\">" . htmlconstant('_LOG') . '</a>';
 	$site->skin->buttonsEnd();
@@ -1196,4 +1202,3 @@ done: end page
 
 
 $site->pageEnd();
-

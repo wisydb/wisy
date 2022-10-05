@@ -1,7 +1,5 @@
 <?php
 
-
-
 /*=============================================================================
 Edit User Access, Server Part; This is a plugin
 ===============================================================================
@@ -138,7 +136,7 @@ function plugin_edit_access(&$param)
 			$code.= "\";euaRender(\"" . strtr($param['values'], array("\n"=>";", "\r"=>"", "\t"=>"", "'"=>"", "\""=>"", " "=>"")) . "\");/"."/--></script>"
 			.		"<noscript>"
 			.			"<textarea rows=\"5\" cols=\"40\" name=\"euahidden\">"
-			.				isohtmlentities($param['values'])
+			.				isohtmlentities( strval( $param['values'] ) )
 			.			"</textarea>"
 			.		"</noscript>";
 
@@ -200,7 +198,7 @@ function plugin_edit_access(&$param)
 		//		control	-	an unique control index, same as given to 'render'
 		//
 		case 'derender':
-			return $_REQUEST['euahidden'];
+		    return isset( $_REQUEST['euahidden'] ) ? $_REQUEST['euahidden'] : null;
 
 
 
@@ -218,6 +216,3 @@ function plugin_edit_access(&$param)
 
 	}
 }
-
-
-

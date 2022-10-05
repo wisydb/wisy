@@ -12,16 +12,16 @@ class CONTROL_INT_CLASS extends CONTROL_BASE_CLASS
 		$this->dbval = trim($user_input);
 		
 		$minmax = explode('###', $this->row_def->addparam);
-		if( $this->dbval=='' && $this->row_def->flags&TABLE_EMPTYONNULL ) {
+		if( (!isset( $this->dbval ) || $this->dbval == '') && $this->row_def->flags&TABLE_EMPTYONNULL ) {
 			$this->dbval = 0;
 		}
-		else if( $this->dbval=='' && $this->row_def->flags&TABLE_EMPTYONMINUSONE ) {
+		else if( (!isset( $this->dbval ) || $this->dbval == '') && $this->row_def->flags&TABLE_EMPTYONMINUSONE ) {
 			$this->dbval = -1;
 		}
-		else if( !preg_match('/^-?\d+$/', $out['db_val']) ) {
+		else if( !isset( $out['db_val'] ) || !preg_match('/^-?\d+$/', $out['db_val'] ) ) {
 			$out['errors'][] = htmlconstant('_EDIT_ERRENTERANUMBER');
 		}
-		else if( $out['db_val'] < $minmax[0] || $out['db_val'] > $minmax[1] ) {
+		else if( isset( $out['db_val'] ) && $out['db_val'] < $minmax[0] || isset( $out['db_val'] ) && $out['db_val'] > $minmax[1] ) {
 			$out['errors'][] = htmlconstant('_EDIT_ERRVALUENOTINRANGE', $minmax[0], $minmax[1]);
 		}
 		else {

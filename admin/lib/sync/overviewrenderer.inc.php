@@ -41,7 +41,8 @@ class SYNC_OVERVIEWRENDERER_CLASS extends SYNC_FUNCTIONS_CLASS
 				
 				$hilite_start = '';
 				$hilite_end = '';
-				if( intval($_REQUEST['hilite'])==$currJob->jobid ) {
+				$hilite = isset($_REQUEST['hilite']) ? $_REQUEST['hilite'] : null;
+				if( intval($hilite)==$currJob->jobid ) {
 					$hilite_start = '<b>';
 					$hilite_end = '</b>';
 				}
@@ -65,7 +66,7 @@ class SYNC_OVERVIEWRENDERER_CLASS extends SYNC_FUNCTIONS_CLASS
 							echo 'Nie';
 						}
 						else {
-							echo sql_date_to_human(strftime('%Y-%m-%d %H:%M:%S', $currJob->lasttime), 'datetime');
+							echo sql_date_to_human(ftime('%Y-%m-%d %H:%M:%S', $currJob->lasttime), 'datetime');
 						}
 						
 					$site->skin->cellEnd();

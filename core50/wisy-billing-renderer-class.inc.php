@@ -10,7 +10,7 @@ class WISY_BILLING_RENDERER_CLASS
 	function __construct(&$framework)
 	{
 		$this->framework				=& $framework;
-		$this->valid_receiver_email		=  $this->framework->iniRead('useredit.paypal.receiver', 'michaels@weiterbildung-hamburg.de');
+		$this->valid_receiver_email		=  $this->framework->iniRead('useredit.paypal.receiver', '');
 
 		// read the prices for several amount of credits as "1000=12.12; 5000=23.23" etc.
 		$this->allPrices = array();
@@ -111,7 +111,7 @@ class WISY_BILLING_RENDERER_CLASS
 		// zum Testen:
 		// - www.sandbox.paypal.com anstelle von www.paypal.com wählen, das IPN-Testtool unter https://developer.paypal.com/
 		// - eCheck complete wählen
-		// - receiver_email : michaels@weiterbildung-hamburg.de
+		// - receiver_email : 
 		// -  mc_currency   : EUR
 		// - item_number    : 1-1000
 		// - custom         : 5455

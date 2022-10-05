@@ -1,6 +1,5 @@
 <?php
 
-
 /*=============================================================================
 (Un-)remember a given Record in the default list 
 ===============================================================================
@@ -30,12 +29,11 @@ require_once('functions.inc.php');
 // ============================================================================
 //
 
-$table = $_REQUEST['table'];
-$id = intval($_REQUEST['id']);
-$img = intval($_REQUEST['img']);
-$bin = $_REQUEST['jobliste'];
+$table = isset( $_REQUEST['table'] ) ? $_REQUEST['table'] : null;
+$id = isset( $_REQUEST['id'] ) ? intval( $_REQUEST['id'] ) : null;
+$img = isset( $_REQUEST['img'] ) ? intval($_REQUEST['img']) : null;
 
-if( $_SESSION['g_session_bin']->recordExists($table, $id) ) 
+if( isset($_SESSION['g_session_bin']) && $_SESSION['g_session_bin']->recordExists($table, $id) ) 
 {
 	if( $_SESSION['g_session_bin']->recordDelete($table, $id) ) {
 		$new_state_img = "{$site->skin->imgFolder}/bin0.gif";
@@ -46,7 +44,7 @@ if( $_SESSION['g_session_bin']->recordExists($table, $id) )
 }
 else 
 {
-    if( $_SESSION['g_session_bin']->recordAdd($table, $id, $bin) ) {
+    if( isset($_SESSION['g_session_bin']) && $_SESSION['g_session_bin']->recordAdd($table, $id) ) {
 		$new_state_img = "{$site->skin->imgFolder}/bin1.gif";
 	}
 	else {
@@ -66,5 +64,3 @@ else
 	// should normally not happen
 	echo 'Record rembembered, you can close this window now.';
 }
-
-

@@ -1,7 +1,5 @@
 <?php
 
-
-
 /*=============================================================================
 EQL (Else Query Language) to SQL (Structured Query Language) plus other tools
 ===============================================================================
@@ -48,8 +46,8 @@ EQL rough overview:
 	functions can also be nested:
 		date.timewindow=today			date(timewindow(today))
 
-  DATE(TIMEWINDOW(12)) MAINAREA(P) AND (TEXT(PHRASE(iff)) OR TEXT(turner) OR TEXT(PHRASE(institut für finanzdienstleistungen)) OR TEXT(reifner) OR TEXT(tiffe) OR TEXT(springeneer) OR TEXT(jaquemoth))
-= timewindow(12) mainarea(p) oneof(iff turner "institut für finanzdienstleistungen" reifner tiffe springeneer jaquemoth)
+  DATE(TIMEWINDOW(12)) MAINAREA(P) AND (TEXT(PHRASE(iff)) OR TEXT(turner) OR TEXT(PHRASE(institut fuer finanzdienstleistungen)) OR TEXT(reifner) OR TEXT(tiffe) OR TEXT(springeneer) OR TEXT(jaquemoth))
+= timewindow(12) mainarea(p) oneof(iff turner "institut fuer finanzdienstleistungen" reifner tiffe springeneer jaquemoth)
 =============================================================================*/
 
 
@@ -158,80 +156,79 @@ function g_eql_normalize_func_name($funcName, $pluralS = 1)
 
 function g_eql_normalize_words($words_, $unique = 0, $keepNumbers = 0, $keepWildcards = 0)
 {
-	// convert void characters to spaces
-	$tr = 					"«»@^_=&´`.:,;/!'~+-#|<>()[]\{}\$%§\"\\\n\r\t";
-	if(!$keepNumbers)$tr  .="0123456789";
-	if(!$keepWildcards)$tr.="?*";
-	$words = strtr($words_,	$tr,
-				  			"                                                                ");
-	// remove multiple spaces
-	while( !(strpos($words, '  ')===false) ) {
-		$words = str_replace('  ', ' ', $words);
-	}
-
-	// lower string
-	$words = trim(strtolower($words));
-
-	// return words in an array
-	if( $words != '' ) {
-		$words = explode(' ', $words);
-	}
-	else {
-		$words = array(); // no real words found
-	}
-
-	// create unique values?
-	if( $unique ) {
-		$temp = array_flip($words);
-		$words = array();
-		reset($temp);
-		foreach(array_keys($temp) as $word) {
-			$words[] = $word;
-		}
-	}
-
-	// done
-	return $words;
+    // convert void characters to spaces
+    $tr = 					"«»@^_=&´`.:,;/!'~+-#|<>()[]\{}\$%§\"\\\n\r\t";
+    if(!$keepNumbers)$tr  .="0123456789";
+    if(!$keepWildcards)$tr.="?*";
+    $words = strtr( strval($words_),	$tr, "                                                                ");
+    
+    // remove multiple spaces
+    while( !(strpos($words, '  ')===false) ) {
+        $words = str_replace('  ', ' ', $words);
+    }
+    
+    // lower string
+    $words = trim(strtolower($words));
+    
+    // return words in an array
+    if( $words != '' ) {
+        $words = explode(' ', $words);
+    }
+    else {
+        $words = array(); // no real words found
+    }
+    
+    // create unique values?
+    if( $unique ) {
+        $temp = array_flip($words);
+        $words = array();
+        reset($temp);
+        foreach(array_keys($temp) as $word) {
+            $words[] = $word;
+        }
+    }
+    
+    // done
+    return $words;
 }
 
 
 
 function g_eql_normalize_natsort_callback($matches)
 {
-	// add leading zeros to a number to allow a 'natural' ordering
-	if( strlen($matches[0]) < 10 ) {
-		return str_pad($matches[0], 10, '0', STR_PAD_LEFT);
-	}
-	else {
-		return $matches[0];
-	}
+    // add leading zeros to a number to allow a 'natural' ordering
+    if( strlen($matches[0]) < 10 ) {
+        return str_pad($matches[0], 10, '0', STR_PAD_LEFT);
+    }
+    else {
+        return $matches[0];
+    }
 }
 function g_eql_normalize_natsort($str)
 {
-	// lower string
-	$str = strtolower($str);
-
-	// convert accented characters
-	$str = strtr($str,	'áàâåãæçéèêëíìîïñóòôõøúùûýÿ',
-						'aaaaaaceeeeiiiinooooouuuyy');
-
-	// convert german umlaute
-	$str = strtr($str,	array('ä'=>'ae', 'ö'=>'oe', 'ü'=>'ue', 'ß'=>'ss'));
-
-	// convert numbers to a 'natural' sorting order
-	$str = preg_replace_callback('/[0-9]+/', 'g_eql_normalize_natsort_callback', $str);  // make sure abc3 -> abc4 -> abc321 and not: abc3 -> abc321 -> abc4
-
-	// strip special characters
-	$str = strtr($str,	'\'\\!°"§$%&/(){}[]=?+*~#,;.:-_<>|@€©®£¥  ',
-						'                                        ');
-
-	// remove spaces
-	$str = str_replace(' ', '', $str);
-
-	// done
-	return $str;
+    // lower string
+    $str = strtolower($str);
+    
+    // convert accented characters
+    $str = strtr($str,	'áàâåãæçéèêëíìîïñóòôõøúùûýÿ',
+        'aaaaaaceeeeiiiinooooouuuyy');
+    
+    // convert german umlaute
+    $str = strtr($str,	array('ä'=>'ae', 'ö'=>'oe', 'ü'=>'ue', 'ß'=>'ss'));
+    
+    // convert numbers to a 'natural' sorting order
+    $str = preg_replace_callback('/[0-9]+/', 'g_eql_normalize_natsort_callback', $str); // make sure abc3 -> abc4 -> abc321 and not: abc3 -> abc321 -> abc4
+    
+    // strip special characters
+    $str = strtr($str,	'\'\\!°"§$%&/(){}[]=?+*~#,;.:-_<>|@€©®£¥  ',
+        '                                        ');
+    
+    // remove spaces
+    $str = str_replace(' ', '', $str);
+    
+    // done
+    return $str;
 }
-
 
 
 //
@@ -264,8 +261,8 @@ function g_rel2absdate($reldate, &$absdate1, &$absdate2, &$unit)
 
 	// past or future?
 	$timedir = -1;
-	if( $reldate{0} == '+' ) { $reldate = trim(substr($reldate, 1)); $timedir = 1; }
-	if( $reldate{0} == '-' ) { $reldate = trim(substr($reldate, 1)); }
+	if( isset($reldate[0]) && $reldate[0] == '+' ) { $reldate = trim(substr($reldate, 1)); $timedir = 1; }
+	if( isset($reldate[0]) && $reldate[0] == '-' ) { $reldate = trim(substr($reldate, 1)); }
 
 	// get the value
 	$value = intval($reldate) * $timedir;
@@ -275,34 +272,34 @@ function g_rel2absdate($reldate, &$absdate1, &$absdate2, &$unit)
 	{
 		$unit		= 'h';
 		$seconds	= $value * 3600; /*no. of seconds in an hour*/
-		$absdate1	= strftime("%Y-%m-%d %H:00:00", time()+$seconds);
-		$absdate2	= strftime("%Y-%m-%d %H:59:59", time()+$seconds);
+		$absdate1	= ftime("%Y-%m-%d %H:00:00", time()+$seconds);
+		$absdate2	= ftime("%Y-%m-%d %H:59:59", time()+$seconds);
 	}
 	else if( substr($reldate, -1) == 'd' || substr($reldate, -1) == 't' )
 	{
 		$unit		= 'd';
 		$seconds	= $value * 86400; /*no. of seconds in a day*/
-		$absdate1	= strftime("%Y-%m-%d 00:00:00", time()+$seconds);
-		$absdate2	= strftime("%Y-%m-%d 23:59:59", time()+$seconds);
+		$absdate1	= ftime("%Y-%m-%d 00:00:00", time()+$seconds);
+		$absdate2	= ftime("%Y-%m-%d 23:59:59", time()+$seconds);
 	}
 	else if( substr($reldate, -1) == 'y' || substr($reldate, -1) == 'j' )
 	{
 		$unit		= 'y';
 		$seconds	= $value * 31622400; /*no. of seconds in a year*/
-		$absdate1	= strftime("%Y-01-01 00:00:00", time()+$seconds);
-		$absdate2	= strftime("%Y-12-31 23:59:59", time()+$seconds);
+		$absdate1	= ftime("%Y-01-01 00:00:00", time()+$seconds);
+		$absdate2	= ftime("%Y-12-31 23:59:59", time()+$seconds);
 	}
 	else
 	{
 		$unit		= 'm';
 		$seconds	= $value * 2678400; /* no. of seconds in a month*/
 		$temp		= time() + $seconds;
-		$absdate1	= strftime("%Y-%m-01 00:00:00", $temp);
-		$absdate2	= strftime("%Y-%m-" .days_in_month(strftime('%m', $temp), strftime('%Y', $temp)). " 23:59:59", $temp);
+		$absdate1	= ftime("%Y-%m-01 00:00:00", $temp);
+		$absdate2	= ftime("%Y-%m-" .days_in_month(ftime('%m', $temp), ftime('%Y', $temp)). " 23:59:59", $temp);
 	}
 
 	// get the timestamp
-	return strftime("%Y-%m-%d %H:%M:%S", time() + $seconds);
+	return ftime("%Y-%m-%d %H:%M:%S", time() + $seconds);
 }
 
 
@@ -313,16 +310,16 @@ function g_addJoin(&$joins, $joinedTable, $joinedField, $primaryField)
 
 	// does the join exist? if so, re-use it.
 	for( $i = 1; $i <= sizeof((array) $joins); $i++ ) {
-		if( $joins[$i-1] == "LEFT JOIN $joinedTable AS j$i ON j$i.$joinedField=$primaryField" ) {
+	    if( isset($joins[$i-1]) && $joins[$i-1] == "LEFT JOIN $joinedTable AS j$i ON j$i.$joinedField=$primaryField" ) {
 			return "j$i";
 		}
-		if( $joins[$i-1] == "LEFT JOIN $joinedTable ON $joinedTable.$joinedField=$primaryField" ) {
+		if( isset($joins[$i-1]) && $joins[$i-1] == "LEFT JOIN $joinedTable ON $joinedTable.$joinedField=$primaryField" ) {
 			return $joinedTable;
 		}
 	}
 
 	// add a new join
-	if( $g_joinHash[$joinedTable] )
+	if( isset($g_joinHash[$joinedTable]) && $g_joinHash[$joinedTable] )
 	{
 		$g_joinHash[$joinedTable] = $g_joinHash[$joinedTable]=='self'? 'self' : 'alias';
 		$i = sizeof((array) $joins)+1;
@@ -360,7 +357,7 @@ function g_debug_out($headline, $text, $color, $leaveOpen = 0)
 {
 	global $debug;
 
-	if( $debug == '1' || $debug == 'eql' ) {
+	if( isset($debug) && ($debug == '1' || $debug == 'eql') ) {
 		$colors = array('blue'=>'#C0FFFF', 'yellow'=>'#FFFFC0', 'green'=>'#C0FFC0', 'red'=>'#FF4040');
 		echo '&nbsp;<br /><table width="100%" border="1" cellpadding="3" cellspacing="0" bgcolor="' .$colors[$color]. '"><tr><td';
 		 if($leaveOpen) echo " colspan=\"$leaveOpen\"";
@@ -383,7 +380,7 @@ function g_debug_out($headline, $text, $color, $leaveOpen = 0)
 
 function g_debug_sql_out($headline, $text, $color, $leaveOpen = 0)
 {
-	$text = isohtmlentities($text);
+    $text = isohtmlentities( strval( $text ) );
 	$text = str_replace(" LEFT JOIN ", " <br />LEFT JOIN ", $text);
 	$text = str_replace(" WHERE ", " <br />WHERE ", $text);
 	$text = str_replace(" GROUP BY ", " <br />GROUP BY ", $text);
@@ -419,7 +416,7 @@ class EQL_PARSER_CLASS
 	function __construct(&$symbols, &$s, $consumeOp = 1, $lastFunc = '')
 	{
 		// get function...
-		if( $symbols[$s]{0} == '"' /* " indicates a function */ )
+	    if( $symbols[$s][0] == '"' /* " indicates a function */ )
 		{
 			$this->func1 = substr($symbols[$s], 1);
 			$lastFunc = $this->func1;
@@ -431,7 +428,7 @@ class EQL_PARSER_CLASS
 		{
 			$s++;
 			$this->expr1 = new EQL_PARSER_CLASS($symbols, $s, 1 /* consume operator */, $lastFunc);
-			if( $this->expr1->lastError ) {
+			if( isset( $this->expr1->lastError ) && $this->expr1->lastError ) {
 				$this->lastError = $this->expr1->lastError;
 				return; // error
 			}
@@ -440,15 +437,15 @@ class EQL_PARSER_CLASS
 				$s++;
 			}
 		}
-		else if( $symbols[$s]{0} == '"' /* " indicates a function */ )
+		else if( $symbols[$s][0] == '"' /* " indicates a function */ )
 		{
 			$this->expr1 = new EQL_PARSER_CLASS($symbols, $s, 0 /* don't consume operator */, $lastFunc);
-			if( $this->expr1->lastError ) {
+			if( isset( $this->expr1->lastError ) && $this->expr1->lastError ) {
 				$this->lastError = $this->expr1->lastError;
 				return; // error
 			}
 		}
-		else if( $symbols[$s]{0} == '$' /* $ indicates an ident */ )
+		else if( $symbols[$s][0] == '$' /* $ indicates an ident */ )
 		{
 			$this->ident1 = substr($symbols[$s], 1);
 			$s++;
@@ -475,36 +472,33 @@ class EQL_PARSER_CLASS
 			return;
 		}
 
-		if( $symbols[$s] == 'and'
-		 || $symbols[$s] == 'or' )
+		if( isset( $symbols[$s] ) && ( $symbols[$s] == 'and' || $symbols[$s] == 'or' ) )
 		{
 			$this->op = $symbols[$s];
 			$s++;
 		}
-		else if( $symbols[$s] == '('
-			  || $symbols[$s]{0} == '"'
-			  || $symbols[$s]{0} == '$' )
+		else if( isset( $symbols[$s] ) && ( $symbols[$s] == '(' || $symbols[$s][0] == '"' || $symbols[$s][0] == '$' ) )
 		{
 			$this->op = 'and';
 		}
 
 		// if we have any operator, get right part...
-		if( $this->op )
+		if( isset( $this->op ) && $this->op )
 		{
 			$this->expr2 = new EQL_PARSER_CLASS($symbols, $s, 1 /* consume operator */, $lastFunc);
-			if( $this->expr2->lastError ) {
+			if( isset( $this->expr2->lastError ) && $this->expr2->lastError ) {
 				$this->lastError = $this->expr2->lastError;
 				return; // error
 			}
 		}
 
 		// optimize
-		if( $this->expr1 && !$this->func1 && !$this->expr2 ) {
-			$this->func1	= $this->expr1->func1;
-			$this->ident1	= $this->expr1->ident1;
-			$this->op		= $this->expr1->op;
-			$this->expr2	= $this->expr1->expr2;
-			$this->expr1	= $this->expr1->expr1; // copy expr1 at last
+		if( isset( $this->expr1 ) && $this->expr1 && ( !isset( $this->func1 ) || !$this->func1 ) && ( !isset( $this->expr2 ) || !$this->expr2 ) ) {
+		    $this->func1	= isset( $this->expr1->func1 ) ? $this->expr1->func1 : null;
+		    $this->ident1	= isset( $this->expr1->ident1 ) ? $this->expr1->ident1 : null;
+		    $this->op		= isset( $this->expr1->op ) ? $this->expr1->op : null;
+		    $this->expr2	= isset( $this->expr1->expr2 ) ? $this->expr1->expr2 : null;
+		    $this->expr1	= isset( $this->expr1->expr1 ) ? $this->expr1->expr1 : null; // copy expr1 at last
 		}
 	}
 
@@ -545,7 +539,7 @@ class EQL_PARSER_CLASS
 		$testArray = array();
 		for( $try = 0; $try <= 2; $try++ )
 		{
-		    for( $i = 0; $i < sizeof((array) $strArray); $i += 2 )
+			for( $i = 0; $i < sizeof((array) $strArray); $i += 2 )
 			{
 				$testArray[$i/2] = $strArray[$i+1];
 				if( $try < 2 ) {
@@ -600,7 +594,7 @@ class EQL_PARSER_CLASS
 	//
 	function getArrayIdsCond($field, &$ids)
 	{
-	    if( sizeof((array) $ids) == 0 ) {
+		if( sizeof((array) $ids) == 0 ) {
 			return '(0)';
 		}
 		else if( sizeof((array) $ids) == 1 )
@@ -686,8 +680,8 @@ class EQL_PARSER_CLASS
 				}
 
 		if( $debug ) {
-		    $msneeded = g_eql_getmicrotime() - $msneeded;
-		    g_debug_sql_out('EQL_PARSER_CLASS->select2ids():', $currSelect . ' => ' . (sizeof((array) $ids)? implode(', ', $ids) : 'EMPTY ROWS') . ' (' . $msneeded . ' seconds needed)', 'yellow');
+			$msneeded = g_eql_getmicrotime() - $msneeded;
+			g_debug_sql_out('EQL_PARSER_CLASS->select2ids():', $currSelect . ' => ' . (sizeof((array) $ids)? implode(', ', $ids) : 'EMPTY ROWS') . ' (' . $msneeded . ' seconds needed)', 'yellow');
 		}
 
 		return $ids;
@@ -770,7 +764,7 @@ class EQL_PARSER_CLASS
 	{
 		// check for invalid modifiers
 		if( $modifiers & (EQL_NEAR|EQL_LAZY|EQL_FUZZY)
-		 || $ident{0} == '*'
+		 || isset($ident[0]) && $ident[0] == '*'
 		 || substr($ident, -1) == '*' )
 		{
 			$this->lastError = htmlconstant('_MOD_DBSEARCH_INVALIDINTOP', g_eql_normalize_func_name($tableDefName, 0).".$field()");
@@ -1033,7 +1027,7 @@ class EQL_PARSER_CLASS
 					$this->lastError = htmlconstant('_MOD_DBSEARCH_ERRUNKNOWNVALUE',
 						$ident,
 						g_eql_normalize_func_name($tableDefName, 0) . ".{$field}()",
-						isohtmlentities($allowedValues));
+						isohtmlentities( strval( $allowedValues ) ) );
 					return 0; // error
 				}
 			}
@@ -1045,7 +1039,8 @@ class EQL_PARSER_CLASS
 		}
 		else
 		{
-			if( ($rowinfo->flags & TABLE_ROW) == TABLE_BITFIELD )
+		    $rowInfoFlags = isset( $rowinfo->flags ) ? $rowinfo->flags : null;
+			if( ($rowInfoFlags & TABLE_ROW) == TABLE_BITFIELD )
 			{
 				if( $modifiers & EQL_OP_BITS )
 				{
@@ -1107,8 +1102,8 @@ class EQL_PARSER_CLASS
 		reset($index);
 		foreach($index as $index_name => $index_info)
 		{
-			if( $index_info['fulltext']  ) {
-			    for( $i = 0; $i < sizeof((array) $index_info['fields']); $i++ ) {
+		    if( isset( $index_info['fulltext'] ) && $index_info['fulltext']  ) {
+				for( $i = 0; $i < sizeof((array) $index_info['fields']); $i++ ) {
 					$fulltext_fields .= $fulltext_fields? ', ' : '';
 					$fulltext_fields .= "$tableDefName." . $index_info['fields'][$i];
 				}
@@ -1124,9 +1119,9 @@ class EQL_PARSER_CLASS
 		$like_count = 0;
 		for( $r = 0; $r < sizeof((array) $tableDef->rows); $r++ )
 		{
-			$rowflags	= $tableDef->rows[$r]->flags;
+		    $rowflags	= isset( $tableDef->rows[$r]->flags ) ? $tableDef->rows[$r]->flags : null;
 			$rowtype	= $rowflags & TABLE_ROW;
-			$rowname	= $tableDef->rows[$r]->name;
+			$rowname	= isset( $tableDef->rows[$r]->name ) ? $tableDef->rows[$r]->name : null;
 
 			if( $rowtype == TABLE_TEXT || $rowtype == TABLE_TEXTAREA )
 			{
@@ -1191,7 +1186,7 @@ class EQL_PARSER_CLASS
 					$word = addslashes($words[$v]);
 
 					if( !($modifiers & EQL_INUSERFUNC)
-					 && $word{0}!='*'
+					 && $word[0]!='*'
 					 && substr($word, -1)!='*' ) {
 						$word = "*{$word}*";
 					}
@@ -1233,8 +1228,8 @@ class EQL_PARSER_CLASS
 					global $g_joinHash;
 					global $g_eql_prefer_joins;
 					if( $g_eql_prefer_joins
-					 && $g_joinHash[$tableDefName]  == 'self' // on root level?
-					 && $g_joinHash[$tableDefName1] != 'alias' )
+					    && isset($tableDefName) && isset($g_joinHash[$tableDefName]) && $g_joinHash[$tableDefName]  == 'self' // on root level?
+					    && (!isset($tableDefName1) || !isset($g_joinHash[$tableDefName1]) || $g_joinHash[$tableDefName1] != 'alias') )
 					{
 						// this variation works, but is slower
 						g_addRelation($retJoins, $tempTable, $rowname, $tableDefName, TABLE_SECONDARY);
@@ -1365,11 +1360,11 @@ class EQL_PARSER_CLASS
 		// find job list to use
 		$joblist = '@'; // init by error
 		if( $ident == '1' ) {
-			$joblist = $_SESSION['g_session_bin']->activeBin;
+		    $joblist = isset($_SESSION['g_session_bin']) ? $_SESSION['g_session_bin']->activeBin : null;
 		}
 		else {
 			$soll = strtolower($ident);
-			$bins = $_SESSION['g_session_bin']->getBins();
+			$bins = isset($_SESSION['g_session_bin']) ? $_SESSION['g_session_bin']->getBins() : null;
 			for( $i = 0; $i < sizeof((array) $bins); $i++ ) {
 				if( strtolower($bins[$i]) == $soll ) {
 					$joblist = $bins[$i];
@@ -1379,7 +1374,7 @@ class EQL_PARSER_CLASS
 		}
 
 		// anything in jobist?
-		$joblist = $_SESSION['g_session_bin']->getRecords($tableDefName, $joblist);
+		$joblist = isset($_SESSION['g_session_bin']) ? $_SESSION['g_session_bin']->getRecords($tableDefName, $joblist) : null;
 		if( sizeof((array) $joblist) == 0 ) {
 			return '(0)'; // nothing found
 		}
@@ -1473,7 +1468,9 @@ class EQL_PARSER_CLASS
 			// select other row
 			$row = $this->getRowInfo($tableDefName, $func);
 			if( $row ) {
-				switch( $row->flags & TABLE_ROW )
+			    $rowFlags = is_object($row) && isset( $row->flags ) ? $row->flags : null;
+			    
+			    switch( $rowFlags & TABLE_ROW )
 				{
 					case TABLE_TEXT:
 					case TABLE_TEXTAREA:
@@ -1567,7 +1564,8 @@ class EQL_PARSER_CLASS
 
 			default:
 				$row = $this->getRowInfo($tableDefName, $this->func1);
-				$rowType = $row->flags & TABLE_ROW;
+				$rowFlags = is_object($row) && isset( $row->flags ) ? $row->flags : null;
+				$rowType = $rowFlags & TABLE_ROW;
 				if( $rowType == TABLE_SECONDARY
 				 || $rowType == TABLE_MATTR
 				 || $rowType == TABLE_SATTR )
@@ -1604,7 +1602,7 @@ class EQL_PARSER_CLASS
 		// LEFT PART: get condition...
 		// ---------------------------
 		//
-		if( $this->expr1 )
+		if( isset( $this->expr1 ) && $this->expr1 )
 		{
 			// ...from expression (invokes recursion)
 			$cond1 = $this->expr1->buildSqlString($joins1, $tableDefName1, $modifiers1, $func1, $addparam);
@@ -1616,11 +1614,11 @@ class EQL_PARSER_CLASS
 		else
 		{
 			// ...from identifier
-			if( $this->ident1 == '' && $modifiers1&EQL_PHRASE && $func1 == '' && is_array($addparam['inattr'])  )
+		    if( ( !isset($this->ident1) || $this->ident1 == '' ) && $modifiers1&EQL_PHRASE && $func1 == '' && isset( $addparam['inattr'] ) && is_array($addparam['inattr'])  )
 			{
-				$xtable = $addparam['inattr']['xtable']; 		// special handling for unset attribute tables ...
-				$xrow   = $addparam['inattr']['xrow'];
-				$xtype  = $addparam['inattr']['xtype'];
+			    $xtable = isset( $addparam['inattr']['xtable'] ) ? $addparam['inattr']['xtable'] : null; 		// special handling for unset attribute tables ...
+			    $xrow   = isset( $addparam['inattr']['xrow'] ) ? $addparam['inattr']['xrow'] : null;
+			    $xtype  = isset( $addparam['inattr']['xtype'] ) ? $addparam['inattr']['xtype'] : null;
 				if( $xtype == TABLE_SATTR ) {
 					$cond1 = "({$xtable}.{$xrow}=0)";
 				}
@@ -1651,15 +1649,18 @@ class EQL_PARSER_CLASS
 			// ...we're in a different table scope, convert secondary / attribute tables to primary table...
 			global $g_joinHash;
 			global $g_eql_prefer_joins;
+			
+			$tableDefNameHash = isset($g_joinHash[$tableDefName]) ? $g_joinHash[$tableDefName] : null;
+			$tableDefName1Hash = isset( $g_joinHash[$tableDefName1] ) ? $g_joinHash[$tableDefName1] : null;
 			if( $g_eql_prefer_joins
-			 && $g_joinHash[$tableDefName]  == 'self' // on root level?
-			 && $g_joinHash[$tableDefName1] != 'alias'
-			 && !isset($g_joinHash[$tableDefName1]) // EDIT BY ME in 2008: NO joins on AND conditions (this would require one additional join per table)
+			 && $tableDefNameHash  == 'self' // on root level?
+			 && $tableDefName1Hash != 'alias'
+			 && !isset($g_joinHash[$tableDefName1]) // EDIT BY ME in 2008: NO joins on AND conditions (this would require one additional join per table, see http://www.silverjuke.net/forum/post.php?p=8423#8423)
 			 && sizeof((array) $joins1)==0 // EDIT 2015: this code does not work eg. with "not(stichwort=7 and stichwort=5480)", the select2ids-code seems to work, hopefully, there are not other disadvantages
 			 && count($retJoins)==0 // EDIT, jm, 2017: to allow search for courses without keywords
 			 && $tableDefName1=="stichwoerter" // EDIT, jm, 2017: to allow search for courses without keywords
 			 && $row->name=="stichwort" // EDIT, jm, 2017: to allow search for courses without keywords
-			    && ($tableDefName=="kurse" || $tableDefName=="anbieter")) // EDIT, jm, 2017 and bp 2018: to allow search for courses without keywords
+			 && ($tableDefName=="kurse" || $tableDefName=="anbieter")) // EDIT, jm, 2017: to allow search for courses without keywords
 			{
 				// this variation works, but is slower
 				g_addRelation($retJoins, $tableDefName1, $row->name, $tableDefName, $rowType);
@@ -1675,7 +1676,7 @@ class EQL_PARSER_CLASS
 		// LEFT PART: not
 		// --------------
 		//
-		if( $this->func1 == 'not' ) {
+		if( isset( $this->func1 ) && $this->func1 == 'not' ) {
 			$cond1 = "NOT($cond1)";
 		}
 
@@ -1683,7 +1684,7 @@ class EQL_PARSER_CLASS
 		// LEFT PART: if there is no right part, we're done with it!
 		// ---------------------------------------------------------
 		//
-		if( !$this->expr2 ) {
+		if( !isset( $this->expr2 ) || !$this->expr2 ) {
 			return $cond1;
 		}
 
@@ -1701,7 +1702,7 @@ class EQL_PARSER_CLASS
 		// LEFT/RIGHT PART: use wanted operator
 		// ------------------------------------
 		//
-		if( $this->op == 'or' || $modifiers & EQL_ONEOF ) {
+		if( isset( $this->op ) && $this->op == 'or' || $modifiers & EQL_ONEOF ) {
 			return "($cond1) OR ($cond2)";
 		}
 		else {
@@ -1722,23 +1723,23 @@ class EQL_PARSER_CLASS
 			$pcode .= ' { ';
 		}
 
-		if( $this->func1 ) {
+		if( isset( $this->func1 ) && $this->func1 ) {
 			$pcode .= $this->func1;
 			$pcode .= ' ( ';
 		}
 
-		if( $this->ident1 != '' ) {
+		if( isset( $this->ident1 ) && $this->ident1 != '' ) {
 			$pcode .= " [$this->ident1] ";
 		}
-		else if( $this->expr1 ) {
+		else if( isset( $this->expr1 ) && $this->expr1 ) {
 			$this->expr1->getPCode($pcode, $this->func1? 0 : 1);
 		}
 
-		if( $this->func1 ) {
+		if( isset( $this->func1 ) && $this->func1 ) {
 			$pcode .= ' ) ';
 		}
 
-		if( $this->expr2 ) {
+		if( isset( $this->expr2 ) && $this->expr2 ) {
 			$pcode .= " $this->op ";
 			$this->expr2->getPCode($pcode, 1);
 		}
@@ -1870,7 +1871,7 @@ class EQL2SQL_CLASS
 					break;
 
 				default:
-					if( $eqlExpr[$e]{0} == '"' )
+				    if( $eqlExpr[$e][0] == '"' )
 					{
 						// '"' indicates a function
 						$symbols[] = $eqlExpr[$e];
@@ -1904,7 +1905,7 @@ class EQL2SQL_CLASS
 		// create parser, parse symbols
 		$s = 0;
 		$this->parser = new EQL_PARSER_CLASS($symbols, $s);
-		if( $this->parser->lastError ) {
+		if( isset( $this->parser->lastError ) && $this->parser->lastError ) {
 			$this->lastError = $this->parser->lastError;
 			return 0;
 		}
@@ -1975,7 +1976,7 @@ class EQL2SQL_CLASS
 	function eql2sql($eqlExpr, $userFields = 'id', $userCond = '', $userOrderBy = '')
 	{
 		g_debug_out('EQL2SQL_CLASS() and EQL2SQL_CLASS->eql2sql() arguments:',
-			"tableDefName = &quot;$this->tableDefName&quot;, usePlusMinusWordQualifiers = $this->usePlusMinusWordQualifiers, eqlExpr = &quot;".isohtmlentities($eqlExpr)."&quot;, userFields = &quot;$userFields&quot;, userCond = &quot;".isohtmlentities($userCond)."&quot;, userOrderBy = &quot;$userOrderBy&quot;", 'blue');
+		    "tableDefName = &quot;$this->tableDefName&quot;, usePlusMinusWordQualifiers = $this->usePlusMinusWordQualifiers, eqlExpr = &quot;".isohtmlentities( strval( $eqlExpr ) )."&quot;, userFields = &quot;$userFields&quot;, userCond = &quot;".isohtmlentities( strval( $userCond ) )."&quot;, userOrderBy = &quot;$userOrderBy&quot;", 'blue');
 
 		global $g_fuzzyInfo;
 		$g_fuzzyInfo = array();
@@ -2003,7 +2004,7 @@ class EQL2SQL_CLASS
 
 			// get SQL partly result strings
 			$cond = $this->parser->buildSqlString($joins, $this->tableDefName);
-			if( $this->parser->lastError || !$cond ) {
+			if( isset( $this->parser->lastError ) && $this->parser->lastError || !$cond ) {
 				$this->lastError = $this->parser->lastError;
 				g_debug_out('EQL_PARSER_CLASS->buildSqlString():', $this->lastError, 'red');
 				return 0;
@@ -2036,7 +2037,7 @@ class EQL2SQL_CLASS
 					$currOrder = substr($currOrder, 0, strlen($currOrder)-4);
 				}
 
-				if( !$fieldsApplied[$currOrder] )
+				if( !isset( $fieldsApplied[$currOrder] ) || !$fieldsApplied[$currOrder] )
 				{
 					$fieldsApplied[$currOrder] = 1;
 					$currOrderApplied = 0;
@@ -2114,11 +2115,11 @@ class EQL2SQL_CLASS
 		}
 
 		// ...add group/order information
-		if( $groupBy ) {
+		if( isset($groupBy) && $groupBy ) {
 			$retSql .= " GROUP BY $groupBy";
 		}
 
-		if( $orderBy ) {
+		if( isset($orderBy) && $orderBy ) {
 			$retSql .= " ORDER BY $orderBy";
 		}
 
@@ -2247,9 +2248,9 @@ class EQL2SQL_CLASS
 	//
 	function replaceFunc_($matches)
 	{
-		if( ($matches[2] || $matches[3]) )
+	    if( (isset($matches[2]) && $matches[2] || isset($matches[3]) && $matches[3]) )
 		{
-			$funcName = strtolower($matches[1]);
+		    $funcName = isset( $matches[1] ) ? strtolower($matches[1]) : null;
 			if( $funcName == 'and' || $funcName == 'or' || $funcName == 'xor' ) {
 				return $matches[0];
 			}
@@ -2297,7 +2298,7 @@ class EQL2SQL_CLASS
 					$ret .= '<tr>';
 						$ret .= '<td align="right" valign="top" nowrap="nowrap">';
 							$ret .= htmlconstant('_MOD_DBSEARCH_FUZZYINFOFOR');
-							$ret .= ' &quot;' . isohtmlentities($word) . '&quot;&nbsp;';
+							$ret .= ' &quot;' . isohtmlentities( strval( $word ) ) . '&quot;&nbsp;';
 						$ret .= '</td>';
 						$ret .= '<td valign="top">';
 							reset($info);
@@ -2305,7 +2306,7 @@ class EQL2SQL_CLASS
 							$i = 0;
 							foreach($info as $dummy => $similarWord) {
 								$ret .= $i? ',' : htmlconstant('_MOD_DBSEARCH_FUZZYINFOALT');
-								$ret .= ' &quot;' . isohtmlentities($similarWord[0]) . '&quot;';
+								$ret .= ' &quot;' . isohtmlentities( strval( $similarWord[0] ) ) . '&quot;';
 								$percent = $similarWord[1] . '%';
 								$ret .= ' <i>(' . ($c==0? htmlconstant('_MOD_DBSEARCH_FUZZYINFOPERCENT', $percent) : $percent) . ')</i>';
 								$c++;
@@ -2320,6 +2321,3 @@ class EQL2SQL_CLASS
 		return $ret;
 	}
 }
-
-
-

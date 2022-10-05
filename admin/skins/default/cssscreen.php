@@ -15,7 +15,9 @@ $evencell	= '#E7EFFF';
 $msgbox		= '#E9E9E9';
 $inputborder= '#BBB';
 
-switch( $_REQUEST['colors'] )
+$colors = isset( $_REQUEST['colors'] ) ? $_REQUEST['colors'] : null;
+
+switch( $colors )
 {
 	case 'lime':
 		$menubg		= '#DEEC73';
@@ -507,6 +509,37 @@ div.e_toolbar, div.e_section {
 	color: <?php echo $hover; ?>
 }
 
+/* show DF modify dates upon hover */
+.df_aenderungsdatum_descr, .e_clr.df_aenderungsdatum_bg {
+	opacity: 0;
+	font-size: '.7em';
+	font-weight: normal;
+	transition: opacity 1.7s ease-in-out;
+	text-align: right;
+}
+
+tr .e_clr.df_aenderungsdatum_bg:before {
+	transition: opacity 1.7s ease-in-out;
+  content: 'Letztes Ã„nderungsdatum: ';
+	color: #aaa;
+  font-size: '.7em';
+	opacity: 0;
+}
+
+tr .e_clr.df_aenderungsdatum_bg input[readonly] {
+	color: #aaa !important;
+  font-size: '.7em' !important;
+}
+
+tr:hover .e_clr.df_aenderungsdatum_bg {
+	opacity: .8;
+	cursor: default;
+}
+
+tr .e_clr.df_aenderungsdatum_bg:before {
+		opacity: .8;
+}
+
 
 
 /*defhide*/
@@ -619,10 +652,10 @@ input[name='resetlogin'] {
 }
 
 .vorschlag {
-	color: #777 !important;;
+	color: #777 !important;
 }
 
-div[data-descr="Durchführung"] + .e_tb {
+div[data-descr="DurchfÃ¼hrung"] + .e_tb {
   border-top: 1px solid #eee;
   margin-bottom: 1em;
 }
@@ -634,10 +667,10 @@ div[data-descr="Durchführung"] + .e_tb {
 	font-size: 1em;
 }
 
-/* div[data-descr="Durchführung"] + .e_tb {
+/* div[data-descr="DurchfÃ¼hrung"] + .e_tb {
   line-height: 1em;
 }
 
-div[data-descr="Durchführung"] + .e_tb * {
+div[data-descr="DurchfÃ¼hrung"] + .e_tb * {
 	padding: 0px;
 } */

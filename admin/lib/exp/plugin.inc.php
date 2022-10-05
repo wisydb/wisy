@@ -76,6 +76,10 @@ class EXP_PLUGIN_CLASS
 	{
 		$GLOBALS['g_export_renderer']->progress_info($msg);
 	}
+	protected function evenmore_info($msg)
+	{
+	    $GLOBALS['g_export_renderer']->evenmore_info($msg);
+	}
 	protected function progress_abort($msg)
 	{
 		$GLOBALS['g_export_renderer']->progress_abort($msg);

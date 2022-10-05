@@ -1,7 +1,5 @@
 <?php
 
-
-
 /*=============================================================================
 Change the order of multiple Attributes in an edit object
 ===============================================================================
@@ -44,18 +42,23 @@ require_lang('lang/edit');
 
 
 
-if( !isset($_REQUEST['object']) || !is_object($_SESSION[$_REQUEST['object']]) ) {
+if(    !isset( $_REQUEST['object'] ) 
+    || !isset( $_SESSION[$_REQUEST['object']] ) 
+    || !is_object($_SESSION[$_REQUEST['object']]) ) {
 	$site->abort(__FILE__, __LINE__);
 	exit(); // no access to this table
 }
 
-$table_def = Table_Find_Def($_SESSION[$_REQUEST['object']]->table_def_name);
+// $_REQUEST['object'] existance guaranteed
+
+$table_def = isset($_REQUEST['object']) && isset($_SESSION[$_REQUEST['object']]) ? Table_Find_Def($_SESSION[$_REQUEST['object']]->table_def_name) : '';
+
 if( !$table_def ) {
 	$site->abort(__FILE__, __LINE__);
 	exit(); // no access to this table
 }
 
-if( $_SESSION[$_REQUEST['object']]->getset_attrtable($_REQUEST['edit_control'], $attr_values, $attr_table_def_name, $dummy, $attr_name) != -1 ) {
+if( isset( $_REQUEST['edit_control'] ) && $_SESSION[$_REQUEST['object']]->getset_attrtable($_REQUEST['edit_control'], $attr_values, $attr_table_def_name, $dummy, $attr_name) != -1 ) {
 	$site->abort(__FILE__, __LINE__);
 	exit(); // no access to this table
 }
@@ -70,8 +73,8 @@ if( !$attr_table_def ) {
 //
 // handle submit
 //
-$sort_index = $_REQUEST['sort_index'];
-$sort_dir = $_REQUEST['sort_dir'];
+$sort_index = isset( $_REQUEST['sort_index'] ) ? $_REQUEST['sort_index'] : null;
+$sort_dir = isset( $_REQUEST['sort_dir'] ) ? $_REQUEST['sort_dir'] : null;
 if( isset($sort_index) && isset($sort_dir) ) 
 {
 	if( $sort_dir=='up' || $sort_dir=='down' ) 
@@ -86,12 +89,14 @@ if( isset($sort_index) && isset($sort_dir) )
 			$temp						= $attr_values[$swap_index_a];
 			$attr_values[$swap_index_a]	= $attr_values[$swap_index_b];
 			$attr_values[$swap_index_b] = $temp;
-			$_SESSION[$_REQUEST['object']]->getset_attrtable($_REQUEST['edit_control'], $attr_values, $attr_table_def_name, $dummy, $attr_name, 1 /*set*/);
+			
+			if( isset( $_REQUEST['edit_control'] ) && isset( $_SESSION[$_REQUEST['object']] ) )
+			 $_SESSION[$_REQUEST['object']]->getset_attrtable($_REQUEST['edit_control'], $attr_values, $attr_table_def_name, $dummy, $attr_name, 1 /*set*/);
 		}
 	}
 	else if( ($sort_dir=='top' || $sort_dir=='bottom') 
 		  && $sort_index >= 0
-	      && $sort_index <  sizeof((array) $attr_values) )
+		  && $sort_index <  sizeof((array) $attr_values) )
 	{
 		// handle top / bottom
 		$temp = $attr_values[$sort_index];
@@ -102,7 +107,9 @@ if( isset($sort_index) && isset($sort_dir) )
 		else {
 			array_unshift($attr_values, $temp);
 		}
-		$_SESSION[$_REQUEST['object']]->getset_attrtable($_REQUEST['edit_control'], $attr_values, $attr_table_def_name, $dummy, $attr_name, 1 /*set*/);
+		
+		if( isset( $_REQUEST['edit_control'] ) && isset( $_SESSION[$_REQUEST['object']] ) )
+		  $_SESSION[$_REQUEST['object']]->getset_attrtable($_REQUEST['edit_control'], $attr_values, $attr_table_def_name, $dummy, $attr_name, 1 /*set*/);
 	}
 }
 
@@ -121,9 +128,9 @@ $site->pageStart();
 
 $site->menuItem('mmainmenu', $table_def->descr, "<a href=\"index.php?table={$table_def->name}\">");
 $site->menuHelpScope	= 'ieditattrselection';
-$site->menuSettingsUrl	= 'settings.php?reload=' . urlencode("deprecated_edit_sort.php?object=".$_REQUEST['object']."&edit_control=".$_REQUEST['edit_control']);
-$site->menuLogoutUrl	= 'edit.php?table='.$table_def->name . '&id=' . $_SESSION[$_REQUEST['object']]->id;
-$site->menuFreeObject	= $_REQUEST['object'];
+$site->menuSettingsUrl	= 'settings.php?reload=' . urlencode("deprecated_edit_sort.php?object=".(isset($_REQUEST['object']) ? $_REQUEST['object'] : '')."&edit_control=".(isset( $_REQUEST['edit_control'] ) ? $_REQUEST['edit_control'] : ''));
+$site->menuLogoutUrl	= 'edit.php?table='.$table_def->name . '&id=' . ( isset($_REQUEST['object']) && isset($_SESSION[$_REQUEST['object']]) ? $_SESSION[$_REQUEST['object']]->id : '' );
+$site->menuFreeObject	= isset($_REQUEST['object']) ? $_REQUEST['object'] : null;
 $site->menuOut();
 
 
@@ -139,7 +146,10 @@ function render_sort_icon($img, $alt, $index, $disabled)
 			echo '&nbsp;';
 		}
 		else {
-			echo '<a href="deprecated_edit_sort.php?object=' .$_REQUEST['object']. '&edit_control=' .$_REQUEST['edit_control']. '&sort_index=' .$index. '&sort_dir=' .$img. '" title="'.$alt.'">&nbsp;';
+		    if( isset( $_REQUEST['edit_control'] ) )
+		        echo '<a href="deprecated_edit_sort.php?object=' . ( isset($_REQUEST['object']) ? $_REQUEST['object'] : '' )
+		        . '&edit_control=' . ( isset($_REQUEST['edit_control']) ? $_REQUEST['edit_control'] : '' )
+		        . '&sort_index=' .$index. '&sort_dir=' .$img. '" title="'.$alt.'">&nbsp;';
 			
 			switch( $img )
 			{
@@ -159,7 +169,10 @@ function render_sort_icon($img, $alt, $index, $disabled)
 		echo "<img src=\"skins/default/img/1x1.gif\" width=\"{$attrimgsize[0]}\" height=\"{$attrimgsize[1]}\" border=\"0\" alt=\"\" />";
 	}
 	else {
-		echo '<a href="deprecated_edit_sort.php?object=' .$_REQUEST['object']. '&edit_control=' .$_REQUEST['edit_control']. '&sort_index=' .$index. '&sort_dir=' .$img. '">';
+	    if( isset( $_REQUEST['edit_control'] ) )
+	        echo '<a href="deprecated_edit_sort.php?object=' . ( isset($_REQUEST['object']) ? $_REQUEST['object'] : '' )
+	           . '&edit_control=' . ( isset($_REQUEST['edit_control']) ? $_REQUEST['edit_control'] : '' )
+	           . '&sort_index=' .$index. '&sort_dir=' .$img. '">';
 		
 			$repeat = 1;
 			switch( $img )
@@ -185,23 +198,23 @@ $site->skin->dialogStart();
 	form_control_start($attr_name, 0);
 
 		echo '<table cellpadding="0" cellspacing="0" border="0">';
-		    for( $a = 0; $a < sizeof((array) $attr_values); $a++ )
+			for( $a = 0; $a < sizeof((array) $attr_values); $a++ )
 			{
 				echo '<tr>';
 					// sort icons
-				    if( sizeof((array) $attr_values) > 2 ) {
+					if( sizeof((array) $attr_values) > 2 ) {
 					  render_sort_icon('top',	htmlconstant('_EDIT_SORTTOP'),		$a, $a==0);
 					}
 					render_sort_icon('up',		htmlconstant('_EDIT_SORTUP'),		$a, $a==0);
 					render_sort_icon('down',	htmlconstant('_EDIT_SORTDOWN'),		$a, $a==(sizeof((array) $attr_values)-1));
 					if( sizeof((array) $attr_values) > 2 ) {
-					    render_sort_icon('bottom',htmlconstant('_EDIT_SORTBOTTOM'),	$a, $a==(sizeof((array) $attr_values)-1));
+					  render_sort_icon('bottom',htmlconstant('_EDIT_SORTBOTTOM'),	$a, $a==(sizeof((array) $attr_values)-1));
 					}
 					
 					// attribute name
 					echo '<td valign="top">';
-						echo '<a href="edit.php?table=' . $attr_table_def->name . '&id=' . $attr_values[$a] . '" target="_blank" rel="noopener noreferrer">';
-							echo isohtmlentities($attr_table_def->get_summary($attr_values[$a], ' / '/*value seperator*/));
+					   echo '<a href="edit.php?table=' . ( isset( $attr_table_def->name ) ? $attr_table_def->name : '' ) . '&id=' . $attr_values[$a] . '" target="_blank" rel="noopener noreferrer">';
+						  echo isohtmlentities( strval( $attr_table_def->get_summary($attr_values[$a], ' / '/*value seperator*/) ) );
 						echo '</a>';
 					echo '</td>';
 				echo '</tr>';
@@ -213,14 +226,13 @@ $site->skin->dialogStart();
 $site->skin->dialogEnd();
 		
 $site->skin->buttonsStart();
-	form_clickbutton("edit.php?object=" . $_REQUEST['object'] . "#c".$_REQUEST['edit_control'], htmlconstant('_OK'));
+    if( isset($_REQUEST['object']) && isset( $_REQUEST['edit_control'] ) )
+	   form_clickbutton("edit.php?object=" . $_REQUEST['object'] . "#c".$_REQUEST['edit_control'], htmlconstant('_OK'));
 $site->skin->buttonsEnd();
 
 
 
 // end page
 $site->pageEnd();
-
-
 
 ?>

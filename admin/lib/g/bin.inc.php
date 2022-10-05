@@ -1,5 +1,11 @@
 <?php
 
+// !!
+error_reporting(E_ALL);
+ini_set('display_errors', '1');
+ini_set('display_startup_errors', 1);
+
+
 class G_BIN_CLASS
 {
 	var $activeBin;	// the current bin
@@ -38,7 +44,7 @@ class G_BIN_CLASS
 	// does a bin exist?
 	function binExists($bin)
 	{
-		if( is_array($this->bins[$bin]) ) {
+	    if( isset( $this->bins[$bin] ) && is_array($this->bins[$bin]) ) {
 			return 1;
 		}
 		else {
@@ -121,7 +127,7 @@ class G_BIN_CLASS
 			} 
 			
 			// active bin still valid?
-			if( !is_array($this->bins[$this->activeBin]) ) {
+			if( !isset( $this->bins[$this->activeBin] ) || !is_array($this->bins[$this->activeBin]) ) {
 				$this->activeBin = is_array($this->bins['default'])? 'default' : $firstBinLeft;
 			}
 			
@@ -132,8 +138,7 @@ class G_BIN_CLASS
 	// change access - we will not change the access of external lists
 	function binSetAccess($access /* n, r, e */, $bin)
 	{
-		if(  $this->binExists($bin)
-		 && !$this->binIsExt($bin) ) 
+		if( $this->binExists($bin) && !$this->binIsExt($bin) ) 
 		{
 			$this->access[$bin] = $access;
 			$this->save_();
@@ -143,8 +148,7 @@ class G_BIN_CLASS
 	// change active bin
 	function binSetActive($bin)
 	{
-		if( $this->binExists($bin) 
-		 && $this->activeBin!=$bin )
+		if( $this->binExists($bin) && $this->activeBin!=$bin )
 		{
 			$this->activeBin = $bin;
 			$this->save_();
@@ -164,7 +168,7 @@ class G_BIN_CLASS
 	function binIsEditable($bin = '')
 	{
 		// get bin
-		if( !$bin ) {
+	    if( !isset( $bin ) || !$bin ) {
 			$bin = $this->activeBin;
 		}
 
@@ -195,7 +199,7 @@ class G_BIN_CLASS
 	function getRecords($table = '', $bin = '')
 	{
 		// get bin
-		if( !$bin ) {
+	    if( !isset( $bin ) || !$bin ) {
 			$bin = $this->activeBin;
 		}
 		
@@ -204,7 +208,7 @@ class G_BIN_CLASS
 		{
 			$temp = &$this->getExtBin_($bin, $localName, $editable);
 			if( is_object($temp) ) {
-				$temp = $temp->bins[$localName];
+			    $temp = isset($temp->bins[$localName]) ? $temp->bins[$localName] : null;
 			}
 			else {
 				$temp = array();
@@ -216,11 +220,11 @@ class G_BIN_CLASS
 		}
 
 		// return
-		if( $table ) {
-			return is_array($temp[$table])? $temp[$table] : array();
+		if( isset( $table ) && $table ) {
+		    return isset( $temp[$table] ) && is_array($temp[$table])? $temp[$table] : array();
 		}
 		else {
-			return is_array($temp)? $temp : array();
+		    return ( isset( $temp ) && is_array($temp) ) ? $temp : array();
 		}
 	}
 
@@ -228,7 +232,7 @@ class G_BIN_CLASS
 	function recordExists($table, $id, $bin = '')
 	{	
 		// get bin
-		if( !$bin ) {
+	    if( !isset( $bin ) || !$bin ) {
 			$bin = $this->activeBin;
 		}
 		
@@ -244,7 +248,7 @@ class G_BIN_CLASS
 		}
 		
 		// check internal bin
-		return $this->bins[$bin][$table][$id]? 1 : 0;
+		return isset($this->bins[$bin][$table][$id]) && $this->bins[$bin][$table][$id] ? 1 : 0;
 	}
 
 	// add a record to a given bin; if no bin is given, the active bin is used
@@ -254,7 +258,7 @@ class G_BIN_CLASS
 	function recordAdd($table, $id, $bin = '')
 	{
 		// get bin
-		if( !$bin ) {
+	    if( !isset( $bin ) || !$bin ) {
 			$bin = $this->activeBin;
 		}
 
@@ -270,12 +274,12 @@ class G_BIN_CLASS
 		}
 		
 		// does the bin exist?
-		if( !is_array($this->bins[$bin]) ) {
+		if( !isset( $this->bins[$bin] ) || !is_array($this->bins[$bin]) ) {
 			return 0; // error
 		}
 		
 		// add hash for the given table if not yet done
-		if( !is_array($this->bins[$bin][$table]) ) {
+		if( !isset( $this->bins[$bin][$table] ) || !is_array($this->bins[$bin][$table]) ) {
 			$this->bins[$bin][$table] = array();
 		}
 		
@@ -295,7 +299,7 @@ class G_BIN_CLASS
 	function recordDelete($table, $id, $bin = '')
 	{
 		// get bin
-		if( !$bin ) {
+	    if( !isset( $bin ) || !$bin ) {
 			$bin = $this->activeBin;
 		}
 
@@ -311,7 +315,8 @@ class G_BIN_CLASS
 		}
 	
 		// does the record table exist?
-		if( is_array($this->bins[$bin]) && is_array($this->bins[$bin][$table]) ) 
+		if( isset( $this->bins[$bin] ) && is_array($this->bins[$bin]) 
+		 && isset( $this->bins[$bin][$table] ) && is_array($this->bins[$bin][$table]) ) 
 		{
 			// remove record from table hash
 			$temp = $this->bins[$bin][$table];
@@ -325,14 +330,14 @@ class G_BIN_CLASS
 			
 			// remove table hash?
 			if( sizeof((array) $this->bins[$bin][$table]) == 0 ) {
-			    $temp = $this->bins[$bin];
-			    $this->bins[$bin] = array();
-			    reset($temp);
-			    foreach($temp as $k => $v) {
-			        if( $k != $table ) {
-			            $this->bins[$bin][$k] = $v;
-			        }
-			    }
+				$temp = $this->bins[$bin];
+				$this->bins[$bin] = array();
+				reset($temp);
+				foreach($temp as $k => $v) {
+					if( $k != $table ) {
+						$this->bins[$bin][$k] = $v;
+					}
+				}
 			}
 			
 			// save all data
@@ -366,15 +371,15 @@ class G_BIN_CLASS
 			$bin = $this->getRecords('', $this->activeBin);
 			foreach($bin as $k1 => $v1)
 			{
-			    if( $i++ ) { echo ':'; }
-			    echo "$k1:";
-			    
-			    $j = 0;
-			    reset($v1);
-			    foreach($v1 as $k2 => $v2) {
-			        if( $j++ ) { echo ' '; }
-			        echo $k2;
-			    }
+				if( $i++ ) { echo ':'; }
+				echo "$k1:";
+				
+				$j = 0;
+				reset($v1);
+				foreach($v1 as $k2 => $v2) {
+					if( $j++ ) { echo ' '; }
+					echo $k2;
+				}
 			}
 			
 			echo "','" .$this->getName($this->activeBin). "','{$site->skin->imgFolder}');";
@@ -430,22 +435,32 @@ class G_BIN_CLASS
 	{
 		if( regGet('settings.editable', 1) ) {
 			$this->db_connect();
-			$this->db->query("UPDATE user SET remembered='" .addslashes(serialize($this)). "' WHERE id=$this->userId");
+			
+			if( is_object($this->db) )   // make sure database connection object is not serialized => causes type problems unserializing in functions.php in PHP >= 8
+			    unset($this->db);
+			
+			$tmpdb = new DB_Admin();
+			$tmpdb->query("UPDATE user SET remembered='" .addslashes(serialize($this)). "' WHERE id=$this->userId");
+			
+			$this->db = new DB_Admin;
 		}
 	}
 	
 	function &getExtBin_($bin, &$localName, &$editable)
 	{
 		$bin = explode('@', $bin);
-		if( $bin[1] != $_SESSION['g_session_userloginname'] )
+		if( !isset($_SESSION['g_session_userloginname']) || $bin[1] != $_SESSION['g_session_userloginname'] )
 		{
-			$this->db_connect();
-			$this->db->query("SELECT remembered, id FROM user WHERE loginname='" .addslashes($bin[1]). "'");
+			// $this->db_connect(); // unserialized $this->db not guaranteed > PHP 8
+		    $this->db = new DB_Admin();
+			if( isset($bin) && (is_array($bin) || is_object($bin)) && isset($bin[1]) )
+			 $this->db->query("SELECT remembered, id FROM user WHERE loginname='" .addslashes(strval($bin[1])). "'");
+			
 			if( $this->db->next_record() ) {
 				$ext = unserialize($this->db->fs('remembered'));
 				if( is_object($ext) ) {
-					if( $ext->access[$bin[0]] == 'r'
-					 || $ext->access[$bin[0]] == 'e' ) {
+				    if( isset( $ext->access[$bin[0]] ) && $ext->access[$bin[0]] == 'r'
+				     || isset( $ext->access[$bin[0]] ) && $ext->access[$bin[0]] == 'e' ) {
 					 	$ext->userId	= $this->db->f('id');
 					 	$localName		= $bin[0];
 					 	$editable		= $ext->access[$bin[0]]=='e'? 1 : 0;
@@ -455,6 +470,8 @@ class G_BIN_CLASS
 			}
 		}
 		
-		return 0; // not found
+		$nill = null; // b/c this function returns by reference! Users of this function must check against null/object
+		
+		return $nill; // not found
 	}
 }

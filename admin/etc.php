@@ -1,7 +1,5 @@
 <?php
 
-
-
 /*=============================================================================
 Overview for all Tables
 ===============================================================================
@@ -193,7 +191,7 @@ function table_details($level, $t, $table, $curr_access, $curr_last_modification
 	table_item($level);
 		echo htmlconstant('_OVERVIEW_LASTMODIFICATION') . ':';
 	table_item_break();
-		echo isohtmlentities(sql_date_to_human($curr_last_modification, 'datetime'));
+	echo isohtmlentities( strval( sql_date_to_human($curr_last_modification, 'datetime') ) );
 	table_item_end();
 	
 	for( $r = 0; $r < sizeof($Table_Def[$t]->rows); $r++ )
@@ -204,7 +202,7 @@ function table_details($level, $t, $table, $curr_access, $curr_last_modification
 		{
 			$curr_sec_table	= $Table_Def[$t]->rows[$r]->addparam->name;
 			$curr_access	= acl_get_access($curr_sec_table.'.COMMON');
-			$is_selected	= $_REQUEST['secondary'] == $curr_sec_table? 1 : 0;
+			$is_selected	= (isset($_REQUEST['secondary']) ? $_REQUEST['secondary'] : null) == $curr_sec_table ? 1 : 0;
 			
 			if( $curr_access )
 			{
@@ -281,7 +279,7 @@ $site->skin->workspaceStart();
 			// render table 
 			$curr_access = acl_get_access($Table_Def[$t]->name.'.COMMON');
 			$is_only_secondary = $Table_Def[$t]->is_only_secondary($dummy, $dummy);
-			$is_selected = $Table_Def[$t]->name == $_REQUEST['table']? 1 : 0;
+			$is_selected = $Table_Def[$t]->name == isset( $_REQUEST['table'] ) && $_REQUEST['table'] ? 1 : 0;
 			
 			if( $curr_access && !$is_only_secondary ) 
 			{
@@ -370,10 +368,10 @@ $site->skin->workspaceEnd();
 $site->skin->fixedFooterStart();
 	$site->skin->submenuStart();
 		echo htmlconstant('_OVERVIEW_SYSTEMTIME',
-			isohtmlentities(sql_date_to_human(strftime("%Y-%m-%d %H:%M:%S"), 'absolute datetime')));
+		    isohtmlentities( strval( sql_date_to_human(ftime("%Y-%m-%d %H:%M:%S"), 'absolute datetime')) ) );
 	$site->skin->submenuBreak();
 		echo htmlconstant('_OVERVIEW_LASTMODDETAILS',
-			isohtmlentities(sql_date_to_human($last_modification, 'datetime')),
+		    isohtmlentities( strval( sql_date_to_human($last_modification, 'datetime') ) ),
 			$last_modification_table,
 			user_html_name($last_modification_user));
 		echo " | <a href=\"log.php\" target=\"_blank\" rel=\"noopener noreferrer\">" . htmlconstant('_LOG') . '</a>';

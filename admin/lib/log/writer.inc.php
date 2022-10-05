@@ -34,25 +34,28 @@ class LOG_WRITER_CLASS
 	{
 		$tr = array("\\"=>"/", "\n"=>"\\n", "\r"=>"", "\t"=>" ");
 		
-		$line = strftime("%Y-%m-%d %H:%M:%S") . "\t" . $table . "\t" . $recordIds . "\t" . $userId . "\t" . $action . "\t";
+		$line = ftime("%Y-%m-%d %H:%M:%S") . "\t" . $table . "\t" . $recordIds . "\t" . $userId . "\t" . $action . "\t";
 
 		reset($this->data);
 		foreach($this->data as $key => $v)
 		{
 			if( is_array($v) ) {
-				if( $v[0] != $v[1] ) {
-					$line .= $key . "\t" . strtr($v[0], $tr) . "\t" . strtr($v[1], $tr) . "\t";
+			    $v0 = isset($v[0]) ? $v[0]  : '';
+			    $v1 = isset($v[1]) ? $v[1] : '';
+			    
+				if( $v0 != $v1 ) {
+				    $line .= $key . "\t" . strtr( strval( $v0 ), $tr) . "\t" . strtr( strval( $v1 ), $tr) . "\t";
 				}
 			}
 			else {
-				$line .= $key . "\t\t" /*no old value*/ . strtr($v, $tr) /*new value*/ . "\t";
+				$line .= $key . "\t\t" /*no old value*/ . strtr( strval( $v ), $tr) /*new value*/ . "\t";
 			}
 		}
 
 		$line .= "\n";
 
 		// get the file name
-		$fullfilename = $this->getFilename(strftime("%Y-%m-%d"));
+		$fullfilename = $this->getFilename(ftime("%Y-%m-%d"));
 		if( $fullfilename )
 		{
 			// open the logging file
@@ -92,7 +95,7 @@ class LOG_WRITER_CLASS
 		$db->query("SELECT * FROM $table WHERE id=$id;");
 		if( $db->next_record() )
 		{
-		    for( $r = 0; $r < sizeof((array) $table_def->rows); $r++ )
+			for( $r = 0; $r < sizeof((array) $table_def->rows); $r++ )
 			{
 				$rowname  = $table_def->rows[$r]->name;
 				$rowflags = $table_def->rows[$r]->flags;
@@ -136,7 +139,7 @@ class LOG_WRITER_CLASS
 								$this->data[ $rownameprefix . $rowname ][ 0 ] = $db->fs( $rowname );
 							}
 							else if( $what == 'creatediff' ) {	
-								if( $this->data[ $rownameprefix . $rowname ][ 0 ] == $db->fs( $rowname ) ) {
+							    if( isset( $this->data[ $rownameprefix . $rowname ][ 0 ] ) && $this->data[ $rownameprefix . $rowname ][ 0 ] == $db->fs( $rowname ) ) {
 									$this->data[ $rownameprefix . $rowname ][ 0 ] = '';  		// not changed
 								}
 								else {
@@ -175,7 +178,7 @@ class LOG_WRITER_CLASS
 								
 								if( $what == 'creatediff' ) {
 									$do_recurse = false; 	// if the secondary table (durchfuehrung) does /not/ exist in the old values, a dump is not needed
-									reset($this->data);			
+									reset($this->data);
 									foreach(array_keys($this->data) as $n) {
 										if( substr($n, 0, strlen($secondary_prefix)) == $secondary_prefix ) { $do_recurse = true; break; }
 									}
@@ -220,7 +223,7 @@ class LOG_WRITER_CLASS
 		
 		if( $p ) {
 			$p -= 32;
-			while($p>0 && $str1{$p}!=' ') $p--;
+			while($p>0 && $str1[$p]!=' ') $p--;
 			if( $p > 10 ) {
 				$str1 = '...' . substr($str1, $p);
 				$str2 = '...' . substr($str2, $p);
@@ -237,7 +240,7 @@ class LOG_WRITER_CLASS
 		
 		if( $p ) {
 			$p -= 32;
-			while($p>0 && $str1{$p}!=' ') $p--;
+			while($p>0 && $str1[$p]!=' ') $p--;
 			if( $p > 10 ) {
 				$str1 = substr($str1, 0, $str1len-$p) . '...';
 				$str2 = substr($str2, 0, $str2len-$p) . '...';

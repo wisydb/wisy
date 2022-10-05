@@ -1,7 +1,5 @@
 <?php
 
-
-
 /*=============================================================================
 simply dump a blob / text as binary data from the database
 ===============================================================================
@@ -38,8 +36,8 @@ require_once('classes.inc.php');
 
 
 // get all request parameter
-$hex = $_REQUEST['hex'];
-$id = intval($_REQUEST['id']);
+$hex = isset( $_REQUEST['hex'] ) ? $_REQUEST['hex'] : null;
+$id = isset( $_REQUEST['id'] ) ? intval($_REQUEST['id']) : null;
 if( !$id )
 {
 	$param = explode('/', $_SERVER['REQUEST_URI']);
@@ -57,8 +55,8 @@ if( !$id )
 }
 else
 {
-	$t = $_REQUEST['t'];
-	$f = $_REQUEST['f'];
+    $t = isset( $_REQUEST['t'] ) ? $_REQUEST['t'] : null;
+    $f = isset( $_REQUEST['f'] ) ? $_REQUEST['f'] : null;
 }
 
 
@@ -90,11 +88,11 @@ if( $db->next_record() )
 		//
 		require_once('functions.inc.php');
 		echo '<html><head><title>Hexdump</title></head><body><pre>'; $s = '';
-			echo isohtmlentities($ob->name);
+			echo isohtmlentities( strval( $ob->name ) );
 			if( $ob->w || $ob->h ) {
 				printf(", %d x %d", $ob->w, $ob->h);
 			}
-			printf(", %s", isohtmlentities($ob->mime));
+			printf(", %s", isohtmlentities(strval( $ob->mime )));
 			printf(", %d Bytes", strlen($ob->blob));
 			
 			echo "\n\n";
@@ -112,7 +110,7 @@ if( $db->next_record() )
 				}
 				
 				$o = ord(substr($str, $i, 1));
-				$s .= $o > 32? isohtmlentities(chr($o)) : '.';
+				$s .= $o > 32? isohtmlentities( strval( chr($o) ) ) : '.';
 				
 				printf("%02x%s", $o, (($i%16)==7?"|":" "));
 				

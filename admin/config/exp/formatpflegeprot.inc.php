@@ -137,7 +137,7 @@ function wisy_durchfuehrung_beginnoptionen($opt)
 	if( $opt <= 0 ) {
 		return '';
 	}
-	else if( $codes_beginnoptionen_array[$opt] ) {
+	else if( isset( $codes_beginnoptionen_array[$opt] ) && $codes_beginnoptionen_array[$opt] ) {
 		return $codes_beginnoptionen_array[$opt];
 	}
 	else {
@@ -165,7 +165,7 @@ function wisy_dauer($dauer, $stunden) // return as ASCII
 	if( $dauer <= 0 ) {
 		$dauer = '';
 	}
-	else if( $codes_dauer_array[$dauer] ) {
+	else if( isset( $codes_dauer_array[$dauer] ) && $codes_dauer_array[$dauer] ) {
 		$dauer = $codes_dauer_array[$dauer];
 	}
 	else {
@@ -383,7 +383,7 @@ class EXP_FORMATPFLEGEPROT_CLASS extends EXP_PLUGIN_CLASS
 		
 		$this->options['anschreiben']	=	array('textarea', 'Anschreiben', $g_def_anschreiben);
 		$this->options['dummy1']		=	array('remark', '<a href="https://b2b.kursportal.info/index.php?title=Pflegeprotokoll" target="_blank">Beispiel und <b>wichtige Hinweise</b> zur Formatierung ...</a>');
-		$this->options['monat'] 		=	array('enum', 'Monat', strftime("%m"), $g_monate);
+		$this->options['monat'] 		=	array('enum', 'Monat', ftime("%m"), $g_monate);
 		$this->options['pflege_weg']	=	array('enum', 'Pflegeweg', -8, $g_pflege_wege);	
 		$this->options['abgel']			=	array('check', 'Abgelaufene Kurse hinzufügen', 1);
 		$this->options['baseurl']		=	array('text', 'Basis-URL für Verweise', 'http:/'.'/hamburg.kursportal.info', 50);
@@ -393,9 +393,9 @@ class EXP_FORMATPFLEGEPROT_CLASS extends EXP_PLUGIN_CLASS
 		for( $i = 0; $i < sizeof((array) $allgroups); $i++ )
 		{
 			$this->options["group{$allgroups[$i][0]}"] = array('check', 
-			    $i==sizeof((array) $allgroups)-1? $allgroups[$i][1] : "{$allgroups[$i][1]} " /*trailing space->no wrap*/,
-			    1,
-			    $i==0? 'Anbietergruppen' : '');
+				$i==sizeof((array) $allgroups)-1? $allgroups[$i][1] : "{$allgroups[$i][1]} " /*trailing space->no wrap*/,
+				1, 
+				$i==0? 'Anbietergruppen' : '');
 		}		
 		
 		$this->options['send']		=	array('enum', 'E-Mails versenden', 0, '0###Nein, keine E-Mails versenden###1###Ja, E-Mails an ALLE ANBIETER versenden');
@@ -448,7 +448,7 @@ class EXP_FORMATPFLEGEPROT_CLASS extends EXP_PLUGIN_CLASS
 		$db1 = new DB_Admin;
 		$db = new DB_Admin;
 
-		if( $this->param['abgel'] )
+		if( isset( $this->param['abgel'] ) && $this->param['abgel'] )
 			$freigeschaltet = '(freigeschaltet=1 OR freigeschaltet=4 OR freigeschaltet=3)';
 		else
 			$freigeschaltet = '(freigeschaltet=1 OR freigeschaltet=4)';
@@ -536,7 +536,7 @@ class EXP_FORMATPFLEGEPROT_CLASS extends EXP_PLUGIN_CLASS
 				if( $beginn )
 				{
 					$termin .= $ende? "$beginn-$ende" : $beginn;
-					if( $beginnsql<strftime("%Y-%m-%d 00:00:00") ) {
+					if( $beginnsql<ftime("%Y-%m-%d 00:00:00") ) {
 						$termin .= " (Termin ist abgelaufen)";
 					}
 					if( $beginnoptionen ) { $termin .= ", ($beginnoptionen)"; }
@@ -584,7 +584,7 @@ class EXP_FORMATPFLEGEPROT_CLASS extends EXP_PLUGIN_CLASS
 					$ort = $ort;
 				}
 				else if( $stadtteil ) {
-					$ort = isohtmlentities($stadtteil);
+					$ort = isohtmlentities( strval( $stadtteil ) );
 				}
 				else {
 					$ort = '';
@@ -634,8 +634,8 @@ class EXP_FORMATPFLEGEPROT_CLASS extends EXP_PLUGIN_CLASS
 			}
 		
 			// titel...
-			$titel = $kurse[$k]['titel'];
-			if( $kurse[$k]['freigeschaltet'] == 3 )
+			$titel = isset( $kurse[$k]['titel'] ) ? $kurse[$k]['titel'] : '';
+			if( isset( $kurse[$k]['freigeschaltet'] ) && $kurse[$k]['freigeschaltet'] == 3 )
 				$titel .= ' (Abgelaufen)';
 			$ret .= wordwrap($titel, $this->linewidth);
 			
@@ -653,15 +653,15 @@ class EXP_FORMATPFLEGEPROT_CLASS extends EXP_PLUGIN_CLASS
 			}
 			
 			// stichwoerter...
-			if( $kurse[$k]['abschluss'] ) {
+			if( isset( $kurse[$k]['abschluss'] ) && $kurse[$k]['abschluss'] ) {
 				$ret .= "\nAbschluss:   " . $kurse[$k]['abschluss'];
 			}
 
-			if( $kurse[$k]['qzertifikat'] ) {
+			if( isset( $kurse[$k]['qzertifikat'] ) && $kurse[$k]['qzertifikat'] ) {
 				$ret .= "\nQualitätsz.: " . $kurse[$k]['qzertifikat'];
 			}
 
-			if( $kurse[$k]['foerderung'] ) {
+			if( isset( $kurse[$k]['foerderung'] ) && $kurse[$k]['foerderung'] ) {
 				$ret .= "\nFörderung:   " . $kurse[$k]['foerderung'];
 			}
 
@@ -706,11 +706,11 @@ class EXP_FORMATPFLEGEPROT_CLASS extends EXP_PLUGIN_CLASS
 		$this->vars['pflege_name']		= $db1->fs('pflege_name');
 		$this->vars['pflege_email']		= $db1->fs('pflege_email');
 		$this->vars['pflege_msg']		= $db1->fs('pflege_msg');
-		$this->vars['aktmonat'] 		= $monateArray[(strftime("%m") * 2)-1];
-		$this->vars['aktjahr'] 			= strftime("%Y");
+		$this->vars['aktmonat'] 		= $monateArray[(ftime("%m") * 2)-1];
+		$this->vars['aktjahr'] 			= ftime("%Y");
 		$this->vars['kursliste']		= $this->getAnbieterKurseAsText($anbieterId, intval($db1->f('pflege_prot'))==2? 1 : 0 /*details?*/);
-		$this->vars['verweis_anbieter']	= $this->param['baseurl'] . "/a$anbieterId";
-		$this->vars['verweis_login']	= $this->param['baseurl'] . "/edit?as=$anbieterId";
+		$this->vars['verweis_anbieter']	= (isset($this->param['baseurl']) ? $this->param['baseurl'] : '') . "/a$anbieterId";
+		$this->vars['verweis_login']	= (isset($this->param['baseurl']) ? $this->param['baseurl'] : '') . "/edit?as=$anbieterId";
 		
 		$monatsnamen = array('Jan.', 'Feb.', 'Maerz', 'Apr.', 'Mai', 'Juni', 'Juli', 'Aug.', 'Sept.', 'Okt.', 'Nov.', 'Dez.');
 		$pflege_akt = $db1->fs('pflege_akt');
@@ -723,7 +723,7 @@ class EXP_FORMATPFLEGEPROT_CLASS extends EXP_PLUGIN_CLASS
 		
 		$record_pflege_weg = intval($db1->f('pflege_weg'));
 		
-		if( intval($this->param['group'.$db1->f('user_grp')])==0 )
+		if( !isset( $this->param['group'.$db1->f('user_grp')] ) || intval($this->param['group'.$db1->f('user_grp')])==0 )
 		{
 			$this->log("Anbieter ID $anbieterId nicht über die Anbietergruppe ausgewählt -> kein Protokoll.");
 			return 0;
@@ -733,7 +733,7 @@ class EXP_FORMATPFLEGEPROT_CLASS extends EXP_PLUGIN_CLASS
 			$this->log("Anbieter ID $anbieterId nicht freigeschaltet -> kein Protokoll.");
 			return 0;
 		}
-		else if( $this->vars['kursliste'] == "" )
+		else if( !isset( $this->vars['kursliste'] ) || $this->vars['kursliste'] == "" )
 		{
 			$this->log("Anbieter ID $anbieterId hat keine Kurse -> kein Protokoll.");
 			return 0;
@@ -753,7 +753,8 @@ class EXP_FORMATPFLEGEPROT_CLASS extends EXP_PLUGIN_CLASS
 				break;
 			
 			default: /*NUR spezieller pflegeweg*/
-				if( $record_pflege_weg!=$this->param['pflege_weg']  ) 
+			    $paramPflegeWeg = isset( $this->param['pflege_weg'] ) ? $this->param['pflege_weg'] : null;
+				if( $record_pflege_weg!=$paramPflegeWeg  ) 
 				{
 					$this->log("Anbieter ID $anbieterId hat nicht den ausgewaehten Pflegeweg -> kein Protokoll.");
 					return 0;
@@ -761,7 +762,7 @@ class EXP_FORMATPFLEGEPROT_CLASS extends EXP_PLUGIN_CLASS
 				break;
 		}
 		
-		if( $this->vars['pflege_name'] == "" )
+		if( !isset( $this->vars['pflege_name'] ) || $this->vars['pflege_name'] == "" )
 		{
 			$this->vars['pflege_name'] = "Damen und Herren";
 		}
@@ -770,7 +771,7 @@ class EXP_FORMATPFLEGEPROT_CLASS extends EXP_PLUGIN_CLASS
 	
 		$this->dumps[$this->d] = $this->processTemplate();
 		
-		if( $this->param['send'] )
+		if( isset( $this->param['send'] ) && $this->param['send'] )
 		{
 			// get the text to send, this contains the header with all information needed
 			$text = $this->dumps[$this->d];
@@ -838,10 +839,10 @@ class EXP_FORMATPFLEGEPROT_CLASS extends EXP_PLUGIN_CLASS
 		
 		$this->dumps[0] = "";
 		$this->names[0] = "_protokoll.txt";
-		$this->log('Pflegeprotokoll vom '.strftime("%d.%m.%Y, %H:%M Uhr"));
+		$this->log('Pflegeprotokoll vom '.ftime("%d.%m.%Y, %H:%M Uhr"));
 		$this->log('Ausgewaehlter Monat: ' . $monatName);
-		$this->log('Abgelaufene Kurse hinzufuegen: ' . ($this->param['abgel']? 'Ja' : 'Nein'));
-		$this->log('EMails versenden: ' . ($this->param['send']? 'Ja' : 'Nein'));
+		$this->log('Abgelaufene Kurse hinzufuegen: ' . ( isset($this->param['abgel']) && $this->param['abgel'] ? 'Ja' : 'Nein'));
+		$this->log('EMails versenden: ' . ( isset($this->param['send']) && $this->param['send'] ? 'Ja' : 'Nein'));
 		$this->log('SQL: ' . $query);
 		$this->log('Programm von Bjoern Petersen - http://b44t.com');
 		$this->log('=======================================================');
@@ -858,7 +859,7 @@ class EXP_FORMATPFLEGEPROT_CLASS extends EXP_PLUGIN_CLASS
 		$this->template = fread($fileHandle, 16000);//max. 16k
 		fclose($fileHandle);
 		*/
-		$this->template = $this->param['anschreiben'];
+		$this->template = isset($this->param['anschreiben']) ? $this->param['anschreiben'] : '';
 		
 		
 		// go through all records
@@ -878,7 +879,7 @@ class EXP_FORMATPFLEGEPROT_CLASS extends EXP_PLUGIN_CLASS
 		
 		// create the ZIP-file
 		$zipfile = new EXP_ZIPWRITER_CLASS($this->allocateFileName('pflegeprotokoll-' . getFilename($site->htmldeentities($monatName)) . '.zip'));
-		for( $i = 0; $i < sizeof((array) $this->names); $i++ )
+		for( $i = 0; $i < sizeof((array) $this->names); $i++ ) 
 		{
 			if( !$zipfile->add_data($this->dumps[$i], $this->names[$i]) )
 				$this->progress_abort('cannot write zip');
@@ -888,5 +889,3 @@ class EXP_FORMATPFLEGEPROT_CLASS extends EXP_PLUGIN_CLASS
 			
 	}
 }
-
-

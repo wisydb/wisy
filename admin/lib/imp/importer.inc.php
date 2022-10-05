@@ -12,27 +12,27 @@ Ein Import wird gestartet durch aufruf der Funktion
 	
 	import_do(<mix_datei>, <option_overwrite>, <option_delete>, [<option_further_options>])
 
-<option_overwrite> legt dabei fest, ob bestehende Datensätze überschrieben werden sollen, oder nicht:
+<option_overwrite> legt dabei fest, ob bestehende Datensaetze ueberschrieben werden sollen, oder nicht:
 	
-	IMP_OVERWRITE_NEVER		bestehende Datensätze nie überschreiben
-	IMP_OVERWRITE_ALWAYS	bestehende Datensätze immer überschrieben
-	IMP_OVERWRITE_OLDER		bestehende Datensätze überschreiben, wenn er älter als der zu importierende ist
+	IMP_OVERWRITE_NEVER		bestehende Datensaetze nie ueberschreiben
+	IMP_OVERWRITE_ALWAYS	bestehende Datensaetze immer ueberschrieben
+	IMP_OVERWRITE_OLDER		bestehende Datensaetze ueberschreiben, wenn er aelter als der zu importierende ist
 	
-<option_delete> delegt fest, ob bestehende Datensätze auch im Bestand gelöscht werden sollen, wenn Sie in der Mix-Datei gelöscht sind:
+<option_delete> delegt fest, ob bestehende Datensaetze auch im Bestand geloescht werden sollen, wenn Sie in der Mix-Datei geloescht sind:
 
-	IMP_DELETE_NEVER		besteheden Datensätze nie löschen
-	IMP_DELETE_DELETED		bestehende Datensätze löschen, wenn sie in der Mix-Datei gelöscht wurden
+	IMP_DELETE_NEVER		besteheden Datensaetze nie loeschen
+	IMP_DELETE_DELETED		bestehende Datensaetze loeschen, wenn sie in der Mix-Datei geloescht wurden
 	
-mit <fieldOptions> kann man zudem noch einzelne Felder beim Import schützen; hierbei müssen die Optionen als Zeichenkette 
+mit <fieldOptions> kann man zudem noch einzelne Felder beim Import schaetzen; hierbei muessen die Optionen als Zeichenkette 
 in der folgenden Form angegeben werden:
 	
 	<tabelle>.<feld> = <aktion>; [<tabelle>.<feld> = <aktion>;]
 	
 wobei <aktion> eines der folgenden Kommandos ist:
 
-	protect 				nur für Attribut-Mehrfachfelder sinnvoll: Eigene Attribute werden nicht angetastet,
-							andere Attribute werden übernommen und bei Bedarf auch gelöscht
-	<andereKommandos>		reserviert für zukünftige Erweiterungen
+	protect 				nur fuer Attribut-Mehrfachfelder sinnvoll: Eigene Attribute werden nicht angetastet,
+							andere Attribute werden uebernommen und bei Bedarf auch geloescht
+	<andereKommandos>		reserviert fuer zukuenftige Erweiterungen
 
 Beispiel:
 
@@ -78,10 +78,10 @@ class IMP_IMPORTER_CLASS
 	{
 		if( 0 )
 		{
-			$out_user_created	= $this->user;
-			$out_user_modified	= $this->user;
-			$out_user_grp		= $this->user_grp;
-			$out_user_access	= $this->user_access;
+		    $out_user_created	= isset( $this->user )         ? $this->user : null;
+		    $out_user_modified	= isset( $this->user )         ? $this->user : null;
+		    $out_user_grp		= isset( $this->user_grp )     ? $this->user_grp : null;
+		    $out_user_access	= isset( $this->user_access )  ? $this->user_access : null;
 		}
 		else
 		{
@@ -130,7 +130,7 @@ class IMP_IMPORTER_CLASS
 
 	private function _is_id_protected($table, $field, $id)
 	{
-		return $this->protect[$table][$field][$id]? true : false;
+	    return isset($this->protect[$table][$field][$id]) && $this->protect[$table][$field][$id] ? true : false;
 	}
 	
 	private function _import_record($table, $id)
@@ -169,10 +169,18 @@ class IMP_IMPORTER_CLASS
 					case TABLE_ENUM:
 					case TABLE_BITFIELD:
 					case TABLE_SATTR:
-					case TABLE_INT:
-						$sql .= ', ' . $row->name . '=' . $sqliteDb->fs($row->name);
+					    
+					    // not a good solution but otherwise error (returns nothing instead of 0 for thema) 
+					    // => is all TABLE_SATTR == int ??? if so make all TABLE_SATTR intval()
+					    if( $row->name == "thema" )     
+					        $sql .= ', ' . $row->name . '=' . intval( $sqliteDb->fs($row->name) );
+					    else
+						    $sql .= ', ' . $row->name . '=' . $sqliteDb->fs($row->name);
 						break;
-					
+					case TABLE_INT:
+					    $sql .= ', ' . $row->name . '=' . intval( $sqliteDb->fs($row->name) );
+					    break;
+					    
 					case TABLE_MATTR:
 					case TABLE_SECONDARY:
 						break; // no default processing!
@@ -217,7 +225,7 @@ class IMP_IMPORTER_CLASS
 						$new_ids[] = $attr_id;
 						$structure_pos = $sqliteDb->fs('structure_pos');
 						
-						if( $old_ids[ $attr_id ] ) {
+						if( isset($old_ids[ $attr_id ]) && $old_ids[ $attr_id ] ) {
 							$old_ids[ $attr_id ] = 0;
 							if( $old_sp[ $attr_id ] != $structure_pos ) {
 								$mysqlDb->query("UPDATE {$table}_{$row->name} SET structure_pos=$structure_pos WHERE primary_id=$id AND $attr_id_name=$attr_id;");
@@ -244,7 +252,7 @@ class IMP_IMPORTER_CLASS
 						
 					// update the secondary table
 					if( $attr_id_name == 'secondary_id' ) {
-					    for( $i = 0; $i < sizeof((array) $new_ids); $i++ ) {
+						for( $i = 0; $i < sizeof((array) $new_ids); $i++ ) {
 							$this->_import_record($row->addparam->name, $new_ids[$i]); // errors may be logged ... no abort ...
 						}
 					}
@@ -286,10 +294,10 @@ class IMP_IMPORTER_CLASS
 			if( $value == 'protect' ) 
 			{
 				if( $system_sync_src == 0 )  { $this->_log_full('"protect" kann nur zusammen mit einer eigenen Datenbankkennung verwendet werden.'); return false; }
-				if( !is_object($table_def) ) { $this->_log_full("$table - ungültige Tabellenangabe."); return false; }
+				if( !is_object($table_def) ) { $this->_log_full("$table - ungueltige Tabellenangabe."); return false; }
 				$linked_table = '';
 				for( $r = 0; $r < sizeof((array) $table_def->rows); $r++ ) {
-					if( $table_def->rows[$r]->name == $field ) {
+				    if( isset($table_def->rows[$r]->name) && $table_def->rows[$r]->name == $field ) {
 						$linked_table = $table_def->rows[$r]->addparam->name;
 						break;
 					}
@@ -304,7 +312,7 @@ class IMP_IMPORTER_CLASS
 			}
 			else
 			{
-				$this->_log_full('"' . $option_further_options_str . '" enthält ungültige Angaben.');
+				$this->_log_full('"' . $option_further_options_str . '" enthaelt ungueltige Angaben.');
 				return false;
 			}
 		}
@@ -312,7 +320,7 @@ class IMP_IMPORTER_CLASS
 		// open the mixfile
 		$this->mixfile = new IMP_MIXFILE_CLASS;
 		if( !$this->mixfile->open($mix_fullpath) ) {
-			$this->_log_full("Kann $mix_fullpath nicht öffnen - ".$this->mixfile->error_str);
+			$this->_log_full("Kann $mix_fullpath nicht oeffnen - ".$this->mixfile->error_str);
 			return false;
 		}
 		$this->mixfile->create_db_object_to_use();
@@ -359,9 +367,9 @@ class IMP_IMPORTER_CLASS
 				}
 				
 				if( $import || $deleteit ) {
-				    if( sizeof((array) $imported_ids[$table])==0 && sizeof((array) $todel_ids[$table])==0 ) {
-				        $this->_log_full('Import gestarted.', $table);
-				    }
+				    if( ( !isset($imported_ids[$table]) || sizeof((array) $imported_ids[$table])==0 ) && ( !isset($todel_ids[$table]) ||Â sizeof((array) $todel_ids[$table])==0 ) ) {
+						$this->_log_full('Import gestarted.', $table);
+					}
 				}
 				
 				// do the import
@@ -378,12 +386,12 @@ class IMP_IMPORTER_CLASS
 				// progress info
 				$totalCnt++;
 				if( $totalCnt % 10 == 0 )
-					$this->_progress("$totalCnt Datensätze bearbeitet ...");				
+					$this->_progress("$totalCnt Datensaetze bearbeitet ...");				
 			}
 		}
 		
 		if( sizeof((array) $imported_ids)==0 && sizeof((array) $todel_ids)==0 ) {
-		    $this->_log_full('Import gestarted, keine zu importierenden oder zu loeschenden Datensaetze gefunden.');
+			$this->_log_full('Import gestarted, keine zu importierenden oder zu loeschenden Datensaetze gefunden.');
 		}
 
 		// DELETE - go through all records--
@@ -399,7 +407,7 @@ class IMP_IMPORTER_CLASS
 					// delete the record, if possible
 					$id_ref_cnt = $table_def->num_references($id, $id_references);
 					if( $id_ref_cnt > 0 ) {
-						$this->_log("Datensatz kann nicht gelöscht werden, da er noch referenziert wird.", $table, $id);
+						$this->_log("Datensatz kann nicht geloescht werden, da er noch referenziert wird.", $table, $id);
 					}
 					else {
 						$table_def->destroy_record_dependencies($id);
@@ -410,28 +418,30 @@ class IMP_IMPORTER_CLASS
 					// progress info
 					$totalCnt++;
 					if( $totalCnt % 10 == 0 )
-						$this->_progress("$totalCnt Datensätze gelöscht ...");	
+						$this->_progress("$totalCnt Datensaetze geloescht ...");	
 				}
 			}
 		}
 		reset($deleted_ids);
 		foreach($deleted_ids as $table => $ids) {
-			$this->_log('Datensätze gelöscht.', $table, implode(',', $ids));
+			$this->_log('Datensaetze geloescht.', $table, implode(',', $ids));
 		}
 		
 		// FINAL log
 		for( $t = 0; $t < sizeof((array) $tables); $t++ ) {
-		    $table = $tables[$t];
-		    if( is_array($imported_ids) && sizeof((array) $imported_ids[$table]) || is_array($todel_ids) && sizeof((array) $todel_ids[$table]) ) {
-		        $this->_log('Import beendet.', $table, sizeof((array) $imported_ids[$table])? implode(',', $imported_ids[$table]) : '');
-		    }
+			$table = $tables[$t];
+			if( isset($imported_ids) && is_array($imported_ids) && isset($imported_ids[$table]) && sizeof((array) $imported_ids[$table]) 
+			 || isset($todel_ids) && is_array($todel_ids) && isset($todel_ids[$table]) && sizeof((array) $todel_ids[$table]) 
+			  ) {
+			     $this->_log('Import beendet.', $table, (isset($imported_ids[$table]) && sizeof((array) $imported_ids[$table])) ? implode(',', $imported_ids[$table]) : '');
+			}
 		}
 		if( sizeof((array) $imported_ids)==0 && sizeof((array) $todel_ids)==0 ) {
-		    $this->_log('Import beendet.');
+			$this->_log('Import beendet.');
 		} 
 
 		// success
-		$this->mixfile->ini_write('import_end_time', strftime("%Y-%m-%d %H:%M:%S"));
+		$this->mixfile->ini_write('import_end_time', ftime("%Y-%m-%d %H:%M:%S"));
 		$this->mixfile->close();
 
 		return true;

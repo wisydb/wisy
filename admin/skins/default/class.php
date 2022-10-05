@@ -190,7 +190,7 @@ class SKIN_DEFAULT_CLASS
 				break;
 		
 			case '':
-				echo '<b>' . isohtmlentities("ERROR: unset type for: submenuItem(\"$type\", \"$descr\", \"" .isohtmlentities($ahref). "\");") . '</b><br />';
+				echo '<b>' . isohtmlentities("ERROR: unset type for: submenuItem(\"$type\", \"$descr\", \"" .isohtmlentities( strval( $ahref ) ). "\");") . '</b><br />';
 				break;
 		}
 		
@@ -224,34 +224,34 @@ class SKIN_DEFAULT_CLASS
 	}
 	function submenuEnd($displayDBLoad = false)
 	{
-	    echo '</td>';
-	    echo '</tr>';
-	    if($displayDBLoad)
-	        echo $this->getDBLoadStatus();
-	        echo '</table>';
+				echo '</td>';
+			echo '</tr>';
+			if($displayDBLoad)
+				echo $this->getDBLoadStatus();
+		echo '</table>';
 	}
 	
 	function getDBLoadStatus() {
-	    
-	    $additionalLoad = array();
-	    
-	    $display = false;
-	    $dbLoad = new DB_Admin;
-	    $dbLoad->query("SELECT svalue FROM `x_state` WHERE skey = 'what'");
-	    $dbLoad->next_record();
-	    $value = $dbLoad->f("svalue");
-	    if( $value == "kurseSlow" )
-	        $keep = true;
-	        
-	        $dbLoad->query("SELECT svalue FROM `x_state` WHERE skey = 'updatestick' AND (svalue <> '0000-00-00 00:00:00' && svalue <> '')");
-	        $dbLoad->next_record();
-	        if($keep && $dbLoad->f("svalue"))
-	            $additionalLoad[] = "Suchindex-Update";
-	            
-	        if(count($additionalLoad))
-	            return '<tr><td class="additionalload"><span class="blink_me"></span>&nbsp;&nbsp;&nbsp;&nbsp;Besondere Datenbankbelastung: '.$additionalLoad[0].'</td><td></td></tr>';
-	        else
-	            return '';
+		
+		$additionalLoad = array();
+		
+		$display = false;
+		$dbLoad = new DB_Admin;
+		$dbLoad->query("SELECT svalue FROM `x_state` WHERE skey = 'what'");
+		$dbLoad->next_record();
+		$value = $dbLoad->f("svalue");
+		if( $value == "kurseSlow" )
+			$keep = true;
+			
+		$dbLoad->query("SELECT svalue FROM `x_state` WHERE skey = 'updatestick' AND (svalue <> '0000-00-00 00:00:00' && svalue <> '')");
+		$dbLoad->next_record();
+		if( isset( $keep ) && $keep && $dbLoad->f("svalue"))
+			$additionalLoad[] = "Suchindex-Update";
+		
+		if(count($additionalLoad))
+			return '<tr><td class="additionalload"><span class="blink_me"></span>&nbsp;&nbsp;&nbsp;&nbsp;Besondere Datenbankbelastung: '.$additionalLoad[0].'</td><td></td></tr>';
+		else
+			return '';
 	}
 	
 	
@@ -352,11 +352,11 @@ class SKIN_DEFAULT_CLASS
 					$attr = " $attr";
 				}
 				
-				echo $this->inTableHead? "<th$attr>" : "<td$attr>";
+				echo isset($this->inTableHead) && $this->inTableHead ? "<th$attr>" : "<td$attr>";
 	}
 	function cellEnd()
 	{
-				echo $this->inTableHead? '</th>' : '</td>';
+	            echo isset($this->inTableHead) && $this->inTableHead ? '</th>' : '</td>';
 	}
 	function rowEnd()
 	{
@@ -364,7 +364,8 @@ class SKIN_DEFAULT_CLASS
 	}
 	function tableEnd()
 	{
-			if( $this->tbodyStarted ) echo '</tbody>';
+	    if( isset( $this->tbodyStarted ) && $this->tbodyStarted ) echo '</tbody>';
+	    
 		echo "</table>\n";
 	}
 	
@@ -477,37 +478,46 @@ class SKIN_DEFAULT_CLASS
 		else {
 			$this->sections[] = array($title, $href, $selected? 1 : 0);
 		}
+		
 	}
 	function sectionDeclareRight($html)
 	{
 		$this->sectionRightHtml = $html;
 	}
+	
 	function sectionStart()
 	{
+	    
 		if( $this->useTabs )
 		{
 			if( $this->sectionCount == -1 ) 
 			{
 				$this->mainmenuStart();
-				    $numSections = sizeof((array) $this->sections);
+					$numSections = sizeof((array) $this->sections);
 					for( $s = 0; $s < $numSections; $s++ ) 
 					{
 						$ahref = '';
-						if( $this->sections[$s][1] ) {
+						if( isset($this->sections[$s][1]) && $this->sections[$s][1] ) {
 							$ahref = '<a href="' . isohtmlentities($this->sections[$s][1]) . "\" onclick=\"return sect(this,$s,$numSections);\">";
 						}
 						$this->mainmenuItem($this->sections[$s][0], $ahref, $this->sections[$s][2], "sectmm$s");
 					}
 				$this->mainmenuBreak();
-					echo $this->sectionRightHtml? $this->sectionRightHtml : '&nbsp;';
+			
+				echo isset($this->sectionRightHtml) && $this->sectionRightHtml ? $this->sectionRightHtml : '&nbsp;';
+				
 				$this->mainmenuEnd();
 			}
+			
 			$this->sectionCount++;
-		
-			$display = $this->sections[$this->sectionCount][2]? 'block' : 'none';
+			
+			$display = isset($this->sections[$this->sectionCount][2]) && $this->sections[$this->sectionCount][2] ? 'block' : 'none';
+			
 			echo "<div id=\"sect{$this->sectionCount}\" style=\"display:$display;\">";
+			
+			
 		}
-		else if( $this->sectionRightHtml )
+		else if( isset($this->sectionRightHtml) && $this->sectionRightHtml )
 		{
 			$this->mainmenuStart();
 				echo '&nbsp;';
@@ -516,7 +526,9 @@ class SKIN_DEFAULT_CLASS
 			$this->mainmenuEnd();
 			$this->sectionRightHtml = '';
 		}
+		
 	}
+	
 	function sectionEnd()
 	{
 		if( $this->useTabs )
@@ -537,14 +549,16 @@ class SKIN_DEFAULT_CLASS
 	{
 		if( !is_array($param) ) $param = array();
 		
-		switch( $param['css'] )
+		$cssParam = isset( $param['css'] )        ? $param['css'] : null;
+		$cssColors = isset( $param['colors'] )    ? $param['colors'] : null;
+		$cssPt = isset( $param['pt'] )            ? $param['pt'] : null;
+		
+		switch( $cssParam )
 		{
-			case 'print':	$css = 'skins/default/cssprint.php?pt='.$param['pt'];			break;
-			default:		$css = 'skins/default/cssscreen.php?colors='.$param['colors'];	break;
+		    case 'print':	$css = 'skins/default/cssprint.php?pt=' . $cssPt;			break;
+			default:		$css = 'skins/default/cssscreen.php?colors=' . $cssColors;	break;
 		}
 		
 		return '<link rel="stylesheet" type="text/css" href="' .$css. '&amp;iv='.CMS_VERSION.'" />' . "\n";
 	}
 }
-
-

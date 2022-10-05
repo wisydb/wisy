@@ -7,7 +7,7 @@ class CONTROL_TEXTAREA_CLASS extends CONTROL_TEXT_CLASS // not: CONTROL_BASE_CLA
 		// get the number of rows to display initially
 		// (the intial number can be modified in the settings and the the global config, for temporary sizing of the textarea, we rely on the browser)
 		$rows = 5;
-		if( $this->row_def->prop['ctrl.rows'] ) {
+		if( isset( $this->row_def->prop['ctrl.rows'] ) && $this->row_def->prop['ctrl.rows'] ) {
 			$rows = intval($this->row_def->prop['ctrl.rows']);
 		}
 		

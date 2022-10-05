@@ -18,7 +18,7 @@ class LOG_FIELDFORMATTER_CLASS
 
 	function combineDoubleFields(&$record)
 	{
-	    $record_size = sizeof((array) $record);
+		$record_size = sizeof((array) $record);
 
 		// remove the secondary ID from the field name (convert <table>.<id>.<field> to <table>.<field>)
 		$record_field_names = array();
@@ -91,7 +91,7 @@ class LOG_FIELDFORMATTER_CLASS
 		$fieldDescr = isohtmlspecialchars($fieldName);
 		$fieldFlags = 0;
 		if( $tableDef ) {
-		    for( $r = 0; $r < sizeof((array) $tableDef->rows); $r++ ) {
+			for( $r = 0; $r < sizeof((array) $tableDef->rows); $r++ ) {
 				if( $tableDef->rows[$r]->name == $fieldName ) {
 					$fieldDescr = trim($tableDef->rows[$r]->descr);
 					$fieldFlags = $tableDef->rows[$r]->flags;
@@ -121,7 +121,7 @@ class LOG_FIELDFORMATTER_CLASS
 				case 'overwrite':			require_lang('lang/imex');	$fieldDescr = htmlconstant('_IMP_OVERWRITE'); break;
 				case 'delete':				require_lang('lang/imex');	$fieldDescr = htmlconstant('_IMP_DELETE'); break;
 				case 'further_options':		require_lang('lang/imex');	$fieldDescr = htmlconstant('_IMP_FURTHEROPTIONS'); break;
-				case 'deleted':				$fieldDescr = 'Gelöschte Datensätze'; break;
+				case 'deleted':				$fieldDescr = 'Gelï¿½schte Datensï¿½tze'; break;
 				case 'export_host':			$fieldDescr = 'Export Host'; break;
 				case 'export_user':			$fieldDescr = 'Exporteur'; break;
 				case 'export_start_time':	$fieldDescr = 'Exportzeit'; break;
@@ -173,7 +173,7 @@ class LOG_FIELDFORMATTER_CLASS
 		        }
 		        break;
 		        
-		    default:                                                                                    // also used for user_created etc.
+						default:                                                                                    // also used for user_created etc.
 				if( $oldValue && $tableDef ) $oldValue = $tableDef->formatField($fieldName, $oldValue); // only format non-empty values to avoid getting stuff as "unknown" or "n/a"
 				if( $newValue && $tableDef )$newValue = $tableDef->formatField($fieldName, $newValue);
 				break;
@@ -219,12 +219,12 @@ class LOG_FIELDFORMATTER_CLASS
 			$value = '<s>' . $oldValue . '</s> ' . $newValue;
 		}
 
-		if( $this->times[$index] )
+		if( isset( $this->times[$index] ) && $this->times[$index] )
 		{
-			$fieldDescr = intval($this->times[$index]) . ' x ' . $fieldDescr . ' geändert';
+			$fieldDescr = intval($this->times[$index]) . ' x ' . $fieldDescr . ' ge&auml;ndert';
 		}
 		
-		if( $fieldName == 'msg' && $value != '' && !$this->times[$index] )
+		if( $fieldName == 'msg' && $value != '' && (!isset($this->times[$index]) || !$this->times[$index]) )
 			return '<b>' . $value . '</b>';
 		else
 			return '<b>' . $fieldDescr . '</b>: ' . $value;

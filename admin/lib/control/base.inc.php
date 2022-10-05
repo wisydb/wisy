@@ -1,4 +1,5 @@
 <?php
+
 /******************************************************************************
 Implementing a single control
 ***************************************************************************//**
@@ -6,7 +7,7 @@ Implementing a single control
 Implementing a single control, derived classes are used by EDIT_RENDERER_CLASS
 and EDIT_DATA_CLASS
 
-@author Björn Petersen, http://b44t.com
+@author Bjoern Petersen, http://b44t.com
 
 ******************************************************************************/
 
@@ -33,7 +34,7 @@ class CONTROL_BASE_CLASS
 	
 	public function is_default()
 	{
-		if( $this->dbval == $this->get_default_dbval(false) ) {
+	    if( isset( $this->dbval ) && $this->dbval == $this->get_default_dbval(false) ) {
 			return true;
 		}
 		return false;
@@ -53,10 +54,13 @@ class CONTROL_BASE_CLASS
 	**************************************************************************/
 	public function is_readonly()
 	{
-		if( !($this->row_def->acl&ACL_EDIT) ) {
+	    $rowDefACL = isset( $this->row_def->acl ) ? $this->row_def->acl : null;
+	    if( !($rowDefACL&ACL_EDIT) ) {
 			return true;
 		}
-		if( $this->row_def->flags&TABLE_READONLY ) {
+		
+		$rowDefFlags = isset( $this->row_def->flags ) ? $this->row_def->flags : null;
+		if( $rowDefFlags&TABLE_READONLY ) {
 			return true;
 		}
 		return false;
@@ -95,10 +99,17 @@ class CONTROL_BASE_CLASS
 	{
 		if( substr($this->name, -2) == '[]' ) {
 			if( !isset($this->x_secondary_index) ) die('x_user_input() may only be called from within set_dbval_from_user_input()!');
-			return $_REQUEST[ $prefix . substr($this->name, 0, -2) ][ $this->x_secondary_index ];
+			
+			if( isset( $_REQUEST[ $prefix . substr($this->name, 0, -2) ][ $this->x_secondary_index ] ) )
+			 return $_REQUEST[ $prefix . substr($this->name, 0, -2) ][ $this->x_secondary_index ];
+		    else
+		     return false;
 		}
 		else {
-			return $_REQUEST[ $prefix . $this->name ];
+		    if( isset( $_REQUEST[ $prefix . $this->name ] ) )
+			 return $_REQUEST[ $prefix . $this->name ];
+		    else
+		     return false;
 		}
 	}
 	
@@ -118,10 +129,11 @@ class CONTROL_BASE_CLASS
 	{
 		$tooltip = '';
 		
-		if( $this->row_def->prop['help.tooltip'] ) {
+		if( isset($this->row_def->prop['help.tooltip']) && $this->row_def->prop['help.tooltip'] ) {
 			$tooltip = $this->row_def->prop['help.tooltip']; 
 		}		
-		else if( $this->row_def->prop['layout.descr.hide'] || $this->row_def->prop['layout.descr'] ) {
+		else if( isset( $this->row_def->prop['layout.descr.hide'] ) && $this->row_def->prop['layout.descr.hide'] 
+		      || isset( $this->row_def->prop['layout.descr'] ) && $this->row_def->prop['layout.descr'] ) {
 			$tooltip = htmlconstant(trim($this->row_def->descr)); 
 		}
 		
@@ -152,7 +164,7 @@ class CONTROL_BASE_CLASS
 	**************************************************************************/
 	public function readonly_attr()
 	{
-		if( $this->is_readonly() ) {
+	    if( null !== $this->is_readonly() && $this->is_readonly() ) {
 			return ' readonly="readonly" ';
 			//return ' disabled="disabled" '; // readonly="readonly" does allow too much activity - eg. changing checkmarks is allowed, see http://www.htmlcodetutorial.com/forms/_INPUT_DISABLED.html
 			// EDIT 14:56 15.04.2014: disabled="disabled" does not forward the values to the browser and back again, so `readonly` is the more little problem
@@ -160,5 +172,3 @@ class CONTROL_BASE_CLASS
 		return '';
 	}
 };
-
-

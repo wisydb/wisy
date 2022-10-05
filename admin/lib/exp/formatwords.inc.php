@@ -35,14 +35,15 @@ class EXP_FORMATWORDS_CLASS extends EXP_PLUGIN_CLASS
 		$natsort = array();
 		for( $r = 0; $r < sizeof((array) $tableDef->rows); $r++ )
 		{
-			$rowtype = intval($tableDef->rows[$r]->flags & TABLE_ROW);
+		    $flags = isset($tableDef->rows[$r]->flags) ? $tableDef->rows[$r]->flags : null;
+			$rowtype = intval($flags & TABLE_ROW);
 			
 			if( $rowtype == TABLE_TEXT || $rowtype == TABLE_TEXTAREA ) {
-				$fields[] = $tableDef->rows[$r]->name;
+			    $fields[] = isset($tableDef->rows[$r]->name) ? $tableDef->rows[$r]->name : null;
 			}
 			
 			if( $rowtype == TABLE_TEXT && $db->column_exists($table, $tableDef->rows[$r]->name.'_sorted') ) {
-				$natsort[] = $tableDef->rows[$r]->name;
+			    $natsort[] = isset($tableDef->rows[$r]->name) ? $tableDef->rows[$r]->name : null;
 			}
 		}
 		
@@ -93,7 +94,7 @@ class EXP_FORMATWORDS_CLASS extends EXP_PLUGIN_CLASS
 
 		// go through all tables and collect the words
 		
-		$table = $param['table'];
+		$table = isset($param['table']) ? $param['table'] : '';
 		$this->exportWords($table, "SELECT * FROM $table;");
 
 		// sort words
@@ -127,7 +128,7 @@ class EXP_FORMATWORDS_CLASS extends EXP_PLUGIN_CLASS
 			{
 				// get soundex key
 				$soundex = soundex($word);
-				if( $soundex{0} == '0' ) {
+				if( $soundex[0] == '0' ) {
 					$soundex = '';
 				}
 				
@@ -139,7 +140,7 @@ class EXP_FORMATWORDS_CLASS extends EXP_PLUGIN_CLASS
 			}
 		
 			// add to file list
-			fwrite($handle, "$word\n");
+			fwrite($handle, utf8_encode($word) . "\n");
 
 			// progress info
 			$recCount++;

@@ -57,21 +57,22 @@ class G_TEMPDIR_CLASS
 	{
 		$ret = array();
 		
-		$wanted_user_id = $_SESSION['g_session_userid'];
+		$wanted_user_id = isset($_SESSION['g_session_userid']) ? $_SESSION['g_session_userid'] : null;
 
 		// files older than $expireDate will be deleted
 		$expireTime = time() - intval($this->expire_days*86400);
 		$filesToDelete = array();
 		
-		$handle = @opendir($GLOBALS['g_temp_dir']);
+		$gTmpDir = isset($GLOBALS['g_temp_dir']) ? $GLOBALS['g_temp_dir'] : '';
+		$handle = @opendir($gTmpDir);
 		if( $handle ) 
 		{
 			while( $file_name = readdir($handle) ) 
 			{
 				$ob = new G_TEMPFILE_CLASS;
 				$ob->file_name = $file_name;
-				$ob->full_path = $GLOBALS['g_temp_dir'].'/'.$ob->file_name;
-				if( $ob->file_name{0} != '.' && !is_dir($ob->full_path) )
+				$ob->full_path = $gTmpDir.'/'.$ob->file_name;
+				if( $ob->file_name[0] != '.' && !is_dir($ob->full_path) )
 				{
 					if( preg_match('/([0-9a-z]{1,8})-([0-9]+)-(.+)/', $ob->file_name, $matches) )
 					{

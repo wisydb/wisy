@@ -17,7 +17,7 @@ class AUTOCOMPLETE_JSON_CLASS
 	
 	private function _die($msg)
 	{
-		if( $this->debug ) {
+	    if( isset($this->debug) && $this->debug ) {
 			echo "[\"debug: " .$this->json->utf8_to_json($msg). "\"]";
 		}
 		else {
@@ -30,7 +30,9 @@ class AUTOCOMPLETE_JSON_CLASS
 	{
 		$this->_find_table_def($table, 'id', $temp_table_def, $dummy);
 		for( $r = 0; $r < sizeof((array) $temp_table_def->rows); $r++ ) {
-			if( $temp_table_def->rows[$r]->flags & TABLE_SUMMARY ) {
+		    
+		    $rowsFlags = isset( $temp_table_def->rows[$r]->flags ) ? $temp_table_def->rows[$r]->flags : null;
+			if( $rowsFlags & TABLE_SUMMARY ) {
 				$ret_field = $temp_table_def->rows[$r]->name;
 				$ret_rowtype = $temp_table_def->rows[$r]->flags & TABLE_ROW;
 				return; // success
@@ -41,7 +43,7 @@ class AUTOCOMPLETE_JSON_CLASS
 	}		
 	
 	// add the LIKE-wildcard "%" at the end/beginning of a value and quote the string properly
-	private function _quote_LIKE($hash_before = '', $value, $hash_after = '')
+	private function _quote_LIKE($value, $hash_before = '', $hash_after = '')
 	{
 		$value = strtr($value, array('%'=>"\\%", '_'=>"\\_"));
 		if( $hash_before != '' ) $value  = '%' . $value;
@@ -66,7 +68,8 @@ class AUTOCOMPLETE_JSON_CLASS
 		require_once('eql.inc.php');
 		
 		for( $r = 0; $r < sizeof((array) $ret_table_def->rows); $r++ ) {
-			if( $ret_table_def->rows[$r]->name == $field
+		    $rowsName = isset( $ret_table_def->rows[$r]->name ) ? $ret_table_def->rows[$r]->name : null;
+			if( $rowsName == $field
              || g_eql_normalize_func_name($ret_table_def->rows[$r]->name, 0) == $field	) {
 				$ret_row_index = $r;
 				break;
@@ -86,13 +89,18 @@ class AUTOCOMPLETE_JSON_CLASS
 	{
 		$fields = array($field);
 		$this->_find_table_def($table, $field, $table_def, $row_index);
-		if( ($table_def->rows[$row_index]->flags & TABLE_ROW)==TABLE_TEXT
-		 && $table_def->rows[$row_index]->flags & TABLE_ACNESTSTART  )
+		
+		$rowsFlags = isset( $table_def->rows[$row_index]->flags ) ? $table_def->rows[$row_index]->flags : null;
+		if( ( $rowsFlags & TABLE_ROW)==TABLE_TEXT
+		   && $rowsFlags & TABLE_ACNESTSTART  )
 		{
-		    for( $r = $row_index + 1; $r < sizeof((array) $table_def->rows); $r++ ) {
-				if( ($table_def->rows[$r]->flags & TABLE_ROW)==TABLE_TEXT
-				 &&  $table_def->rows[$r]->flags & TABLE_ACNEST ) {
-					$fields[] = $table_def->rows[$r]->name;
+			for( $r = $row_index + 1; $r < sizeof((array) $table_def->rows); $r++ ) {
+			    
+			    $rowsFlags = isset( $table_def->rows[$r]->flags ) ? $table_def->rows[$r]->flags : null;
+			    $rowsName = isset( $table_def->rows[$r]->name ) ? $table_def->rows[$r]->name : null;
+				if( ( $rowsFlags & TABLE_ROW)==TABLE_TEXT
+				   && $rowsFlags & TABLE_ACNEST ) {
+				       $fields[] = $rowsName;
 				}
 				else {
 					break; // nest end
@@ -112,7 +120,7 @@ class AUTOCOMPLETE_JSON_CLASS
 			$sql_cond = " id=" . intval($this->term) . ' ';
 		}
 		else {	
-			$sql_cond = " $field LIKE " . $this->_quote_LIKE('%',$this->term,'%') . ' ';
+		    $sql_cond = " $field LIKE " . $this->_quote_LIKE($this->term, '%', '%') . ' ';
 		}
 		
 		$actypefield  = '';
@@ -129,7 +137,7 @@ class AUTOCOMPLETE_JSON_CLASS
 					WHERE " . $sql_cond . $sql_referencable ." 
 					GROUP BY ".implode(',', $fields)." 
 					ORDER BY INSTR($field, '$this->term'), $field  
-					LIMIT $this->limit;"; // 11:59 04.02.2014 "ORDER BY field" hinzugefügt; der andere Ansatz, die letzten Ergebnisse via "ORDER BY date_modified DESC" anzuzeigen ist zu unübersichtlich und nicht vorhersehbar
+					LIMIT $this->limit;"; // 11:59 04.02.2014 "ORDER BY field" hinzugefuegt; der andere Ansatz, die letzten Ergebnisse via "ORDER BY date_modified DESC" anzuzeigen ist zu unuebersichtlich und nicht vorhersehbar
 		$this->db->query($sql);	// LIKE and INSTR are not case sensitive!
 		while( $this->db->next_record() ) 
 		{
@@ -146,7 +154,7 @@ class AUTOCOMPLETE_JSON_CLASS
 				$temp = $this->db->fs($fields[$r]);
 				if( $temp!='' ) {
 					// add separator
-					if( $fields[$r-1]=='plz' && $this->db->fs('plz')!='' )	{ $label .= ' ';	}
+				    if( isset( $fields[$r-1] ) && $fields[$r-1] == 'plz' && $this->db->fs('plz')!='' )	{ $label .= ' ';	}
 					else 													{ $label .= $label==''? '' : ', '; 	}
 					// add label
 					$label .= isohtmlspecialchars($temp);
@@ -194,15 +202,14 @@ class AUTOCOMPLETE_JSON_CLASS
 
 		for( $v = 0; $v < sizeof($values); $v+=2 ) 
 		{
-			$test = $values[$v+1];
-			if( $test !='' 
-			 && ($try==1 || strpos(strtolower($test), strtolower($this->term))!==false) )
+		    $test = isset($values[$v+1]) ? $values[$v+1] : '';
+			if( $test != '' && ( isset($try) && $try==1 || strpos(strtolower($test), strtolower($this->term))!==false ) )
 			{
 				$suggestions[] = array('label'=>isohtmlspecialchars($test), 'value'=>$test);
 			}
 		}
 		
-		// man könnte an dieser Stelle bei einer leeren Liste einfach alle Möglichen Optionen ausgeben; wir tun dies aber nicht, 
+		// man koennte an dieser Stelle bei einer leeren Liste einfach alle Moeglichen Optionen ausgeben; wir tun dies aber nicht, 
 		// um konsistent zu TABLE_TEXT etc. zu bleiben
 		
 		usort($suggestions, array($this, '_sort_callback'));
@@ -222,27 +229,31 @@ class AUTOCOMPLETE_JSON_CLASS
 		$this->limit	= 8;
 	
 		// get query entered by the user
-		$this->term = trim(utf8_decode($_REQUEST['term']));
+		$this->term = isset($_REQUEST['term'])? trim(utf8_decode($_REQUEST['term'])) : '';
 		if( $this->term=='' ) {
 			$this->_die('nothing entered.');
 		}
 		
 		// get the request scope from acdata
-		$temp = explode('.', $_REQUEST['acdata']);
-		$acdata_table		= $temp[0];
-		$acdata_field		= $temp[1];
+		if( isset( $_REQUEST['acdata'] ) )
+		  $temp = explode('.', $_REQUEST['acdata']);
 		
-		if( $acdata_field == 'seeselect' )
+		$acdata_table		= isset($temp[0]) ? $temp[0] : null;
+		$acdata_field		= isset($temp[1]) ? $temp[1] : null;
+		
+		if( isset( $acdata_field ) && $acdata_field == 'seeselect' )
 		{
-			$select_fields = explode('.', $_REQUEST['select']);
-			if( $select_fields[0]=='' || $select_fields[0]=='ANY' || $select_fields[0]=='DUMMY' || $select_fields[0]=='OPTIONS' || $select_fields[0]=='job' )
+		    if( isset( $_REQUEST['select'] ) )
+			 $select_fields = explode('.', $_REQUEST['select']);
+		    
+			if( $select_fields[0] == '' || $select_fields[0]=='ANY' || $select_fields[0]=='DUMMY' || $select_fields[0]=='OPTIONS' || $select_fields[0]=='job' )
 			{
 				$this->_die('cannot handle '.$select_fields[0]); 
 			} 
-			else if( sizeof($select_fields) == 2 || sizeof($select_fields) == 3 )
+			else if( isset( $select_fields ) && sizeof($select_fields) == 2 || isset( $select_fields ) && sizeof($select_fields) == 3 )
 			{
 				// search in secondary / attribute tables, max. 2 iterations needed
-				$this->_find_table_def($acdata_table, $select_fields[0], $temp_table_def, $temp_row_index);
+			    $this->_find_table_def( (isset($acdata_table) ? $acdata_table : null), $select_fields[0], $temp_table_def, $temp_row_index);
 				$temp_table_def2 = $temp_table_def->rows[$temp_row_index]->addparam;
 				if( sizeof($select_fields) == 3 )
 				{
@@ -254,42 +265,43 @@ class AUTOCOMPLETE_JSON_CLASS
 			}
 			else 
 			{
-				$suggest_table		= $acdata_table;
-				$suggest_field		= $select_fields[0];
+			    $suggest_table		= isset( $acdata_table ) ? $acdata_table : null;
+			    $suggest_field		= isset( $select_fields[0] ) ? $select_fields[0] : null;
 			}
 		}
-		else if( $acdata_field == 'user_created' || $acdata_field == 'user_modified' )   // needed in edit.php
+		else if( isset( $acdata_field ) && $acdata_field == 'user_created' || isset( $acdata_field ) && $acdata_field == 'user_modified' )   // needed in edit.php
 		{
 			$suggest_table		= 'user';
 			$suggest_field		= 'name';
 		}
-		else if( $acdata_field == 'user_grp' )   // needed in edit.php
+		else if( isset( $acdata_field ) && $acdata_field == 'user_grp' )   // needed in edit.php
 		{
 			$suggest_table		= 'user_grp';
 			$suggest_field		= 'name';
 		}
 		else
 		{
-			$suggest_table		= $acdata_table;
-			$suggest_field		= $acdata_field;
+		    $suggest_table		= isset( $acdata_table ) ? $acdata_table : null;
+			$suggest_field		= isset( $acdata_field ) ? $acdata_field : null;
 		}
 		
 		// convert attribute tables to normal field lookups 
 		$referencable_only = false;
-		$this->_find_table_def($suggest_table, $suggest_field, $temp_table_def, $temp_row_index);
-		$suggest_row_type = $temp_table_def->rows[$temp_row_index]->flags & TABLE_ROW;
+		$this->_find_table_def( $suggest_table, $suggest_field , $temp_table_def , $temp_row_index);
+		$flags = isset($temp_table_def->rows[$temp_row_index]->flags) ? $temp_table_def->rows[$temp_row_index]->flags : null;
+		$suggest_row_type = $flags & TABLE_ROW;
 		if( $suggest_row_type == TABLE_SECONDARY || $suggest_row_type == TABLE_SATTR || $suggest_row_type == TABLE_MATTR )
 		{
 			$referencable_only = true;
 			$suggest_table = $temp_table_def->rows[$temp_row_index]->addparam->name;
 			$this->_find_first_summary_field($suggest_table, $suggest_field, $suggest_row_type);
 		}
-		else if( $suggest_field == 'createdby' || $suggest_field == 'modifiedby' ) // needed in index.php
+		else if( isset( $suggest_field ) && $suggest_field == 'createdby' || isset( $suggest_field ) && $suggest_field == 'modifiedby' ) // needed in index.php
 		{
 			$suggest_table = 'user';
 			$this->_find_first_summary_field($suggest_table, $suggest_field, $suggest_row_type);
 		}
-		else if( $suggest_field == 'group' ) // needed in index.php
+		else if( isset( $suggest_field ) && $suggest_field == 'group' ) // needed in index.php
 		{
 			$suggest_table = 'user_grp';
 			$this->_find_first_summary_field($suggest_table, $suggest_field, $suggest_row_type);
@@ -301,12 +313,12 @@ class AUTOCOMPLETE_JSON_CLASS
 		{
 			case TABLE_TEXT:
 			case TABLE_INT:
-				$suggestions = $this->_handle_TABLE_TEXT($suggest_table, $suggest_field, $referencable_only);
+			    $suggestions = $this->_handle_TABLE_TEXT($suggest_table, $suggest_field , $referencable_only);
 				break;
 			
 			case TABLE_ENUM:
 			case TABLE_BITFIELD:
-				$suggestions = $this->_handle_TABLE_ENUM($suggest_table, $suggest_field);
+			    $suggestions = $this->_handle_TABLE_ENUM($suggest_table , $suggest_field);
 				break;
 			
 			default:
@@ -315,7 +327,7 @@ class AUTOCOMPLETE_JSON_CLASS
 		}
 		
 		// show "nothing found" on debug
-		if( $this->debug && sizeof((array) $suggestions) == 0 ) {
+		if( isset($this->debug) && $this->debug && sizeof((array) $suggestions) == 0 ) {
 			$this->_die("no suggestions found for $suggest_table.$suggest_field (row_type=$suggest_row_type)");
 		}
 		
@@ -352,4 +364,3 @@ class AUTOCOMPLETE_JSON_CLASS
 		echo $json;
 	}
 };
-
