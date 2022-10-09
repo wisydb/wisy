@@ -267,6 +267,9 @@ if( !$use_neweditor )
 	$durchfuehrung->add_row(TABLE_TEXT, 						'foerder_dnr', 	'Förder-Durchführungsnummer');
 	$durchfuehrung->add_row(TABLE_TEXT, 						'azwv_dnr', 	'AZAV-Durchführungsnummer');
 }
+
+// $durchfuehrung->add_row(TABLE_TEXT|TABLE_ACNEST,			'url',				'URL ', '', 3, '', array('layout.defhide'=>1));
+
 // $durchfuehrung->add_row(TABLE_DATETIME|TABLE_LIST|TABLE_READONLY, 'date_modified',			'Änderungsdatum', '', '', '', array('layout.descr'=>'Änderungsdatum', 'ctrl.class'=>'df_aenderungsdatum_ctrl', 'layout.descr.class'=>'df_aenderungsdatum_descr', 'layout.bg.class'=>'df_aenderungsdatum_bg'));
 $durchfuehrung->set_trigger('config/trigger_durchfuehrung.inc.php');    // make sure changes to DF trigger calculations, like last df change date
 

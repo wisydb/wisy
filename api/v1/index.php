@@ -137,6 +137,7 @@ class REST_API_CLASS
 			'land'				=>	array('flags'=>REST_STRING,				),
 			'rollstuhlgerecht'	=>	array('flags'=>REST_INT,				),
 			'bemerkungen'		=>	array('flags'=>REST_STRING,				),
+		    'url'		        =>	array('flags'=>REST_STRING,				),
 			'herkunft'			=>	array('flags'=>REST_INT,				),
 			'herkunftsID'		=>	array('flags'=>REST_STRING,				),
 		),

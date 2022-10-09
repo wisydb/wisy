@@ -301,6 +301,7 @@ CREATE TABLE `durchfuehrung` (
   `land` varchar(200) NOT NULL DEFAULT '',
   `rollstuhlgerecht` int(11) NOT NULL DEFAULT 0,
   `bemerkungen` longtext NOT NULL,
+  `url` varchar(200) NOT NULL DEFAULT '',
   `bg_nummer` varchar(100) DEFAULT NULL,
   `bu_dnummer` varchar(100) DEFAULT NULL,
   `bg_nummer_count` smallint(6) DEFAULT NULL,
