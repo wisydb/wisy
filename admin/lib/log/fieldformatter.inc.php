@@ -60,7 +60,7 @@ class LOG_FIELDFORMATTER_CLASS
 		for( $i = 0; $i < sizeof($oldValues); $i++ ) {	
 			if( !is_numeric($oldValues[$i]) ) return false; // error
 			if( !in_array($oldValues[$i], $newValues) ) { $ret_deleted[] = $oldValues[$i]; }
-			if( $oldValues[$i] != $newValues[$i] ) { $ret_orderModified = true; }
+			if( !isset($oldValues[$i])  || !isset($newValues[$i]) || $oldValues[$i] != $newValues[$i] ) { $ret_orderModified = true; }
 		}
 		for( $i = 0; $i < sizeof($newValues); $i++ ) {
 			if( !is_numeric($newValues[$i]) ) return false; // error

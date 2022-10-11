@@ -296,6 +296,7 @@ class LOG_RENDERER_CLASS
 		}
 
 		// render "more ..." link
+		$stats = isset($stats) ? $stats : '';
 		$record = array('', '', 0, 0, 'more___', $this->getUrl(array('date'=>ftime("%Y-%m-%d", $timestamp - $fileDaysScanned*86400))), 
 			"<small title=\"$stats\" style=\"color: #bbb;\">&nbsp; ".sprintf('%1.3f s', $time3)."</small>");
 		$this->dumpRow($currDay, 0, $record);

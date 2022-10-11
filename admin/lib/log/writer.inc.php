@@ -208,12 +208,12 @@ class LOG_WRITER_CLASS
 	
 	private function diff(&$str1, &$str2) // create a difference between two strings
 	{
-		// simplyfy the strings
-		$str1 = trim(strtr($str1, "\n\t\r", '   '));
-		while( !(strpos($str1, '  ' )===false) ) $str1 = str_replace('  ', ' ' , $str1);
-		
-		$str2 = trim(strtr($str2, "\n\t\r", '   '));
-		while( !(strpos($str2, '  ' )===false) ) $str2 = str_replace('  ', ' ' , $str2);
+	    // simplyfy the strings
+	    $str1 = trim(strtr(strval($str1), "\n\t\r", '   '));
+	    while( !(strpos($str1, '  ' )===false) ) $str1 = str_replace('  ', ' ' , $str1);
+	    
+	    $str2 = trim(strtr(strval($str2), "\n\t\r", '   '));
+	    while( !(strpos($str2, '  ' )===false) ) $str2 = str_replace('  ', ' ' , $str2);
 		
 		// remove equal characters at the beginning
 		$p = 0;
