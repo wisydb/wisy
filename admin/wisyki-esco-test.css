@@ -1,0 +1,101 @@
+*, html {
+    margin: 0;
+}
+
+body {
+    font-family: sans-serif;
+}
+
+h1 {
+    font-size: 1.5em;
+    margin-bottom: 1em;
+}
+
+h2 {
+    font-size: 1em;
+    margin-bottom: .5em;
+}
+main {
+    margin: 1em;
+}
+
+.esco-autocomplete {
+    margin-bottom: 1em;
+}
+
+ul {
+    /* list-style: none; */
+    padding-inline-start: 1em;
+}
+
+li {
+    margin: 0.2em;
+}
+
+.tabs {
+    margin-bottom: 1em;
+}
+
+/* Style the tab */
+.tabmenu {
+    overflow: hidden;
+    border: 1px solid #ccc;
+    background-color: #f1f1f1;
+}
+
+/* Style the buttons that are used to open the tab content */
+.tabmenu button {
+    background-color: inherit;
+    float: left;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 14px 16px;
+    transition: 0.3s;
+}
+
+/* Change background color of buttons on hover */
+.tabmenu button:hover {
+    background-color: #ddd;
+}
+
+/* Create an active/current tablink class */
+.tabmenu button.active {
+    background-color: #ccc;
+}
+
+/* Style the tab content */
+.tabcontent {
+    display: none;
+    padding: 6px 12px;
+    border: 1px solid #ccc;
+    border-top: none;
+    min-height: 320px;
+}
+
+.tabcontent.active {
+    display: block;
+}
+
+output {
+    display: block;
+}
+
+output label {
+    font-weight: bold;
+}
+output a {
+    margin: 0em .2em;
+    text-decoration: none;
+}
+
+a[href^="https://"]::after {content: "";
+    background: url(core51/img/External.svg) center right no-repeat;
+    background-size: 10px;
+    padding-right: 10px;
+    background-position: 0px 0px;
+}
+
+button.suggest {
+    margin: 0 .5em;
+}
