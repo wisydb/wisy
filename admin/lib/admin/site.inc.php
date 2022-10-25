@@ -129,7 +129,7 @@ class ADMIN_SITE_CLASS
 	private function _poorMansCron()
 	{
 		// calling this function makes sure, the cron job is called at least from time to time ...
-	    if( isset( $_SESSION['g_session_userid'] ) && $_SESSION['g_session_userid'] )
+	    if( isset( $_SESSION['g_session_userid'] ) && is_numeric( $_SESSION['g_session_userid'] ) )
 		{
 			$lastcall = regGet('cron.poormanscron', '0000-00-00 00:00:00', 'template');
 			if( $lastcall < ftime("%Y-%m-%d %H:%M:00", time() - 30*60) /*call it about every 30 minutes*/ )
@@ -158,7 +158,7 @@ class ADMIN_SITE_CLASS
 		$this->skin->fixedHeaderStart();
 		$this->skin->mainmenuStart();
 		
-		    if( isset( $_SESSION['g_session_userid'] ) && $_SESSION['g_session_userid'] ) 
+		    if( isset( $_SESSION['g_session_userid'] ) && is_numeric( $_SESSION['g_session_userid'] ) ) 
 			{
 				$anything_hilited = 0;
 				for( $t = 0; $t < sizeof((array) $Table_Def); $t++ )
@@ -226,7 +226,7 @@ class ADMIN_SITE_CLASS
 				$Admin_Logo_Target = regGet('logo.image.dest.url', '');
 				if( $Admin_Logo_Target ) {
 					$logo .= '<a href="' .isohtmlentities($Admin_Logo_Target). '" ';
-					if( isset( $_SESSION['g_session_userid'] ) && $_SESSION['g_session_userid'] ) {
+					if( isset( $_SESSION['g_session_userid'] ) && is_numeric( $_SESSION['g_session_userid'] ) ) {
 						$logo .= ' target="_blank" rel="noopener noreferrer"';
 					}
 					$logo .= '>';
@@ -238,7 +238,7 @@ class ADMIN_SITE_CLASS
 				echo $logo;
 			}
 			
-			echo '&nbsp;<a href="help.php?id='.( isset( $_SESSION['g_session_userid'] ) && $_SESSION['g_session_userid'] ? 'isysinfo' : '.').'" target="help" title="'.htmlconstant('_SYSINFO').'" onclick="return popup(this,500,380);"><small>V'.CMS_VERSION.'</small></a>&nbsp;';
+			echo '&nbsp;<a href="help.php?id='.( isset( $_SESSION['g_session_userid'] ) && is_numeric( $_SESSION['g_session_userid'] ) ? 'isysinfo' : '.').'" target="help" title="'.htmlconstant('_SYSINFO').'" onclick="return popup(this,500,380);"><small>V'.CMS_VERSION.'</small></a>&nbsp;';
 		
 		$this->skin->mainmenuEnd();
 
@@ -246,7 +246,7 @@ class ADMIN_SITE_CLASS
 			
 			$submenuItems = 0;
 			
-			if( isset( $_SESSION['g_session_userid'] ) && $_SESSION['g_session_userid'] ) 
+			if( isset( $_SESSION['g_session_userid'] ) && is_numeric( $_SESSION['g_session_userid'] ) ) 
 			{
 				for( $i = ($anything_hilited? 1 : 0); $i < sizeof((array) $this->menuItems); $i++ )
 				{
@@ -261,7 +261,7 @@ class ADMIN_SITE_CLASS
 
 		$this->skin->submenuBreak();								
 
-		    if( isset( $_SESSION['g_session_userid'] ) && $_SESSION['g_session_userid'] ) 
+		    if( isset( $_SESSION['g_session_userid'] ) && is_numeric( $_SESSION['g_session_userid'] ) ) 
 			{
 				// settings
 				$a = '';
@@ -284,7 +284,7 @@ class ADMIN_SITE_CLASS
 			}
 			
 			// print
-			if( isset( $_SESSION['g_session_userid'] ) && $_SESSION['g_session_userid'] ) 
+			if( isset( $_SESSION['g_session_userid'] ) && is_numeric( $_SESSION['g_session_userid'] ) ) 
 			{
 				$a = '';
 				if( isset( $this->menuPrintUrl ) && $this->menuPrintUrl != '' ) {
@@ -297,7 +297,7 @@ class ADMIN_SITE_CLASS
 			$this->menuHelpEntry($this->menuHelpScope);
 			
 			// logout
-			if( isset( $_SESSION['g_session_userid'] ) && $_SESSION['g_session_userid'] ) {
+			if( isset( $_SESSION['g_session_userid'] ) && is_numeric( $_SESSION['g_session_userid'] ) ) {
 				$this->skin->submenuItem('mlogout', 
 				    htmlconstant('_LOGOUTNAME', isohtmlentities( strval( (isset($_SESSION['g_session_userloginname']) ? $_SESSION['g_session_userloginname'] : null) ) ), '', ''), 
 					  "<a href=\"logout.php?page=".urlencode($this->menuLogoutUrl).'">');
