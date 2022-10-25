@@ -332,7 +332,7 @@ $kurse->add_row(TABLE_TEXT,										'msgtooperator',	'Stichwortvorschläge', 0, 
 
 $kurse->add_row(TABLE_TEXT|TABLE_READONLY,		                 'msgtooperator_unterrichtsart',	'Vorschläge Unterrichtsart', 0, 0, '',
     array('layout.join'=>1, 'layout.defhide'=>0,
-        'help.tooltip'=>'Unterrichtsart-Vorschläge vom Anbieter. Diese sind zur Bearbeitung gesperrt, weil sie bei der Onlinepflege mit existierenden SW abgeglichen werden m¸ssen.',
+        'help.tooltip'=>'Unterrichtsart-Vorschläge vom Anbieter. Diese sind zur Bearbeitung gesperrt, weil sie bei der Onlinepflege mit existierenden SW abgeglichen werden m&uuml;ssen.',
         'ctrl.size'=>'60-60-200',
         'ctrl.class'=>'vorschlag',
         'layout.descr.class' => 'vorschlag_label',
@@ -438,7 +438,7 @@ $anbieter_billing->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,			'notizen',				'Jou
 $apikeys = new Table_Def_Class(0,								'apikeys',			'API-Keys');
 $apikeys->add_row(TABLE_TEXT|TABLE_LIST|TABLE_MUST,				'name',				'Name', '', '', '', array('ctrl.size'=>'10-80', 'layout.bg.class'=>'e_bglite', 'layout.descr.class'=>'e_bolder', 'ctrl.class'=>'e_bolder'));
 $apikeys->add_row(TABLE_TEXT|TABLE_LIST|TABLE_UNIQUE,			'apikey',			'persönlicher API-Key', 'wird automatisch erzeugt', '', '', array('ctrl.size'=>'25-80'));
-$apikeys->add_row(TABLE_BITFIELD|TABLE_LIST,					'flags',			'Optionen', 1+2, '1###Freigeschaltet###2###Verschl¸sselte Verbindung###4###Schreibzugriff erlauben###8###Journal Lesezugriff', '', array('ctrl.checkboxes'=>1));
+$apikeys->add_row(TABLE_BITFIELD|TABLE_LIST,					'flags',			'Optionen', 1+2, '1###Freigeschaltet###2###Verschl&uuml;sselte Verbindung###4###Schreibzugriff erlauben###8###Journal Lesezugriff', '', array('ctrl.checkboxes'=>1));
 $apikeys->add_row(TABLE_MATTR,			                        'usergrp',  		'Zugriffsbeschränkung', 0, 'user_grp', '', array('layout.after'=>'<br>Wenn hier Gruppen eingetragen werden, können neue Datensätze nur mit diesen Gruppen erstellt werden und bestehende können nur bearbeitet/gelöscht werden, wenn sie einer der Gruppen angehören.'));
 $apikeys->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION, 				'notizen', 			'Journal', '', '', '', array('layout.section'=>1));
 $apikeys->set_trigger('config/trigger_apikeys.inc.php'); 
@@ -491,7 +491,7 @@ Table_Def_Finish(array(
 // Every first value (%1) = Field Name
 // Every second value (%2) = Setting Name in DB
 $g_addsettings_view             = array( "Domain f&uuml;r 'Ansicht'", 'view.domain' );                   // if no sepcific value is set for this user it will fall back / show the value of user "template" in CMS!
-$g_addsettings_misc             = array( "Export.ApiKey f&uml;r Synchronisation<br>Kann nur 'template' setzen", 'export.apikey' );    // if no sepcific value is set for this user it will fall back / show the value of user "template" in CMS!
+$g_addsettings_misc             = array( "Export.ApiKey f&uuml;r Synchronisation<br>Kann nur 'template' setzen", 'export.apikey' );    // if no sepcific value is set for this user it will fall back / show the value of user "template" in CMS!
 $g_addsettings_userTemplateOnly = array( 'export.apikey' );                                         // any of these settings are to be displayed for and can only be set by user "template" only
 
 // in dieses Verzeichnis werden zu exportierende Dateien temporär gelagert; andere Dateien in diesem Verzeichnis werden gelöscht!

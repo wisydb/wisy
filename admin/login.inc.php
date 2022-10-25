@@ -44,7 +44,7 @@ function login_screen()
     global $site;
     global $denymessage;
     
-    $enter_loginname = isset( $_REQUEST['enter_loginname'] ) ? strval( $_REQUEST['enter_loginname'] ) : '';
+    $enter_loginname = isset( $_REQUEST['enter_loginname'] ) ? @strval( $_REQUEST['enter_loginname'] ) : '';
     $enter_password = '';
     $resetlogin = isset( $_REQUEST['resetlogin'] ) ? $_REQUEST['resetlogin'] : null;
     
@@ -291,8 +291,8 @@ function login_check()
 	   unset( $_SESSION['g_role_confirm_login_credential_pw'] );
 
 	// get loginname/password from the request
-	$enter_loginname = isset( $_REQUEST['enter_loginname'] ) ? strval( $_REQUEST['enter_loginname'] ) : null;
-	$enter_password = isset( $_REQUEST['enter_password'] ) ? strval( $_REQUEST['enter_password'] ) : null;
+	$enter_loginname = isset( $_REQUEST['enter_loginname'] ) ? @strval( $_REQUEST['enter_loginname'] ) : null;
+	$enter_password = isset( $_REQUEST['enter_password'] ) ? @strval( $_REQUEST['enter_password'] ) : null;
 	$resetlogin = isset( $_REQUEST['resetlogin'] ) ? $_REQUEST['resetlogin'] : null;
 	
 	require_lang('lang/login');

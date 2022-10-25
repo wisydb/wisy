@@ -882,7 +882,7 @@ $site->initSkin();
 
 
 // check if the user is authorized or prompt for password
-if( ( !isset( $_SESSION['g_session_userid'] ) || !$_SESSION['g_session_userid'] ) && !defined('G_SKIP_LOGIN') )
+if( ( !isset( $_SESSION['g_session_userid'] ) || !is_numeric($_SESSION['g_session_userid']) ) && !defined('G_SKIP_LOGIN') )
 {
 	require_once('login.inc.php');
 	login_check();

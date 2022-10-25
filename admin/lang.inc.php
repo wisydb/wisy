@@ -98,7 +98,7 @@ function check_wanted_lang($availLang, $wantedLang)
 	
 	for( $wl = 0; $wl < sizeof($wantedLangArray); $wl++ ) {
 		$testLang = trim($wantedLangArray[$wl]);
-		if( $availLang[$testLang] ) {
+		if( isset($availLang[$testLang]) && $availLang[$testLang] ) {
 			$wantedLang = $testLang;
 			break;
 		}
@@ -115,7 +115,7 @@ function check_wanted_lang($availLang, $wantedLang)
 		}
 		
 		if( !$wantedLang ) {
-			if( $availLang['en'] ) {
+		    if( $availLang['en'] && $availLang['en'] ) {
 				$wantedLang = 'en';
 			}
 			else {
