@@ -90,7 +90,7 @@ output a {
 }
 
 a[href^="https://"]::after {content: "";
-    background: url(core51/img/External.svg) center right no-repeat;
+    background: url(../files/External.svg) center right no-repeat;
     background-size: 10px;
     padding-right: 10px;
     background-position: 0px 0px;

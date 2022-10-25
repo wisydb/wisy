@@ -97,14 +97,20 @@ async function autocomplete(input) {
 
 	if (response.ok) {
 		const result = await response.json();
-		showAutocompleteResult(result);
+		showAutocompleteResult(result, input);
 	} else {
 		alert("HTTP-Error: " + response.status);
 	}
 }
 
-function showAutocompleteResult(suggestions) {
-    const output = document.querySelector(".tabcontent.active output");
+function showAutocompleteResult(suggestions, inputNode = null) {
+    let output = null;
+    if (inputNode) {
+        output = inputNode.parentNode.querySelector("output");
+    } else {
+        output = document.querySelector(".tabcontent.active output");
+    }
+
     while(output.lastChild) {
         output.removeChild(output.lastChild);
     }

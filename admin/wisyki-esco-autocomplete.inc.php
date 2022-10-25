@@ -41,7 +41,7 @@ if (isset($scheme) && !empty($scheme)) {
         }
     }
 } else {
-    $results[$type] = $esco->search_api($_GET['term'], $type, $scheme[0], $_GET['limit']);
+    $results[$type] = $esco->search_api($_GET['term'], $type, $scheme, $_GET['limit']);
 }
 
 if (is_array($scheme) && !in_array('extenden-skills-hierarchy', $scheme) && array_key_exists('skills-hierarchy', $results) && empty($results['skills-hierarchy'])) {
