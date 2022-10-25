@@ -237,7 +237,7 @@ function regSave()
 	{
 		if( regGet('settings.editable', 1) )
 		{
-		    if( isset( $_SESSION['g_session_userid'] ) && $_SESSION['g_session_userid'] ) {
+		    if( isset( $_SESSION['g_session_userid'] ) && is_numeric($_SESSION['g_session_userid']) ) {
 				regSaveToDb__($_SESSION['g_session_userid'], $g_regUser);
 				$g_regUserModified = 0;
 				$ret = 1;
@@ -882,14 +882,14 @@ $site->initSkin();
 
 
 // check if the user is authorized or prompt for password
-if( ( !isset( $_SESSION['g_session_userid'] ) || !$_SESSION['g_session_userid'] ) && !defined('G_SKIP_LOGIN') )
+if( ( !isset( $_SESSION['g_session_userid'] ) || !is_numeric($_SESSION['g_session_userid']) ) && !defined('G_SKIP_LOGIN') )
 {
 	require_once('login.inc.php');
 	login_check();
 }
 
 // init bins
-if( isset( $_SESSION['g_session_userid'] ) && $_SESSION['g_session_userid'] )
+if( isset( $_SESSION['g_session_userid'] ) && is_numeric($_SESSION['g_session_userid']) )
 {
 	$db = new DB_Admin; // not sure: is this object used anywhere else?
 	$db->query( "SELECT remembered FROM user WHERE id=".$_SESSION['g_session_userid'] );
@@ -948,6 +948,6 @@ if( isset( $_SESSION['g_session_userid'] ) && $_SESSION['g_session_userid'] )
 			$_SESSION['g_session_bin'] = new G_BIN_CLASS();
 		}
 		
-		$_SESSION['g_session_bin']->userId = isset(  $_SESSION['g_session_userid'] ) ? $_SESSION['g_session_userid'] : null;
+		$_SESSION['g_session_bin']->userId = isset(  $_SESSION['g_session_userid'] ) ? intval($_SESSION['g_session_userid']) : null;
 	}
 }

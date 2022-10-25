@@ -43,7 +43,7 @@ function check_access($path, $id, $user, $descr)
 			echo '<span style="color:' .($access? '#00A000' : '#A00000'). ';">' .acl_get_readable_str($access). '</span>';
 		$site->skin->cellEnd();
 		
-		$gSessionUserID = isset($_SESSION['g_session_userid']) ? $_SESSION['g_session_userid'] : null;
+		$gSessionUserID = isset($_SESSION['g_session_userid']) ? intval($_SESSION['g_session_userid']) : null;
 		if( $user != $gSessionUserID ) {
 			$site->skin->cellStart();
 			$access = acl_get_access($path, $id, $gSessionUserID);
@@ -70,7 +70,7 @@ function write_head($name, $user)
 		$site->skin->cellEnd();
 		
 		// foreign user
-		$gSessionUserID = isset($_SESSION['g_session_userid']) ? $_SESSION['g_session_userid'] : null;
+		$gSessionUserID = isset($_SESSION['g_session_userid']) ? intval($_SESSION['g_session_userid']) : null;
 		if( $user != $gSessionUserID ) {
 			$site->skin->cellStart('width="25%"');
 				echo user_html_name($user);
@@ -214,7 +214,7 @@ while( $db->next_record() )
 }
 
 if( !$user_found && isset( $_SESSION['g_session_userid'] ) ) {
-	$user = $_SESSION['g_session_userid'];
+	$user = intval($_SESSION['g_session_userid']);
 }
 
 

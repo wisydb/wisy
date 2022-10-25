@@ -704,7 +704,7 @@ function Table_Find_Def($name, $accessCheck = 1)
 	{
 		if( $Table_Def[$t]->name == $name ) 
 		{
-		    if( !isset( $_SESSION['g_session_userid'] ) || !$_SESSION['g_session_userid'] || $accessCheck == 0) {
+		    if( !isset( $_SESSION['g_session_userid'] ) || !is_numeric($_SESSION['g_session_userid']) || $accessCheck == 0) {
 				return $Table_Def[$t]; 
 			}
 			
