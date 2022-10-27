@@ -302,6 +302,8 @@ function acl_get_access(	$object_path,
 		//
 		$g_acl_instance_grp = intval($g_acl_db->f('user_grp'));
 		
+		$filteredgroups = isset($filteredgroups) && is_array($filteredgroups) ? $filteredgroups : array();
+		
 		if( ( isset($filterpositive) && $filterpositive ? !in_array($g_acl_instance_grp, $filteredgroups) : in_array($g_acl_instance_grp, $filteredgroups)) ) {
 			$g_acl_get_rights = 0;
 			return 0; // record filtered - no access
