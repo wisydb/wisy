@@ -146,7 +146,9 @@ $codes_stichwort_eigenschaften =
     .'2048###Verwaltungsstichwort###'
     .'4096###Thema###'
     .'8192###Schlagwort nicht verwenden###'	// 8192 war mal "Hierarchie", "Schlagwort nicht verwenden" war mal bit 32 -- in beiden Fällen: wozu soll das sein? (bp)
-    .'16384###Anbieterstichwort';			// sollte mal exklusiv die Kurse infizieren, wenn bei einem Anbieter verwendet, aktuell (12/2014) nicht verwendet, alle nicht-versteckten Stichwoerter infizieren die Kurse, wenn einem Anbieter zugeordnet
+    .'16384###Anbieterstichwort###'			// sollte mal exklusiv die Kurse infizieren, wenn bei einem Anbieter verwendet, aktuell (12/2014) nicht verwendet, alle nicht-versteckten Stichwoerter infizieren die Kurse, wenn einem Anbieter zugeordnet
+	.'524288###ESCO-Kompetenz###'
+	.'1048576###ESCO-Tätigkeit';
     // ACHTUNG: Werte ab 0x10000 werden in tag_type anders verwendet!
     // 131072 versteckte Anbieter-Namensverweisung
     // 262144 = neue Namensverweisung, damit von SW-Synonym (64) unterscheidbar

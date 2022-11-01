@@ -19,6 +19,228 @@ main {
     margin: 1em;
 }
 
+.manual-classification {
+    margin: 0 1rem;
+}
+
+.manual-classification > *:not(canvas) {
+    margin: 0 auto;
+    max-width: 500px;
+    padding: 1rem 0;
+}
+
+canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: -1;
+}
+
+.manual-classification > header {
+    margin-top: 1rem;
+}
+
+.manual-classification > header h1 {
+    margin: 0;
+}
+
+.manual-classification_selection .course-info {
+    background-color: #C0DCF7;
+    border-radius: 5px;
+    padding: 1rem;
+    margin: 1rem 0rem;
+}
+
+main.manual-classification_review {
+    background-color: #C0DCF7;
+    border-radius: 5px;
+    padding: 1rem;
+    
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 0.3rem;
+}
+
+.manual-classification_review .actions {
+    margin-top: 2rem;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 0.3rem;
+}
+
+
+.manual-classification_review .actions .btn {
+    flex-grow: 1;
+}
+
+.chosen-level {
+    font-weight: bold;
+}
+
+.course-info label {
+    font-size: 0.8em;
+    font-style: italic;
+}
+
+.course-info > * {
+    display: block;
+}
+
+.course-info label:not(:first-child) {
+    margin-top: .5rem;
+}
+
+.manual-classification_selection form section {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.3rem;
+}
+
+.manual-classification_selection .form-input {
+    flex-direction: column;
+}
+
+.manual-classification_selection .form-input label {
+    margin-bottom: 0.3rem;
+}
+
+.manual-classification_selection .form-action {
+    margin: 1rem 0;
+    flex-direction: row;
+}
+
+.manual-classification_selection .form-action .btn {
+    width: 100%;
+}
+
+progress[value] {
+    /* Reset the default appearance */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+
+    border: none;
+
+    width: 100%;
+    height: 20px;
+}
+progress[value]::-moz-progress-bar { 
+    background-image:
+    -moz-linear-gradient(
+        135deg, 
+        transparent 33%, 
+        rgba(0, 0, 0, 0.1) 33%, 
+        rgba(0, 0, 0, 0.1) 66%, 
+        transparent 66% 
+    ),
+    -moz-linear-gradient(
+        top, 
+        rgba(255, 255, 255, 0.25), 
+        rgba(0, 0, 0, 0.25)
+    ),
+    -moz-linear-gradient(
+        left, 
+        #09c, 
+        #f44
+    );
+
+    border-radius: 2px; 
+    background-size: 35px 20px, 100% 100%, 100% 100%; 
+}
+
+progress[value]::-webkit-progress-bar {
+    background-color: #eee;
+    border-radius: 2px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25) inset;
+}
+
+progress[value]::-webkit-progress-value {
+    background-image:
+        -webkit-linear-gradient(-45deg, 
+                                transparent 33%, rgba(0, 0, 0, .1) 33%, 
+                                rgba(0,0, 0, .1) 66%, transparent 66%),
+        -webkit-linear-gradient(top, 
+                                rgba(255, 255, 255, .25), 
+                                rgba(0, 0, 0, .25)),
+        -webkit-linear-gradient(left, #09c, #f44);
+
+    border-radius: 2px; 
+    background-size: 35px 20px, 100% 100%, 100% 100%;
+}
+
+progress[value]::-webkit-progress-value::before {
+    content: '80%';
+    position: absolute;
+    right: 0;
+    top: -125%;
+}
+
+.btn {
+    border-radius: 5px;
+    border: 0px;
+    text-align: center;
+    text-decoration: none;
+    font-size: 0.9rem;
+    padding: 0.5rem;
+    cursor: pointer;
+    color: rgb(53, 53, 53);
+    background-color: #dfdfdf;
+}
+
+.btn:hover, .btn:active {
+    background-color: #eeeeee;
+}
+
+.form-input select {
+    border-radius: 5px;
+    border: 0px;
+    text-align: center;
+    text-decoration: none;
+    font-size: 0.8rem;
+    padding: 0.5rem;
+    cursor: pointer;
+    color: rgb(31, 31, 31);
+    background-color: #dfdfdf;
+}
+
+.form-input select:hover {
+    background-color: #eeeeee;
+}
+
+.btn-primary {
+    color: white;
+    font-weight: bolder;
+    background-color: #0083C4;
+}
+
+.btn-primary:hover, .btn-primary:active {
+    background-color: #0075af;
+}
+
+.btn-secondary {
+    color: white;
+    font-weight: bold;
+    background-color: #c2c2c2;
+}
+
+.btn-secondary:hover, .btn-secondary:active {
+    background-color: #b4b4b4;
+}
+
+.help {
+    flex-direction: column;
+}
+
+.help-actions .btn {
+    flex-grow: 1;
+}
+
+.help label {
+    display: block;
+}
+
 .esco-autocomplete {
     margin-bottom: 1em;
 }
@@ -89,10 +311,11 @@ output a {
     text-decoration: none;
 }
 
-a[href^="https://"]::after {content: "";
+a[href^="https://"]::after {
+    content: "";
     background: url(../files/External.svg) center right no-repeat;
-    background-size: 10px;
-    padding-right: 10px;
+    background-size: 12px;
+    padding-right: 12px;
     background-position: 0px 0px;
 }
 

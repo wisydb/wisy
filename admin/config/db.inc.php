@@ -321,6 +321,21 @@ $kurse->add_row(TABLE_SATTR|TABLE_LIST|TABLE_TRACKDEFAULTS|TABLE_MUST,
 																'anbieter',			'Anbieter', 0, $anbieter);
 $kurse->add_row(TABLE_TEXTAREA|TABLE_WIKI|TABLE_NEWSECTION,		'beschreibung',		'Beschreibung', 0, 0, 'Kursporträt');
 $kurse->add_row(TABLE_SATTR|TABLE_TRACKDEFAULTS,				'thema',			'Thema', 0, $themen, '', array());
+
+// Dynammically get the respective stichwort ids for the competency levels from the database.
+$db = new DB_Admin();
+$level_selct_values = '0###keine Angabe';
+$levels = ['Niveau A', 'Niveau B', 'Niveau C', 'Niveau D'];
+foreach ($levels as $level) {
+	$sql = 'SELECT id FROM stichwoerter WHERE stichwoerter.stichwort = "' . $level . '"';
+	$db->query($sql);
+	if ($db->next_record()) {
+		$level_selct_values .= '###' . $db->Record['id'] . '###' . $level;
+	}
+}
+// Adds a dropdown for selecting a competency niveau to the edit page for 'kurse'.
+$kurse->add_row(TABLE_ENUM|TABLE_DB_IGNORE,						'level',	        'Kompetenzniveau', 0, $level_selct_values, '', array('layout.join'=>0));
+
 $kurse->add_row(TABLE_MATTR|TABLE_TRACKDEFAULTS,				'stichwort',		'Stichwörter', 0, $stichwoerter, '', array('layout.join'=>0));
 $kurse->add_row(TABLE_TEXT,										'msgtooperator',	'Stichwortvorschläge', 0, 0, '',
     array('layout.join'=>0, 'layout.defhide'=>0,

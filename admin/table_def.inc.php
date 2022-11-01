@@ -48,6 +48,7 @@ define("TABLE_TRACKDEFAULTS",		0x00008000); // TABLE_*: track default values
 define("TABLE_USERDEF",				0x00010000); // TABLE_*: a user defined control, PHP script in 'addparam', 2014-11-12 DEPRECATED, used in the old editor only 
 define("TABLE_NEWSECTION",			0x00020000); // TABLE_*: start a new section, 28.01.2014: DEPRECATED: used in the old editor only
 define("TABLE_READONLY",			0x00040000); // TABLE_*: control is always read-only, whatever ACL says
+define("TABLE_DB_IGNORE",			0x00080000); // TABLE_*: ignored during export and imports, for fields that are not present in the database 
 define("TABLE_HTML",				0x00100000); // TABLE_TEXTAREA: this flag will allow the HTML editor
 define("TABLE_WIKI",				0x00200000); // TABLE_TEXTAREA: this flag indicates WIKI formatted text
 define("TABLE_DAYMONTHOPT",			0x00100000); // TABLE_DATE: day/month is optional

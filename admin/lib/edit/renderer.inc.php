@@ -106,6 +106,7 @@ class EDIT_RENDERER_CLASS
 		// page start
 		$site->title = $this->data->get_title();
 		$site->addScript('lib/edit/edit.js');
+		$site->addScript('lib/edit/suggest_comp_level.js');
 		$site->pageStart();
 		
 			// menu
@@ -351,6 +352,8 @@ class EDIT_RENDERER_CLASS
 		else {
 			echo ' &nbsp; ';
 		}
+
+		$selected_level = 0; 
 		
 		$this->data->connect_to_db_();
 		$this->defhide_id = 1; // note: the ID is only guaranteed to be unique inside the same object! if objects are duplicated, they will have the same IDs!
@@ -441,6 +444,18 @@ class EDIT_RENDERER_CLASS
 						echo $control_descr . ' ';
 					}
 				}
+ 
+				// Don't show level stichwoerter in stichwort field. 
+				if ($control->name == 'f_level') { 
+					$selected_level = $control->dbval; 
+				} else if ($control->name == 'f_stichwort') { 
+					$stichworte = explode(',', $control->dbval); 
+					if (($key = array_search($selected_level, $stichworte)) !== false){ 
+						unset($stichworte[$key]); 
+					} 
+					$control->dbval = implode(',', array_filter($stichworte)); 
+				}
+ 
 				
 				echo $control->render_html(array(
 									'dba'	=>	$this->data->dba,
