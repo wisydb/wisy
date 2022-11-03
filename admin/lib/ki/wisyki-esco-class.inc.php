@@ -163,6 +163,12 @@ class WISYKI_ESCO_CLASS {
         $results = $response['_embedded']['results'];
 
         foreach ($results as $result) {
+            if ($result['className'] == 'Concept') {
+                if (!preg_match("/.*esco\/(skill\/S\d\.\d\.\d)|(isced-f\/\d{4})/", $result["uri"])) {
+                    continue;
+                }
+            }
+
             $escoSuggestions[$result["uri"]] = [
                 "label" => $result["title"]
             ];
@@ -213,9 +219,9 @@ class WISYKI_ESCO_CLASS {
 
         // Decode response and filter results for title and uri attributes.
         $response = json_decode($response, true);
-        if ($response['_links']['hasEssentialSkill']) {
+        if (array_key_exists('hasEssentialSkill', $response['_links'])) {
             $skills = $response['_links']['hasEssentialSkill'];
-        } else if ($response['_links']['narrowerSkill']) {
+        } else if (array_key_exists('narrowerSkill', $response['_links'])) {
             $skills = $response['_links']['narrowerSkill'];
         } else {
             return [];
