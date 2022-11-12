@@ -177,6 +177,12 @@ progress[value]::-webkit-progress-value::before {
     top: -125%;
 }
 
+details {
+    background-color: #ffffff5e;
+    padding: 0.5em;
+    border-radius: 5px;
+}
+
 .btn {
     border-radius: 5px;
     border: 0px;

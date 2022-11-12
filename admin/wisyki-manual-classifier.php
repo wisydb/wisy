@@ -73,6 +73,20 @@ function get_level_ids($levels) {
     return $levels; 
 }
 
+function round_report(array $report): array {
+    $rounded = array();
+    foreach ($report as $key => $value) {
+        if (is_array($value)) {
+            $rounded[$key] = round_report($value);
+        } elseif (is_float($value)) {
+            $rounded[$key] = number_format($value, 4, ',', '');
+        } else {
+            $rounded[$key] = $value;
+        }
+    }
+    return $rounded;
+}
+
 function pagestart($title) {
     echo (" <!DOCTYPE html>
             <html lang='en'>
@@ -141,9 +155,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $progress_value = max($trainings_progress, 5);
 
         $report = $pythonAPI->get_comp_level_report();
+        $rounded_report = round_report($report);
+        $json_report = json_encode($rounded_report, JSON_PRETTY_PRINT);
 
         $model_accuracy = number_format($report['accuracy'] * 100, 2, ',', '');
-
+        $trainings_date = date("d.m.Y h:i", $report['time']) . ' Uhr';
+        $execution_time = number_format($report['executiontime'], 2, ',', '');
         // HTML response.
         pagestart('Erfolgreiche Kursklassifikation');
         
@@ -156,7 +173,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <progress id="trainings-progress" value="<?php echo $progress_value ?>" max="100"> <?php echo $trainings_progress ?>% </progress>
             <p><?php echo $labeled_courses ?>/<?php echo $all_courses ?> Kurse wurden bereits klassifiziert.</p>
             <br>
-            <details><summary>KI-Model Genauigkeit: <?php echo $model_accuracy ?>%</summary><pre><?php echo json_encode($report, JSON_PRETTY_PRINT) ?></pre></details>
+            <details>
+                <summary>KI-Model Genauigkeit: <?php echo $model_accuracy ?>%</summary>
+                <br>
+                <ul>
+                    <li>Modellname: <?php echo $report['modelname'] ?></li>
+                    <li>Zuletzt trainiert am <?php echo $trainings_date ?></li>
+                    <li>Anzahl der Trainingsdaten: <?php echo $report['weighted avg']['support'] ?></li>
+                    <li>Trainingsdauer: <?php echo $execution_time ?> Sekunden</li>
+                </ul>
+                <br>
+                <details>
+                    <summary>Detailierte Statistiken</summary>
+                    <pre><?php echo $json_report ?></pre>
+                </details>
+            </details>
             <section class="actions">
                 <a href="<?php echo $pageuri . '?courseid=' . $courseid ?>" class="btn btn-secondary">Auswahl korrigieren</a>
                 <a href="<?php echo $pageuri ?>" class="btn btn-primary">Nächster Kurs</a>
