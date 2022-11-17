@@ -81,7 +81,7 @@ function showLevelSuggestion(suggestion) {
 		suggestionTag.hidden = false 
 	}
 	suggestionTag.className = "level-suggestion" 
-	suggestionTag.innerHTML = "KI empfielt <strong>Niveau "+ suggestion.level + " (" + suggestion.target_probability.toFixed(2) + "%)</strong>" 
+	suggestionTag.innerHTML = "KI empfielt <strong>Niveau "+ suggestion.level + " (" + (suggestion.target_probability*100).toFixed(2) + "%)</strong>" 
 } 
  
 function hideLevelSuggestion() { 
