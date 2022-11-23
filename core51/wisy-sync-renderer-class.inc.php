@@ -538,10 +538,10 @@ class WISY_SYNC_RENDERER_CLASS
 	}
 	protected function flatenArray__(&$ids, $id)
 	{
-		if( $this->in_work[$id] ) { return; } $this->in_work[$id] = 1; // avoid dead lock and speed up things
+		if( isset($this->in_work[$id]) ) { return; } $this->in_work[$id] = 1; // avoid dead lock and speed up things
 		foreach( $ids[$id] as $super_id )
 		{
-			if( is_array($ids[$super_id]) ) 
+			if( isset($ids[$super_id]) && is_array($ids[$super_id]) ) 
 			{
 				$this->flatenArray__($ids, $super_id);
 				for( $k = 0; $k < sizeof((array) $ids[$super_id]); $k++ )

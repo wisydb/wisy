@@ -152,7 +152,7 @@ class WISY_FRAMEWORK_CLASS
 			// This makes sure that a q parameter that is set by a google link and encoded in UTF-8 (like T%C3%B6pfern) is convertet to ISO-8859-15 for search
 			// While this also converts non-Umlaaut-strings as well, like "deutsch", that doesn't matter
 			// results: "deutsch" (= ASCII) => ISO = 1, UTF-8 = 1 // Töpfern => ISO = 1, UTF-8 = 0 // Tπpfern = ISO = 1, UTF-8 =  1
-			if((strpos($_SERVER["HTTP_REFERER"], "google.") !== FALSE) && trim($this->getParam('q', '')) != "" && mb_check_encoding(rawurldecode($this->getParam('q', '')), "ISO-8859-15") && mb_check_encoding(rawurldecode($this->getParam('q', '')), "UTF-8")) // deutsch oder T%C3%B6pfern, nicht (wie es korrekt w√§re ):T%F6pfern (ISO-8859)
+			if((isset($_SERVER["HTTP_REFERER"]) && (strpos($_SERVER["HTTP_REFERER"], "google.") !== FALSE)) && trim($this->getParam('q', '')) != "" && mb_check_encoding(rawurldecode($this->getParam('q', '')), "ISO-8859-15") && mb_check_encoding(rawurldecode($this->getParam('q', '')), "UTF-8")) // deutsch oder T%C3%B6pfern, nicht (wie es korrekt w√§re ):T%F6pfern (ISO-8859)
 			    $this->Q = utf8_decode($this->Q);
 			
 			$this->tokens = $searcher->tokenize($this->Q);
@@ -201,7 +201,7 @@ class WISY_FRAMEWORK_CLASS
 	{
 		global $wisyPortalEinstcache;
 		global $s_cacheModified;
-		if( $wisyPortalEinstcache[ $key ] != $value )
+		if( !isset($wisyPortalEinstcache[ $key ]) || $wisyPortalEinstcache[ $key ] != $value )
 		{
 			$wisyPortalEinstcache[ $key ] = $value;
 			$s_cacheModified = true;
@@ -2377,7 +2377,7 @@ class WISY_FRAMEWORK_CLASS
 		        $active_filters = $this->filterer->getActiveFilters();
 		        $hintwithfilters = $this->iniRead('searcharea.hintwithfilters', 0);
 		        if($active_filters == '' || $hintwithfilters) {
-		            $hint = ($hintwithfilters && $active_filters) ? $hintwithfilters : ($hint =="") ? $this->replacePlaceholders($this->iniRead('searcharea.hint', $DEFAULT_BOTTOM_HINT)) : $hint;
+		            $hint = $hintwithfilters && $active_filters ? $hintwithfilters : (($hint =="") ? $this->replacePlaceholders($this->iniRead('searcharea.hint', $DEFAULT_BOTTOM_HINT)) : $hint);
 		            echo '<div class="wisy_searchhints">' .  $hint;
 		            
 		            if( $this->getParam('anbieterRedirect') == 1)
