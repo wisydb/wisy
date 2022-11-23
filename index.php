@@ -325,7 +325,7 @@ $wisyCore = 'core20';
  // $wisyCore = 'core' . strval($_GET['filecore']);
  }
  else */
-if( strval($_COOKIE['core']) != '' )
+if( strval(isset($_COOKIE['core'])) && $_COOKIE['core'] !='' )
 {
     $wisyCore = 'core' . strval($_COOKIE['core']);
 }

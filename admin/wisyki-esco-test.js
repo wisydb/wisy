@@ -21,7 +21,9 @@ async function suggestSkills(uri) {
         return;
     }
 
-    const params = {uri: uri, limit: 10};
+    const limit = 40;
+
+    const params = {uri: uri, limit: limit};
 
     const url = "./wisyki-esco-skill-suggest.inc.php?" + new URLSearchParams(params);
 	const response = await fetch(url);
@@ -77,19 +79,26 @@ function showSkillSuggestions(suggestions) {
 
 async function autocomplete(input) {
     const searchterm = input.value;
+    let limit = 40;
+    if (input.getAttribute('max')) {
+        limit = input.getAttribute('max');
+    }
 
     if(searchterm.length < 3) {
         showAutocompleteResult([])
         return;
     }
 
-    const params = {term: searchterm, limit: 10};
+    const params = {term: searchterm, limit: limit};
 
     if (input.getAttribute("esco-type")) {
         params.type = input.getAttribute("esco-type").split(" ");
     }
     if (input.getAttribute("esco-scheme")) {
         params.scheme = input.getAttribute("esco-scheme").split(" ");
+    }
+    if (input.getAttribute("onlyrelevant") === 'False') {
+        params.onlyrelevant = false;
     }
 
     const url = "./wisyki-esco-autocomplete.inc.php?" + new URLSearchParams(params);
@@ -133,7 +142,7 @@ function showAutocompleteResult(suggestions, inputNode = null) {
             if (category == "occupation" || category == "skills-hierarchy" || category == "member-occupations") {
                 const suggestButton = document.createElement("button");
                 suggestButton.className = "suggest";
-                suggestButton.textContent = "KompetenzvorschlÃ¤ge";
+                suggestButton.textContent = "Kompetenzvorschläge";
                 suggestButton.setAttribute("value", suggestionURI);
                 li.appendChild(suggestButton);
 

@@ -14,28 +14,28 @@
         <div class="tabs">
             <!-- Tab links -->
             <div class="tabmenu">
-                <button class="tablink active" value="Testcase1">TÃ¤tigkeit</button>
-                <button class="tablink" value="Testcase4">TÃ¤tigkeit & Kompetenzkonzept</button>
+                <button class="tablink active" value="Testcase1">Tätigkeit</button>
+                <button class="tablink" value="Testcase4">Tätigkeit & Kompetenzkonzept</button>
                 <button class="tablink" value="Testcase5">Kompetenzen</button>
             </div>
 
             <!-- Tab content -->
             <div id="Testcase1" class="tabcontent active">
-                <h2>FÃ¼r welchen Beruf oder welche TÃ¤tigkeit suchst Du eine Weiterbildung?</h2>
-                <input type="text" placeholder="koch" name="esco-occupation-select" class="esco-autocomplete" esco-type="occupation">
+                <h2>Für welchen Beruf oder welche Tätigkeit suchst Du eine Weiterbildung?</h2>
+                <input type="text" placeholder="koch" name="esco-occupation-select" class="esco-autocomplete" esco-type="occupation" onlyrelevant=False>
                 <output name="esco-occupation-autocomplete" for="esco-occupation-select"></output>
             </div>
 
             <div id="Testcase4" class="tabcontent">
-                <h2>FÃ¼r welches Thema suchst Du eine Weiterbildung?</h2>
-                <input type="text" placeholder="koch" name="esco-occupationAndConcept-select-select" class="esco-autocomplete" esco-scheme="skills-hierarchy member-occupations">
+                <h2>Für welches Thema suchst Du eine Weiterbildung?</h2>
+                <input type="text" placeholder="koch" name="esco-occupationAndConcept-select-select" class="esco-autocomplete" esco-scheme="skills-hierarchy member-occupations" onlyrelevant=False>
                 <output name="esco-occupationAndConcept-autocomplete" for="esco-occupationAndConcept-select">
                 </output>
             </div>
 
             <div id="Testcase5" class="tabcontent">
-                <h2>Ãœber welche Kompetenzen verfÃ¼gst Du, was kannst Du gut?</h2>
-                <input type="text" placeholder="koch" name="esco-skill-select" class="esco-autocomplete" esco-type="skill">
+                <h2>Über welche Kompetenzen verfügst Du, was kannst Du gut?</h2>
+                <input type="text" placeholder="koch" name="esco-skill-select" class="esco-autocomplete" esco-type="skill" onlyrelevant=False>
                 <output name="esco-skill-autocomplete" for="esco-skill-select"></output>
             </div>
         </div>
@@ -44,7 +44,7 @@
         <div class="tabs">
             <!-- Tab links -->
             <div class="tabmenu">
-                <button class="tablink active" value="tab-skill-suggestions">KompetenzvorschlÃ¤ge</button>
+                <button class="tablink active" value="tab-skill-suggestions">Kompetenzvorschläge</button>
             </div>
 
             <!-- Tab content -->

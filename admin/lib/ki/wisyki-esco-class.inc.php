@@ -281,4 +281,20 @@ class WISYKI_ESCO_CLASS {
 
         return $search_results;
     }
+
+
+    function filter_is_relevant($tags) {
+        $db = new DB_Admin();
+        $filtered = array();
+        foreach ($tags as $category => $categorytags) {
+            foreach ($categorytags as $id => $tag) {
+                $sql = 'SELECT * FROM x_tags WHERE tag_name = "'. $tag['label'] .'"';
+                $db->query($sql);
+                if ($db->next_record()) {
+                    $filtered[$category][$id] = $tag;
+                }
+            }
+        }
+        return $filtered;
+    }
 }
