@@ -406,11 +406,11 @@ class WISY_FILTER_CLASS
 		$heute = mktime(0, 0, 0);
 		
 		$ret = array();
-		$ret['vorgestern'] = strftime('%d.%m.%Y', $heute-$onedaysec*2);
-		$ret['gestern'] = strftime('%d.%m.%Y', $heute-$onedaysec);
-		$ret['heute'] = strftime('%d.%m.%Y', $heute);
-		$ret['morgen'] = strftime('%d.%m.%Y', $heute+$onedaysec);
-		$ret['uebermorgen'] = strftime('%d.%m.%Y', $heute+$onedaysec*2);
+		$ret['vorgestern'] = date('d.m.Y', $heute-$onedaysec*2);
+		$ret['gestern'] = date('d.m.Y', $heute-$onedaysec);
+		$ret['heute'] = date('d.m.Y', $heute);
+		$ret['morgen'] = date('d.m.Y', $heute+$onedaysec);
+		$ret['uebermorgen'] = date('d.m.Y', $heute+$onedaysec*2);
 		
 		// nächsten Montag herausfinden
 		$test = $heute + $onedaysec;
@@ -422,7 +422,7 @@ class WISY_FILTER_CLASS
 			$test += $onedaysec;
 		}
 		for( $i = 1; $i <= 9 /* s.a. (1) */; $i++ )
-			$ret['montag'.$i] = strftime('%d.%m.%Y', $test + $onedaysec * 7 * ($i-1));
+			$ret['montag'.$i] = date('d.m.Y', $test + $onedaysec * 7 * ($i-1));
 		
 		return $ret;
 	}
@@ -432,7 +432,7 @@ class WISY_FILTER_CLASS
 	{
 		// nur die stichwörter zurückgeben, die im aktuellem Portal auch verwendet werden!
 		$keyPrefix = "advStichw.$flag";
-		$magic = strftime("%Y-%m-%d-v5-").md5($GLOBALS['wisyPortalFilter']['stdkursfilter']);
+		$magic = date("Y-m-d-v5-").md5($GLOBALS['wisyPortalFilter']['stdkursfilter']);
 		if( $this->framework->cacheRead("adv_stichw.$flag.magic") != $magic )
 		{
 			$specialInfo =& createWisyObject('WISY_SPECIAL_INFO_CLASS', $this->framework);

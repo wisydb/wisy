@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="wisyki-esco-test.css">
-    <script src="wisyki-esco-test.js"></script>
+    <script src="wisyki-esco-demo.js"></script>
     <title>ESCO Test</title>
 </head>
 <body>
@@ -15,8 +15,9 @@
             <!-- Tab links -->
             <div class="tabmenu">
                 <button class="tablink active" value="Testcase1">Tätigkeit</button>
-                <button class="tablink" value="Testcase4">Tätigkeit & Kompetenzkonzept</button>
-                <button class="tablink" value="Testcase5">Kompetenzen</button>
+                <button class="tablink" value="Testcase2">Kompetenzkonzept</button>
+                <button class="tablink" value="Testcase3">Kompetenzen</button>
+                <button class="tablink" value="Testcase4">WISY Stichwort</button>
             </div>
 
             <!-- Tab content -->
@@ -26,16 +27,21 @@
                 <output name="esco-occupation-autocomplete" for="esco-occupation-select"></output>
             </div>
 
-            <div id="Testcase4" class="tabcontent">
+            <div id="Testcase2" class="tabcontent">
                 <h2>Für welches Thema suchst Du eine Weiterbildung?</h2>
-                <input type="text" placeholder="koch" name="esco-occupationAndConcept-select-select" class="esco-autocomplete" esco-scheme="skills-hierarchy member-occupations" onlyrelevant=False>
-                <output name="esco-occupationAndConcept-autocomplete" for="esco-occupationAndConcept-select">
-                </output>
+                <input type="text" placeholder="koch" name="esco-concept-select-select" class="esco-autocomplete" esco-type="concept" esco-scheme="skills-hierarchy" max="5" onlyrelevant=False>
+                <output name="esco-concept-autocomplete" for="esco-concept-select"></output>
             </div>
 
-            <div id="Testcase5" class="tabcontent">
+            <div id="Testcase3" class="tabcontent">
                 <h2>Über welche Kompetenzen verfügst Du, was kannst Du gut?</h2>
                 <input type="text" placeholder="koch" name="esco-skill-select" class="esco-autocomplete" esco-type="skill" onlyrelevant=False>
+                <output name="esco-skill-autocomplete" for="esco-skill-select"></output>
+            </div>
+
+            <div id="Testcase4" class="tabcontent">
+                <h2>Über welche Kompetenzen verfügst Du, was kannst Du gut?</h2>
+                <input type="text" placeholder="koch" name="esco-skill-select" class="esco-autocomplete" esco-type="skill" esco-scheme="sachstichwort" onlyrelevant=False>
                 <output name="esco-skill-autocomplete" for="esco-skill-select"></output>
             </div>
         </div>

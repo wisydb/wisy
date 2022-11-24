@@ -59,7 +59,9 @@ if (is_array($scheme) && !in_array('extenden-skills-hierarchy', $scheme) && arra
 }
 
 
+
 if ($onlyrelevant == 1) {
     $results = $esco->filter_is_relevant($results);
 }
-echo json_encode($results);
+
+echo json_encode($results, JSON_THROW_ON_ERROR);

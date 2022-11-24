@@ -21,7 +21,7 @@ class WISYKI_ESCO_CLASS {
         }
 
         // Build request url.
-        $url = "https://ec.europa.eu/esco/api/suggest2";
+        $url = "https://ec.europa.eu/esco/api/search";
         $dataArray = array(
             'text' => $term,
             'language' => 'de',
@@ -85,15 +85,38 @@ class WISYKI_ESCO_CLASS {
 
                 $concepts[$result["broaderHierarchyConcept"][0]] = [
                     "label" => $skill["title"],
+                    "count" => 1,
                 ];
 
                 if ($limit && count($concepts) >= $limit) {
                     return $concepts;
                 }
+            } else {
+                if (array_key_exists("count", $concepts[$result["broaderHierarchyConcept"][0]])) {
+                    $concepts[$result["broaderHierarchyConcept"][0]]["count"] += 1;
+                } else {
+                    $concepts[$result["broaderHierarchyConcept"][0]]["count"] = 1;
+                }
             }
         }
 
+        usort($concepts, function ($a, $b) {
+            $a_val = (int) $a['count'];
+            $b_val = (int) $b['count'];
+          
+            if($a_val > $b_val) return -1;
+            if($a_val < $b_val) return 1;
+            return 0;
+          });
+
         return $concepts;
+    }
+
+    function sort_by_count($concepts) {
+        $sorted = array();
+        foreach($concepts as $key => $value) {
+
+        }
     }
 
     /**
@@ -116,6 +139,7 @@ class WISYKI_ESCO_CLASS {
         ];
 
         // Build request url.
+        // $url = "https://ec.europa.eu/esco/api/suggest2";
         $url = "https://ec.europa.eu/esco/api/search";
         $dataArray = array(
             'text' => $term,
@@ -252,32 +276,75 @@ class WISYKI_ESCO_CLASS {
      * @return array [{"label":"title1","value":"url1"},{"label":"title2","value":"url2"}]
      */
     function search_wisy($term, $type = null, $scheme = null, $limit = 5) {
-        $db = new DB_Admin();
+        $url = $_SERVER['HTTP_HOST'] . '/autosuggest';
+
+        $dataArray = array(
+            'q' => $term,
+            'limit' => $limit,
+            'timestamp' => time(),
+        );
+
+        $data = http_build_query($dataArray);
+        $getUrl = $url."?".$data;
+
+        $curl = curl_init();
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, FALSE);
+        curl_setopt($curl, CURLOPT_FOLLOWLOCATION, TRUE);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, TRUE);
+        curl_setopt($curl, CURLOPT_URL, $getUrl);
+        curl_setopt($curl, CURLOPT_TIMEOUT, 80);
+
+        $response = curl_exec($curl);
+
+        if (curl_error($curl)){
+            echo 'Request Error:' . curl_error($curl);
+            return;
+        }
+
+        curl_close($curl);
 
         $search_results = array();
 
-		$available_wisy_schemes = [
-            'sachstichwort' => '0',
-        ];
-
-        $sql = 'SELECT id, stichwort FROM stichwoerter WHERE stichwort LIKE "%'. $term .'%"';
-
-		if (isset($scheme) && !empty($scheme)) {
-            if (array_key_exists($scheme, $available_wisy_schemes)) {
-                $sql .= ' AND eigenschaften = ' .$available_wisy_schemes[$scheme];
+        $tags = explode('|', $response);
+        for ($i = 0; $i < count($tags); $i++) {
+            if ($i % 4 != 0) {
+                continue;
             }
-		}
-
-        if (isset($limit)) {
-            $sql .= ' LIMIT ' . $limit;
-        }
-
-        $db->query($sql);
-        while ($db->next_record()) {
-            $search_results[$db->Record['id']] = [
-                "label" =>  utf8_encode($db->Record['stichwort'])
+            $tag = preg_replace('/\d+\s*/', '', $tags[$i]);
+            if(empty($tag) || str_contains($tag, 'volltext:')) {
+                continue;
+            }
+            $search_results[] = [
+                "label" =>  utf8_encode($tag),
             ];
         }
+
+        // $db = new DB_Admin();
+
+        // $search_results = array();
+
+		// $available_wisy_schemes = [
+        //     'sachstichwort' => '0',
+        // ];
+
+        // $sql = 'SELECT id, stichwort FROM stichwoerter WHERE stichwort LIKE "%'. $term .'%"';
+
+		// if (isset($scheme) && !empty($scheme)) {
+        //     if (array_key_exists($scheme, $available_wisy_schemes)) {
+        //         $sql .= ' AND eigenschaften = ' .$available_wisy_schemes[$scheme];
+        //     }
+		// }
+
+        // if (isset($limit)) {
+        //     $sql .= ' LIMIT ' . $limit;
+        // }
+
+        // $db->query($sql);
+        // while ($db->next_record()) {
+        //     $search_results[$db->Record['id']] = [
+        //         "label" =>  utf8_encode($db->Record['stichwort'])
+        //     ];
+        // }
 
         return $search_results;
     }

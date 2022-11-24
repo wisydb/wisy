@@ -21,7 +21,7 @@ async function suggestSkills(uri) {
         return;
     }
 
-    const limit = 40;
+    const limit = 10;
 
     const params = {uri: uri, limit: limit};
 
@@ -65,12 +65,6 @@ function showSkillSuggestions(suggestions) {
         span.textContent = suggestion.label;
         li.appendChild(span);
 
-        const a = document.createElement("a");
-        a.setAttribute("href", "https://esco.ec.europa.eu/de/classification/skills?uri=" + suggestionURI);
-        a.setAttribute("target", "_blank");
-        a.innerHTML = "&#x1F6C8;";
-        li.appendChild(a);
-
         ul.appendChild(li);
     }
 
@@ -81,7 +75,7 @@ let currentRequestID = 0;
 
 async function autocomplete(input) {
     const searchterm = input.value;
-    let limit = 40;
+    let limit = 10;
     if (input.getAttribute('max')) {
         limit = input.getAttribute('max');
     }
@@ -135,10 +129,10 @@ function showAutocompleteResult(suggestions, inputNode = null, id = null) {
     }
 
     for (category in suggestions) {
-        const label = document.createElement("label");
-        label.setAttribute("for", category);
-        label.textContent = category;
-        output.appendChild(label);
+        // const label = document.createElement("label");
+        // label.setAttribute("for", category);
+        // label.textContent = category;
+        // output.appendChild(label);
         const ul = document.createElement("ul");
         ul.setAttribute("name", category);
 
@@ -159,13 +153,13 @@ function showAutocompleteResult(suggestions, inputNode = null, id = null) {
                 suggestButton.addEventListener('click', () => suggestSkills(suggestButton.value))
             }
 
-            if (suggestionURI.startsWith('http')) {
-                const a = document.createElement("a");
-                a.setAttribute("href", "https://esco.ec.europa.eu/de/classification/skills?uri=" + suggestionURI);
-                a.setAttribute("target", "_blank");
-                a.innerHTML = "&#x1F6C8;";
-                li.appendChild(a);
-            }
+            // if (suggestionURI.startsWith('http')) {
+            //     const a = document.createElement("a");
+            //     a.setAttribute("href", "https://esco.ec.europa.eu/de/classification/skills?uri=" + suggestionURI);
+            //     a.setAttribute("target", "_blank");
+            //     a.innerHTML = "&#x1F6C8;";
+            //     li.appendChild(a);
+            // }
 
             ul.appendChild(li);
         }

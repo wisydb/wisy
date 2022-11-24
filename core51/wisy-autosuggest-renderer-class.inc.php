@@ -109,7 +109,7 @@ class WISY_AUTOSUGGEST_RENDERER_CLASS
                     
                     foreach($filtered_tags AS $filtered_tag) {
                         // eliminate double tags and tags without courses (except for synonyms)
-                        if( ($filtered_tag['tag'] == $tags[$i]['tag']) || (intval($tags[$i]['tag_help']) == 0 && (intval($tags[$i]['tag_freq']) == 0 && intval($tags[$i]['tag_type']) != 64)) )
+                        if( ($filtered_tag['tag'] == $tags[$i]['tag']) || (intval($tags[$i]['tag_help']) == 0 && (!isset($tags[$i]['tag_freq']) || (intval($tags[$i]['tag_freq']) == 0) && intval($tags[$i]['tag_type']) != 64)) )
                             $skip = true;
                     }
                     
@@ -157,12 +157,16 @@ class WISY_AUTOSUGGEST_RENDERER_CLASS
 					
 				for( $i = 0; $i < sizeof((array) $filtered_tags); $i++ )
 				{
+					$tag_freq = 0;
+					if (isset($filtered_tags[$i]['tag_freq']) && !empty($filtered_tags[$i]['tag_freq'])) {
+						$tag_freq = $filtered_tags[$i]['tag_freq'];
+					}
 					
 					echo		$filtered_tags[$i]['tag'] . 
 						"|"	.	$filtered_tags[$i]['tag_descr'] . 
 						"|"	.	intval($filtered_tags[$i]['tag_type']) . 
 						"|" .	intval($filtered_tags[$i]['tag_help']) . 
-						"|" .	intval($filtered_tags[$i]['tag_freq']) .
+						"|" .	$tag_freq .
 						"\n";
 				}
 				break;

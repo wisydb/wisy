@@ -2747,7 +2747,7 @@ class WISY_FRAMEWORK_CLASS
 			}
 			
 			// for "normal pages" as kurse, anbieter, search etc. switch back to non-secure
-			if( $renderer->unsecureOnly && $_SERVER['HTTPS']=='on' && !$this->iniRead('portal.https', '') )
+			if( !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS']=='on' && !$this->iniRead('portal.https', '') )
 			{
 				$redirect = "http://" . $_SERVER['HTTP_HOST'] . $_SERVER["REQUEST_URI"];
 				fwd301($redirect);

@@ -219,8 +219,8 @@ class WISY_TAGSUGGESTOR_CLASS
 				    $tag_anbieter_id = '';
 				    $tag_groups = array();
 					
-					if( !$tags_done [ $tag_name ]   // kein Tag zweimal ausgeben (koennte passieren, wenn es sowohl durch die buchstabenadditive und duch die fehlertolerante Suche gefunden wuerde)
-					 && !$links_done[ $tag_name ] ) // wenn zuvor auf ein lemma via Synonym verwiesen wurde, dieses Lemma nicht noch einmal einzeln hinzufügen
+					if( !isset($tags_done [ $tag_name ])   // kein Tag zweimal ausgeben (koennte passieren, wenn es sowohl durch die buchstabenadditive und duch die fehlertolerante Suche gefunden wuerde)
+					 && !isset($links_done[ $tag_name ]) ) // wenn zuvor auf ein lemma via Synonym verwiesen wurde, dieses Lemma nicht noch einmal einzeln hinzufügen
 					{
 						$fuzzy = $tries==1? 0x20000000 : 0;
 						$tags_done[ $tag_name ] = 1;

@@ -249,7 +249,7 @@ class WISY_SEARCH_CLASS
 	        $redundantFound = $this->isRedundantSearchTag($tag, $tag_heap, array("ancestor", "descendant"), $maxlevels);
 	        
 	        // curent value may still be a synonym => descendant/ancestor would not be found => check referenced tag
-	        if(!$redundantFound["found"] == "descendant" && !$redundantFound["found"] == "ancestor") {
+	        if(is_array($redundantFound) && !$redundantFound["found"] == "descendant" && !$redundantFound["found"] == "ancestor") {
 	            // Look for: 64 = Synonym, 32 = verstecktes Synonym
 	            $sql = "SELECT stichwort FROM stichwoerter WHERE id IN (SELECT stichwoerter_verweis.attr_id AS id "
 	                ."FROM stichwoerter, stichwoerter_verweis WHERE stichwoerter.stichwort = '".addslashes($tag)."' AND stichwoerter.eigenschaften IN (64,32) AND stichwoerter_verweis.primary_id = stichwoerter.id)";
