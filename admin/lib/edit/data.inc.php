@@ -387,6 +387,21 @@ class EDIT_DATA_CLASS
 				return ( isset( $row->name ) ? $db->fs($row->name) : '' );
 		}
 	}
+
+	private function get_level_ids() { 
+		$levels = ['Niveau A', 'Niveau B', 'Niveau C', 'Niveau D']; 
+ 
+		$db = new DB_Admin(); 
+		foreach ($levels as $level) { 
+			$sql = 'SELECT id FROM stichwoerter WHERE stichwoerter.stichwort = "' . $level . '"'; 
+			$db->query($sql); 
+			if ($db->next_record()) { 
+				$levelids[] = $db->Record['id']; 
+			} 
+		} 
+ 
+		return $levelids; 
+	} 
 	
 	public function load_from_db($copy_record = false)
 	{
@@ -410,6 +425,9 @@ class EDIT_DATA_CLASS
 		$this->control_user_created->dbval	= $this->db1->fs('user_created')==0? '' : $this->db1->fs('user_created');
 		$this->control_user_grp->dbval		= $this->db1->fs('user_grp')==0? '' : $this->db1->fs('user_grp');
 		$this->control_user_access->dbval	= $this->db1->fs('user_access');
+
+		$levelids = $this->get_level_ids();
+		$selected_level = ''; 
 		
 		$this->controls = array();
 		if(is_array($this->table_def->rows)) {
@@ -469,7 +487,40 @@ class EDIT_DATA_CLASS
 					default:	
 						// primary field
 						$control = $this->CREATE_CONTROL_("f_{$row->name}", $row, $this->table_def);
-						$control->dbval = $this->get_value_from_db_($this->db1, $this->table_def, $r);
+						if ($row->name == 'level') {
+							$level = 0;
+
+							$index_of_stichwort = null; 
+							for( $rx = 0; $rx < sizeof((array) $this->table_def->rows); $rx++ ) { 
+								$rowx = $this->table_def->rows[$rx]; 
+								if ($rowx->name == 'stichwort') { 
+									$index_of_stichwort = $rx; 
+									break; 
+								} 
+							} 
+ 
+							$stichworte = $this->get_value_from_db_($this->db1, $this->table_def, $index_of_stichwort); 
+ 
+							if(!empty($stichworte)) { 
+ 
+								$stichworte = explode(',', $stichworte); 
+ 
+								foreach ($stichworte as $stichwort) { 
+									if (in_array($stichwort, $levelids)) {
+										$selected_level = $stichwort; 
+										$level = $stichwort;
+										break;
+									} 
+								} 
+							} 
+							$control->dbval = $level;
+						} else if ($selected_level && $row->name == 'stichwort') { 
+							$stichworte = $this->get_value_from_db_($this->db1, $this->table_def, $r); 
+							$stichworte = str_replace($selected_level, '', $stichworte); 
+							$control->dbval = $stichworte; 
+						} else { 
+							$control->dbval = $this->get_value_from_db_($this->db1, $this->table_def, $r);
+						}
 						$this->controls[] = $control;
 						if( ($row->flags&TABLE_ROW) == TABLE_BLOB )
 							$this->can_contain_blobs = true;
@@ -590,6 +641,19 @@ class EDIT_DATA_CLASS
 					if( ($flags&TABLE_ROW) == TABLE_BLOB ) {
 						$this->can_contain_blobs = true;
 					}
+ 
+					if($row->name == 'level') { 
+						if (!isset($_REQUEST["f_{$row->name}"]) || $_REQUEST["f_{$row->name}"] == 0) { 
+							break; 
+						} 
+ 
+						if (empty($_REQUEST["f_stichwort"])) { 
+							$_REQUEST["f_stichwort"] = $_REQUEST["f_{$row->name}"]; 
+						} else { 
+							$_REQUEST["f_stichwort"] .= "," . $_REQUEST["f_{$row->name}"]; 
+						}
+					} 
+
 					break;
 			}
 		}
@@ -676,6 +740,9 @@ class EDIT_DATA_CLASS
 					default:
 						// if we go here, most stuff is already validated by set_dbval_*() - if any set_dbval_*() returns errors,
 						// the record ist **not** saved.
+						if ($row->flags & TABLE_DB_IGNORE) { 
+							break; 
+						} 
 						if( !$field->is_readonly() ) {
 							$sql .= $row->name . "=" . $this->db1->quote($field->dbval) . ", ";
 							

@@ -25,3 +25,6 @@ weiterbildungsportal_files
 admin/stats/
 
 *.gz
+
+# ignore directories where course information needed for wisy@ki AI is stored
+/admin/lib/ki/python/data/
