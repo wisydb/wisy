@@ -79,7 +79,7 @@ define("TABLE_SYNCABLE",		0x00000004); // the table may be synched and has globa
 // for URLs and files, we remove a part in the middle
 function smart_truncate($text, $l = 80)
 {
-	if( strlen($text) > $l ) 
+    if( isset($text) && $text != null && strlen($text) > $l ) 
 	{
 		$sep = strpos($text, "\\")? "\\" : "/";
 		$p1  = strpos($text, ':'.$sep);

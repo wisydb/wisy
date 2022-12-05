@@ -35,18 +35,18 @@ class G_GEOCODE
         $this->framework = $framework;
     }
 	
-	function xml_elem_start($parser, $name, $attribs)
-	{
-		if( $name == 'PLACE' ) {
-			if( !is_array($this->geocode_ret) ) {
-				$this->geocode_ret = array();
-				$this->geocode_ret['lat'] = $attribs['LAT'];
-				$this->geocode_ret['lng'] = $attribs['LON'];
-				$this->geocode_ret['DISPLAY_NAME'] = $attribs['DISPLAY_NAME'];
-			}
-		}
-		
-	}
+    function xml_elem_start($parser, $name, $attribs)
+    {
+        if( $name == 'PLACE' ) {
+            if( !isset($this->geocode_ret) || !is_array($this->geocode_ret) ) {
+                $this->geocode_ret = array();
+                $this->geocode_ret['lat'] = isset($attribs['LAT']) ? $attribs['LAT'] : 0;
+                $this->geocode_ret['lng'] = isset($attribs['LON']) ? $attribs['LON'] : 0;
+                $this->geocode_ret['DISPLAY_NAME'] = isset($attribs['DISPLAY_NAME']) ? $attribs['DISPLAY_NAME'] : 0;
+            }
+        }
+        
+    }
 	
 	function xml_elem_end($parser, $name)
 	{
@@ -67,7 +67,7 @@ class G_GEOCODE
 	//		... array('error'=>'short error message') on failure
 	function geocode($q_arr)
 	{
-	    $this->nominatim_url = 'https://nominatim.openstreetmap.org/search';
+	    $this->nominatim_url = 'https://www.mapquestapi.com/geocoding/v1/address';
 	    $this->nominatim_params = '?format=xml&limit=3&accept-language=de';
 	    
 	    $alternate_geocoder = $this->framework->iniRead('nominatim.alternate.geocoder', '');
@@ -81,42 +81,43 @@ class G_GEOCODE
 	    $this->nominatim_url = $nominatim_url;
 	    $this->nominatim_params .= '&key='.$nominatim_key;
 	        
-	    if( $GLOBALS['geocode_called'] >= 5500 ) { return array('error'=>'err_geocode_toomanycalls ('.$GLOBALS['geocode_called'].')', 'url'=>'not called'); }
+	    if( isset($GLOBALS['geocode_called']) && $GLOBALS['geocode_called'] >= 5500 ) { return array('error'=>'err_geocode_toomanycalls ('.$GLOBALS['geocode_called'].')', 'url'=>'not called'); }
 	    $GLOBALS['geocode_called']++;
 		
 	    // build query parameters string
 	    $param = '';
-	    if( $q_arr['street']!='' || $q_arr['postalcode']!='' || $q_arr['city']!='' || $q_arr['country']!='' ) {
-	        if( $q_arr['street']    !='' ) { $param .= '&street='     . urlencode(cs8($q_arr['street']    )); }
-	        if( $q_arr['postalcode']!='' ) { $param .= '&postalcode=' . urlencode(cs8($q_arr['postalcode'])); }
-	        if( $q_arr['city']      !='' ) { $param .= '&city='       . urlencode(cs8($q_arr['city']      )); }
-	        if( $q_arr['country']   !='' ) { $param .= '&country='    . urlencode(cs8($q_arr['country']   )); }
+	    if( isset($q_arr['street']) && $q_arr['street']!='' || isset($q_arr['postalcode']) && $q_arr['postalcode']!='' || isset($q_arr['city']) && $q_arr['city']!='' || isset($q_arr['country']) && $q_arr['country']!='' ) {
+	        if( isset($q_arr['street'])       && $q_arr['street']    !='' ) { $param .= '&street='     . urlencode(cs8($q_arr['street']    )); }
+	        if( isset($q_arr['postalcode'])   && $q_arr['postalcode']!='' ) { $param .= '&postalcode=' . urlencode(cs8($q_arr['postalcode'])); }
+	        if( isset($q_arr['city'])         && $q_arr['city']      !='' ) { $param .= '&city='       . urlencode(cs8($q_arr['city']      )); }
+	        if( sset($q_arr['country'])       && $q_arr['country']   !='' ) { $param .= '&country='    . urlencode(cs8($q_arr['country']   )); }
 	    }
-	    else if( $q_arr['free']!='' ) {
+	    else if( isset($q_arr['free']) && $q_arr['free']!='' ) {
 	        $place_search = urlencode(cs8($q_arr['free']));
 	        if($this->nominatim_explicit_city && stripos($place_search, $this->nominatim_explicit_city) === FALSE && stripos($place_search, ",") === FALSE)
 	            $place_search = $place_search.",+".$this->nominatim_explicit_city;
 	            
-	            $param .= '&q=' . $place_search;
+	            $param .= '&location=' . $place_search;
 	    }
 	    else {
 	        return array('error'=>'err_geocode_param', 'url'=>'none');
 	    }
-	
-		// read data - Usage Policy: https://wiki.openstreetmap.org/wiki/Nominatim_usage_policy
-		//	"Usage triggered by searches of the users are okay, 
-		//	Howver, no Heavy usage: max. 1 Request/s (for all users together)"
-		// to determinate the standard zoom, we could use the bounding box or sth. as the type (the XML-result gives much more information than just the lat/lng)
-		if($this->nominatim_explicit_city && stripos($param, $this->nominatim_explicit_city) === FALSE && stripos($param, ",") === FALSE)
-		  $param = $param.",+".$this->nominatim_explicit_city;
-		    
-		$url = $this->nominatim_url . $this->nominatim_params.'&q='.$param;
-		$url = str_replace('&q=&q=', '&q=', $url);
-		    
-		if (!($fp = @fopen($url, "r"))) {
-		  return array('error'=>'err_geocode_fopen ('.$url.')', 'url'=>$url);
-		}
-      
+	    
+	    // read data - Usage Policy: https://wiki.openstreetmap.org/wiki/Nominatim_usage_policy
+	    //	"Usage triggered by searches of the users are okay,
+	    //	Howver, no Heavy usage: max. 1 Request/s (for all users together)"
+	    // to determinate the standard zoom, we could use the bounding box or sth. as the type (the XML-result gives much more information than just the lat/lng)
+	    if($this->nominatim_explicit_city && stripos($param, $this->nominatim_explicit_city) === FALSE && stripos($param, ",") === FALSE)
+	        $param = $param.",+".$this->nominatim_explicit_city;
+	        
+	    $url = $this->nominatim_url . $this->nominatim_params.'&location='.$param;
+	    $url = str_replace('&location=&location=', '&location=', $url);
+	        
+	    // e.g.: https://www.mapquestapi.com/geocoding/v1/address?format=xml&limit=3&accept-language=de&key=<key>&location=Rathausmarkt,+Hamburg
+	    if (!($fp = @fopen($url, "r"))) {
+	       return array('error'=>'err_geocode_fopen ('.$url.')', 'url'=>$url);
+	    }
+	        
 		$data = '';
 		$loopprotect = 0;
 		while( $chunk=@fread($fp, 4096) ) {
@@ -125,24 +126,40 @@ class G_GEOCODE
 			if( $loopprotect > 1000 ) { return array('error'=>'err_geocode_fread', 'url'=>$url); }
 		}
 
-		// parse XML result
-		$this->geocode_ret = false;
-		$parser = xml_parser_create('UTF-8');
-		xml_set_object($parser, $this);
-		xml_set_element_handler($parser, 'xml_elem_start', 'xml_elem_end');
-		if( !@xml_parse($parser, $data, true) ) {
-			xml_parser_free($parser);
-			return array('error'=>'err_geocode_xmlparse', 'url'=>$url);
-		}
-		xml_parser_free($parser);
+		// parse response		
+		$data = json_decode( $data );
 		
-		if( !is_array($this->geocode_ret) ) {
-		    return array('error'=>'err_geocode_badxml', 'url'=>$url);
+		if( !is_object($data) )
+		    return array('error'=>'err_geocode_jsonparse', 'url'=>$url);
+		    
+		if( !is_array($data->results) )
+		    return array('error'=>'err_geocode_resultNotArray', 'url'=>$url);
+		        
+		$results = (array) $data->results;
+		        
+		foreach( $results AS $result ) {
+		            
+		  if( isset($result->locations) && !is_array($result->locations) )
+		      return array('error'=>'err_geocode_resultNotArray', 'url'=>$url);
+		                
+		  $locations = $result->locations;
+		                
+		  if( isset($locations[0]) && isset($locations[0]->latLng) && isset($locations[0]->latLng->lat) && isset($locations[0]->latLng->lng) ) {
+		      $lat = $locations[0]->latLng->lat;
+		      $lng = $locations[0]->latLng->lng;
+		  }
+		                
+		   // try further if lat/lng not found
+	    }
+		        
+		if( !isset($lat)|| !isset($lng) )
+		  return array('error'=>'err_geocode_latLngNotDefined', 'url'=>$url);
+		else {
+		  $success = array( 'lat' => $lat, 'lng' => $lng );
+		  return $success;   // success
 		}
-		
-		// succes - example returns:
-		return $this->geocode_ret;
-	}
+		            
+	} // end: geoccode()
 	
 	
 };
@@ -254,11 +271,11 @@ class WISY_OPENSTREETMAP_CLASS
 				exit();
 			}
 			$coord = $this->geocode2__($db->Record, 'perm', true /*allow external call, see marks below*/);
-			if( $coord['error'] || !isset($coord['lat']) || !isset($coord['lng']) ) {
-				echo '{"error": "geocode"}'; 
-				exit();
+			if( isset($coord['error']) && $coord['error'] || !isset($coord['lat']) || !isset($coord['lng']) ) {
+			    echo '{"error": "geocode"}';
+			    exit();
 			}
-			echo '{"lat": '.floatval($coord['lat']).',"lng": '.floatval($coord['lng']).'}'; 
+			echo '{"lat": '.floatval($coord['lat']).',"lng": '.floatval($coord['lng']).'}';
 			
 			$db->close();
 			return;
@@ -278,23 +295,23 @@ class WISY_OPENSTREETMAP_CLASS
 		$ext_marker_lookup = 0;
 		foreach( $this->points as $point )
 		{
-			$html = $point['strasse']; 
-			if( $point['ort'] ) { $html .= ($html?', ':'') . $point['ort']; }
-		
-			$coord = $this->geocode2__($point, 'perm', false /*no external call, see marks above and [*] */);
-			if( $coord['error']=='err_notincache' ) {
-				if( $ext_marker_lookup < WISY_OPENSTREETMAP_CLASS::MAX_EXT_MARKER_LOOKUP
-				 && $point['dfid'] ) {
-					array_unshift($markers, array('html'=>$html, 'dfid'=>$point['dfid'], 'lat'=>0, 'lng'=>0)); // js expects missing coordinates being first
-					$ext_marker_lookup++;
-				}
-			}
-			else if( !$coord['error'] && isset($coord['lat']) && isset($coord['lng']) ) {
-				if( !$added_hash[ $coord['lat'].$coord['lng'] ] ) {
-					$markers[] = array('html'=>$html, 'dfid'=>0, 'lat'=>$coord['lat'], 'lng'=>$coord['lng']);
-					$added_hash[ $coord['lat'].$coord['lng'] ] = 1;
-				}
-			}
+		    $html = $point['strasse'];
+		    if( $point['ort'] ) { $html .= ($html?', ':'') . $point['ort']; }
+		    
+		    $coord = $this->geocode2__($point, 'perm', false /*no external call, see marks above and [*] */);
+		    if( isset($coord['error']) && $coord['error']=='err_notincache' ) {
+		        if( $ext_marker_lookup < WISY_OPENSTREETMAP_CLASS::MAX_EXT_MARKER_LOOKUP
+		            && $point['dfid'] ) {
+		                array_unshift($markers, array('html'=>$html, 'dfid'=>$point['dfid'], 'lat'=>0, 'lng'=>0)); // js expects missing coordinates being first
+		                $ext_marker_lookup++;
+		            }
+		    }
+		    else if( (!isset($coord['error']) || !$coord['error']) && isset($coord['lat']) && isset($coord['lng']) ) {
+		        if( !isset($added_hash[ $coord['lat'].$coord['lng'] ]) || !$added_hash[ $coord['lat'].$coord['lng'] ] ) {
+		            $markers[] = array('html'=>$html, 'dfid'=>0, 'lat'=>$coord['lat'], 'lng'=>$coord['lng']);
+		            $added_hash[ $coord['lat'].$coord['lng'] ] = 1;
+		        }
+		    }
 		}
 
 		if( $this->framework->iniRead('map.disable', '') || sizeof((array) $markers) == 0 ) {
@@ -303,10 +320,10 @@ class WISY_OPENSTREETMAP_CLASS
 		
 		$marker_js = '';
 		foreach( $markers as $i => $marker ) {
-				$marker_js	.=	"osm_mark_dfid[$i]=".intval($marker['dfid'])."; "
-							.	"osm_mark_lat[$i]=".floatval($marker['lat'])."; "
-							.	"osm_mark_lng[$i]=".floatval($marker['lng'])."; "
-							.	"osm_mark_html[$i]='".strtr($marker['html'], "'\"<>&", "     ")."'; ";
+		    $marker_js	.=	"osm_mark_dfid[$i]="  .   (isset($marker['dfid']) ? intval($marker['dfid']) : 0 ) . "; "
+		                .	"osm_mark_lat[$i]="   .   (isset($marker['lat']) ? floatval($marker['lat']) : 0 ) . "; "
+		                .	"osm_mark_lng[$i]="   .   (isset($marker['lng']) ? floatval($marker['lng']) : 0) . "; "
+		                .	"osm_mark_html[$i]='" .   (isset($marker['html']) ? strtr($marker['html'], "'\"<>&", "     ") : '') .   "'; ";
 		}
 
 		// decide, which library to use
@@ -340,19 +357,19 @@ class WISY_OPENSTREETMAP_CLASS
 		// convert $adr=array('strasse'=>, 'plz'=>, 'ort'=>, 'stadtteil'=>, 'land'=>), optional $adr=array('free'=>)
 		//      to $q_arr=array('street'=>, 'postalcode'=>, 'city'=>, 'country'=>''), optional $q_arr=array('free'=>)
 		$q_arr = array();
-		if( $adr['free'] ) {
+		if( isset($adr['free']) && $adr['free'] ) {   // user address
 		    if( preg_match("/[0-9]{5}/i",$adr['free']) )
-		        $q_arr['free'] = $adr['free'].", Deutschland"; // PLZ only
+		      $q_arr['free'] = $adr['free'].", Deutschland"; // PLZ only
 		    else
-		        $q_arr['free'] = $adr['free'];
+		      $q_arr['free'] = $adr['free'];
 		}
 		else {
-		    $strasse	= trim($adr['strasse']);
-		    $plz		= trim($adr['plz']);		
-		    $ort		= trim($adr['ort']);
-		    $stadtteil	= trim($adr['stadtteil']);
-		    $land		= trim($adr['land']);
-			if( $strasse=='' && $ort=='' ) { return array('error'=>'err_nostreetnocity'); }
+		    $strasse	= isset($adr['strasse'])    ? trim($adr['strasse']) : '';
+		    $plz		= isset($adr['plz'])        ? trim($adr['plz']) : '';
+		    $ort		= isset($adr['ort'])        ? trim($adr['ort']) : '';
+		    $stadtteil	= isset($adr['stadtteil'])  ? trim($adr['stadtteil']) : '';
+		    $land		= isset($adr['land'])       ? trim($adr['land']) : '';
+		    if( $strasse=='' && $ort=='' ) { return array('error'=>'err_nostreetnocity'); }
 
 			// Remove venue descriptions (i.e. "Ecke ...strasse")
 			$p = strpos($strasse, '('); if( $p ) { $strasse = trim(substr($strasse, 0, $p)); }
@@ -397,7 +414,7 @@ class WISY_OPENSTREETMAP_CLASS
 		}
 
 		// create cache object, if not yet done
-		if( !is_array($this->cache) )
+		if( !isset($this->cache) || !is_array($this->cache) )
 		{
 			$this->cache = array();
 			$this->cache['perm'] =& createWisyObject('WISY_CACHE_CLASS', $this->framework, array('table'=>'x_cache_latlng_perm', 
@@ -421,8 +438,8 @@ class WISY_OPENSTREETMAP_CLASS
 			}
 		}
 	
-		if( !$call_external ) {
-			return array('error'=>'err_notincache');
+		if( !isset($call_external) || !$call_external ) {
+		    return array('error'=>'err_notincache');
 		}
 	
 		// call geocoder
@@ -434,8 +451,8 @@ class WISY_OPENSTREETMAP_CLASS
 		//$coord['dbg_geocoder'] = $obj->get_nominatim_url();
 		
 		// add result to cache object
-		if( $coord['error'] ) {
-			$addto = 'temp';
+		if( isset($coord['error']) && $coord['error'] ) {
+		    $addto = 'temp';
 		}
 		$this->cache[$addto]->insert($q_key, serialize($coord));
 		
