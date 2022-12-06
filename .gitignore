@@ -21,3 +21,4 @@ config.inc.php
 .settings/*
 responsive_files
 weiterbildungsportal_files
+/.metadata/
