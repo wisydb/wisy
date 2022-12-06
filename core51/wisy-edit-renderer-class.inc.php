@@ -19,7 +19,7 @@ class WISY_EDIT_RENDERER_CLASS
 		require_once('admin/date.inc.php');
 		require_once('admin/eql.inc.php');
 		require_once('admin/classes.inc.php');
-		require_once('adminDFTest/config/trigger_kurse.inc.php');
+		require_once('admin/config/trigger_kurse.inc.php');
 
 		// constructor
 		$this->framework	=& $framework;

@@ -329,6 +329,12 @@ if( strval(isset($_COOKIE['core'])) && $_COOKIE['core'] !='' )
 {
     $wisyCore = 'core' . strval($_COOKIE['core']);
 }
+/*WISY@KI-Synchronisation in core100 (Author: Karl Weber)*/
+else if ($wisyRequestedFile == "wisykisync" && strval($wisyPortalEinstellungen['wisykicore'] != ''))
+{
+	$wisyCore = 'core' . strval($wisyPortalEinstellungen['wisykicore']);
+	$wisyRequestedFile = 'sync';
+}
 else if( strval($wisyPortalEinstellungen['core']) != '' )
 {
     $wisyCore = 'core' . strval($wisyPortalEinstellungen['core']);

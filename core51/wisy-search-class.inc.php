@@ -1077,7 +1077,14 @@ class WISY_SEARCH_CLASS
 	                case 'creatd':	$orderBy = 'x_kurse.begmod_date DESC';						break;
 	                case 'rand':
 	                    $ip = str_replace('.', '', $_SERVER['REMOTE_ADDR']);
-	                    $seed = ($ip + date('d') );
+						try
+						{
+                            $seed = ((int)$ip + (int)date('d') );
+						}
+	                    catch(Exception $e)
+						{
+							$seed = 1;
+						}
 	                    $this->randSeed;
 	                    $orderBy = 'RAND('.$seed.')';
 	                    break;

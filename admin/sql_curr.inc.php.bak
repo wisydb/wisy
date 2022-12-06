@@ -422,7 +422,7 @@ class DB_Sql
 		if( isset( $this->Halt_On_Error ) && $this->Halt_On_Error == 'no' )
 			return;
 
-		echo '<p style="border: 2px solid black;"><b>DB-Anfrage error:</b>'.$this->Error.'</b></p>';
+		echo '<p style="border: 2px solid black;"><b>DB-Anfrage error:</b>'.$this->Errno.'</b></p>';
 		
 		// ! printf('<p style="border: 2px solid black;"><b>DB_Sql error:</b> %s<br>MySQL says: Errno %s - %s</p>', $msg, $this->Errno, $this->Error);
 		
