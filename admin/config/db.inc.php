@@ -496,4 +496,3 @@ $g_addsettings_userTemplateOnly = array( 'export.apikey' );                     
 
 // in dieses Verzeichnis werden zu exportierende Dateien temporär gelagert; andere Dateien in diesem Verzeichnis werden gelöscht!
 $g_temp_dir = '../temp';
-
