@@ -16,8 +16,6 @@ define('ssJS', '\u00df', false);
 global $geomap_orte;
 $geomap_orte = array(
     'Frankfurt' => "Frankfurt am Main",
-    'Offenbach' => "Offenbach am Main",
-    'Rüsselsheim' => "Rüsselsheim am Main",
     'Hofheim' => "Hofheim am Taunus",
     'Bad Homburg' => "Bad Homburg v.d.H.",
     'HH' => "Hamburg",
