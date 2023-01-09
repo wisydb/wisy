@@ -1,7 +1,9 @@
 <?php
 require_once('lib/ki/wisyki-python-api.inc.php');
+require_once('lib/ki/wisyki-esco-class.inc.php');
 
 $pythonAPI = new WISYKI_PYTHON_API;
+$escoAPI = new WISYKI_ESCO_CLASS; 
 
 function get_course_without_level($levelidlist) {
     $db = new DB_Admin();
@@ -220,6 +222,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // );
         $prediction = $pythonAPI->predict_comp_level($course['titel'], $course['beschreibung']);
         $course['level_suggestion'] = $prediction['level'];
+
+        // $keywords = $pythonAPI->extract_keywords($course['titel'], $course['beschreibung']); 
+        // $searchterm = ""; 
+        // foreach ($keywords as $keyword) { 
+        //     $searchterm .= $keyword[0] . ", "; 
+        // } 
+        $searchterm = utf8_encode($course['titel']) . " " . utf8_encode($course['beschreibung']); 
+        // $searchterm = utf8_encode($course['titel']); 
+        $skillSuggestions = $escoAPI->search_api($searchterm, 'skill', null, 10); 
+
         pagestart('Manuelle Kursklassifikation');
 
         ?>
@@ -267,6 +279,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </section>
                 </section>
             </form>
+             
+            <br> 
+            <br> 
+            <section class="skill-suggestions"> 
+                <h2>ESCO-Skill Empfehlungen:</h4> 
+                <ul> 
+                    <?php  
+                    if (!empty($skillSuggestions)) { 
+                        foreach ($skillSuggestions as $url => $suggestion) { 
+                            echo("<li><a href='$url' target='_blank' rel='noopener noreferrer' class='btn'>" . utf8_decode($suggestion['label']) . "</a></li>"); 
+                        } 
+                    } 
+                    ?> 
+                </ul> 
+            </section>
         </main>
 
         <?php

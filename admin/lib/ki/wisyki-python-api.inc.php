@@ -4,6 +4,8 @@ require_once("./sql_curr.inc.php");
 require_once("./config/config.inc.php");
 
 class WISYKI_PYTHON_API {
+    private string $pythonlib; 
+    private string $api_uri;
 
     function __construct()
 	{
@@ -38,8 +40,41 @@ class WISYKI_PYTHON_API {
 
         return [$result, $exitcode];
     }
-    
-    
+
+    public function extract_keywords(string $title = '', string $description = '') { 
+        $endpoint = "/extractKeywords"; 
+        $data = [ 
+            'title' => utf8_encode($title),  
+            'description' => utf8_encode($description) 
+        ]; 
+     
+        $post_data = json_encode($data); 
+ 
+        $url = $this->api_uri . $endpoint; 
+        $curl = curl_init($url); 
+        curl_setopt($curl, CURLOPT_POSTFIELDS, $post_data); 
+        curl_setopt($curl, CURLOPT_TIMEOUT, 80); 
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true); 
+        curl_setopt($curl, CURLINFO_HEADER_OUT, true); 
+        curl_setopt($curl, CURLOPT_POST, true); 
+     
+        // Set HTTP Header for POST request  
+        curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type:application/json')); 
+           
+        $response = curl_exec($curl); 
+ 
+        if (curl_error($curl)){ 
+            echo 'Request Error:' . curl_error($curl); 
+            return; 
+        } 
+ 
+        curl_close($curl); 
+ 
+        // Decode response and filter results for title and uri attributes. 
+        $response = json_decode($response, true); 
+        return $response; 
+    }
+
     public function predict_comp_level(string $title = '', string $description = '') {
         $endpoint = "/predictCompLevel";
         $data = [

@@ -10,14 +10,14 @@
 </head>
 <body>
     <main>
-        <h1>ESCO Test</h1>
+        <h1></h1>
         <div class="tabs">
             <!-- Tab links -->
             <div class="tabmenu">
-                <button class="tablink active" value="Testcase1">Tätigkeit</button>
-                <button class="tablink" value="Testcase2">Kompetenzkonzept</button>
-                <button class="tablink" value="Testcase3">Kompetenzen</button>
-                <button class="tablink" value="Testcase4">WISY Stichwort</button>
+                <button class="tablink active" value="Testcase1">Tätigkeiten</button>
+                <button class="tablink" value="Testcase2">Themen</button>
+                <button class="tablink" value="Testcase3">Fähigkeiten</button>
+                <button class="tablink" value="Testcase4">Stichworte</button>
             </div>
 
             <!-- Tab content -->
@@ -55,8 +55,8 @@
 
             <!-- Tab content -->
             <div id="tab-skill-suggestions" class="tabcontent active">
-                <input type="text" placeholder="Kompetenz-URI" size="80" name="esco-uri-input" class="esco-skill-suggest">
-                <label for="esco-uri-input">Bezeichnung</label>
+                <input type="text" placeholder="Kompetenz-URI" size="80" name="esco-uri-input" class="esco-skill-suggest" style="display: none;">
+                <label for="esco-uri-input"></label>
                 <output name="skill-suggestions-output" for="esco-skill-select"></output>
             </div>
 
