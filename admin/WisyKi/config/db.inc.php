@@ -1,6 +1,6 @@
 <?php
 
-// Encoding: ISO8859-15, Test:: üäö
+// Encoding: ISO8859-15, Test:: ï¿½ï¿½ï¿½
 
 // deprecated
 $use_neweditor = true;
@@ -46,7 +46,7 @@ $ratgeber->add_row(TABLE_TEXT|TABLE_SUMMARY|TABLE_LIST|TABLE_MUST|TABLE_UNIQUE,
 if( !$use_neweditor ) {
 	$ratgeber->add_row(TABLE_ENUM,								'freigeschaltet',	'ABC-Index', 2, '2###Nein###1###Ja');
 }
-$ratgeber->add_row(TABLE_TEXTAREA|TABLE_WIKI|TABLE_NEWSECTION,'erklaerung',		'Erklärung', '', '', '', array('ctrl.rows'=>20));
+$ratgeber->add_row(TABLE_TEXTAREA|TABLE_WIKI|TABLE_NEWSECTION,'erklaerung',		'Erklï¿½rung', '', '', '', array('ctrl.rows'=>20));
 $ratgeber->add_row(TABLE_TEXT,								'wikipedia',		'Stichw. Wikipedia', '', '', '', array('ctrl.size'=>'10-20-60'));
 $ratgeber->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,			'notizen_fix',			'Anmerkungen', '', '', '',  array('layout.section'=>1));
 $ratgeber->add_row(TABLE_TEXTAREA,			                'notizen',			'Journal', '', '', '');
@@ -58,7 +58,7 @@ $themen = new Table_Def_Class(TABLE_SYNCABLE,				'themen',			'Themen');
 $themen->add_row(TABLE_TEXT|TABLE_SUMMARY|TABLE_LIST|TABLE_MUST,
 															'thema',			'Thema', '', '', '', array('ctrl.size'=>'10-20-60', 'layout.bg.class'=>'e_bglite', 'layout.descr.class'=>'e_bolder', 'ctrl.class'=>'e_bolder'));
 $themen->add_row(TABLE_TEXT|TABLE_LIST|TABLE_MUST|TABLE_UNIQUE|TABLE_NEWSECTION,
-															'kuerzel',			'Kürzel', 0, 0, 'Klassifizierung', array('ctrl.size'=>'4-10-40', 'layout.section'=>'Klassifizierung'));
+															'kuerzel',			'Kï¿½rzel', 0, 0, 'Klassifizierung', array('ctrl.size'=>'4-10-40', 'layout.section'=>'Klassifizierung'));
 $themen->add_row(TABLE_SATTR,								'glossar',			'Ratgeberseite', 0, $ratgeber);
 $themen->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,			'scope_note',		'Scope note');
 $themen->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,			'algorithmus',		'Algorithmus');
@@ -66,12 +66,12 @@ $themen->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,			'notizen',			'Journal', '', 
 
 
 /*** STICHWOERTER ***/
-$stichwoerter = new Table_Def_Class(TABLE_PRIMARY|TABLE_SYNCABLE,			'stichwoerter',		'Stichwörter');
+$stichwoerter = new Table_Def_Class(TABLE_PRIMARY|TABLE_SYNCABLE,			'stichwoerter',		'Stichwï¿½rter');
 $stichwoerter->add_row(TABLE_TEXT|TABLE_SUMMARY|TABLE_LIST|TABLE_MUST|TABLE_UNIQUE,
-																			'stichwort',		'Deskriptor', 0, 0, '', array('ctrl.size'=>'20-70', 'help.tooltip'=>'Deskriptor, ohne Erklärungen und so kurz und so einfach wie möglich', 'layout.bg.class'=>'e_bglite', 'layout.descr.class'=>'e_bolder', 'ctrl.class'=>'e_bolder'));
-$stichwoerter->add_row(TABLE_TEXT,											'zusatzinfo',		'Zusatzinfo', 0, 0, '', array('ctrl.size'=>'20-70', 'help.tooltip'=>'Kurze Informationen zur evtl. notwendigen Erklärung'));
-$stichwoerter->add_row(TABLE_MATTR|TABLE_SHOWREF,							'verweis',			'Synonym für', 0, 0 /*set below*/, '', array('ref.name'=>'Synonym von'));
-$stichwoerter->add_row(TABLE_MATTR|TABLE_SHOWREF,							'verweis2',			'Oberbegriff für', 0, 0 /*set below*/, '', array('help.tooltip'=>'Das aktuelle Stichwort wird automatisch vergeben, wenn eines der hier angegebenen Stichwörter vergeben wird', 'ref.name'=>'Unterbegriff von'));
+																			'stichwort',		'Deskriptor', 0, 0, '', array('ctrl.size'=>'20-70', 'help.tooltip'=>'Deskriptor, ohne Erklï¿½rungen und so kurz und so einfach wie mï¿½glich', 'layout.bg.class'=>'e_bglite', 'layout.descr.class'=>'e_bolder', 'ctrl.class'=>'e_bolder'));
+$stichwoerter->add_row(TABLE_TEXT,											'zusatzinfo',		'Zusatzinfo', 0, 0, '', array('ctrl.size'=>'20-70', 'help.tooltip'=>'Kurze Informationen zur evtl. notwendigen Erklï¿½rung'));
+$stichwoerter->add_row(TABLE_MATTR|TABLE_SHOWREF,							'verweis',			'Synonym fï¿½r', 0, 0 /*set below*/, '', array('ref.name'=>'Synonym von'));
+$stichwoerter->add_row(TABLE_MATTR|TABLE_SHOWREF,							'verweis2',			'Oberbegriff fï¿½r', 0, 0 /*set below*/, '', array('help.tooltip'=>'Das aktuelle Stichwort wird automatisch vergeben, wenn eines der hier angegebenen Stichwï¿½rter vergeben wird', 'ref.name'=>'Unterbegriff von'));
 $stichwoerter->add_row(TABLE_ENUM|TABLE_SUMMARY|TABLE_LIST|TABLE_NEWSECTION,'eigenschaften',	'Typ', 0, $codes_stichwort_eigenschaften, 'Klassifizierung', array('layout.section'=>'Klassifizierung'));
 $stichwoerter->add_row(TABLE_SATTR,											'thema',			'Thema', 0, $themen);
 $stichwoerter->add_row(TABLE_SATTR,											'glossar',			'Ratgeberseite', 0, $ratgeber);
@@ -97,7 +97,7 @@ if( $use_neweditor ) {
 	$anbieter->add_row(TABLE_TEXT, 								'azwv_annr', 		'AZAV-Anbieternr.', 0, 0,'', 	array('ctrl.size'=>'10-40', 'layout.defhide'=>2, 'layout.join'=>1));
 	$anbieter->add_row(TABLE_ENUM,								'freigeschaltet',	'Status', 1, '1###Freigegeben###2###Gesperrt', '', array('layout.join'=>1, 'layout.descr.hide'=>1));
 	$anbieter->add_row(TABLE_INT|TABLE_EMPTYONNULL|TABLE_READONLY|TABLE_PERCENT,
-																'vollstaendigkeit',	'Vollständigkeit', 0, '0###100', 0, array('layout.defhide'=>1, 'layout.after'=>'%', 'layout.join'=>1));
+																'vollstaendigkeit',	'Vollstï¿½ndigkeit', 0, '0###100', 0, array('layout.defhide'=>1, 'layout.after'=>'%', 'layout.join'=>1));
 																// new field, add with: ALTER TABLE `anbieter` ADD `vollstaendigkeit` int(11) NOT NULL DEFAULT '0' AFTER `date_modified` ;
 }
 $anbieter->add_row(TABLE_TEXT|TABLE_SUMMARY|TABLE_LIST|TABLE_MUST|TABLE_UNIQUE,
@@ -119,7 +119,7 @@ if( $use_neweditor ) {
     $anbieter->add_row(TABLE_MATTR|TABLE_SHOWREF,			'verweis',			'Namensverweisung', 0, 0 /*set below*/, '', array('layout.join'=>1, 'layout.defhide'=>1));
 }
 $anbieter->add_row(TABLE_TEXTAREA,								'postname',			'Originalname',  '', '', '', array('ctrl.rows'=>'2'));
-$anbieter->add_row(TABLE_TEXT|TABLE_ACNESTSTART,			'strasse',			'Straße ', '', '', '', array('layout.descr'=>'Ort','ctrl.size'=>'8-16-48', 'ctrl.placeholder'=>1));
+$anbieter->add_row(TABLE_TEXT|TABLE_ACNESTSTART,			'strasse',			'Straï¿½e ', '', '', '', array('layout.descr'=>'Ort','ctrl.size'=>'8-16-48', 'ctrl.placeholder'=>1));
 $anbieter->add_row(TABLE_TEXT|TABLE_ACNESTSTART|TABLE_ACNEST,'plz',				'PLZ ', '', 5, '', array('layout.after'=>' ', 'layout.descr.hide'=>1, 'ctrl.placeholder'=>1));
 $anbieter->add_row(TABLE_TEXT|TABLE_ACNEST,					'bezirk',			'Bezirk ', '', '', '', array('layout.descr.hide'=>1, 'ctrl.placeholder'=>1, 'ctrl.class'=>'anbieter_bezirk', 'ctrl.size'=>'8-16-48', 'layout.defhide'=>1));
 $anbieter->add_row(TABLE_TEXT|TABLE_ACNEST,					'ort',				'Ort ', '', '', '', array('layout.descr.hide'=>1, 'ctrl.placeholder'=>1, 'ctrl.size'=>'8-16-48'));
@@ -132,7 +132,7 @@ $anbieter->add_row(TABLE_TEXT|TABLE_TEL,					'leitung_tel',		'Leitung Telefon', 
 if( !$use_neweditor ) {
 	$anbieter->add_row(TABLE_SATTR|TABLE_TRACKDEFAULTS,			'thema',			'Thema', 0, $themen);
 }
-$anbieter->add_row(TABLE_MATTR|TABLE_TRACKDEFAULTS,			'stichwort',		'Stichwörter', 0, $stichwoerter, '', array());
+$anbieter->add_row(TABLE_MATTR|TABLE_TRACKDEFAULTS,			'stichwort',		'Stichwï¿½rter', 0, $stichwoerter, '', array());
 if( !$use_neweditor ) {
 	$anbieter->add_row(TABLE_TEXT,								'din_nr',			'Wisy-Kundennummer');
 	$anbieter->add_row(TABLE_TEXT, 								'wisy_annr', 		'Kursnet-Nummer');
@@ -142,15 +142,15 @@ if( !$use_neweditor ) {
 	$anbieter->add_row(TABLE_TEXT, 								'azwv_annr', 		'AZAV-Anbieternummer');
 }
 $anbieter->add_row(TABLE_INT|TABLE_EMPTYONNULL|TABLE_NEWSECTION,
-															'gruendungsjahr',	'Gründungsjahr', 0, '0###2200' /*0=leer, daher muss der Bereich ab dort derzeit (11/2013) erlaubt sein*/, 'Firmenporträt', array('layout.section'=>'Firmenporträt'));
+															'gruendungsjahr',	'Grï¿½ndungsjahr', 0, '0###2200' /*0=leer, daher muss der Bereich ab dort derzeit (11/2013) erlaubt sein*/, 'Firmenportrï¿½t', array('layout.section'=>'Firmenportrï¿½t'));
 $anbieter->add_row(TABLE_ENUM,								'rechtsform',		'Rechtsform', 0,
 																				 $codes_rechtsform, '', array('layout.join'=>1));
-$anbieter->add_row(TABLE_TEXTAREA|TABLE_WIKI,				'firmenportraet',	'Firmenporträt');
+$anbieter->add_row(TABLE_TEXTAREA|TABLE_WIKI,				'firmenportraet',	'Firmenportrï¿½t');
 $anbieter->add_row(TABLE_BLOB,								'logo',				'Logo / Bild', '', '', '', array('layout.bg.class'=>'e_bgbottom'));
 $anbieter->add_row(TABLE_TEXT|TABLE_URL,					'logo_rechte',			'Bildrechte', '', '', '', array('ctrl.size'=>'10-20-50'));
-$anbieter->add_row(TABLE_FLAG,					            'logo_position',			'Über Inhalt positionieren', '', '', '', array('layout.join'=>1));
+$anbieter->add_row(TABLE_FLAG,					            'logo_position',			'ï¿½ber Inhalt positionieren', '', '', '', array('layout.join'=>1));
 $anbieter->add_row(TABLE_TEXT|TABLE_URL,					'homepage',			'Homepage', '', '', '', array('ctrl.size'=>'10-20-50'));
-$anbieter->add_row(TABLE_DATE|TABLE_DAYMONTHOPT,			'pruefsiegel_seit',	'Prüfsiegel seit');
+$anbieter->add_row(TABLE_DATE|TABLE_DAYMONTHOPT,			'pruefsiegel_seit',	'Prï¿½fsiegel seit');
 $anbieter->add_row(TABLE_TEXT|TABLE_NEWSECTION,				'anspr_name',		'Kundenberater', 0, 0, 'Kundenkontakt', array('ctrl.placeholder'=>'Name', 'layout.section'=>'Kundenkontakt'));
 $anbieter->add_row(TABLE_TEXTAREA,							'anspr_zeit',		'Sprechzeiten', '', '', '', array('ctrl.rows'=>2));
 $anbieter->add_row(TABLE_TEXT|TABLE_TEL,					'anspr_tel',		'Kunden Telefon');
@@ -175,7 +175,7 @@ $anbieter->add_row(TABLE_ENUM,								'pflege_prot',		'Korrekturausdrucke', 1,
 $anbieter->add_row(TABLE_BITFIELD,							'pflege_akt',		'Aktualisieren', 0,
 																				 '1###Jan. ###'
 																				.'2###Feb. ###'
-																				.'4###März ###'
+																				.'4###Mï¿½rz ###'
 																				.'8###Apr. ###'
 																				.'16###Mai ###'
 																				.'32###Juni ###'
@@ -189,7 +189,7 @@ $anbieter->add_row(TABLE_TEXTAREA,							'settings',			'Einstellungen');
 $anbieter->add_row(TABLE_BITFIELD|TABLE_NEWSECTION,			'pflege_pweinst',	$use_neweditor?'Onlinepflegeopt.':'Onlinepflegeoptionen', 0,
 																				 '1###Zugang zur Onlinepflege erlauben###'
 																				.'2###der Anbieter kann seine '.($use_neweditor?'Angebote':'Kurse').' bewerben###'
-																				.'4###nur Bagatelländerungen zulassen',
+																				.'4###nur Bagatellï¿½nderungen zulassen',
 																				 'Onlinepflege', array('layout.section'=>'Onlinepflege', 'ctrl.checkboxes'=>1));
 $anbieter->add_row(TABLE_PASSWORD,							'pflege_passwort',	'Passwort', 0, '');
 $anbieter->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,			'notizen_fix',			'Anmerkungen', '', '', '',  array('layout.section'=>1));
@@ -214,21 +214,21 @@ $anbieter->rows[$use_neweditor? 10 : 2]->addparam = $anbieter;
 
 /*** DURCHFUEHRUNGEN ***/
 $timecheck_reg = 'ss:mm###/^[012]\d:[0123456]\d{1,1}$/######/\./###:###/\s/######/^(\d):/###0\1:###/(\d\d)(\d\d)/###\1:\2###/(\d)(\d\d)/###0\1:\2';
-$durchfuehrung = new Table_Def_Class(TABLE_SYNCABLE,		'durchfuehrung',	'Durchführungen', 0, 0, true); // last parameter: delete DF as secondary entry in lookup table (adter deleting in course view)
-$durchfuehrung->add_row(TABLE_TEXT|TABLE_LIST|TABLE_SUMMARY,'nr',				'Durchführungs-Nr.', '', '', '', array('ctrl.size'=>'10-40'));
+$durchfuehrung = new Table_Def_Class(TABLE_SYNCABLE,		'durchfuehrung',	'Durchfï¿½hrungen', 0, 0, true); // last parameter: delete DF as secondary entry in lookup table (adter deleting in course view)
+$durchfuehrung->add_row(TABLE_TEXT|TABLE_LIST|TABLE_SUMMARY,'nr',				'Durchfï¿½hrungs-Nr.', '', '', '', array('ctrl.size'=>'10-40'));
 if( $use_neweditor )
 {
-	$durchfuehrung->add_row(TABLE_TEXT|TABLE_NEWSECTION,		'bg_nummer',	'Maßnahmen-Nr.','','', 'Durchführungs-IDs',	array('layout.defhide'=>2, 'layout.join'=>1, 'ctrl.size'=>'10-40', 'layout.defhide.tooltip'=>'weitere Verwaltungsnummern'));
-	$durchfuehrung->add_row(TABLE_TEXT, 						'bu_dnummer', 	'BU-Durchführungsnr.', '', '', '', 			array('layout.defhide'=>2, 'layout.join'=>1, 'ctrl.size'=>'10-40'));
-	$durchfuehrung->add_row(TABLE_TEXT, 						'wisy_dnr', 	'Wisy-Durchführungsnr.', '', '', '',		array('layout.defhide'=>2, 'layout.join'=>1, 'ctrl.size'=>'10-40'));
-	$durchfuehrung->add_row(TABLE_TEXT, 						'fu_dnr', 		'FU-Durchführungsnr.', '', '', '',			array('layout.defhide'=>2, 'layout.join'=>1, 'ctrl.size'=>'10-40'));
-	$durchfuehrung->add_row(TABLE_TEXT, 						'foerder_dnr', 	'Förder-Durchführungsnr.', '', '', '',		array('layout.defhide'=>2, 'layout.join'=>1, 'ctrl.size'=>'10-40'));
-	$durchfuehrung->add_row(TABLE_TEXT, 						'azwv_dnr', 	'AZAV-Durchführungsnr.', '', '', '',		array('layout.defhide'=>2, 'layout.join'=>1, 'ctrl.size'=>'10-40'));
+	$durchfuehrung->add_row(TABLE_TEXT|TABLE_NEWSECTION,		'bg_nummer',	'Maï¿½nahmen-Nr.','','', 'Durchfï¿½hrungs-IDs',	array('layout.defhide'=>2, 'layout.join'=>1, 'ctrl.size'=>'10-40', 'layout.defhide.tooltip'=>'weitere Verwaltungsnummern'));
+	$durchfuehrung->add_row(TABLE_TEXT, 						'bu_dnummer', 	'BU-Durchfï¿½hrungsnr.', '', '', '', 			array('layout.defhide'=>2, 'layout.join'=>1, 'ctrl.size'=>'10-40'));
+	$durchfuehrung->add_row(TABLE_TEXT, 						'wisy_dnr', 	'Wisy-Durchfï¿½hrungsnr.', '', '', '',		array('layout.defhide'=>2, 'layout.join'=>1, 'ctrl.size'=>'10-40'));
+	$durchfuehrung->add_row(TABLE_TEXT, 						'fu_dnr', 		'FU-Durchfï¿½hrungsnr.', '', '', '',			array('layout.defhide'=>2, 'layout.join'=>1, 'ctrl.size'=>'10-40'));
+	$durchfuehrung->add_row(TABLE_TEXT, 						'foerder_dnr', 	'Fï¿½rder-Durchfï¿½hrungsnr.', '', '', '',		array('layout.defhide'=>2, 'layout.join'=>1, 'ctrl.size'=>'10-40'));
+	$durchfuehrung->add_row(TABLE_TEXT, 						'azwv_dnr', 	'AZAV-Durchfï¿½hrungsnr.', '', '', '',		array('layout.defhide'=>2, 'layout.join'=>1, 'ctrl.size'=>'10-40'));
 }
 $durchfuehrung->add_row(TABLE_INT|TABLE_EMPTYONNULL,		'stunden',			'Stunden ', 0, '0###9999', '', array('layout.join'=>1, 'layout.descr.class'=>'e_bold'));
 $durchfuehrung->add_row(TABLE_INT|TABLE_EMPTYONNULL,		'teilnehmer',		'max. Teilnehmende', 0, '0###999', '', array('layout.join'=>1));
 $durchfuehrung->add_row(TABLE_INT|TABLE_EMPTYONMINUSONE,	'preis',			'Gesamtpreis/EUR ', -1, '-1###99999', '', array('layout.join'=>1, 'layout.descr.class'=>'e_bold', 'help.tooltip'=>'Gesamtpreis inkl. MwSt in ganzen Euro; 0=kostenlos'));
-$durchfuehrung->add_row(TABLE_TEXT|TABLE_ACNORMAL,			'preishinweise',	'Preishinweise', '', '', '',					array('layout.defhide'=>1, 'layout.defhide.tooltip'=>'weitere Preisangaben', 'layout.join'=>1, 'help.tooltip'=>'Preishinweise, aber keine Angaben über die MwSt; Preise müssen immer inkl. MwSt. angegeben werden!', 'ctrl.size'=>'10-20-80'));
+$durchfuehrung->add_row(TABLE_TEXT|TABLE_ACNORMAL,			'preishinweise',	'Preishinweise', '', '', '',					array('layout.defhide'=>1, 'layout.defhide.tooltip'=>'weitere Preisangaben', 'layout.join'=>1, 'help.tooltip'=>'Preishinweise, aber keine Angaben ï¿½ber die MwSt; Preise mï¿½ssen immer inkl. MwSt. angegeben werden!', 'ctrl.size'=>'10-20-80'));
 $durchfuehrung->add_row(TABLE_INT|TABLE_EMPTYONMINUSONE,	'sonderpreis',		'Sonderpreis/EUR ', -1, '-1###99999', '',		array('layout.defhide'=>2, 'layout.join'=>1, 'help.tooltip'=>'Sonderpreis, der ein paar Tage vor Kursbeginn gelten soll, inkl. MwSt. in ganzen Euro; optional; 0=kostenlos'));
 $durchfuehrung->add_row(TABLE_INT|TABLE_EMPTYONNULL,		'sonderpreistage',	'Sonderpreis/Tage vor Beginn', 0, '0###999','', array('layout.defhide'=>2, 'layout.join'=>1, 'help.tooltip'=>'Anzahl Tage vor Kursbeginn, aber der der Sonderpreis gelten soll; optional'));
 $durchfuehrung->add_row(TABLE_DATE|TABLE_DAYMONTHOPT|TABLE_SUMMARY|TABLE_LIST|TABLE_NEWSECTION,
@@ -250,7 +250,7 @@ if( $use_neweditor )
 	$durchfuehrung->add_row(TABLE_ENUM|TABLE_SUMMARY,		'beginnoptionen',	'Terminoption', 0, $codes_beginnoptionen, '', array('layout.join'=>1, 'layout.defhide'=>1, 'layout.descr.hide'=>1)); // nur ca. 10% der Kurse haben eine Terminoption, kann man also verstecken ...
 }
 $durchfuehrung->add_row(TABLE_TEXT|TABLE_NEWSECTION|TABLE_ACNESTSTART,
-															'strasse',			'Straße ', '', '', 'Veranstaltungsort', array('layout.descr'=>'Veranstaltungsort', 'layout.descr.hide'=>1, 'ctrl.placeholder'=>1, 'ctrl.size'=>'8-16-48'));
+															'strasse',			'Straï¿½e ', '', '', 'Veranstaltungsort', array('layout.descr'=>'Veranstaltungsort', 'layout.descr.hide'=>1, 'ctrl.placeholder'=>1, 'ctrl.size'=>'8-16-48'));
 $durchfuehrung->add_row(TABLE_TEXT|TABLE_ACNESTSTART|TABLE_ACNEST,				'plz',				'PLZ ', '', 5, '', array('layout.after'=>' ', 'layout.descr.hide'=>1, 'ctrl.placeholder'=>1));
 $durchfuehrung->add_row(TABLE_TEXT|TABLE_ACNEST,			'ort',				'Ort ', '', '', '', array('ctrl.size'=>'8-16-48', 'layout.descr.hide'=>1, 'ctrl.placeholder'=>1));
 $durchfuehrung->add_row(TABLE_TEXT|TABLE_ACNEST,			'stadtteil',		'Stadtteil ', '', '', '', array('ctrl.size'=>'8-16-48', 'layout.defhide.tooltip'=>'weitere Ortsangaben')); // , 'layout.defhide'=>1
@@ -260,21 +260,21 @@ $durchfuehrung->add_row(TABLE_FLAG,							'rollstuhlgerecht',	'Rollstuhlgerecht'
 $durchfuehrung->add_row(TABLE_TEXTAREA|TABLE_WIKI,			'bemerkungen',		'Bemerkungen', '', '', '', array('layout.defhide'=>1, 'ctrl.rows'=>2));
 if( !$use_neweditor )
 {
-	$durchfuehrung->add_row(TABLE_TEXT|TABLE_NEWSECTION,		'bg_nummer',	'Maßnahmen-Nummer','','', 'Durchführungs-IDs');
-	$durchfuehrung->add_row(TABLE_TEXT, 						'bu_dnummer', 	'BU-Durchführungsnummer');
-	$durchfuehrung->add_row(TABLE_TEXT, 						'wisy_dnr', 	'Wisy-Durchführungsnummer');
-	$durchfuehrung->add_row(TABLE_TEXT, 						'fu_dnr', 		'FU-Durchführungsnummer');
-	$durchfuehrung->add_row(TABLE_TEXT, 						'foerder_dnr', 	'Förder-Durchführungsnummer');
-	$durchfuehrung->add_row(TABLE_TEXT, 						'azwv_dnr', 	'AZAV-Durchführungsnummer');
+	$durchfuehrung->add_row(TABLE_TEXT|TABLE_NEWSECTION,		'bg_nummer',	'Maï¿½nahmen-Nummer','','', 'Durchfï¿½hrungs-IDs');
+	$durchfuehrung->add_row(TABLE_TEXT, 						'bu_dnummer', 	'BU-Durchfï¿½hrungsnummer');
+	$durchfuehrung->add_row(TABLE_TEXT, 						'wisy_dnr', 	'Wisy-Durchfï¿½hrungsnummer');
+	$durchfuehrung->add_row(TABLE_TEXT, 						'fu_dnr', 		'FU-Durchfï¿½hrungsnummer');
+	$durchfuehrung->add_row(TABLE_TEXT, 						'foerder_dnr', 	'Fï¿½rder-Durchfï¿½hrungsnummer');
+	$durchfuehrung->add_row(TABLE_TEXT, 						'azwv_dnr', 	'AZAV-Durchfï¿½hrungsnummer');
 }
 
 // $durchfuehrung->add_row(TABLE_TEXT|TABLE_ACNEST,			'url',				'URL ', '', 3, '', array('layout.defhide'=>1));
 
-// $durchfuehrung->add_row(TABLE_DATETIME|TABLE_LIST|TABLE_READONLY, 'date_modified',			'Änderungsdatum', '', '', '', array('layout.descr'=>'Änderungsdatum', 'ctrl.class'=>'df_aenderungsdatum_ctrl', 'layout.descr.class'=>'df_aenderungsdatum_descr', 'layout.bg.class'=>'df_aenderungsdatum_bg'));
+// $durchfuehrung->add_row(TABLE_DATETIME|TABLE_LIST|TABLE_READONLY, 'date_modified',			'ï¿½nderungsdatum', '', '', '', array('layout.descr'=>'ï¿½nderungsdatum', 'ctrl.class'=>'df_aenderungsdatum_ctrl', 'layout.descr.class'=>'df_aenderungsdatum_descr', 'layout.bg.class'=>'df_aenderungsdatum_bg'));
 $durchfuehrung->set_trigger('config/trigger_durchfuehrung.inc.php');    // make sure changes to DF trigger calculations, like last df change date
 
 /*** PORTALE ***/
-/*** HINWEIS: Einstellungen gehören als INI-Wert in das Feld portale.einstellungen - sonst haben wir hier ganz schnell Chaos! (bp) ***/
+/*** HINWEIS: Einstellungen gehï¿½ren als INI-Wert in das Feld portale.einstellungen - sonst haben wir hier ganz schnell Chaos! (bp) ***/
 $portale = new Table_Def_Class(TABLE_PRIMARY,						'portale',			'Portale');
 $portale->add_row(TABLE_ENUM,								        'status',	        'Status', 1, '1###Freigegeben###3###Archiv', '', array('layout.join'=>1, 'layout.descr.hide'=>1));
 $portale->add_row(TABLE_TEXT|TABLE_SUMMARY|TABLE_LIST|TABLE_MUST,	'name',				'Name', 0, 0, '', array('ctrl.size'=>'10-20-80', 'layout.bg.class'=>'e_bglite', 'layout.descr.class'=>'e_bolder', 'ctrl.class'=>'e_bolder'));
@@ -288,7 +288,7 @@ $portale->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION, 					'filter',			'Filter', 0,
 $portale->add_row(TABLE_TEXTAREA|TABLE_READONLY,					'einstcache',		'Cache', 0, 0, '', array('layout.defhide'=>2, 'layout.descr.hide'=>1, 'layout.join'=>1));
 $portale->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,			'notizen_fix',			'Anmerkungen', '', '', '',  array('layout.section'=>1));
 $portale->add_row(TABLE_TEXTAREA,					'notizen',			'Journal', '', '', '');
-/*** /HINWEIS: Einstellungen gehören als INI-Wert in das Feld portale.einstellungen - sonst haben wir hier ganz schnell Chaos! (bp) ***/
+/*** /HINWEIS: Einstellungen gehï¿½ren als INI-Wert in das Feld portale.einstellungen - sonst haben wir hier ganz schnell Chaos! (bp) ***/
 /*** Verworfene Werte: skindir, iwwb, iwwb_filter, iwwb_style, logo_1, logo_1_href, logo_2, logo_2_href, menuswitch, print_img, spalten, themen_erlauben, themen_verbieten, qual_logo, qual_logo_gloss, qual_logo_stich, horizont, horizontende, betreiberID (bp) ***/
 
 
@@ -299,10 +299,10 @@ if($use_neweditor) {
 	$kurse->add_row(TABLE_TEXT|TABLE_NEWSECTION,					'bu_nummer',		'BU-Kursnr.', '','', 'Kurs-IDs',	array('ctrl.size'=>'10-40', 'layout.defhide'=>1, 'layout.join'=>1));
 	//$kurse->add_row(TABLE_TEXT, 									'res_nummer', 		'BU-Kursnr.', '','', '',		array('ctrl.size'=>'10-40', 'layout.defhide'=>2, 'layout.join'=>1));
 	$kurse->add_row(TABLE_TEXT, 									'fu_knr', 		    'FU-Kursnr.', '','', '',		array('ctrl.size'=>'10-40', 'layout.defhide'=>2, 'layout.join'=>1));
-	$kurse->add_row(TABLE_TEXT, 									'foerder_knr', 		'Förder-Kursnr.', '','', '',	array('ctrl.size'=>'10-40', 'layout.defhide'=>2, 'layout.join'=>1));
+	$kurse->add_row(TABLE_TEXT, 									'foerder_knr', 		'Fï¿½rder-Kursnr.', '','', '',	array('ctrl.size'=>'10-40', 'layout.defhide'=>2, 'layout.join'=>1));
 	$kurse->add_row(TABLE_ENUM,										'freigeschaltet',	'Status ', 1, '0###In Vorbereitung###1###Freigegeben###3###Abgelaufen###4###Dauerhaft###2###Gesperrt', '', array('layout.join'=>1, 'layout.descr.hide'=>1));
 	$kurse->add_row(TABLE_INT|TABLE_EMPTYONNULL|TABLE_READONLY|TABLE_PERCENT,
-																	'vollstaendigkeit',	'Vollständigkeit', 0, '0###100', 0, array('layout.defhide'=>1, 'layout.after'=>'%'));
+																	'vollstaendigkeit',	'Vollstï¿½ndigkeit', 0, '0###100', 0, array('layout.defhide'=>1, 'layout.after'=>'%'));
 }
 $kurse->add_row(TABLE_TEXT|TABLE_SUMMARY|TABLE_LIST|TABLE_MUST,	'titel',			'Titel ', '', '', 0, array('ctrl.size'=>'10-30-100', 'ctrl.class'=>'e_bolder', 'layout.descr.class'=>'e_bolder', 'layout.bg.class'=>'e_bglite'));
 if($use_neweditor) {
@@ -312,27 +312,43 @@ if($use_neweditor) {
 if(!$use_neweditor) {
 	$kurse->add_row(TABLE_ENUM,										'freigeschaltet',	'Status ', 1, '0###In Vorbereitung###1###Freigegeben###3###Abgelaufen###4###Dauerhaft###2###Gesperrt', '', array('layout.join'=>1));
 	$kurse->add_row(TABLE_INT|TABLE_EMPTYONNULL|TABLE_READONLY|TABLE_PERCENT,
-																	'vollstaendigkeit',	'Vollständigkeit', 0, '0###100', 0, array('layout.defhide'=>1, 'layout.after'=>'%'));
+																	'vollstaendigkeit',	'Vollstï¿½ndigkeit', 0, '0###100', 0, array('layout.defhide'=>1, 'layout.after'=>'%'));
 }
 if(!$use_neweditor) {
 	$kurse->add_row(TABLE_TEXT, 									'org_titel', 		'Originaltitel', 0, 0, '');
 }
 $kurse->add_row(TABLE_SATTR|TABLE_LIST|TABLE_TRACKDEFAULTS|TABLE_MUST,
 																'anbieter',			'Anbieter', 0, $anbieter);
-$kurse->add_row(TABLE_TEXTAREA|TABLE_WIKI|TABLE_NEWSECTION,		'beschreibung',		'Beschreibung', 0, 0, 'Kursporträt');
-$kurse->add_row(TABLE_SATTR|TABLE_TRACKDEFAULTS,				'thema',			'Thema', 0, $themen, '', array());
-$kurse->add_row(TABLE_MATTR|TABLE_TRACKDEFAULTS,				'stichwort',		'Stichwörter', 0, $stichwoerter, '', array('layout.join'=>0));
-$kurse->add_row(TABLE_TEXT,										'msgtooperator',	'Stichwortvorschläge', 0, 0, '',
+$kurse->add_row(TABLE_TEXTAREA|TABLE_WIKI|TABLE_NEWSECTION,		'beschreibung',		'Beschreibung', 0, 0, 'Kursportrï¿½t');
+$kurse->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,		'lernziele',		'Lernziele ', 0, 0, 'Lernziele', array('layout.after'=>'<br/>'));
+$kurse->add_row(TABLE_MATTR_BR|TABLE_SATTR|TABLE_TRACKDEFAULTS,				'thema',			'Thema', 0, $themen, '');
+
+// Dynammically get the respective stichwort ids for the competency levels from the database.
+$db = new DB_Admin();
+$level_selct_values = '0###keine Angabe';
+$levels = ['Niveau A', 'Niveau B', 'Niveau C', 'Niveau D'];
+foreach ($levels as $level) {
+	$sql = 'SELECT id FROM stichwoerter WHERE stichwoerter.stichwort = "' . $level . '"';
+	$db->query($sql);
+	if ($db->next_record()) {
+		$level_selct_values .= '###' . $db->Record['id'] . '###' . $level;
+	}
+}
+// Adds a dropdown for selecting a competency niveau to the edit page for 'kurse'.
+$kurse->add_row(TABLE_ENUM|TABLE_DB_IGNORE,						'level',	        'Kompetenzniveau', 0, $level_selct_values, '', array('layout.join'=>0));
+
+$kurse->add_row(TABLE_MATTR|TABLE_TRACKDEFAULTS,				'stichwort',		'Stichwï¿½rter', 0, $stichwoerter, '', array('layout.join'=>0));
+$kurse->add_row(TABLE_TEXT,										'msgtooperator',	'Stichwortvorschlï¿½ge', 0, 0, '',
     array('layout.join'=>0, 'layout.defhide'=>0,
-        'help.tooltip'=>'Stichwortvorschläge vom Anbieter',
+        'help.tooltip'=>'Stichwortvorschlï¿½ge vom Anbieter',
         'ctrl.size'=>'10-20-60',
         'ctrl.class'=>'vorschlag',
         'layout.descr.class' => 'vorschlag_label'
     ));
 
-$kurse->add_row(TABLE_TEXT|TABLE_READONLY,		                 'msgtooperator_unterrichtsart',	'Vorschläge Unterrichtsart', 0, 0, '',
+$kurse->add_row(TABLE_TEXT|TABLE_READONLY,		                 'msgtooperator_unterrichtsart',	'Vorschlï¿½ge Unterrichtsart', 0, 0, '',
     array('layout.join'=>1, 'layout.defhide'=>0,
-        'help.tooltip'=>'Unterrichtsart-Vorschläge vom Anbieter. Diese sind zur Bearbeitung gesperrt, weil sie bei der Onlinepflege mit existierenden SW abgeglichen werden m&uuml;ssen.',
+        'help.tooltip'=>'Unterrichtsart-Vorschlï¿½ge vom Anbieter. Diese sind zur Bearbeitung gesperrt, weil sie bei der Onlinepflege mit existierenden SW abgeglichen werden m&uuml;ssen.',
         'ctrl.size'=>'60-60-200',
         'ctrl.class'=>'vorschlag',
         'layout.descr.class' => 'vorschlag_label',
@@ -341,12 +357,12 @@ $kurse->add_row(TABLE_TEXT|TABLE_READONLY,		                 'msgtooperator_unte
         'layout.input.hide' => 1
     ));  //'value.replace'=>array( array('###'), array(',') )
     
-$kurse->add_row(TABLE_SECONDARY|TABLE_TRACKDEFAULTS,			'durchfuehrung',	'Durchführung', 1, $durchfuehrung);
+$kurse->add_row(TABLE_SECONDARY|TABLE_TRACKDEFAULTS,			'durchfuehrung',	'Durchfï¿½hrung', 1, $durchfuehrung);
 if(!$use_neweditor) {
 	$kurse->add_row(TABLE_TEXT|TABLE_NEWSECTION,					'bu_nummer',		'BU-Kursnummer', '','', 'Kurs-IDs', array('layout.join'=>1));
 	//$kurse->add_row(TABLE_TEXT, 									'res_nummer', 		'BU-Kursnummer', '','', '', array('layout.join'=>1));
 	$kurse->add_row(TABLE_TEXT, 									'fu_knr', 		    'FU-Kursnummer', '','', '', array('layout.join'=>1));
-	$kurse->add_row(TABLE_TEXT, 									'foerder_knr', 		'Förder-Kursnummer', '','', '', array('layout.join'=>1));
+	$kurse->add_row(TABLE_TEXT, 									'foerder_knr', 		'Fï¿½rder-Kursnummer', '','', '', array('layout.join'=>1));
 	$kurse->add_row(TABLE_TEXT, 									'azwv_knr', 		'AZAV-Kursnummer', '','', '', array('layout.join'=>1));
 }
 
@@ -401,7 +417,7 @@ $tickets->add_row(TABLE_TEXTAREA|TABLE_LIST|TABLE_READONLY,		'nachricht_txt',			
 $tickets->add_row(TABLE_DATETIME|TABLE_LIST|TABLE_READONLY,
     'date_created',			'Eingang', '', '', '', array('layout.descr'=>'Eingang'));
 // $tickets->add_row(TABLE_TEXTAREA|TABLE_LIST|TABLE_READONLY,		'nachricht_html',			'Nachricht');
-$tickets->add_row(TABLE_TEXT|TABLE_LIST|TABLE_READONLY,					'groesse',			'Größe');
+$tickets->add_row(TABLE_TEXT|TABLE_LIST|TABLE_READONLY,					'groesse',			'Grï¿½ï¿½e');
 $tickets->add_row(TABLE_TEXT|TABLE_LIST|TABLE_MUST|TABLE_READONLY,			'msgid',				'Nachrichten-ID');
 $tickets->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION, 						'notizen', 			'Journal', '', '', '', array('layout.section'=>1));
 
@@ -437,9 +453,9 @@ $anbieter_billing->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,			'notizen',				'Jou
 /*** APIKEYS ***/
 $apikeys = new Table_Def_Class(0,								'apikeys',			'API-Keys');
 $apikeys->add_row(TABLE_TEXT|TABLE_LIST|TABLE_MUST,				'name',				'Name', '', '', '', array('ctrl.size'=>'10-80', 'layout.bg.class'=>'e_bglite', 'layout.descr.class'=>'e_bolder', 'ctrl.class'=>'e_bolder'));
-$apikeys->add_row(TABLE_TEXT|TABLE_LIST|TABLE_UNIQUE,			'apikey',			'persönlicher API-Key', 'wird automatisch erzeugt', '', '', array('ctrl.size'=>'25-80'));
+$apikeys->add_row(TABLE_TEXT|TABLE_LIST|TABLE_UNIQUE,			'apikey',			'persï¿½nlicher API-Key', 'wird automatisch erzeugt', '', '', array('ctrl.size'=>'25-80'));
 $apikeys->add_row(TABLE_BITFIELD|TABLE_LIST,					'flags',			'Optionen', 1+2, '1###Freigeschaltet###2###Verschl&uuml;sselte Verbindung###4###Schreibzugriff erlauben###8###Journal Lesezugriff', '', array('ctrl.checkboxes'=>1));
-$apikeys->add_row(TABLE_MATTR,			                        'usergrp',  		'Zugriffsbeschränkung', 0, 'user_grp', '', array('layout.after'=>'<br>Wenn hier Gruppen eingetragen werden, können neue Datensätze nur mit diesen Gruppen erstellt werden und bestehende können nur bearbeitet/gelöscht werden, wenn sie einer der Gruppen angehören.'));
+$apikeys->add_row(TABLE_MATTR,			                        'usergrp',  		'Zugriffsbeschrï¿½nkung', 0, 'user_grp', '', array('layout.after'=>'<br>Wenn hier Gruppen eingetragen werden, kï¿½nnen neue Datensï¿½tze nur mit diesen Gruppen erstellt werden und bestehende kï¿½nnen nur bearbeitet/gelï¿½scht werden, wenn sie einer der Gruppen angehï¿½ren.'));
 $apikeys->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION, 				'notizen', 			'Journal', '', '', '', array('layout.section'=>1));
 $apikeys->set_trigger('config/trigger_apikeys.inc.php'); 
 
@@ -467,7 +483,7 @@ $Table_Shortnames = array(
 	'Gesamtpreis/EUR'				=>	'Preis',
 	'Sonderpreis/EUR'				=>	'Sonderpr.',
 	'Sonderpreis/Tage vor Beginn'	=>	'Tage',
-	'Durchführungs-Nr.'				=>	'Nr.',
+	'Durchfï¿½hrungs-Nr.'				=>	'Nr.',
 	'Stunden'						=>	'Std.',
 	'Uhrzeit von'					=>	'Zeit',
 	'max. Teilnehmende'				=>	'Teiln.',
@@ -494,6 +510,6 @@ $g_addsettings_view             = array( "Domain f&uuml;r 'Ansicht'", 'view.doma
 $g_addsettings_misc             = array( "Export.ApiKey f&uuml;r Synchronisation<br>Kann nur 'template' setzen", 'export.apikey' );    // if no sepcific value is set for this user it will fall back / show the value of user "template" in CMS!
 $g_addsettings_userTemplateOnly = array( 'export.apikey' );                                         // any of these settings are to be displayed for and can only be set by user "template" only
 
-// in dieses Verzeichnis werden zu exportierende Dateien temporär gelagert; andere Dateien in diesem Verzeichnis werden gelöscht!
+// in dieses Verzeichnis werden zu exportierende Dateien temporï¿½r gelagert; andere Dateien in diesem Verzeichnis werden gelï¿½scht!
 $g_temp_dir = '../temp';
 

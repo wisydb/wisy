@@ -204,6 +204,11 @@ function selectPortalOrFwd301()
 			$ist_domain = substr($ist_domain, 7 + 1 /*dot or minus*/ );
 		$do_fwd = false;
 	}
+	elseif ( substr($ist_domain, 0, 7)=='wisyisy' ) // remove wisyki prefix Karl Weber
+	{
+		$ist_domain = substr($ist_domain,7 + 1);
+	}
+
 	else if( substr($ist_domain, -6)=='.local' ) // ... special domain needed for development
 	{	
 		$ist_domain = str_replace('.local', '.info', $ist_domain);
@@ -330,9 +335,9 @@ if( strval(isset($_COOKIE['core'])) && $_COOKIE['core'] !='' )
     $wisyCore = 'core' . strval($_COOKIE['core']);
 }
 /*WISY@KI-Synchronisation in core100 (Author: Karl Weber)*/
-else if ($wisyRequestedFile == "wisykisync" && strval($wisyPortalEinstellungen['wisykicore'] != ''))
+else if ($wisyRequestedFile == "wisykisync" && strval($wisyPortalEinstellungen['wisyki'] != ''))
 {
-	$wisyCore = 'core' . strval($wisyPortalEinstellungen['wisykicore']);
+	$wisyCore = 'core' . strval($wisyPortalEinstellungen['wisyki']);
 	$wisyRequestedFile = 'sync';
 }
 else if( strval($wisyPortalEinstellungen['core']) != '' )
@@ -416,4 +421,3 @@ else if( @file_exists("$wisyCore/main.inc.php") )
 *******************************************************************************/
 
 error404();
-
