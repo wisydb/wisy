@@ -2626,6 +2626,12 @@ class WISY_FRAMEWORK_CLASS
 
 			case 'edit':
 				return createWisyObject('WISY_EDIT_RENDERER_CLASS', $this);
+
+			case 'scout':
+				return createWisyObject('WISYKI_SCOUT_RENDERER_CLASS', $this);
+
+			case 'esco':
+				return createWisyObject('WISYKI_ESCO_CLASS', $this);
 				
 			case 'robots.txt':
 			case 'sitemap.xml':
