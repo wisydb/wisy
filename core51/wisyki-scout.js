@@ -926,7 +926,7 @@ function enable(node) {
     show(node);
 }
 
-function focusDelayed(element, delay = 200) {
+function focusDelayed(element, delay = 500) {
     const stepNow = currentStepName;
     return new Promise((res, _rej) => {
         setTimeout(() => {
