@@ -1147,7 +1147,6 @@ class WISY_SEARCH_CLASS
 	                       }
 	                   }
 	                 }
-	                 echo "<br><br><br><br>";
 	        
 	                            
 	        // add result to cache

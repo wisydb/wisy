@@ -1,9 +1,9 @@
 <?php
 
-require_once("./sql_curr.inc.php");
-require_once("./config/config.inc.php");
+require_once($_SERVER['DOCUMENT_ROOT'] . "/admin/sql_curr.inc.php");
+require_once($_SERVER['DOCUMENT_ROOT'] . "./admin/config/config.inc.php");
 
-class WISYKI_PYTHON_API {
+class WISYKI_PYTHON_CLASS {
     private string $pythonlib; 
     private string $api_uri;
 
@@ -41,11 +41,11 @@ class WISYKI_PYTHON_API {
         return [$result, $exitcode];
     }
 
-    public function extract_keywords(string $title = '', string $description = '') { 
+    public function extract_keywords(string $text) { 
         $endpoint = "/extractKeywords"; 
         $data = [ 
-            'title' => utf8_encode($title),  
-            'description' => utf8_encode($description) 
+            'title' => '',  
+            'description' => $text
         ]; 
      
         $post_data = json_encode($data); 
@@ -78,8 +78,8 @@ class WISYKI_PYTHON_API {
     public function predict_comp_level(string $title = '', string $description = '') {
         $endpoint = "/predictCompLevel";
         $data = [
-            'title' => $title, 
-            'description' => $description
+            'title' => utf8_encode($title), 
+            'description' => utf8_encode($description)
         ];
     
         $post_data = json_encode($data);

@@ -24,6 +24,9 @@ body {
     font-family: 'Inter', sans-serif;
     color: #222;
     overflow: hidden;
+    padding-top: 10px;
+    height: 100vh;
+    position: relative;
 }
 
 a:not(.link) {
@@ -48,19 +51,22 @@ nav {
     height: 60px;
     display: grid;
     grid-template-columns: 1fr 1fr;
-    margin-top: 1em;
+}
+
+.btn-link:not(:disabled) {
+    text-decoration: underline;
+    color: slateblue;
 }
 
 .btn-link {
+    font-size: 1em;
     background: none;
     outline: none;
     border: none;
-    text-decoration: underline;
-    color: slateblue;
-    font-size: 1em;
+    color: inherit;
 }
 
-.btn-link:active {
+.btn-link:not(:disabled):active {
     color: crimson;
 }
 
@@ -217,11 +223,17 @@ nav {
     background-color: #eee;
     z-index: 10;
     position: relative;
+    padding: 0 .5em;
+}
+
+
+.scout-nav__progress > span {
+    display: none;
+    margin-right: .5em;
 }
 
 .scout-nav__progress ul {
     position: relative;
-    margin-left: .5em;
     display: inline-flex;
     flex-direction: row;
     padding-inline: 0;
@@ -256,13 +268,12 @@ nav {
 .scout-nav__progress li::before {
     content: '';
     position: absolute;
-    top: -4px;
-    left: -4px;
-    width: 26px;
-    height: 26px;
+    width: 100%;
+    height: 100%;
     border: 1px solid transparent;
     border-radius: 100%;
     transition: all .3s ease-out;
+    scale: 1.3;
 }
 
 .scout-nav__progress li.done.current-step::before {
@@ -300,7 +311,7 @@ nav {
     height: 110px;
     width: 100%;
     background: #eee;
-    position: fixed;
+    position: sticky;
     bottom: 0;
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -359,7 +370,7 @@ main {
     border: 12px solid transparent;
 }
 
-a .loader {
+button .loader {
     display: inline-block;
     width: 1em;
     height: 1em;
@@ -372,10 +383,10 @@ a .loader {
     left: 0;
     scale: unset;
     transition: none;
-    margin-right: .3em;
+    margin-right: .5em;
 }
 
-a .loader::after {
+button .loader::after {
     content: '';
     box-sizing: border-box;
     border: 2px solid #f3f3f3;
@@ -388,6 +399,7 @@ a .loader::after {
     scale: 1;
     transition: border .2s ease-out, scale .2s ease-in;
     top: 2px;
+    left: 0;
 }
 
 @keyframes spin {
@@ -409,7 +421,7 @@ a .loader::after {
 }
 
 #steps {
-    height: calc(100vh - 300px);
+    height: calc(100vh - 60px - 110px - 110px - 10px);
     margin-bottom: 1em;
     display: flex;
     flex-direction: row;
@@ -645,7 +657,7 @@ ul.level-goal-selection {
 p.level-goal {
     overflow: hidden;
     text-overflow: ellipsis;
-    padding: .3em 0em;
+    padding: .3em 1em;
     border-radius: 3px 3px 0px 0px;
     font-size: 1em;
     text-align: center;
@@ -681,30 +693,98 @@ ul.result-list {
 
 .result-list li {
     display: grid;
-    grid-template-columns: 1fr 150px;
-    grid-template-rows: 1fr auto;
+    grid-template-columns: 1fr;
     column-gap: 1em;
-    row-gap: .2em;
+    row-gap: .5em;
+    justify-items: center;
     margin-bottom: 2em;
     position: relative;
 }
 
-.result-list p.level-goal {
+.result-list .level-goal {
+    border-radius: 3px;
+    width: 100%;
+}
+
+.course-list p.skill-title {
+    text-align: center;
+}
+
+.result-list p.level-goal, .course-list p.level-goal {
     border-radius: 2px;
+    width: 100%;
 }
 
-.result-list .skill-title {
-    grid-column: 1 / 3;
-    grid-row: 1;
+.result-list p.level-goal {
+    max-width: 350px;
 }
 
-.result-list .result-link {
-    /* grid-column-start: 2;
-    grid-row-start: 1;
-    grid-row-end: 3; */
-    align-self: center;
-    justify-self: center;
+.result-link {
+    min-width: 150px;
+}
+
+.course-list {
+    padding-inline: 0;
+    margin-top: 1em;
+}
+
+.course-list li {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: .5em;
+    padding: 1em;
     position: relative;
+}
+
+
+.course-list li::before {
+    content: '';
+    border-top: 2px solid #181B5A;
+    border-radius: 2px;
+    width: 100%;
+    top: 0;
+    left: 0;
+    position: absolute;
+}
+
+.course-list li:last-of-type::after {
+    content: '';
+    border-top: 2px solid #181B5A;
+    border-radius: 2px;
+    width: 100%;
+    bottom: 0;
+    left: 0;
+    position: absolute;
+}
+
+.course-preview .course-title {
+    font-weight: bold;
+}
+
+.course-preview__actions {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 2em;
+    width: 100%;
+    max-width: 200px;
+    align-self: center;
+}
+
+.to-course-btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #181B5A;
+    border-radius: 5px;
+    padding: 0em 1em;
+    margin: .4em 0;
+    text-align: center;
+}
+
+.to-course-btn > span{
+    color: white;
 }
 
 .level-O {
@@ -746,5 +826,36 @@ ul.result-list {
         grid-template-columns: 1fr 1fr;
         align-items: center;
         gap: 1em;
+    }
+}
+
+
+@media screen and (min-width: 420px) {
+
+    .result-list li {
+        grid-template-columns: 1fr auto;
+        grid-template-rows: 1fr auto;
+    }
+
+    .scout-nav__progress > span {
+        display: inline-block;
+    }
+
+    .result-list p.skill-title {
+        text-align: left;
+    }
+    .result-list .level-goal {
+        grid-row: 2;
+    }
+
+    .result-list .result-link {
+        /* grid-row: 1 / 3; */
+        grid-row: 2;
+        align-self: center;
+        justify-self: end;
+    }
+
+    .result-list li {
+        justify-items: normal;
     }
 }

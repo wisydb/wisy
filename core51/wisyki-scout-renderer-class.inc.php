@@ -4,11 +4,13 @@ if (!defined('IN_WISY')) die('!IN_WISY');
 class WISYKI_SCOUT_RENDERER_CLASS
 {
 	var $framework;
+	var $request;
 
-	function __construct(&$framework)
+	function __construct(&$framework, $request)
 	{
 		// constructor
 		$this->framework	=& $framework;
+		$this->request = $request;
 	}
 
 	function getPrologue() {
@@ -86,6 +88,13 @@ class WISYKI_SCOUT_RENDERER_CLASS
 						<article class="step" id="resultOverview">
 							<p><strong>Geschafft!</strong> Ich habe folgende Kurse f&uuml;r Dich gefunden.</p>
 							<ul class="result-list"></ul>
+						</article>
+					</div>
+					<div class="step-container">
+						<article class="step" id="resultList">
+							<p><span class="result-count"></span> gefunden zu:</p>
+							<p class="skill-title"></p>
+							<ul class="course-list"></ul>
 						</article>
 					</div>
 				</section>
@@ -183,10 +192,8 @@ class WISYKI_SCOUT_RENDERER_CLASS
 	function render()
 	{
 		header("Content-Type: text/html; charset=UTF-8");
-		$action = $_REQUEST['action'];
-	
 
-		switch( $action ) {
+		switch( $this->request ) {
 			case 'main':
 				$this->renderMain();
 				break;

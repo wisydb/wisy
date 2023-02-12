@@ -1,6 +1,6 @@
 <?php
 require_once('lib/ki/wisyki-python-api.inc.php');
-require_once('lib/ki/wisyki-esco-class.inc.php');
+require_once('../core51/wisyki-esco-class.inc.php');
 
 $pythonAPI = new WISYKI_PYTHON_API;
 $escoAPI = new WISYKI_ESCO_CLASS; 
@@ -110,6 +110,8 @@ function pageend() {
     echo ("</body></html>");
 }
 
+header('Content-Type: text/html; charset=UTF-8');
+
 $pageuri = parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH);
 $levels = [
     'A' => [
@@ -168,8 +170,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         ?>
         <main class="manual-classification_review">
-            <h2>Vielen Dank für deinen Beitrag!</h2>
-            <p>Dank deiner Unterstützung kann das KI-Modell lernen passgenauere Entscheidungen zu treffen.</p>
+            <h2>Vielen Dank fÃ¼r deinen Beitrag!</h2>
+            <p>Dank deiner UnterstÃ¼tzung kann das KI-Modell lernen passgenauere Entscheidungen zu treffen.</p>
             <br>
             <label for="trainings-progress">Trainings Fortschritt:</label>
             <progress id="trainings-progress" value="<?php echo $progress_value ?>" max="100"> <?php echo $trainings_progress ?>% </progress>
@@ -192,7 +194,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </details>
             <section class="actions">
                 <a href="<?php echo $pageuri . '?courseid=' . $courseid ?>" class="btn btn-secondary">Auswahl korrigieren</a>
-                <a href="<?php echo $pageuri ?>" class="btn btn-primary">Nächster Kurs</a>
+                <a href="<?php echo $pageuri ?>" class="btn btn-primary">NÃ¤chster Kurs</a>
             </section>
         </main>
         <script type="application/x-javascript" src=lib/ki/js/p5/p5.min.js></script>
@@ -215,40 +217,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         pagestart('Error - Manuelle Kursklassifikation');
         echo('Es konnte kein Kurs gefunden werden, bitte lade die Seite erneut.');
     } else {
-        // list($result, $exitcode) = $pythonAPI->exec_command(
-        //     "predict_comp_level.py",
-        //     array("title" => $course['titel'], "description" => $course['beschreibung']),
-        //     "Kompetenzniveau konnte nicht bestimmt werden."
-        // );
-        $prediction = $pythonAPI->predict_comp_level($course['titel'], $course['beschreibung']);
+        $prediction = $pythonAPI->predict_comp_level(utf8_encode($course['titel']), utf8_encode($course['beschreibung']));
         $course['level_suggestion'] = $prediction['level'];
 
-        // $keywords = $pythonAPI->extract_keywords($course['titel'], $course['beschreibung']); 
-        // $searchterm = ""; 
-        // foreach ($keywords as $keyword) { 
-        //     $searchterm .= $keyword[0] . ", "; 
-        // } 
-        $searchterm = utf8_encode($course['titel']) . " " . utf8_encode($course['beschreibung']); 
-        // $searchterm = utf8_encode($course['titel']); 
-        $skillSuggestions = $escoAPI->search_api($searchterm, 'skill', null, 10); 
+        $skillSuggestions = $escoAPI->suggestSkills(utf8_encode($course['titel']), utf8_encode($course['beschreibung']));
+        $skillSuggestions['result'] = array_merge($skillSuggestions['result'], $escoAPI->search_api('englisch', 'skill', null, 5));
 
         pagestart('Manuelle Kursklassifikation');
 
         ?>
 
         <main class="manual-classification_selection">
-            <h2>Bestimme ein passendes Kompetenzniveau für den folgenden zufällig ausgewählten Kurs.</h2>
+            <h2>Bestimme ein passendes Kompetenzniveau fÃ¼r den folgenden zufÃ¤llig ausgewÃ¤hlten Kurs.</h2>
             <section class="course-info">
                 <label for="course-title">Titel</label>
-                <p id="course-title"><?php echo $course['titel'] ?></p>
+                <p id="course-title"><?php echo utf8_encode($course['titel']) ?></p>
                 <label for="course-id">ID</label>
                 <p id="course-id"><?php echo $course['id'] ?></p>
                 <label for="course-description">Beschreibung</label>
-                <p id="course-description"><?php echo $course['beschreibung'] ?></p>
+                <p id="course-description"><?php echo utf8_encode($course['beschreibung']) ?></p>
             </section>
             <form method="post" name="level-selection-form">
                 <section class="form-input">
-                    <label for="level-selection">Wähle ein passendes Kompetenzniveau.</label>
+                    <label for="level-selection">WÃ¤hle ein passendes Kompetenzniveau.</label>
                     <input type="hidden" name="courseid" value="<?php echo $course['id'] ?>">
                     <select name="level-selection" id="level-selection">
                     <?php
@@ -267,7 +258,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </select>
                 </section>
                 <section class="form-action">
-                    <a href="<?php echo $pageuri ?>" class="btn btn-secondary">Überspringen</a>
+                    <a href="<?php echo $pageuri ?>" class="btn btn-secondary">Ãœberspringen</a>
                     <button type="submit" class="btn btn-primary">Abschicken</button>
                 </section>
                 <section class="help">
@@ -283,12 +274,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <br> 
             <br> 
             <section class="skill-suggestions"> 
-                <h2>ESCO-Skill Empfehlungen:</h4> 
+                <h2>ESCO-Skill Empfehlungen:</h4>
+                <p>Searchterm: <?php echo $skillSuggestions['searchterms'] ?></p>
                 <ul> 
-                    <?php  
-                    if (!empty($skillSuggestions)) { 
-                        foreach ($skillSuggestions as $url => $suggestion) { 
-                            echo("<li><a href='$url' target='_blank' rel='noopener noreferrer' class='btn'>" . utf8_decode($suggestion['label']) . "</a></li>"); 
+                    <?php
+                    if (!empty($skillSuggestions['result'])) { 
+                        foreach ($skillSuggestions['result'] as $url => $suggestion) { 
+                            if(!empty($suggestion)) {
+                                echo("<li><a href='$url' target='_blank' rel='noopener noreferrer' class='btn'>" . $suggestion['label'] . "</a></li>"); 
+                            }
                         } 
                     } 
                     ?> 

@@ -15,6 +15,8 @@ let currentStepNode;
 let currentStepName;
 let scoutNavSteps;
 let skillProfile;
+let searchResults = [];
+let currentSearchResult;
 const amountOfSkillSuggestionsShownByDefault = 6;
 const maxSkills = 5;
 
@@ -25,6 +27,7 @@ const steps = [
     "currentLevel",
     "levelGoal",
     "resultOverview",
+    "resultList",
 ];
 const compLevels = {
     O: "ohne Vorkenntnisse",
@@ -125,6 +128,9 @@ async function showStep(step) {
         case "resultOverview":
             initResultOverviewStep(isLoaded);
             break;
+        case "resultList":
+            initResultListStep(isLoaded);
+            break;
     }
     
     if (loader) {
@@ -138,7 +144,7 @@ async function showStep(step) {
 }
 
 async function loadStep(stepName) {
-    const url = "./scout?action=" + stepName;
+    const url = "./scout/" + stepName;
     const response = await fetch(url);
     if (response.ok) {
         const result = await response.text();
@@ -412,6 +418,9 @@ function initLevelGoalStep(_isOld) {
             levelGoal.classList.add(
                 "level-" + Object.keys(compLevels)[levelIndex]
             );
+            skill.levelGoal = Object.keys(compLevels)[levelIndex];
+            skillProfile.skills[skill.uri].levelGoal = skill.levelGoal;
+            localStorage.setItem("skillProfile", JSON.stringify(skillProfile));
         }
         const select = getLevelGoalSelectElement(skill);
         levelGoalDiv.appendChild(levelGoalLabel);
@@ -465,10 +474,11 @@ function initResultOverviewStep(_isOld) {
         levelGoalNode.textContent = compLevels[skill.levelGoal];
         li.appendChild(levelGoalNode);
 
-        const resultLink = document.createElement('a');
+        const resultLink = document.createElement('button');
         resultLink.classList.add('result-link');
-        resultLink.classList.add('link');
-        resultLink.setAttribute('id', skill.uri);
+        resultLink.classList.add('btn-link');
+        resultLink.setAttribute('skill-uri', skill.uri);
+        disable(resultLink);
         const loader = document.createElement('span');
         loader.classList.add('loader');
         resultLink.appendChild(loader);
@@ -477,28 +487,121 @@ function initResultOverviewStep(_isOld) {
         resultLink.appendChild(resultText);
         li.appendChild(resultLink);
         resultList.appendChild(li);
-        getSearchResult(resultLink, resultText, loader, skill);
+
+        getSearchResultPreview(resultLink, resultText, loader, skill);
     }
-    // TODO remove this feature.
-    temp_loader_counter = 1;
 }
 
-async function getSearchResult(output, text, loader, skill) {
-    output.setAttribute('href', await search(skill));
-    output.setAttribute('target', '_blank');
-    text.textContent = Math.floor(Math.random() * 9 + 1) + ' Kurse gefunden';
+async function getSearchResultPreview(output, text, loader, skill) {
+    const response = await prepareSearch(skill);
+    output.setAttribute('search-id', response.id);
+    if (response.count == 1) {
+        text.textContent = '1 Kurs gefunden';
+    } else {
+        text.textContent = response.count + ' Kurse gefunden';
+    }
     loader.remove();
+
+    if (response.count > 0) {
+        enable(output);
+        output.addEventListener('click', () => {
+            currentSearchResult = response.id;
+            showStep(steps.indexOf('resultList'));
+        });
+    }
 }
 
-let temp_loader_counter = 1;
+async function prepareSearch(skill) {
+    const params = { prepare: true, label: skill.label, level: skill.levelGoal };
 
-function search(skill) {
-    return new Promise((res, _rej) => {
-        let url = 'https://sh.kursportal.info/search';
-        const param = new URLSearchParams({qs: skill.label});
-        url = encodeURI(url + '?' + param);
-        setTimeout(() => res(url), 500 * temp_loader_counter++);
+    const url = "./scout-search?" + new URLSearchParams(params);
+    const response = await fetch(url);
+
+    if (response.ok) {
+        const result = await response.json();
+        searchResults[result.id] = result;
+        return result;
+    } else {
+        alert("HTTP-Error: " + response.status);
+    }
+}
+
+async function updateSearchResult(search) {
+    const params = { label: search.skill.label, level: search.skill.levelGoal };
+
+    const url = "./scout-search?" + new URLSearchParams(params);
+    const response = await fetch(url);
+
+    if (response.ok) {
+        const result = await response.json();
+        searchResults[result.id] = result;
+        return result;
+    } else {
+        alert("HTTP-Error: " + response.status);
+    }
+}
+
+function initResultListStep(_isOld) {
+    show(prevButton);
+    enable(prevButton);
+    hide(nextButton);
+    disable(nextButton);
+
+    console.log(searchResults);
+
+    const preview = searchResults[currentSearchResult];
+
+    const countNode = currentStepNode.querySelector('.result-count');
+    if (preview.count == 1) {
+        countNode.textContent = '1 Kurs';
+    } else {
+        countNode.textContent = preview.count + ' Kurse';
+    }
+    const skillTitle = currentStepNode.querySelector('.skill-title');
+    skillTitle.textContent = preview.skill.label;
+
+    const resultList = currentStepNode.querySelector('ul.course-list');
+    while (resultList.lastChild) {
+        resultList.removeChild(resultList.lastChild);
+    }
+
+    updateSearchResult(preview).then((result) => {
+        for (const courseID in result.result) {
+            const course = result.result[courseID];
+            const li = document.createElement('li');
+            li.classList.add('course-preview');
+
+            const p = document.createElement('p');
+            p.classList.add('course-title');
+            p.textContent = course.title;
+            li.appendChild(p);
+
+            const level = document.createElement("p");
+            level.classList.add("level-goal");
+            if (course.level) {
+                level.classList.add("level-" + course.level);
+                level.textContent = compLevels[course.level];
+            } else {
+                level.classList.add("level-O");
+                level.textContent = compLevels['O'];
+            }
+            li.appendChild(level);
+
+            li.insertAdjacentHTML('beforeend', getCoursePreviewActions(courseID));
+
+            resultList.appendChild(li);
+        }
     });
+}
+
+function getCoursePreviewActions(courseid) {
+    return `
+        <div class="course-preview__actions">
+            <button class="bookmark-btn labeled-icon-btn"><i class="material-symbols-rounded">star</i>Merken</button>
+            <button class="share-btn labeled-icon-btn"><i class="material-symbols-rounded">share</i>Teilen</button>
+            <a class="to-course-btn btn" href="/k${courseid}"><span>Kurs ansehen</span></a>
+        </div>
+    `;
 }
 
 function getCurrentLevelSelectElement(skill) {
@@ -635,6 +738,9 @@ function checkStep(step) {
     ) {
         return 0;
     }
+    if (step == 6 && (!currentSearchResult && searchResults.length == 0)) {
+        return 5;
+    }
     // Check overflow.
     if (step >= steps.length) {
         return steps.length - 1;
@@ -683,11 +789,12 @@ function updateScoutNav(currentStep) {
         // disable(element.firstChild);
     });
 
-    for (i = 0; i <= currentStep; i++) {
+    for (i = 0; i <= Math.min(currentStep, scoutNavSteps.length-1); i++) {
         scoutNavSteps[i].classList.add("done");
         // enable(scoutNavSteps[i].firstChild);
     }
-    scoutNavSteps[currentStep].classList.add("current-step");
+
+    scoutNavSteps[Math.min(currentStep, scoutNavSteps.length-1)].classList.add("current-step");
 }
 
 async function suggestSkills(uri) {
@@ -697,9 +804,9 @@ async function suggestSkills(uri) {
 
     const limit = 10;
 
-    const params = { action: "skill-suggest", uri: uri, limit: limit };
+    const params = { uri: uri, limit: limit, onlyrelevant: false };
 
-    const url = "./esco?" + new URLSearchParams(params);
+    const url = "./esco/get-concept-skills?" + new URLSearchParams(params);
     const response = await fetch(url);
 
     if (response.ok) {
@@ -817,7 +924,6 @@ async function autocomplete(input, requestID) {
         return [];
     }
     const params = {
-        action: "autocomplete",
         term: searchterm,
         limit: limit,
         requestID: requestID,
@@ -833,7 +939,7 @@ async function autocomplete(input, requestID) {
         params.onlyrelevant = false;
     }
 
-    const url = "./esco?" + new URLSearchParams(params);
+    const url = "./esco/autocomplete?" + new URLSearchParams(params);
     const response = await fetch(url);
 
     if (response.ok) {

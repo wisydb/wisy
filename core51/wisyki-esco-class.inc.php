@@ -1,16 +1,22 @@
 <?php
 
+require_once($_SERVER['DOCUMENT_ROOT'] . '/core51/wisyki-python-class.inc.php');
+
 class WISYKI_ESCO_CLASS {
 	var $framework;
+	var $pythonAPI;
+	var $request;
 
 	/**************************************************************************
 	 * Tools / Misc.
 	 *************************************************************************/
 	
-	function __construct(&$framework)
+	function __construct(&$framework = null, $request = '')
 	{
 		// constructor
 		$this->framework	=& $framework;
+        $this->pythonAPI = new WISYKI_PYTHON_CLASS();
+        $this->request = $request;
 	}
     /**
      * Calls ESCO API to get autocomplete suggestions based on the given term
@@ -160,15 +166,17 @@ class WISYKI_ESCO_CLASS {
         );
 
 		if (isset($type) && !empty($type)) {
-            if (in_array($type, $available_types)) {
-                $dataArray['type'] = $type;
+            if (!in_array($type, $available_types)) {
+                $this->error_401($type . ' is not a valid type.');
             }
+            $dataArray['type'] = $type;
 		}
 
 		if (isset($scheme) && !empty($scheme)) {
-            if (array_key_exists($scheme, $available_esco_schemes)) {
-                $dataArray['isInScheme'] = $available_esco_schemes[$scheme];
+            if (!array_key_exists($scheme, $available_esco_schemes)) {
+                $this->error_401($scheme . ' is not a valid scheme.');
             }
+            $dataArray['isInScheme'] = $available_esco_schemes[$scheme];
 		}
 
         $data = http_build_query($dataArray);
@@ -185,7 +193,7 @@ class WISYKI_ESCO_CLASS {
 
         if (curl_error($curl)){
             echo 'Request Error:' . curl_error($curl);
-            return;
+            $this->error_500();
         }
 
         curl_close($curl);
@@ -216,7 +224,7 @@ class WISYKI_ESCO_CLASS {
      * @param int $limit
      * @return array [{"label":"title1","value":"url1"},{"label":"title2","value":"url2"}]
      */
-    function getSkillsOf($uri) {
+    function getSkillsOf($uri, $onlyrelevant = false) {
         $escoSuggestions =  array();
 
         // Build request url.
@@ -265,6 +273,10 @@ class WISYKI_ESCO_CLASS {
                 "label" => $skill["title"],
                 "href" => $skill["href"],
             ];
+        }
+
+        if ($onlyrelevant) {
+            $escoSuggestions = $this->filter_is_relevant($escoSuggestions);
         }
 
         return array(
@@ -357,109 +369,226 @@ class WISYKI_ESCO_CLASS {
         return $search_results;
     }
 
-
-    function filter_is_relevant($tags) {
+    /**
+     * Filters an array of esco skills to only contain skills for which there is a tag with the same name presenet in the wisy database.
+     * It is irrelevant whether the tag in the database is of type ESCO_Kompetenz or any other type.
+     *
+     * @param array $skills A two-dimensional array of esco skills ordered by a category. [['category1] => ['skill1', 'skill2'], ['category2] => ['skill3']]
+     * @return array Array containing skills that have equivalent tags in the wisy databse.
+     */
+    function filter_is_relevant(array $skills):array {
         $db = new DB_Admin();
         $filtered = array();
-        foreach ($tags as $category => $categorytags) {
-            foreach ($categorytags as $id => $tag) {
-                $sql = 'SELECT * FROM x_tags WHERE tag_name = "'. $tag['label'] .'"';
-                $db->query($sql);
-                if ($db->next_record()) {
-                    $filtered[$category][$id] = $tag;
-                }
+        foreach ($skills as $index => $skill) {
+            $sql = 'SELECT * FROM x_tags WHERE tag_name = "'. $skill['label'] .'"';
+            $db->query($sql);
+            if ($db->next_record()) {
+                $filtered[$index] = $skill;
             }
         }
         return $filtered;
     }
 
-    function autocomplete() {
+    /**
+     * Uses the ESCO API to generate autocomplete results for known ESCO concepts, skills and occupations based on a given term.
+     *
+     * @param string $term The term based on which autocomplete reults are searched.
+     * @param string $type The type of results that are searched. By default every type is searched.
+     * @param array $scheme The ESCO Scheme that is to be searched. By default every scheme is searched.
+     * @param int $limit The max number of results.
+     * @param boolean $onlyrelevant Whether only relevant results should be returned. A relevant result is one that has an equivalent tag with the same name in the WISY database.
+     * @return array A two dimensional array of ESCO results ordered by category, which can be either the type or scheme of the result. [['category1] => ['skill1', 'skill2'], ['category2] => ['skill3']]
+     */
+    function autocomplete($term, $type = null, $scheme = null, $limit = null, $onlyrelevant = true): array {
+        $results = [];
+
+        if (isset($scheme) && !empty($scheme)) {
+            if (count($scheme) > 1) {
+                foreach($scheme as $s) {
+                    $s = trim($s);
+                    if ($s == 'extenden-skills-hierarchy') {
+                        $results['skills-hierarchy'] = $this->search_skills_hierarchy($term, $limit);
+                    } else if ($s == 'sachstichwort') {
+                        $results['sachstichwort'] = $this->search_wisy($term, $type, $s, $limit);
+                    } else {
+                        $results[$s] = $this->search_api($term, $type, $s, $limit);
+                    }
+                }
+            } else {
+                if ($scheme[0] == 'extended-skills-hierarchy') {
+                    $results['skills-hierarchy'] = $this->search_skills_hierarchy($term, $limit);
+                } else if ($scheme[0] == 'sachstichwort') {
+                    $results['sachstichwort'] = $this->search_wisy($term, $type, $scheme[0], $limit);
+                } else {
+                    $results[$scheme[0]] = $this->search_api($term, $type, $scheme[0], $limit);
+                }
+            }
+        } else {
+            $results[$type] = $this->search_api($term, $type, $scheme, $limit);
+        }
+
+        if (is_array($scheme) && !in_array('extenden-skills-hierarchy', $scheme) && array_key_exists('skills-hierarchy', $results) && empty($results['skills-hierarchy'])) {
+            $results['skills-hierarchy'] = $this->search_skills_hierarchy($term, $limit);
+        }
+
+
+
+        if ($onlyrelevant) {
+            foreach ($results as $categoryname => $category) {
+                $results[$categoryname] = $this->filter_is_relevant($category);
+            }
+        }
+
+        return $results;
+    }
+
+    function suggestSkills(string $title, string $description): array {
+        $keywords = $this->pythonAPI->extract_keywords($title . ' \n\n ' . $description);
+        $searchterms = ""; 
+        foreach ($keywords as $keyword) { 
+            $searchterms .= $keyword[0] . ", "; 
+        } 
+        $searchterms .= $title;
+        $skillSuggestions = array();
+        // $skillSuggestions = array_merge($skillSuggestions, $escoAPI->search_api("speicherprogrammierbare Steuerung", 'skill', null, 5));
+        // $skillSuggestions = array_merge($skillSuggestions, $escoAPI->search_api("Individualarbeitsrecht", 'skill', null, 5));
+        // $skillSuggestions = array_merge($skillSuggestions, $this->search_api("englisch sprechen ", 'skill', null, 5));
+        // $skillSuggestions = array_merge($skillSuggestions, $escoAPI->search_api("excel tabellenkalulation ", 'skill', null, 5));
+        $skillSuggestions = array_merge($skillSuggestions, $this->search_api($searchterms, 'skill', null, 5));
+
+       
+
+        $result = array(
+            'searchterms' => $searchterms,
+            'result' => $skillSuggestions,
+        );
+
+        return $result;
+    }
+
+    function render_autocomplete() {
+        header('Content-Type: application/json; charset=UTF-8');
+        $term = $_GET['term'];
+        if (!isset($term) || empty($term)) {
+            $this->error_400('The request is missing the term parameter.');
+        }
+        
         $type = null;
-        if (isset($_GET['type'])) {
+        if (isset($_GET['type']) && !empty($_GET['type'])) {
             $type = $_GET['type'];
         }
 
-        $limit = null;
-        if (isset($_GET['limit'])) {
-            $limit = $_GET['limit'];
-        }
-
-        $onlyrelevant = true;
-        if (isset($_GET['onlyrelevant'])) {
-            $onlyrelevant = $_GET['onlyrelevant'];
-        }
-
         $scheme = null;
-        if (isset($_GET['scheme'])) {
+        if (isset($_GET['scheme']) && !empty($_GET['scheme'])) {
             $scheme = explode(',', $_GET['scheme']);
             if (!is_array($scheme)) {
                 $scheme = array($scheme);
             }
         }
 
-
-        $results = [];
-
-        if (isset($scheme) && !empty($scheme)) {
-            if (count($scheme) > 1) {
-                foreach($scheme as $s) {
-                    if ($s == 'extenden-skills-hierarchy') {
-                        $results['skills-hierarchy'] = $this->search_skills_hierarchy($_GET['term'], $limit);
-                    } else if ($s == 'sachstichwort') {
-                        $results['sachstichwort'] = $this->search_wisy($_GET['term'], $type, $s, $limit);
-                    } else {
-                        $results[$s] = $this->search_api($_GET['term'], $type, $s, $limit);
-                    }
-                }
-            } else {
-                if ($scheme[0] == 'extended-skills-hierarchy') {
-                    $results['skills-hierarchy'] = $this->search_skills_hierarchy($_GET['term'], $limit);
-                } else if ($scheme[0] == 'sachstichwort') {
-                    $results['sachstichwort'] = $this->search_wisy($_GET['term'], $type, $scheme[0], $limit);
-                } else {
-                    $results[$scheme[0]] = $this->search_api($_GET['term'], $type, $scheme[0], $limit);
-                }
-            }
-        } else {
-            $results[$type] = $this->search_api($_GET['term'], $type, $scheme, $limit);
+        $limit = null;
+        if (isset($_GET['limit']) && !empty($_GET['limit'])) {
+            $limit = $_GET['limit'];
         }
 
-        if (is_array($scheme) && !in_array('extenden-skills-hierarchy', $scheme) && array_key_exists('skills-hierarchy', $results) && empty($results['skills-hierarchy'])) {
-            $results['skills-hierarchy'] = $this->search_skills_hierarchy($_GET['term'], $limit);
+        $onlyrelevant = true;
+        if (isset($_GET['onlyrelevant']) && !empty($_GET['onlyrelevant'])) {
+            $onlyrelevant = strtolower($_GET['onlyrelevant']) === 'true' ? true : (strtolower($_GET['onlyrelevant']) === 'false' ? false : $this->error_401($_GET['onlyrelevant'] . ' is not a valid value for onlyrelevant.'));
         }
-
-
-
-        if ($onlyrelevant == 1) {
-            $results = $this->filter_is_relevant($results);
-        }
-
-        echo json_encode($results, JSON_THROW_ON_ERROR);
+        echo json_encode($this->autocomplete($term, $type, $scheme, $limit, $onlyrelevant));
     }
 
-    function skillSuggest() {
-        $result = $this->getSkillsOf($_GET["uri"]);
-        if (is_array($result)) {
-            echo json_encode($result);
-        } else {
-            echo $result;
+    function render_concept_skills() {
+        header('Content-Type: application/json; charset=UTF-8');
+        $uri = $_GET['uri'];
+        if (!isset($uri) || empty($uri)) {
+            $this->error_400('The request is missing the uri parameter.');
         }
+        $parsed = parse_url($uri);
+        if (!isset($parsed['scheme'])) {
+            $this->error_401($uri . ' is not a valid uri. Please specifiy a valid http protocol.');
+        }
+        if (!isset($parsed['host'])) {
+            $this->error_401($uri . ' is not a valid uri. Please specifiy a host.');
+        }
+        if ($parsed['host'] !== 'data.europa.eu') {
+            $this->error_401('Unkown host. Only the host data.europa.eu is allowed here.');
+        }
+        if (!isset($parsed['path']) || empty(trim($parsed['path'], '/'))) {
+            $this->error_401($uri . ' is not valid. Please specifiy a ressource.');
+        }
+
+        $onlyrelevant = true;
+        if (isset($_GET['onlyrelevant']) && !empty($_GET['onlyrelevant'])) {
+            $onlyrelevant = strtolower($_GET['onlyrelevant']) === 'true' ? true : (strtolower($_GET['onlyrelevant']) === 'false' ? false : $this->error_401($_GET['onlyrelevant'] . ' is not a valid value for onlyrelevant.'));
+        }
+
+        echo json_encode($this->getSkillsOf($uri, $onlyrelevant));
+    }
+
+    function render_suggest_skills() {
+        header('Content-Type: application/json; charset=UTF-8');
+        $json = file_get_contents('php://input');
+        $data = json_decode($json, true);
+        if (empty($data)) {
+            $this->error_400('No valid json provided.');
+        }
+        if (!isset($data['title'])) {
+            $this->error_400('The provided json is missing a title.');
+        }
+        if (!isset($data['description'])) {
+            $this->error_400('The provided json is missing a description.');
+        }
+        echo json_encode($this->suggestSkills($data['title'], $data['description']));
+    }
+
+    function error_400($message) {
+        header('Content-Type: application/json; charset=UTF-8');
+        http_response_code(400);
+        echo json_encode(array(
+            'error_code' => '400',
+            'error_message' => $message,
+        ));
+        die();
+    }
+
+    function error_401($message) {
+        header('Content-Type: application/json; charset=UTF-8');
+        http_response_code(401);
+        echo json_encode(array(
+            'error_code' => '401',
+            'error_message' => $message,
+        ));
+        die();
+    }
+
+    function error_404() {
+        http_response_code(404);
+        die();
+    }
+
+    function error_500() {
+        http_response_code(500);
+        echo json_encode(array(
+            'error_code' => '500',
+            'error_message' => 'Server error - please retry again at a later time.',
+        ));
+        die();
     }
 
     function render() {
-        header('Content-Type: application/json; charset=UTF-8');
-		$action = $_GET['action'];
-	
-
-		switch( $action ) {
-            case 'skill-suggest':
-                $this->skillSuggest();
+		switch( $this->request ) {
+            case 'get-concept-skills':
+                $this->render_concept_skills();
+                break;
+            case 'suggest-skills':
+                $this->render_suggest_skills();
                 break;
             case 'autocomplete':
-                $this->autocomplete();
+                $this->render_autocomplete();
                 break;
             default:
-                echo json_encode(array('error' => 'missing action parameter'));
+                $this->error_404();
         }
 
     }
