@@ -56,6 +56,7 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_INTELLISEARCH_CLASS {
 
 	function render_result() {
 		header('Content-Type: application/json; charset=UTF-8');
+		$db = new DB_Admin();
 
 		$label = $_GET['label'];
 		$level = $_GET['level'];
@@ -69,8 +70,18 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_INTELLISEARCH_CLASS {
 			$result = array();
 	
 			foreach($kurse['records'] as $kurs) {
+				// Get provider title.
+				$db->query("SELECT anbieter.suchname FROM anbieter WHERE id=" . $kurs['anbieter']);
+				$db->next_record();
+				$provider = $db->Record;
+
+				// Get course comp level.
+				$level = $this->get_course_comp_level($kurs['id']);
+
 				$result[$kurs['id']] = array(
 					'title' => utf8_encode($kurs['titel']),
+					'provider' => utf8_encode($provider['suchname']),
+					'level' => utf8_encode($level),
 				);
 			}
 
@@ -85,6 +96,25 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_INTELLISEARCH_CLASS {
 		} else {
 			$this->error_500();
 		}
+	}
+
+	function get_course_comp_level($courseID):string {
+		$db = new DB_Admin();
+
+		$sql = "SELECT stichwoerter.stichwort as level 
+			FROM kurse_stichwort, stichwoerter
+			WHERE primary_id = $courseID
+				AND attr_id = stichwoerter.id
+				AND (stichwoerter.stichwort = 'Niveau A'
+					OR stichwoerter.stichwort = 'Niveau B'
+					OR stichwoerter.stichwort = 'Niveau C'
+					OR stichwoerter.stichwort = 'Niveau D'
+				);";
+		$db->query($sql);
+		if ($db->next_record() ) {
+			return str_replace('Niveau ', '', $db->Record['level']);
+		}
+		return '';
 	}
 
     function error_500() {
