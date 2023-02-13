@@ -53,9 +53,9 @@ nav {
     grid-template-columns: 1fr 1fr;
 }
 
-.btn-link:not(:disabled) {
-    text-decoration: underline;
+.btn-link:not(:disabled) span {
     color: slateblue;
+    text-decoration: underline;
 }
 
 .btn-link {
@@ -64,6 +64,10 @@ nav {
     outline: none;
     border: none;
     color: inherit;
+}
+
+.btn-link i {
+ text-decoration: none;
 }
 
 .btn-link:not(:disabled):active {
@@ -196,7 +200,7 @@ nav {
 }
 
 .tabs>*:not(.selected) {
-    background: #181B5A;
+    background: #003064;
     color: white;
     font-weight: 200;
     box-shadow: -1px -3px 6px #11031d52 inset, -2px -1px 3px #11031d6e;
@@ -208,7 +212,7 @@ nav {
 }
 
 .tabs {
-    color: #181B5A;
+    color: #003064;
     font-weight: 600;
 }
 
@@ -247,7 +251,7 @@ nav {
     height: 1px;
     width: 100%;
     transform: translateY(10px);
-    background-color: #181B5A;
+    background-color: #003064;
 }
 
 .scout-nav__progress li {
@@ -259,7 +263,7 @@ nav {
     justify-content: center;
     align-items: center;
     background-color: white;
-    border: 1px solid #181B5A;
+    border: 1px solid #003064;
     border-radius: 100%;
     z-index: 100;
     transition: all .3s ease-out;
@@ -293,7 +297,7 @@ nav {
 }
 
 .scout-nav__progress li.done {
-    background-color: #181B5A;
+    background-color: #003064;
     color: white;
 }
 
@@ -322,7 +326,7 @@ nav {
 .bottom-nav button {
     width: 60px;
     height: 60px;
-    background: #181B5A;
+    background: #003064;
     color: white;
     border: none;
     border-radius: 5px;
@@ -330,7 +334,7 @@ nav {
 }
 
 .bottom-nav button.disabled {
-    background: #181b5a31;
+    background: #00306431;
 }
 
 #prev-step {
@@ -344,13 +348,13 @@ nav {
 /* Main */
 main {
     position: relative;
-    /* overflow: hidden; */
+    overflow: hidden;
 }
 
 /* Step */
 .loader {
     border: 12px solid #f3f3f3;
-    border-top: 12px solid #181B5A;
+    border-top: 12px solid #003064;
     border-radius: 50%;
     width: 8em;
     height: 8em;
@@ -390,7 +394,7 @@ button .loader::after {
     content: '';
     box-sizing: border-box;
     border: 2px solid #f3f3f3;
-    border-top: 2px solid #181B5A;
+    border-top: 2px solid #003064;
     border-radius: 50%;
     width: 100%;
     height: 100%;
@@ -462,7 +466,7 @@ button .loader::after {
     flex-grow: 1;
     align-items: center;
     padding: 0 .5em;
-    border: 2px solid #181B5A;
+    border: 2px solid #003064;
 }
 
 .autocomplete-box input {
@@ -480,7 +484,7 @@ button .loader::after {
     width: 100%;
     position: absolute;
     margin-top: -2px;
-    border: 2px solid #181B5A;
+    border: 2px solid #003064;
     border-top: none;
     background: whitesmoke;
     z-index: 10;
@@ -503,7 +507,7 @@ button .loader::after {
     text-align: left;
     font-size: 1em;
     text-overflow: ellipsis;
-    /* background-color: #181b5a07; */
+    /* background-color: #00306407; */
 }
 
 .autocomplete-box output li:not(:last-of-type)::after {
@@ -513,11 +517,11 @@ button .loader::after {
     width: 96%;
     margin: 0em 1em;
     margin-left: 2%;
-    border-top: 1px dotted #181b5a75;
+    border-top: 1px dotted #00306475;
 }
 
 .autocomplete-box output button:not(:disabled):hover {
-    background-color: #181b5a1e;
+    background-color: #0030641e;
 }
 
 .autocomplete-box output button:disabled {
@@ -535,7 +539,7 @@ button .loader::after {
     width: 100%;
     margin: .5em 0em;
     padding: .2em 1em;
-    background: #181B5A;
+    background: #003064;
     border-radius: 2px;
     text-overflow: ellipsis;
     overflow: hidden;
@@ -574,7 +578,7 @@ button .loader::after {
 
 .level-explanation-btn i.material-symbols-rounded {
     font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 48;
-    color: #181B5A;
+    color: #003064;
 }
 
 ul.current-level-selection {
@@ -602,7 +606,7 @@ ul.current-level-selection {
 
 .current-level-selection select {
     text-align: center;
-    border: 1px solid #181B5A;
+    border: 1px solid #003064;
     border-radius: 0px 0px 3px 3px;
     font-size: 1em;
     padding: .3em 0em;
@@ -671,7 +675,7 @@ p.level-goal {
 .level-goal-selection select {
     width: 100%;
     text-align: center;
-    border: 1px solid #181B5A;
+    border: 1px solid #003064;
     border-radius: 0px 0px 3px 3px;
     font-size: 1em;
     padding: .3em 0em;
@@ -740,7 +744,7 @@ ul.result-list {
 
 .course-list li::before {
     content: '';
-    border-top: 2px solid #181B5A;
+    border-top: 2px solid #0030647a;
     border-radius: 2px;
     width: 100%;
     top: 0;
@@ -750,7 +754,7 @@ ul.result-list {
 
 .course-list li:last-of-type::after {
     content: '';
-    border-top: 2px solid #181B5A;
+    border-top: 2px solid #0030647a;
     border-radius: 2px;
     width: 100%;
     bottom: 0;
@@ -765,18 +769,15 @@ ul.result-list {
 .course-preview__actions {
     display: flex;
     flex-direction: row;
-    justify-content: space-between;
     gap: 2em;
-    width: 100%;
-    max-width: 200px;
-    align-self: center;
+    align-self: flex-end;
 }
 
 .to-course-btn {
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: #181B5A;
+    background-color: #003064;
     border-radius: 5px;
     padding: 0em 1em;
     margin: .4em 0;
@@ -786,6 +787,23 @@ ul.result-list {
 .to-course-btn > span{
     color: white;
 }
+
+.course-preview details > div{
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-flow: dense;
+    gap: 1em;
+    margin-top: .5em;
+    padding-bottom: 1em;
+    padding-inline: 1em;
+    /* justify-items: center; */
+}
+
+.provider-title {
+    grid-column: 1 / 3;
+    grid-row: 1;
+}
+
 
 .level-O {
     background-color: #e4e4f3;
@@ -808,7 +826,7 @@ ul.result-list {
 }
 
 .level-D {
-    background-color: #181B5A;
+    background-color: #003064;
     color: white
 }
 

@@ -547,8 +547,6 @@ function initResultListStep(_isOld) {
     hide(nextButton);
     disable(nextButton);
 
-    console.log(searchResults);
-
     const preview = searchResults[currentSearchResult];
 
     const countNode = currentStepNode.querySelector('.result-count');
@@ -576,16 +574,52 @@ function initResultListStep(_isOld) {
             p.textContent = course.title;
             li.appendChild(p);
 
-            const level = document.createElement("p");
-            level.classList.add("level-goal");
             if (course.level) {
+                const level = document.createElement("p");
+                level.classList.add("level-goal");
                 level.classList.add("level-" + course.level);
                 level.textContent = compLevels[course.level];
-            } else {
-                level.classList.add("level-O");
-                level.textContent = compLevels['O'];
+                li.appendChild(level);
             }
-            li.appendChild(level);
+
+            const courseDetailsNode = document.createElement('details');
+            const summaryNode = document.createElement('summary');
+            summaryNode.textContent = 'Kursdetails';
+            courseDetailsNode.appendChild(summaryNode);
+            const courseDetails = document.createElement('div');
+            
+            const providerNode = document.createElement('p');
+            providerNode.classList.add('provider-title');
+            providerNode.textContent = course.provider;
+            courseDetails.appendChild(providerNode);
+            
+            const nextDateNode = document.createElement('p');
+            nextDateNode.classList.add('next-date');
+            nextDateNode.textContent = course.nextDate;
+            courseDetails.appendChild(nextDateNode);
+            
+            const workloadNode = document.createElement('p');
+            workloadNode.classList.add('workload');
+            workloadNode.textContent = course.workload;
+            courseDetails.appendChild(workloadNode);
+            
+            const courseModeNode = document.createElement('p');
+            courseModeNode.classList.add('course-mode');
+            courseModeNode.textContent = course.mode;
+            courseDetails.appendChild(courseModeNode);
+            
+            const priceNode = document.createElement('p');
+            priceNode.classList.add('price');
+            priceNode.textContent = course.price;
+            courseDetails.appendChild(priceNode);
+            
+            const locationNode = document.createElement('p');
+            locationNode.classList.add('location');
+            locationNode.textContent = course.location;
+            courseDetails.appendChild(locationNode);
+
+            courseDetailsNode.appendChild(courseDetails);
+            li.appendChild(courseDetailsNode);
 
             li.insertAdjacentHTML('beforeend', getCoursePreviewActions(courseID));
 
@@ -1038,9 +1072,6 @@ function focusDelayed(element, delay = 500) {
         setTimeout(() => {
             if (currentStepName == stepNow) {
                 element.focus();
-                console.log('focus completed');
-            } else {
-                console.log('focus aborted');
             }
             res();
         }, delay);

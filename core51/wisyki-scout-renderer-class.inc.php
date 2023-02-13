@@ -55,7 +55,7 @@ class WISYKI_SCOUT_RENDERER_CLASS
 							<li><button to-step="5">6</button></li>
 						</ul>
 					</div>
-					<button class="btn-link" id="scout-abort">abbrechen</button>
+					<button class="btn-link" id="scout-abort"><span>abbrechen</span></button>
 				</section>
 			</header>
 		
@@ -143,8 +143,8 @@ class WISYKI_SCOUT_RENDERER_CLASS
 		<div class="selected-occupation"></div>
 		<p>Ich habe Kurse zu folgenden passenden Kompetenzen gefunden. Wähle aus, welche Du erlangen oder weiterentwickeln möchtest. Beachte: Im nächsten Schritt kannst Du weitere Kompetenzen frei wählen. Wähle insgesamt max. <span class="maxSkills"></span>.</p>
 		<ul class="selectable-skills"></ul>
-		<button class="btn-link more-skills-btn">weitere Kompetenzen anzeigen</button>
-		<button class="btn-link less-skills-btn">weniger Kompetenzen anzeigen</button>
+		<button class="btn-link more-skills-btn"><span>weitere Kompetenzen anzeigen</span></button>
+		<button class="btn-link less-skills-btn"><span>weniger Kompetenzen anzeigen</span></button>
 
 		<?php
 	}

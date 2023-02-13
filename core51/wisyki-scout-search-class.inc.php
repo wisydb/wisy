@@ -75,13 +75,15 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_INTELLISEARCH_CLASS {
 				$db->next_record();
 				$provider = $db->Record;
 
-				// Get course comp level.
-				$level = $this->get_course_comp_level($kurs['id']);
-
 				$result[$kurs['id']] = array(
 					'title' => utf8_encode($kurs['titel']),
 					'provider' => utf8_encode($provider['suchname']),
-					'level' => utf8_encode($level),
+					'level' => utf8_encode($this->get_course_comp_level($kurs['id'])),
+					'mode' => utf8_encode($this->get_course_mode($kurs['id'])),
+					'nextDate' => '$nextDate',
+					'workload' => '$workload',
+					'price' => '$price',
+					'location' => '$location',
 				);
 			}
 
@@ -98,7 +100,13 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_INTELLISEARCH_CLASS {
 		}
 	}
 
-	function get_course_comp_level($courseID):string {
+    /**
+     * Get the Competency Level associated with a given course. 
+     *
+     * @param integer $courseID
+     * @return string Possible return values are ['A', 'B', 'C', 'D', '']. Empty if no level is associated with a course.
+     */
+	function get_course_comp_level(int $courseID):string {
 		$db = new DB_Admin();
 
 		$sql = "SELECT stichwoerter.stichwort as level 
@@ -109,8 +117,34 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_INTELLISEARCH_CLASS {
 					OR stichwoerter.stichwort = 'Niveau B'
 					OR stichwoerter.stichwort = 'Niveau C'
 					OR stichwoerter.stichwort = 'Niveau D'
-				);";
+				)
+			;";
+		
 		$db->query($sql);
+
+		if ($db->next_record() ) {
+			return str_replace('Niveau ', '', $db->Record['level']);
+		}
+		return '';
+	}
+
+    /**
+     * Get the course mode (Unterrichtsart) of a given course. 
+     *
+     * @param integer $courseID
+     * @return string The course mode, empty if no coursemode is associated with the course.
+     */
+	function get_course_mode(int $courseID):string {
+		$db = new DB_Admin();
+
+		$sql = "SELECT stichwoerter.stichwort as level 
+			FROM kurse_stichwort, stichwoerter
+			WHERE primary_id = $courseID
+				AND attr_id = stichwoerter.id
+				AND stichwoerter.eigenschaften = 32768;";
+		
+		$db->query($sql);
+
 		if ($db->next_record() ) {
 			return str_replace('Niveau ', '', $db->Record['level']);
 		}
