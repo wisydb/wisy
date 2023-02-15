@@ -298,8 +298,8 @@ function initSkillsStep(isOld) {
                 requestID
             );
             conceptBtns.forEach((btn) =>
-                btn.addEventListener("mousedown", () => {
-                    addSelectedSkill(btn.id, btn.name);
+                btn.addEventListener("mousedown", async () => {
+                    await addSelectedSkill(btn.id, btn.name);
                     updateSelectedSkills(skillsNode, autocompleteInput);
                     clearAutocompleteInput(
                         autocompleteInput,
@@ -768,9 +768,9 @@ function updateSelectedSkills(output, input, rebuild = false) {
         li.appendChild(label);
         output.insertBefore(li, output.firstChild);
 
-        checkbox.addEventListener("change", () => {
+        checkbox.addEventListener("change", async () => {
             if (checkbox.checked) {
-                addSelectedSkill(
+                await addSelectedSkill(
                     checkbox.getAttribute("id"),
                     checkbox.getAttribute("name")
                 );
@@ -939,9 +939,9 @@ function showSkillSuggestions(suggestions, output) {
     }
 
     checkboxes.forEach((checkbox) =>
-        checkbox.addEventListener("change", () => {
+        checkbox.addEventListener("change", async () => {
             if (checkbox.checked) {
-                addSelectedSkill(
+                await addSelectedSkill(
                     checkbox.getAttribute("id"),
                     checkbox.getAttribute("name")
                 );
