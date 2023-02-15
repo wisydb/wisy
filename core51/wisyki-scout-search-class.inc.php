@@ -8,8 +8,7 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_INTELLISEARCH_CLASS {
 	}
 
 	function get_querystring($label, $level) : string {
-		return $label . ', Niveau ' . $level;
-		// return $label;
+		return $label . ', ' . $level;
 	}
 
 	function render_prepare() {
@@ -24,7 +23,7 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_INTELLISEARCH_CLASS {
 
 		if ($this->ok()) {
 			echo json_encode(array(
-				'id' => $querystring,
+				'query' => $querystring,
 				'skill' => array(
 					'label' => $label,
 					'levelGoal' => $level,
@@ -42,13 +41,14 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_INTELLISEARCH_CLASS {
 
 		$label = $_GET['label'];
 		$level = $_GET['level'];
+		$limit = $_GET['limit'];
 
 		$querystring = $this->get_querystring($label, $level);
 
 		$this->prepare($querystring);
 
 		if ($this->ok()) {
-			$kurse = $this->getKurseRecords(0, 3, 'rand');
+			$kurse = $this->getKurseRecords(0, $limit ?? 0, 'rand');
 			$result = array();
 	
 			foreach($kurse['records'] as $kurs) {
@@ -57,10 +57,17 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_INTELLISEARCH_CLASS {
 				$db->next_record();
 				$provider = $db->Record;
 
+				$courseLevel = '';
+				if (str_contains($level, 'Niveau')) {
+					$courseLevel = $this->get_course_comp_level($kurs['id']);
+				} else {
+					$courseLevel = $this->get_course_language_level($kurs['id']);
+				}
+
 				$result[$kurs['id']] = array(
 					'title' => utf8_encode($kurs['titel']),
 					'provider' => utf8_encode($provider['suchname']),
-					'level' => utf8_encode($this->get_course_comp_level($kurs['id'])),
+					'level' => utf8_encode($courseLevel),
 					'mode' => utf8_encode($this->get_course_mode($kurs['id'])),
 					'nextDate' => '$nextDate',
 					'workload' => '$workload',
@@ -70,7 +77,7 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_INTELLISEARCH_CLASS {
 			}
 
 			echo json_encode(array(
-				'id' => $querystring,
+				'query' => $querystring,
 				'skill' => array(
 					'label' => $label,
 					'levelGoal' => $level,
@@ -83,7 +90,7 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_INTELLISEARCH_CLASS {
 	}
 
     /**
-     * Get the Competency Level associated with a given course. 
+     * Get the competency level associated with a given course. 
      *
      * @param integer $courseID
      * @return string Possible return values are ['A', 'B', 'C', 'D', '']. Empty if no level is associated with a course.
@@ -99,6 +106,36 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_INTELLISEARCH_CLASS {
 					OR stichwoerter.stichwort = 'Niveau B'
 					OR stichwoerter.stichwort = 'Niveau C'
 					OR stichwoerter.stichwort = 'Niveau D'
+				)
+			;";
+		
+		$db->query($sql);
+
+		if ($db->next_record() ) {
+			return str_replace('Niveau ', '', $db->Record['level']);
+		}
+		return '';
+	}
+
+    /**
+     * Get the language level associated with a given course. 
+     *
+     * @param integer $courseID
+     * @return string Possible return values are ['A1', 'A2', 'B1', 'B2', 'C1', 'C2', '']. Empty if no level is associated with a course.
+     */
+	function get_course_language_level(int $courseID):string {
+		$db = new DB_Admin();
+
+		$sql = "SELECT stichwoerter.stichwort as level 
+			FROM kurse_stichwort, stichwoerter
+			WHERE primary_id = $courseID
+				AND attr_id = stichwoerter.id
+				AND (stichwoerter.stichwort = 'A1'
+					OR stichwoerter.stichwort = 'A2'
+					OR stichwoerter.stichwort = 'B1'
+					OR stichwoerter.stichwort = 'B2'
+					OR stichwoerter.stichwort = 'C1'
+					OR stichwoerter.stichwort = 'C2'
 				)
 			;";
 		

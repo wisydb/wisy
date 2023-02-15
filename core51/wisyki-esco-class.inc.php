@@ -466,6 +466,45 @@ class WISYKI_ESCO_CLASS {
         return $result;
     }
 
+    function is_language_course(string $uri): bool {
+        
+        $url = "https://ec.europa.eu/esco/api/resource/skill";
+        $dataArray = array(
+            'uri' => $uri,
+            'language' => 'de'
+        );
+
+        $data = http_build_query($dataArray);
+        $getUrl = $url."?".$data;
+
+        $curl = curl_init();
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, FALSE);
+        curl_setopt($curl, CURLOPT_FOLLOWLOCATION, TRUE);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, TRUE);
+        curl_setopt($curl, CURLOPT_URL, $getUrl);
+        curl_setopt($curl, CURLOPT_TIMEOUT, 80);
+
+        $response = curl_exec($curl);
+
+        if (curl_error($curl)){
+            echo 'Request Error:' . curl_error($curl);
+            $this->error_500();
+        }
+
+        curl_close($curl);
+
+        // Decode response and filter results for title and uri attributes.
+        $response = json_decode($response, true);
+
+        foreach ($response['_links']['isInScheme'] as $scheme) {
+            if ($scheme['uri'] === "http://data.europa.eu/esco/concept-scheme/skill-language-groups") {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+
     function render_autocomplete() {
         header('Content-Type: application/json; charset=UTF-8');
         $term = $_GET['term'];
@@ -542,6 +581,15 @@ class WISYKI_ESCO_CLASS {
         echo json_encode($this->suggestSkills($data['title'], $data['description']));
     }
 
+    function render_is_langauge_skill() {
+        header('Content-Type: application/json; charset=UTF-8');
+        
+        if (!isset($_GET['uri'])) {
+            $this->error_400('The request is missing the uri parameter.');
+        }
+        echo json_encode($this->is_language_course($_GET['uri']));
+    }
+
     function error_400($message) {
         header('Content-Type: application/json; charset=UTF-8');
         http_response_code(400);
@@ -578,14 +626,17 @@ class WISYKI_ESCO_CLASS {
 
     function render() {
 		switch( $this->request ) {
-            case 'get-concept-skills':
+            case 'getConceptSkills':
                 $this->render_concept_skills();
                 break;
-            case 'suggest-skills':
+            case 'suggestSkills':
                 $this->render_suggest_skills();
                 break;
             case 'autocomplete':
                 $this->render_autocomplete();
+                break;
+            case 'isLanguageSkill':
+                $this->render_is_langauge_skill();
                 break;
             default:
                 $this->error_404();

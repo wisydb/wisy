@@ -811,17 +811,17 @@ ul.result-list {
     color: black;
 }
 
-.level-A {
+.level-A, .level-A1, .level-A2 {
     background-color: #a2a4d3;
     color: white
 }
 
-.level-B {
+.level-B, .level-B1, .level-B2 {
     background-color: #696cac;
     color: white
 }
 
-.level-C {
+.level-C, .level-C1, .level-C2 {
     background-color: #3a3e85;
     color: white
 }

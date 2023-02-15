@@ -36,6 +36,15 @@ const compLevels = {
     C: "Fortgeschrittenenstufe",
     D: "Expert*innenstufe",
 };
+const languageLevels = {
+    O: "ohne Vorkenntnisse",
+    A1: "A1",
+    A2: "A2",
+    B1: "B1",
+    B2: "B2",
+    C1: "C1",
+    C2: "C2",
+};
 
 function init() {
     stepsNode = document.querySelector("#steps");
@@ -395,7 +404,11 @@ function initLevelGoalStep(_isOld) {
             skill.currentLevel = "O";
         }
         currentLevel.classList.add("level-" + skill.currentLevel);
-        currentLevel.textContent = compLevels[skill.currentLevel];
+        let skillLevels = compLevels;
+        if (skill.isLanguageSkill) {
+            skillLevels = languageLevels;
+        }
+        currentLevel.textContent = skillLevels[skill.currentLevel];
         currentLevelDiv.appendChild(currentLevel);
         levelDiv.appendChild(currentLevelDiv);
         const levelGoalDiv = document.createElement("div");
@@ -404,21 +417,21 @@ function initLevelGoalStep(_isOld) {
         levelGoal.classList.add("level-goal");
         if (skill.levelGoal) {
             levelGoalLabel.textContent = "Dein Ziel";
-            levelGoal.textContent = compLevels[skill.levelGoal];
+            levelGoal.textContent = skillLevels[skill.levelGoal];
             levelGoal.classList.add("level-" + skill.levelGoal);
         } else {
             levelGoalLabel.textContent = "Mein Vorschlag";
             let levelIndex =
-                Object.keys(compLevels).indexOf(skill.currentLevel) + 1;
-            if (levelIndex >= Object.keys(compLevels).length) {
-                levelIndex = Object.keys(compLevels).length - 1;
+                Object.keys(skillLevels).indexOf(skill.currentLevel) + 1;
+            if (levelIndex >= Object.keys(skillLevels).length) {
+                levelIndex = Object.keys(skillLevels).length - 1;
             }
             levelGoal.textContent =
-                compLevels[Object.keys(compLevels)[levelIndex]];
+                skillLevels[Object.keys(skillLevels)[levelIndex]];
             levelGoal.classList.add(
-                "level-" + Object.keys(compLevels)[levelIndex]
+                "level-" + Object.keys(skillLevels)[levelIndex]
             );
-            skill.levelGoal = Object.keys(compLevels)[levelIndex];
+            skill.levelGoal = Object.keys(skillLevels)[levelIndex];
             skillProfile.skills[skill.uri].levelGoal = skill.levelGoal;
             localStorage.setItem("skillProfile", JSON.stringify(skillProfile));
         }
@@ -433,7 +446,7 @@ function initLevelGoalStep(_isOld) {
         select.addEventListener("change", (event) => {
             skillProfile.skills[select.getAttribute("id")].levelGoal =
                 select.value;
-            levelGoal.textContent = compLevels[select.value];
+            levelGoal.textContent = skillLevels[select.value];
             levelGoal.className = "";
             levelGoal.classList.add("level-goal");
             levelGoal.classList.add("level-" + select.value);
@@ -471,7 +484,11 @@ function initResultOverviewStep(_isOld) {
             skill.levelGoal = "A";
         }
         levelGoalNode.classList.add("level-" + skill.levelGoal);
-        levelGoalNode.textContent = compLevels[skill.levelGoal];
+        if (skill.isLanguageSkill) {
+            levelGoalNode.textContent = languageLevels[skill.levelGoal];
+        } else {
+            levelGoalNode.textContent = compLevels[skill.levelGoal];
+        }
         li.appendChild(levelGoalNode);
 
         const resultLink = document.createElement('button');
@@ -505,21 +522,25 @@ async function getSearchResultPreview(output, text, loader, skill) {
     if (response.count > 0) {
         enable(output);
         output.addEventListener('click', () => {
-            currentSearchResult = response.id;
+            currentSearchResult = response.query;
             showStep(steps.indexOf('resultList'));
         });
     }
 }
 
 async function prepareSearch(skill) {
-    const params = { prepare: true, label: skill.label, level: skill.levelGoal };
+    let levelGoal = skill.levelGoal;
+    if (!skill.isLanguageSkill) {
+        levelGoal = "Niveau " + levelGoal;
+    }
+    const params = { prepare: true, label: skill.label, level: levelGoal };
 
     const url = "./scout-search?" + new URLSearchParams(params);
     const response = await fetch(url);
 
     if (response.ok) {
         const result = await response.json();
-        searchResults[result.id] = result;
+        searchResults[result.query] = result;
         return result;
     } else {
         alert("HTTP-Error: " + response.status);
@@ -527,7 +548,7 @@ async function prepareSearch(skill) {
 }
 
 async function updateSearchResult(search) {
-    const params = { label: search.skill.label, level: search.skill.levelGoal };
+    const params = { label: search.skill.label, level: search.skill.levelGoal, limit: 3 };
 
     const url = "./scout-search?" + new URLSearchParams(params);
     const response = await fetch(url);
@@ -578,7 +599,11 @@ function initResultListStep(_isOld) {
                 const level = document.createElement("p");
                 level.classList.add("level-goal");
                 level.classList.add("level-" + course.level);
-                level.textContent = compLevels[course.level];
+                if (result.skill.levelGoal.includes('Niveau')) {
+                    level.textContent = compLevels[course.level];
+                } else {
+                    level.textContent = languageLevels[course.level];
+                }
                 li.appendChild(level);
             }
 
@@ -642,14 +667,29 @@ function getCurrentLevelSelectElement(skill) {
     const select = document.createElement("select");
     select.setAttribute("name", skill.label);
     select.setAttribute("id", skill.uri);
-    const optionHtml = `
-    <option value="" style="display: none;">Stufe auswählen</option>
-    <option value="O">ohne Vorkentnisse</option>
-    <option value="A">Grundstufe</option>
-    <option value="B">Aufbaustufe</option>
-    <option value="C">Fortgeschrittenenstufe</option>
-    <option value="D">Expert*innenstufe</option>
-    `;
+    let optionHtml = "";
+    if (skill.isLanguageSkill) {
+        optionHtml = `
+            <option value="" style="display: none;">Stufe auswählen</option>
+            <option value="O">ohne Vorkentnisse</option>
+            <option class="level-A1" value="A1">A1</option>
+            <option class="level-A2" value="A2">A2</option>
+            <option class="level-B1" value="B1">B1</option>
+            <option class="level-B2" value="B2">B2</option>
+            <option class="level-C1" value="C1">C1</option>
+            <option class="level-C2" value="C2">C2</option>
+            `;
+    } else {
+        optionHtml = `
+            <option value="" style="display: none;">Stufe auswählen</option>
+            <option class="level-O" value="O">ohne Vorkentnisse</option>
+            <option class="level-A" value="A">Grundstufe</option>
+            <option class="level-B" value="B">Aufbaustufe</option>
+            <option class="level-C" value="C">Fortgeschrittenenstufe</option>
+            <option class="level-D" value="D">Expert*innenstufe</option>
+            `;
+    }
+    
     select.insertAdjacentHTML("afterbegin", optionHtml);
     if (skill.currentLevel) {
         select
@@ -663,13 +703,26 @@ function getLevelGoalSelectElement(skill) {
     const select = document.createElement("select");
     select.setAttribute("name", skill.label);
     select.setAttribute("id", skill.uri);
-    const optionHtml = `
-    <option value="" style="display: none;">Stufe ändern</option>
-    <option value="A">Grundstufe</option>
-    <option value="B">Aufbaustufe</option>
-    <option value="C">Fortgeschrittenenstufe</option>
-    <option value="D">Expert*innenstufe</option>
-    `;
+    let optionHtml = "";
+    if (skill.isLanguageSkill) {
+        optionHtml = `
+            <option value="" style="display: none;">Stufe auswählen</option>
+            <option class="level-A1" value="A1">A1</option>
+            <option class="level-A2" value="A2">A2</option>
+            <option class="level-B1" value="B1">B1</option>
+            <option class="level-B2" value="B2">B2</option>
+            <option class="level-C1" value="C1">C1</option>
+            <option class="level-C2" value="C2">C2</option>
+            `;
+    } else {
+        optionHtml = `
+            <option value="" style="display: none;">Stufe ändern</option>
+            <option class="level-A" value="A">Grundstufe</option>
+            <option class="level-B" value="B">Aufbaustufe</option>
+            <option class="level-C" value="C">Fortgeschrittenenstufe</option>
+            <option class="level-D" value="D">Expert*innenstufe</option>
+            `;
+    }
     select.insertAdjacentHTML("afterbegin", optionHtml);
     return select;
 }
@@ -840,7 +893,7 @@ async function suggestSkills(uri) {
 
     const params = { uri: uri, limit: limit, onlyrelevant: false };
 
-    const url = "./esco/get-concept-skills?" + new URLSearchParams(params);
+    const url = "./esco/getConceptSkills?" + new URLSearchParams(params);
     const response = await fetch(url);
 
     if (response.ok) {
@@ -928,16 +981,29 @@ function updateSkillSelection(checkboxes, input = false) {
     });
 }
 
-function addSelectedSkill(uri, label) {
+async function addSelectedSkill(uri, label) {
     const skill = {
         label: label,
         currentLevel: null,
         levelGoal: null,
+        isLanguageSkill: await isLanguageSkill(uri),
         uri: uri,
     };
 
     skillProfile.skills[uri] = skill;
     localStorage.setItem("skillProfile", JSON.stringify(skillProfile));
+}
+
+async function isLanguageSkill(uri) {
+    const params = { uri: uri };
+    const url = "./esco/isLanguageSkill?" + new URLSearchParams(params);
+    const response = await fetch(url);
+
+    if (response.ok) { 
+        return await response.json();
+    } else {
+        console.error("HTTP-Error: " + response.status);
+    }
 }
 
 function removeSelectedSkill(uri) {

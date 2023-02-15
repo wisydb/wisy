@@ -134,7 +134,7 @@ async function suggestSkills(title, description) {
         description: description,
     };
 
-    const url = "../esco/suggest-skills";
+    const url = "../esco/suggestSkills";
     const response = await fetch(url, {
         method: 'POST',
         headers: {
