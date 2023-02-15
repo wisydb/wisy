@@ -456,6 +456,7 @@ button .loader::after {
     font-size: 1.2em;
     position: relative;
     background: whitesmoke;
+    margin: 0.5em 0;
 }
 
 .autocomplete-box__input {

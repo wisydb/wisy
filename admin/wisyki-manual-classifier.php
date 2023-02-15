@@ -97,6 +97,8 @@ function pagestart($title) {
                 <meta http-equiv='X-UA-Compatible' content='IE=edge'>
                 <meta name='viewport' content='width=device-width, initial-scale=1.0'>
                 <link rel='stylesheet' href='wisyki-esco-test.css'>
+                <link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200' />
+                <script src='./wisyki-manual-classifier.js'></script>
                 <title>$title</title>
             </head>
 
@@ -220,8 +222,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $prediction = $pythonAPI->predict_comp_level(utf8_encode($course['titel']), utf8_encode($course['beschreibung']));
         $course['level_suggestion'] = $prediction['level'];
 
-        $skillSuggestions = $escoAPI->suggestSkills(utf8_encode($course['titel']), utf8_encode($course['beschreibung']));
-        $skillSuggestions['result'] = array_merge($skillSuggestions['result'], $escoAPI->search_api('englisch', 'skill', null, 5));
+        // $skillSuggestions = $escoAPI->suggestSkills(utf8_encode($course['titel']), utf8_encode($course['beschreibung']));
+        // $skillSuggestions['result'] = array_merge($skillSuggestions['result'], $escoAPI->search_api('englisch', 'skill', null, 5));
 
         pagestart('Manuelle Kursklassifikation');
 
@@ -275,18 +277,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <br> 
             <section class="skill-suggestions"> 
                 <h2>ESCO-Skill Empfehlungen:</h4>
-                <p>Searchterm: <?php echo $skillSuggestions['searchterms'] ?></p>
-                <ul> 
+                <ul class="skill-cloud">
                     <?php
-                    if (!empty($skillSuggestions['result'])) { 
-                        foreach ($skillSuggestions['result'] as $url => $suggestion) { 
-                            if(!empty($suggestion)) {
-                                echo("<li><a href='$url' target='_blank' rel='noopener noreferrer' class='btn'>" . $suggestion['label'] . "</a></li>"); 
-                            }
-                        } 
-                    } 
+                    // if (!empty($skillSuggestions['result'])) { 
+                    //     foreach ($skillSuggestions['result'] as $url => $suggestion) { 
+                    //         if(!empty($suggestion)) {
+                    //             echo("<li><a href='$url' target='_blank' rel='noopener noreferrer' class='btn'>" . $suggestion['label'] . "</a></li>"); 
+                    //         }
+                    //     } 
+                    // } 
                     ?> 
                 </ul> 
+                <details>
+                    <summary>Suchworte</summary>
+                    <pre class="skill-cloud-searchterm"></pre>
+                </details>
+                <div class="autocomplete-box">
+                    <div class="autocomplete-box__input">
+                        <span class="material-symbols-rounded">search</span>
+                        <input type="text" placeholder="Kompetenzen finden" name="esco-skill-select" id="esco-skill-select" class="esco-autocomplete" esco-type="skill" onlyrelevant=False>
+                        <button class="clear-input material-symbols-rounded">close</button>
+                    </div>
+                    <output name="esco-skill-select" for="esco-skill-select"></output>
+                </div>
+                <ul class="selectable-skills"></ul>
             </section>
         </main>
 

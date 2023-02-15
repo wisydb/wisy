@@ -7,24 +7,6 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_INTELLISEARCH_CLASS {
 		parent::__construct($framework, $param);
 	}
 
-	function search(): array {
-		// return array(
-		// 	'id' => 'scout-search#1',
-		// 	'skill' => array(
-		// 		'uri' => 'asd',
-		// 		'label' => 'mit Kunden kommunizieren',
-		// 		'levelGoal' => 'C',
-		// 	),
-		// 	'count' => 4,
-		// 	'results' => array(
-		// 		array(
-		// 			'title' => 'Sales Professional',
-		// 			'level' => 'C',
-		// 			'provider' => 'Wirtschaftsakademie Schleswig-Holstein GmbH'
-		// 		),
-		// 	));
-	}
-
 	function get_querystring($label, $level) : string {
 		return $label . ', Niveau ' . $level;
 		// return $label;
