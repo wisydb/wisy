@@ -338,11 +338,62 @@ function initSkillsStep(isOld) {
     }
 }
 
-function initCurrentLevelStep(_isOld) {
+function toggleModal(modal) {
+    if (modal.classList.contains('display-none')) {
+        show(modal);
+    } else {
+        hide(modal);
+    }
+}
+
+function showModalTab(tabBtns, tabs, tabBtn) {
+    console.log(tabBtn);
+    tabBtns.forEach((btn) => {
+        btn.classList.remove('selected');
+        disable(btn);
+    });
+
+    const tabName = tabBtn.getAttribute('for');
+    currentStepNode.querySelector('.tabs [for="' + tabName + '"]');
+    tabBtn.classList.add('selected');
+    tabs.forEach((tab) => {
+        if (tab.getAttribute('name') === tabName) {
+            show(tab);
+        } else {
+            hide(tab);
+        }
+    });
+    enable(tabBtn);
+}
+
+function initCurrentLevelStep(isOld) {
     show(prevButton);
     enable(prevButton);
     show(nextButton);
     enable(nextButton);
+
+    if (!isOld) {
+        const tabNavBtns = currentStepNode.querySelectorAll('.modal .tab-nav li');
+        const tabs = currentStepNode.querySelectorAll('.tab');
+        console.log(tabNavBtns);
+        tabNavBtns.forEach((btn) => btn.addEventListener('click', () => showModalTab(tabNavBtns, tabs, btn)));
+
+        const modalBtn = currentStepNode.querySelector('.open-modal-btn');
+        const modal = currentStepNode.querySelector('.modal.level-explanation');
+        modalBtn.addEventListener('click', () => toggleModal(modal));
+        modal.addEventListener(
+            'click',
+            (event) => {
+                if (currentStepName !== 'currentLevel') {
+                    return;
+                }
+                if ((event.target.matches('.close-modal-btn') || !event.target.closest('.modal')  || event.target.matches('.backdrop')) && !event.target.closest('.open-modal-btn')) {
+                    hide(modal);
+                }
+            },
+            false
+          )
+    }
 
     const levelSelectionList = currentStepNode.querySelector(
         "ul.current-level-selection"
@@ -377,11 +428,35 @@ function initCurrentLevelStep(_isOld) {
     }
 }
 
-function initLevelGoalStep(_isOld) {
+function initLevelGoalStep(isOld) {
     show(prevButton);
     enable(prevButton);
     show(nextButton);
     enable(nextButton);
+    
+
+    if (!isOld) {
+        const tabNavBtns = currentStepNode.querySelectorAll('.modal .tab-nav li');
+        const tabs = currentStepNode.querySelectorAll('.tab');
+        console.log(tabNavBtns);
+        tabNavBtns.forEach((btn) => btn.addEventListener('click', () => showModalTab(tabNavBtns, tabs, btn)));
+        
+        const modalBtn = currentStepNode.querySelector('.open-modal-btn');
+        const modal = currentStepNode.querySelector('.modal.level-explanation');
+        modalBtn.addEventListener('click', () => toggleModal(modal));
+        document.addEventListener(
+            'click',
+            (event) => {
+                if (currentStepName !== 'levelGoal') {
+                    return;
+                }
+                if ((event.target.matches('.close-modal-btn') || !event.target.closest('.modal__content')) && !event.target.closest('.open-modal-btn')) {
+                    hide(modal);
+                }
+            },
+            false
+          )
+    }
 
     const levelSelectionList = currentStepNode.querySelector(
         "ul.level-goal-selection"

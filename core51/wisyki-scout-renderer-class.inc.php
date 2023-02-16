@@ -39,7 +39,7 @@ class WISYKI_SCOUT_RENDERER_CLASS
 				</div>
 			</nav>
 			<header>
-				<section class="tabs">
+				<section class="tab-nav">
 					<a href="/index.php"><span>Kurssuche</span></a>
 					<div class="selected"><span>Scout</span></div>
 				</section>
@@ -172,8 +172,113 @@ class WISYKI_SCOUT_RENDERER_CLASS
 		?>
 	
 		<p>Um dir passende Kurse vorzuschlagen, beurteile Deine Kompetenzen bitte nach Deinem Können.</p>
-		<button class="level-explanation-btn btn-link"><span>Kompetenzstufen kurz erklärt</span><i class="material-symbols-rounded">info</i></button>
+		<button class="open-modal-btn btn-link"><span>Kompetenzstufen kurz erklärt</span><i class="material-symbols-rounded">info</i></button>
+		<?php $this->renderLevelModal() ?>
 		<ul class="current-level-selection"></ul>
+
+		<?php
+	}
+
+	function renderLevelModal() {
+		?>
+
+		<section class="modal level-explanation display-none">
+			<div class="backdrop"></div>
+			<div class="modal__content">
+				<button class="close-modal-btn material-symbols-rounded">close</button>
+				<div class="modal__header">
+					<p class="modal__heading">Niveaustufen erklärt!</p>
+					<p class="modal__subheading"><em>Hinweis:</em> Alle Stufen beinhalten jeweils das Niveau der Vorstufe.</p>
+				</div>
+
+				<div class="level-explantaion__tabs">
+					<ul class="tab-nav">
+						<li for="Kompetenzniveau" class="selected" disabled>Kompetenzniveau</li>
+						<li for="Sprachniveau">Sprachniveau</li>
+					</ul>
+
+					<div class="tabs">
+						<article class="tab" name="Kompetenzniveau">
+							<ul>
+								<li class="level-explanation__item level-A">
+									<p class="level-title">Grundstufe</p>
+									<div>
+										<p class="comp-type">Wissen und Fertigkeiten</p>
+										<p class="comp-explanation">Ich kann diese Kompetenzen für <em>grundlegende Aufgaben nach anleitung</em> einsetzen.</p>
+									</div>
+									<div>
+										<p class="comp-type">Personelle Kompetenzen</p>
+										<p class="comp-explanation">Ich kann diese Kompetenzen einsetzen, um Handlungen <em>wahrzunehmen</em> und einzuschätzen.</p>
+									</div>
+								</li>
+								<li class="level-explanation__item level-B">
+									<p class="level-title">Aufbaustufe</p>
+									<div>
+										<p class="comp-type">Wissen und Fertigkeiten</p>
+										<p class="comp-explanation">Ich kann diese Kompetenzen für <em>erweiterte Aufgaben überwiegend selbstständig</em> einsetzen.</p>
+									</div>
+									<div>
+										<p class="comp-type">Personelle Kompetenzen</p>
+										<p class="comp-explanation">Ich kann diese Kompetenzen einsetzen, um in einer Gruppe <em>mitzuwirken</em>.</p>
+									</div>
+								</li>
+								<li class="level-explanation__item level-C">
+									<p class="level-title">Fortgeschrittenenstufe</p>
+									<div>
+										<p class="comp-type">Wissen und Fertigkeiten</p>
+										<p class="comp-explanation">Ich kann diese Kompetenzen für <em>spezialisierte Aufgaben selbstständig</em> einsetzen.</p>
+									</div>
+									<div>
+										<p class="comp-type">Personelle Kompetenzen</p>
+										<p class="comp-explanation">Ich kann diese Kompetenzen einsetzen, um Prozesse <em>kooperativ zu gestalten</em> und andere anzuleiten.</p>
+									</div>
+								</li>
+								<li class="level-explanation__item level-D">
+									<p class="level-title">Expert*innenstufe</p>
+									<div>
+										<p class="comp-type">Wissen und Fertigkeiten</p>
+										<p class="comp-explanation">Ich kann diese Kompetenzen für <em>komplexe Aufgaben eigenverantwortlich</em> einsetzen.</p>
+									</div>
+									<div>
+										<p class="comp-type">Personelle Kompetenzen</p>
+										<p class="comp-explanation">Ich kann diese Kompetenzen einsetzen, um Personen oder Organisationen <em>zu führen</em>.</p>
+									</div>
+								</li>
+							</ul>
+						</article>
+						<article class="tab display-none" name="Sprachniveau">
+							<ul>
+								<li class="level-explanation__item level-A1">
+									<p class="level-title">A1 - Anfänger</p>
+									<p class="comp-explanation">Ich kann ganz einfache Sätze verstehen und verwenden.</p>
+								</li>
+								<li class="level-explanation__item level-A2">
+									<p class="level-title">A2 - Grundlegende Kentnisse</p>
+									<p class="comp-explanation">Ich kann elementare Sätze und häufig gebrauchte Ausdrücke verstehen und verwenden.</p>
+								</li>
+								<li class="level-explanation__item level-B1">
+									<p class="level-title">B1 - Fortgeschrittene Sprachverwendung</p>
+									<p class="comp-explanation">Ich kann klare Standardsprache verstehen und verwenden.</p>
+								</li>
+								<li class="level-explanation__item level-B2">
+									<p class="level-title">B2 - Selbständige Sprachverwendung</p>
+									<p class="comp-explanation">Ich kann die Sprache selbständig in einem breiten Themenspektrum verwenden.</p>
+								</li>
+								<li class="level-explanation__item level-C1">
+									<p class="level-title">C1 - Fachkundige Sprachkenntnisse</p>
+									<p class="comp-explanation">Ich kann die Sprache und anspruchsvolle Texte verstehen und fließend, strukturiert kommunizieren.</p>
+								</li>
+								<li class="level-explanation__item level-C2">
+									<p class="level-title">C2 - Annähernd muttersprachliche Kenntnisse</p>
+									<p class="comp-explanation">Ich kann die gesprochene Sprache und geschriebene Texte mühelos verstehen und selbst anwenden.</p>
+								</li>
+							</ul>
+						</article>
+						<article class="tab" name="Sprachniveau"></article>
+					</div>
+				</div>
+			</div>
+		</section>
 
 		<?php
 	}
@@ -183,7 +288,8 @@ class WISYKI_SCOUT_RENDERER_CLASS
 		?>
 	
 		<p>Auf Basis Deiner Einschätzung schlage ich Dir folgende Lernziele vor. Du kannst sie hier noch anpassen.</p>
-		<button class="level-explanation-btn btn-link"><span>Kompetenzstufen kurz erklärt</span><i class="material-symbols-rounded">info</i></button>
+		<button class="open-modal-btn btn-link"><span>Kompetenzstufen kurz erklärt</span><i class="material-symbols-rounded">info</i></button>
+		<?php $this->renderLevelModal() ?>
 		<ul class="level-goal-selection"></ul>
 
 		<?php

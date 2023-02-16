@@ -177,7 +177,7 @@ nav {
 }
 
 /* Tabs */
-.tabs {
+.tab-nav {
     margin-top: .3em;
     font-size: 1.5em;
     width: calc(100% - 8px);
@@ -186,34 +186,32 @@ nav {
     grid-template-columns: .8fr 1fr;
     font-family: 'Inter', sans-serif;
     margin: 0 auto;
+    color: #003064;
+    font-weight: 600;
+    padding: 0;
 }
 
-.tabs>* {
+.tab-nav>* {
     display: flex;
     justify-content: center;
     align-items: center;
     box-shadow: -3px -1px 5px #11031d28, 2px 2px 4px #11031d28;
 }
 
-.tabs>a:hover {
+.tab-nav>a:hover {
     background: #1f2374;
 }
 
-.tabs>*:not(.selected) {
-    background: #003064;
+.tab-nav>*:not(.selected) {
+    background: #25578b;
     color: white;
     font-weight: 200;
     box-shadow: -1px -3px 6px #11031d52 inset, -2px -1px 3px #11031d6e;
     margin-top: 4px;
 }
 
-.tabs>.selected {
+.tab-nav>.selected {
     background-color: #eee;
-}
-
-.tabs {
-    color: #003064;
-    font-weight: 600;
 }
 
 /* Scout Nav */
@@ -450,6 +448,130 @@ button .loader::after {
     width: 90vw;
     margin: 0 auto;
     margin-bottom: 2em;
+    position: relative;
+}
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 100;
+    box-shadow: 0px 0px 8px #0000005c;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+}
+
+.modal .backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: #0000003d;
+    width: 100vw;
+    height: 100vh;
+    z-index: -100;
+}
+
+.modal__header {
+    padding: 1em 1em;
+    background: #f5f5f5;
+    border-radius: 5px;
+}
+
+.modal__heading {
+    font-size: 1.3em;
+    font-weight: bold;
+}
+
+.modal__content {
+    background: #eee;
+    border-radius: 5px;
+    width: 90vw;
+    max-width: 400px;
+    overflow: hidden;
+}
+
+.modal__subheading {
+    font-size: .9em;
+}
+
+.modal .level-explantaion__tabs {
+    position: relative;
+}
+
+.modal .level-explantaion__tabs .tabs {
+    z-index: 100;
+    background-color: #eee;
+    border-radius: 0 0 5px 5px;
+    position: inherit;
+    max-height: 60vh;
+    height: 100%;
+    overflow: auto;
+}
+
+.level-explantaion__tabs .tab ul {
+    list-style: none;
+    padding-inline: 0;
+}
+
+.level-explanation__item {
+    padding: 0.5em 0.7em;
+    font-size: 0.9em;
+}
+
+.level-explanation__item .level-title {
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+.level-explanation__item > div{
+    padding: .2em 0;
+}
+
+.level-explanation__item .comp-type {
+    font-weight: bold;
+}
+
+.level-explanation__item em {
+    font-weight: bold;
+    font-style: normal;
+    color: rgb(230, 214, 0);
+}
+
+.close-modal-btn {
+    float: right;
+    padding: 0.5em;
+}
+
+.modal .level-explantaion__tabs .tab-nav {
+    z-index: 0;
+    font-size: 1em;
+    width: 100%;
+}
+
+.modal .level-explantaion__tabs .tab-nav .selected {
+    padding: 0 1.5em;
+    z-index: 100;
+}
+.modal .level-explantaion__tabs .tab-nav li:not(.selected) {
+    cursor: pointer;
+    background-color: #b8b8b8;
+    color: white;
+    font-weight: normal;
+    box-shadow: -1px -3px 6px #11031d27 inset, -2px -1px 3px #11031d27;
+}
+
+.modal .level-explantaion__tabs .tab-nav .selected[for="Kompetenzniveau"] {
+    background-color: #a2a4d3;
+    color: white;
+}
+
+.modal__subheading em {
+    display: block;
+    font-weight: bold;
+    font-style: normal;
 }
 
 .autocomplete-box {
@@ -563,7 +685,7 @@ button .loader::after {
 }
 
 /* Step currentLevel */
-.level-explanation-btn {
+.open-modal-btn {
     width: 100%;
     display: flex;
     flex-direction: row;
@@ -573,11 +695,11 @@ button .loader::after {
     text-decoration: none;
 }
 
-.level-explanation-btn span {
+.open-modal-btn span {
     text-decoration: underline;
 }
 
-.level-explanation-btn i.material-symbols-rounded {
+.open-modal-btn i.material-symbols-rounded {
     font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 48;
     color: #003064;
 }
@@ -805,23 +927,52 @@ ul.result-list {
     grid-row: 1;
 }
 
-
 .level-O {
     background-color: #e4e4f3;
     color: black;
 }
 
-.level-A, .level-A1, .level-A2 {
+.level-A1 {
+    background-color: rgba(111, 111, 111, 0.1);
+    color: black;
+}
+
+.level-A2 {
+    background-color: rgba(111, 111, 111, 0.2);
+    color: black;
+}
+
+.level-B1 {
+    background-color: rgba(111, 111, 111, 0.3);
+    color: black;
+}
+
+.level-B2 {
+    background-color: rgba(111, 111, 111, 0.4);
+    color: black;
+}
+
+.level-C1 {
+    background-color: rgba(111, 111, 111, 0.5);
+    color: black;
+}
+
+.level-C2 {
+    background-color: rgba(111, 111, 111, 0.6);
+    color: black;
+}
+
+.level-A {
     background-color: #a2a4d3;
     color: white
 }
 
-.level-B, .level-B1, .level-B2 {
+.level-B {
     background-color: #696cac;
     color: white
 }
 
-.level-C, .level-C1, .level-C2 {
+.level-C {
     background-color: #3a3e85;
     color: white
 }
