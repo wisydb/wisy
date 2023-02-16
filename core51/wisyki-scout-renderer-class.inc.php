@@ -16,6 +16,9 @@ class WISYKI_SCOUT_RENDERER_CLASS
 	function getPrologue() {
 		$pageTitle = 'Weiterbildungsscout';
 		global $wisyCore;
+
+		$additional_css = explode(',', $this->framework->iniRead('scout.css', ''));
+		$logo = $this->framework->iniRead('scout.logo', '');
 		?>
 
 		<!DOCTYPE html>
@@ -25,13 +28,20 @@ class WISYKI_SCOUT_RENDERER_CLASS
 			<meta http-equiv="X-UA-Compatible" content="IE=edge">
 			<meta name="viewport" content="width=device-width, initial-scale=1.0">
 			<link rel="stylesheet" href="<?php echo $wisyCore ?>/wisyki-scout.css">
+			<?php 
+			if ($additional_css) {
+				foreach ($additional_css as $cssfile) {
+					echo("<link rel='stylesheet' href='$cssfile'>");
+				}
+			} 
+			?>
 			<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 			<script src="<?php echo $wisyCore ?>/wisyki-scout.js"></script>
 			<title><?php echo $pageTitle ?></title>
 		</head>
 		<body>
 			<nav>
-				<a href="/index.php" class="img-link"><img class="portal-logo" src="../files/sh/responsiv/img/kursportal-sh-logo.png" alt="Kursportal Schleswig Holstein"></a>
+				<a href="/index.php" class="img-link"><img class="portal-logo" src="<?php echo($logo) ?>" alt="Kursportal Schleswig Holstein"></a>
 				<div class="action-bar">
 					<a class="bookmarks-btn labeled-icon-btn" href="#"><i class="material-symbols-rounded">assignment</i>Merkliste</a>
 					<a class="login-btn labeled-icon-btn" href="#"><i class="material-symbols-rounded">account_circle</i>Login</a>
@@ -193,7 +203,7 @@ class WISYKI_SCOUT_RENDERER_CLASS
 
 				<div class="level-explantaion__tabs">
 					<ul class="tab-nav">
-						<li for="Kompetenzniveau" class="selected" disabled>Kompetenzniveau</li>
+						<li for="Kompetenzniveau" class="selected level-A" disabled>Kompetenzniveau</li>
 						<li for="Sprachniveau">Sprachniveau</li>
 					</ul>
 
