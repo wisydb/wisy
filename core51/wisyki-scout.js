@@ -7,6 +7,10 @@ addEventListener("pageshow", function (event) {
     }
 });
 
+addEventListener('resize', () => {
+    scrollToStep(currentStep());
+});
+
 let requestReload = false;
 let nextButton;
 let prevButton;
@@ -15,7 +19,7 @@ let currentStepNode;
 let currentStepName;
 let scoutNavSteps;
 let skillProfile;
-let searchResults = [];
+const searchResults = [];
 let currentSearchResult;
 const amountOfSkillSuggestionsShownByDefault = 6;
 const maxSkills = 5;
@@ -159,7 +163,7 @@ async function loadStep(stepName) {
         const result = await response.text();
         currentStepNode.insertAdjacentHTML("beforeend", result);
     } else {
-        alert("HTTP-Error: " + response.status);
+        console.error("HTTP-Error: " + response.status);
     }
 }
 
@@ -543,7 +547,7 @@ async function prepareSearch(skill) {
         searchResults[result.query] = result;
         return result;
     } else {
-        alert("HTTP-Error: " + response.status);
+        console.error("HTTP-Error: " + response.status);
     }
 }
 
@@ -558,7 +562,7 @@ async function updateSearchResult(search) {
         searchResults[result.id] = result;
         return result;
     } else {
-        alert("HTTP-Error: " + response.status);
+        console.error("HTTP-Error: " + response.status);
     }
 }
 
@@ -900,7 +904,7 @@ async function suggestSkills(uri) {
         const result = await response.json();
         return result;
     } else {
-        alert("HTTP-Error: " + response.status);
+        console.error("HTTP-Error: " + response.status);
     }
 }
 
@@ -1046,7 +1050,7 @@ async function autocomplete(input, requestID) {
         const result = await response.json();
         return result;
     } else {
-        alert("HTTP-Error: " + response.status);
+        console.error("HTTP-Error: " + response.status);
     }
 }
 
