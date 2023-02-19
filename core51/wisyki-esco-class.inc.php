@@ -1,52 +1,173 @@
 <?php
 
 require_once($_SERVER['DOCUMENT_ROOT'] . '/core51/wisyki-python-class.inc.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/core51/wisyki-json-response.inc.php');
 
+/**
+ * Class WISYKI_ESCO_CLASS 
+ * 
+ * This class provides functionality for working with the ESCO taxonomy.
+ * 
+ * The "Weiterbildungsscout" was created by the project consortium "WISY@KI" as part of the Innovationswettbewerb INVITE 
+ * and was funded by the Bundesinstitut für Berufsbildung and the Federal Ministry of Education and Research.
+ * 
+ * @copyright   2023 ISy TH Lübeck <dev.ild@th-luebeck.de>
+ * @author		Pascal Hürten <pascal.huerten@th-luebeck.de>
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class WISYKI_ESCO_CLASS {
-	var $framework;
-	var $pythonAPI;
-	var $request;
-
-	/**************************************************************************
-	 * Tools / Misc.
-	 *************************************************************************/
-	
-	function __construct(&$framework = null, $request = '')
-	{
-		// constructor
-		$this->framework	=& $framework;
-        $this->pythonAPI = new WISYKI_PYTHON_CLASS();
-        $this->request = $request;
-	}
     /**
-     * Calls ESCO API to get autocomplete suggestions based on the given term
-     * for skill concepts by including the titles of specific skills into the search.
+     * The framework of the wisy frontend. Provides basic functionalities to navigate the system. 
+     *
+     * @var WISY_FRAMEWORK_CLASS
+     */
+    private WISY_FRAMEWORK_CLASS $framework;
+
+    /**
+     * Class that handles requests to the PYTHON-AI-API.
+     *
+     * @var WISYKI_PYTHON_CLASS
+     */
+    private WISYKI_PYTHON_CLASS $pythonAPI;
+
+    /**
+     * The second part of the requested URI path.
+     * For the URI <host>/esco/autocomplete $request would be "autocomplete".
+     * This parameter is used to determine which service the client is requesting.
+     *
+     * @var string
+     */
+    private string $request = '';
+
+    /**
+     * Constructor.
+     *
+     * @param WISY_FRAMEWORK_CLASS $framework
+     * @param string|null $request
+     */
+    function __construct(WISY_FRAMEWORK_CLASS &$framework = null, string|null $request) {
+        // constructor
+        $this->framework = &$framework;
+        $this->pythonAPI = new WISYKI_PYTHON_CLASS();
+        if (isset($request)) {
+            $this->request = $request;
+        }
+    }
+
+    /**
+     * Calls ESCO API to get suggestions based on the given term for skill concepts and 
+     * enhances the search by including the titles of more specific skills into the search.
      *
      * @param string $term
-     * @param int $limit
+     * @param int|null $limit
      * @return array [{"label":"title1","value":"url1"},{"label":"title2","value":"url2"}]
      */
     function search_skills_hierarchy($term, $limit = 5) {
 
+        // Call search API to get initial results.
         $concepts = $this->search_api($term, 'concept', 'skills-hierarchy', $limit);
 
-        if ($limit && count($concepts) >= $limit) {
+        // If the number of results equals the limit or no limit has been set, return the initial results.
+        if (isset($limit) && count($concepts) >= $limit) {
             return $concepts;
         }
 
-        // Build request url.
+        // Build search request for specific skills.
         $url = "https://ec.europa.eu/esco/api/search";
         $dataArray = array(
             'text' => $term,
             'language' => 'de',
             'type' => 'skill',
             'isInScheme' => 'http://data.europa.eu/esco/concept-scheme/member-skills',
-            'full' => 'false', // Set True for full object and False for faster requests. For 'search' endpoint.
-            'alt' => 'true' // For 'suggest2' endpoint.
+            'full' => 'false',
+            'alt' => 'true'
         );
 
         $data = http_build_query($dataArray);
-        $getUrl = $url."?".$data;
+        $getUrl = $url . "?" . $data;
+
+        // Make request to ESCO API.
+        $curl = curl_init();
+        curl_setopt_array($curl, [
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_URL => $getUrl,
+            CURLOPT_TIMEOUT => 80,
+        ]);
+
+        $response = curl_exec($curl);
+
+        if (curl_error($curl)) {
+            JSONResponse::error500('Request Error:' . curl_error($curl));
+        }
+
+        curl_close($curl);
+
+        // Filter results for title and uri attributes.
+        $response = json_decode($response, true);
+        $results = $response['_embedded']['results'];
+
+        // Store the broaderHierarchyConcept of the found skills in the concepts array.
+        foreach ($results as $result) {
+            $broaderConcept = $result["broaderHierarchyConcept"][0];
+
+            if (!array_key_exists($broaderConcept, $concepts)) {
+                $skill = $this->getSkillDetails($broaderConcept);
+
+                $concepts[$broaderConcept] = [
+                    "label" => $skill["title"],
+                    "count" => 1,
+                ];
+            } else {
+                if (array_key_exists("count", $concepts[$broaderConcept])) {
+                    $concepts[$broaderConcept]["count"] += 1;
+                } else {
+                    $concepts[$broaderConcept]["count"] = 1;
+                }
+            }
+
+
+            // If the number of results equals the limit, return the current concepts.
+            if (isset($limit) && count($concepts) >= $limit) {
+                break;
+            }
+        }
+
+        // Sort the concepts by the number of times they appear in the results.
+        usort($concepts, function ($a, $b) {
+            $a_val = (int) $a['count'];
+            $b_val = (int) $b['count'];
+
+            if ($a_val > $b_val) {
+                return -1;
+            }
+
+            if ($a_val < $b_val) {
+                return 1;
+            }
+
+            return 0;
+        });
+
+        return $concepts;
+    }
+
+    /**
+     * Calls the ESCO API to get the details of a skill.
+     *
+     * @param string $uri
+     * @return array
+     */
+    function getSkillDetails(string $uri): array {
+        $url = 'https://ec.europa.eu/esco/api/resource/skill';
+        $dataArray = array(
+            'uri' => $uri,
+            'language' => 'de',
+        );
+
+        $data = http_build_query($dataArray);
+        $getUrl = $url . "?" . $data;
 
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, FALSE);
@@ -57,80 +178,13 @@ class WISYKI_ESCO_CLASS {
 
         $response = curl_exec($curl);
 
-        if (curl_error($curl)){
-            echo 'Request Error:' . curl_error($curl);
-            return;
+        if (curl_error($curl)) {
+            JSONResponse::error500('Request Error:' . curl_error($curl));
         }
 
         curl_close($curl);
 
-        // Decode response and filter results for title and uri attributes.
-        $response = json_decode($response, true);
-        $results = $response['_embedded']['results'];
-
-        foreach ($results as $result) {
-            if (!array_key_exists($result["broaderHierarchyConcept"][0], $concepts)) {
-                $url = 'https://ec.europa.eu/esco/api/resource/skill';
-                $dataArray = array(
-                    'uri' => $result["broaderHierarchyConcept"][0],
-                    'language' => 'de',
-                );
-
-                $data = http_build_query($dataArray);
-                $getUrl = $url."?".$data;
-
-                $curl = curl_init();
-                curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, FALSE);
-                curl_setopt($curl, CURLOPT_FOLLOWLOCATION, TRUE);
-                curl_setopt($curl, CURLOPT_RETURNTRANSFER, TRUE);
-                curl_setopt($curl, CURLOPT_URL, $getUrl);
-                curl_setopt($curl, CURLOPT_TIMEOUT, 80);
-
-                $response = curl_exec($curl);
-
-                if (curl_error($curl)){
-                    echo 'Request Error:' . curl_error($curl);
-                    return;
-                }
-
-                curl_close($curl);
-
-                $skill = json_decode($response, true);
-
-                $concepts[$result["broaderHierarchyConcept"][0]] = [
-                    "label" => $skill["title"],
-                    "count" => 1,
-                ];
-
-                if ($limit && count($concepts) >= $limit) {
-                    return $concepts;
-                }
-            } else {
-                if (array_key_exists("count", $concepts[$result["broaderHierarchyConcept"][0]])) {
-                    $concepts[$result["broaderHierarchyConcept"][0]]["count"] += 1;
-                } else {
-                    $concepts[$result["broaderHierarchyConcept"][0]]["count"] = 1;
-                }
-            }
-        }
-
-        usort($concepts, function ($a, $b) {
-            $a_val = (int) $a['count'];
-            $b_val = (int) $b['count'];
-          
-            if($a_val > $b_val) return -1;
-            if($a_val < $b_val) return 1;
-            return 0;
-          });
-
-        return $concepts;
-    }
-
-    function sort_by_count($concepts) {
-        $sorted = array();
-        foreach($concepts as $key => $value) {
-
-        }
+        return json_decode($response, true);
     }
 
     /**
@@ -144,8 +198,8 @@ class WISYKI_ESCO_CLASS {
      */
     function search_api($term, $type = null, $scheme = null, $limit = 5) {
         $escoSuggestions =  array();
-		$available_types = ['occupation','skill','concept'];
-		$available_esco_schemes = [
+        $available_types = ['occupation', 'skill', 'concept'];
+        $available_esco_schemes = [
             'skills-hierarchy' => 'http://data.europa.eu/esco/concept-scheme/skills-hierarchy',
             'member-skills' => 'http://data.europa.eu/esco/concept-scheme/member-skills',
             'member-occupations' => 'http://data.europa.eu/esco/concept-scheme/member-occupations',
@@ -153,34 +207,31 @@ class WISYKI_ESCO_CLASS {
         ];
 
         // Build request url.
-        // $url = "https://ec.europa.eu/esco/api/suggest2";
         $url = "https://ec.europa.eu/esco/api/search";
         $dataArray = array(
             'text' => $term,
             'language' => 'de',
-            // 'type' => ['occupation','skill','concept'],
-            // 'isInScheme': ['http://data.europa.eu/esco/concept-scheme/skills-hierarchy', 'http://data.europa.eu/esco/concept-scheme/member-skills']
-            'full' => 'false', // Set True for full object and False for faster requests. For 'search' endpoint.
-            'alt' => 'true', // For 'suggest2' endpoint.
+            'full' => 'false',
+            'alt' => 'true',
             'limit' => $limit,
         );
 
-		if (isset($type) && !empty($type)) {
+        if (isset($type) && !empty($type)) {
             if (!in_array($type, $available_types)) {
-                $this->error_401($type . ' is not a valid type.');
+                JSONResponse::error401($type . ' is not a valid type.');
             }
             $dataArray['type'] = $type;
-		}
+        }
 
-		if (isset($scheme) && !empty($scheme)) {
+        if (isset($scheme) && !empty($scheme)) {
             if (!array_key_exists($scheme, $available_esco_schemes)) {
-                $this->error_401($scheme . ' is not a valid scheme.');
+                JSONResponse::error401($scheme . ' is not a valid scheme.');
             }
             $dataArray['isInScheme'] = $available_esco_schemes[$scheme];
-		}
+        }
 
         $data = http_build_query($dataArray);
-        $getUrl = $url."?".$data;
+        $getUrl = $url . "?" . $data;
 
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, FALSE);
@@ -191,9 +242,8 @@ class WISYKI_ESCO_CLASS {
 
         $response = curl_exec($curl);
 
-        if (curl_error($curl)){
-            echo 'Request Error:' . curl_error($curl);
-            $this->error_500();
+        if (curl_error($curl)) {
+            JSONResponse::error500('Request Error:' . curl_error($curl));
         }
 
         curl_close($curl);
@@ -239,7 +289,7 @@ class WISYKI_ESCO_CLASS {
         );
 
         $data = http_build_query($dataArray);
-        $getUrl = $url."?".$data;
+        $getUrl = $url . "?" . $data;
 
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, FALSE);
@@ -250,9 +300,8 @@ class WISYKI_ESCO_CLASS {
 
         $response = curl_exec($curl);
 
-        if (curl_error($curl)){
-            echo 'Request Error:' . curl_error($curl);
-            return;
+        if (curl_error($curl)) {
+            JSONResponse::error500('Request Error:' . curl_error($curl));
         }
 
         curl_close($curl);
@@ -305,7 +354,7 @@ class WISYKI_ESCO_CLASS {
         );
 
         $data = http_build_query($dataArray);
-        $getUrl = $url."?".$data;
+        $getUrl = $url . "?" . $data;
 
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, FALSE);
@@ -316,9 +365,8 @@ class WISYKI_ESCO_CLASS {
 
         $response = curl_exec($curl);
 
-        if (curl_error($curl)){
-            echo 'Request Error:' . curl_error($curl);
-            return;
+        if (curl_error($curl)) {
+            JSONResponse::error500('Request Error:' . curl_error($curl));
         }
 
         curl_close($curl);
@@ -331,40 +379,13 @@ class WISYKI_ESCO_CLASS {
                 continue;
             }
             $tag = preg_replace('/\d+\s*/', '', $tags[$i]);
-            if(empty($tag) || str_contains($tag, 'volltext:')) {
+            if (empty($tag) || str_contains($tag, 'volltext:')) {
                 continue;
             }
             $search_results[] = [
                 "label" =>  utf8_encode($tag),
             ];
         }
-
-        // $db = new DB_Admin();
-
-        // $search_results = array();
-
-		// $available_wisy_schemes = [
-        //     'sachstichwort' => '0',
-        // ];
-
-        // $sql = 'SELECT id, stichwort FROM stichwoerter WHERE stichwort LIKE "%'. $term .'%"';
-
-		// if (isset($scheme) && !empty($scheme)) {
-        //     if (array_key_exists($scheme, $available_wisy_schemes)) {
-        //         $sql .= ' AND eigenschaften = ' .$available_wisy_schemes[$scheme];
-        //     }
-		// }
-
-        // if (isset($limit)) {
-        //     $sql .= ' LIMIT ' . $limit;
-        // }
-
-        // $db->query($sql);
-        // while ($db->next_record()) {
-        //     $search_results[$db->Record['id']] = [
-        //         "label" =>  utf8_encode($db->Record['stichwort'])
-        //     ];
-        // }
 
         return $search_results;
     }
@@ -376,11 +397,11 @@ class WISYKI_ESCO_CLASS {
      * @param array $skills A two-dimensional array of esco skills ordered by a category. [['category1] => ['skill1', 'skill2'], ['category2] => ['skill3']]
      * @return array Array containing skills that have equivalent tags in the wisy databse.
      */
-    function filter_is_relevant(array $skills):array {
+    function filter_is_relevant(array $skills): array {
         $db = new DB_Admin();
         $filtered = array();
         foreach ($skills as $index => $skill) {
-            $sql = 'SELECT * FROM x_tags WHERE tag_name = "'. $skill['label'] .'"';
+            $sql = 'SELECT * FROM x_tags WHERE tag_name = "' . $skill['label'] . '"';
             $db->query($sql);
             if ($db->next_record()) {
                 $filtered[$index] = $skill;
@@ -393,10 +414,10 @@ class WISYKI_ESCO_CLASS {
      * Uses the ESCO API to generate autocomplete results for known ESCO concepts, skills and occupations based on a given term.
      *
      * @param string $term The term based on which autocomplete reults are searched.
-     * @param string $type The type of results that are searched. By default every type is searched.
-     * @param array $scheme The ESCO Scheme that is to be searched. By default every scheme is searched.
-     * @param int $limit The max number of results.
-     * @param boolean $onlyrelevant Whether only relevant results should be returned. A relevant result is one that has an equivalent tag with the same name in the WISY database.
+     * @param string|null $type The type of results that are searched. By default every type is searched.
+     * @param array|null $scheme The ESCO Scheme that is to be searched. By default every scheme is searched.
+     * @param int|null $limit The max number of results.
+     * @param boolean|null $onlyrelevant Whether only relevant results should be returned. A relevant result is one that has an equivalent tag with the same name in the WISY database.
      * @return array A two dimensional array of ESCO results ordered by category, which can be either the type or scheme of the result. [['category1] => ['skill1', 'skill2'], ['category2] => ['skill3']]
      */
     function autocomplete($term, $type = null, $scheme = null, $limit = null, $onlyrelevant = true): array {
@@ -404,9 +425,9 @@ class WISYKI_ESCO_CLASS {
 
         if (isset($scheme) && !empty($scheme)) {
             if (count($scheme) > 1) {
-                foreach($scheme as $s) {
+                foreach ($scheme as $s) {
                     $s = trim($s);
-                    if ($s == 'extenden-skills-hierarchy') {
+                    if ($s == 'extended-skills-hierarchy') {
                         $results['skills-hierarchy'] = $this->search_skills_hierarchy($term, $limit);
                     } else if ($s == 'sachstichwort') {
                         $results['sachstichwort'] = $this->search_wisy($term, $type, $s, $limit);
@@ -427,7 +448,7 @@ class WISYKI_ESCO_CLASS {
             $results[$type] = $this->search_api($term, $type, $scheme, $limit);
         }
 
-        if (is_array($scheme) && !in_array('extenden-skills-hierarchy', $scheme) && array_key_exists('skills-hierarchy', $results) && empty($results['skills-hierarchy'])) {
+        if (is_array($scheme) && !in_array('extended-skills-hierarchy', $scheme) && array_key_exists('skills-hierarchy', $results) && empty($results['skills-hierarchy'])) {
             $results['skills-hierarchy'] = $this->search_skills_hierarchy($term, $limit);
         }
 
@@ -442,32 +463,44 @@ class WISYKI_ESCO_CLASS {
         return $results;
     }
 
+    /**
+     * Suggests skills based on the given title and description by extracting keywords from the text and searching
+     * the ESCO API for skills that match those keywords.
+     *
+     * @param string $title The title to extract keywords from.
+     * @param string $description The description to extract keywords from.
+     * @return array An array containing the search terms used and the resulting skill suggestions.
+     */
     function suggestSkills(string $title, string $description): array {
+        // Extract keywords from the title and description.
         $keywords = $this->pythonAPI->extract_keywords($title . ' \n\n ' . $description);
-        $searchterms = ""; 
-        foreach ($keywords as $keyword) { 
-            $searchterms .= $keyword[0] . ", "; 
-        } 
+
+        // Build search terms string from extracted keywords and title.
+        $searchterms = "";
+        foreach ($keywords as $keyword) {
+            $searchterms .= $keyword[0] . ", ";
+        }
         $searchterms .= $title;
-        $skillSuggestions = array();
-        // $skillSuggestions = array_merge($skillSuggestions, $escoAPI->search_api("speicherprogrammierbare Steuerung", 'skill', null, 5));
-        // $skillSuggestions = array_merge($skillSuggestions, $escoAPI->search_api("Individualarbeitsrecht", 'skill', null, 5));
-        // $skillSuggestions = array_merge($skillSuggestions, $this->search_api("englisch sprechen ", 'skill', null, 5));
-        // $skillSuggestions = array_merge($skillSuggestions, $escoAPI->search_api("excel tabellenkalulation ", 'skill', null, 5));
-        $skillSuggestions = array_merge($skillSuggestions, $this->search_api($searchterms, 'skill', null, 5));
 
-       
+        // Search ESCO API for skills that match the search terms.
+        $skillSuggestions = $this->search_api($searchterms, 'skill', null, 5);
 
+        // Return the search terms and resulting skill suggestions.
         $result = array(
             'searchterms' => $searchterms,
             'result' => $skillSuggestions,
         );
-
         return $result;
     }
 
-    function is_language_course(string $uri): bool {
-        
+    /**
+     * Determines whether the ESCO skill identified by the given URI is a language skill.
+     *
+     * @param string $uri The URI to check.
+     * @return bool Returns true if the skill is a language skill, false otherwise.
+     */
+    function is_language_skill(string $uri): bool {
+        // Set up the API request.
         $url = "https://ec.europa.eu/esco/api/resource/skill";
         $dataArray = array(
             'uri' => $uri,
@@ -475,8 +508,9 @@ class WISYKI_ESCO_CLASS {
         );
 
         $data = http_build_query($dataArray);
-        $getUrl = $url."?".$data;
+        $getUrl = $url . "?" . $data;
 
+        // Make the API request.
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, FALSE);
         curl_setopt($curl, CURLOPT_FOLLOWLOCATION, TRUE);
@@ -486,32 +520,42 @@ class WISYKI_ESCO_CLASS {
 
         $response = curl_exec($curl);
 
-        if (curl_error($curl)){
-            echo 'Request Error:' . curl_error($curl);
-            $this->error_500();
+        // Check for errors and return an error response if there is one.
+        if (curl_error($curl)) {
+            JSONResponse::error500('Request Error:' . curl_error($curl));
         }
 
         curl_close($curl);
 
-        // Decode response and filter results for title and uri attributes.
+        // Decode the API response and check for language skill.
         $response = json_decode($response, true);
-
         foreach ($response['_links']['isInScheme'] as $scheme) {
             if ($scheme['uri'] === "http://data.europa.eu/esco/concept-scheme/skill-language-groups") {
                 return true;
             }
         }
-        
+
         return false;
     }
 
+    /**
+     * Renders the results of an autocomplete search based on the specified GET parameters as a JSON response.
+     * 
+     * @var string $_GET['term']   Required. The search term to autocomplete on.
+     * @var string $_GET['type']   Optional. The type of concept to search for.
+     * @var string $_GET['scheme'] Optional. Comma-separated list of concept schemes to restrict the search to.
+     * @var int    $_GET['limit']  Optional. The maximum number of results to return.
+     * @var bool   $_GET['onlyrelevant'] Optional. Whether to only include concepts relevant to the wisy database.
+     * 
+     * @return void
+     */
     function render_autocomplete() {
         header('Content-Type: application/json; charset=UTF-8');
         $term = $_GET['term'];
         if (!isset($term) || empty($term)) {
-            $this->error_400('The request is missing the term parameter.');
+            JSONResponse::error400('The request is missing the term parameter.');
         }
-        
+
         $type = null;
         if (isset($_GET['type']) && !empty($_GET['type'])) {
             $type = $_GET['type'];
@@ -532,102 +576,99 @@ class WISYKI_ESCO_CLASS {
 
         $onlyrelevant = true;
         if (isset($_GET['onlyrelevant']) && !empty($_GET['onlyrelevant'])) {
-            $onlyrelevant = strtolower($_GET['onlyrelevant']) === 'true' ? true : (strtolower($_GET['onlyrelevant']) === 'false' ? false : $this->error_401($_GET['onlyrelevant'] . ' is not a valid value for onlyrelevant.'));
+            $onlyrelevant = strtolower($_GET['onlyrelevant']) === 'true' ? true : (strtolower($_GET['onlyrelevant']) === 'false' ? false : JSONResponse::error401($_GET['onlyrelevant'] . ' is not a valid value for onlyrelevant.'));
         }
-        echo json_encode($this->autocomplete($term, $type, $scheme, $limit, $onlyrelevant));
+
+        JSONResponse::send_json_response($this->autocomplete($term, $type, $scheme, $limit, $onlyrelevant));
     }
 
-    function render_concept_skills() {
+    /**
+     * Renders the concept skills as a JSON response.
+     * 
+     * @var string $_GET['uri'] The URI of the concept for which the skills are requested.
+     * @var bool $_GET['onlyrelevant'] Whether to return only relevant skills. Optional, defaults to true.
+     * 
+     * @return void
+     */
+    function render_skills_of_concept() {
         header('Content-Type: application/json; charset=UTF-8');
+
+        // Check if the uri parameter is present and not empty.
         $uri = $_GET['uri'];
         if (!isset($uri) || empty($uri)) {
-            $this->error_400('The request is missing the uri parameter.');
+            JSONResponse::error400('The request is missing the uri parameter.');
         }
+
+        // Validate the URI.
         $parsed = parse_url($uri);
         if (!isset($parsed['scheme'])) {
-            $this->error_401($uri . ' is not a valid uri. Please specifiy a valid http protocol.');
+            JSONResponse::error401($uri . ' is not a valid uri. Please specifiy a valid http protocol.');
         }
         if (!isset($parsed['host'])) {
-            $this->error_401($uri . ' is not a valid uri. Please specifiy a host.');
+            JSONResponse::error401($uri . ' is not a valid uri. Please specifiy a host.');
         }
         if ($parsed['host'] !== 'data.europa.eu') {
-            $this->error_401('Unkown host. Only the host data.europa.eu is allowed here.');
+            JSONResponse::error401('Unkown host. Only the host data.europa.eu is allowed here.');
         }
         if (!isset($parsed['path']) || empty(trim($parsed['path'], '/'))) {
-            $this->error_401($uri . ' is not valid. Please specifiy a ressource.');
+            JSONResponse::error400($uri . ' is not valid. Please specifiy a ressource.');
         }
 
+        // Check if the onlyrelevant parameter is present and set to true if empty.
         $onlyrelevant = true;
         if (isset($_GET['onlyrelevant']) && !empty($_GET['onlyrelevant'])) {
-            $onlyrelevant = strtolower($_GET['onlyrelevant']) === 'true' ? true : (strtolower($_GET['onlyrelevant']) === 'false' ? false : $this->error_401($_GET['onlyrelevant'] . ' is not a valid value for onlyrelevant.'));
+            $onlyrelevant = strtolower($_GET['onlyrelevant']) === 'true' ? true : (strtolower($_GET['onlyrelevant']) === 'false' ? false : JSONResponse::error401($_GET['onlyrelevant'] . ' is not a valid value for onlyrelevant.'));
         }
 
-        echo json_encode($this->getSkillsOf($uri, $onlyrelevant));
+        // Get the skills for the specified concept and send the JSON response.
+        JSONResponse::send_json_response($this->getSkillsOf($uri, $onlyrelevant));
     }
 
+    /**
+     * Renders skill suggestions as a JSON response based on a title and a description provided by a POST Request.
+     *
+     * @return void
+     */
     function render_suggest_skills() {
         header('Content-Type: application/json; charset=UTF-8');
         $json = file_get_contents('php://input');
         $data = json_decode($json, true);
         if (empty($data)) {
-            $this->error_400('No valid json provided.');
+            JSONResponse::error400('No valid json provided.');
         }
         if (!isset($data['title'])) {
-            $this->error_400('The provided json is missing a title.');
+            JSONResponse::error400('The provided json is missing a title.');
         }
         if (!isset($data['description'])) {
-            $this->error_400('The provided json is missing a description.');
+            JSONResponse::error400('The provided json is missing a description.');
         }
-        echo json_encode($this->suggestSkills($data['title'], $data['description']));
+        JSONResponse::send_json_response($this->suggestSkills($data['title'], $data['description']));
     }
 
-    function render_is_langauge_skill() {
+    /**
+     * Sends a JSON response for the request to identify wether a given skill identified by its uri is a language skill.
+     *
+     * @return void
+     */
+    function render_is_language_skill() {
         header('Content-Type: application/json; charset=UTF-8');
-        
+
         if (!isset($_GET['uri'])) {
-            $this->error_400('The request is missing the uri parameter.');
+            JSONResponse::error400('The request is missing the uri parameter.');
         }
-        echo json_encode($this->is_language_course($_GET['uri']));
+        JSONResponse::send_json_response($this->is_language_skill($_GET['uri']));
     }
 
-    function error_400($message) {
-        header('Content-Type: application/json; charset=UTF-8');
-        http_response_code(400);
-        echo json_encode(array(
-            'error_code' => '400',
-            'error_message' => $message,
-        ));
-        die();
-    }
-
-    function error_401($message) {
-        header('Content-Type: application/json; charset=UTF-8');
-        http_response_code(401);
-        echo json_encode(array(
-            'error_code' => '401',
-            'error_message' => $message,
-        ));
-        die();
-    }
-
-    function error_404() {
-        http_response_code(404);
-        die();
-    }
-
-    function error_500() {
-        http_response_code(500);
-        echo json_encode(array(
-            'error_code' => '500',
-            'error_message' => 'Server error - please retry again at a later time.',
-        ));
-        die();
-    }
-
+    /**
+     * Renders the appropriate response based on the value of the request parameter.
+     *
+     * @return void
+     */
     function render() {
-		switch( $this->request ) {
+        // Evaluate the value of the request parameter using a switch statement.
+        switch ($this->request) {
             case 'getConceptSkills':
-                $this->render_concept_skills();
+                $this->render_skills_of_concept();
                 break;
             case 'suggestSkills':
                 $this->render_suggest_skills();
@@ -636,11 +677,11 @@ class WISYKI_ESCO_CLASS {
                 $this->render_autocomplete();
                 break;
             case 'isLanguageSkill':
-                $this->render_is_langauge_skill();
+                $this->render_is_language_skill();
                 break;
             default:
-                $this->error_404();
+                // If the request parameter doesn't match any of the above cases, send a 404 Not Found HTTP response.
+                JSONResponse::error404();
         }
-
     }
 }

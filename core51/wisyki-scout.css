@@ -1,5 +1,15 @@
+/* 
+ * Stylesheet for the WISY@KI feature "Weiterbildungsscout".
+ * 
+ * @copyright   2023 ISy TH Lübeck <dev.ild@th-luebeck.de>
+ * @author		Pascal Hürten <pascal.huerten@th-luebeck.de>
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+*/
+
+
 /* Google fonts and icons */
 @import url('https://fonts.googleapis.com/css2?family=Kanit&family=Inter:wght@200;400;600&display=swap');
+
 .material-symbols-outlined {
     font-variation-settings:
         'FILL' 0,
@@ -80,7 +90,7 @@ nav {
 }
 
 .btn-link i {
- text-decoration: none;
+    text-decoration: none;
 }
 
 .btn-link:not(:disabled):active {
@@ -237,7 +247,7 @@ nav {
 }
 
 
-.scout-nav__progress > span {
+.scout-nav__progress>span {
     display: none;
     margin-right: .5em;
 }
@@ -535,7 +545,7 @@ button .loader::after {
     font-size: 1.1em;
 }
 
-.level-explanation__item > div{
+.level-explanation__item>div {
     padding: .2em 0;
 }
 
@@ -564,6 +574,7 @@ button .loader::after {
     padding: 0 1.5em;
     z-index: 100;
 }
+
 .modal .level-explantaion__tabs .tab-nav li:not(.selected) {
     cursor: pointer;
     background-color: #c9c9c9;
@@ -716,7 +727,6 @@ ul.current-level-selection {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    text-align: center;
     margin-bottom: 1em;
     position: relative;
 }
@@ -741,6 +751,14 @@ ul.current-level-selection {
 
 .current-level-selection select option {
     text-align: center;
+}
+
+.current-level-selection .skill-title {
+    margin-bottom: .3em;
+}
+
+.current-level-selection .current-level {
+    border-radius: 3px 3px 0px 0px;
 }
 
 ul.level-goal-selection {
@@ -774,7 +792,7 @@ ul.level-goal-selection {
     font-size: 1.2em;
 }
 
-.level-goal-selection p.current-level {
+p.current-level {
     overflow: hidden;
     text-overflow: ellipsis;
     padding: .3em 0em;
@@ -839,7 +857,8 @@ ul.result-list {
     text-align: center;
 }
 
-.result-list p.level-goal, .course-list p.level-goal {
+.result-list p.level-goal,
+.course-list p.level-goal {
     border-radius: 2px;
     width: 100%;
 }
@@ -862,7 +881,7 @@ ul.result-list {
     display: flex;
     flex-direction: column;
     gap: .5em;
-    padding: 1em;
+    padding: 1em 0em;
     position: relative;
 }
 
@@ -909,21 +928,27 @@ ul.result-list {
     text-align: center;
 }
 
-.to-course-btn > span{
+.to-course-btn>span {
     color: var(--font-color__light);
 }
 
-.course-preview details > div{
+.course-preview .course-details {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     grid-auto-flow: dense;
-    gap: 1em;
+    gap: .6em;
     margin-top: .5em;
     padding-bottom: 1em;
     padding-inline: 1em;
     /* justify-items: center; */
 }
+.next-date > span {
+    display: block;
+}
 
+.wisyr_euro::after {
+    content: ' €';
+}
 .provider-title {
     grid-column: 1 / 3;
     grid-row: 1;
@@ -1009,13 +1034,14 @@ ul.result-list {
         grid-template-rows: 1fr auto;
     }
 
-    .scout-nav__progress > span {
+    .scout-nav__progress>span {
         display: inline-block;
     }
 
     .result-list p.skill-title {
         text-align: left;
     }
+
     .result-list .level-goal {
         grid-row: 2;
     }

@@ -1,14 +1,40 @@
 <?php
 
 require_once($_SERVER['DOCUMENT_ROOT'] . "/admin/sql_curr.inc.php");
-require_once($_SERVER['DOCUMENT_ROOT'] . "./admin/config/config.inc.php");
+require_once($_SERVER['DOCUMENT_ROOT'] . "/admin/config/config.inc.php");
+require_once($_SERVER['DOCUMENT_ROOT'] . '/core51/wisyki-json-response.inc.php');
 
+/**
+ * Class WISYKI_PYTHON_CLASS
+ *
+ * Represents a library of functions to handle request to the WISYKI-API.
+ * 
+ * The "Weiterbildungsscout" was created by the project consortium "WISY@KI" as part of the Innovationswettbewerb INVITE 
+ * and was funded by the Bundesinstitut für Berufsbildung and the Federal Ministry of Education and Research.
+ *
+ * @copyright   2023 ISy TH Lübeck <dev.ild@th-luebeck.de>
+ * @author		Pascal Hürten <pascal.huerten@th-luebeck.de>
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class WISYKI_PYTHON_CLASS {
-    private string $pythonlib; 
+    /**
+     * Filelocation where all python scripts reside.
+     *
+     * @var string
+     */
+    private string $pythonlib;
+
+    /**
+     * URI of the WISYKI-API.
+     *
+     * @var string
+     */
     private string $api_uri;
 
-    function __construct()
-	{
+    /**
+     * Constructor of WISYKI_PYTHON_CLASS.
+     */
+    function __construct() {
         $this->pythonlib = dirname(__FILE__) . '/python/';
         $this->api_uri = "https://wisyki.eu.pythonanywhere.com";
     }
@@ -16,15 +42,16 @@ class WISYKI_PYTHON_CLASS {
     /**
      * Executes the specified python module.
      *
-     * @param  string $modulename
-     * @param  array  $params
-     * @param  string $errorlangstr
-     * @return array [0] is the result body and [1] the exit code.
+     * @param  string $modulename   The name of the Python module to execute.
+     * @param  array  $params       The parameters to pass to the Python module.
+     * @param  string $errorlangstr The error message to display if the command fails.
+     * @return array                Returns an array containing the result body and exit code.
+     * @throws Exception            Throws an Exception if the command fails.
      */
     public function exec_command(string $modulename, array $params, string $errorlangstr) {
-
+        // Executes the specified Python module and returns the result.
         $cmd = PYTHON_HOME . ' ' . $this->pythonlib . $modulename . ' ';
-        if(count($params) >= 1) {
+        if (count($params) >= 1) {
             foreach ($params as $param) {
                 $cmd .= escapeshellarg($param) . ' ';
             }
@@ -41,47 +68,20 @@ class WISYKI_PYTHON_CLASS {
         return [$result, $exitcode];
     }
 
-    public function extract_keywords(string $text) { 
-        $endpoint = "/extractKeywords"; 
-        $data = [ 
-            'title' => '',  
-            'description' => $text
-        ]; 
-     
-        $post_data = json_encode($data); 
- 
-        $url = $this->api_uri . $endpoint; 
-        $curl = curl_init($url); 
-        curl_setopt($curl, CURLOPT_POSTFIELDS, $post_data); 
-        curl_setopt($curl, CURLOPT_TIMEOUT, 80); 
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true); 
-        curl_setopt($curl, CURLINFO_HEADER_OUT, true); 
-        curl_setopt($curl, CURLOPT_POST, true); 
-     
-        // Set HTTP Header for POST request  
-        curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type:application/json')); 
-           
-        $response = curl_exec($curl); 
- 
-        if (curl_error($curl)){ 
-            echo 'Request Error:' . curl_error($curl); 
-            return; 
-        } 
- 
-        curl_close($curl); 
- 
-        // Decode response and filter results for title and uri attributes. 
-        $response = json_decode($response, true); 
-        return $response; 
-    }
-
-    public function predict_comp_level(string $title = '', string $description = '') {
-        $endpoint = "/predictCompLevel";
+    /**
+     * Extracts keywords from a given text.
+     *
+     * @param  string $text The text to extract keywords from.
+     * @return mixed        Returns an array of keywords or NULL on failure.
+     */
+    public function extract_keywords(string $text) {
+        // Extracts keywords from a given text using a remote API.
+        $endpoint = "/extractKeywords";
         $data = [
-            'title' => utf8_encode($title), 
-            'description' => utf8_encode($description)
+            'title' => '',
+            'description' => $text
         ];
-    
+
         $post_data = json_encode($data);
 
         $url = $this->api_uri . $endpoint;
@@ -91,15 +91,55 @@ class WISYKI_PYTHON_CLASS {
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($curl, CURLINFO_HEADER_OUT, true);
         curl_setopt($curl, CURLOPT_POST, true);
-    
-        // Set HTTP Header for POST request 
+
+        // Set HTTP Header for POST request  
         curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
-          
+
         $response = curl_exec($curl);
 
-        if (curl_error($curl)){
-            echo 'Request Error:' . curl_error($curl);
-            return;
+        if (curl_error($curl)) {
+            JSONResponse::error500('Request Error:' . curl_error($curl));
+        }
+
+        curl_close($curl);
+
+        // Decode response and filter results for title and uri attributes. 
+        $response = json_decode($response, true);
+        return $response;
+    }
+
+
+    /**
+     * Predicts the comprehension level of a given text.
+     *
+     * @param  string $title       The title of the text.
+     * @param  string $description The description of the text.
+     * @return mixed
+     */
+    public function predict_comp_level(string $title = '', string $description = '') {
+        $endpoint = "/predictCompLevel";
+        $data = [
+            'title' => utf8_encode($title),
+            'description' => utf8_encode($description)
+        ];
+
+        $post_data = json_encode($data);
+
+        $url = $this->api_uri . $endpoint;
+        $curl = curl_init($url);
+        curl_setopt($curl, CURLOPT_POSTFIELDS, $post_data);
+        curl_setopt($curl, CURLOPT_TIMEOUT, 80);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLINFO_HEADER_OUT, true);
+        curl_setopt($curl, CURLOPT_POST, true);
+
+        // Set HTTP Header for POST request 
+        curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
+
+        $response = curl_exec($curl);
+
+        if (curl_error($curl)) {
+            JSONResponse::error500('Request Error:' . curl_error($curl));
         }
 
         curl_close($curl);
@@ -108,8 +148,14 @@ class WISYKI_PYTHON_CLASS {
         $response = json_decode($response, true);
         return $response;
     }
-    
-    
+
+
+    /**
+     * Triggers a re-training of the competency-level prediction model with the specified training data.
+     *
+     * @param  string $training_data  The training data as a JSON string.
+     * @return array                  An array with the response from the API.
+     */
     public function train_comp_level_model(string $training_data) {
         $endpoint = "/trainCompLevel";
 
@@ -119,15 +165,14 @@ class WISYKI_PYTHON_CLASS {
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($curl, CURLINFO_HEADER_OUT, true);
         curl_setopt($curl, CURLOPT_POST, true);
-    
+
         // Set HTTP Header for POST request 
         curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
-          
+
         $response = curl_exec($curl);
 
-        if (curl_error($curl)){
-            echo 'Request Error:' . curl_error($curl);
-            return;
+        if (curl_error($curl)) {
+            JSONResponse::error500('Request Error:' . curl_error($curl));
         }
 
         curl_close($curl);
@@ -136,8 +181,12 @@ class WISYKI_PYTHON_CLASS {
         $response = json_decode($response, true);
         return $response;
     }
-    
-    
+
+    /**
+     * Returns a report with the current statistics of the competency-level prediction model.
+     *
+     * @return array  An array with the response from the API.
+     */
     public function get_comp_level_report() {
         $endpoint = "/getCompLevelReport";
 
@@ -147,12 +196,11 @@ class WISYKI_PYTHON_CLASS {
         curl_setopt($curl, CURLOPT_FOLLOWLOCATION, TRUE);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, TRUE);
         curl_setopt($curl, CURLOPT_TIMEOUT, 20);
-          
+
         $response = curl_exec($curl);
 
-        if (curl_error($curl)){
-            echo 'Request Error:' . curl_error($curl);
-            return;
+        if (curl_error($curl)) {
+            JSONResponse::error500('Request Error:' . curl_error($curl));
         }
 
         curl_close($curl);
