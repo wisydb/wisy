@@ -415,6 +415,7 @@ class WISYKI_SCOUT_RENDERER_CLASS {
 		switch ($this->request) {
 			case '':
 				$this->renderMain();
+				break;
 			case 'occupation':
 				$this->renderOccupationStep();
 				break;
