@@ -24,6 +24,13 @@ addEventListener("resize", () => {
     scrollToStep(currentStep());
 });
 
+// Detect the height of the app and update value of css property.
+function docHeight() {
+    document.documentElement.style.setProperty("--doc-height", `${window.innerHeight}px`);
+}
+addEventListener("resize", docHeight);
+docHeight();
+
 let nextButton;
 let prevButton;
 let stepsNode;
@@ -125,6 +132,22 @@ function init() {
     prevButton = document.querySelector("#prev-step");
     nextButton.addEventListener("click", () => showStep(nextStep()));
     prevButton.addEventListener("click", () => showStep(prevStep()));
+
+    // Detect whether virtualKeyboard is shown on screen.
+    if ("visualViewport" in window) {
+        const VIEWPORT_VS_CLIENT_HEIGHT_RATIO = 0.75;
+        window.visualViewport.addEventListener("resize", function (event) {
+            if (
+                (event.target.height * event.target.scale) /
+                    window.screen.height <
+                VIEWPORT_VS_CLIENT_HEIGHT_RATIO
+            ) {
+                document.body.classList.add("virtual-keyboard-shown");
+            } else {
+                document.body.classList.remove("virtual-keyboard-shown");
+            }
+        });
+    }
 
     // Disable and hide the "next"- and "prev"-buttons by default
     disable(nextButton);

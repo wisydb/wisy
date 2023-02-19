@@ -191,7 +191,7 @@ class WISYKI_SCOUT_RENDERER_CLASS {
 	function renderOccupationStep() {
 	?>
 
-		<h3>Für welchen Beruf oder welche Tätigkeit suchst Du eine Weiterbildung?</h2>
+		<p>Für welchen Beruf oder welche Tätigkeit suchst Du eine Weiterbildung?</p>
 			<div class="autocomplete-box">
 				<div class="autocomplete-box__input">
 					<span class="material-symbols-rounded">search</span>

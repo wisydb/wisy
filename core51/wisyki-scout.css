@@ -30,6 +30,7 @@
     --link-color: slateblue;
     --link-color__highlight: crimson;
     --hover-color: #0030641e;
+    --doc-height: 100%;   
 }
 
 /* Base tags */
@@ -47,8 +48,8 @@ body {
     font-family: 'Inter', sans-serif;
     color: var(--font-color__dark);
     overflow: hidden;
-    padding-top: 10px;
     height: 100vh;
+    height: var(--doc-height);
     position: relative;
 }
 
@@ -71,7 +72,7 @@ button:disabled {
 }
 
 nav {
-    height: 60px;
+    max-height: 60px;
     display: grid;
     grid-template-columns: 1fr 1fr;
 }
@@ -323,6 +324,7 @@ nav {
 }
 
 /* Bottom nav */
+
 .bottom-nav {
     height: 110px;
     width: 100%;
@@ -437,7 +439,8 @@ button .loader::after {
 }
 
 #steps {
-    height: calc(100vh - 60px - 110px - 110px - 10px);
+    height: calc(100vh - 60px - 110px - 110px);
+    height: calc(var(--doc-height) - 60px - 110px - 110px);
     margin-bottom: 1em;
     display: flex;
     flex-direction: row;
@@ -450,7 +453,7 @@ button .loader::after {
 }
 
 .step-container {
-    padding-top: 2em;
+    padding-top: 1em;
     min-width: 100vw;
     height: 100%;
     overflow: auto;
@@ -485,6 +488,7 @@ button .loader::after {
     background-color: #0000003d;
     width: 100vw;
     height: 100vh;
+    height: var(--doc-height);
     z-index: -100;
 }
 
@@ -942,13 +946,15 @@ ul.result-list {
     padding-inline: 1em;
     /* justify-items: center; */
 }
-.next-date > span {
+
+.next-date>span {
     display: block;
 }
 
 .wisyr_euro::after {
     content: ' €';
 }
+
 .provider-title {
     grid-column: 1 / 3;
     grid-row: 1;
@@ -1056,4 +1062,38 @@ ul.result-list {
     .result-list li {
         justify-items: normal;
     }
+}
+
+nav,
+header,
+main {
+    transform: translate(0, 0);
+    transition: transform ease-in .3s;
+}
+
+nav,
+header,
+main {
+    transform: inherit;
+}
+
+.virtual-keyboard-shown nav {
+    transform: translate(0px, -60px);
+}
+
+.virtual-keyboard-shown header, .virtual-keyboard-shown main{
+    transform: translate(0px, -120px);
+}
+
+.virtual-keyboard-shown .bottom-nav {
+    display: none;
+}
+
+.bottom-nav {
+    opacity: 0.8;
+}
+
+.virtual-keyboard-shown #steps {
+    height: 100vh;
+    height: var(--doc-height);
 }
