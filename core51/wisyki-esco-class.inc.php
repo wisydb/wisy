@@ -19,9 +19,9 @@ class WISYKI_ESCO_CLASS {
     /**
      * The framework of the wisy frontend. Provides basic functionalities to navigate the system. 
      *
-     * @var WISY_FRAMEWORK_CLASS
+     * @var WISY_FRAMEWORK_CLASS|null
      */
-    private WISY_FRAMEWORK_CLASS $framework;
+    private WISY_FRAMEWORK_CLASS|null $framework;
 
     /**
      * Class that handles requests to the PYTHON-AI-API.
@@ -37,7 +37,7 @@ class WISYKI_ESCO_CLASS {
      *
      * @var string
      */
-    private string $request = '';
+    private string $request;
 
     /**
      * Constructor.
@@ -45,7 +45,7 @@ class WISYKI_ESCO_CLASS {
      * @param WISY_FRAMEWORK_CLASS $framework
      * @param string|null $request
      */
-    function __construct(WISY_FRAMEWORK_CLASS &$framework = null, string|null $request) {
+    function __construct(WISY_FRAMEWORK_CLASS &$framework = null, string $request = '') {
         // constructor
         $this->framework = &$framework;
         $this->pythonAPI = new WISYKI_PYTHON_CLASS();
