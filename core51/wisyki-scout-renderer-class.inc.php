@@ -76,17 +76,16 @@ class WISYKI_SCOUT_RENDERER_CLASS {
 				}
 			}
 			?>
-			<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 			<title><?php echo $pageTitle ?></title>
 		</head>
 
 		<body>
 			<script src="<?php echo $wisyCore ?>/wisyki-scout.js" async></script>
 			<nav>
-				<a href="/index.php" class="img-link"><img class="portal-logo" src="<?php echo ($logo) ?>" alt="Kursportal Schleswig Holstein" height="60px"></a>
+				<a href="/index.php" class="img-link"><img class="portal-logo" src="<?php echo ($logo) ?>" alt="Kursportal Schleswig Holstein" height="60px" width="220px"></a>
 				<div class="action-bar">
-					<a class="bookmarks-btn labeled-icon-btn" href="#"><i class="material-symbols-rounded">assignment</i>Merkliste</a>
-					<a class="login-btn labeled-icon-btn" href="#"><i class="material-symbols-rounded">account_circle</i>Login</a>
+					<a class="bookmarks-btn labeled-icon-btn" href="#"><i class="icon bookmarks-icon"></i>Merkliste</a>
+					<a class="login-btn labeled-icon-btn" href="#"><i class="icon account-icon"></i>Login</a>
 					<div class="menu-btn">
 						<div class="menu-btn__burger"></div>
 					</div>
@@ -172,8 +171,8 @@ class WISYKI_SCOUT_RENDERER_CLASS {
 		?>
 
 			<section class="bottom-nav">
-				<button id="prev-step" class="hidden disabled"><span class="material-symbols-rounded">arrow_forward_ios</span></button>
-				<button id="next-step" class="hidden disabled"><span class="material-symbols-rounded">arrow_forward_ios</span></button>
+				<button id="prev-step" class="hidden disabled" title="Go to previous step"><i class="icon arrow-icon"></i></button>
+				<button id="next-step" class="hidden disabled" title="Go to next step"><i class="icon arrow-icon"></i></button>
 			</section>
 		</body>
 
@@ -194,9 +193,9 @@ class WISYKI_SCOUT_RENDERER_CLASS {
 		<p>Für welchen Beruf oder welche Tätigkeit suchst Du eine Weiterbildung?</p>
 			<div class="autocomplete-box">
 				<div class="autocomplete-box__input">
-					<span class="material-symbols-rounded">search</span>
+				<i class="icon search-icon"></i>
 					<input type="text" placeholder="Beruf oder Tätigkeit finden" name="esco-occupation-select" id="esco-occupation-select" class="esco-autocomplete" esco-type="occupation" onlyrelevant=False>
-					<button class="clear-input material-symbols-rounded">close</button>
+					<button class="clear-input" title="Clear input"><i class="icon close-icon"></i></button>
 				</div>
 				<output name="esco-occupation-autocomplete" for="esco-occupation-select"></output>
 			</div>
@@ -236,9 +235,9 @@ class WISYKI_SCOUT_RENDERER_CLASS {
 			<p>Möchtest du noch andere Kompetenzen erlangen oder weiterentwickeln? Füge weitere Kompetenzen zu Deiner Liste hinzu. Wähle insgesamt max. <span class="maxSkills"></span>.</p>
 			<div class="autocomplete-box">
 				<div class="autocomplete-box__input">
-					<span class="material-symbols-rounded">search</span>
+					<i class="icon search-icon"></i>
 					<input type="text" placeholder="Kompetenzen finden" name="esco-skill-select" id="esco-skill-select" class="esco-autocomplete" esco-type="skill" onlyrelevant=False>
-					<button class="clear-input material-symbols-rounded">close</button>
+					<button class="clear-input" title="Clear input"><i class="icon close-icon"></i></button>
 				</div>
 				<output name="esco-skill-select" for="esco-skill-select"></output>
 			</div>
@@ -257,7 +256,7 @@ class WISYKI_SCOUT_RENDERER_CLASS {
 		?>
 
 			<p>Um dir passende Kurse vorzuschlagen, beurteile Deine Kompetenzen bitte nach Deinem Können.</p>
-			<button class="open-modal-btn btn-link"><span>Kompetenzstufen kurz erklärt</span><i class="material-symbols-rounded">info</i></button>
+			<button class="open-modal-btn btn-link"><span>Kompetenzstufen kurz erklärt</span><i class="icon help-icon"></i></button>
 			<?php $this->renderLevelModal() ?>
 			<ul class="current-level-selection"></ul>
 
@@ -276,7 +275,7 @@ class WISYKI_SCOUT_RENDERER_CLASS {
 			<section class="modal level-explanation display-none">
 				<div class="backdrop"></div>
 				<div class="modal__content">
-					<button class="close-modal-btn material-symbols-rounded">close</button>
+					<button class="close-modal-btn" title="Close level explanation"><i class="icon close-icon"></i></button>
 					<div class="modal__header">
 						<p class="modal__heading">Niveaustufen erklärt!</p>
 						<p class="modal__subheading"><em>Hinweis:</em> Alle Stufen beinhalten jeweils das Niveau der Vorstufe.</p>
@@ -383,7 +382,7 @@ class WISYKI_SCOUT_RENDERER_CLASS {
 		?>
 
 			<p>Auf Basis Deiner Einschätzung schlage ich Dir folgende Lernziele vor. Du kannst sie hier noch anpassen.</p>
-			<button class="open-modal-btn btn-link"><span>Kompetenzstufen kurz erklärt</span><i class="material-symbols-rounded">info</i></button>
+			<button class="open-modal-btn btn-link"><span>Kompetenzstufen kurz erklärt</span><i class="icon help-icon"></i></button>
 			<?php $this->renderLevelModal() ?>
 			<ul class="level-goal-selection"></ul>
 

@@ -62,6 +62,12 @@ async function updateSkillCloud() {
 
     if (!skillSuggestions) {
         skillSuggestions = await suggestSkills(document.querySelector('#course-title').textContent, document.querySelector('#course-description').textContent);
+        if (!skillSuggestions) {
+            skillSuggestions = {
+                'searchterms': 'error loading skill suggestions',
+                'result': null,
+            }
+        }
     }
 
     let searchterms = skillSuggestions.searchterms;
@@ -147,7 +153,7 @@ async function suggestSkills(title, description) {
         const result = await response.json();
         return result;
     } else {
-        alert("HTTP-Error: " + response.status);
+        console.error("HTTP-Error: " + response.status);
     }
 }
 
@@ -209,7 +215,7 @@ async function autocomplete_input(input, requestID) {
         const result = await response.json();
         return result;
     } else {
-        alert("HTTP-Error: " + response.status);
+        console.error("HTTP-Error: " + response.status);
     }
 }
 async function autocomplete(searchterm) {
@@ -227,7 +233,7 @@ async function autocomplete(searchterm) {
         const result = await response.json();
         return result;
     } else {
-        alert("HTTP-Error: " + response.status);
+        console.error("HTTP-Error: " + response.status);
     }
 }
 

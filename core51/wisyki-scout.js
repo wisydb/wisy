@@ -592,7 +592,7 @@ function initCurrentLevelStep(isStale) {
                     return;
                 }
                 if (
-                    (event.target.matches(".close-modal-btn") ||
+                    (event.target.closest(".close-modal-btn") ||
                         !event.target.closest(".modal") ||
                         event.target.matches(".backdrop")) &&
                     !event.target.closest(".open-modal-btn")
@@ -696,7 +696,7 @@ function initLevelGoalStep(isStale) {
                     return;
                 }
                 if (
-                    (event.target.matches(".close-modal-btn") ||
+                    (event.target.closest(".close-modal-btn") ||
                         !event.target.closest(".modal__content")) &&
                     !event.target.closest(".open-modal-btn")
                 ) {
@@ -1078,8 +1078,8 @@ function initResultListStep(_isStale) {
 function getCourseActions(courseid) {
     return `
         <div class="course-preview__actions">
-            <button class="bookmark-btn labeled-icon-btn"><i class="material-symbols-rounded">star</i>Merken</button>
-            <button class="share-btn labeled-icon-btn"><i class="material-symbols-rounded">share</i>Teilen</button>
+            <button class="bookmark-btn labeled-icon-btn"><i class="icon star-icon"></i>Merken</button>
+            <button class="share-btn labeled-icon-btn"><i class="icon share-icon"></i>Teilen</button>
             <a class="to-course-btn btn" href="/k${courseid}" target="_blank" rel="noreferrer noopener"><span>Kurs ansehen</span></a>
         </div>
     `;

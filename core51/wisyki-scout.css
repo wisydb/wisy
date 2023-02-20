@@ -6,18 +6,6 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
 */
 
-
-/* Google fonts and icons */
-@import url('https://fonts.googleapis.com/css2?family=Kanit&family=Inter:wght@200;400;600&display=swap');
-
-.material-symbols-outlined {
-    font-variation-settings:
-        'FILL' 0,
-        'wght' 400,
-        'GRAD' 0,
-        'opsz' 48;
-}
-
 :root {
     --main-color: #003064;
     --main-color__highlight: #004a99;
@@ -30,7 +18,12 @@
     --link-color: slateblue;
     --link-color__highlight: crimson;
     --hover-color: #0030641e;
-    --doc-height: 100%;   
+    --doc-height: 100%;
+}
+
+@font-face {
+    font-family: "Inter";
+    src: url(/files/wisyki/Inter-VariableFont_slnt\,wght.ttf) format("truetype");
 }
 
 /* Base tags */
@@ -135,6 +128,44 @@ nav {
     justify-content: center;
     align-items: center;
     font-size: .8em;
+}
+
+.icon {
+    height: 24px;
+    width: 24px;
+    display: block;
+}
+
+.bookmarks-icon {
+    background-image: url('/files/wisyki/assignment_black_24dp.svg');
+}
+
+.account-icon {
+    background-image: url('/files/wisyki/account_circle_black_24dp.svg');
+}
+
+.arrow-icon {
+    background-image: url('/files/wisyki/arrow_forward_ios_black_24dp.svg');
+}
+
+.close-icon {
+    background-image: url('/files/wisyki/close_black_24dp.svg');
+}
+
+.share-icon {
+    background-image: url('/files/wisyki/share_black_24dp.svg');
+}
+
+.star-icon {
+    background-image: url('/files/wisyki/star_outline_black_24dp.svg');
+}
+
+.help-icon {
+    background-image: url('/files/wisyki/help_outline_black_24dp.svg');
+}
+
+.search-icon {
+    background-image: url('/files/wisyki/search_black_24dp.svg');
 }
 
 /* Burger-Menu */
@@ -345,6 +376,9 @@ nav {
     border: none;
     border-radius: 5px;
     transition: background .3s ease-out;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .bottom-nav button.disabled {
@@ -355,7 +389,7 @@ nav {
     justify-self: flex-end;
 }
 
-#prev-step span {
+#prev-step .icon {
     transform: scale(-1);
 }
 
@@ -500,7 +534,7 @@ button .loader::after {
 
 .modal__heading {
     font-size: 1.3em;
-    font-weight: bold;
+    font-weight: 600;
 }
 
 .modal__content {
@@ -545,7 +579,7 @@ button .loader::after {
 }
 
 .level-explanation__item .level-title {
-    font-weight: bold;
+    font-weight: 600;
     font-size: 1.1em;
 }
 
@@ -554,11 +588,11 @@ button .loader::after {
 }
 
 .level-explanation__item .comp-type {
-    font-weight: bold;
+    font-weight: 600;
 }
 
 .level-explanation__item em {
-    font-weight: bold;
+    font-weight: 600;
     font-style: normal;
     color: var(--font-color__highlight);
 }
@@ -588,7 +622,7 @@ button .loader::after {
 
 .modal__subheading em {
     display: block;
-    font-weight: bold;
+    font-weight: 600;
     font-style: normal;
 }
 
@@ -600,19 +634,18 @@ button .loader::after {
 }
 
 .autocomplete-box__input {
-    padding-right: 10px;
     height: 3em;
     display: flex;
     flex-direction: row;
-    flex-grow: 1;
     align-items: center;
-    padding: 0 .5em;
+    gap: 0.3em;
+    padding-left: .5em;
     border: 2px solid var(--main-color);
 }
 
 .autocomplete-box input {
     height: 100%;
-    width: 100%;
+    flex-grow: 1;
     outline: none;
     border: none;
     font-size: 1em;
@@ -667,11 +700,12 @@ button .loader::after {
     cursor: unset;
 }
 
-.clear-input::before {
-    content: '';
-    margin-right: 0.3em;
-    border-left: 1px solid var(--font-color__dark);
-    opacity: .8;
+.clear-input {
+    min-width: 48px;
+    min-height: 48px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 /* Step occupationSkills */
@@ -708,17 +742,12 @@ button .loader::after {
     flex-direction: row;
     align-items: center;
     justify-content: flex-end;
-    gap: 1em;
+    gap: .3em;
     text-decoration: none;
 }
 
 .open-modal-btn span {
     text-decoration: underline;
-}
-
-.open-modal-btn i.material-symbols-rounded {
-    font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 48;
-    color: var(--main-color);
 }
 
 ul.current-level-selection {
@@ -750,7 +779,7 @@ ul.current-level-selection {
     font-size: 1em;
     padding: .3em 0em;
     font-family: 'Inter', sans-serif;
-    font-weight: bold;
+    font-weight: 600;
 }
 
 .current-level-selection select option {
@@ -792,7 +821,7 @@ ul.level-goal-selection {
 }
 
 .skill-title {
-    font-weight: bold;
+    font-weight: 600;
     font-size: 1.2em;
 }
 
@@ -827,7 +856,7 @@ p.level-goal {
     font-size: 1em;
     padding: .3em 0em;
     font-family: 'Inter', sans-serif;
-    font-weight: bold;
+    font-weight: 600;
     margin-bottom: 1em;
     position: relative;
 }
@@ -911,7 +940,7 @@ ul.result-list {
 }
 
 .course-preview .course-title {
-    font-weight: bold;
+    font-weight: 600;
 }
 
 .course-preview__actions {
@@ -942,7 +971,6 @@ ul.result-list {
     grid-auto-flow: dense;
     gap: .6em;
     margin-top: .5em;
-    padding-bottom: 1em;
     padding-inline: 1em;
     /* justify-items: center; */
 }
@@ -1081,7 +1109,8 @@ main {
     transform: translate(0px, -60px);
 }
 
-.virtual-keyboard-shown header, .virtual-keyboard-shown main{
+.virtual-keyboard-shown header,
+.virtual-keyboard-shown main {
     transform: translate(0px, -120px);
 }
 
