@@ -131,8 +131,8 @@ nav {
 }
 
 .icon {
-    height: 24px;
-    width: 24px;
+    min-height: 24px;
+    min-width: 24px;
     display: block;
 }
 
@@ -268,14 +268,15 @@ nav {
 .scout-nav {
     height: 50px;
     width: 100%;
-    display: grid;
-    grid-template-columns: 1fr .3fr;
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
     align-items: center;
-    justify-items: center;
+    justify-content: space-around;
     background-color: var(--secondary-background-color);
     z-index: 10;
     position: relative;
-    padding: 0 .5em;
+    padding: .5em;
 }
 
 
@@ -645,7 +646,7 @@ button .loader::after {
 
 .autocomplete-box input {
     height: 100%;
-    flex-grow: 1;
+    width: 100%;
     outline: none;
     border: none;
     font-size: 1em;

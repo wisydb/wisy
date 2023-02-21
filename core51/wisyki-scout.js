@@ -40,6 +40,7 @@ let scoutNavSteps;
 let skillProfile;
 const searchResults = [];
 let currentSearchResult;
+let occupationSkillNodes;
 const amountOfSkillSuggestionsShownByDefault = 6;
 const amountOfCoursesToRecommend = 4;
 const maxSkills = 5;
@@ -330,6 +331,7 @@ function initOccupationStep(isStale) {
 
             // Unset a previously selected occupation.
             skillProfile.occupation = {};
+            skillProfile.skills = {};
             localStorage.setItem("skillProfile", JSON.stringify(skillProfile));
 
             // Update step completeion state.
@@ -407,16 +409,28 @@ async function initOccupationSkillsStep(isStale) {
             skillsNode.removeChild(skillsNode.lastChild);
         }
 
+        const loader = currentStepNode.parentNode.querySelector(
+            ".loader.hidden"
+        );
+        if(loader) {
+            show(loader);
+        }
+
         occupationNode.textContent = skillProfile.occupation.label;
         const suggestions = await suggestSkills(skillProfile.occupation.uri);
         showSkillSuggestions(suggestions, skillsNode);
+
+        
+        if(loader) {
+            hide(loader);
+        }
     }
 
     // Display a reduced amount of skills by default,
     // when the amount of skill-suggestions is bigger than a set number.
-    const skills = skillsNode.querySelectorAll(".selectable-skills li");
-    if (skills.length > amountOfSkillSuggestionsShownByDefault) {
-        showLessSkills(skills, more, less);
+    occupationSkillNodes = skillsNode.querySelectorAll(".selectable-skills li");
+    if (occupationSkillNodes.length > amountOfSkillSuggestionsShownByDefault) {
+        showLessSkills(more, less);
     }
 
     // Setup the inital state of the selectable skill sugestions.
@@ -426,10 +440,10 @@ async function initOccupationSkillsStep(isStale) {
     // Set up UI-actions to show or hide more skill suggestions.
     if (!isStale) {
         more.addEventListener("click", () =>
-            showMoreSkills(skills, more, less)
+            showMoreSkills(more, less)
         );
         less.addEventListener("click", () =>
-            showLessSkills(skills, more, less)
+            showLessSkills(more, less)
         );
     }
 }
@@ -1269,14 +1283,16 @@ function checkSkillStepCompletion() {
  * This function shows more skills by hiding the "show more" button and displaying all previously hidden skills,
  * while displaying the "show less" button to enable the user to hide the previously hidden skills again.
  *
- * @param {NodeList} skills The NodeList of skills to show
  * @param {HTMLElement} more The "show more" button to hide
  * @param {HTMLElement} less The "show less" button to show
  *
  * @returns {void}
  */
-function showMoreSkills(skills, more, less) {
-    skills.forEach((skill) => show(skill));
+function showMoreSkills(more, less) {
+    if (!occupationSkillNodes) {
+        return;
+    }
+    occupationSkillNodes.forEach((skill) => show(skill));
     hide(more);
     show(less);
 }
@@ -1285,19 +1301,21 @@ function showMoreSkills(skills, more, less) {
  * Hides the skill suggestions that come after the default number of skills shown
  * and displays the "more" button to enable the user to show the previously hidden skills again.
  *
- * @param {Array} skills An array of HTML elements representing suggested skills.
  * @param {Element} more An HTML element representing the "more" button that displays additional skill suggestions.
  * @param {Element} less An HTML element representing the "less" button that hides additional skill suggestions.
  *
  * @returns {void}
  */
-function showLessSkills(skills, more, less) {
+function showLessSkills(more, less) {
+    if (!occupationSkillNodes) {
+        return;
+    }
     for (
         let i = amountOfSkillSuggestionsShownByDefault;
-        i < skills.length;
+        i < occupationSkillNodes.length;
         i++
     ) {
-        hide(skills[i]);
+        hide(occupationSkillNodes[i]);
     }
     show(more);
     hide(less);
