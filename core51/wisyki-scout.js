@@ -1757,6 +1757,7 @@ function completeStepOccupation(inputNode, label, uri) {
     };
 
     skillProfile.occupation = occupation;
+    skillProfile.skills = {};
     localStorage.setItem("skillProfile", JSON.stringify(skillProfile));
     enable(nextButton);
 }
