@@ -96,9 +96,9 @@ class WISY_SEARCH_RENDERER_CLASS
 			{
 				if( $sollOrder )
 				{
-					if( $istOrder{0} == $sollOrder ) 
+					if( $istOrder[0] == $sollOrder ) 
 					{
-						$dir = $istOrder{1}=='d'? 'd' /*desc*/ : 'a' /*asc*/;
+						$dir = $istOrder[1]=='d'? 'd' /*desc*/ : 'a' /*asc*/;
 						$newOrder = $sollOrder . ($dir=='d'? '' : 'd');
 						$icon = $dir=='d'? ' &#9660;' /*v*/ : ' &#9650;' /*^*/;
 					}

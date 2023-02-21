@@ -996,29 +996,43 @@ if( $select_numrows )
 							
 							if( $columnsHash[$hi++] )
 							{
-								$site->skin->cellStart();
-									if( canRead() )
-									{
-										$valuesOut = 0;
-										
-										if( isset($secondaryHash[$sTableDef->rows[$sr]->name]) && is_array($secondaryHash[$sTableDef->rows[$sr]->name]) )
-										{
-											reset($secondaryHash[$sTableDef->rows[$sr]->name]);
-											foreach(array_keys($secondaryHash[$sTableDef->rows[$sr]->name]) as $value) {
-												$value = strval($value);
-												if( $value != '' && $value != '&nbsp;' ) {
-													echo $valuesOut? ', ' : '';
-													echo $value;
-													$valuesOut++;
-												}
-											}
-										}
-										
-										if( $valuesOut == 0 ) {
-											echo '&nbsp;';
-										}
-									}
-								$site->skin->cellEnd();
+							    $site->skin->cellStart();
+							    if( canRead() )
+							    {
+							        $valuesOut = 0;
+							        
+							        if( isset($secondaryHash[$sTableDef->rows[$sr]->name]) && is_array($secondaryHash[$sTableDef->rows[$sr]->name]) )
+							        {
+							            reset($secondaryHash[$sTableDef->rows[$sr]->name]);
+							            
+							            foreach(array_keys($secondaryHash[$sTableDef->rows[$sr]->name]) as $value) {
+							                
+							                $value = strval($value);
+							                
+							                // !
+							                $storedValue = '';
+							                
+							                if( regGet('index.showempty', 1) && ($value == '' || $value == '&nbsp;') ) {
+							                    $storedValue = $value;
+							                    $value = '<span class="keineAngabe">k.A.</span>';
+							                }
+							                
+							                if( $value != '' && $value != '&nbsp;' ) {
+							                    echo $valuesOut? ', ' : '';
+							                    echo $value;
+							                    $valuesOut++;
+							                }
+							                
+							                if( regGet('index.showempty', 1) && $value == 'k.A.')
+							                    $value = $storedValue;
+							            }
+							        }
+							        
+							        if( $valuesOut == 0 ) {
+							            echo '&nbsp;';
+							        }
+							    }
+							    $site->skin->cellEnd();
 							}
 						}
 					}

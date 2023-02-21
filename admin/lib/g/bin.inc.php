@@ -1,6 +1,7 @@
 <?php
 
-// !!
+// to make sure, job lists etc. are not loaded/saved mangled 
+// after transfer of WISY system to other server environments
 error_reporting(E_ALL);
 ini_set('display_errors', '1');
 ini_set('display_startup_errors', 1);

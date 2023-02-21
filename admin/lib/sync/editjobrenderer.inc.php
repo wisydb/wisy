@@ -71,7 +71,7 @@ class SYNC_EDITJOBRENDERER_CLASS extends SYNC_FUNCTIONS_CLASS
 					form_control_enum('table', $currJob->table, $this->_get_tables_list());
 				form_control_end();
 				form_control_start('Anfrage an Quellserver');
-					form_control_text('query', $currJob->query, 60 /*width*/);
+				    form_control_textarea('query', $currJob->query, 60 /*width*/, 5 /*height*/);
 					echo '<br />z.B. <i>modified(today)</i> oder <i>modified>=__LAST_DATE__</i> - wenn Sie die Anfrage leer lassen, werden alle Datens&auml;tze der Tabelle synchronisiert.';
 					echo '<br />&nbsp;';
 					echo '<br />&nbsp;';

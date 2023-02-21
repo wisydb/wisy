@@ -55,7 +55,9 @@ if( !@function_exists('mysql_connect') )
 	    catch (Exception $e) {
 	        $e_msg = is_object($e) ? $e->getMessage(). "<br><br>" : '';
 	        
-	        die( "Fehler: " . $e_msg . "<b>" . $query . "</b>" );
+	        die( "SQL Fehler" );
+	        // Only if debugging(!): 
+	        // die( "SQL Fehler:<br>" . $e_msg . "<b>" . $query . "</b>" );
 	    }
 	    
 	    

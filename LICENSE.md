@@ -1,3 +1,5 @@
+** For licenses and sources of external libraries and files please read: LICENSES_external.md **
+
 ** Mozilla Public License **
 ** Version 2.0 ** 
 

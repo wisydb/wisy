@@ -490,7 +490,7 @@ class WISY_SEARCH_CLASS
 					{
 					    // simple AND- or NOT search
 					    $op = '';
-					    if( $value{0} == '-' )
+					    if( $value[0] == '-' )
 					    {
 					        $value = substr($value, 1);
 					        $op = 'not';

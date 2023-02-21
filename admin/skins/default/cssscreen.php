@@ -1,5 +1,7 @@
 <?php
 
+// äöü (ISO8859!)
+
 // make sure, the file is cached
 header("Cache-Control: public");
 header('Expires: ' . gmdate("D, d M Y H:i:s", intval(time()+43200)) . ' GMT'); // in 12 hours
@@ -655,7 +657,7 @@ input[name='resetlogin'] {
 	color: #777 !important;
 }
 
-div[data-descr="DurchfÃ¼hrung"] + .e_tb {
+div[data-descr="Durchführung"] + .e_tb {
   border-top: 1px solid #eee;
   margin-bottom: 1em;
 }
@@ -667,10 +669,14 @@ div[data-descr="DurchfÃ¼hrung"] + .e_tb {
 	font-size: 1em;
 }
 
-/* div[data-descr="DurchfÃ¼hrung"] + .e_tb {
+/* div[data-descr="Durchführung"] + .e_tb {
   line-height: 1em;
 }
 
-div[data-descr="DurchfÃ¼hrung"] + .e_tb * {
+div[data-descr="Durchführung"] + .e_tb * {
 	padding: 0px;
 } */
+
+.keineAngabe {
+	color: #bbb !important;
+}
