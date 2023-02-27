@@ -471,19 +471,18 @@ class WISYKI_ESCO_CLASS {
      * @param string $description The description to extract keywords from.
      * @return array An array containing the search terms used and the resulting skill suggestions.
      */
-    function suggestSkills(string $title, string $description): array {
+    function suggestSkills(string $text): array {
         // Extract keywords from the title and description.
-        $keywords = $this->pythonAPI->extract_keywords($title . ' \n\n ' . $description);
+        $keywords = $this->pythonAPI->extract_keywords($text);
 
         // Build search terms string from extracted keywords and title.
-        $searchterms = "";
-        foreach ($keywords as $keyword) {
-            $searchterms .= $keyword[0] . ", ";
+        $searchterms = join(', ', $keywords);
+        if (empty($searchterms)) {
+            $searchterms = $text;
         }
-        $searchterms .= $title;
 
         // Search ESCO API for skills that match the search terms.
-        $skillSuggestions = $this->search_api($searchterms, 'skill', null, 5);
+        $skillSuggestions = $this->search_api($searchterms, 'skill', null, 7);
 
         // Return the search terms and resulting skill suggestions.
         $result = array(
@@ -636,13 +635,10 @@ class WISYKI_ESCO_CLASS {
         if (empty($data)) {
             JSONResponse::error400('No valid json provided.');
         }
-        if (!isset($data['title'])) {
-            JSONResponse::error400('The provided json is missing a title.');
+        if (!isset($data['text'])) {
+            JSONResponse::error400('The provided json is missing a text property.');
         }
-        if (!isset($data['description'])) {
-            JSONResponse::error400('The provided json is missing a description.');
-        }
-        JSONResponse::send_json_response($this->suggestSkills($data['title'], $data['description']));
+        JSONResponse::send_json_response($this->suggestSkills($data['text']));
     }
 
     /**

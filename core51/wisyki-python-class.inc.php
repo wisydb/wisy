@@ -75,11 +75,12 @@ class WISYKI_PYTHON_CLASS {
      * @return mixed        Returns an array of keywords or NULL on failure.
      */
     public function extract_keywords(string $text) {
+        // Remove wisy headings like '''Inhalte:'''.
+        $text = preg_replace("/'{3}.+?'{3}/", "", $text);
         // Extracts keywords from a given text using a remote API.
         $endpoint = "/extractKeywords";
         $data = [
-            'title' => '',
-            'description' => $text
+            'text' => $text
         ];
 
         $post_data = json_encode($data);

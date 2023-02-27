@@ -136,7 +136,7 @@ function init() {
 
     // Detect whether virtualKeyboard is shown on screen.
     if ("visualViewport" in window) {
-        const VIEWPORT_VS_CLIENT_HEIGHT_RATIO = 0.75;
+        const VIEWPORT_VS_CLIENT_HEIGHT_RATIO = 0.65;
         window.visualViewport.addEventListener("resize", function (event) {
             if (
                 (event.target.height * event.target.scale) /

@@ -61,7 +61,7 @@ async function updateSkillCloud() {
     }
 
     if (!skillSuggestions) {
-        skillSuggestions = await suggestSkills(document.querySelector('#course-title').textContent, document.querySelector('#course-description').textContent);
+        skillSuggestions = await suggestSkills(document.querySelector('#course-title').textContent + '\n\n ' + document.querySelector('#course-description').textContent);
         if (!skillSuggestions) {
             skillSuggestions = {
                 'searchterms': 'error loading skill suggestions',
@@ -134,10 +134,9 @@ async function updateSkillCloud() {
     console.log(skillsShown);
 }
 
-async function suggestSkills(title, description) {
+async function suggestSkills(text) {
     const data = {
-        title: title,
-        description: description,
+        text: text
     };
 
     const url = "../esco/suggestSkills";

@@ -237,7 +237,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <label for="course-id">ID</label>
                 <p id="course-id"><?php echo $course['id'] ?></p>
                 <label for="course-description">Beschreibung</label>
-                <p id="course-description"><?php echo utf8_encode($course['beschreibung']) ?></p>
+                <div id="course-description"><?php echo utf8_encode($course['beschreibung']) ?></div>
             </section>
             <form method="post" name="level-selection-form">
                 <section class="form-input">
