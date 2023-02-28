@@ -62,6 +62,14 @@ $phpSelf = isset($_SERVER['PHP_SELF']) ? $_SERVER['PHP_SELF'] : '#';
  table.sm:first-child { margin-top: 0.5em; }
  
  .availabilityResponsiveness .stat_left, .availabilityResponsiveness .stat_right { border-bottom: 1em; }
+  .keineAngabe { color: #BBB !important; }
+ label { margin-left: 1em; }
+ select { font-weight: bold; margin-top: 1em; margin-bottom: 1em; padding: 5px; text-align: right !important; }
+ .searchTags table { border-collapse: collapse; }
+ .searchTags table tr:nth-child(even) { background: #eee; border-bottom: 1px solid #ccc; }
+ .searchTags table tr:nth-child(odd) { background: #fff; border-bottom: 1px solid #ccc; }
+ .searchTags table { width: 100%; }
+ .searchTags th { background-color: #fffaee; }
 </style>
 
 <?php
@@ -114,7 +122,9 @@ function outputTagStatisticsTableContent( &$db, $heading ) {
 }
 
 $db1 = new DB_Admin;
-$limit = 10; // top $limit list of common search tags etc.
+$limit  = ( !isset($_GET['limit']) )    ? 10           : intval($_GET['limit']); // top $limit list of common search tags etc.
+$month  = ( !isset($_GET['month']) )    ? date("m")    : intval($_GET['month']);
+$year   = ( !isset($_GET['year'])  )     ? date("Y")    : intval($_GET['year']);
 
 $statCats = array(
                     array(
@@ -139,19 +149,77 @@ $statCats = array(
                     )
 );
 ?>
+<form action='<?php echo htmlspecialchars( $_SERVER['PHP_SELF'] ); ?>' id="statisticConf" method="GET">
+ <?php 
+    foreach( $_GET as $key => $value ) {
+        if( !in_array($key, array( 'limit', 'month', 'year' ) ))
+            echo '<input type="hidden" name="' . htmlspecialchars(  $key ) . '" value="'.htmlspecialchars( $value ).'" >';
+    }
+ ?>
+
+ <label for="limit">Anzahl der Eintr&auml;ge:</label>
+ <select name="limit" id="limitSelect" form="statisticConf" onchange='jQuery(this).parent().submit();'>
+  <option value=5 <?php if($limit == 5) echo 'selected'; ?> 	>&nbsp;&nbsp;5</option>
+  <option value=10 <?php if($limit == 10) echo 'selected'; ?> 	>&nbsp;10</option>
+  <option value=20 <?php if($limit == 20) echo 'selected'; ?> 	>&nbsp;20</option>
+  <option value=50 <?php if($limit == 50) echo 'selected'; ?> 	>&nbsp;50</option>
+  <option value=100 <?php if($limit == 100) echo 'selected'; ?> >100</option>
+</select>
+&nbsp;&nbsp;&nbsp;
+
+ <label for="year">Jahr:</label>
+<select name="year" id="yearSelect" form="statisticConf" onchange='$("#monthSelect").val($("#monthSelect option:first").val()); jQuery(this).parent().submit();'>
+  <option value=-1 <?php if($limit == -1) echo 'selected'; ?> 	>Keine Einschr&auml;nkung</option>
+  <?php 
+  for( $i=2023; $i <= 2033; $i++ ) { 
+    echo '<option value=' . $i . ' ' . (($year == $i) ? "selected" : "") . '>&nbsp;&nbsp;' . $i . '</option>';  
+  }
+  ?>
+</select>
+
+<label for="month">Monat:</label>
+<select name="month" id="monthSelect" form="statisticConf" onchange='jQuery(this).parent().submit();'>
+  <option value=-1 <?php if($limit == -1) echo 'selected'; ?> 	>Keine Einschr&auml;nkung</option>
+  <?php 
+  for( $i=1; $i <= 12; $i++ ) { 
+     echo '<option value=' . $i . ' ' . (($month == $i) ? "selected" : "") . '>&nbsp;&nbsp;' . $i . '</option>';  
+  }
+  ?>
+</select>
+
+
+</form>
 <div class="searchTags">
 	<?php 
         for( $i=0; $i < count($statCats); $i++ ) {  
     ?>
 			<div class="<?php echo ( $i%2 == 0 ) ? 'stat_left' : 'stat_right'; ?>">
-			<?php 
-	            $sql = "SELECT query1, GROUP_CONCAT(DISTINCT query2 SEPARATOR '<hr>') as q2, domain,
-                        GROUP_CONCAT(DISTINCT datum_uhrzeit SEPARATOR ',') as timestamp, COUNT(query1) AS cntQ1
-                        FROM x_searchqueries WHERE portal_id = $portal_id AND src = '" . $statCats[$i]['src'] . "'
-                        AND status IN (" . $statCats[$i]['statusIn'] . ")
-                        GROUP BY query1 ORDER BY cntQ1 DESC, query1 ASC LIMIT $limit";
-                $db1->query( $sql );
-                outputTagStatisticsTableContent( $db1, $statCats[$i]['heading'] );
+			<?php
+			     
+			 if( $month != -1 && $year != -1 ) { // both year and month defined
+			     $date       = date( 'Y-m-d H:i:s', strtotime( str_pad($year, 4, "0", STR_PAD_LEFT)."-".str_pad($month, 2, "0", STR_PAD_LEFT). "-01 00:00:00" ) );
+			     $maxDate    = date( 'Y-m-d H:i:s', strtotime( $date.' +1 month' ) );
+			 }
+			 elseif( $year != -1 ) { // only year defined
+			     $date       = date( 'Y-m-d H:i:s', strtotime( $year . "-01-01 00:00:00" ) );
+			     $maxDate    = date( 'Y-m-d H:i:s', strtotime( $year . "-12-31 00:00:00" ) );
+			 }
+			 else // neither year nor month defined
+                $date = -1;
+                
+             $dateWhere = ( $date != -1 ? " AND datum_uhrzeit >= '" . $date . "' AND datum_uhrzeit < '" . $maxDate . "' " : " " );
+             
+	         $sql = "SELECT query1, GROUP_CONCAT(DISTINCT query2 SEPARATOR '<hr>') as q2, domain,
+                     GROUP_CONCAT(DISTINCT datum_uhrzeit SEPARATOR ',') as timestamp, COUNT(query1) AS cntQ1
+                     FROM x_searchqueries WHERE portal_id = $portal_id AND src = '" . $statCats[$i]['src'] . "'
+                     AND status IN (" . $statCats[$i]['statusIn'] . ")"
+                   . $dateWhere
+                   . "GROUP BY query1 ORDER BY cntQ1 DESC, query1 ASC LIMIT $limit";
+                     
+             $db1->query( $sql );
+                
+             outputTagStatisticsTableContent( $db1, $statCats[$i]['heading'] );
+            
             ?>
 			</div>
 			<?php 

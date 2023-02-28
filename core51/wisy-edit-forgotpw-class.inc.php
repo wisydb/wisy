@@ -127,6 +127,8 @@ __NAME__";
 			// confirmation link clicked
 			// ================================================================
 			
+		    global $salt;
+		    
 			$db	= new DB_Admin;
 			$this->dbCache->deleteOldEntries(); // otherwise they are only deleted if an expired entry is tried to be read - this is normally never ...
 			$anbieterId = intval($this->dbCache->lookup('forgotpw.'.$_REQUEST['c']));
@@ -137,7 +139,7 @@ __NAME__";
 				$newpassword = genpassword();
 				$notizen = strftime('%d.%m.%y') . ": Neues Passwort mit Passwort-Vergessen-Funktion generiert\n" . $db->f8('notizen');
 				
-				$db->query("UPDATE anbieter SET pflege_passwort=".$db->quote(crypt($newpassword)).", notizen=".$db->quote($notizen)." WHERE id=$anbieterId;");
+				$db->query("UPDATE anbieter SET pflege_passwort=".$db->quote(crypt($newpassword, $salt)).", notizen=".$db->quote($notizen)." WHERE id=$anbieterId;");
 				
 				$this->dbCache->insert('forgotpw.'.$_REQUEST['c'], 0);
 				
