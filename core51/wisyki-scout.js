@@ -1698,42 +1698,38 @@ function showAutocompleteResult(suggestions, output, id = null) {
         output.removeChild(output.lastChild);
     }
 
-    // Iterate through each category of suggestions.
-    for (category in suggestions) {
-        const ul = document.createElement("ul");
-        ul.setAttribute("name", category);
+    const ul = document.createElement("ul");
+    // Iterate through each suggestion.
+    for (const uri in suggestions) {
 
-        // Iterate through each suggestion in the category.
-        for (const uri in suggestions[category]) {
-            // Skip suggestion if it has already been selected.
-            if (uri in skillProfile.skills) {
-                continue;
-            }
-            // Create a button for the suggestion and add it to the list.
-            const suggestion = suggestions[category][uri];
-            const li = document.createElement("li");
-            const button = document.createElement("button");
-            button.textContent = suggestion.label;
-            button.setAttribute("name", suggestion.label);
-            button.setAttribute("id", uri);
-            skillsBtns.push(button);
-            li.appendChild(button);
-            ul.appendChild(li);
+        // Skip suggestion if it has already been selected.
+        if (uri in skillProfile.skills) {
+            continue;
         }
-
-        // If no suggestions were found for this category, display a message.
-        if (skillsBtns.length == 0) {
-            const li = document.createElement("li");
-            const button = document.createElement("button");
-            button.textContent = "Keine Ergebnisse";
-            button.setAttribute("disabled", "");
-            li.appendChild(button);
-            ul.appendChild(li);
-        }
-
-        // Add the list of suggestions to the output element.
-        output.appendChild(ul);
+        // Create a button for the suggestion and add it to the list.
+        const suggestion = suggestions[uri];
+        const li = document.createElement("li");
+        const button = document.createElement("button");
+        button.textContent = suggestion.label;
+        button.setAttribute("name", suggestion.label);
+        button.setAttribute("id", uri);
+        skillsBtns.push(button);
+        li.appendChild(button);
+        ul.appendChild(li);
     }
+
+    // If no suggestions were found for this category, display a message.
+    if (skillsBtns.length == 0) {
+        const li = document.createElement("li");
+        const button = document.createElement("button");
+        button.textContent = "Keine Ergebnisse";
+        button.setAttribute("disabled", "");
+        li.appendChild(button);
+        ul.appendChild(li);
+    }
+
+    // Add the list of suggestions to the output element.
+    output.appendChild(ul);
 
     // Return the list of buttons that were created.
     return skillsBtns;

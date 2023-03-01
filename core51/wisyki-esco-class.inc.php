@@ -224,10 +224,15 @@ class WISYKI_ESCO_CLASS {
         }
 
         if (isset($scheme) && !empty($scheme)) {
-            if (!array_key_exists($scheme, $available_esco_schemes)) {
-                JSONResponse::error401($scheme . ' is not a valid scheme.');
+            $schemes = explode(', ', $scheme);
+            $esco_schemes = array();
+            foreach ($schemes as $s) {
+                if (!array_key_exists($s, $available_esco_schemes)) {
+                    JSONResponse::error401($scheme . ' is not a valid scheme.');
+                }
+                $esco_schemes[] = $available_esco_schemes[$s];
             }
-            $dataArray['isInScheme'] = $available_esco_schemes[$scheme];
+            $dataArray['isInScheme'] = join(', ', $esco_schemes);
         }
 
         $data = http_build_query($dataArray);
@@ -374,7 +379,7 @@ class WISYKI_ESCO_CLASS {
         $search_results = array();
 
         $tags = explode('|', $response);
-        for ($i = 0; $i < count($tags); $i++) {
+        for ($i = 0; $i < count($tags) && $i < $limit; $i++) {
             if ($i % 4 != 0) {
                 continue;
             }
@@ -424,41 +429,36 @@ class WISYKI_ESCO_CLASS {
         $results = [];
 
         if (isset($scheme) && !empty($scheme)) {
-            if (count($scheme) > 1) {
-                foreach ($scheme as $s) {
-                    $s = trim($s);
-                    if ($s == 'extended-skills-hierarchy') {
-                        $results['skills-hierarchy'] = $this->search_skills_hierarchy($term, $limit);
-                    } else if ($s == 'sachstichwort') {
-                        $results['sachstichwort'] = $this->search_wisy($term, $type, $s, $limit);
-                    } else {
-                        $results[$s] = $this->search_api($term, $type, $s, $limit);
-                    }
-                }
-            } else {
-                if ($scheme[0] == 'extended-skills-hierarchy') {
-                    $results['skills-hierarchy'] = $this->search_skills_hierarchy($term, $limit);
-                } else if ($scheme[0] == 'sachstichwort') {
-                    $results['sachstichwort'] = $this->search_wisy($term, $type, $scheme[0], $limit);
+            $minlimit = round($limit / count($scheme), 0, PHP_ROUND_HALF_UP);
+            $counter = 0;
+            foreach (array_reverse($scheme) as $s) {
+                $counter++;
+                $l = $counter * $minlimit - count($results);
+                $s = trim($s);
+                if ($s == 'extended-skills-hierarchy') {
+                    $results = array_merge($results, $this->search_skills_hierarchy($term, $l));
+                } else if ($s == 'sachstichwort') {
+                    $results = array_merge($results, $this->search_wisy($term, $type, $s, $l));
                 } else {
-                    $results[$scheme[0]] = $this->search_api($term, $type, $scheme[0], $limit);
+                    $results = array_merge($results, $this->search_api($term, $type, $s, $l));
                 }
             }
         } else {
-            $results[$type] = $this->search_api($term, $type, $scheme, $limit);
+            $results = array_merge($results, $this->search_api($term, $type, $scheme, $limit));
         }
 
-        if (is_array($scheme) && !in_array('extended-skills-hierarchy', $scheme) && array_key_exists('skills-hierarchy', $results) && empty($results['skills-hierarchy'])) {
-            $results['skills-hierarchy'] = $this->search_skills_hierarchy($term, $limit);
-        }
+        // if (is_array($scheme) && !in_array('extended-skills-hierarchy', $scheme) && array_key_exists('skills-hierarchy', $results) && empty($results['skills-hierarchy'])) {
+        //     $results = array_merge($results, $this->search_skills_hierarchy($term, $limit));
+        // }
 
 
 
         if ($onlyrelevant) {
-            foreach ($results as $categoryname => $category) {
-                $results[$categoryname] = $this->filter_is_relevant($category);
-            }
+            $results = $this->filter_is_relevant($results);
         }
+
+        // // Randomize order of elements, so they are not sorted by scheme.
+        // shuffle($results);
 
         return $results;
     }
@@ -471,18 +471,27 @@ class WISYKI_ESCO_CLASS {
      * @param string $description The description to extract keywords from.
      * @return array An array containing the search terms used and the resulting skill suggestions.
      */
-    function suggestSkills(string $text): array {
+    function suggestSkills(string $title = null, $text): array {
         // Extract keywords from the title and description.
-        $keywords = $this->pythonAPI->extract_keywords($text);
+        $keywords = $this->pythonAPI->extract_keywords($title, $text);
 
         // Build search terms string from extracted keywords and title.
         $searchterms = join(', ', $keywords);
         if (empty($searchterms)) {
-            $searchterms = $text;
+            $searchterms = $title;
         }
 
         // Search ESCO API for skills that match the search terms.
-        $skillSuggestions = $this->search_api($searchterms, 'skill', null, 7);
+        $skillSuggestions = array();
+        foreach ($keywords as $keyword) {
+            $skillSuggestions = array_merge($skillSuggestions, $this->search_api($keyword, null, 'member-skills, skills-hierarchy', 3));
+        }
+        shuffle($skillSuggestions);
+
+        if(!empty($skillSuggestions)) {
+            $skillSuggestions = array_splice($skillSuggestions, 0, 10, true);
+        }
+        
 
         // Return the search terms and resulting skill suggestions.
         $result = array(
@@ -549,7 +558,6 @@ class WISYKI_ESCO_CLASS {
      * @return void
      */
     function render_autocomplete() {
-        header('Content-Type: application/json; charset=UTF-8');
         $term = $_GET['term'];
         if (!isset($term) || empty($term)) {
             JSONResponse::error400('The request is missing the term parameter.');
@@ -590,8 +598,6 @@ class WISYKI_ESCO_CLASS {
      * @return void
      */
     function render_skills_of_concept() {
-        header('Content-Type: application/json; charset=UTF-8');
-
         // Check if the uri parameter is present and not empty.
         $uri = $_GET['uri'];
         if (!isset($uri) || empty($uri)) {
@@ -629,7 +635,6 @@ class WISYKI_ESCO_CLASS {
      * @return void
      */
     function render_suggest_skills() {
-        header('Content-Type: application/json; charset=UTF-8');
         $json = file_get_contents('php://input');
         $data = json_decode($json, true);
         if (empty($data)) {
@@ -638,7 +643,7 @@ class WISYKI_ESCO_CLASS {
         if (!isset($data['text'])) {
             JSONResponse::error400('The provided json is missing a text property.');
         }
-        JSONResponse::send_json_response($this->suggestSkills($data['text']));
+        JSONResponse::send_json_response($this->suggestSkills($data['title'], $data['text']));
     }
 
     /**
@@ -647,8 +652,6 @@ class WISYKI_ESCO_CLASS {
      * @return void
      */
     function render_is_language_skill() {
-        header('Content-Type: application/json; charset=UTF-8');
-
         if (!isset($_GET['uri'])) {
             JSONResponse::error400('The request is missing the uri parameter.');
         }

@@ -295,7 +295,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="autocomplete-box">
                     <div class="autocomplete-box__input">
                         <span class="material-symbols-rounded">search</span>
-                        <input type="text" placeholder="Kompetenzen finden" name="esco-skill-select" id="esco-skill-select" class="esco-autocomplete" esco-type="skill" onlyrelevant=False>
+                        <input type="text" placeholder="Kompetenzen finden" name="esco-skill-select" id="esco-skill-select" class="esco-autocomplete" esco-scheme="member-skills,skills-hierarchy" onlyrelevant=False>
                         <button class="clear-input material-symbols-rounded">close</button>
                     </div>
                     <output name="esco-skill-select" for="esco-skill-select"></output>

@@ -61,7 +61,7 @@ async function updateSkillCloud() {
     }
 
     if (!skillSuggestions) {
-        skillSuggestions = await suggestSkills(document.querySelector('#course-title').textContent + '\n\n ' + document.querySelector('#course-description').textContent);
+        skillSuggestions = await suggestSkills(document.querySelector('#course-title').textContent,  document.querySelector('#course-description').textContent);
         if (!skillSuggestions) {
             skillSuggestions = {
                 'searchterms': 'error loading skill suggestions',
@@ -134,8 +134,9 @@ async function updateSkillCloud() {
     console.log(skillsShown);
 }
 
-async function suggestSkills(text) {
+async function suggestSkills(title, text) {
     const data = {
+        title: title,
         text: text
     };
 
@@ -198,10 +199,10 @@ async function autocomplete_input(input, requestID) {
     };
 
     if (input.getAttribute("esco-type")) {
-        params.type = input.getAttribute("esco-type").split(" ");
+        params.type = input.getAttribute("esco-type");
     }
     if (input.getAttribute("esco-scheme")) {
-        params.scheme = input.getAttribute("esco-scheme").split(" ");
+        params.scheme = input.getAttribute("esco-scheme");
     }
     if (input.getAttribute("onlyrelevant") === "False") {
         params.onlyrelevant = false;
@@ -248,36 +249,33 @@ function showAutocompleteResult(suggestions, output, id = null) {
         output.removeChild(output.lastChild);
     }
 
-    for (category in suggestions) {
-        const ul = document.createElement("ul");
-        ul.setAttribute("name", category);
 
-        for (const uri in suggestions[category]) {
-            if (uri in selectedSkills) {
-                continue;
-            }
-            const suggestion = suggestions[category][uri];
-            const li = document.createElement("li");
-            const button = document.createElement("button");
-            button.textContent = suggestion.label;
-            button.setAttribute("name", suggestion.label);
-            button.setAttribute("id", uri);
-            skillsBtns.push(button);
-            li.appendChild(button);
-            ul.appendChild(li);
+    const ul = document.createElement("ul");
+    for (const uri in suggestions) {
+        if (uri in selectedSkills) {
+            continue;
         }
-
-        if (skillsBtns.length == 0) {
-            const li = document.createElement("li");
-            const button = document.createElement("button");
-            button.textContent = "Keine Ergebnisse";
-            button.setAttribute("disabled", "");
-            li.appendChild(button);
-            ul.appendChild(li);
-        }
-
-        output.appendChild(ul);
+        const suggestion = suggestions[uri];
+        const li = document.createElement("li");
+        const button = document.createElement("button");
+        button.textContent = suggestion.label;
+        button.setAttribute("name", suggestion.label);
+        button.setAttribute("id", uri);
+        skillsBtns.push(button);
+        li.appendChild(button);
+        ul.appendChild(li);
     }
+
+    if (skillsBtns.length == 0) {
+        const li = document.createElement("li");
+        const button = document.createElement("button");
+        button.textContent = "Keine Ergebnisse";
+        button.setAttribute("disabled", "");
+        li.appendChild(button);
+        ul.appendChild(li);
+    }
+
+    output.appendChild(ul);
 
     return skillsBtns;
 }

@@ -236,7 +236,7 @@ class WISYKI_SCOUT_RENDERER_CLASS {
 			<div class="autocomplete-box">
 				<div class="autocomplete-box__input">
 					<i class="icon search-icon"></i>
-					<input type="text" placeholder="Kompetenzen finden" name="esco-skill-select" id="esco-skill-select" class="esco-autocomplete" esco-type="skill" onlyrelevant=False>
+					<input type="text" placeholder="Kompetenzen finden" name="esco-skill-select" id="esco-skill-select" class="esco-autocomplete" esco-scheme="member-skills,skills-hierarchy,sachstichwort" onlyrelevant=False>
 					<button class="clear-input" title="Clear input"><i class="icon close-icon"></i></button>
 				</div>
 				<output name="esco-skill-select" for="esco-skill-select"></output>
