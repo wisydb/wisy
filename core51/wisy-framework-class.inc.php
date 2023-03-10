@@ -76,6 +76,7 @@ class WISY_FRAMEWORK_CLASS
 	var $filterTokens = array(
 	    'anbieter',
 	    'zielgruppe',
+	    'niveau',
 	    'thema',
 	    'foerderung',
 	    'qualitaetszertifikat',

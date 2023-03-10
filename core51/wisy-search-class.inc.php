@@ -333,6 +333,7 @@ class WISY_SEARCH_CLASS
 	            if (stristr(trim($ort), trim($synonym)))   { $ort = trim($original); }
 	        }
 	        
+			$ort = str_replace("'", "\'", $ort);
 	        
 	        $this->db->query("SELECT ort, plz FROM plz_ortscron WHERE ort = '".trim($ort)."';");
 	        if( $this->db->next_record() ) {
