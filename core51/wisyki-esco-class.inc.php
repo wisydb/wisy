@@ -438,13 +438,29 @@ class WISYKI_ESCO_CLASS {
                 if ($s == 'extended-skills-hierarchy') {
                     $results = array_merge($results, $this->search_skills_hierarchy($term, $l));
                 } else if ($s == 'sachstichwort') {
-                    $results = array_merge($results, $this->search_wisy($term, $type, $s, $l));
+                    $sachstichworte = $this->search_wisy($term, $type, $s, $l);
                 } else {
                     $results = array_merge($results, $this->search_api($term, $type, $s, $l));
                 }
             }
         } else {
             $results = array_merge($results, $this->search_api($term, $type, $scheme, $limit));
+        }
+
+        // If there are esco skills and stichworte with the same label, skip the stichwort.
+        if (!empty($sachstichworte)) {
+            foreach ($sachstichworte as $stichwort) {
+                $duplicate = false;
+                foreach ($results as $skill) {
+                    if ($stichwort['label'] == $skill['label']) {
+                        $duplicate = true;
+                        break;
+                    }
+                }
+                if (!$duplicate) {
+                    $results[] = $stichwort;
+                }
+            }
         }
 
         // if (is_array($scheme) && !in_array('extended-skills-hierarchy', $scheme) && array_key_exists('skills-hierarchy', $results) && empty($results['skills-hierarchy'])) {
@@ -486,7 +502,7 @@ class WISYKI_ESCO_CLASS {
         foreach ($keywords as $keyword) {
             $skillSuggestions = array_merge($skillSuggestions, $this->search_api($keyword, null, 'member-skills, skills-hierarchy', 3));
         }
-        shuffle($skillSuggestions);
+        // shuffle($skillSuggestions);
 
         if(!empty($skillSuggestions)) {
             $skillSuggestions = array_splice($skillSuggestions, 0, 10, true);

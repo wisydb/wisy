@@ -64,6 +64,10 @@ button:disabled {
     cursor: unset;
 }
 
+.bottom-nav button:hover {
+    background: var(--main-color__highlight);
+}
+
 nav {
     max-height: 60px;
     display: grid;
@@ -166,6 +170,15 @@ nav {
 
 .search-icon {
     background-image: url('/files/wisyki/search_black_24dp.svg');
+}
+
+button > i {
+    scale: 1;
+    transition: scale .2s ease-in-out;
+}
+
+button:hover > i {
+    scale: 1.2;
 }
 
 /* Burger-Menu */
@@ -783,6 +796,10 @@ ul.current-level-selection {
     font-weight: 600;
 }
 
+.current-level-selection select:hover {
+    outline: var(--font-color__dark) solid 1px;
+}
+
 .current-level-selection select option {
     text-align: center;
 }
@@ -860,6 +877,10 @@ p.level-goal {
     font-weight: 600;
     margin-bottom: 1em;
     position: relative;
+}
+
+.level-goal-selection select:hover {
+    outline: var(--font-color__dark) solid 1px;
 }
 
 .level-goal-selection select option {
@@ -960,6 +981,10 @@ ul.result-list {
     padding: 0em 1em;
     margin: .4em 0;
     text-align: center;
+}
+
+.to-course-btn:hover {
+    background-color: var(--main-color__highlight);
 }
 
 .to-course-btn>span {

@@ -329,11 +329,6 @@ function initOccupationStep(isStale) {
             // Reset autocomplete input and reults.
             clearAutocompleteInput(autocompleteInput, autocompleteOutput);
 
-            // Unset a previously selected occupation.
-            skillProfile.occupation = {};
-            skillProfile.skills = {};
-            localStorage.setItem("skillProfile", JSON.stringify(skillProfile));
-
             // Update step completeion state.
             disable(nextButton);
             autocompleteInput.focus();
@@ -1009,6 +1004,7 @@ function initResultListStep(_isStale) {
 
     // Perform the search based on the preview and update the DOM with the results.
     search(preview).then((result) => {
+        console.log(result);
         for (const courseID in result.result) {
             const course = result.result[courseID];
             const li = document.createElement("li");
@@ -1752,9 +1748,11 @@ function completeStepOccupation(inputNode, label, uri) {
         uri: uri,
     };
 
-    skillProfile.occupation = occupation;
-    skillProfile.skills = {};
-    localStorage.setItem("skillProfile", JSON.stringify(skillProfile));
+    if (skillProfile.occupation.label != occupation.label) {
+        skillProfile.skills = {};
+        skillProfile.occupation = occupation;
+        localStorage.setItem("skillProfile", JSON.stringify(skillProfile));
+    }
     enable(nextButton);
 }
 
