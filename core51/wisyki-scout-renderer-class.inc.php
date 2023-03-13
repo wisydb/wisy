@@ -150,9 +150,6 @@ class WISYKI_SCOUT_RENDERER_CLASS {
 					</div>
 					<div class="step-container">
 						<article class="step" id="resultList">
-							<p><span class="result-count"></span> gefunden zu:</p>
-							<p class="skill-title"></p>
-							<ul class="course-list"></ul>
 						</article>
 					</div>
 				</section>

@@ -50,8 +50,6 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_INTELLISEARCH_CLASS {
 	 * @return void Echoes the an overview of the Search in JSON format.
 	 */
 	function render_prepare() {
-		header('Content-Type: application/json; charset=UTF-8');
-
 		$label = $_GET['label'];
 		$level = $_GET['level'];
 
@@ -62,6 +60,7 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_INTELLISEARCH_CLASS {
 		if (!$this->ok()) {
 			JSONResponse::error500();
 		}
+
 		JSONResponse::send_json_response(array(
 			'query' => $querystring,
 			'skill' => array(
@@ -78,8 +77,6 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_INTELLISEARCH_CLASS {
 	 * @return void Echoes a JSON response.
 	 */
 	function render_result() {
-		header('Content-Type: application/json; charset=UTF-8');
-
 		$label = $_GET['label'];
 		$level = $_GET['level'];
 		$limit = $_GET['limit'];
@@ -93,43 +90,34 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_INTELLISEARCH_CLASS {
 		}
 
 		$kurse = $this->getKurseRecords(0, $limit ?? 0, 'rand');
-		$result = array();
+		$kursecount = $this->getKurseCount();
+		$exactmatch = array();
+		if (!empty($kurse)) {
+			$exactmatch = array_map([$this, 'get_course_details'], $kurse['records']);
+		}
 
-		foreach ($kurse['records'] as $kurs) {
-			// Get provider title.
-			$db = new DB_Admin();
-			$db->query("SELECT anbieter.suchname FROM anbieter WHERE id=" . $kurs['anbieter']);
-			if (!$db->next_record()) {
+		// If there arent a lot of exact matches, search for other close matches.
+		// TODO: Search for courses with other levels and related esco skills.
+		$closematch = array();
+		if (!isset($limit) || $kursecount < $limit) {
+			$searcher2 =& createWisyObject('WISY_SEARCH_CLASS', $this->framework);
+			$searcher2->prepare($label);
+
+			if (!$searcher2->ok()) {
 				JSONResponse::error500();
 			}
-			$provider = $db->Record;
 
-
-			$db = new DB_Admin();
-			$today = strftime("%Y-%m-%d");
-			$db->query("SELECT d.beginn, d.beginnoptionen, d.ende, d.dauer, d.zeit_von, d.zeit_bis, d.stunden, d.preis, d.ort FROM durchfuehrung d, kurse_durchfuehrung kd, x_kurse WHERE d.id = kd.secondary_id AND kd.primary_id={$kurs['id']} AND (d.beginn>='$today' OR d.beginn=0) ORDER BY d.beginn ASC LIMIT 1;");
-			if (!$db->next_record()) {
-				JSONResponse::error500();
+			$morekurse = $searcher2->getKurseRecords(0, $limit ?? 0, 'rand');
+			if (!empty($morekurse)) {
+				foreach ($morekurse['records'] as $key => $closekurs) {
+					foreach ($kurse['records'] as $exactkurs) {
+						if ($closekurs == $exactkurs) {
+							unset($morekurse['records'][$key]);
+						}
+					}
+				}
+				$closematch = array_splice(array_map([$this, 'get_course_details'], $morekurse['records']), 0, $limit-$kursecount);
 			}
-			$durchfuehrung = $db->Record;
-
-			$courseLevel = '';
-			if (str_contains($level, 'Niveau')) {
-				$courseLevel = $this->get_course_comp_level($kurs['id']);
-			} else {
-				$courseLevel = $this->get_course_language_level($kurs['id']);
-			}
-
-			$result[$kurs['id']] = array(
-				'title' => utf8_encode($kurs['titel']),
-				'provider' => utf8_encode($provider['suchname']),
-				'level' => utf8_encode($courseLevel),
-				'mode' => utf8_encode($this->get_course_mode($kurs['id'])),
-				'nextDate' => $this->get_next_date($durchfuehrung),
-				'workload' => utf8_encode($this->get_workload($durchfuehrung)),
-				'price' => utf8_encode($this->get_price($durchfuehrung)),
-				'location' => utf8_encode($durchfuehrung['ort']),
-			);
 		}
 
 		JSONResponse::send_json_response(array(
@@ -138,8 +126,41 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_INTELLISEARCH_CLASS {
 				'label' => $label,
 				'levelGoal' => $level,
 			),
-			'result' => $result,
+			'exactMatch' => $exactmatch,
+			'closeMatch' => $closematch,
 		));
+	}
+
+	private function get_course_details(array $course): array {
+		$db = new DB_Admin();
+		$db->query("SELECT anbieter.suchname FROM anbieter WHERE id=" . $course['anbieter']);
+		if (!$db->next_record()) {
+			JSONResponse::error500();
+		}
+		$provider = $db->Record;
+
+
+		$db = new DB_Admin();
+		$today = strftime("%Y-%m-%d");
+		$db->query("SELECT d.beginn, d.beginnoptionen, d.ende, d.dauer, d.zeit_von, d.zeit_bis, d.stunden, d.preis, d.ort FROM durchfuehrung d, kurse_durchfuehrung kd, x_kurse WHERE d.id = kd.secondary_id AND kd.primary_id={$course['id']} AND (d.beginn>='$today' OR d.beginn=0) ORDER BY d.beginn ASC LIMIT 1;");
+		if (!$db->next_record()) {
+			JSONResponse::error500();
+		}
+		$durchfuehrung = $db->Record;
+
+		$courseLevels = array_merge($this->get_course_comp_level($course['id']), $this->get_course_language_level($course['id']));
+
+		return array(
+			'id' => $course['id'],
+			'title' => utf8_encode($course['titel']),
+			'provider' => utf8_encode($provider['suchname']),
+			'levels' => $courseLevels,
+			'mode' => utf8_encode($this->get_course_mode($course['id'])),
+			'nextDate' => utf8_encode($this->get_next_date($durchfuehrung)),
+			'workload' => utf8_encode($this->get_workload($durchfuehrung)),
+			'price' => utf8_encode($this->get_price($durchfuehrung)),
+			'location' => utf8_encode($durchfuehrung['ort']),
+		);
 	}
 
 	private function get_workload(array $durchfuehrung): string {
@@ -196,9 +217,9 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_INTELLISEARCH_CLASS {
 	 * Get the competency level associated with a given course. 
 	 *
 	 * @param integer $courseID
-	 * @return string Possible return values are ['A', 'B', 'C', 'D', '']. Empty if no level is associated with a course.
+	 * @return array Possible return values are ['A', 'B', 'C', 'D', '']. Empty if no level is associated with a course.
 	 */
-	function get_course_comp_level(int $courseID): string {
+	function get_course_comp_level(int $courseID): array {
 		$db = new DB_Admin();
 
 		$sql = "SELECT stichwoerter.stichwort as level 
@@ -214,19 +235,20 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_INTELLISEARCH_CLASS {
 
 		$db->query($sql);
 
-		if ($db->next_record()) {
-			return str_replace('Niveau ', '', $db->Record['level']);
+		$result = array();
+		while ($db->next_record()) {
+			$result[] = str_replace('Niveau ', '', utf8_encode($db->Record['level']));
 		}
-		return '';
+		return $result;
 	}
 
 	/**
 	 * Get the language level associated with a given course. 
 	 *
 	 * @param integer $courseID
-	 * @return string Possible return values are ['A1', 'A2', 'B1', 'B2', 'C1', 'C2', '']. Empty if no level is associated with a course.
+	 * @return array Possible return values are ['A1', 'A2', 'B1', 'B2', 'C1', 'C2', '']. Empty if no level is associated with a course.
 	 */
-	function get_course_language_level(int $courseID): string {
+	function get_course_language_level(int $courseID): array {
 		$db = new DB_Admin();
 
 		$sql = "SELECT stichwoerter.stichwort as level 
@@ -244,10 +266,11 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_INTELLISEARCH_CLASS {
 
 		$db->query($sql);
 
-		if ($db->next_record()) {
-			return str_replace('Niveau ', '', $db->Record['level']);
+		$result = array();
+		while ($db->next_record()) {
+			$result[] = str_replace('Niveau ', '', utf8_encode($db->Record['level']));
 		}
-		return '';
+		return $result;
 	}
 
 	/**

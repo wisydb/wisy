@@ -852,13 +852,25 @@ p.current-level {
     text-align: center;
 }
 
-p.level-goal {
+.level-goal {
     overflow: hidden;
     text-overflow: ellipsis;
     padding: .3em 1em;
     border-radius: 3px 3px 0px 0px;
     font-size: 1em;
     text-align: center;
+}
+
+.level-goal-list {
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+}
+
+.level-goal-list .level-goal {
+    flex-grow: 1;
+    text-align: center;
+    border-radius: 3px;
 }
 
 .level-goal-selection label {
@@ -926,9 +938,20 @@ ul.result-list {
     min-width: 150px;
 }
 
+.close-matches {
+    margin-top: 3em;
+}
+
+.close-matches::before {
+    content: "";
+    display: block;
+    margin: 2em auto;
+    width: 83%;
+    border-top: 1px solid var(--main-color);
+}
+
 .course-list {
     padding-inline: 0;
-    margin-top: 1em;
 }
 
 .course-list li {
@@ -936,7 +959,7 @@ ul.result-list {
     display: flex;
     flex-direction: column;
     gap: .5em;
-    padding: 1em 0em;
+    padding: 1.5em 0em;
     position: relative;
 }
 
@@ -996,7 +1019,6 @@ ul.result-list {
     grid-template-columns: repeat(2, 1fr);
     grid-auto-flow: dense;
     gap: .6em;
-    margin-top: .5em;
     padding-inline: 1em;
     /* justify-items: center; */
 }

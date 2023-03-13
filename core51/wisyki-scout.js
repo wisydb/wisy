@@ -42,7 +42,7 @@ const searchResults = [];
 let currentSearchResult;
 let occupationSkillNodes;
 const amountOfSkillSuggestionsShownByDefault = 6;
-const amountOfCoursesToRecommend = 4;
+const amountOfCoursesToRecommend = 5;
 const maxSkills = 5;
 
 const steps = [
@@ -984,98 +984,142 @@ function initResultListStep(_isStale) {
     // Get the cached current/previous search result.
     const preview = searchResults[currentSearchResult];
 
-    // Set the count of search results.
-    const countNode = currentStepNode.querySelector(".result-count");
-    if (preview.count == 1) {
-        countNode.textContent = "1 Kurs";
-    } else {
-        countNode.textContent = preview.count + " Kurse";
-    }
-
-    // Set skill title.
-    const skillTitle = currentStepNode.querySelector(".skill-title");
-    skillTitle.textContent = preview.skill.label;
+    // <p><span class="result-count"></span> gefunden zu:</p>
+    // <p class="skill-title"></p>
+    // <ul class="course-list"></ul>
 
     // Clear the existing list of search results.
-    const resultList = currentStepNode.querySelector("ul.course-list");
-    while (resultList.lastChild) {
-        resultList.removeChild(resultList.lastChild);
+    while (currentStepNode.lastChild) {
+        currentStepNode.removeChild(currentStepNode.lastChild);
     }
+
+    const exactMatchDiv = document.createElement('div');
+    exactMatchDiv.classList.add('exact-matches')
+    // Set the count of search results.
+    const countNode = document.createElement('p');
+    countNode.classList.add('result-count');
+    if (preview.count == 1) {
+        countNode.textContent = "1 passender Kurs gefunden zu:";
+    } else {
+        countNode.textContent = preview.count + " passende Kurse gefunden zu:";
+    }
+    exactMatchDiv.appendChild(countNode);
+
+    // Set skill title.
+    const skillTitle = document.createElement('p');
+    skillTitle.classList.add('skill-title');
+    levelGoal = preview.skill.levelGoal.replace('Niveau ', '');
+    if (levelGoal in compLevels) {
+        levelGoal = compLevels[levelGoal];
+    } else {
+        levelGoal = languageLevels[levelGoal];
+    }
+    skillTitle.textContent = preview.skill.label + ', ' + levelGoal;
+    exactMatchDiv.appendChild(skillTitle);
+    currentStepNode.appendChild(exactMatchDiv);
+
 
     // Perform the search based on the preview and update the DOM with the results.
     search(preview).then((result) => {
-        console.log(result);
-        for (const courseID in result.result) {
-            const course = result.result[courseID];
-            const li = document.createElement("li");
-            li.classList.add("course-preview");
+        const exactMatchList = renderCourseList(result.exactMatch);
+        exactMatchDiv.appendChild(exactMatchList);
 
-            // Add course title.
-            const p = document.createElement("p");
-            p.classList.add("course-title");
-            p.textContent = course.title;
-            li.appendChild(p);
+        console.log(result.closeMatch);
+        console.log(result.closeMatch.length);
+        if (result.closeMatch && Object.keys(result.closeMatch).length > 0) {
+            // Set the count of search results.
+            const closeMatchDiv = document.createElement('div');
+            closeMatchDiv.classList.add('close-matches')
+            const closeMatchTitle = document.createElement('p');
+            closeMatchTitle.textContent = "Weitere ähnliche Kurse:";
+            closeMatchDiv.appendChild(closeMatchTitle);
 
-            // Add course level if available.
-            if (course.level) {
-                const level = document.createElement("p");
-                level.classList.add("level-goal");
-                level.classList.add("level-" + course.level);
-                if (result.skill.levelGoal.includes("Niveau")) {
-                    level.textContent = compLevels[course.level];
-                } else {
-                    level.textContent = languageLevels[course.level];
-                }
-                li.appendChild(level);
-            }
-
-            // Add course details.
-            // const courseDetailsNode = document.createElement('details');
-            // const summaryNode = document.createElement('summary');
-            // summaryNode.textContent = 'Kursdetails';
-            // courseDetailsNode.appendChild(summaryNode);
-            const courseDetails = document.createElement("div");
-            courseDetails.classList.add("course-details");
-
-            const providerNode = document.createElement("p");
-            providerNode.classList.add("provider-title");
-            providerNode.textContent = course.provider;
-            courseDetails.appendChild(providerNode);
-
-            const nextDateNode = document.createElement("p");
-            nextDateNode.classList.add("next-date");
-            nextDateNode.insertAdjacentHTML("beforeend", course.nextDate);
-            courseDetails.appendChild(nextDateNode);
-
-            const workloadNode = document.createElement("p");
-            workloadNode.classList.add("workload");
-            workloadNode.insertAdjacentHTML("beforeend", course.workload);
-            courseDetails.appendChild(workloadNode);
-
-            const courseModeNode = document.createElement("p");
-            courseModeNode.classList.add("course-mode");
-            courseModeNode.textContent = course.mode;
-            courseDetails.appendChild(courseModeNode);
-
-            const priceNode = document.createElement("p");
-            priceNode.classList.add("price");
-            priceNode.insertAdjacentHTML("beforeend", course.price);
-            courseDetails.appendChild(priceNode);
-
-            const locationNode = document.createElement("p");
-            locationNode.classList.add("location");
-            locationNode.textContent = course.location;
-            courseDetails.appendChild(locationNode);
-
-            // courseDetailsNode.appendChild(courseDetails);
-            li.appendChild(courseDetails);
-
-            // Add course actions.
-            li.insertAdjacentHTML("beforeend", getCourseActions(courseID));
-
-            resultList.appendChild(li);
+            const closeMatchList = renderCourseList(result.closeMatch);
+            closeMatchDiv.appendChild(closeMatchList);
+            currentStepNode.appendChild(closeMatchDiv);
         }
     });
+}
+
+function renderCourseList(courses) {
+    const resultList = document.createElement('ul');
+    resultList.classList.add('course-list');
+    for (const courseID in courses) {
+        const course = courses[courseID];
+        const li = document.createElement("li");
+        li.classList.add("course-preview");
+
+        // Add course title.
+        const p = document.createElement("p");
+        p.classList.add("course-title");
+        p.textContent = course.title;
+        li.appendChild(p);
+
+        // Add course level if available.
+        if (course.levels) {
+            const levelsNode = document.createElement("p")
+            levelsNode.classList.add("level-goal-list");
+            for (const level of course.levels) {
+                const levelNode = document.createElement("span");
+                levelNode.classList.add("level-goal");
+                levelNode.classList.add("level-" + level);
+                if (level in compLevels) {
+                    levelNode.textContent = compLevels[level];
+                } else {
+                    levelNode.textContent = languageLevels[level];
+                }
+                levelsNode.appendChild(levelNode);
+            }
+            li.appendChild(levelsNode);
+        }
+
+        // Add course details.
+        // const courseDetailsNode = document.createElement('details');
+        // const summaryNode = document.createElement('summary');
+        // summaryNode.textContent = 'Kursdetails';
+        // courseDetailsNode.appendChild(summaryNode);
+        const courseDetails = document.createElement("div");
+        courseDetails.classList.add("course-details");
+
+        const providerNode = document.createElement("p");
+        providerNode.classList.add("provider-title");
+        providerNode.textContent = course.provider;
+        courseDetails.appendChild(providerNode);
+
+        const nextDateNode = document.createElement("p");
+        nextDateNode.classList.add("next-date");
+        nextDateNode.insertAdjacentHTML("beforeend", course.nextDate);
+        courseDetails.appendChild(nextDateNode);
+
+        const workloadNode = document.createElement("p");
+        workloadNode.classList.add("workload");
+        workloadNode.insertAdjacentHTML("beforeend", course.workload);
+        courseDetails.appendChild(workloadNode);
+
+        const courseModeNode = document.createElement("p");
+        courseModeNode.classList.add("course-mode");
+        courseModeNode.textContent = course.mode;
+        courseDetails.appendChild(courseModeNode);
+
+        const priceNode = document.createElement("p");
+        priceNode.classList.add("price");
+        priceNode.insertAdjacentHTML("beforeend", course.price);
+        courseDetails.appendChild(priceNode);
+
+        const locationNode = document.createElement("p");
+        locationNode.classList.add("location");
+        locationNode.textContent = course.location;
+        courseDetails.appendChild(locationNode);
+
+        // courseDetailsNode.appendChild(courseDetails);
+        li.appendChild(courseDetails);
+
+        // Add course actions.
+        li.insertAdjacentHTML("beforeend", getCourseActions(course.id));
+
+        resultList.appendChild(li);
+    }
+    return resultList;
 }
 
 /**
