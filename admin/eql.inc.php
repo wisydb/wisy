@@ -67,7 +67,10 @@ if( !is_object($site) )
 }
 
 require_once("{$site->sitePath}{$site->adminDir}/table_def.inc.php");
-require_once("{$site->sitePath}{$site->adminDir}/config/db.inc.php");
+if (isset($GLOBALS['WisyKi']))
+	require_once('WisyKi/config/db.inc.php');
+else
+	require_once('config/db.inc.php');
 
 //
 // Configuration
@@ -157,7 +160,7 @@ function g_eql_normalize_func_name($funcName, $pluralS = 1)
 function g_eql_normalize_words($words_, $unique = 0, $keepNumbers = 0, $keepWildcards = 0)
 {
     // convert void characters to spaces
-    $tr = 					"«»@^_=&´`.:,;/!'~+-#|<>()[]\{}\$%§\"\\\n\r\t";
+    $tr = 					"ï¿½ï¿½@^_=&ï¿½`.:,;/!'~+-#|<>()[]\{}\$%ï¿½\"\\\n\r\t";
     if(!$keepNumbers)$tr  .="0123456789";
     if(!$keepWildcards)$tr.="?*";
     $words = strtr( strval($words_),	$tr, "                                                                ");
@@ -210,17 +213,17 @@ function g_eql_normalize_natsort($str)
     $str = strtolower($str);
     
     // convert accented characters
-    $str = strtr($str,	'áàâåãæçéèêëíìîïñóòôõøúùûýÿ',
+    $str = strtr($str,	'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½',
         'aaaaaaceeeeiiiinooooouuuyy');
     
     // convert german umlaute
-    $str = strtr($str,	array('ä'=>'ae', 'ö'=>'oe', 'ü'=>'ue', 'ß'=>'ss'));
+    $str = strtr($str,	array('ï¿½'=>'ae', 'ï¿½'=>'oe', 'ï¿½'=>'ue', 'ï¿½'=>'ss'));
     
     // convert numbers to a 'natural' sorting order
     $str = preg_replace_callback('/[0-9]+/', 'g_eql_normalize_natsort_callback', $str); // make sure abc3 -> abc4 -> abc321 and not: abc3 -> abc321 -> abc4
     
     // strip special characters
-    $str = strtr($str,	'\'\\!°"§$%&/(){}[]=?+*~#,;.:-_<>|@€©®£¥  ',
+    $str = strtr($str,	'\'\\!ï¿½"ï¿½$%&/(){}[]=?+*~#,;.:-_<>|@ï¿½ï¿½ï¿½ï¿½ï¿½  ',
         '                                        ');
     
     // remove spaces

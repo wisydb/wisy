@@ -10,6 +10,7 @@ if( isset( $_COOKIE['oldeditor'] ) && $_COOKIE['oldeditor'] )
 else
 // /deprecated
 {
+    require_once("WisyKi/wisykistart.php");
     require_once('functions.inc.php');
     $ob = new EDIT_RENDERER_CLASS;
     $ob->handle_request();
