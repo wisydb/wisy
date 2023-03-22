@@ -320,7 +320,7 @@ if(!$use_neweditor) {
 $kurse->add_row(TABLE_SATTR|TABLE_LIST|TABLE_TRACKDEFAULTS|TABLE_MUST,
 																'anbieter',			'Anbieter', 0, $anbieter);
 $kurse->add_row(TABLE_TEXTAREA|TABLE_WIKI|TABLE_NEWSECTION,		'beschreibung',		'Beschreibung', 0, 0, 'Kursportr�t');
-$kurse->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,		'lernziele',		'Lernziele ', 0, 0, 'Lernziele', array('layout.after'=>'<br/>'));
+// $kurse->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,		'lernziele',		'Lernziele ', 0, 0, 'Lernziele', array('layout.after'=>'<br/>'));
 $kurse->add_row(TABLE_MATTR_BR|TABLE_SATTR|TABLE_TRACKDEFAULTS,				'thema',			'Thema', 0, $themen, '');
 
 // Dynammically get the respective stichwort ids for the competency levels from the database.

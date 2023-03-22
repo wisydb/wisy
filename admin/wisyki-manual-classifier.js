@@ -1,7 +1,7 @@
 window.onload = init;
 
-const selectedSkills = [];
-
+const selectedSkills = {};
+let skillInput;
 
 function init() {
     const autocompleteInput =
@@ -10,7 +10,7 @@ function init() {
     const autocompleteOutput = document.querySelector(
         ".autocomplete-box output"
     );
-    const skillsNode = document.querySelector(".selectable-skills");
+    skillInput = document.querySelector('input[name="skills"]');
     
     autocompleteInput.addEventListener("keyup", async () => {
         const requestID = ++currentRequestID;
@@ -45,30 +45,43 @@ function init() {
         hide(autocompleteOutput)
     );
 
-    updateSkillCloud();
+    initSkillCloud().then(() => updateSkillCloud());
 }
 
 let skillCloudNode;
 let skillCloudSearchtermNode;
 let skillSuggestions;
+let titleSuggestions;
+let themaSuggestions;
+const abschluesse = [];
+const sachstichworte = [];
 
-async function updateSkillCloud() {
-    if (!skillCloudNode) {
-        skillCloudNode = document.querySelector('.skill-cloud');
-    }
-    if (!skillCloudSearchtermNode) {
-        skillCloudSearchtermNode = document.querySelector('.skill-cloud-searchterm');
-    }
+async function initSkillCloud() {
+    skillCloudNode = document.querySelector('.skill-cloud');
+    skillCloudSearchtermNode = document.querySelector('.skill-cloud-searchterm');
 
-    if (!skillSuggestions) {
-        skillSuggestions = await suggestSkills(document.querySelector('#course-title').textContent,  document.querySelector('#course-description').textContent);
-        if (!skillSuggestions) {
+    const abschlussTagNodes = skillCloudNode.querySelectorAll('.tag_abschluss');
+    const sachstichwortTagNodes = skillCloudNode.querySelectorAll('.tag_sachstichwort');
+    abschlussTagNodes.forEach((node) => abschluesse.push(node.textContent));
+    sachstichwortTagNodes.forEach((node) => {
+        // addSelectedSkill(node.textContent, node.textContent);
+        sachstichworte.push(node.textContent)
+    });
+
+    if (!skillSuggestions) { 
+        skillSuggestions = await suggestSkills(document.querySelector('#course-title').textContent,  document.querySelector('#course-description').textContent, document.querySelector('#course-thema').textContent, sachstichworte, abschluesse); 
+        if (!skillSuggestions) { 
             skillSuggestions = {
-                'searchterms': 'error loading skill suggestions',
+                'searchterms': '',
                 'result': null,
             }
+        } else {
+            skillSuggestions.searchterms = skillSuggestions.searchterms.keywords.join(', ');
         }
     }
+}
+
+async function updateSkillCloud() {
 
     let searchterms = skillSuggestions.searchterms;
 
@@ -78,17 +91,23 @@ async function updateSkillCloud() {
 
     const skillsShown = [];
 
+    for (const sachstichwort of sachstichworte) {
+        const skillHtml = `<li><button class='btn selected-skill'>${sachstichwort}</button></li>`;
+        skillCloudNode.insertAdjacentHTML('afterbegin', skillHtml);
+        skillsShown.push(sachstichwort);
+    }
+
     for (const skillUri in selectedSkills) {
         const skill = selectedSkills[skillUri];
         
-        const skillHtml = `<li><button skill-uri="${skillUri}" class='btn selected-skill'>${skill['label']}</button></li>`;
+        const skillHtml = `<li><button skill-uri="${skillUri}" class='btn selected-skill'>${skill.label}</button></li>`;
         skillCloudNode.insertAdjacentHTML('afterbegin', skillHtml);
-        skillsShown.push(skill['label']);
+        skillsShown.push(skill.label);
 
         if (!skill.suggestions) {
             const response = await autocomplete(skill.label);
-            if (response.skill) {
-                skill.suggestions = response.skill;
+            if (response && response) {
+                selectedSkills[skillUri].suggestions = response;
             }
         }
         searchterms += ", " + skill.label
@@ -107,14 +126,14 @@ async function updateSkillCloud() {
         }
     }
 
-    for (const skillUri in skillSuggestions.result) {
-        const skill = skillSuggestions.result[skillUri];
-        if (skillsShown.includes(skill['label'])) {
+    for (const skillUri in skillSuggestions.results) {
+        const skill = skillSuggestions.results[skillUri];
+        if (skillsShown.includes(skill['title'])) {
             continue;
         }
-        const skillHtml = `<li><button skill-uri="${skillUri}" class='btn'>${skill['label']}</button></li>`;
+        const skillHtml = `<li><button skill-uri="${skillUri}" class='btn'>${skill['title']}</button></li>`;
         skillCloudNode.insertAdjacentHTML('beforeend', skillHtml);
-        skillsShown.push(skill['label']);
+        skillsShown.push(skill['title']);
     }
     
     skillCloudSearchtermNode.textContent = searchterms;
@@ -130,17 +149,26 @@ async function updateSkillCloud() {
             updateSkillCloud();
         })
     );
-
-    console.log(skillsShown);
+    console.log(selectedSkills);
 }
 
-async function suggestSkills(title, text) {
+async function suggestSkills(title, text, thema, abschluesse, sachstichworte) {
+    const wisytags = [...abschluesse, ...sachstichworte];
+    const keywords = [title, thema, ...wisytags];
+    text += ' ' + title + ' ' + wisytags.join(', ') + wisytags.join(', ') + ' ' + thema;
+
     const data = {
-        title: title,
-        text: text
+        searchterms: {
+            keywords: keywords
+        },
+        doc: text,
+        extract_keywords: wisytags.length == 0,
+        exclude_irrelevant: true
     };
 
-    const url = "../esco/suggestSkills";
+    console.log(data);
+
+    const url = "https://wisyki.eu.pythonanywhere.com/predictESCO";
     const response = await fetch(url, {
         method: 'POST',
         headers: {
@@ -168,16 +196,16 @@ function clearAutocompleteInput(input, output) {
 function addSelectedSkill(uri, label) {
     const skill = {
         label: label,
-        currentLevel: null,
-        levelGoal: null,
-        uri: uri,
+        suggestions: null,
     };
 
     selectedSkills[uri] = skill;
+    skillInput.value = JSON.stringify(selectedSkills);
 }
 
 function removeSelectedSkill(uri) {
     delete selectedSkills[uri];
+    skillInput.value = JSON.stringify(selectedSkills);
 }
 
 let currentRequestID = 0;
@@ -218,11 +246,12 @@ async function autocomplete_input(input, requestID) {
         console.error("HTTP-Error: " + response.status);
     }
 }
+
 async function autocomplete(searchterm) {
     const params = {
         term: searchterm,
-        limit: 5,
-        type: 'skill',
+        limit: 3,
+        scheme: 'member-skills,extended-skills-hierarchy',
         onlyrelevant: false,
     };
 

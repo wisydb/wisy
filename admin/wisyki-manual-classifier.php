@@ -8,15 +8,52 @@ $escoAPI = new WISYKI_ESCO_CLASS;
 function get_course_without_level($levelidlist) {
     $db = new DB_Admin();
 
-    $sql = "SELECT kurse.id, kurse.titel, kurse.beschreibung FROM kurse, kurse_stichwort WHERE kurse_stichwort.primary_id = kurse.id AND kurse_stichwort.attr_id NOT IN ($levelidlist) ORDER BY RAND() LIMIT 1";
+    $sql = "SELECT kurse.id, kurse.titel, kurse.beschreibung, themen.thema
+    FROM kurse
+    LEFT JOIN themen
+        ON themen.id = kurse.thema
+    WHERE kurse.id NOT IN (
+        SELECT kurse_stichwort.primary_id 
+        FROM kurse_stichwort 
+        WHERE kurse_stichwort.attr_id IN ($levelidlist)
+    )
+    ORDER BY RAND()
+    LIMIT 1";
 
     $db->query($sql);
 
     if ($db->next_record()) { 
         $course = $db->Record;
+        $course['tags'] = get_course_tags($course['id']);
     }
     
     return $course;
+}
+
+function get_course_tags($courseid) {
+    $db = new DB_Admin();
+
+    // SQL query to get course tags of type Sachstichwort and Abschluss.
+    $sql = "SELECT stichwoerter.stichwort, stichwoerter.eigenschaften 
+        FROM stichwoerter
+        LEFT JOIN kurse_stichwort
+            ON kurse_stichwort.attr_id = stichwoerter.id
+        WHERE kurse_stichwort.primary_id = $courseid
+        AND stichwoerter.eigenschaften IN (0,1);";
+
+    $db->query($sql);
+
+    $sachstichworte = array();
+    $abschluesse = array();
+    while ($db->next_record()) { 
+        if ($db->Record['eigenschaften'] == 0) {
+            $sachstichworte[] = utf8_encode($db->Record['stichwort']);
+        } else {
+            $abschluesse[] = utf8_encode($db->Record['stichwort']);
+        }
+    }
+    
+    return array("Sachstichwort" => $sachstichworte, "Abschluss" => $abschluesse);
 }
 
 function count_courses_with_level($levelidlist) {
@@ -51,12 +88,17 @@ function get_course($courseid) {
     $db = new DB_Admin();
     $course = array();
 
-    $sql = "SELECT kurse.id, kurse.titel, kurse.beschreibung FROM kurse WHERE kurse.id = $courseid";
+    $sql = "SELECT kurse.id, kurse.titel, kurse.beschreibung, themen.thema 
+        FROM kurse
+        LEFT JOIN themen
+            ON themen.id = kurse.thema 
+        WHERE kurse.id = $courseid";
 
     $db->query($sql);
 
     if ($db->next_record()) { 
         $course = $db->Record;
+        $course['tags'] = get_course_tags($course['id']);
     }
     
     return $course;
@@ -97,7 +139,6 @@ function pagestart($title) {
                 <meta http-equiv='X-UA-Compatible' content='IE=edge'>
                 <meta name='viewport' content='width=device-width, initial-scale=1.0'>
                 <link rel='stylesheet' href='wisyki-esco-test.css'>
-                <link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200' />
                 <script src='./wisyki-manual-classifier.js'></script>
                 <title>$title</title>
             </head>
@@ -154,6 +195,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Insert level as a stichwort.
         $sql = "INSERT INTO kurse_stichwort (primary_id, attr_id) VALUES ($courseid, $levelid)"; 
         $db->query($sql);
+
+        $skills = $_POST['skills'];
 
         $labeled_courses = count_courses_with_level($levelidlist);
         $all_courses = count_all_courses();
@@ -222,9 +265,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $prediction = $pythonAPI->predict_comp_level(utf8_encode($course['titel']), utf8_encode($course['beschreibung']));
         $course['level_suggestion'] = $prediction['level'];
 
-        // $skillSuggestions = $escoAPI->suggestSkills(utf8_encode($course['titel']), utf8_encode($course['beschreibung']));
-        // $skillSuggestions['result'] = array_merge($skillSuggestions['result'], $escoAPI->search_api('englisch', 'skill', null, 5));
-
         pagestart('Manuelle Kursklassifikation');
 
         ?>
@@ -234,6 +274,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <section class="course-info">
                 <label for="course-title">Titel</label>
                 <p id="course-title"><?php echo utf8_encode($course['titel']) ?></p>
+                <label for="course-thema">Thema</label>
+                <p id="course-thema"><?php echo utf8_encode($course['thema']) ?></p>
                 <label for="course-id">ID</label>
                 <p id="course-id"><?php echo $course['id'] ?></p>
                 <label for="course-description">Beschreibung</label>
@@ -258,6 +300,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                     ?>
                     </select>
+                    <input type="hidden" name="skills" value="">
                 </section>
                 <section class="form-action">
                     <a href="<?php echo $pageuri ?>" class="btn btn-secondary">Überspringen</a>
@@ -285,7 +328,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     //             echo("<li><a href='$url' target='_blank' rel='noopener noreferrer' class='btn'>" . $suggestion['label'] . "</a></li>"); 
                     //         }
                     //     } 
-                    // } 
+                    // }
+                    if (!empty($course['tags'])) {
+                        foreach ($course['tags']['Sachstichwort'] as $sachstichwort) { 
+                            echo('<li><button class="btn tag_sachstichwort">' . $sachstichwort . '</button></li>');
+                        }  
+                        foreach ($course['tags']['Abschluss'] as $abschluss) { 
+                            echo('<li><button class="btn tag_abschluss">' . $abschluss . '</button></li>');
+                        } 
+                    } 
                     ?> 
                 </ul> 
                 <details>
@@ -294,9 +345,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </details>
                 <div class="autocomplete-box">
                     <div class="autocomplete-box__input">
-                        <span class="material-symbols-rounded">search</span>
+					    <i class="icon search-icon"></i>
                         <input type="text" placeholder="Kompetenzen finden" name="esco-skill-select" id="esco-skill-select" class="esco-autocomplete" esco-scheme="member-skills,skills-hierarchy" onlyrelevant=False>
-                        <button class="clear-input material-symbols-rounded">close</button>
+                        <button class="clear-input" title="Clear input"><i class="icon close-icon"></i></button>
                     </div>
                     <output name="esco-skill-select" for="esco-skill-select"></output>
                 </div>

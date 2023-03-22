@@ -111,6 +111,9 @@ class WISYKI_ESCO_CLASS {
         // Store the broaderHierarchyConcept of the found skills in the concepts array.
         foreach ($results as $result) {
             $broaderConcept = $result["broaderHierarchyConcept"][0];
+            if (!isset($broaderConcept)) {
+                continue;
+            }
 
             if (!array_key_exists($broaderConcept, $concepts)) {
                 $skill = $this->getSkillDetails($broaderConcept);
@@ -135,20 +138,20 @@ class WISYKI_ESCO_CLASS {
         }
 
         // Sort the concepts by the number of times they appear in the results.
-        usort($concepts, function ($a, $b) {
-            $a_val = (int) $a['count'];
-            $b_val = (int) $b['count'];
+        // usort($concepts, function ($a, $b) {
+        //     $a_val = (int) $a['count'];
+        //     $b_val = (int) $b['count'];
 
-            if ($a_val > $b_val) {
-                return -1;
-            }
+        //     if ($a_val > $b_val) {
+        //         return -1;
+        //     }
 
-            if ($a_val < $b_val) {
-                return 1;
-            }
+        //     if ($a_val < $b_val) {
+        //         return 1;
+        //     }
 
-            return 0;
-        });
+        //     return 0;
+        // });
 
         return $concepts;
     }
@@ -191,12 +194,13 @@ class WISYKI_ESCO_CLASS {
      * Calls ESCO API to get suggestions for ESCO vocabulary based on the given term.
      *
      * @param string $term
-     * @param string $type
-     * @param string $scheme
+     * @param string|null $type
+     * @param string|null $scheme
      * @param int $limit
+     * @param array|null $filterconcepts If set, only skills or occupations that are part of the given concepts will be searched.
      * @return array [{"url1": {"label": "title1"}, {"url2": {"label": "title2"},]
      */
-    function search_api($term, $type = null, $scheme = null, $limit = 5) {
+    function search_api($term, $type = null, $scheme = null, $limit = 0, $filterconcepts = null) {
         $escoSuggestions =  array();
         $available_types = ['occupation', 'skill', 'concept'];
         $available_esco_schemes = [
@@ -213,7 +217,7 @@ class WISYKI_ESCO_CLASS {
             'language' => 'de',
             'full' => 'false',
             'alt' => 'true',
-            'limit' => $limit,
+            'limit' => $limit > 0 ? $limit: null,
         );
 
         if (isset($type) && !empty($type)) {
@@ -264,8 +268,28 @@ class WISYKI_ESCO_CLASS {
                 }
             }
 
+            if (isset($filterconcepts) && !empty($filterconcepts)) {
+                if ($result['className'] == 'Concept' || empty($result["broaderHierarchyConcept"])) {
+                    continue;
+                }
+
+                $ispartofconcept = false;
+                foreach( $filterconcepts as $filterconcept) {
+                    if (in_array($filterconcept, $result["broaderHierarchyConcept"])) {
+                        $ispartofconcept = true;
+                        break;
+                    }
+                }
+
+                if (!$ispartofconcept) {
+                    continue;
+                }
+            }
+
             $escoSuggestions[$result["uri"]] = [
-                "label" => $result["title"]
+                "label" => $result["title"],
+                // "isInScheme"=> $dataArray['isInScheme'],
+                // "broaderHierarchyConcept" => $result["broaderHierarchyConcept"]
             ];
         }
 
@@ -423,28 +447,28 @@ class WISYKI_ESCO_CLASS {
      * @param array|null $scheme The ESCO Scheme that is to be searched. By default every scheme is searched.
      * @param int|null $limit The max number of results.
      * @param boolean|null $onlyrelevant Whether only relevant results should be returned. A relevant result is one that has an equivalent tag with the same name in the WISY database.
+     * @param array|null $filterconcepts If set, only skills or occupations that are part of the given concepts will be searched.
      * @return array A two dimensional array of ESCO results ordered by category, which can be either the type or scheme of the result. [['category1] => ['skill1', 'skill2'], ['category2] => ['skill3']]
      */
-    function autocomplete($term, $type = null, $scheme = null, $limit = null, $onlyrelevant = true): array {
+    function autocomplete($term, $type = null, $schemes = null, $limit = null, $onlyrelevant = true, $filterconcepts = null): array {
         $results = [];
 
-        if (isset($scheme) && !empty($scheme)) {
-            $minlimit = round($limit / count($scheme), 0, PHP_ROUND_HALF_UP);
+        if (isset($schemes) && !empty($schemes)) {
+            $minlimit = round($limit / count($schemes), 0, PHP_ROUND_HALF_UP);
             $counter = 0;
-            foreach (array_reverse($scheme) as $s) {
+            foreach (array_reverse($schemes) as $scheme) {
                 $counter++;
-                $l = $counter * $minlimit - count($results);
-                $s = trim($s);
-                if ($s == 'extended-skills-hierarchy') {
-                    $results = array_merge($results, $this->search_skills_hierarchy($term, $l));
-                } else if ($s == 'sachstichwort') {
-                    $sachstichworte = $this->search_wisy($term, $type, $s, $l);
+                $schemelimit = $counter * $minlimit - count($results);
+                if ($scheme == 'extended-skills-hierarchy') {
+                    $results = array_merge($results, $this->search_skills_hierarchy($term, $schemelimit));
+                } else if ($scheme == 'sachstichwort') {
+                    $sachstichworte = $this->search_wisy($term, $type, $scheme, $schemelimit);
                 } else {
-                    $results = array_merge($results, $this->search_api($term, $type, $s, $l));
+                    $results = array_merge($results, $this->search_api($term, $type, $scheme, $schemelimit, $filterconcepts));
                 }
             }
         } else {
-            $results = array_merge($results, $this->search_api($term, $type, $scheme, $limit));
+            $results = array_merge($results, $this->search_api($term, $type, $schemes, $limit, $filterconcepts));
         }
 
         // If there are esco skills and stichworte with the same label, skip the stichwort.
@@ -489,18 +513,16 @@ class WISYKI_ESCO_CLASS {
      */
     function suggestSkills(string $title = null, $text): array {
         // Extract keywords from the title and description.
-        $keywords = $this->pythonAPI->extract_keywords($title, $text);
+        $keywords = array($title);
+        // $keywords = array_merge($keywords, $this->pythonAPI->extract_keywords($title, $text));
 
         // Build search terms string from extracted keywords and title.
         $searchterms = join(', ', $keywords);
-        if (empty($searchterms)) {
-            $searchterms = $title;
-        }
 
         // Search ESCO API for skills that match the search terms.
         $skillSuggestions = array();
         foreach ($keywords as $keyword) {
-            $skillSuggestions = array_merge($skillSuggestions, $this->search_api($keyword, null, 'member-skills, skills-hierarchy', 3));
+            $skillSuggestions = array_merge($skillSuggestions, $this->search_api($keyword, null, 'member-skills,extended-skills-hierarchy', 3));
         }
         // shuffle($skillSuggestions);
 
@@ -570,6 +592,7 @@ class WISYKI_ESCO_CLASS {
      * @var string $_GET['scheme'] Optional. Comma-separated list of concept schemes to restrict the search to.
      * @var int    $_GET['limit']  Optional. The maximum number of results to return.
      * @var bool   $_GET['onlyrelevant'] Optional. Whether to only include concepts relevant to the wisy database.
+     * @var string   $_GET['onlyrelevant'] Optional. Comma-separated list of concepts to restrict the search to.
      * 
      * @return void
      */
@@ -590,6 +613,7 @@ class WISYKI_ESCO_CLASS {
             if (!is_array($scheme)) {
                 $scheme = array($scheme);
             }
+            $scheme = array_map('trim', $scheme);
         }
 
         $limit = null;
@@ -602,7 +626,16 @@ class WISYKI_ESCO_CLASS {
             $onlyrelevant = strtolower($_GET['onlyrelevant']) === 'true' ? true : (strtolower($_GET['onlyrelevant']) === 'false' ? false : JSONResponse::error401($_GET['onlyrelevant'] . ' is not a valid value for onlyrelevant.'));
         }
 
-        JSONResponse::send_json_response($this->autocomplete($term, $type, $scheme, $limit, $onlyrelevant));
+        $filterconcepts = null;
+        if (isset($_GET['filterconcepts']) && !empty($_GET['filterconcepts'])) {
+            $filterconcepts = explode(',', $_GET['filterconcepts']);
+            if (!is_array($filterconcepts)) {
+                $filterconcepts = array($filterconcepts);
+            }
+            $filterconcepts = array_map('trim', $filterconcepts);
+        }
+
+        JSONResponse::send_json_response($this->autocomplete($term, $type, $scheme, $limit, $onlyrelevant, $filterconcepts));
     }
 
     /**

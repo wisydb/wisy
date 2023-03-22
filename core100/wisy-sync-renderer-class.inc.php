@@ -104,10 +104,10 @@ class WISY_SYNC_STATETABLE_CLASS
 			return false;
 		}
 		$updatestick = $this->readState('updatestick', '0000-00-00 00:00:00');
-		if ($updatestick > strftime("%Y-%m-%d %H:%M:00", time() - 3 * 60) /*wait 3 minutes*/) {
-			$this->lock(false);
-			return false;
-		}
+		// if ($updatestick > strftime("%Y-%m-%d %H:%M:00", time() - 3 * 60) /*wait 3 minutes*/) {
+		// 	$this->lock(false);
+		// 	return false;
+		// }
 		$this->updatestick_datetime = strftime("%Y-%m-%d %H:%M:00");
 		$this->writeState('updatestick', $this->updatestick_datetime);
 
@@ -1650,7 +1650,7 @@ class WISY_SYNC_RENDERER_CLASS
 		if ($mode <> 3) {
 			$uri = $keyword['uri'];
 			$lab = Utf8_decode($keyword['preferredLabel']['de']);
-			if (!isset($lab)) {
+			if (!isset($lab) || empty($lab)) {
 				$lab = Utf8_decode($keyword['title']);
 			}
 		} else {
@@ -1658,7 +1658,8 @@ class WISY_SYNC_RENDERER_CLASS
 			$lab = Utf8_decode($keyword);
 		}
 
-		if (!isset($lab)) {
+		if (!isset($lab) || empty($lab)) {
+			$this->log("Label of keyword missing.");
 			return $newId;
 		}
 
@@ -1698,16 +1699,19 @@ class WISY_SYNC_RENDERER_CLASS
 			$sqlESCO = "INSERT INTO stichwoerter (date_created, date_modified, user_created, user_modified, user_grp, user_access, stichwort, stichwort_sorted, eigenschaften, zusatzinfo, notizen, scope_note, algorithmus ) 
 		 VALUES ('$creationDate', '$creationDate','$userCreated', '$userCreated', '$userGrp', '$userAccess', '$lab','$sorted', '$eigenschaften', '$zusatzinfo', '$notizen', '$scope_note', '$algorithmus')";
 			$db->query($sqlESCO);
-			$sqlESCO = "SELECT LAST_INSERT_ID() AS last_id";
+			$sqlESCO = "SELECT stichwoerter.id FROM stichwoerter WHERE stichwoerter.stichwort = '$lab' LIMIT 1";
 			$db->query($sqlESCO);
 			if ($db->next_record()) {
-				$lastId = $db->fs('last_id');
-				$newId = intval($lastId);
+				$newId = $db->Record['id'];
+				$this->log("Stichwort created with id: " . $db->Record['id']);
 				$count++;
-			} else
+			} else {
 				$newId = 0;
-		} elseif ($existingId <> null)
+			}
+		} elseif ($existingId <> null) {
+			$this->log("Stichwort " . $keyword['title'] . " with id " . $existingId . " already exists.");
 			$newId  = intval($existingId);
+		}
 		//Insert Synonym
 		if ($mode == 1 or $mode == 2) {
 			$actualid = $newId;
@@ -1892,6 +1896,307 @@ class WISY_SYNC_RENDERER_CLASS
 		//	$db5->close();
 		//	$db6->close();
 		curl_close($this->curl_session);
+	}
+
+	function get_level_ids($levels) {
+		$db = new DB_Admin(); 
+		foreach ($levels as $key => $value) {
+			$sql = 'SELECT id FROM stichwoerter WHERE stichwoerter.stichwort = "Niveau ' . $key . '"'; 
+			$db->query($sql); 
+			if ($db->next_record()) {
+				$levels[$key]['id'] = $db->Record['id']; 
+			} 
+		} 
+	
+		return $levels; 
+	}
+
+	function get_course_tags($courseid) {
+		$db = new DB_Admin();
+	
+		// SQL query to get course tags of type Sachstichwort and Abschluss.
+		$sql = "SELECT stichwoerter.stichwort, stichwoerter.eigenschaften 
+			FROM stichwoerter
+			LEFT JOIN kurse_stichwort
+				ON kurse_stichwort.attr_id = stichwoerter.id
+			WHERE kurse_stichwort.primary_id = $courseid
+			AND stichwoerter.eigenschaften IN (0,1);";
+	
+		$db->query($sql);
+	
+		$sachstichworte = array();
+		$abschluesse = array();
+		while ($db->next_record()) { 
+			if ($db->Record['eigenschaften'] == 0) {
+				$sachstichworte[] = utf8_encode($db->Record['stichwort']);
+			} else {
+				$abschluesse[] = utf8_encode($db->Record['stichwort']);
+			}
+		}
+		
+		return array("Sachstichwort" => $sachstichworte, "Abschluss" => $abschluesse);
+	}
+
+	function prepareEditEnv($deepupdate) {
+		require_lang('lang/edit');
+
+		//Check for UserId
+		if (!isset($_REQUEST['userid'])) {
+			$this->log("userid ist zwingend erforderlich.");
+			exit();
+		} else {
+			$_SESSION['g_session_userid'] = $_REQUEST['userid'];
+		}
+
+		$this->par = new EDIT_DATA_CLASS(
+			null,
+			"stichwoerter",
+			-1
+		);
+		$this->par->load_blank();
+
+		global $geocode_errors_file;
+
+		$updateLatlng = $deepupdate;
+		if ($updateLatlng) {
+			$geo_protocol_file = $geocode_errors_file;
+			$live_geocode_max = 5500; // mapquest: free account = 15.000 / month
+			$is_geocode_day = (intval(date('d')) === 5 || intval(date('d')) === 15 || intval(date('d')) === 25); // update on 5th, 15th and 25th day of the month
+			$GLOBALS['geocode_called'] = 0;
+			$geocoding_total_s = 0.0;
+			$geocoded_addresses = 0;
+			$geocoded_addresses_ext = 0;
+			$non_geocoded_addresses_limit = 0;
+			$geocoded_addresses_live = array();
+			$nongeocoded_addresses = array();
+			$geocoder = &createWisyObject('WISY_OPENSTREETMAP_CLASS', $this->framework);
+		}
+
+		// find out the date to start with syncing
+		if ($deepupdate)
+			$lastsync = '0000-00-00 00:00:00';
+		else
+			$lastsync = $this->statetable->readState('lastsync.kurse.global', '0000-00-00 00:00:00');
+	}
+
+	function classifyLearningOutcome($deepupdate)
+	{
+		$this->prepareEditEnv($deepupdate);
+		require_once($_SERVER['DOCUMENT_ROOT'] . '/core51/wisyki-python-class.inc.php');
+		$pythonAPI = new WISYKI_PYTHON_CLASS;
+
+		// The min probability score required, for the ai suggestions to be accepted.
+		$minrequiredscore = .7; // Set default.
+		if (!empty($_REQUEST['minrequiredscore']) && intval($_REQUEST['minrequiredscore']) >= 0 && intval($_REQUEST['minrequiredscore']) <= 1) {
+			$minrequiredscore = intval($_REQUEST['minrequiredscore']);
+		}
+
+		// The amount of courses to be classified. 30 Courses take about 1 minute to compute.
+		$batchsize = 1; // Set default.
+		if (!empty($_REQUEST['batchsize']) && intval($_REQUEST['batchsize']) > 0) {
+			$batchsize = intval($_REQUEST['batchsize']);
+		}
+
+		// The amount of courses to be classified. 30 Courses take about 1 minute to compute.
+		$wherecourseidsql = ""; // Set default.
+		if (!empty($_REQUEST['courseid']) && intval($_REQUEST['courseid']) > 0) {
+			$wherecourseidsql = "AND kurse.id = " . intval($_REQUEST['courseid']);
+		}
+
+		$doCompLevel = true; // Set default.
+		if (isset($_REQUEST['doCompLevel'])) {
+			$doCompLevel = boolval($_REQUEST['doCompLevel']);
+		}
+		
+		$doESCO = true; // Set default.
+		if (isset($_REQUEST['doESCO'])) {
+			$doESCO = boolval($_REQUEST['doESCO']);
+		}
+
+		// Check for UserId.
+		if (!isset($_REQUEST['userid'])) {
+			$this->log("userid ist zwingend erforderlich.");
+			exit();
+		} else {
+			$_SESSION['g_session_userid'] = $_REQUEST['userid'];
+		}
+
+		// create a new DB_Admin object
+		$db = new DB_Admin();
+
+		$levels = [
+			'A' => [
+				'name' => 'Grundstufe', 'id' => ''
+			], 
+			'B' => [
+				'name' => 'Aufbaustufe', 'id' => ''
+			], 
+			'C' => [
+				'name' => 'Fortgeschrittenenstufe', 'id' => ''
+			], 
+			'D' => [
+				'name' => 'Expertenstufe', 'id' => ''
+			],
+		];
+		$levels = $this->get_level_ids($levels);
+		$levelids = array();
+		foreach ($levels as $level) {
+			$levelids[] = $level['id'];
+		}
+		$levelidlist = join(", ", $levelids);
+
+		$wherenocomplevel = "1=1";
+		if ($doCompLevel) {
+			$wherenocomplevel = "(kurse.id NOT IN (
+									SELECT kurse_stichwort.primary_id 
+									FROM kurse_stichwort 
+									WHERE kurse_stichwort.attr_id IN ($levelidlist)
+								)
+								AND kurse.notizen NOT LIKE '%wisyki-bot-classification-complevel%')";
+		}
+
+		$whereesco = "1=1";
+		if ($doESCO) {
+			$whereesco = "kurse.notizen NOT LIKE '%wisyki-bot-classification-esco%'";
+		}
+
+		// build the SQL query to retrieve courses without levels
+		$sql = "SELECT kurse.id, kurse.titel, kurse.beschreibung, kurse.notizen, themen.thema
+				FROM kurse
+				LEFT JOIN themen
+					ON themen.id = kurse.thema
+				WHERE kurse.freigeschaltet = 1
+				$wherecourseidsql
+				AND (
+					$wherenocomplevel
+					OR
+					$whereesco
+				)
+				ORDER BY RAND()
+				LIMIT $batchsize";
+
+		// execute the SQL query and retrieve the courses
+		$db->query($sql);
+
+		$updatedlevelcount = 0;
+		$updatedescocount = 0;
+		$coursecount = 0;
+
+		// loop through the courses and generate competency levels for each one
+		while ($db->next_record()) {
+			$coursecount++;
+			$course = $db->Record;
+			// Get course tags.
+			$course['tags'] = $this->get_course_tags($course['id']);
+
+			// call the endpoint using cURL
+			$title = utf8_encode($course['titel']);
+			$this->log("");
+			$this->log("Classify LOs for course {$course['id']}, " . utf8_decode($title) .": ");
+			
+			$timestamp = time();
+			$creationDate = date("Y-m-d H:i:s", $timestamp);
+			$notizen = '';
+
+			if (!$doCompLevel) {
+				$this->log(" - skip compLevel classification");
+			} elseif (str_contains($course['notizen'], 'wisyki-bot-classification-complevel')) {
+				$this->log(" - skip complevel-classification, course has already been classified");
+			} else {
+				$level_prediction = $pythonAPI->predict_comp_level(utf8_encode($course['titel']), utf8_encode($course['beschreibung']));
+				if (!empty($level_prediction)) {
+					$this->log(" - AI suggests " . $level_prediction['level'] . " " . round($level_prediction['target_probability']*100, 2) . "%");
+					if ($level_prediction['target_probability'] >= $minrequiredscore) {
+						$levelid = $levels[$level_prediction['level']]['id'];
+						$leveldb = new DB_Admin(); 
+
+						// If there are already levels associated with the course, delete them.
+						$sql = "DELETE FROM kurse_stichwort WHERE kurse_stichwort.primary_id = {$course['id']} AND kurse_stichwort.attr_id IN ($levelidlist)";
+						$leveldb->query($sql);
+				
+						// Insert level as a stichwort.
+						$sql = "INSERT INTO kurse_stichwort (primary_id, attr_id) VALUES ({$course['id']}, $levelid)"; 
+						if ($leveldb->query($sql)) {			
+							$notizen .= $creationDate . " Niveau {$level_prediction['level']} wurde automatisiert durch KI vergeben. (wisyki-bot-classification-complevel)\n";
+							$this->log(" - Added 'Niveau {$level_prediction['level']}' tag to course. DB updated sucessfully.");
+							$updatedlevelcount++;
+						} else {
+							$this->log(" - Error: Couldn't add 'Niveau {$level_prediction['level']}' tag to course.)");
+						}
+					} else {
+						$this->log(" - Did not add 'Niveau {$level_prediction['level']}' tag to course, because probability score < ." . $minrequiredscore);
+					}
+					$this->log("");
+				} else {
+					$this->log(" - ERROR: " . $level_prediction);
+				}
+			}
+
+			if (!$doESCO) {
+				$this->log(" - skip ESCO classification");
+			} elseif (str_contains($course['notizen'], 'wisyki-bot-classification-esco')) {
+				$this->log(" - skip esco-classification, course has already been classified");
+			} else {
+				$esco_prediction = $pythonAPI->predict_esco_terms(utf8_encode($course['titel']), utf8_encode($course['beschreibung']), utf8_encode($course['thema']), $course['tags']['Abschluss'], $course['tags']['Sachstichwort']);
+				if (!empty($esco_prediction)) {
+					if (empty($esco_prediction["results"])) {
+						$this->log(" - No releveant ESCO terms found for this course.");
+					} else {
+						$escodb = new DB_Admin();
+						$skillsmappedcount = 0;
+						foreach ($esco_prediction["results"] as $result) {
+							if ($result['className'] == 'Occupation') {
+								continue;
+							}
+
+							// Insert skill as tag in db, if it does not already exist.
+							$skillid = $this->insertESCOKeyword($result, $escodb, "0", $dummy, 0);
+							if ($skillid <= 0) {
+								$this->log(" - Error: ESCO keyword couldnt be inserted, skillid: " . $skillid);
+								break;
+							}	
+											
+							// Check if skill is already mapped to course.
+							$sql = "SELECT * FROM kurse_stichwort WHERE primary_id = {$course['id']} AND attr_id = $skillid LIMIT 1";
+							if ($escodb->query($sql) and $escodb->next_record()) {
+								$this->log(" - Already mapped skill '{$result['title']}' tag to course.");
+								continue;
+							}
+
+							// Map skill to course.
+							$sql = "INSERT INTO kurse_stichwort (primary_id, attr_id) VALUES ({$course['id']}, $skillid)"; 
+							if (!$escodb->query($sql)) {
+								$this->log(" - Error: Couldn't map Skill '{$result['title']}' tag to course.)");
+								continue;
+							}
+							$this->log(" - Mapped skill '{$result['title']}' tag to course. DB updated sucessfully.");
+							$skillsmappedcount++;
+						}			
+						// ESCO Competency mapped successfully to course.
+						if ($skillsmappedcount > 0) {
+							$notizen .= $creationDate . " ESCO-Stichworte wurden automatisiert durch KI ergänzt. (wisyki-bot-classification-esco)\n";
+							$updatedescocount++;
+						}
+					}
+				} else {
+					$this->log(" - ERROR: " . $esco_prediction);
+				}
+
+				if (!empty($notizen)) {
+					$notizen .= utf8_encode($course['notizen']);
+					$notizen = addslashes(utf8_decode($notizen));
+					$kursdb = new DB_Admin();
+					$sql = "UPDATE kurse
+							SET notizen = '$notizen', date_modified = '$creationDate'
+							WHERE kurse.id = " . $course['id'];
+					$kursdb->query($sql);
+				}
+				$this->log("");
+			}
+			$this->log("");
+		}
+		$this->log("Successfully classified compLevel for $updatedlevelcount/$coursecount courses.");
+		$this->log("Successfully classified ESCO LOs for $updatedescocount/$coursecount courses.");
 	}
 
 
@@ -2351,6 +2656,13 @@ class WISY_SYNC_RENDERER_CLASS
 		if (isset($_GET['syncESCO'])) {
 			$this->log("********** $host: starting Syncronisateion with ESCO - if you do not read \"done.\" below, we're aborted unexpectedly and things may not work!");
 			$this->doSyncESCO(false);
+		} else if (isset($_GET['classifyLearningOutcome'])) {
+			$this->log("********** $host: starting Classification of competency levels - if you do not read \"done.\" below, we're aborted unexpectedly and things may not work!");
+			try {
+				$this->classifyLearningOutcome(false);
+			} catch (Exception $e) {		
+				$this->log("********** ERROR: " . $e->getMessage());
+			}
 		} else {
 			$this->log("********** ERROR: $host: unknown syncing option, use one of \"kurseFast\" or \"kurseSlow\".");
 		}

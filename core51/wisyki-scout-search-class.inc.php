@@ -56,6 +56,7 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_INTELLISEARCH_CLASS {
 		$querystring = $this->get_querystring($label, $level);
 
 		$this->prepare($querystring);
+		// TODO: Cache the search results for later retrieval.
 
 		if (!$this->ok()) {
 			JSONResponse::error500();

@@ -1495,7 +1495,7 @@ async function suggestSkills(uri) {
     }
 
     const limit = 10;
-    const params = { uri: uri, limit: limit, onlyrelevant: false };
+    const params = { uri: uri, limit: limit, onlyrelevant: true };
 
     const url = "./esco/getConceptSkills?" + new URLSearchParams(params);
     const response = await fetch(url);

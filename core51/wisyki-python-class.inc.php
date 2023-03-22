@@ -115,10 +115,10 @@ class WISYKI_PYTHON_CLASS {
 
 
     /**
-     * Predicts the comprehension level of a given text.
+     * Predicts the comprehension level of a given course.
      *
-     * @param  string $title       The title of the text.
-     * @param  string $description The description of the text.
+     * @param  string $title       The title of the course.
+     * @param  string $description The description of the course.
      * @return mixed
      */
     public function predict_comp_level(string $title = '', string $description = '') {
@@ -145,6 +145,62 @@ class WISYKI_PYTHON_CLASS {
 
         if (curl_error($curl)) {
             JSONResponse::error500('Request Error:' . curl_error($curl));
+        }
+
+        curl_close($curl);
+
+        // Decode response and filter results for title and uri attributes.
+        $response = json_decode($response, true);
+        return $response;
+    }
+
+
+    /**
+     * Predicts esco terms relevant to a course.
+     *
+     * @param  string $title            The title of the course.
+     * @param  string $description      The description of the course.
+     * @param  string $thema            The thema of the course.
+     * @param  array $abschluesse       The abschluesse of the course.
+     * @param  array $sachstichworte    The sachstichworte of the course.
+     * @return mixed
+     */
+    public function predict_esco_terms(string $title, string $doc, string $thema, array $abschluesse, array $sachstichworte) {
+        $endpoint = "/predictESCO";
+        $wisytags = $sachstichworte;
+        $wisytags = array_merge($wisytags, $abschluesse);
+        $keywords = [$title, $thema];
+        $keywords = array_merge($keywords, $wisytags);
+        // Add Keywords and topic to course description to influence the outcome of the esco suggestions, in case the course description is not descriptive enough on its own. 
+        $doc .= ' ' . $title . ' ' . join(', ', $wisytags) . join(', ', $wisytags) . ' ' . $thema;
+
+        $data = [
+            "searchterms" => [
+                "keywords" => $keywords
+            ],
+            "doc" => $doc,
+            "extract_keywords" => count($wisytags) == 0,
+            "exclude_irrelevant" => true
+        ];
+
+        $post_data = json_encode($data);
+
+        $url = $this->api_uri . $endpoint;
+        $curl = curl_init($url);
+        curl_setopt($curl, CURLOPT_POSTFIELDS, $post_data);
+        curl_setopt($curl, CURLOPT_TIMEOUT, 80);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLINFO_HEADER_OUT, true);
+        curl_setopt($curl, CURLOPT_POST, true);
+
+        // Set HTTP Header for POST request 
+        curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
+
+        $response = curl_exec($curl);
+
+        if (curl_error($curl)) {
+            JSONResponse::error500('Request Error:' . curl_error($curl));
+            throw new Exception('Request Error:' . curl_error($curl), 1);
         }
 
         curl_close($curl);
