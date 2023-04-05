@@ -256,7 +256,7 @@ $durchfuehrung->add_row(TABLE_TEXT|TABLE_ACNEST,			'ort',				'Ort ', '', '', '',
 $durchfuehrung->add_row(TABLE_TEXT|TABLE_ACNEST,			'stadtteil',		'Stadtteil ', '', '', '', array('ctrl.size'=>'8-16-48', 'layout.defhide.tooltip'=>'weitere Ortsangaben')); // , 'layout.defhide'=>1
 $durchfuehrung->add_row(TABLE_TEXT|TABLE_ACNEST,			'bezirk',			'Bezirk ', '', '', '', array('layout.descr.hide'=>1, 'ctrl.class'=>'df_bezirk', 'layout.defhide'=>1, 'ctrl.placeholder'=>1));
 $durchfuehrung->add_row(TABLE_TEXT|TABLE_ACNEST,			'land',				'Land ', '', 3, '', array('layout.defhide'=>1));
-$durchfuehrung->add_row(TABLE_FLAG,							'rollstuhlgerecht',	'Rollstuhlgerecht', '', '', '', array('layout.defhide'=>1));
+$durchfuehrung->add_row(TABLE_INT,							'rollstuhlgerecht',	'Rollstuhlgerecht', 0, '0###1', '', array('ctrl.intAsCheck'=>true, 'layout.defhide'=>1) );
 $durchfuehrung->add_row(TABLE_TEXTAREA|TABLE_WIKI,			'bemerkungen',		'Bemerkungen', '', '', '', array('layout.defhide'=>1, 'ctrl.rows'=>2));
 if( !$use_neweditor )
 {

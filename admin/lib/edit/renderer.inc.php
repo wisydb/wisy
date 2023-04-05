@@ -354,6 +354,8 @@ class EDIT_RENDERER_CLASS
 		
 		$this->data->connect_to_db_();
 		$this->defhide_id = 1; // note: the ID is only guaranteed to be unique inside the same object! if objects are duplicated, they will have the same IDs!
+		$controlTableRowID = 0;
+		
 		for( $f = 0; $f < sizeof((array) $this->data->controls); $f++ )
 		{
 		    // don't display row if dependent upon setting and setting is 0
@@ -379,6 +381,7 @@ class EDIT_RENDERER_CLASS
 				}
 					
 				echo "<input name=\"{$control->name}\" {$attr}type=\"hidden\" value=\"".isohtmlspecialchars($control->dbval)."\" />\n";
+				$controlTableRowID = $control->dbval;
 
 				if( isset($control->row_def->prop['__META__']) ) {
 				 switch( $control->row_def->prop['__META__'] )
@@ -444,7 +447,8 @@ class EDIT_RENDERER_CLASS
 				
 				echo $control->render_html(array(
 									'dba'	=>	$this->data->dba,
-									'id'	=>	$this->data->id	// may be -1, 0 or invalid otherwise
+				                    'id'	=>	$this->data->id,	// may be -1, 0 or invalid otherwise
+				                    'controlTableRowID' => $controlTableRowID
 								));
 				
 				// stuff after the control
