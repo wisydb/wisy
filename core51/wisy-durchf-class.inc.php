@@ -407,17 +407,19 @@ class WISY_DURCHF_CLASS
             
             // this ORDER BY puts durchfuehrungen with beginn = '0000-00-00 00:00:00' at the end(!) and sorts everything else by beginn ASC.
             // using -beginn DESC doesn't work b/c '0000-00-00 00:00:00' seems not to be treated as empty
-            $db->query("SELECT id, nr, dauer, bemerkungen, preis, teilnehmer, kurstage, sonderpreis, sonderpreistage, plz, strasse,
-						 land, stadtteil, preishinweise, beginn, beginnoptionen, ende, ort, tagescode, stunden, zeit_von, zeit_bis, bg_nummer, bg_nummer_count
-					  FROM durchfuehrung
-							WHERE id IN (".implode(",", $durchfuehrungIds).") ORDER BY  beginn = '0000-00-00 00:00:00', beginn");
+            $db->query( "SELECT id, nr, dauer, bemerkungen, preis, teilnehmer, kurstage, sonderpreis, sonderpreistage, plz, strasse, rollstuhlgerecht, "
+                . "land, stadtteil, preishinweise, beginn, beginnoptionen, ende, ort, tagescode, stunden, zeit_von, zeit_bis, bg_nummer, bg_nummer_count "
+                . "FROM durchfuehrung "
+                . "WHERE id IN (".implode(",", $durchfuehrungIds).") ORDER BY  beginn = '0000-00-00 00:00:00', beginn "
+                );
             
         } elseif(!is_array($durchfuehrungId)) {
             
-            $db->query("SELECT id, nr, dauer, bemerkungen, preis, teilnehmer, kurstage, sonderpreis, sonderpreistage, plz, strasse,
-						 land, stadtteil, preishinweise, beginn, beginnoptionen, ende, ort, tagescode, stunden, zeit_von, zeit_bis, bg_nummer, bg_nummer_count
-					  FROM durchfuehrung
-							WHERE id=$durchfuehrungId");
+            $db->query( "SELECT id, nr, dauer, bemerkungen, preis, teilnehmer, kurstage, sonderpreis, sonderpreistage, plz, strasse, rollstuhlgerecht, "
+                . "land, stadtteil, preishinweise, beginn, beginnoptionen, ende, ort, tagescode, stunden, zeit_von, zeit_bis, bg_nummer, bg_nummer_count "
+                . "FROM durchfuehrung "
+                . "WHERE id=$durchfuehrungId"
+                );
         }
         if( $db->next_record() )
         {

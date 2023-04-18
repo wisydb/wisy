@@ -17,7 +17,7 @@ $evencell	= '#E7EFFF';
 $msgbox		= '#E9E9E9';
 $inputborder= '#BBB';
 
-$colors = isset( $_REQUEST['colors'] ) ? $_REQUEST['colors'] : null;
+$colors = $_REQUEST['colors'] ?? '';
 
 switch( $colors )
 {

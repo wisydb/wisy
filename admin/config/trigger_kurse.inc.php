@@ -242,14 +242,18 @@ function update_kurs_state($kurs_id, $param)
 	if( $azwv_knr != '' )  $anz_stichw ++;
 	if( $thema != 0 )	   $anz_stichw ++;
 	
+	remove_tagsToBeCalculated( $kurs_id );
+	
 	// alle durchfuehrungen checken
 	$baD					= array();
 	$neuer_status			= 3; /*abgelaufen*/
 	/*$neuer_status_gueltig	= true;*/
 	for( $i = 0; $i < $anz_durchf; $i++ )
 	{
-		$db->query("SELECT beginn, beginnoptionen, ende, kurstage, preis, strasse, plz, ort, stadtteil, bemerkungen, dauer, dauer_fix, tagescode, nr, stunden, teilnehmer, zeit_von, zeit_bis " 
-		         . " FROM durchfuehrung WHERE id={$durchf_ids[$i]};");
+	    $db->query("SELECT beginn, beginnoptionen, ende, kurstage, preis, strasse, plz, ort, stadtteil, bemerkungen, dauer, dauer_fix, tagescode, nr, "
+	        . "stunden, teilnehmer, zeit_von, zeit_bis, rollstuhlgerecht "
+	        . "FROM durchfuehrung "
+	        . "WHERE id={$durchf_ids[$i]};");
 		
 		if( $db->next_record() )
 		{
@@ -271,10 +275,18 @@ function update_kurs_state($kurs_id, $param)
 			$teilnehmer		= intval($db->f('teilnehmer'));
 			$zeit_von		= $db->fs('zeit_von'); if( $zeit_von == '00:00' ) $zeit_von = '';
 			$zeit_bis		= $db->fs('zeit_bis'); if( $zeit_bis == '00:00' ) $zeit_bis = '';
+			$rollstuhlgerecht = $db->f('rollstuhlgerecht');
 			$ret['returnmsg'] = isset( $ret['returnmsg'] ) ? $ret['returnmsg'] : '';
 			
 			$update = '';
 			
+			global $controlTags;
+			
+			// Wenn Datum in Zukunft oder oefter beginnend oder Kurs ist dauerhaft => SW Rollstuhlgerecht anhaengen solang eine DF die entspr. Option hat.
+			if( intval($rollstuhlgerecht) != 0 ) {
+			    if( $alter_status == 4 || strtotime($beginn) >= strtotime(date('Y-m-d H:i:s')) || $beginnoptionen > 0  )
+			        add_tagToCourse( $kurs_id, array( $controlTags['rollstuhlgerecht'] ) );
+			}
 			
 			// beginnstatus ueberpruefen
 			/* -- 11:54 18.12.2012: Fehlende Beginndaten fuehren nicht mehr zu freigeschalteten Kursen!
@@ -699,4 +711,41 @@ function update_titel_sorted($kurs_id, $titel = "") {
 			$titel					= $db->fs('titel');
 		}
 		$db->query("UPDATE kurse SET titel_sorted = '".g_eql_normalize_natsort($titel)."' WHERE id=".$kurs_id);
+}
+
+function add_tagToCourse($kursId, $newStichwoerter)
+{
+    if( !is_array($newStichwoerter) )
+        return;
+        
+    $db = new DB_Admin;
+        
+    // write all tags as a whole (this includes the new ones)
+    foreach($newStichwoerter as $newStichwort) {
+        $db->query("SELECT * FROM kurse_stichwort WHERE primary_id=$kursId AND attr_id=$newStichwort");
+            
+        if( $db->next_record() )
+            return; // tag already attached to course
+                
+        $db->query("SELECT MAX(structure_pos) AS sp FROM kurse_stichwort WHERE primary_id=$kursId");
+        $db->next_record();
+        $structurePos = intval($db->f('sp'))+1;
+                
+        $db->query("INSERT INTO kurse_stichwort (primary_id, attr_id, structure_pos) VALUES($kursId, $newStichwort, $structurePos);");
+    }
+}
+
+function remove_tagsToBeCalculated($kursId) {
+    global $controlTags;
+    
+    if( $kursId == 0 || $kursId == null )
+        return;
+        
+    $id_rollstuhlgerecht = $controlTags['rollstuhlgerecht'];
+        
+    if( $id_rollstuhlgerecht == 0 || $id_rollstuhlgerecht == null )
+        return;
+            
+    $db = new DB_Admin;
+    $db->query( "DELETE FROM kurse_stichwort WHERE primary_id = $kursId AND attr_id = $id_rollstuhlgerecht" );
 }

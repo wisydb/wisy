@@ -602,7 +602,7 @@ class WISY_SEARCH_CLASS
 				                        $cnt_types++;
 				                        $code_found = true;
 				                        $this->rawWhere .= $this->rawWhere? ($cnt_types == 1 ? ' AND ( ' : ' OR ') : ' WHERE ( ';
-				                        $this->rawWhere .= "x_kurse.kurs_id IN (SELECT x_kurse_tags.kurs_id FROM x_kurse_tags, x_tags WHERE x_kurse_tags.tag_id = x_tags.tag_id AND x_tags.tag_type = ".$codes_array[$y-1].")";
+				                        $this->rawWhere .= "x_kurse.kurs_id IN (SELECT x_kurse_tags.kurs_id FROM x_kurse_tags, x_tags WHERE x_kurse_tags.tag_id = x_tags.tag_id AND x_tags.tag_type = '".$codes_array[$y-1]."')";
 				                        if($cnt_types == count($val_arr))
 				                            $this->rawWhere .= ")";
 				                            
@@ -612,7 +612,7 @@ class WISY_SEARCH_CLASS
 				            } elseif(strtolower(trim($value)) == strtolower($codes_array[$y])) {
 				                $code_found = true;
 				                $this->rawWhere .= $this->rawWhere? ' AND ' : ' WHERE ';
-				                $this->rawWhere .= "x_kurse.kurs_id IN (SELECT x_kurse_tags.kurs_id FROM x_kurse_tags, x_tags WHERE x_kurse_tags.tag_id = x_tags.tag_id AND x_tags.tag_type = ".$codes_array[$y-1].")";
+				                $this->rawWhere .= "x_kurse.kurs_id IN (SELECT x_kurse_tags.kurs_id FROM x_kurse_tags, x_tags WHERE x_kurse_tags.tag_id = x_tags.tag_id AND x_tags.tag_type = '".$codes_array[$y-1]."')";
 				            }
 				            
 				        }
