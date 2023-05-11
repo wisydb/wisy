@@ -550,7 +550,7 @@ else {
 }
 
 if( $rows < 1 ) { $rows = 1; }
-if( $rows > 500 ) { $rows = 500; }
+if( $rows > 5000 ) { $rows = 5000; }
 
 // order
 if( !isset($_REQUEST['orderby']) ) {
@@ -1181,13 +1181,18 @@ if( $select_numrows )
 			}
 
 		$site->skin->submenuBreak();
-
+			
 			echo htmlconstant('_OVERVIEW_ROWS') . ' ' . rows_per_page_sel("$baseurl&searchoffset=0&rows=", $rows);
+			
+			echo " &nbsp; <a href='#' rel='noopener noreferrer' onclick='exportTableToCSV( document, \"table.tb > thead tr\", \"table.tb > tbody tr\" )' id='csvExportTable'><img src='/admin/lib/exp/CSV.png' style='height:20px;' alt='Exportiere Tabelle dieser Ansicht als CSV-Datei'></a>";
+			
+			echo " &nbsp; <a href='#' rel='noopener noreferrer' onclick='exportTableToCSV( document, false, \"table tr\", \"/admin/print.php?table=kurse&id=&prevview=list&printArea=selected&view=list&pagebreak=0&repeathead=1&ok=Drucken\" )' id='csvExportTable'><img src='/admin/lib/exp/CSV_plus.png' style='height:20px;' alt='Exportiere Tabelle aller Reiter als CSV-Datei'></a>";
+			
 			if( !isset($_REQUEST['selectobject']) ) {
-				echo " | <a href=\"log.php?table=$table\" target=\"_blank\" rel=\"noopener noreferrer\">" . htmlconstant('_LOG') . '</a>';
+			    echo " &nbsp; <a href=\"log.php?table=$table\" target=\"_blank\" rel=\"noopener noreferrer\">" . htmlconstant('_LOG') . '</a>';
 			}
-
-		$site->skin->submenuEnd(true);
+			
+	    $site->skin->submenuEnd(true);
 		
 	if( !isset($_REQUEST['selectobject']) ) $site->skin->fixedFooterEnd();
 }

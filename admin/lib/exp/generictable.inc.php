@@ -425,17 +425,17 @@ class EXP_GENERICTABLE_CLASS extends EXP_PLUGIN_CLASS
 					
 					// add queries to the query queue for the new stuff to check
 					if( isset( $this->attrasids ) && $this->attrasids ) {
-						reset($stuff_to_check);
-						foreach($stuff_to_check as $currTable => $currIds) {
-						    if( sizeof((array) $currIds) ) {
-								$currIds = implode(',', $currIds);
-								
-								if( isset($this->tdl[$currTable]['fields']) ) {
-								    $sql = "SELECT id{$this->tdl[$currTable]['fields']} FROM $currTable WHERE id IN ($currIds);";
-								    array_push($query_queue, array($currTable, $sql));
-								}
-							}
-						}
+					    reset($stuff_to_check);
+					    foreach($stuff_to_check as $currTable => $currIds) {
+					        if( sizeof((array) $currIds) ) {
+					            $currIds = implode(',', $currIds);
+					            
+					            $addFields = $this->tdl[$currTable]['fields'] ?? '';
+					            $sql = "SELECT id{$addFields} FROM $currTable WHERE id IN ($currIds);";
+					            array_push($query_queue, array($currTable, $sql));
+					            
+					        }
+					    }
 					}
 					
 					$this->progress_info($cntAll . ' Datens'.aeJS.'tze gesammelt ...');

@@ -53,6 +53,7 @@ class ADMIN_SITE_CLASS
 		// be compatible with older settings (added on 19.05.2012 - may be deleted sometime)
 		if( $folder == 'lb' ) { $folder = 'skins/lime';  $writeBack = true; }
 		if( $folder == 'st' ) { $folder = 'skins/steel'; $writeBack = true; }
+		if( $folder == 'aa' ) { $folder = 'skins/sh';    $writeBack = true; }
 		
 		// check for skin existance
 		if( !$folder || !@file_exists("{$folder}/class.php") )	{ $folder = 'skins/default'; $writeBack = true; }

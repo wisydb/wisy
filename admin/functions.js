@@ -966,6 +966,203 @@ function check_grp_user() {
 
 });
 
+/* HTML preview: */
+/* if beschreibung contains HTML tags => display button to create overlay to parse that HTML in the textarea field */
+function removeOverlay() {
+    jQuery("#overlay").remove();
+}
+
+function displayOverlay() {
+
+    if( jQuery("#overlay").length ) {
+		removeOverlay();
+		return true;
+	}
+	
+	var overlay = jQuery('textarea[name=f_beschreibung]').val();
+    overlay = '<div id="overlay" onclick="removeOverlay();" tile="Klicken zum schliessen." >' + overlay + '</div>';
+	jQuery('#fheader').append(overlay);
+}
+
+function containsHTMLTags(text) {
+    const regex = /<[^>]*>/g;
+    return regex.test(text);
+}
+
+function downloadCSV(csv, filename) {
+  var csvFile;
+  var downloadLink;
+
+  // CSV file
+  csvFile = new Blob([csv], {type: "text/csv"});
+
+  // Download link
+  downloadLink = document.createElement("a");
+
+  // File name
+  downloadLink.download = filename;
+
+  // Create a link to the file
+  downloadLink.href = window.URL.createObjectURL(csvFile);
+
+  // Hide download link
+  downloadLink.style.display = "none";
+
+  // Add the link to DOM
+  document.body.appendChild(downloadLink);
+
+  // Click download link
+  downloadLink.click();
+}
+
+function buildCSVrow(csv, rows, skipRowsEnd, textElementSelector) {
+	
+  // don't use last row (protocol etc.)
+  for (var i = 0; i < rows.length-skipRowsEnd; i++) {
+	
+    var row = [];
+	var cols = rows[i].querySelectorAll( textElementSelector );
+
+    for (var j = 0; j < cols.length; j++) {
+	  
+      var cellData = cols[j].innerText;
+
+	  // If the cell data is not a number, encapsulate it with quotes and remove any new line characters
+      if (isNaN(cellData)) {
+        cellData = '"' + cellData.replace(/"/g, '""').replace(/[\n]+/g, '') + '"';
+      } else {
+        cellData = cellData.replace(/[\n]+/g, '');
+      }
+
+      row.push(cellData);
+    }
+
+    csv.push(row.join(";"));
+  }
+
+  return csv;
+}
+
+function removeThisNestedElement( elementParent, selector) {
+	
+	// Iterate through the NodeList
+  	elementParent.forEach(element => {
+  		// Find nested tables within the current element
+  		const nestedTables = element.querySelectorAll( selector );
+
+  		// Remove each nested table = always in last column in CMS
+  		nestedTables.forEach( selectedElement => {
+    		selectedElement.parentNode.removeChild( selectedElement );
+  		});
+  	});
+
+	return elementParent;
+}
+
+function exportTableToCSV( rootElement, headSelector, bodySelector, url = "" ) {
+
+  if( url != "" ) {
+	
+	$.get(url, (data) => {
+      var parser = new DOMParser();
+      outputTableToCSV( parser.parseFromString(data, 'text/html'), headSelector, bodySelector );
+    }).fail(function() {
+		console.log('An error occurred while fetching the search table data via ajax call!');
+    });
+
+  } else {
+	// console.log( "Verwende Tabelle der aktuellen Seite." );
+	outputTableToCSV( rootElement, headSelector, bodySelector );
+  }
+
+}
+
+function outputTableToCSV( rootElement, headSelector, bodySelector ) {
+	
+  var csv = [];
+
+  // select only direct children b/c some cells have child table
+  var rows_head = rootElement.querySelectorAll( headSelector );
+  var rows_body = rootElement.querySelectorAll( bodySelector );
+	
+  console.log(bodySelector);
+  console.log( rows_body );
+	
+  if( headSelector )
+  	csv = buildCSVrow( csv, rows_head, 0, 'th' );
+
+  csv = buildCSVrow( csv, rows_body, 0, 'td' );
+
+  $.ajax({
+	  url: '/admin/lib/exp/table_to_csv.php',
+	  method: 'POST',
+	  data: {
+	    csv_data: csv.join("\n")
+	  },
+	  success: function(response) {
+		
+	    // Create a Blob with the response data
+	    var blob = new Blob([response], {type: 'text/csv'});
+	
+	    // Create a download link and set the Blob URL as its href
+	    var downloadLink = document.createElement('a');
+	    downloadLink.href = window.URL.createObjectURL(blob);
+
+ 
+		Number.prototype.pad = function(n) {
+			if( this < 10 )
+		    	return new Array(n).join('0').slice((n || 2) * -1) + this;
+			else
+				return this;
+		}
+		const date	= new Date();
+		let year	= date.getFullYear(); 
+		let month	= date.getMonth()+1; 
+		let day		= date.getDate();
+		let hour	= date.getHours();
+		let minute	= date.getMinutes(); 
+ 
+	    downloadLink.download = 'Export_' + year + '-' + month.pad(2) + '-' + day.pad(2) + '_' + hour.pad(2) + '-'+minute.pad(2) + '.csv';
+	
+	    // Add the download link to the DOM and trigger the click event to start the download
+	    document.body.appendChild(downloadLink);
+	    downloadLink.click();
+	
+	    // Remove the download link from the DOM
+	    document.body.removeChild(downloadLink);
+
+	  },
+	  error: function(xhr, status, error) {
+	    alert( "Fehler bei der Generierung der CSV-Datei:\n" + error );
+	  }
+	});
+	
+} // end: outputTableToCSV
+
+
+
+jQuery(document).ready(function() {
+
+	var selectTag = 'textarea[name=f_beschreibung]';
+	var beschreibung = jQuery(selectTag);
+
+	if( beschreibung.length ) {
+	
+		var checkHTML = document.querySelector(selectTag);
+		checkHTMLContent = checkHTML.value;
+
+		if (containsHTMLTags(checkHTMLContent)) {
+			beschreibung.next().after('<br><button type="button" onclick="displayOverlay()" id="overlayButton">Portal-Ansicht</button>');
+		} else {
+    		/* console.log('Textarea does not contain HTML tags.'); */
+		}
+
+	}
+});
+
+/* End: HTML preview */
+/*********************/
+
 var ae = unescape("%E4");
 var ue = unescape("%FC");
 var oe = unescape("%F6");

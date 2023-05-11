@@ -1,6 +1,6 @@
 <?php
 
-// Encoding: ISO8859-15, Test:: üäö
+// Encoding: ISO8859-15, Test: üäö
 
 // deprecated
 $use_neweditor = true;
@@ -70,6 +70,9 @@ $stichwoerter = new Table_Def_Class(TABLE_PRIMARY|TABLE_SYNCABLE,			'stichwoerte
 $stichwoerter->add_row(TABLE_TEXT|TABLE_SUMMARY|TABLE_LIST|TABLE_MUST|TABLE_UNIQUE,
 																			'stichwort',		'Deskriptor', 0, 0, '', array('ctrl.size'=>'20-70', 'help.tooltip'=>'Deskriptor, ohne Erklärungen und so kurz und so einfach wie möglich', 'layout.bg.class'=>'e_bglite', 'layout.descr.class'=>'e_bolder', 'ctrl.class'=>'e_bolder'));
 $stichwoerter->add_row(TABLE_TEXT,											'zusatzinfo',		'Zusatzinfo', 0, 0, '', array('ctrl.size'=>'20-70', 'help.tooltip'=>'Kurze Informationen zur evtl. notwendigen Erklärung'));
+
+// $stichwoerter->add_row(TABLE_TEXT,								            'logo',				'Siegel', '', '', '', array('layout.bg.class'=>'e_bgbottom'));
+
 $stichwoerter->add_row(TABLE_MATTR|TABLE_SHOWREF,							'verweis',			'Synonym für', 0, 0 /*set below*/, '', array('ref.name'=>'Synonym von'));
 $stichwoerter->add_row(TABLE_MATTR|TABLE_SHOWREF,							'verweis2',			'Oberbegriff für', 0, 0 /*set below*/, '', array('help.tooltip'=>'Das aktuelle Stichwort wird automatisch vergeben, wenn eines der hier angegebenen Stichwörter vergeben wird', 'ref.name'=>'Unterbegriff von'));
 $stichwoerter->add_row(TABLE_ENUM|TABLE_SUMMARY|TABLE_LIST|TABLE_NEWSECTION,'eigenschaften',	'Typ', 0, $codes_stichwort_eigenschaften, 'Klassifizierung', array('layout.section'=>'Klassifizierung'));
@@ -268,7 +271,7 @@ if( !$use_neweditor )
 	$durchfuehrung->add_row(TABLE_TEXT, 						'azwv_dnr', 	'AZAV-Durchführungsnummer');
 }
 
-// $durchfuehrung->add_row(TABLE_TEXT|TABLE_ACNEST,			'url',				'URL ', '', 3, '', array('layout.defhide'=>1));
+$durchfuehrung->add_row(TABLE_TEXT|TABLE_ACNEST,			'url',				'URL ', '', '50', '', array() ); // array('layout.defhide'=>1)
 
 // $durchfuehrung->add_row(TABLE_DATETIME|TABLE_LIST|TABLE_READONLY, 'date_modified',			'Änderungsdatum', '', '', '', array('layout.descr'=>'Änderungsdatum', 'ctrl.class'=>'df_aenderungsdatum_ctrl', 'layout.descr.class'=>'df_aenderungsdatum_descr', 'layout.bg.class'=>'df_aenderungsdatum_bg'));
 $durchfuehrung->set_trigger('config/trigger_durchfuehrung.inc.php');    // make sure changes to DF trigger calculations, like last df change date

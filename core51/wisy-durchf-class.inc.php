@@ -799,6 +799,10 @@ class WISY_DURCHF_CLASS
 		        $bemerkungen = $record['bemerkungen'];
 		        $bemerkungen = str_replace(chr(128), "&euro;", $bemerkungen); // str_replace(chr(0xE2).chr(0x82).chr(0xAC), "&euro;",
 		        echo cs8($wiki2html->run($bemerkungen));
+		        
+		        if( isset($record['rollstuhlgerecht']) && $record['rollstuhlgerecht'] )
+		            echo '<small class="rollstuhlgerecht">Dieser Ort ist&nbsp;rollstuhlgerecht.<br>Details bitte beim Anbieter erfragen.</small><br>';
+		        
 		        echo ' </td>' . "\n";
 		    } 
 		}

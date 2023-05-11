@@ -1,5 +1,7 @@
 <?php
 
+// üöä
+
 define('USER_ONLINEBAGATELLE',19);
 define('USER_ONLINEPFLEGE', 20);
 define('USER_MENUCHECK', -1); // to be defined
@@ -12,14 +14,25 @@ define('oeJS', '\u00f6', false);
 define('OEJS', '\u00d6', false);
 define('ssJS', '\u00df', false);
 
+global $geocode_key, $geocode_user, $geocode_passwd, $geocode_protocol, $geocode_url;
+$geocode_key = ""; // nur fuer externe Dienste, wie Mapquest...
+$geocode_user = "";
+$geocode_passwd = "";
+$geocode_protocol = "";
+$geocode_url = ""; // selbst gehostet
+
+global $edit_tagid_blacklist;
+// 827571 = WeGebAU, 7635 = Bildungspaket, 833621 = Bildungsprämie, 7464 = Förderprogramme (der Länder), 9846 = Politische Bildung (Förderung), 827691 = Politische Bildung (HH) Förderung Kurse 2017, 832831 = Politische Bildung (HH) Förderung Kurse 2018, 834371 = Politische Bildung (HH) Förderung Kurse 2019, 847861 = Politische Bildung (HH) Förderung Kurse 2020, 852321 = Politische Bildung (HH) Förderung Kurse 2021
+$edit_tagid_blacklist = array(827571, 7635, 833621, 7464, 9846, 827691, 832831, 834371, 847861, 852321);
+
 // synonym => original
 global $geomap_orte;
 $geomap_orte = array(
-    'Frankfurt' => "Frankfurt am Main",
-    'Hofheim' => "Hofheim am Taunus",
-    'Bad Homburg' => "Bad Homburg v.d.H.",
-    'HH' => "Hamburg",
-    'Barmbronx' => "Barmbek-Nord"
+    'Frankfurt'     => "Frankfurt am Main",
+    'Hofheim'       => "Hofheim am Taunus",
+    'Bad Homburg'   => "Bad Homburg v.d.H.",
+    'HH'            => "Hamburg",
+    'Barmbronx'     => "Barmbek-Nord"
 );
 
 // macht nichts, wenn SW umbenannt wird: nur zur leichteren Lesbarkeit. Muss nur im Code konsistent verwendet werden.
@@ -58,12 +71,8 @@ $controlTags = array(
     "Glossar:unterrichtsart_speichern" => 14201
 );
 
-global $edit_tagid_blacklist;
-// 827571 = WeGebAU, 7635 = Bildungspaket, 833621 = Bildungsprämie, 7464 = Förderprogramme (der Länder), 9846 = Politische Bildung (Förderung), 827691 = Politische Bildung (HH) Förderung Kurse 2017, 832831 = Politische Bildung (HH) Förderung Kurse 2018, 834371 = Politische Bildung (HH) Förderung Kurse 2019, 847861 = Politische Bildung (HH) Förderung Kurse 2020, 852321 = Politische Bildung (HH) Förderung Kurse 2021
-$edit_tagid_blacklist = array(827571, 7635, 833621, 7464, 9846, 827691, 832831, 834371, 847861, 852321); 
-
 global $nonvenues;
-$nonvenues = array(".*ohne .*", ".*unbekannt.*", ".*E-Learning.*", ".*virtuell.*", ".*Web-Seminar.*", ".*Webinar.*", ".*Online.*", ".*WWW.*", ".*Fernstudium.*", ".*Live", ".*Internet.*", ".*Cloud.*", ".*Zoom.*", "N\.N\.", "--");
+$nonvenues = array(".*ohne .*", ".*unbekannt.*", ".*E-Learning.*", ".*virtuell.*", ".*Web-Seminar.*", ".*Webinar.*", ".*Online.*", ".*WWW.*", ".*Fernstudium.*", ".*Fernunterricht.*", ".*Live", ".*Internet.*", ".*Cloud.*", ".*Zoom.*", "N\.N\.", "--");
 
 // Only applies to full text search and venue/city detection - NOT for standard tag search!
 // Don't add operator keywords like "oder", "bei"... !
