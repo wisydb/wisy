@@ -90,13 +90,13 @@ class WISY_INTELLISEARCH_CLASS
 	
 	function getInfo()
 	{
-		$ret = $this->searcher->getInfo();
-			
-		$ret['suggestions'] = $this->suggestions;
-		$ret['changed_query'] = $this->changed_query;
-		$ret['changed_cnt'] = $this->getKurseCount();
-		
-		return $ret;
+	    $ret = $this->searcher->getInfo();
+	    
+	    $ret['suggestions'] = $this->suggestions;
+	    $ret['changed_query'] = trim($this->changed_query) != "" ? $this->changed_query : $this->searcher->get_changedQueryString();
+	    $ret['changed_cnt'] = $this->getKurseCount();
+	    
+	    return $ret;
 	}
 	
 	public function getFoundVenue() {
@@ -198,6 +198,14 @@ class WISY_INTELLISEARCH_CLASS
 	
 	public function getAssumedLocation() {
 	    return $this->searcher->getAssumedLocation();
+	}
+	
+	public function get_postScript() {
+	    return $this->searcher->get_postScript();
+	}
+	
+	public function get_changedQueryString() {
+	    return $this->searcher->get_changedQueryString();
 	}
 	
 };

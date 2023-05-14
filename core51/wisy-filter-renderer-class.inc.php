@@ -70,7 +70,7 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 			$renderformData['records_dauer'] = array();
 			$renderformData['records_dauer_min'] = 0;
 			$renderformData['records_dauer_max'] = 0;
-    		$this->db->query("SELECT preis, beginn, plz, ort, dauer FROM kurse_durchfuehrung, durchfuehrung WHERE primary_id IN($kursids) AND id=secondary_id AND (beginn>='".strftime("%Y-%m-%d 00:00:00")."' OR (beginn='0000-00-00 00:00:00' AND beginnoptionen>0))");
+    		$this->db->query("SELECT preis, beginn, plz, ort, dauer FROM kurse_durchfuehrung, durchfuehrung WHERE primary_id IN($kursids) AND id=secondary_id AND (beginn>='".ftime("%Y-%m-%d 00:00:00")."' OR (beginn='0000-00-00 00:00:00' AND beginnoptionen>0))");
     		while( $this->db->next_record() )
     		{
     		    $renderformData['preis'] = intval($this->db->fcs8('preis'));
@@ -309,25 +309,29 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 	        $orders = $orders_custom;
 	    }
 	    
+	    
 	    $portal_order = $this->framework->specialSortOrder ? $this->framework->specialSortOrder : $this->framework->iniRead('kurse.sortierung', false);
 	    
+	    // $portal_order = $this->framework->iniRead('kurse.sortierung', false); // ?
 	    if($portal_order && $renderformData['order'] == '') $renderformData['order'] = $portal_order;
 	    if($renderformData['order'] == '') $renderformData['order'] = 'b';
 	    
 	    // display sort order filter, except if fulltext search (b/c then sorted by match category automatically + RAND as secondary criteria)
 	    if( stripos($this->framework->QS, 'volltext:') === FALSE && stripos($this->framework->QF, 'volltext:') === FALSE ) {
-    	    echo '<fieldset class="wisyr_filtergroup wisyr_filter_select filter_sortierung ui-front">';
-    	    echo '	<legend data-filtervalue="' . str_replace('- '.$this->max_preis, '', $orders[$renderformData['order']]) . '" >Sortierung</legend>';
-    	    echo '	<select name="filter_order" class="wisyr_selectmenu">';
-    	    foreach($orders as $key => $value)
-    	    {
-    	        echo '		<option value="' . $key . '"';
-    	        if($key == $renderformData['order']) echo ' selected="selected"';
-    	        echo ' class="order_'.$key.'"';
-    	        echo '>' . $value . '</option>';
-    	    }
-    	    echo '	</select>';
-    	    echo '</fieldset>';
+	        echo '<fieldset class="wisyr_filtergroup wisyr_filter_select filter_sortierung ui-front ">';
+	        echo '	<legend data-filtervalue="' . str_replace('- '.$this->max_preis, '', $orders[$renderformData['order']]) . '" >Sortierung</legend>';
+	        echo '	<select name="filter_order" class="wisyr_selectmenu">';
+	        foreach($orders as $key => $value)
+	        {
+	            if( $this->framework->getSearchType() != "Anbietersuche" || in_array($key, array('a')) ) {
+	                echo '		<option value="' . $key . '" ';
+	                if($key == $renderformData['order']) echo ' selected="selected"';
+	                echo ' class="order_'.$key.'"';
+	                echo '>' . $value . '</option>';
+	            }
+	        }
+	        echo '	</select>';
+	        echo '</fieldset>';
 	    }
 	    
 	    echo '</form>';
@@ -825,7 +829,7 @@ class WISY_FILTERMENU_ITEM
 	{
 	    // nur die Stichwoerter zurueckgeben, die im aktuellem Portal auch verwendet werden!
 	    $keyPrefix = "advStichw.$flag";
-	    $magic = strftime("%Y-%m-%d-v5-").md5($GLOBALS['wisyPortalFilter']['stdkursfilter']);
+	    $magic = ftime("%Y-%m-%d-v5-").md5($GLOBALS['wisyPortalFilter']['stdkursfilter']);
 	    if( $this->framework->cacheRead("adv_stichw.$flag.magic") != $magic )
 	    {
 	        $specialInfo =& createWisyObject('WISY_SPECIAL_INFO_CLASS', $this->framework);

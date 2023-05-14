@@ -371,7 +371,7 @@ function formatItem(row)
 		tag_name = htmlspecialchars(tag_name);
 	}
 	
-	return '<span class="'+row_class+'">' + row_prefix + tag_name + row_postfix + '</span>';
+	return '<span class="'+row_class+'">' + row_prefix + '<span class="tag_name">' + tag_name + '</span>' + row_postfix + '</span>';
 }
 
 function formatResult(row) {
@@ -784,12 +784,13 @@ if (jQuery.ui)
  * advanced search stuff
  *****************************************************************************/
 
-// prevent empty search (< 2 chars): on hompage: output message, on other page: search for all courses
+// prevent empty search (<2 chars): on hompage: output message, on other page: search for all courses
 function preventEmptySearch(homepage) {
  
+  // ! $("#wisy_searcharea form[action=search]").length &&
+  
   // only if no other submit event is attached to search submit button:
-  // Array.isArray($("#wisy_searcharea form[action=search]")) => why array before?
-  if( $("#wisy_searcharea form[action=search]").length && typeof $._data( $("#wisy_searcharea form[action=search]")[0], "events" ) == 'undefined' ) {
+  if( Array.isArray($("#wisy_searcharea form[action=search]")) && typeof $._data( $("#wisy_searcharea form[action=search]")[0], "events" ) == 'undefined' ) {
     
    $('#wisy_searcharea form[action=search]').on('submit', function(e) {
     e.preventDefault();
@@ -1619,6 +1620,24 @@ $().ready(function()
 	  $("form[name='filterform']").prepend("<input type=hidden name='qtrigger' value="+window.qtrigger+">");
 	 if(window.force)
 	  $("form[name='filterform']").prepend("<input type=hidden name='force' value="+window.force+">");
+
+	// Make sure human triggered fulltext search through menu appends necessary parameters
+ 	$('a[data-searchtype="volltext"]').click(function(event){
+  	 event.preventDefault();
+  	 href = $(this).attr('href')+'&qsrc=m&qtrigger=h';
+  	 window.location.href = href;
+ 	});
+
+ 	// Add human trigger signal to fulltext links.
+ 	// They should only have this parameter through Javascript as simple "if human check", so fulltext search isn't indexed by search engine etc.
+ 	if( jQuery('.wisyp_search').length ) { 
+	 jQuery( 'a[data-volltextlink]' ).each( function(){ jQuery(this).attr('href', jQuery(this).attr('href')+'&qtrigger=h'); }); 
+ 	}
+
+ 	// Add signal to menu link clicks
+ 	if( jQuery('#themenmenue').length ) {
+  	 jQuery('#themenmenue .dropdown a').click(function(){ jQuery(this).attr('href', jQuery(this).attr('href')+'&qtrigger=m') });
+ 	}
 	
 });
 
@@ -1757,3 +1776,69 @@ var ss = unescape("%DF");
    
  });
  
+/***********************************************
+ * viewport size
+ ***********************************************/
+function dw_getWindowDims() {
+    var doc = document, w = window;
+    var docEl = (doc.compatMode && doc.compatMode === 'CSS1Compat') ? doc.documentElement : doc.body;
+    
+    var width = docEl.clientWidth;
+    var height = docEl.clientHeight;
+    
+    // mobile zoomed in?
+    if ( w.innerWidth && width > w.innerWidth ) {
+        width = w.innerWidth;
+        height = w.innerHeight;
+    }
+    
+    return {width: width, height: height};
+}
+
+var windowDims = dw_getWindowDims();
+
+/***********************************************
+ * editor
+ ***********************************************/
+
+/* WYSIWYG */
+$(function() { 
+ if( $('.wisyp_edit').length && $('.format_buttons').length ) { 
+  $('.format_buttons a').click(function(e) {
+   switch( $(this).data('role') ) {
+    case 'p':
+		break;
+    default:
+		// If using contentEditable: execCommand() affects the currently active editable element!
+		document.execCommand($(this).data('role'), false, null);
+    	break;
+   }
+  });
+ }
+});
+
+/* submit edit form after checks etc. */
+function finalizeSubmit() {
+	
+	// write editable div content to textarea
+	// b/c only textarea content can be processed as form element
+	jQuery('#beschreibung').text( jQuery( '#edit_beschreibung' ).html() );
+	
+	// write editable divs content to next element (textarea)
+	jQuery('.edit_bemerkungen').each(function(){ 
+		jQuery(this).next().val( jQuery(this).html()); 
+	});
+	
+	// Get the form element
+    var form = jQuery('form[name=kurs]');
+
+    // Check if the form is valid using the reportValidity method
+	// = browser form check via pattern attribute
+    if (form[0].reportValidity()) {
+	
+    	// If the form is valid, submit form
+        form.submit();
+
+    }
+
+}

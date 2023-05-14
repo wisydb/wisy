@@ -103,7 +103,7 @@ class WISY_TAGSUGGESTOR_CLASS
 	            for( $i = 1; $i < sizeof((array) $tag_ids_arr); $i++ ) {
 	                $sql .= " AND t.kurs_id IN(SELECT kurs_id FROM x_kurse_tags WHERE tag_id=".intval($tag_ids_arr[$i]) . ") ";
 	            }
-	            $sql .= " AND k.beginn>=".$this->db2->quote(strftime("%Y-%m-%d"));
+	            $sql .= " AND k.beginn>=".$this->db2->quote(ftime("%Y-%m-%d"));
 	                
 	                $freq = 0;
 	                $this->db2->query($sql);

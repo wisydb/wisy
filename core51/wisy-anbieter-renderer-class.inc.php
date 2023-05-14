@@ -100,20 +100,21 @@ class WISY_ANBIETER_RENDERER_CLASS
 		
 		$kursId			= intval($kursId);
 		$suchname		= $db->fcs8('suchname');
-		$postname		= htmlentities($db->fcs8('postname'));
-		$strasse		= htmlentities($db->fcs8('strasse'));
-		$plz			= htmlentities($db->fcs8('plz'));
-		$ort			= htmlentities($db->fcs8('ort'));
-		$stadtteil		= htmlentities($db->fcs8('stadtteil'));
-		$land			= htmlentities($db->fcs8('land'));
-		$anspr_tel		= htmlentities($db->fcs8('anspr_tel'));  // Achtung, Bindestrich muss gueltig sein, sonst wird nichts angezeigt
-		$anspr_fax		= htmlentities($db->fcs8('anspr_fax'));
-		$anspr_name		= htmlentities($db->fcs8('anspr_name'));
-		$anspr_email	= trim(htmlentities($db->fcs8('anspr_email')));
-		$anspr_zeit		= htmlentities($db->fcs8('anspr_zeit'));
-		$homepage		= htmlentities($db->fcs8('homepage'));
-		$din_nr			= htmlentities($db->fcs8('din_nr'));
-		$leitung_name   = htmlentities($db->fcs8('leitung_name'));
+		$postname		= htmlentities(strval($db->fcs8('postname')));
+		$adresszusatz	= htmlentities(strval($db->fcs8('adresszusatz')));
+		$strasse		= htmlentities(strval($db->fcs8('strasse')));
+		$plz			= htmlentities(strval($db->fcs8('plz')));
+		$ort			= htmlentities(strval($db->fcs8('ort')));
+		$stadtteil		= htmlentities(strval($db->fcs8('stadtteil')));
+		$land			= htmlentities(strval($db->fcs8('land')));
+		$anspr_tel		= htmlentities(strval($db->fcs8('anspr_tel')));  // Achtung, Bindestrich muss gueltig sein, sonst wird nichts angezeigt
+		$anspr_fax		= htmlentities(strval($db->fcs8('anspr_fax')));
+		$anspr_name		= htmlentities(strval($db->fcs8('anspr_name')));
+		$anspr_email	= trim(htmlentities(strval($db->fcs8('anspr_email'))));
+		$anspr_zeit		= htmlentities(strval($db->fcs8('anspr_zeit')));
+		$homepage		= htmlentities(strval($db->fcs8('homepage')));
+		$din_nr			= htmlentities(strval($db->fcs8('din_nr')));
+		$leitung_name   = htmlentities(strval($db->fcs8('leitung_name')));
 		$gruendungsjahr = intval($db->f('gruendungsjahr'));
 		$rechtsform     = intval($db->f('rechtsform'));
 		$pruefsiegel_seit = $db->fcs8('pruefsiegel_seit');
@@ -144,7 +145,8 @@ class WISY_ANBIETER_RENDERER_CLASS
 		);		
 		
 		// Name und Adresse
-		$vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_name" itemprop="name">'. ($postname? $postname : htmlentities($suchname)) . '</div>';
+		$vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_name" itemprop="name">'. ($postname? $postname : htmlentities(strval($suchname))) . '</div>';
+		$vc['Adresse'] .= $adresszusatz ? "\n" . '<div class="wisyr_anbieter_adresszusatz">'. $adresszusatz . '</div>' : '';
 		$vc['Adresse'] .= "\n" . '<div class="wisyr_anbieter_adresse" itemprop="address" itemscope itemtype="https://schema.org/PostalAddress">';
 
 		$map_strasse = urlencode(PHP7 ? utf8_encode(html_entity_decode($strasse)) : html_entity_decode($strasse));
@@ -570,7 +572,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		if( !$db->next_record() || $db->fcs8('freigeschaltet')!=1 ) {
 		    $this->framework->error404(); // record does not exist/is not active, report a normal 404 error, not a "Soft 404", see  http://goo.gl/IKMnm -- fuer nicht-freigeschaltete Datensaetze, s. [here]
 		}
-		$din_nr			= htmlentities(cs8($db->fs('din_nr')));
+		$din_nr			= htmlentities(strval(cs8($db->fs('din_nr'))));
 		$suchname		= $db->fcs8('suchname');
 		$typ            = intval($db->f('typ'));
 		$firmenportraet	= trim($db->fcs8('firmenportraet'));
@@ -641,7 +643,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		echo '<div class="wisyr_anbieter_kopf '.($logo_name? "" : "nologo").'">';
 		echo "\n\n" . '<h1 class="wisyr_anbietertitel">';
 			if( $typ == 2 ) echo '<span class="wisy_icon_beratungsstelle">Beratungsstelle<span class="dp">:</span></span> ';
-			echo htmlentities($suchname);
+			echo htmlentities(strval($suchname));
 		echo '</h1>';
 		
 		if( $readsp_embedurl = $this->framework->iniRead('readsp.embedurl', false) )

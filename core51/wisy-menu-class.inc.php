@@ -275,12 +275,6 @@ class WISY_MENU_CLASS
             $url = 'search?q=' . urlencode( (PHP7 ? utf8_decode(g_sync_removeSpecialChars($g_keywords[ $keywordId ])) : g_sync_removeSpecialChars($g_keywords[ $keywordId ])) ) . $additionalqStr;
         }
         
-        if(strpos($url, "indertages") !== FALSE) {
-            $file = fopen("test.txt", "w+");
-            fwrite($file, $url."\n");
-            fclose($file);
-        }
-        
         $item = new WISY_MENU_ITEM($manualTitle!=''? $manualTitle : $autoTitle, $url, $aparam, $level);
         
         // check, if there are child items
@@ -403,7 +397,8 @@ class WISY_MENU_CLASS
             if( $title == '' ) $title = 'OhneName';
         }
         
-        return array( new WISY_MENU_ITEM($title, $url, $aparam, $level) );
+        $wisy_menu_item = new WISY_MENU_ITEM($title, $url, $aparam, $level);
+        return array( $wisy_menu_item );
     }
     
     function getHtml()
@@ -411,7 +406,7 @@ class WISY_MENU_CLASS
         global $wisyPortalEinstellungen;
         global $wisyPortalModified;
         
-        $cacheKey = $wisyPortalModified . ' ' .strftime('%Y-%m-%d %H:00:00'). ' v7'; // the key changes if the portal record is updated or at least every hour (remember __DATE__ etc.)
+        $cacheKey = $wisyPortalModified . ' ' .ftime('%Y-%m-%d %H:00:00'). ' v7'; // the key changes if the portal record is updated or at least every hour (remember __DATE__ etc.)
         if( $this->framework->cacheRead("menu.{$this->prefix}.key", '')==$cacheKey )
         {
             // read the menu from the cache ...

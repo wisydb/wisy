@@ -375,7 +375,7 @@ function formatItem(row)
 		tag_name = htmlspecialchars(tag_name);
 	}
 	
-	return '<span class="'+row_class+'">' + row_prefix + tag_name + row_postfix + '</span>';
+	return '<span class="'+row_class+'">' + row_prefix + '<span class="tag_name">' + tag_name + '</span>' + row_postfix + '</span>';
 }
 
 function formatResult(row) {
@@ -1250,11 +1250,29 @@ $().ready(function()
 	   });
 	 }
 	
-	// Human triggered search, propagate to filter form + pagination
+	 // Human triggered search, propagate to filter form + pagination
 	 if(window.qtrigger)
 	  $("form[name='filterform']").prepend("<input type=hidden name='qtrigger' value="+window.qtrigger+">");
 	 if(window.force)
 	  $("form[name='filterform']").prepend("<input type=hidden name='force' value="+window.force+">");
+
+	 // Make sure human triggered fulltext search through menu appends necessary parameters
+	 $('a[data-searchtype="volltext"]').click(function(event){
+	  event.preventDefault();
+	  href = $(this).attr('href')+'&qsrc=m&qtrigger=h';
+	  window.location.href = href;
+	 });
+	
+	 // Add human trigger signal to fulltext links.
+	 // They should only have this parameter through Javascript as simple "if human check", so fulltext search isn't indexed by search engine etc.
+	 if( jQuery('.wisyp_search').length ) { 
+		jQuery( 'a[data-volltextlink]' ).each( function(){ jQuery(this).attr('href', jQuery(this).attr('href')+'&qtrigger=h'); }); 
+	 }
+	
+	 // Add signal to menu link clicks
+	 if( jQuery('#themenmenue').length ) {
+	  jQuery('#themenmenue .dropdown a').click(function(){ jQuery(this).attr('href', jQuery(this).attr('href')+'&qtrigger=m') });
+	 }
 	
 });
 

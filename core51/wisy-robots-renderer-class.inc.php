@@ -170,7 +170,7 @@ class WISY_ROBOTS_RENDERER_CLASS
 	    }
 	    
 		$this->urlsAdded ++;
-		return "<url><loc>{$this->absPath}$url</loc><lastmod>" .strftime("%Y-%m-%d", $lastmod). "</lastmod><changefreq>$changefreq</changefreq></url>\n";
+		return "<url><loc>{$this->absPath}$url</loc><lastmod>" .ftime("%Y-%m-%d", $lastmod). "</lastmod><changefreq>$changefreq</changefreq></url>\n";
 	}
 
 	function createSitemapXml(&$sitemap /*by reference to save some MB*/)
@@ -235,7 +235,7 @@ class WISY_ROBOTS_RENDERER_CLASS
 
 		// sitemap end
 		$sitemap .= "<!-- $this->urlsAdded URLs added -->\n";
-		$sitemap .= "<!-- timestamp: ".strftime("%Y-%m-%d %H:%M:%S")." -->\n";
+		$sitemap .= "<!-- timestamp: ".ftime("%Y-%m-%d %H:%M:%S")." -->\n";
 		$sitemap .= "</urlset>\n";
 	}
 	

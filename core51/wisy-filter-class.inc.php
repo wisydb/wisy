@@ -399,32 +399,32 @@ class WISY_FILTER_CLASS
 			);
 	}
 	
-	// TODO db: Die Funktion ist jetzt gedoppelt, aufräumen
+	// TODO db: Die Funktion ist jetzt gedoppelt, aufr√§umen
 	function getDates()
 	{
-		$onedaysec = 24*60*60;
-		$heute = mktime(0, 0, 0);
-		
-		$ret = array();
-		$ret['vorgestern'] = strftime('%d.%m.%Y', $heute-$onedaysec*2);
-		$ret['gestern'] = strftime('%d.%m.%Y', $heute-$onedaysec);
-		$ret['heute'] = strftime('%d.%m.%Y', $heute);
-		$ret['morgen'] = strftime('%d.%m.%Y', $heute+$onedaysec);
-		$ret['uebermorgen'] = strftime('%d.%m.%Y', $heute+$onedaysec*2);
-		
-		// nächsten Montag herausfinden
-		$test = $heute + $onedaysec;
-		while( 1 )
-		{
-			$info = getdate($test);
-			if( $info['wday'] == 1 )
-				{ break; }
-			$test += $onedaysec;
-		}
-		for( $i = 1; $i <= 9 /* s.a. (1) */; $i++ )
-			$ret['montag'.$i] = strftime('%d.%m.%Y', $test + $onedaysec * 7 * ($i-1));
-		
-		return $ret;
+	    $onedaysec = 24*60*60;
+	    $heute = mktime(0, 0, 0);
+	    
+	    $ret = array();
+	    $ret['vorgestern']     = ftime('%d.%m.%Y', $heute-$onedaysec*2);
+	    $ret['gestern']        = ftime('%d.%m.%Y', $heute-$onedaysec);
+	    $ret['heute']          = ftime('%d.%m.%Y', $heute);
+	    $ret['morgen']         = ftime('%d.%m.%Y', $heute+$onedaysec);
+	    $ret['uebermorgen']    = ftime('%d.%m.%Y', $heute+$onedaysec*2);
+	    
+	    // naechsten Montag herausfinden
+	    $test = $heute + $onedaysec;
+	    while( 1 )
+	    {
+	        $info = getdate($test);
+	        if( isset($info['wday']) && $info['wday'] == 1 )
+	        { break; }
+	        $test += $onedaysec;
+	    }
+	    for( $i = 1; $i <= 9 /* s.a. (1) */; $i++ )
+	        $ret['montag'.$i] = ftime('%d.%m.%Y', $test + $onedaysec * 7 * ($i-1));
+	        
+	        return $ret;
 	}
 	
 	// TODO db: Die Funktion ist jetzt gedoppelt, aufräumen
@@ -432,7 +432,7 @@ class WISY_FILTER_CLASS
 	{
 		// nur die stichwörter zurückgeben, die im aktuellem Portal auch verwendet werden!
 		$keyPrefix = "advStichw.$flag";
-		$magic = strftime("%Y-%m-%d-v5-").md5($GLOBALS['wisyPortalFilter']['stdkursfilter']);
+		$magic = ftime("%Y-%m-%d-v5-").md5($GLOBALS['wisyPortalFilter']['stdkursfilter']);
 		if( $this->framework->cacheRead("adv_stichw.$flag.magic") != $magic )
 		{
 			$specialInfo =& createWisyObject('WISY_SPECIAL_INFO_CLASS', $this->framework);
@@ -511,13 +511,13 @@ class WISY_FILTER_CLASS
 				}
 
 				
-				if( $preset['comma_to_slash'] )
+				if( isset($preset['comma_to_slash']) && $preset['comma_to_slash'] )
 				{
-					$value = str_replace(', ', '/', $value);
-					$value = str_replace(',', '/', $value);
+				    $value = str_replace(', ', '/', $value);
+				    $value = str_replace(',', '/', $value);
 				}
-	
-				if( $preset['function'] ) $field = trim($preset['function'], ':');
+				
+				if( isset($preset['function']) && $preset['function'] ) $field = trim($preset['function'], ':');
 				
 				$queryfilters[] = array('field' => $field, 'value' => $value);
 			}
@@ -986,7 +986,8 @@ class WISY_FILTER_CLASS
 	                                        $filterlabel = str_replace('Dauer', 'Dauer min', $filterlabel);
 	                                }
 	                                break;
-	                                
+	                    
+	                    //almost unnecessary, b/c $value usually empty
 	                    case 'fav':
 	                        $ignore = true;
 	                        break;

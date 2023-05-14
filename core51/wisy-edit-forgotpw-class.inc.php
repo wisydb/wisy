@@ -137,7 +137,7 @@ __NAME__";
 			{
 				$anbieterSuchname = $db->f8('suchname');
 				$newpassword = genpassword();
-				$notizen = strftime('%d.%m.%y') . ": Neues Passwort mit Passwort-Vergessen-Funktion generiert\n" . $db->f8('notizen');
+				$notizen = ftime('%d.%m.%y') . ": Neues Passwort mit Passwort-Vergessen-Funktion generiert\n" . $db->f8('notizen');
 				
 				$db->query("UPDATE anbieter SET pflege_passwort=".$db->quote(crypt($newpassword, $salt)).", notizen=".$db->quote($notizen)." WHERE id=$anbieterId;");
 				

@@ -82,11 +82,7 @@ class WISY_KURS_ANALYZER_CLASS
         global $hidden_stichwort_eigenschaften;
         
         $sql = "SELECT id, stichwort, eigenschaften FROM stichwoerter LEFT JOIN {$table}_stichwort ON id=attr_id WHERE primary_id=$kursId "
-        ."AND eigenschaften=$typeId ORDER BY structure_pos;";
-        
-        if($_GET['debug'] == 3)
-            echo "<br><small>".$sql."</small><br>";
-            
+        ."AND eigenschaften=$typeId ORDER BY structure_pos;";    
             $db->query($sql);
             while( $db->next_record() )
             {
@@ -105,9 +101,6 @@ class WISY_KURS_ANALYZER_CLASS
         global $hidden_stichwort_eigenschaften;
         
         $sql = "SELECT x_tags.tag_name, x_tags.tag_type FROM x_{$table}_tags, x_tags WHERE x_{$table}_tags.tag_id = x_tags.tag_id AND x_tags.tag_type={$typeId} AND x_{$table}_tags.kurs_id={$kursId}";
-        
-        if($_GET['debug'] == 3)
-            echo "<br><small>".$sql."</small><br>";
             
             $db->query($sql);
             while( $db->next_record() )

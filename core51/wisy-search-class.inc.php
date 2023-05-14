@@ -784,8 +784,8 @@ class WISY_SEARCH_CLASS
 					{
 						$offset = intval($matches[1]);
 						$abgelaufeneKurseAnzeigen = 'void';
-						$todayMidnight = strtotime(strftime("%Y-%m-%d"));
-						$wantedday = strftime("%Y-%m-%d", $todayMidnight + $offset*24*60*60);
+						$todayMidnight = strtotime(ftime("%Y-%m-%d"));
+						$wantedday = ftime("%Y-%m-%d", $todayMidnight + $offset*24*60*60);
 						$this->rawWhere .= $this->rawWhere? ' AND ' : ' WHERE ';
 						$this->rawWhere .= "(x_kurse.beginn_last>='$wantedday')"; // 13:58 30.01.2013: war: x_kurse.beginn='0000-00-00' OR ...
 					}
@@ -803,7 +803,7 @@ class WISY_SEARCH_CLASS
 						{
 						    // $abgelaufeneKurseAnzeigen = 'void';
 						    $abgelaufeneKurseAnzeigen = 'yes';
-							$wantedday = strftime("%Y-%m-%d", $timestamp);
+							$wantedday = ftime("%Y-%m-%d", $timestamp);
 							$this->rawWhere .= $this->rawWhere? ' AND ' : ' WHERE ';
 							$this->rawWhere .= "(x_kurse.beginn_last>='$wantedday')"; // 13:59 30.01.2013: war: x_kurse.beginn='0000-00-00' OR ...
 						}
@@ -911,7 +911,7 @@ class WISY_SEARCH_CLASS
 		{
 			if( $abgelaufeneKurseAnzeigen == 'no' )
 			{
-				$today = strftime("%Y-%m-%d");
+				$today = ftime("%Y-%m-%d");
 				
 				$this->rawWhere .= $this->rawWhere? ' AND ' : ' WHERE ';
 				$this->rawWhere .= "(x_kurse.beginn>='$today')"; // 13:59 30.01.2013: war: x_kurse.beginn='0000-00-00' OR ...

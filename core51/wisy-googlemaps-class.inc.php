@@ -1,27 +1,7 @@
 <?php
 
-
-
-
-
-
-
-
-
-
-
-		/*  Google Maps support is deprecated;
-		please refer to WISY_OPENSTREETMAP_CLASS instead! (bp, 14.11.2013)
-
-		
-		
-		
-		
-		
-		
-		
-		
-		
+/*  Google Maps support is deprecated;
+please refer to WISY_OPENSTREETMAP_CLASS instead! (bp, 14.11.2013) */		
 		
 
 /*****************************************************************************
@@ -348,7 +328,7 @@ class WISY_GOOGLEMAPS_CLASS
 				$nexti = $i+1;
 				if( $nexti >= sizeof((array) $this->adr) ) $nexti = 0;
 				
-				$nextShortDescr = $this->adr[$nexti]['descr'];
+				$nextShortDescr = isset($this->adr[$nexti]['descr']) ? strval($this->adr[$nexti]['descr']) : '';
 				$p=strpos($nextShortDescr, '<br />');
 				if($p!==false)
 					$nextShortDescr = substr($nextShortDescr, 0, $p);

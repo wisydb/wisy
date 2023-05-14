@@ -102,9 +102,9 @@ class WISY_SYNC_STATETABLE_CLASS
 	{
 		if( !$this->lock(true) ) { return false; }
 					$updatestick = $this->readState('updatestick', '0000-00-00 00:00:00');
-					if( $updatestick > strftime("%Y-%m-%d %H:%M:00", time() - 3*60) /*wait 3 minutes*/ )
+					if( $updatestick > ftime("%Y-%m-%d %H:%M:00", time() - 3*60) /*wait 3 minutes*/ )
 						{ $this->lock(false); return false; }
-					$this->updatestick_datetime = strftime("%Y-%m-%d %H:%M:00");
+					$this->updatestick_datetime = ftime("%Y-%m-%d %H:%M:00");
 					$this->writeState('updatestick', $this->updatestick_datetime);
 					
 					$what = '';
@@ -120,9 +120,9 @@ class WISY_SYNC_STATETABLE_CLASS
 	}
 	function updateUpdatestick()
 	{
-		if( $this->updatestick_datetime != strftime('%Y-%m-%d %H:%M:00') )
+		if( $this->updatestick_datetime != ftime('%Y-%m-%d %H:%M:00') )
 		{
-			$this->updatestick_datetime = strftime('%Y-%m-%d %H:%M:00');
+			$this->updatestick_datetime = ftime('%Y-%m-%d %H:%M:00');
 			$this->lock(true);
 						$this->writeState('updatestick', $this->updatestick_datetime);
 			$this->lock(false);
@@ -511,7 +511,7 @@ class WISY_SYNC_RENDERER_CLASS
 		$this->anbieter2tag 	= new ATTR2TAG_CLASS($this->tagtable, 'anbieter',		'suchname'		);
 		$this->weekdays			= array('Montags', 'Dienstags', 'Mittwochs', 'Donnerstags', 'Freitags', 'Samstags', 'Sonntags');
 		$this->tagescodes		= array(''/*0*/, 'Ganztags'/*1*/, 'Vormittags'/*2*/, 'Nachmittags'/*3*/, 'Abends'/*4*/, 'Wochenende'/*5*/);
-		$this->today_datetime   = strftime("%Y-%m-%d %H:%M:%S");
+		$this->today_datetime   = ftime("%Y-%m-%d %H:%M:%S");
 		$this->today_datenotime = substr($this->today_datetime, 0, 10);
 		
 		// create hash stichwort => übergeordneteStichwörter
@@ -1311,7 +1311,7 @@ class WISY_SYNC_RENDERER_CLASS
 		            $curr_tags		= array();
 		            $last_kurs_id	= 0;
 		            $result			= array();
-		            $today 			= strftime("%Y-%m-%d");
+		            $today 			= ftime("%Y-%m-%d");
 		            
 		            $limit_i = 0;
 		            $limit_cnt = 200000;
