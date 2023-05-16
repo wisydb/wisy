@@ -669,7 +669,7 @@ class EDIT_RENDERER_CLASS
 				$this->render_data_();
 				$html = ob_get_contents();
 			ob_end_clean();
-			echo utf8_encode($html);
+			echo $html;
 			exit();
 		}
 		else
