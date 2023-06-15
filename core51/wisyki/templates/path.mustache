@@ -1,0 +1,23 @@
+<header>
+    <h1>Scout</h1>
+    <section class="scout-nav">
+        <div class="scout-nav__progress">
+            <span>Schritt</span>
+            <ul>
+                {{ #steps }}
+                <li><button to-step="{{ index }}">{{ nav_label }}</button></li>
+                {{ /steps }}
+            </ul>
+        </div>
+        <button class="btn-link" id="scout-abort"><span>abbrechen</span></button>
+    </section>
+</header>
+<main>
+    <section id="steps">
+        {{ #steps }}
+        <div class="step-container">
+            <article class="step" id="{{ name }}"></article>
+        </div>
+        {{ /steps }}
+    </section>
+</main>

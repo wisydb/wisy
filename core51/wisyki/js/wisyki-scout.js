@@ -57,10 +57,10 @@ const steps = [
 
 const compLevels = {
     O: "ohne Vorkenntnisse",
-    A: "Grundstufe",
+    A: "Basisstufe",
     B: "Aufbaustufe",
     C: "Fortgeschrittenenstufe",
-    D: "Expert*innenstufe",
+    D: "Expertenstufe",
 };
 
 const languageLevels = {
@@ -331,7 +331,7 @@ function initOccupationStep(isStale) {
 
             // Update step completeion state.
             disable(nextButton);
-            autocompleteInput.focus();
+            // autocompleteInput.focus();
         });
 
         // Show autocomplete reults only while the input is focused.
@@ -364,7 +364,7 @@ function initOccupationStep(isStale) {
     // Delay is necessary to prevent window-scrolling issues
     // that can happen when the node is foused while still offscreen.
     if (!autocompleteInput.value) {
-        focusDelayed(autocompleteInput);
+        // focusDelayed(autocompleteInput);
     }
 }
 
@@ -482,7 +482,7 @@ function initSkillsStep(isStale) {
                         autocompleteInput,
                         autocompleteOutput
                     );
-                    autocompleteInput.focus();
+                    // autocompleteInput.focus();
                 })
             );
         });
@@ -513,7 +513,7 @@ function initSkillsStep(isStale) {
 
     // Focus the auocomplete input, if empty.
     if (!autocompleteInput.value) {
-        focusDelayed(autocompleteInput);
+        // focusDelayed(autocompleteInput);
     }
 }
 
@@ -896,23 +896,24 @@ async function getSearchResultPreview(output, text, loader, skill) {
 
     // Set the search id to the output element's attribute.
     output.setAttribute("search-id", response.id);
-    if (response.count == 1) {
-        text.textContent = "1 Kurs gefunden";
-    } else {
-        text.textContent = response.count + " Kurse gefunden";
-    }
+    // if (response.count == 1) {
+    //     text.textContent = "1 Kurs gefunden";
+    // } else {
+    //     text.textContent = response.count + " Kurse gefunden";
+    // }
+    text.textContent = "Kurse anzeigen";
     // Remove the loader spinner from the output element.
     loader.remove();
 
     // If there is at least one search result, enable the output element
     // and add a click listener to show the search result in the next step.
-    if (response.count > 0) {
+    // if (response.count > 0) {
         enable(output);
         output.addEventListener("click", () => {
             currentSearchResult = response.query;
             showStep(steps.indexOf("resultList"));
         });
-    }
+    // }
 }
 
 /**
@@ -1023,21 +1024,35 @@ function initResultListStep(_isStale) {
     search(preview).then((result) => {
         const exactMatchList = renderCourseList(result.exactMatch);
         exactMatchDiv.appendChild(exactMatchList);
-
-        console.log(result.closeMatch);
-        console.log(result.closeMatch.length);
+        
         if (result.closeMatch && Object.keys(result.closeMatch).length > 0) {
             // Set the count of search results.
             const closeMatchDiv = document.createElement('div');
             closeMatchDiv.classList.add('close-matches')
             const closeMatchTitle = document.createElement('p');
-            closeMatchTitle.textContent = "Weitere ähnliche Kurse:";
+            closeMatchTitle.textContent = "Ähnliche Kurse, die dich eventuell auch interessieren könnten:";
             closeMatchDiv.appendChild(closeMatchTitle);
 
             const closeMatchList = renderCourseList(result.closeMatch);
             closeMatchDiv.appendChild(closeMatchList);
             currentStepNode.appendChild(closeMatchDiv);
         }
+
+        const searchMoreBtn = document.createElement('a');
+        searchMoreBtn.className = "link";
+        const searchparams = new URLSearchParams({
+            "qs": preview.skill.label,
+            "filter_niveau": levelGoal,
+        })
+        searchMoreBtn.setAttribute('href', '/search?' + searchparams);
+        searchMoreBtn.setAttribute('target', '_blank');
+        searchMoreBtn.textContent = "Zeige mehr Suchergebnisse";
+
+        const searchMoreDiv = document.createElement('div');
+        searchMoreDiv.className = "searchmore-link";
+        searchMoreDiv.appendChild(searchMoreBtn);
+        currentStepNode.appendChild(searchMoreDiv);
+
     });
 }
 
@@ -1613,14 +1628,32 @@ function updateSkillSelection(checkboxes, input = false) {
  *
  * @returns {Promise} A Promise that resolves with no value.
  */
-async function addSelectedSkill(uri, label) {
+function addSelectedSkill(uri, label) {
     const skill = {
         label: label,
         currentLevel: null,
         levelGoal: null,
-        isLanguageSkill: await isLanguageSkill(uri),
+        isLanguageSkill: null,
         uri: uri,
     };
+
+    skillProfile.skills[uri] = skill;
+    localStorage.setItem("skillProfile", JSON.stringify(skillProfile));
+
+    updateSkillType(uri);
+
+    return;
+}
+
+/**
+ * Updates the skill type of a given skill.
+ * 
+ * @param {string} uri - The URI of the skill to be updated. 
+ * @returns {Promise} A Promise that resolves with no value.
+ */
+async function updateSkillType(uri) {
+    const skill = skillProfile.skills[uri];
+    skill.isLanguageSkill = await isLanguageSkill(uri);
 
     skillProfile.skills[uri] = skill;
     localStorage.setItem("skillProfile", JSON.stringify(skillProfile));
@@ -1647,6 +1680,10 @@ function removeSelectedSkill(uri) {
  * @returns {Promise} - A Promise that resolves to true if the skill is a language skill, false otherwise.
  */
 async function isLanguageSkill(uri) {
+    // Return false if uri does not start with http://data.europa.eu/esco/skill/ and is therefore not an actual esco uri.
+    if (!uri.startsWith("http://data.europa.eu/esco/skill/")) {
+        return false;
+    }
     const params = { uri: uri };
     const url = "./esco/isLanguageSkill?" + new URLSearchParams(params);
     const response = await fetch(url);
@@ -1673,7 +1710,7 @@ async function autocomplete(input, requestID) {
     const searchterm = input.value;
 
     // If search term is too short, return an empty array.
-    if (searchterm.length < 3) {
+    if (searchterm.length < 2) {
         return [];
     }
 
@@ -1740,19 +1777,22 @@ function showAutocompleteResult(suggestions, output, id = null) {
 
     const ul = document.createElement("ul");
     // Iterate through each suggestion.
-    for (const uri in suggestions) {
-
+    console.log(suggestions);
+    for (const suggestion of suggestions) {
         // Skip suggestion if it has already been selected.
-        if (uri in skillProfile.skills) {
+        if (suggestion.uri && suggestion.uri in skillProfile.skills || suggestion.label in skillProfile.skills) {
             continue;
         }
         // Create a button for the suggestion and add it to the list.
-        const suggestion = suggestions[uri];
         const li = document.createElement("li");
         const button = document.createElement("button");
         button.textContent = suggestion.label;
         button.setAttribute("name", suggestion.label);
-        button.setAttribute("id", uri);
+        if (suggestion.uri) {
+            button.setAttribute("id", suggestion.uri);
+        } else {
+            button.setAttribute("id", suggestion.label);
+        }
         skillsBtns.push(button);
         li.appendChild(button);
         ul.appendChild(li);

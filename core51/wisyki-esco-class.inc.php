@@ -120,6 +120,7 @@ class WISYKI_ESCO_CLASS {
 
                 $concepts[$broaderConcept] = [
                     "label" => $skill["title"],
+                    "uri" => $broaderConcept,
                     "count" => 1,
                 ];
             } else {
@@ -211,13 +212,14 @@ class WISYKI_ESCO_CLASS {
         ];
 
         // Build request url.
-        $url = "https://ec.europa.eu/esco/api/search";
+        // $url = "https://ec.europa.eu/esco/api/search";
+        $url = "https://ec.europa.eu/esco/api/suggest2";
         $dataArray = array(
             'text' => $term,
             'language' => 'de',
             'full' => 'false',
             'alt' => 'true',
-            'limit' => $limit > 0 ? $limit: null,
+            'limit' => $limit > 0 ? $limit : null,
         );
 
         if (isset($type) && !empty($type)) {
@@ -228,9 +230,10 @@ class WISYKI_ESCO_CLASS {
         }
 
         if (isset($scheme) && !empty($scheme)) {
-            $schemes = explode(', ', $scheme);
+            $schemes = explode(',', $scheme);
             $esco_schemes = array();
             foreach ($schemes as $s) {
+                $s = trim($s);
                 if (!array_key_exists($s, $available_esco_schemes)) {
                     JSONResponse::error401($scheme . ' is not a valid scheme.');
                 }
@@ -274,7 +277,7 @@ class WISYKI_ESCO_CLASS {
                 }
 
                 $ispartofconcept = false;
-                foreach( $filterconcepts as $filterconcept) {
+                foreach ($filterconcepts as $filterconcept) {
                     if (in_array($filterconcept, $result["broaderHierarchyConcept"])) {
                         $ispartofconcept = true;
                         break;
@@ -288,6 +291,7 @@ class WISYKI_ESCO_CLASS {
 
             $escoSuggestions[$result["uri"]] = [
                 "label" => $result["title"],
+                "uri" => $result["uri"],
                 // "isInScheme"=> $dataArray['isInScheme'],
                 // "broaderHierarchyConcept" => $result["broaderHierarchyConcept"]
             ];
@@ -295,6 +299,7 @@ class WISYKI_ESCO_CLASS {
 
         return $escoSuggestions;
     }
+
 
     /**
      * Calls ESCO API to get the essential skills of an occupation based on the given occupation uri.
@@ -339,6 +344,9 @@ class WISYKI_ESCO_CLASS {
         $response = json_decode($response, true);
         if (array_key_exists('hasEssentialSkill', $response['_links'])) {
             $skills = $response['_links']['hasEssentialSkill'];
+            if (array_key_exists('hasOptionalSkill', $response['_links'])) {
+                $skills = array_merge($skills, $response['_links']['hasOptionalSkill']);
+            }
         } else if (array_key_exists('narrowerSkill', $response['_links'])) {
             $skills = $response['_links']['narrowerSkill'];
         } else {
@@ -349,6 +357,7 @@ class WISYKI_ESCO_CLASS {
         foreach ($skills as $skill) {
             $escoSuggestions[$skill["uri"]] = [
                 "label" => $skill["title"],
+                "uri" => $skill["uri"],
                 "href" => $skill["href"],
             ];
         }
@@ -373,7 +382,7 @@ class WISYKI_ESCO_CLASS {
      * @param int $limit
      * @return array [{"label":"title1","value":"url1"},{"label":"title2","value":"url2"}]
      */
-    function search_wisy($term, $type = null, $scheme = null, $limit = 5) {
+    function search_wisy($term, $limit = 5) {
         $url = $_SERVER['HTTP_HOST'] . '/autosuggest';
 
         $dataArray = array(
@@ -403,7 +412,7 @@ class WISYKI_ESCO_CLASS {
         $search_results = array();
 
         $tags = explode('|', $response);
-        for ($i = 0; $i < count($tags) && $i < $limit; $i++) {
+        for ($i = 0; $i < count($tags); $i++) {
             if ($i % 4 != 0) {
                 continue;
             }
@@ -411,10 +420,14 @@ class WISYKI_ESCO_CLASS {
             if (empty($tag) || str_contains($tag, 'volltext:')) {
                 continue;
             }
+            if (str_contains($tag, '[privatrechtlich]')) {
+                continue;
+            }
             $search_results[] = [
                 "label" =>  utf8_encode($tag),
             ];
         }
+
 
         return $search_results;
     }
@@ -462,7 +475,7 @@ class WISYKI_ESCO_CLASS {
                 if ($scheme == 'extended-skills-hierarchy') {
                     $results = array_merge($results, $this->search_skills_hierarchy($term, $schemelimit));
                 } else if ($scheme == 'sachstichwort') {
-                    $sachstichworte = $this->search_wisy($term, $type, $scheme, $schemelimit);
+                    $sachstichworte = $this->search_wisy($term, $schemelimit);
                 } else {
                     $results = array_merge($results, $this->search_api($term, $type, $scheme, $schemelimit, $filterconcepts));
                 }
@@ -474,9 +487,13 @@ class WISYKI_ESCO_CLASS {
         // If there are esco skills and stichworte with the same label, skip the stichwort.
         if (!empty($sachstichworte)) {
             foreach ($sachstichworte as $stichwort) {
+                // Remove substrings in parentheses at the end of a stichwort.
+                // Example: "Statistik (ESCO)" -> "Statistik"
+                $stichwortlabel = preg_replace('/ *\(.*\)/', '', $stichwort['label']);
                 $duplicate = false;
                 foreach ($results as $skill) {
-                    if ($stichwort['label'] == $skill['label']) {
+                    $skilllabel = preg_replace('/ *\(.*\)/', '', $skill['label']);
+                    if ($stichwortlabel == $skilllabel) {
                         $duplicate = true;
                         break;
                     }
@@ -491,52 +508,39 @@ class WISYKI_ESCO_CLASS {
         //     $results = array_merge($results, $this->search_skills_hierarchy($term, $limit));
         // }
 
-
-
         if ($onlyrelevant) {
             $results = $this->filter_is_relevant($results);
         }
-
-        // // Randomize order of elements, so they are not sorted by scheme.
-        // shuffle($results);
+        
+        usort($results, function ($a, $b) use ($term) {
+            return $this->sort_term_first($a, $b, $term);
+        });
 
         return $results;
     }
 
     /**
-     * Suggests skills based on the given title and description by extracting keywords from the text and searching
-     * the ESCO API for skills that match those keywords.
+     * Sorts the given ESCO results based on whether their labels start with a given search term.
      *
-     * @param string $title The title to extract keywords from.
-     * @param string $description The description to extract keywords from.
-     * @return array An array containing the search terms used and the resulting skill suggestions.
+     * @param array $a The first ESCO result.   ['label' => 'skill1']
+     * @param array $b The second ESCO result.  ['label' => 'skill2']
+     * @param string $searchterm The search term.
+     * @return int Returns -1 if $a starts with $searchterm, 1 if $b starts with $searchterm and 0 if both do not.
      */
-    function suggestSkills(string $title = null, $text): array {
-        // Extract keywords from the title and description.
-        $keywords = array($title);
-        // $keywords = array_merge($keywords, $this->pythonAPI->extract_keywords($title, $text));
+    function sort_term_first($a, $b, $searchterm) {
+        $a_starts_with_search_string = (substr($a["label"], 0, strlen($searchterm)) === $searchterm);
+        $b_starts_with_search_string = (substr($b["label"], 0, strlen($searchterm)) === $searchterm);
 
-        // Build search terms string from extracted keywords and title.
-        $searchterms = join(', ', $keywords);
-
-        // Search ESCO API for skills that match the search terms.
-        $skillSuggestions = array();
-        foreach ($keywords as $keyword) {
-            $skillSuggestions = array_merge($skillSuggestions, $this->search_api($keyword, null, 'member-skills,extended-skills-hierarchy', 3));
+        if ($a_starts_with_search_string && !$b_starts_with_search_string) {
+            return -1;
+        } else if (!$a_starts_with_search_string && $b_starts_with_search_string) {
+            return 1;
+        } else if ($a_starts_with_search_string && $b_starts_with_search_string) {
+            return strlen($a["label"]) > strlen($b["label"]);
+            // return strcmp($a["label"], $b["label"]);
+        } else {
+            return 0;
         }
-        // shuffle($skillSuggestions);
-
-        if(!empty($skillSuggestions)) {
-            $skillSuggestions = array_splice($skillSuggestions, 0, 10, true);
-        }
-        
-
-        // Return the search terms and resulting skill suggestions.
-        $result = array(
-            'searchterms' => $searchterms,
-            'result' => $skillSuggestions,
-        );
-        return $result;
     }
 
     /**
@@ -679,23 +683,6 @@ class WISYKI_ESCO_CLASS {
     }
 
     /**
-     * Renders skill suggestions as a JSON response based on a title and a description provided by a POST Request.
-     *
-     * @return void
-     */
-    function render_suggest_skills() {
-        $json = file_get_contents('php://input');
-        $data = json_decode($json, true);
-        if (empty($data)) {
-            JSONResponse::error400('No valid json provided.');
-        }
-        if (!isset($data['text'])) {
-            JSONResponse::error400('The provided json is missing a text property.');
-        }
-        JSONResponse::send_json_response($this->suggestSkills($data['title'], $data['text']));
-    }
-
-    /**
      * Sends a JSON response for the request to identify wether a given skill identified by its uri is a language skill.
      *
      * @return void
@@ -717,9 +704,6 @@ class WISYKI_ESCO_CLASS {
         switch ($this->request) {
             case 'getConceptSkills':
                 $this->render_skills_of_concept();
-                break;
-            case 'suggestSkills':
-                $this->render_suggest_skills();
                 break;
             case 'autocomplete':
                 $this->render_autocomplete();

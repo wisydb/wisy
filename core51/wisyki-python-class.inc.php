@@ -179,7 +179,7 @@ class WISYKI_PYTHON_CLASS {
                 "keywords" => $keywords
             ],
             "doc" => $doc,
-            "extract_keywords" => count($wisytags) == 0,
+            "extract_keywords" => count($sachstichworte) <= 1,
             "exclude_irrelevant" => true
         ];
 
@@ -188,7 +188,7 @@ class WISYKI_PYTHON_CLASS {
         $url = $this->api_uri . $endpoint;
         $curl = curl_init($url);
         curl_setopt($curl, CURLOPT_POSTFIELDS, $post_data);
-        curl_setopt($curl, CURLOPT_TIMEOUT, 80);
+        curl_setopt($curl, CURLOPT_TIMEOUT, 40);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($curl, CURLINFO_HEADER_OUT, true);
         curl_setopt($curl, CURLOPT_POST, true);
@@ -199,7 +199,7 @@ class WISYKI_PYTHON_CLASS {
         $response = curl_exec($curl);
 
         if (curl_error($curl)) {
-            JSONResponse::error500('Request Error:' . curl_error($curl));
+            // JSONResponse::error500('Request Error:' . curl_error($curl));
             throw new Exception('Request Error:' . curl_error($curl), 1);
         }
 

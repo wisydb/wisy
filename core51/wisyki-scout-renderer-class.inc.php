@@ -55,8 +55,10 @@ class WISYKI_SCOUT_RENDERER_CLASS {
 		$pageTitle = 'Weiterbildungsscout';
 		global $wisyCore;
 
-		// Get additional CSS styles from the config file
+		// Get additional CSS styles from the portal config.
 		$additional_css = explode(',', $this->framework->iniRead('scout.css', ''));
+		// Get additional JS scripts from the portal config.
+		$additional_js = explode(',', $this->framework->iniRead('scout.js', ''));
 		// Get the filepath of the logo to be displayed in the navbar.
 		$logo = $this->framework->iniRead('scout.logo', '');
 ?>
@@ -68,7 +70,7 @@ class WISYKI_SCOUT_RENDERER_CLASS {
 			<meta charset="UTF-8">
 			<meta http-equiv="X-UA-Compatible" content="IE=edge">
 			<meta name="viewport" content="width=device-width, initial-scale=1.0">
-			<link rel="stylesheet" href="<?php echo $wisyCore ?>/wisyki-scout.css">
+			<link rel="stylesheet" href="<?php echo $wisyCore ?>/wisyki/css/scout.css">
 			<?php
 			if ($additional_css) {
 				foreach ($additional_css as $cssfile) {
@@ -80,7 +82,16 @@ class WISYKI_SCOUT_RENDERER_CLASS {
 		</head>
 
 		<body>
-			<script src="<?php echo $wisyCore ?>/wisyki-scout.js" async></script>
+			<script src="<?php echo $wisyCore ?>/wisyki/js/scout.js" async></script>
+			<script src="<?php echo $wisyCore ?>/wisyki/js/main.js" async></script>
+			<?php
+			if ($additional_js) {
+				foreach ($additional_js as $jsfile) {
+					echo ('<script src="' . $jsfile . '" async></script>');
+				}
+			}
+			?>
+    		<script src="https://unpkg.com/mustache@latest"></script>
 			<nav>
 				<a href="/index.php" class="img-link"><img class="portal-logo" src="<?php echo ($logo) ?>" alt="Kursportal Schleswig Holstein" height="60px" width="220px"></a>
 				<div class="action-bar">
@@ -91,27 +102,6 @@ class WISYKI_SCOUT_RENDERER_CLASS {
 					</div>
 				</div>
 			</nav>
-			<header>
-				<section class="tab-nav">
-					<a href="/index.php"><span>Kurssuche</span></a>
-					<div class="selected"><span>Scout</span></div>
-				</section>
-				<section class="scout-nav">
-					<div class="scout-nav__progress">
-						<span>Schritt</span>
-						<ul>
-							<li class="done"><button to-step="0">1</button></li>
-							<li><button to-step="1">2</button></li>
-							<li><button to-step="2">3</button></li>
-							<li><button to-step="3">4</button></li>
-							<li><button to-step="4">5</button></li>
-							<li><button to-step="5">6</button></li>
-						</ul>
-					</div>
-					<button class="btn-link" id="scout-abort"><span>abbrechen</span></button>
-				</section>
-			</header>
-
 		<?php
 	}
 
@@ -124,36 +114,8 @@ class WISYKI_SCOUT_RENDERER_CLASS {
 	function renderMain() {
 		$this->getPrologue();
 		?>
-			<main>
-				<section id="steps">
-					<div class="step-container">
-						<article class="step" id="occupation"></article>
-					</div>
-					<div class="step-container">
-						<div class="loader"></div>
-						<article class="step" id="occupationSkills"></article>
-					</div>
-					<div class="step-container">
-						<article class="step" id="skills"></article>
-					</div>
-					<div class="step-container">
-						<article class="step" id="currentLevel"></article>
-					</div>
-					<div class="step-container">
-						<article class="step" id="levelGoal"></article>
-					</div>
-					<div class="step-container">
-						<article class="step" id="resultOverview">
-							<p><strong>Geschafft!</strong> Ich habe folgende Kurse f&uuml;r Dich gefunden.</p>
-							<ul class="result-list"></ul>
-						</article>
-					</div>
-					<div class="step-container">
-						<article class="step" id="resultList">
-						</article>
-					</div>
-				</section>
-			</main>
+
+			<div id="path"></div>
 
 		<?php
 		$this->getEpilogue();
@@ -188,15 +150,15 @@ class WISYKI_SCOUT_RENDERER_CLASS {
 	?>
 
 		<p>Für welchen Beruf oder welche Tätigkeit suchst Du eine Weiterbildung?</p>
-			<div class="autocomplete-box">
-				<div class="autocomplete-box__input">
-				<i class="icon search-icon"></i>
-					<input type="text" placeholder="Beruf oder Tätigkeit finden" name="esco-occupation-select" id="esco-occupation-select" class="esco-autocomplete" esco-type="occupation" onlyrelevant=False>
-					<button class="clear-input" title="Clear input"><i class="icon close-icon"></i></button>
-				</div>
-				<output name="esco-occupation-autocomplete" for="esco-occupation-select"></output>
+		<div class="autocomplete-box">
+			<div class="autocomplete-box__input">
+			<i class="icon search-icon"></i>
+				<input type="text" placeholder="Beruf oder Tätigkeit finden" name="esco-occupation-select" id="esco-occupation-select" class="esco-autocomplete" esco-type="occupation" onlyrelevant=False>
+				<button class="clear-input" title="Clear input"><i class="icon close-icon"></i></button>
 			</div>
-			<p>Du weißt welche Kompetenzen Du weiterentwickeln möchtest? <a class="link to-skill-step-btn" href="#">Klicke hier</a></p>
+			<output name="esco-occupation-autocomplete" for="esco-occupation-select"></output>
+		</div>
+		<p>Du weißt welche Kompetenzen Du weiterentwickeln möchtest? <a class="link to-skill-step-btn" href="#">Klicke hier</a></p>
 
 		<?php
 	}
