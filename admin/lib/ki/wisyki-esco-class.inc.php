@@ -126,7 +126,7 @@ class WISYKI_ESCO_CLASS {
      * @param string $type
      * @param string $scheme
      * @param int $limit
-     * @return array [{"label":"title1","value":"url1"},{"label":"title2","value":"url2"}]
+     * @return array [{"url1": {"label": "title1"}, {"url2": {"label": "title2"},]
      */
     function search_api($term, $type = null, $scheme = null, $limit = 5) {
         $escoSuggestions =  array();

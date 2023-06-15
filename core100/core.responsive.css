@@ -1,0 +1,1331 @@
+/* Basis-CSS zur responsiven Darstellung eines WISY-Portals */
+
+/* Clearfix und Basics */
+.clearfix:after{clear:both;content:' ';display:block;font-size:0;line-height:0;visibility:hidden;width:0;height:0;}.clearfix{display:inline-block;}* html .clearfix{height: 1%;}.clearfix{display: block;}
+
+body { padding: 0; margin: 0; }
+.acclink { display: none; }
+
+#page { max-width: 1024px; margin: 0 auto; padding: 10px; overflow-x: hidden; }
+
+/* Themenmenue */
+#themenmenue { 
+	background-color: #eee;
+	clear: both;
+}
+#nav-link {
+	display: none;
+	position: absolute;
+	top: 0;
+	right: 0;
+	width: 50px;
+	height: 50px;
+	cursor: pointer;
+}
+#nav-link span, #nav-link span:before, #nav-link span:after {
+	display: block;
+	position: absolute;
+	width: 20px;
+	height: 2px;
+	background-color: #000;
+}
+#nav-link span { 
+	top: 30px;
+	left: 15px;
+	font-size: 0;
+	line-height: 0;
+	text-indent: -100%;
+}
+#nav-link span:before { content: ''; margin-top: -5px; }
+#nav-link span:after { content: ''; margin-top: 5px; }
+
+#nav-link span, #nav-link span:before, #nav-link span:after {
+	-webkit-transition: all 0.5s ease;
+	transition: all 0.5s ease;
+}
+.navshowing #nav-link span {
+	-webkit-transform: rotateZ(-45deg);
+	transform: rotateZ(-45deg);
+}
+.navshowing #nav-link span:before {
+	margin-top: 0;
+	-webkit-transform: rotateZ(90deg);
+	transform: rotateZ(90deg);		
+}
+.navshowing #nav-link span:after { display: none; }
+
+#favlistlink { display: inline-block; padding: 2px; }
+
+/* Contentarea */
+#wisy_contentarea { padding: 0; }
+.wisyr_indent { margin-left: 1em; vertical-align: top; }
+
+.wisy_tagtable .title { float: left; }
+.wisy_tagtable .tag_count { float: right; }
+.wisy_tagtable .wisyr_tag_name a { display: inline-block; max-width: 70%; }
+
+/* ART Icons */
+.wisyr_art_icon,
+.wisyr_art .bu,
+.wisyr_art_wochenende,
+.wisyr_art_details {
+	font-size: 12px;
+	font-weight: bold;
+	margin-right: 4px;
+}
+
+/* Suche: Formular */
+#wisy_searcharea { position: relative; padding: 15px 0 45px 0; }
+#wisy_searcharea .formrow { display: inline; position: relative; }
+#wisy_searcharea label { display: none; }
+#wisy_searchinput {
+	width: 100%;
+	max-width: 500px;
+	font-size: 15px;
+	padding: 5px 15px;
+	box-sizing: border-box;
+}
+#wisy_searchbtn { margin-top: 15px; }
+.wisy_searchhints {
+	position: absolute;
+	bottom: -30px;
+	left: 0;
+}
+
+.wisyr_searchinput { position: relative; }
+.wisyr_searchinput .clear_btn {
+	position: absolute;
+	top: 0;
+	right: 1.5em;
+	width: 1em;
+	height: 1em;
+	background: #fff url(/core51/img/close-red.png) no-repeat center center/1em;
+	cursor: pointer;
+}
+
+/* Suche: Autovervollständigung */
+.ac_results { border: 1px solid #ccc; }
+.ac_results_v2 { z-index: 2222; }
+.ac_results_v2 li { padding: 5px 15px; }
+.ac_even { background-color: #eee; }
+.ac_odd { background-color: #fff; }
+
+/* Erweiterte Suche: Formular */
+
+#adv_all {
+	width: 100%;
+	max-width: 600px;
+	margin: 0 auto;
+}
+#adv_all fieldset { margin-top: 1em; border: 1px solid #666; }
+
+@media screen and (min-width: 640px) {
+	#adv_all fieldset { margin-top: 1.5em; }
+	#adv_all .formrow { position: relative; margin-bottom: 0.5em; }
+	#adv_all label { position: absolute; width: 30%; }
+	#adv_all .formfield { margin-left: 33%; }
+}
+
+/* Tabellen */
+
+/* --- Anbieter - Detail --- */
+.wisyr_anbieter_firmenportraet {
+	min-height: 300px;
+}
+	 
+/* --- Kursliste / Anbieterliste --- */
+
+.wisyr_anbieter_switch,
+.wisyr_kurse_switch { margin-left: 20px; }
+
+.wisy_paginate.wisyr_paginate_top { display: none; }
+.wisy_paginate .wisy_paginate_seitevon,
+.wisyr_listnav { display: none; }
+
+.wisyr_filternav { margin: 10px 0; }
+#filterEmbedded {
+	width: 100%;
+	min-height: 64px;
+	background-color: #eee;
+	padding: 0 10px 30px 10px;
+}
+#wisy_filter_all h2 { font-size: 14px; }
+
+.wisyr_list_footer { margin: 10px 0; }
+.wisyr_rss_link_wrapper { float: left; }
+
+/* --- Anbieterdetailseite: Kontaktdaten */
+.wisyr_anbieteradresse dt {
+    float: left;
+    clear: left;
+	width: 25%;
+	font-weight: bold;
+}
+.wisyr_anbieteradresse dt:after { content: ":"; }
+.wisyr_anbieteradresse dd {
+	margin: 0 0 1em 25%;
+}
+
+/* , print */
+@media screen and (max-width: 760px) {
+	
+	#page { padding-top: 50px; }
+	
+	/* Themenmenue */
+	#themenmenue { display: none; }
+	#nav-link { display: block; }
+	
+	.navshowing #themenmenue {
+		display: block;
+		position: absolute;
+		top: 60px;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		z-index: 330;
+	}
+	#themenmenue ul, #themenmenue li { position: relative; float: none; visibility: visible!important; }
+	#themenmenue li { padding: 0; border: none; background-color: #eee;}
+	#themenmenue a { display: block; padding: 10px; border-bottom: 1px solid #fff; }
+	#themenmenue li.dir { background-color: #ddd; }
+	#themenmenue ul ul { display: none; }
+	#themenmenue ul.dropdown ul { width: 100%; }
+	#themenmenue ul.dropdown ul ul { left: 0; }
+	
+	#favlistlink { width: 100%; }
+	
+	.wisy_searchhints { display: none; }
+	
+	/* Tabellenkopf zugänglich ausblenden */
+	table.wisy_list thead tr { position: absolute; top: -9999px; left: -9999px; }
+	
+	/* Filter */
+	#filterEmbedded { box-sizing: border-box; }
+	#wisy_filter_all .formrow { width: 100%!important; padding: 0; }
+	#wisy_filter_all select { width: 100%; box-sizing: border-box; }
+	#wisy_filter_all #filter { display: block; width: 100%; margin-bottom: 15px; }
+	#wisy_filter_all #filter_buttons { text-align: center; }
+
+	/* --- Kursliste / Anbieterliste auf schmalen Bildschirmen linearisieren a la Mobilmodul ---------------- */
+	
+	.wisyr_anbieter_switch,
+	.wisyr_kurse_switch { display: none; }
+	.wisyr_listnav { display: block; }
+	.wisyq_fav .wisyr_listnav { display: none; }
+	.wisyr_listnav a, .wisyr_listnav span {
+		display: inline-block;
+		width: 33%;
+		max-width: 100%;
+		text-align: center;
+		border: none;
+		padding: 15px 0 10px 0;
+		cursor: pointer;
+	}
+	.wisyr_listnav .active { border-bottom: 2px solid #000; }
+		
+	/* Tabellenelemente umwandeln in Blockelemente */
+	table.wisyr_kursliste, table.wisyr_kursliste thead, table.wisyr_kursliste tbody, table.wisyr_kursliste tr,
+	table.wisyr_anbieterliste, table.wisyr_anbieterliste thead, table.wisyr_anbieterliste tbody, table.wisyr_anbieterliste tr,
+	table.wisy_tagtable, table.wisy_tagtable thead, table.wisy_tagtable tbody, table.wisy_tagtable tr {
+		display: block;
+	}
+	
+	/* Tabellenelemente umwandeln in Inlineelemente */
+	table.wisyr_kursliste th, table.wisyr_kursliste td,
+	table.wisyr_anbieterliste th, table.wisyr_anbieterliste td,
+	table.wisy_tagtable th, table.wisy_tagtable td {
+		display: inline;
+		padding: 0;
+		margin: 0;
+		border: none;
+	}
+	
+	/* Umgeformte Tabelle gestalten */
+	table.wisyr_kursliste tr,
+	table.wisyr_anbieterliste tr,
+	table.wisy_tagtable tr {
+		padding: 0.5em;
+		border-bottom: 1px solid #eee;
+	}
+	
+	table.wisyr_kursliste .wisyr_angebot, table.wisyr_kursliste .wisyr_anbieter,
+	table.wisyr_anbieterliste .wisyr_angebot, table.wisyr_anbieterliste .wisyr_anbieter {
+		display: block; width: 100%;
+	}
+	
+	table.wisy_tagtable .wisyr_indent { margin: 0; }
+	table.wisy_tagtable .ac_indent { padding-left: 2em; }
+	table.wisy_tagtable .wisyr_tag_name a { display: inline; }
+	table.wisy_tagtable .wisyr_tag_name a:after,
+	table.wisy_tagtable .wisyr_tag_type:after { content:"\A"; white-space: pre; }
+	table.wisy_tagtable .tag_count { float: none; }
+	table.wisy_tagtable .wisyr_tag_type, table.wisy_tagtable .wisyr_tag_groups, table.wisy_tagtable .wisyr_tag_info {
+		margin-left: 0.3em;
+	}
+	
+	table.wisyr_kursliste .wisyr_art,
+	table.wisyr_kursliste .wisyr_anbieter_telefon,
+	table.wisyr_kursliste .wisyr_anbieter_profil,
+	table.wisyr_kursliste .wisyr_termin_weitere span,
+	table.wisyr_anbieterliste .wisyr_homepage,
+	table.wisyr_anbieterliste .wisyr_telefon,
+	table.wisyr_anbieterliste .wisyr_email { 
+		display: none;
+	}
+	
+	table.wisyr_kursliste .wisyr_termin_weitere a:before {
+		content: '+';
+	}
+	
+	/* Anbieter-Detail */
+	.wisyr_anbieter_firmenportraet {
+		min-height: 300px;
+	}
+	
+	/* Paginierung */
+	.wisyr_rss_link_wrapper { display: none; }
+	.wisyr_angebote_suchauftrag { display: none; }
+	.wisy_paginate.wisyr_paginate_top { display: none; }
+	.wisy_paginate.wisyr_paginate_bottom {
+		display: block;
+		float: none;
+		position: relative;
+		text-align: center;
+		padding: 15px;
+		background-color: #eee;
+	}
+	.wisy_paginate .wisy_paginate_seitevon { display: inline; }
+	.wisy_paginate_text, .wisy_paginate_pagelink { display: none; }
+	.wisy_paginate_next, .wisy_paginate_prev { position: absolute; top: 10px; right: 5px; }
+	.wisy_paginate_prev { right: auto; left: 5px; }
+	
+	.wisy_paginate a { padding: 5px; }
+	.wisy_paginate .wisy_paginate_next, .wisy_paginate .wisy_paginate_prev { display: inline-block; }
+
+	/* --- Kleinere Tabellen auf schmalen Bildschirmen umformen a la http://elvery.net/demo/responsive-tables/#no-more-tables -------- */
+	
+	/* Tabellenelemente umwandeln in Blockelemente */
+	table.wisyr_durchfuehrungen,
+	table.wisyr_durchfuehrungen thead,
+	table.wisyr_durchfuehrungen tbody,
+	table.wisyr_durchfuehrungen th,
+	table.wisyr_durchfuehrungen td,
+	table.wisyr_durchfuehrungen tr {
+		display: block;
+		border: none;
+	}
+
+	/* Umgeformte Tabelle gestalten */
+	table.wisyr_durchfuehrungen tr {
+		background-color: #eee;
+		margin-bottom: 1em;
+	}
+
+	table.wisyr_durchfuehrungen td {
+		position: relative;
+		width: auto;
+		min-height: 1.5em;
+		padding: 0.5em 0.5em 0.5em 48%;
+		border-bottom: 1px solid #fff;
+	}
+
+	table.wisyr_durchfuehrungen td:before {
+		position: absolute;
+		left: 0.5em;
+		width: 45%;
+		font-weight: bold;
+		white-space: nowrap;
+		padding-right: 1em;
+	}
+
+	/* Tabellenbeschriftung aus data-title Attribut */
+	table.wisyr_durchfuehrungen td:before { content: attr(data-title); }
+	
+	/* Suche: Autovervollständigung */
+	.ac_results_v2 {
+		max-height: none;
+		width: 100%!important;		
+		left: 0!important;
+		padding: 0 10px;
+		box-sizing: border-box;
+		border: none;
+		background-color: transparent;
+	}
+}
+
+/* ---Filter Neue Suche --- */
+#wisy_filterlink {
+	display: none;
+}
+.wisyr_filterform {
+	margin-top: 30px;
+}
+.wisyr_filterform h3,
+.wisyr_filterform h4 {
+	display: inline-block;
+	margin: 0;
+}
+.wisyr_filterform h3,
+.wisy_suggestions h3 { color: #798D94; margin-right: 1em; }
+.wisyr_filterform h4 { font-weight: 300; }
+#wisyr_filterform_close { display: none; }
+
+.wisyr_filterform form {
+	margin-top: 0.5em;
+}
+
+.wisyr_filterform input[type="text"] {
+	width: 75%;
+	padding: 7px 5px;
+	border: 0;
+	border-radius: 2px;
+}
+
+.wisyr_filterform_reset { display: none; }
+
+/* Legend und Fieldset Reset */
+.wisyr_filterform legend { padding: 0; display: table; }
+.wisyr_filterform fieldset { border: 0; padding: 0.01em 0 0 0; margin: 0; min-width: 0; }
+body:not(:-moz-handler-blocked) .wisyr_filterform fieldset { display: table-cell;}
+
+.wisyr_filterform form fieldset.wisyr_filtergroup {
+	position: relative;
+	display: inline-block;
+	width: 7rem;
+	height: 1.75rem;
+	border: 0;
+	border-radius: 2px;
+	background: #EEE;
+	margin-right: 0.3em;
+	cursor: pointer;
+}
+.wisyr_filterform form fieldset.wisyr_filtergroup > legend {
+	position: absolute;
+	left: 0.5em;
+	top: 0.3em;
+}
+.wisyr_filterform form fieldset.wisyr_filtergroup:hover > legend,
+.wisyr_filterform form fieldset.wisyr_filtergroup.active > legend { color: #333; }
+.wisyr_filterform form fieldset.wisyr_filtergroup:focus > legend,
+.wisyr_filterform form fieldset.wisyr_filtergroup:focus-within > legend { color: #333; }
+.wisyr_filterform form fieldset.wisyr_filtergroup:after {
+	content: '';
+	position: absolute;
+	right: 0.1em;
+	top: 0.3em;
+	width: 1.5em;
+	height: 1.5em;
+	/* https://materialdesignicons.com: chevron-down */
+	background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 23 23'%3E%3Cpath fill='%23787878' d='M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z' /%3E%3C/svg%3E") center center/contain;
+}
+
+/* Metagroup: Filtergruppe mit Ueberschrift und Umbruch danach */
+.wisyr_filterform form fieldset.wisyr_filter_metagroup {
+	margin-top: 2em;
+}
+.wisyr_filterform form fieldset.wisyr_filter_metagroup > legend {
+	color: #798D94;
+	font-weight: 700;
+	margin-bottom: 0.5em;
+}
+
+/* Sonderfall "Weitere Kriterien" */
+.wisyr_filterform form fieldset.filter_weiterekriterien,
+.wisyr_filterform form fieldset.filter_weiterekriterien > .wisyr_filtergroup { width: 9rem; }
+.wisyr_filterform form fieldset.filter_weiterekriterien:after {
+	/* https://materialdesignicons.com: plus */
+/* fontabhaengig + wird nicht verstanden // background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'%3E%3Cpath fill='%23787878' d='M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z' /%3E%3C/svg%3E") center center/contain; */
+	background-repeat:no-repeat;
+	right: 0.1em;
+}
+
+.wisyr_filterform form fieldset.filter_weiterekriterien .filter_inner {
+	padding-right: 10px;
+}
+.wisyr_filterform form fieldset.filter_weiterekriterien fieldset {
+	margin-bottom: 1em;
+}
+.wisyr_filterform form fieldset.filter_weiterekriterien legend {
+	margin-bottom: 0.5em;
+}
+.wisyr_filterform form fieldset.filter_weiterekriterien .ui-selectmenu-button {
+	width: 100%;
+	background: #fff;
+}
+.wisyr_filterform form fieldset.filter_weiterekriterien .filter_filtersection_submit { display: none; }
+
+.wisyr_filterform form fieldset.filter_sortierung { 
+	float: right;
+	width: 170px;
+	text-align: right;
+	margin-right: 0;
+	padding: 0;
+	background: transparent;
+}
+.wisyr_filterform form fieldset.filter_sortierung legend,
+.wisyr_filterform form .wisyr_filterform_listheader > fieldset.filter_sortierung legend { display: none; }
+.wisyr_filterform .ui-selectmenu-button {
+	width: 170px;
+	box-sizing: border-box;
+	border: 0;
+	border-radius: 2px;
+	background: #EEE;
+	padding-left: 7px;
+}
+.wisyr_filterform form .wisyr_filterform_listheader {
+	margin-top: 1em;
+}
+.wisyr_filterform form .wisyr_filterform_listheader .wisyr_list_anzahl_angebote {
+	float: left;
+	height: 1.75em;
+	line-height: 1.75rem;
+}
+.wisyr_filterform form .wisyr_filterform_listheader fieldset.filter_sortierung {
+	float: right;
+}
+
+.wisyr_filterform .ui-selectmenu-button .ui-icon {
+	display: none;
+	background-image: none;
+}
+.wisyr_filterform .ui-selectmenu-button .ui-selectmenu-text { color: #606060; margin-right: 0; }
+.wisyr_filterform .ui-selectmenu-button .ui-selectmenu-text:hover { color: #333; }
+.wisyr_filterform .ui-selectmenu-button:after {
+	content: '';
+	position: absolute;
+	right: 0.1em;
+	top: 0.3em;
+	width: 1.5em;
+	height: 1.5em;
+	/* https://materialdesignicons.com: chevron-down */
+	background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23787878' d='M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z' /%3E%3C/svg%3E") center center/contain;
+}
+.wisyr_filterform .ui-selectmenu-menu { text-align: left; }
+.wisyr_filterform .ui-selectmenu-menu .ui-menu-item { background-color: #eee; border: 0; }
+.wisyr_filterform .ui-selectmenu-menu .ui-menu-item-wrapper { padding: 7px; }
+.wisyr_filterform .ui-selectmenu-menu .ui-state-active { border: 0; }
+
+.wisyr_filterform .ui-selectmenu-menu .ui-widget.ui-widget-content {
+	margin-top: 4px;
+	border: 0;
+	border-radius: 2px;
+	box-shadow: -1px 1px 4px rgba(0, 0, 0, 0.4);
+}
+
+.Zebra_DatePicker { margin-left: -100px; }
+.Zebra_DatePicker .dp_daypicker.dp_body th {
+	color: #fff;
+	background: #3E7AB8;
+}
+.Zebra_DatePicker .dp_daypicker.dp_body .dp_current {
+	color: #3E7AB8;
+}
+.wisyr_filterform .Zebra_DatePicker_Icon {
+	display: none;
+}
+
+.wisyr_filterform form fieldset.filter_sortierung:after {
+	display: none;
+	content: '';
+}
+
+.wisyr_filterform fieldset:not(.wisyr_filter_metagroup) > .filter_inner {
+	display: none;
+	position: absolute;
+	top: 32px;
+	left: 0;
+	border-radius: 2px;
+	background: #EEE;
+	box-shadow: -1px 1px 4px rgba(0, 0, 0, 0.4);
+	padding: 10px 20px 20px 10px;
+	z-index: 11;
+}
+.wisyr_filterform fieldset.active .filter_inner { display: block; cursor: default; }
+.wisyr_filterform fieldset:focus .filter_inner,
+.wisyr_filterform fieldset:focus-within > .filter_inner { display: block; cursor: default; }
+.wisyr_filterform .filter_inner legend {
+	color: #798D94;
+	font-weight: 700;
+	margin-bottom: 1em;
+}
+
+.wisyr_filterform .filter_inner legend {
+	font-weight: 500;
+	font-size: 1em;
+}
+
+.wisyr_radiowrapper { display: block; white-space: nowrap; }
+
+.wisyr_filterform form fieldset.wisyr_filtergroup select {
+	line-height: 1.5;
+	background-color: #fff;
+}
+.wisyr_filterform form fieldset.wisyr_filtergroup select option:hover {
+	background-color: #798D94;
+}
+
+.wisyr_filterform form input:disabled + label { color: #999; }
+.wisyr_filterform form input:disabled + label:hover { text-decoration: none; cursor: default; }
+
+.wisyr_filterform .filter_submit {
+	height: 40px;
+	color: #fff;
+	font-size: 14px;
+	text-transform: uppercase;
+	border: none;
+	border-radius: 2px;
+	padding: 7px 15px;
+	margin: 20px 0 10px 0;
+	box-shadow: 0 2px 2px rgba(0, 0, 0, 0.4);
+	-webkit-appearance: none;
+	background-color: #3E7AB8;
+	cursor: pointer;
+}
+
+.wisyr_filterform .filter_zweispaltig .filter_inner,
+.wisyr_filterform .filter_breit .filter_inner { width: 21rem; }
+.filter_spalte1,
+.filter_spalte2 { float: left; width: 50%; }
+.wisyr_filterform .filter_ohnetitel > legend {
+	display: none;
+}
+.wisyr_filterform .filter_inline,
+.wisyr_filterform .filter_inline_desktop {
+	float: left;
+}
+
+.wisyr_filterform form fieldset.filter_weiterekriterien .filter_schmal .ui-selectmenu-button {
+	float: right;
+	width: 49%;
+}
+.wisyr_filterform form fieldset.filter_weiterekriterien .filter_schmal .ui-selectmenu-button:first-of-type {
+	float: left;
+}
+.wisyr_filterform form fieldset.filter_weiterekriterien .ui-selectmenu-menu .ui-state-disabled { display: none; }
+
+/* Kursthemen und andere Linklisten */
+.wisyr_filterlinklist .filter_inner {
+	padding: 0;
+}
+.wisyr_filterlinklist ul {
+	width: 310px;
+	max-height: 50vh;
+	overflow-y: scroll;
+	list-style-type: none;
+	margin: 0;
+	padding: 1em;
+}
+.wisyr_filterlinklist li {
+	margin-bottom: 0.5em;
+}
+.wisyr_filterlinklist input { display: none; }
+
+.wisyr_filterlinklist .wisyr_filter_selected { color: #606060; }
+
+.wisyr_filtergroup.filter_sortierung .filter_inner {
+	width: 180px;
+	left: auto;
+	right: 0;
+}
+
+.wisyr_filtergroup .wisyr_datepicker {
+	padding-right: 20px;
+	/* https://materialdesignicons.com: calendar */
+	background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23787878' d='M19,19H5V8H19M16,1V3H8V1H6V3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3H18V1M17,12H12V17H17V12Z' /%3E%3C/svg%3E") no-repeat 95% center/auto 66%;
+}
+
+/* Clear button */
+.wisyr_filtergroup .filter_clearbutton_wrapper { position: relative; }
+.wisyr_filtergroup .filter_clearbutton_wrapper input[type="text"] { width: 100%;}
+.wisyr_filtergroup .filter_clearbutton_wrapper .clear_btn {
+	position: absolute;
+	top: 0.5em;
+	right: -0.5em;
+	width: 1.5em;
+	height: 1.5em;
+	/* https://materialdesignicons.com: close */
+	background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23787878' d='M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z' /%3E%3C/svg%3E") no-repeat center center/contain;
+	cursor: pointer;
+}
+
+/* Preis und andere Radiolisten */
+.wisyr_filterradiolist input {
+}
+.wisyr_filterradiolist label {
+	display: inline-block;
+	color: #3E7AB8;
+	margin-bottom: 0.3em;
+}
+.wisyr_filterradiolist label:hover {
+	text-decoration: underline;
+	cursor: pointer;
+}
+
+/* Anbieter und andere Radiolinklisten */
+
+.wisyr_filterradiolinklist .filter_inner {
+	width: 26rem;
+	max-height: 50vh;
+	overflow-y: scroll;
+	list-style-type: none;
+	margin: 0;
+	padding: 1em;
+}
+.wisyr_filterradiolinklist .wisyr_radiowrapper {
+	margin-bottom: 0.5em;
+}
+.wisyr_filterradiolinklist .wisyr_radiowrapper input {
+	display: none;
+}
+.wisyr_filterradiolinklist label {
+	display: inline;
+	color: #3E7AB8;
+}
+.wisyr_filterradiolinklist label:hover {
+	text-decoration: underline;
+	cursor: pointer;
+}
+
+/* Checkboxen und Checkboxbuttons */
+.wisyr_radioboxwrapper,
+.wisyr_checkboxwrapper {
+	float: left;
+}
+.wisyr_radiobutton input,
+.wisyr_checkbutton input {
+	display: none;
+}
+.wisyr_radiobutton label,
+.wisyr_checkbutton label {
+	display: block;
+	max-width: 15rem;
+	text-transform: uppercase;
+	padding: 0.5em 1em;
+	margin: 0 0.3em 1em 0;
+	background: #EEE;
+	border-radius: 2px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	cursor: pointer;
+}
+.wisyr_radiobutton input:checked + label,
+.wisyr_checkbutton input:checked + label {
+	color: #fff;
+	background-color: #3E7AB8;
+}
+
+/* Aktive Filter */
+.wisyr_activefilters {
+	position: absolute;
+	top: 4.5rem;
+	left: 0;
+	list-style-type: none;
+	padding: 0;
+	margin: 0 0 0.3em 0;
+}
+.wisyr_activefilters .wisyr_filter {
+	position: relative;
+	float: left;
+	margin-right: 0.5em;
+	margin-bottom: 0.3em;
+	z-index: 9;
+}
+.wisyr_activefilters .wisyr_filter a {
+	color: #fff;
+	font-size: 14px;
+	line-height: 14px;
+	font-weight: 300;
+	background-color: #3E7AB8;
+	border-radius: 2px;
+	padding: 0.5em 1.5em 0.5em 0.5em;
+	
+	display: block;
+	max-width: 9rem;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.wisyr_activefilters .wisyr_filter a:hover {
+	text-decoration: none;
+}
+.wisyr_activefilters .wisyr_filter a:after {
+	content: '';
+	position: absolute;
+	top: 0.5em;
+	right: 0.25em;
+	width: 1em;
+	height: 1em;
+	/* https://materialdesignicons.com: close */
+	background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ffffff' d='M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z' /%3E%3C/svg%3E") no-repeat center center/contain;
+}
+
+/* Don't limit filter length */
+.wisyr_activefilters .wisyr_filter a {
+ max-width: none;
+}
+
+/* Nichts gefunden / leergefiltert Seite */
+.wisy_suggestions .wisyr_filterform_header { display: none; }
+
+/* Make filtergroups appear neutral until there are neutral filter metagroups */
+.wisyr_filterform form > fieldset
+{ background-color: transparent; }
+
+.wisyr_filterform_header_titel 
+{ display: none; } 
+
+/* Titel of Metagroup, tmp. don't display */
+.wisyr_filter_metagroup > legend {
+ display: none;	
+}
+
+/* Cookiebanner */
+
+.toggle_cookiedetails.inactive::after {
+ content: " anzeigen..." !important;
+}
+
+.toggle_cookiedetails::after {
+ content: " ausblenden..." !important;
+}
+
+.toggle_cookiedetails {
+    color: #444 !important;
+    text-decoration: underline;
+}
+
+.cc-link {
+ color: rgb(28, 88, 151) !important;
+}
+
+.cookies_techdetails.inactive {
+ display: none;
+}
+
+.cc-allow-all.inactive {
+ display: none;	
+}
+
+.cc-btn.cc-allow {
+  color: rgb(255, 255, 255);
+  background-color: rgb(62, 122, 184);
+}
+
+.cc-btn.cc-allow:hover {
+  background-color: #aaa !important;
+}
+
+.cc-revoke, .cc-window {
+ overflow: scroll !important;
+}
+
+.cc-window.cc-floating {
+ max-width: 40em;
+ border: 2px solid white;
+ max-height: 97vH;
+}
+
+.cc-window ul li.disabled {
+    font-weight: 200;
+    color: #444;
+}
+
+.cc-window ul li {
+ font-size: 1em;
+}
+
+.cc-window ul li .importance {
+ font-size: .8em;
+}
+
+.cc-window ul li {
+	list-style: none;
+	padding-left: .2em;
+	margin-top: .5em;
+	font-weight: 600;
+	font-size: .8em;
+}
+
+.cc-window ul li div.consent_option_infos {
+	vertical-align: top;
+	display: inline-block;
+	max-width: 90%;
+}
+
+.cc-window ul li .importance {
+	font-weight: 100;
+	font-size: .8em;
+}
+
+.cc-window .hinweis_abwahl {
+	padding-left: .2em;
+	font-weight: 500;
+	font-size: .7em;
+	/* color: #666; */
+}
+
+/* don't display, if detailed consent necessary anyway */
+.cc-btn.cc-deny {
+	display: none;
+}
+
+.cc-window ul li div.consent_option_infos.highlight {
+	color: darkred;
+}
+
+/* *************** */ 
+
+@media screen and (min-width: 761px) {
+	.wisyr_filterform .ui-selectmenu-menu .ui-widget.ui-widget-content {
+		max-width: 26rem;
+	}
+}
+@media screen and (max-width: 840px) {
+	.wisyr_filterform form .wisyr_filterform_listheader fieldset.filter_sortierung {
+		display: block;
+		float: none;
+	}
+}
+@media screen and (max-width: 760px), print {
+	#wisy_filterlink {
+		display: block;
+		width: 20px;
+		height: 20px;
+		font-size: 0;
+		text-indent: -200%;
+		padding: 15px;
+		margin: 0;
+		background-color: transparent;
+		overflow: hidden;
+		/* https://materialdesignicons.com: tune */
+		background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23787878' d='M3,17V19H9V17H3M3,5V7H13V5H3M13,21V19H21V17H13V15H11V21H13M7,9V11H3V13H7V15H9V9H7M21,13V11H11V13H21M15,9H17V7H21V5H17V3H15V9Z' /%3E%3C/svg%3E") no-repeat center center/24px;
+	}
+	.wisyr_filternav.wisyr_filters_active #wisy_filterlink, body.activefilters #wisy_filterlink {
+		/* https://materialdesignicons.com: tune */
+		background: url("data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill-rule%3D%22evenodd%22%20clip-rule%3D%22evenodd%22%20stroke-linejoin%3D%22round%22%20stroke-miterlimit%3D%222%22%3E%3Cpath%20d%3D%22M3%2017v2h6v-2H3M3%205v2h10V5H3m10%2016v-2h8v-2h-8v-2h-2v6h2M7%209v2H3v2h4v2h2V9H7m14%204v-2H11v2h10m-6-4h2V7h4V5h-4V3h-2v6z%22%20fill-rule%3D%22nonzero%22%2F%3E%3Ccircle%20cx%3D%2217.809%22%20cy%3D%226.108%22%20r%3D%224.163%22%20fill%3D%22%233e7ab8%22%2F%3E%3C%2Fsvg%3E") no-repeat center center/24px;
+	}
+	.wisyr_activefilters {
+		display: none;
+	}
+	#wisyr_filterform {
+		display: none;
+	}
+	body.wisyr_filterform_active { padding-top: 0; overflow: hidden; }
+	body.wisyr_filterform_active #mainheader,
+	body.wisyr_filterform_active #wisy_searcharea { display: none; }
+	
+	body.wisyr_filterform_active #wisyr_filterform {
+		display: block;
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		margin: 0;
+		padding: 0;
+		background: #eee;
+		z-index: 1;
+		overflow-y: auto;
+		-webkit-overflow-scrolling: touch;
+	}
+	body.wisyr_filterform_active #wisyr_filterform.subActive { overflow: hidden; }
+	.wisyr_filterform_header {
+		display: block;
+		position: fixed;
+		width: 100%;
+		height: 48px;
+		line-height: 48px;
+		background-color: #3E7AB8;
+		padding: 0 15px;
+		margin: 0;
+		z-index: 11;
+		box-sizing: border-box;
+	}
+	.wisyr_filterform_header:after {
+		content: '';
+		position: absolute;
+		top: 1em;
+		right: 1em;
+		width: 2em;
+		height: 2em;
+		/* https://materialdesignicons.com: close */
+		background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ffffff' d='M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z' /%3E%3C/svg%3E") no-repeat center center/contain;	
+	}
+	.wisyr_filterform_header_titel {
+		color: #fff;
+		font-size: 14px;
+		font-weight: 500;
+		text-transform: uppercase;
+	}
+	.wisyr_filterform_header_text {
+		display: none!important;
+	}
+	
+	.wisyr_filterform form { height: auto; margin-top: 98px; }
+	
+	.wisyr_filterform form .ui-front { z-index: 1; }
+	
+	.wisyr_filterform form .filter_submit { width: 100%; }
+	
+	.wisyr_filterform input[type="text"] {
+		height: 40px;
+		font-size: 14px;
+		padding: 5px 15px;
+		margin-right: 5px;
+		box-sizing: border-box;
+	}
+	
+	.wisyr_filterform form fieldset.wisyr_filtergroup {
+		display: block;
+		width: 100%;
+		height: 38px;
+		padding: 5px 0;
+		border-radius: 0;
+		border-bottom: 1px solid #ddd;
+	}
+	.wisyr_filterform form fieldset legend,
+	.wisyr_filterform form fieldset .filter_inner legend {
+		left: 15px;
+		font-size: 16px;
+		font-weight: 500;
+		line-height: 42px;
+		color: #3E7AB8;
+	}
+	.wisyr_filterform form fieldset:not(.active) legend:not([data-filtervalue='']) {
+		line-height: 24px;
+	}
+	.wisyr_filterform form fieldset legend:after,
+	.wisyr_filterform form fieldset .filter_inner legend:after,
+	.wisyr_filterform form fieldset.filter_sortierung > legend:after {
+		content: attr(data-filtervalue);
+		display: block;
+		font-size: 14px;
+		line-height: 12px;
+		color: #606060;
+	}
+	
+	.wisyr_filterform form fieldset.filter_sortierung {
+		position: absolute;
+		top:48px;
+		width: 100%;
+		height: 38px;
+		text-align: left; 
+		padding: 5px 0;
+	}
+	.wisyr_filterform form fieldset.filter_sortierung > * { display: none; }
+	.wisyr_filterform form fieldset.filter_sortierung.active > .ui-selectmenu-menu { display: block; }
+	.wisyr_filterform form .wisyr_filterform_listheader fieldset.filter_sortierung > legend { display: block; }
+	
+	.wisyr_filterform .ui-selectmenu-button { width: 100%; }
+	
+	.wisyr_filterform form fieldset.filter_weiterekriterien {
+		position: relative;
+	}
+	
+	.wisyr_filterform form fieldset.filter_weiterekriterien,
+	.wisyr_filterform form fieldset.filter_weiterekriterien > .wisyr_filtergroup { width: 100%; z-index: 1112!important; }
+	.wisyr_filterform form fieldset.filter_weiterekriterien:after { display: none; }
+	.wisyr_filterform form fieldset.filter_weiterekriterien fieldset { 
+		position: relative;
+		height: 38px;
+		margin: 0;
+		padding: 5px 0;
+		border-bottom: 1px solid #ddd;
+	}
+	.wisyr_filterform form fieldset.wisyr_filtergroup:after,
+	.wisyr_filterform form fieldset.filter_sortierung:after,
+	.wisyr_filterform form fieldset.filter_weiterekriterien fieldset:after {
+		content: '';
+		position: absolute;
+		right: 0;
+		top: 1em;
+		width: 1.5em;
+		height: 1.5em;
+		/* https://materialdesignicons.com: chevron-right */
+		background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23787878' d='M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z' /%3E%3C/svg%3E") center center/contain;
+	}
+	.wisyr_filterform form fieldset.filter_weiterekriterien fieldset .ui-selectmenu-button::after {
+		top: -3em;
+	}
+	.wisyr_filterform form fieldset.filter_weiterekriterien > legend { display: none; }
+	.wisyr_filterform form fieldset.filter_weiterekriterien > .filter_inner,
+	.wisyr_filterform form fieldset.filter_weiterekriterien > .wisyr_filtergroup > .filter_inner { 
+		display: block; 
+		top: 0;
+		width: 100%;
+		padding: 0;
+		box-shadow: none;
+	}
+	
+	.wisyr_filterform form fieldset.filter_weiterekriterien > .filter_inner > .filter_submit { display: none; }
+	.wisyr_filterform form fieldset.filter_weiterekriterien > .filter_inner > .no_autosubmit_mobile.active + .filter_filtersection_submit { 
+		display: block;
+		position: absolute;
+		z-index: 1114!important;
+		margin: 0 15px;
+		width: calc(100% - 30px);
+	}
+	
+	.wisyr_filterform form fieldset.filter_weiterekriterien > .filter_inner > fieldset > *,
+	.wisyr_filterform form fieldset.filter_weiterekriterien > .wisyr_filtergroup > .filter_inner > fieldset > * { display: none; }
+	.wisyr_filterform form fieldset.filter_weiterekriterien > .filter_inner > fieldset > legend,
+	.wisyr_filterform form fieldset.filter_weiterekriterien > .wisyr_filtergroup > .filter_inner > fieldset > legend {
+		display: block;
+		position: absolute;
+		top: 0.3em;
+		font-weight: 500;
+		line-height: 42px;
+	}
+	.wisyr_filterform form fieldset.filter_weiterekriterien > .filter_inner > fieldset:not(.active) > legend:not([data-filtervalue='']),
+	.wisyr_filterform form fieldset.filter_weiterekriterien > .wisyr_filtergroup > .filter_inner > fieldset:not(.active) > legend:not([data-filtervalue='']) {
+		line-height: 24px;
+	}
+	.wisyr_filterform form fieldset.filter_weiterekriterien > .filter_inner > fieldset.active > legend,
+	.wisyr_filterform form fieldset.filter_weiterekriterien > .wisyr_filtergroup > .filter_inner > fieldset.active > legend {
+		height: 48px;
+		line-height: 48px;
+	}
+	
+	.wisyr_filterform fieldset.active {
+		position: fixed!important;
+		width: 100%;
+		height: auto!important;
+		top: 0!important;
+		bottom: 0;
+		box-shadow: none;
+		padding: 0;
+		margin: 0!important;
+		z-index: 1114!important;
+		background: #eee!important;
+	}
+	.wisyr_filterform fieldset.active:after { display: none!important; }
+	.wisyr_filterform fieldset.active > legend:after {
+		content: ''!important;
+		position: absolute;
+		top: 1em;
+		right: 1em;
+		width: 2em;
+		height: 2em;
+		/* https://materialdesignicons.com: close */
+		background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ffffff' d='M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z' /%3E%3C/svg%3E") no-repeat center center/contain;
+	}
+	.wisyr_filterform fieldset.active > legend {
+		left: 0!important;
+		top: 0!important;
+		width: 100%;
+		height: 48px;
+		line-height: 48px;
+		color: #fff!important;
+		font-size: 14px!important;
+		font-weight: 500;
+		line-height: 48px;
+		text-transform: uppercase;
+		background: #3E7AB8;
+	    padding: 0 15px;
+	    box-sizing: border-box;
+		z-index: 1111;
+	}
+	
+	.wisyr_filterform fieldset.active > .filter_inner {
+		top: 50px;
+		bottom: 0;
+		width: 100%;
+		box-shadow: none;
+		box-sizing: border-box;
+		overflow-y: auto;
+		padding: 15px;
+		-webkit-overflow-scrolling: touch;
+	}
+	.wisyr_filterform fieldset.active > .filter_inner > .filter_spalte1, 
+	.wisyr_filterform fieldset.active > .filter_inner > .filter_spalte2 {
+		float: none;
+		width: 100%;
+		margin-bottom: 15px;
+	}
+	
+	.wisyr_filterform form fieldset.filter_weiterekriterien > .filter_inner > fieldset.active,
+	.wisyr_filterform form fieldset.filter_weiterekriterien > .wisyr_filtergroup > .filter_inner > fieldset.active { padding-top: 50px; }
+	.wisyr_filterform form fieldset.filter_weiterekriterien > .filter_inner > fieldset.active > *,
+	.wisyr_filterform form fieldset.filter_weiterekriterien > .wisyr_filtergroup > .filter_inner > fieldset.active > * { display: block;  }
+	
+	.wisyr_filterform form fieldset.filter_sortierung .ui-selectmenu-button,
+	.wisyr_filterform form fieldset.filter_weiterekriterien .ui-selectmenu-button {
+		display: block;
+		opacity: 0;
+		height: 50px;
+		margin-top: -50px;
+		z-index: -1;
+	}
+	.wisyr_filterform form fieldset.filter_sortierung .ui-selectmenu-button { margin-top: 0; }
+	.wisyr_filterform form fieldset.filter_weiterekriterien .ui-selectmenu-button { margin-top: -50px; }
+	.wisyr_filterform form .ui-selectmenu-menu .ui-widget.ui-widget-content { box-shadow: none; padding: 0; margin: 0; }
+	.wisyr_filterform form .ui-selectmenu-menu .ui-menu-item-wrapper { color: #3E7AB8; }
+	.wisyr_filterform form .ui-selectmenu-menu .ui-menu-item-wrapper.ui-state-active,
+	.wisyr_filterform form .ui-selectmenu-menu .ui-menu-item.wisyr_selectedmobile .ui-menu-item-wrapper {
+		background: none;
+		text-decoration: underline;
+		background-color: #D2DFEE;
+	}
+	.wisyr_filterform form fieldset.active .ui-selectmenu-menu {
+		bottom: 0;
+		overflow-y: auto;
+		-webkit-overflow-scrolling: touch;
+	}
+	.wisyr_filterform form fieldset.active .ui-selectmenu-menu li { padding: 0 8px; }
+	
+	.wisyr_filterlinklist ul {
+		width: auto;
+		max-height: none;
+		padding-left: 0;
+		overflow-y: auto;
+	}
+	.wisyr_filterlinklist li {
+		margin-bottom: 1em;
+	}
+	
+	.wisyr_filterradiolinklist .filter_inner {
+		max-height: none;
+	}
+	
+	.wisyr_filterform fieldset.filter_checkboxes {
+		padding: 0 15px;
+	}
+	
+	.wisyr_checkbutton label {
+		border: 1px solid black;
+	}
+	.wisyr_checkbutton input:checked + label {
+		border-color: #3E7AB8;
+	}
+	
+	.wisyr_filterform_reset { 
+		display: block;
+		line-height: 48px;
+		padding: 5px 15px;
+	}
+	
+	.filter_ortundumkreis_ort .clear_btn {
+		right: 6px;
+		height: 34px;
+	}
+	
+	.wisyr_filterform form fieldset.wisyr_filter_metagroup {
+		margin-top: 0;
+	}
+	
+	.wisyr_filterform form fieldset.wisyr_filter_metagroup > legend {
+		margin-bottom: 0;
+		padding: 0 15px;
+	}
+	.wisyr_filterform form fieldset.wisyr_filter_metagroup.filter_checkboxes > legend {
+		padding: 0;
+	}
+	
+	.wisyr_filterform .filter_inline,
+	.wisyr_filterform .filter_inline_mobile {
+		float: left;
+	}
+	.wisyr_filterform .filter_inline_desktop {
+		float: none;
+	}
+	
+	.wisyr_filterform form .wisyr_filterform_listheader .wisyr_list_anzahl_angebote {
+		display: none;
+	}
+}
+
+/* Barrierefreie Formulare */
+.wisy-form {
+	line-height: 1.5;
+}
+.wisy-form * {
+	box-sizing: border-box;
+}
+.wisy-form fieldset {
+	max-width: 600px;
+	padding: 1rem;
+	margin-bottom: 1rem;
+	box-sizing: border-box;
+}
+.wisy-form label {
+	font-weight: bold;
+}
+.wisy-form input[type="text"],
+.wisy-form input[type="password"],
+.wisy-form input[type="email"],
+.wisy-form textarea,
+.wisy-form select {
+	display: block;
+	width: 100%;
+	font-size: 1rem;
+	margin: 0.25rem 0 1rem 0;
+}
+.wisy-form input[type="text"],
+.wisy-form input[type="password"],
+.wisy-form input[type="email"],
+.wisy-form textarea {
+	padding: 0.5rem;
+}
+.wisy-form input[type="search"] {
+	font-size: 1rem;
+	padding: 0.5rem;
+}
+.wisy-form textarea {
+	padding: 1rem 0.5rem;
+	min-height: 6rem;
+}
+.wisy-form input[type="submit"],
+.wisy-form button {
+	font-size: 1rem;
+}
+.wisy-form--error {
+	color: red;
+	font-weight: bold;
+}
+input + .wisy-form--error,
+textarea + .wisy-form--error {
+	margin-top: -0.8rem;
+}
+
+.wisyr_align--left {
+	text-align: left;
+}
+.wisyr_align--right {
+	text-align: right;
+}
+.wisyr_align--center {
+	text-align: center;
+}
+
+.redundant_tags, .changed_ort {
+ font-size: 0.8em;
+}
+
+@media screen and (-ms-high-contrast: active) {
+	.cc-window,
+	.wisyr_filterform form fieldset.wisyr_filtergroup,
+	.wisyr_filterform fieldset.active .filter_inner,
+	.wisyr_filterform input[type='text'],
+	.wisyr_filterform .filter_submit,
+	.wisyr_filterform .ui-selectmenu-button,
+	.wisyr_filterform .ui-selectmenu-menu .ui-widget-content.ui-widget,
+	.wisyr_kursliste,
+	.wisyr_anbieterliste,
+	.wisyr_durchfuehrungen,
+	.Zebra_DatePicker {
+		border: 1px solid windowText;
+	}
+	.wisyr_kursliste th,
+	.wisyr_anbieterliste th,
+	.wisyr_durchfuehrungen th,
+	.Zebra_DatePicker .dp_header {
+		border-bottom: 1px solid windowText;
+	}
+	.wisyr_filterform .Zebra_DatePicker_Icon {
+		display: block;
+		text-indent: 0;
+		margin-top: 0.5em;
+		border: 1px solid windowText;
+	}
+}

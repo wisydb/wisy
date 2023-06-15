@@ -216,6 +216,18 @@ class WISY_FILTER_CLASS
 				);
 		}
 		
+		$niveaus = ["Basisstufe", "Aufbaustufe", "Fortgeschrittenenstufe", "Expertenstufe"];
+		if( sizeof((array) $niveaus) > 1 )
+		{
+			$this->presets['niveau'] = array
+				(
+					'type'		=> 'taglist',
+					'descr'		=> 'Niveau:',
+					'function'	=> 'niveau:',
+					'options'	=>	$niveaus
+				);
+		}
+		
 		$zielgruppen = $this->getSpezielleStichw(8);
 		if( sizeof((array) $zielgruppen) > 1 )
 		{
@@ -571,7 +583,7 @@ class WISY_FILTER_CLASS
 		    $filter_volltext = $this->framework->getParam('filter_volltext');
 		    $volltext_q = trim( strval( $filter_volltext[0]) );
 		    
-		    if( strlen($volltext_q) != "" && $this->match_validFulltext( $volltext_q ) ) {
+		    if( strlen($volltext_q) > 0 && $this->match_validFulltext( $volltext_q ) ) {
 		        $volltext = $volltext_q;
 		        $queryfilters[] = array('field' => 'volltext', 'value' =>  $volltext  );
 		    }

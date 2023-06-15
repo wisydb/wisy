@@ -1,20 +1,59 @@
 <?php
 require_once('lib/ki/wisyki-python-api.inc.php');
+require_once('../core51/wisyki-esco-class.inc.php');
 
 $pythonAPI = new WISYKI_PYTHON_API;
+$escoAPI = new WISYKI_ESCO_CLASS; 
 
 function get_course_without_level($levelidlist) {
     $db = new DB_Admin();
 
-    $sql = "SELECT kurse.id, kurse.titel, kurse.beschreibung FROM kurse, kurse_stichwort WHERE kurse_stichwort.primary_id = kurse.id AND kurse_stichwort.attr_id NOT IN ($levelidlist) ORDER BY RAND() LIMIT 1";
+    $sql = "SELECT kurse.id, kurse.titel, kurse.beschreibung, themen.thema
+    FROM kurse
+    LEFT JOIN themen
+        ON themen.id = kurse.thema
+    WHERE kurse.id NOT IN (
+        SELECT kurse_stichwort.primary_id 
+        FROM kurse_stichwort 
+        WHERE kurse_stichwort.attr_id IN ($levelidlist)
+    )
+    ORDER BY RAND()
+    LIMIT 1";
 
     $db->query($sql);
 
     if ($db->next_record()) { 
         $course = $db->Record;
+        $course['tags'] = get_course_tags($course['id']);
     }
     
     return $course;
+}
+
+function get_course_tags($courseid) {
+    $db = new DB_Admin();
+
+    // SQL query to get course tags of type Sachstichwort and Abschluss.
+    $sql = "SELECT stichwoerter.stichwort, stichwoerter.eigenschaften 
+        FROM stichwoerter
+        LEFT JOIN kurse_stichwort
+            ON kurse_stichwort.attr_id = stichwoerter.id
+        WHERE kurse_stichwort.primary_id = $courseid
+        AND stichwoerter.eigenschaften IN (0,1);";
+
+    $db->query($sql);
+
+    $sachstichworte = array();
+    $abschluesse = array();
+    while ($db->next_record()) { 
+        if ($db->Record['eigenschaften'] == 0) {
+            $sachstichworte[] = utf8_encode($db->Record['stichwort']);
+        } else {
+            $abschluesse[] = utf8_encode($db->Record['stichwort']);
+        }
+    }
+    
+    return array("Sachstichwort" => $sachstichworte, "Abschluss" => $abschluesse);
 }
 
 function count_courses_with_level($levelidlist) {
@@ -49,12 +88,17 @@ function get_course($courseid) {
     $db = new DB_Admin();
     $course = array();
 
-    $sql = "SELECT kurse.id, kurse.titel, kurse.beschreibung FROM kurse WHERE kurse.id = $courseid";
+    $sql = "SELECT kurse.id, kurse.titel, kurse.beschreibung, themen.thema 
+        FROM kurse
+        LEFT JOIN themen
+            ON themen.id = kurse.thema 
+        WHERE kurse.id = $courseid";
 
     $db->query($sql);
 
     if ($db->next_record()) { 
         $course = $db->Record;
+        $course['tags'] = get_course_tags($course['id']);
     }
     
     return $course;
@@ -95,6 +139,7 @@ function pagestart($title) {
                 <meta http-equiv='X-UA-Compatible' content='IE=edge'>
                 <meta name='viewport' content='width=device-width, initial-scale=1.0'>
                 <link rel='stylesheet' href='wisyki-esco-test.css'>
+                <script src='./wisyki-manual-classifier.js'></script>
                 <title>$title</title>
             </head>
 
@@ -107,6 +152,8 @@ function pagestart($title) {
 function pageend() {
     echo ("</body></html>");
 }
+
+header('Content-Type: text/html; charset=UTF-8');
 
 $pageuri = parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH);
 $levels = [
@@ -149,6 +196,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $sql = "INSERT INTO kurse_stichwort (primary_id, attr_id) VALUES ($courseid, $levelid)"; 
         $db->query($sql);
 
+        $skills = $_POST['skills'];
+
         $labeled_courses = count_courses_with_level($levelidlist);
         $all_courses = count_all_courses();
         $trainings_progress = number_format(($labeled_courses / $all_courses) * 100, 2, ',', '');
@@ -166,8 +215,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         ?>
         <main class="manual-classification_review">
-            <h2>Vielen Dank für deinen Beitrag!</h2>
-            <p>Dank deiner Unterstützung kann das KI-Modell lernen passgenauere Entscheidungen zu treffen.</p>
+            <h2>Vielen Dank fÃ¼r deinen Beitrag!</h2>
+            <p>Dank deiner UnterstÃ¼tzung kann das KI-Modell lernen passgenauere Entscheidungen zu treffen.</p>
             <br>
             <label for="trainings-progress">Trainings Fortschritt:</label>
             <progress id="trainings-progress" value="<?php echo $progress_value ?>" max="100"> <?php echo $trainings_progress ?>% </progress>
@@ -190,7 +239,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </details>
             <section class="actions">
                 <a href="<?php echo $pageuri . '?courseid=' . $courseid ?>" class="btn btn-secondary">Auswahl korrigieren</a>
-                <a href="<?php echo $pageuri ?>" class="btn btn-primary">Nächster Kurs</a>
+                <a href="<?php echo $pageuri ?>" class="btn btn-primary">NÃ¤chster Kurs</a>
             </section>
         </main>
         <script type="application/x-javascript" src=lib/ki/js/p5/p5.min.js></script>
@@ -213,30 +262,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         pagestart('Error - Manuelle Kursklassifikation');
         echo('Es konnte kein Kurs gefunden werden, bitte lade die Seite erneut.');
     } else {
-        // list($result, $exitcode) = $pythonAPI->exec_command(
-        //     "predict_comp_level.py",
-        //     array("title" => $course['titel'], "description" => $course['beschreibung']),
-        //     "Kompetenzniveau konnte nicht bestimmt werden."
-        // );
-        $prediction = $pythonAPI->predict_comp_level($course['titel'], $course['beschreibung']);
+        $prediction = $pythonAPI->predict_comp_level(utf8_encode($course['titel']), utf8_encode($course['beschreibung']));
         $course['level_suggestion'] = $prediction['level'];
+
         pagestart('Manuelle Kursklassifikation');
 
         ?>
 
         <main class="manual-classification_selection">
-            <h2>Bestimme ein passendes Kompetenzniveau für den folgenden zufällig ausgewählten Kurs.</h2>
+            <h2>Bestimme ein passendes Kompetenzniveau fÃ¼r den folgenden zufÃ¤llig ausgewÃ¤hlten Kurs.</h2>
             <section class="course-info">
                 <label for="course-title">Titel</label>
-                <p id="course-title"><?php echo $course['titel'] ?></p>
+                <p id="course-title"><?php echo utf8_encode($course['titel']) ?></p>
+                <label for="course-thema">Thema</label>
+                <p id="course-thema"><?php echo utf8_encode($course['thema']) ?></p>
                 <label for="course-id">ID</label>
                 <p id="course-id"><?php echo $course['id'] ?></p>
                 <label for="course-description">Beschreibung</label>
-                <p id="course-description"><?php echo $course['beschreibung'] ?></p>
+                <div id="course-description"><?php echo utf8_encode($course['beschreibung']) ?></div>
             </section>
             <form method="post" name="level-selection-form">
                 <section class="form-input">
-                    <label for="level-selection">Wähle ein passendes Kompetenzniveau.</label>
+                    <label for="level-selection">WÃ¤hle ein passendes Kompetenzniveau.</label>
                     <input type="hidden" name="courseid" value="<?php echo $course['id'] ?>">
                     <select name="level-selection" id="level-selection">
                     <?php
@@ -253,9 +300,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                     ?>
                     </select>
+                    <input type="hidden" name="skills" value="">
                 </section>
                 <section class="form-action">
-                    <a href="<?php echo $pageuri ?>" class="btn btn-secondary">Überspringen</a>
+                    <a href="<?php echo $pageuri ?>" class="btn btn-secondary">Ãœberspringen</a>
                     <button type="submit" class="btn btn-primary">Abschicken</button>
                 </section>
                 <section class="help">
@@ -267,6 +315,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </section>
                 </section>
             </form>
+             
+            <br> 
+            <br> 
+            <section class="skill-suggestions"> 
+                <h2>ESCO-Skill Empfehlungen:</h4>
+                <ul class="skill-cloud">
+                    <?php
+                    // if (!empty($skillSuggestions['result'])) { 
+                    //     foreach ($skillSuggestions['result'] as $url => $suggestion) { 
+                    //         if(!empty($suggestion)) {
+                    //             echo("<li><a href='$url' target='_blank' rel='noopener noreferrer' class='btn'>" . $suggestion['label'] . "</a></li>"); 
+                    //         }
+                    //     } 
+                    // }
+                    if (!empty($course['tags'])) {
+                        foreach ($course['tags']['Sachstichwort'] as $sachstichwort) { 
+                            echo('<li><button class="btn tag_sachstichwort">' . $sachstichwort . '</button></li>');
+                        }  
+                        foreach ($course['tags']['Abschluss'] as $abschluss) { 
+                            echo('<li><button class="btn tag_abschluss">' . $abschluss . '</button></li>');
+                        } 
+                    } 
+                    ?> 
+                </ul> 
+                <details>
+                    <summary>Suchworte</summary>
+                    <pre class="skill-cloud-searchterm"></pre>
+                </details>
+                <div class="autocomplete-box">
+                    <div class="autocomplete-box__input">
+					    <i class="icon search-icon"></i>
+                        <input type="text" placeholder="Kompetenzen finden" name="esco-skill-select" id="esco-skill-select" class="esco-autocomplete" esco-scheme="member-skills,skills-hierarchy" onlyrelevant=False>
+                        <button class="clear-input" title="Clear input"><i class="icon close-icon"></i></button>
+                    </div>
+                    <output name="esco-skill-select" for="esco-skill-select"></output>
+                </div>
+                <ul class="selectable-skills"></ul>
+            </section>
         </main>
 
         <?php

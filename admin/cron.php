@@ -20,7 +20,8 @@ parameters:
 
 
 define('G_SKIP_LOGIN', 1); // skip the normal login, instead perform a check of export.apikey in handle_request()
-require('functions.inc.php');
+if (@file_exists("WisyKi/wisykistart.php"))
+        require_once("WisyKi/wisykistart.php");
 
 $GLOBALS['g_cron'] = new G_CRON_CLASS;
 $GLOBALS['g_cron']->handle_request();

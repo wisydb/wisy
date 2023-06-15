@@ -608,6 +608,7 @@ autocomplete styles v2
 
 .ac_ort .tag_type,
 .ac_zielgruppe .tag_type,
+.ac_niveau .tag_type,
 .ac_qualitaetszertifikat .tag_type,
 .ac_unterrichtsart .tag_type { color: #3E7AB8; }
 

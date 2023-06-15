@@ -1,3 +1,6 @@
+/* Google fonts and icons */
+@import url('https://fonts.googleapis.com/css2?family=Kanit&family=Inter:wght@200;400;600&display=swap');
+
 *, html {
     margin: 0;
 }
@@ -317,7 +320,37 @@ output a {
     text-decoration: none;
 }
 
-a[href^="https://"]::after {
+.skill-suggestions .skill-cloud{ 
+    padding-inline-start: 0; 
+    display: flex; 
+    flex-direction: row; 
+    flex-wrap: wrap; 
+    gap: 0.2em; 
+} 
+ 
+.skill-suggestions .skill-cloud li { 
+    margin: 0; 
+    list-style: none; 
+} 
+ 
+.skill-suggestions .skill-cloud a { 
+    font-size: 0.7em; 
+    display: block; 
+} 
+
+.skill-suggestions .skill-cloud-searchterm {
+    white-space: initial;
+}
+
+.selected-skill {
+    background-color: greenyellow;
+}
+ 
+a { 
+    text-decoration: none; 
+} 
+ 
+a[href^="https://"]::after, a[href^="http://"]::after {
     content: "";
     background: url(../files/External.svg) center right no-repeat;
     background-size: 12px;
@@ -327,4 +360,114 @@ a[href^="https://"]::after {
 
 button.suggest {
     margin: 0 .5em;
+}
+
+.autocomplete-box {
+    font-size: 1.2em;
+    position: relative;
+    background: whitesmoke;
+    margin: 0.5em 0;
+}
+
+.autocomplete-box__input {
+    padding-right: 10px;
+    height: 3em;
+    display: flex;
+    flex-direction: row;
+    flex-grow: 1;
+    align-items: center;
+    padding: 0 .5em;
+    border: 2px solid #003064;
+}
+
+.autocomplete-box input {
+    height: 100%;
+    width: 100%;
+    outline: none;
+    border: none;
+    font-size: 1em;
+    margin: 0;
+    text-overflow: ellipsis;
+    background: inherit;
+}
+
+
+.skill-suggestions .autocomplete-box output {
+    width: 100%;
+    position: absolute;
+    margin-top: -2px;
+    border: 2px solid #003064;
+    border-top: none;
+    background: whitesmoke;
+    z-index: 10;
+}
+
+.autocomplete-box output ul {
+    list-style-type: none;
+    padding-bottom: .5em;
+    padding-inline: 0;
+    max-height: 40vh;
+    overflow: auto;
+}
+
+.autocomplete-box output button {
+    position: relative;
+    width: 100%;
+    padding: .2em;
+    padding-left: 1.5em;
+    overflow: hidden;
+    text-align: left;
+    font-size: 1em;
+    text-overflow: ellipsis;
+    /* background-color: #00306407; */
+}
+
+.autocomplete-box output li:not(:last-of-type)::after {
+    content: '';
+    /* transform: translateY(-0.25em); */
+    display: block;
+    width: 96%;
+    margin: 0em 1em;
+    margin-left: 2%;
+    border-top: 1px dotted #00306475;
+}
+
+.autocomplete-box output button:not(:disabled):hover {
+    background-color: #0030641e;
+}
+
+.autocomplete-box output button:disabled {
+    cursor: unset;
+}
+
+.clear-input::before {
+    content: '';
+    margin-right: 0.3em;
+    border-left: 1px solid #555;
+}
+
+
+.autocomplete-box button {
+    cursor: pointer;
+    border: none;
+    background-color: transparent;
+    font-family: inherit;
+}
+
+.autocomplete-box button:disabled {
+    cursor: unset;
+}
+
+.selectable-skills {
+    list-style-type: none;
+    padding-inline: 0;
+    margin: 1em;
+}
+
+.selectable-skills li {
+    margin-bottom: .8em;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 1em;
 }

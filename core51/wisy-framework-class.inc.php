@@ -76,6 +76,7 @@ class WISY_FRAMEWORK_CLASS
 	var $filterTokens = array(
 	    'anbieter',
 	    'zielgruppe',
+	    'niveau',
 	    'thema',
 	    'foerderung',
 	    'qualitaetszertifikat',
@@ -2514,6 +2515,7 @@ class WISY_FRAMEWORK_CLASS
 	function &getRenderer()
 	{
 		// this function returns the renderer object to use _or_ a string with the URL to forward to
+		global $wisykiRequestPaths;
 		global $wisyRequestedFile;
 
 		switch( trim($wisyRequestedFile, '/') )
@@ -2626,6 +2628,15 @@ class WISY_FRAMEWORK_CLASS
 
 			case 'edit':
 				return createWisyObject('WISY_EDIT_RENDERER_CLASS', $this);
+
+			case 'scout':
+				return createWisyObject('WISYKI_SCOUT_RENDERER_CLASS', $this, $wisykiRequestPaths[1]);
+
+			case 'scout-search':
+				return createWisyObject('WISYKI_SCOUT_SEARCH_CLASS', $this);
+
+			case 'esco':
+				return createWisyObject('WISYKI_ESCO_CLASS', $this, $wisykiRequestPaths[1]);
 				
 			case 'robots.txt':
 			case 'sitemap.xml':

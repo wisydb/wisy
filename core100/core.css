@@ -1,0 +1,1091 @@
+/*******************************************************************************
+WISY CSS
+*******************************************************************************/
+
+
+
+/*******************************************************************************
+general
+*******************************************************************************/
+
+body {
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: 12px;
+}
+
+h1, h2 {
+  font-family: "Trebuchet MS", "Bitstream Vera Sans", verdana, lucida, arial, helvetica, sans-serif;
+  font-size: 24px;
+  line-height: 30px; /* otherwise multi-line headlines are very ugly, see #wisy_contentarea */
+  font-weight: bold;
+  letter-spacing: -1px;
+}
+
+a {
+  color: #3E7AB8;
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+
+
+/*******************************************************************************
+wisy_contentarea - this covers _all_ areas that is not portal-specific
+*******************************************************************************/
+
+#wisy_contentarea {
+  padding: 2em 5em 2em 5em;
+  line-height: 1.4em;
+}
+
+#wisy_resultarea {
+}
+
+#wisy_resultcol1 {
+	width: 65%;
+	float: left;
+}
+
+#wisy_resultcol2 {
+	width: 32%;
+	float: right;
+}
+
+.zurAngeboteSuche {
+ display: block;
+}
+
+div.wisy_vcard {
+	margin: 1.4em 0 1.4em 0;
+	background-color: #E2E2E2;
+}
+div.wisy_vcardtitle {
+	border-bottom: 2px solid #fff;
+	color: #000;
+	font-weight: bold;
+	padding: 3px 0px 3px 0px;
+	text-align: center;
+}
+div.wisy_vcardcontent {
+	padding: 3px;
+	text-align: center;
+}
+
+.wisy_glossar {
+	border-bottom: 1px solid #AAA;
+}
+
+.wisyp_glossar table {
+	width: 100%;
+}
+
+#wisy_copyright_footer {
+	font-size: 11px;
+	color: #AAA;
+	margin-top: 2em;
+	clear: both;
+}
+
+#wisy_copyright_footer a {
+	color: #AAA;	
+}
+
+.wisy_showalloffers {
+	background-color: #999999;
+	padding: 5px 16px;
+	color: #FFF !important; font-weight: bold;
+	text-decoration: none !important;
+	border-radius: 8px;
+}
+
+.wisy_showalloffers:hover {
+	text-decoration: underline !important;
+}
+
+h1.wisy_df_headline {
+	margin-top: 1em;
+}
+
+#anbieterlogo {
+  border: 0;
+  margin-top: 5px;
+  max-width: 200px;
+  max-height: 70px;
+}
+
+#logo_big {
+  width: 100%;
+  height: auto;
+}
+
+#logo_bildrechte_big {
+  color: rgb(170, 170, 170);
+  font-size: 0.7em;
+  text-transform: initial;
+}
+
+.pruefsiegel {
+  border: none;
+}
+
+.searcherror_help {
+ display: block;
+ margin-top: 1em;
+ font-weight: bold;
+}
+
+/*******************************************************************************
+wisy_searcharea
+*******************************************************************************/
+
+#wisy_searcharea {
+  padding-left: 8%;
+  padding-bottom: 20px;
+}
+
+#wisy_searcharea form {
+  margin: 0;
+  padding: 0;
+}
+
+.zurAngeboteSuche {
+ display: block;
+}
+
+#wisy_searchinput { /* ID also used from JS */
+  font-size: 19px;
+  margin-right: 4px;
+  width: 40%;
+  background: white;
+}
+
+#wisy_beiinput { /* ID also used from JS */
+  font-size: 19px;
+  width: 10%;
+  background: white;
+}
+
+#wisy_kmselect { /* ID also used from JS */
+  font-size: 19px;
+}
+
+#wisy_searchbtn {
+  font-size: 19px;
+}
+
+.wisy_searchhints {
+  color: #AAA;
+}
+
+.wisy_topnote {
+  background-color: #FFFFC0;
+  border: 1px solid black;
+  padding: 1em;
+}
+
+.noresults .wisyr_filterform form fieldset.wisyr_filtergroup {
+	display: none ;
+}
+
+.noresults .wisy_suggestions_inner {
+  margin-top: 1.4em;
+}
+
+
+/*******************************************************************************
+wisy_paginate etc.
+*******************************************************************************/
+
+.wisy_paginate {
+  float: right;
+  display: block;
+}
+
+.wisy_paginate a, .wisy_paginate a:visited, .wisy_paginate strong {
+  border: 1px solid #444;
+  padding: 0.1em 0.5em 0.1em 0.5em;
+}
+
+.wisy_paginate strong {
+  background-color: #444;
+  border: 1px solid #444;
+  color: #E2E2E2;
+  font-weight: normal;
+}
+
+a.wisy_rss_link {
+	padding-left: 17px;
+	background: white url('/core51/img/feed-icon-12x12.png') 3px center no-repeat !important;
+}
+
+
+
+/*******************************************************************************
+wisy_help icon
+*******************************************************************************/
+
+a.wisy_help:link, a.wisy_help:visited, a.wisy_help:active {
+  text-decoration: none; 
+  font-family:" Courier New",serif; 
+  font-weight: bold; 
+  color: #D60008;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+a.wisy_help:hover {
+  background-color: #D60008;
+  color: white;
+  text-decoration: none; 
+}
+
+
+
+/*******************************************************************************
+wisy_list etc.
+*******************************************************************************/
+
+.wisy_list {
+}
+
+.wisy_list th {
+  background-color: #E2E2E2;
+  white-space: nowrap;
+  border-right: 1px solid white;
+  padding: 3px 5px 3px 5px;
+}
+
+.wisy_list th a {
+  background-color: #E2E2E2;
+  color: #000;
+}
+
+.wisy_list td {
+  padding: 1px 3px 1px 0px;
+  vertical-align: top;
+  border-right: 1px solid white;
+  border-bottom: 1px solid #E2E2E2;
+}
+
+.wisy_list td.type {
+	text-align: center;
+}
+
+.wisy_list tr.wisy_even td {
+}
+
+/* special columns */
+.wisy_anbieter {
+  width: 25%;
+}
+
+.wisy_kurstitel {
+  width: 35%;
+}
+
+/*map*/
+#wisy_map2 {
+	width: 100%; 
+	height: 280px;
+}
+
+/*promotions in the wisy_list*/
+.wisy_list tr.wisy_promoted_head td {
+	background-color: #FFFFD0;
+	color: #D60008;
+	font-size: 11px;
+	text-align: left;
+	padding: 7x 0px 0px 0px;
+}
+
+.wisy_list tr.wisy_promoted td {
+	background-color: #FFFFD0;
+}
+
+.wisyr_titel .tag_count {
+  color: white;
+}
+
+span.wisy_promoted_prefix {
+	color: #D60008;
+	font-size: 11px;
+}
+
+span.wisy_datum_abgel {
+	text-decoration: line-through;
+}
+
+img.seal, img.seal_small {
+ border:0;
+}
+
+img.seal_small {
+ float: right;
+}
+
+.seal_small {
+  display: inline-block;
+  margin-right: 4px;
+}
+
+.wisy_list td a.help {
+	padding: 0px;
+}
+
+.wisyr_termin_weitere  {
+  display: block;
+}
+
+.info_conflict {
+  max-width: 80%;
+  padding: 0;
+  margin: 0 auto;
+  margin-bottom: 2em;
+}
+
+/*******************************************************************************
+advanced form
+*******************************************************************************/
+
+#adv_all {
+  width: 60%;
+  margin-left: 20%;
+  background-color: #E0ECFF;
+  border: 3px solid #6694E3;
+}
+
+#adv_title {
+  background-color: #6694E3;
+  color: #fff;
+  font-size: 18px; 
+  padding: 6px 10px 6px 10px;
+}
+
+#adv_title .wisy_help {
+	background-color: #D60008;
+	color: #fff;
+}
+
+#adv_body {
+  padding:  10px;
+}
+
+#adv_buttons {
+  text-align: center;
+  padding-top: 8px;
+}
+
+#adv_searchkurse {
+  font-weight: bold;
+}
+
+#adv_q, #adv_volltext, #adv_bei {
+  width: 90%;
+}
+
+
+
+/*******************************************************************************
+edit stuff
+*******************************************************************************/
+
+.wisyp_edit #wisy_contentarea {
+	padding: 4%;
+}
+
+div.wisy_edittoolbar {
+	margin-bottom: 1.5em;
+}
+
+.wisy_edittoolbar { /*used in <div> and in <span>*/
+	background-color: #FFF7D7;
+	border: 2px solid #FAD163;
+	padding: 1px 8px 1px 8px;
+	font-weight: normal !important;
+}
+
+#kurse_invorbereitung a {
+  display: block;
+  line-height: 1em;
+  padding: .5em;
+}
+
+#kurse_invorbereitung a.wisy_even {
+  background-color: #ececec;
+}
+
+input.wisy_hinted {
+	color: #ccc;
+}
+
+.wisy_editweekdaysnorm, .wisy_editweekdayssel {
+	border-left: 1px solid #ccc; border-top: 1px solid #ccc; border-right: 1px solid black; border-bottom: 1px solid black;
+	padding: 2px 3px; 
+	cursor: pointer;
+}
+
+.wisy_editweekdayssel {
+	border-left: 1px solid black; border-top: 1px solid black; border-right: 1px solid #ccc; border-bottom: 1px solid #ccc;
+	background-color: #ccc;
+}
+
+.wisy_badqualitybanner {
+	border: 2px solid red;
+	padding: 1em;
+	font-weight: bold;
+	color: red;
+}
+
+.wisy_editvollstcol {
+	font-weight: normal;
+}
+
+
+.edit_hint_a, .edit_hint_b {
+  cursor: pointer;
+  text-decoration: none !important;
+}
+	
+.edit_hint_enable {
+  color: #0F3B7F;
+}
+.edit_hint_disable, .edit_hint_a.edit_hint_disable, .edit_hint_b.edit_hint_disable {
+  color: #555;
+  cursor: auto;  
+}
+
+a.wisy_help_hint {
+ background-color: #FFF7D7;
+ font-family: Arial,sans-serif;   
+ border: 2px solid #FAD163;
+ padding: 1px 8px 1px 8px;
+ font-weight: normal !important;
+}
+
+.wisyp_edit select {
+	min-width: 50%;
+}
+
+.wisyp_edit .editFoerderungDiv table td {
+	vertical-align: top;
+	text-align: left !important;
+}
+
+.wisyp_edit .edithinweis {
+	display: block;
+	margin-bottom: 1em;
+	color: #555;
+	font-size:.8em;
+}
+
+.wisyp_edit  .edithinweis small {
+	color: #555;
+	font-size:.8em;
+}
+
+/*******************************************************************************
+autocomplete styles v1
+*******************************************************************************/
+
+.ac_results {
+  padding: 0px;
+  border: 1px solid #222; border-top: 1px solid #ccc; border-left: 1px solid #ccc;
+  background-color: white;
+  overflow: hidden;
+  z-index: 444;
+}
+
+.ac_results ul {
+  width: 100%;
+  list-style-position: outside;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.ac_results li {
+  margin: 0px;
+  padding: 2px 5px;
+  cursor: default;
+  display: block;
+  /* 
+  it is very important, if line-height not setted or setted 
+  in relative units scroll will be broken in firefox
+  */
+  line-height: 14px;
+  overflow: hidden;
+}
+
+.ac_loading {
+  background: white url('/core51/img/ajax-indicator-2-16x16.gif') right center no-repeat !important;
+}
+
+.ac_odd {
+  background-color: #eee;
+}
+
+.ac_over {
+  background-color: #444;
+  color: #fff;
+}
+
+.ac_over .ac_more a {
+	color: #fff;
+}
+
+.ac_tag_type {
+	font-size: 11px;
+	font-style: italic;
+	color: #999;
+}
+.ac_anbieter .ac_tag_type {
+	/*hier koennte man einzelne typen speziell formatieren ...*/
+}
+
+
+/*******************************************************************************
+autocomplete styles v2
+*******************************************************************************/
+
+/* jQuery UI autocompleter */
+.ui-helper-hidden-accessible { display: none; }
+
+.ac_results_v2 { max-height: 400px; overflow-y: auto; }
+.ac_results_v2 li { padding: 2px 4px; }
+.ac_results_v2 li > a { display: block; padding: 2px 0; cursor: default; }
+.ac_results_v2 .ui-state-focus { background-color: #444; color: #fff; }
+
+.ac_results_v2 .tag_name { margin-right: 1em; }
+.ac_results_v2 .tag_count { font-size: 10px; color: #666; margin-right: 0.5em;  }
+.ac_results_v2 .tag_type { font-size: 10px; color: #444; }
+
+.ac_results_v2 .ui-state-focus .tag_name { color: #fff!important; }
+.ac_results_v2 .ui-state-focus .tag_count { color: #aaa!important; }
+.ac_results_v2 .ui-state-focus .tag_type { color: #ddd!important; }
+
+.ac_results_v2 .ac_more a { color: #000; font-weight: bold; }
+.ac_results_v2 .ui-state-focus .ac_more a { color: #fff; }
+
+.ac_results_v2 .ac_headline .tag_name,
+.ac_results_v2 .ac_more .tag_name { width: 100%; }
+
+/* Vorschläge im Hauptfenster */
+.wisy_tagtable { border-spacing: 1px; }
+.wisy_tagtable th { 
+	color: #000;
+	background-color: #E2E2E2;
+	padding: 3px 5px 3px 5px;
+	text-align: left;
+	border-bottom: 1px solid #000;
+}
+.wisy_tagtable th.titel { width: 60%; }
+.wisy_tagtable .tag_count { float: right; }
+.wisy_tagtable th.art { width: 10%; }
+.wisy_tagtable th.gruppe { width: 15%; }
+.wisy_tagtable th.info { width: 15%; }
+.wisy_tagtable td { vertical-align: top; padding: 2px 4px; }
+.wisy_tagtable .ac_indent .td.tag_name { padding-left: 20px; }
+.wisy_tagtable .ac_indent .td.tag_name:before { content: '\2192'; position: absolute; left: 5px; }
+
+/* Allgemeine Auszeichnungen */
+.ac_abschluss .tag_name a, tr.ac_abschluss { font-weight: bold; }
+.ac_zertifikat .tag_name a, tr.ac_zertifikat { font-weight: bold; }
+.ac_foerderung .tag_name a, tr.ac_foerderung { font-weight: bold; color: red; }
+.ac_suggestion { color: #444; }
+.ui-state-focus .ac_suggestion { color: #ddd; }
+
+.ac_anbieter .tag_type { color: green; }
+.ac_foerderung .tag_type { font-weight: bold; }
+.ac_thema .tag_type { font-weight: bold; }
+
+.ac_normal .tag_name, .ac_normal .tag_name a,
+.ac_abschluss .tag_name, .ac_abschluss .tag_name a  { color: #000; }
+.ac_zertifikat .tag_name, .ac_zertifikat .tag_name a  { color: #000; }
+.ac_anbieter .tag_name, .ac_anbieter .tag_name a { color: green; }
+.ac_qualitaetszertifikat .tag_name { color: #3E7AB8; }
+
+.ac_ort .tag_type,
+.ac_zielgruppe .tag_type,
+.ac_qualitaetszertifikat .tag_type,
+.ac_unterrichtsart .tag_type { color: #3E7AB8; }
+
+.tag_count, .tag_groups { color: #000; font-weight: normal!important; font-style: normal!important; }
+.tag_info a { color: #666; font-weight: bold; }
+.ac_anbieter .tag_info a { font-weight: normal; }
+.tag_info a:hover { color: #3e7ab8; }
+
+/* Hervorhebung des Suchstrings */
+.tag_name em {
+	border-bottom: 1px solid #3E7AB8;
+	font-style: inherit;
+}
+
+/*******************************************************************************
+search: fulltext, changed queries, load animation
+*******************************************************************************/
+
+.fulltext_query {
+ font-weight: bold;
+}
+
+.wisy_kurstitel .mark, .excerpt .mark {
+    background-color: #fcfcc7;
+    padding: 1px;
+    padding-left: 0px;
+    padding-right: 0px;
+}
+
+.statistics b, .subheading b {
+ font-weight: bold;
+}
+
+.subheading {
+  padding-top: 1em;
+  border-top: 2px solid #E3F4FE !important;
+  border-bottom: 1px solid #E3F4FE !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.2), 0 3px 15px 0 rgba(0, 0, 0, 0.19);
+}
+
+.page_searchresults {
+ color: #aaa;
+}
+
+.changed_query .wisy_suggestions_inner {
+ display: none;
+}
+
+.changed_query .wisyr_angebote_zum_suchauftrag {
+ color: #999;
+}
+
+.laden {
+    animation: blinker 1s linear infinite;
+}
+.laden {
+    font-weight: bold;
+    font-size: 1.3em;
+    color: #3f88b7;
+    margin-bottom: 20px;
+    position: absolute;
+    z-index: 999;
+}
+
+.wisyq_volltext .laden {
+ display: block !important;
+}
+
+.ppp1, .ppp2, .ppp3 {
+    font-size: 1.6em;
+}
+.ppp1 {
+    color: #555;
+}
+
+.ppp3 {
+  color: #413496;
+}
+
+@keyframes blinker {
+  50% {
+    opacity: 0;
+  }
+}
+
+/*******************************************************************************
+portalmenu styles
+*******************************************************************************/
+
+/* functionality - do not subclass this if you're not absolutely sure what you're doing ... */
+
+#themenmenue ul {
+	z-index: 1200;
+}
+
+ul.dropdown,
+ul.dropdown li,
+ul.dropdown ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+ul.dropdown {
+  position: relative;
+  z-index: 1597;
+  float: left;
+}
+
+ul.dropdown li {
+  float: left;
+  line-height: 1.3em;
+  vertical-align: middle;
+  zoom: 1; /* IE10 */
+}
+
+ul.dropdown li.hover,
+ul.dropdown li:hover {
+  position: relative;
+  z-index: 1599;
+  cursor: default;
+}
+
+ul.dropdown ul {
+  visibility: hidden;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1598;
+  width: 100%;
+}
+
+ul.dropdown ul li {
+  float: none;
+}
+
+ul.dropdown ul ul {
+  top: 1px;
+  left: 99%;
+}
+
+ul.dropdown li:hover > ul {
+  visibility: visible;
+}
+
+/* theme, here you can chage the layout */
+
+ul.dropdown li {
+  padding: 2px 6px;
+  border-style: solid;
+  border-width: 1px;
+  border-color: transparent;
+}
+
+ul.dropdown ul {
+  width: 250px;
+  margin-top: 1px;
+}
+
+ul.dropdown ul li {
+  padding: 2px 6px;
+  border-style: solid;
+  border-width: 1px;
+  border-color: #fff #d9d9d9 #d9d9d9 #fff;
+  background-color: #f6f6f6;
+  color: #000;
+}
+
+ul.dropdown li.hover,
+ul.dropdown li:hover {
+  background-color: #eee;
+  border-color: #fff #d9d9d9 #d9d9d9 #fff;
+  color: #000;
+}
+
+ul.dropdown a:link,
+ul.dropdown a:visited { color: #000; text-decoration: none; }
+ul.dropdown a:hover   { color: #000; }
+ul.dropdown a:active  { color: #ffa500; }
+
+ul.dropdown ul *.dir {
+	/* TODO db: Hier Pfeilsymbol einfuegen */
+}
+
+/* IWWB-Banner */
+#iwwb {
+	margin-top:40px;
+}
+
+
+/*******************************************************************************
+ ratgeber
+ ******************************************************************************/
+
+table.wisy_glskey {
+	border-spacing: 1px;
+	margin-top: 1em;
+	margin-bottom: 0em;
+	max-width: 90%;
+	border-bottom: 1px solid #bbb;
+}
+
+table.wisy_glskey thead tr td {
+  background-color:#bbb;
+  padding:0.2em 0.5em;
+  font-weight: bold;
+  color: white;
+  white-space: nowrap;
+}
+
+table.wisy_glskey tbody tr:nth-child(even) {
+  background-color:#f4f4f4;
+}
+
+table.wisy_glskey tbody tr td {
+  vertical-align: top;
+}
+
+a.wisy_glskeyexp {
+  color: #666;
+}
+a.wisy_glskeyexp:hover {
+  text-decoration: none;
+  color: #000;
+}
+
+div.wisy_glskeytime { /*this class is temporary; when removing it, add the border to table.wisy_glskey */
+	margin-bottom: 1em;
+	font-size: 11px;
+	color: #e4e4e4;
+}
+
+table.wisy_glskey .heading_tagtree,
+table.wisy_glskey .tag_cell {
+ width: 90%;
+}
+
+table.wisy_glskey .heading_infos,
+table.wisy_glskey .info_cell {
+ width: 10%;
+}
+
+table.wisy_glskey .info_cell {
+  white-space: nowrap;
+  text-align: center;
+}
+
+/*******************************************************************************
+ accessibility
+ ******************************************************************************/
+ 
+/*display:none would not work, see accessibility.txt*/
+.acclink { 
+	height: 0; 
+	overflow: hidden;
+}
+
+
+
+/*******************************************************************************
+fav stuff:
+- fav_item is the clickable star; selected starts additionaly get fav_selected
+- fav_hide - information that can be hidden if favourites are in use.
+*******************************************************************************/
+
+.fav_item { 
+  font-weight: normal;
+  cursor: pointer;	
+  color: #bbb;
+}
+
+.fav_selected { 
+  color: #F4BE04;
+}
+
+td.wisy_kurstitel .fav_item {
+  display: block;
+  float: right;
+  padding-right: 8px;
+}
+
+th .fav_hint_in_th {
+  display: block;
+  float: right;
+  padding-right: 8px;
+  font-weight: normal; 
+  color: #aaa;
+}
+
+.wisy_list th.wisy_anbieter {
+  white-space: normal; /* nowrap would bring the icon block to the next line*/
+}
+
+
+/*******************************************************************************
+Popup window
+*******************************************************************************/
+
+.hover_bkgr_fricc{
+    background:rgba(0,0,0,.4);
+    cursor:pointer;
+    display:none;
+    height:100%;
+    position:fixed;
+    text-align:center;
+    top:0;
+    width:100%;
+    z-index:10000;
+}
+.hover_bkgr_fricc .helper{
+    display:inline-block;
+    height:100%;
+    vertical-align:middle;
+}
+.hover_bkgr_fricc > div {
+    background-color: #fff;
+    box-shadow: 10px 10px 60px #555;
+    display: inline-block;
+    height: auto;
+    max-width: 551px;
+    min-height: 100px;
+    vertical-align: middle;
+    width: 60%;
+    position: relative;
+    border-radius: 8px;
+    padding: 15px 5%;
+}
+.popupCloseButton {
+    background-color: #fff;
+    border: 3px solid #999;
+    border-radius: 50px;
+    cursor: pointer;
+    display: inline-block;
+    font-family: arial;
+    font-weight: bold;
+    position: absolute;
+    top: -20px;
+    right: -20px;
+    font-size: 25px;
+    line-height: 30px;
+    width: 30px;
+    height: 30px;
+    text-align: center;
+}
+.popupCloseButton:hover {
+    background-color: #ccc;
+}
+.trigger_popup_fricc {
+    cursor: pointer;
+    font-size: 20px;
+    margin: 20px;
+    display: inline-block;
+    font-weight: bold;
+}
+
+
+/*******************************************************************************
+Datenschutz
+*******************************************************************************/
+#cookie-banner {
+ padding: 10px;
+ background-color: white;
+ opacity: 1;
+ position: absolute;
+ z-index: 99999;
+}
+
+/*******************************************************************************
+SEO
+*******************************************************************************/
+
+#sw_cloud {
+	margin-top: 35px;
+	padding: 5px;
+	background-color: #ddd;
+	border: 1px solid #eee;
+}
+
+#sw_cloud h4 {
+    width: 7.4em;
+    padding: 0.3em;
+    padding-left: 0.3em;
+    margin-top: -1.5em;
+    margin-left: 5px;
+    background-color: #ddd;
+    border-top: 1px solid #eee;
+    padding-left: 0.6em;
+    color: #888;
+    display: none;
+}
+
+/*******************************************************************************
+Error pages, 404 etc.
+*******************************************************************************/
+.wisyp_error .portal_index {
+	margin-top: 2em;
+	background-color: #bffcbf;
+	border: 2px solid white;
+	padding: 1em;
+}
+
+.wisyp_error .portal_index h4 {
+	margin-top: 0;
+}
+
+.wisyp_error .portal_index a {
+	color: darkblue;
+}
+
+.strike {
+  text-decoration: line-through;
+  text-decoration-color: darkred;
+}
+
+/*******************************************************************************
+print 
+*******************************************************************************/
+
+.printonly {
+	display: none;
+}
+
+@media print {
+	
+	/* explizit verwendete Print-Klassen */
+	.noprint {
+		display: none !important;
+		border: 1px solid red;
+	}
+	
+	span.printonly, i.printonly, em.printonly, small.printonly {
+		display: inline !important;
+	}
+	
+	div.printonly, p.printonly {
+		display: block !important;
+	}
+	
+	/* implizit verwendete Klassen und IDs, die in der Druckausgabe besondere Berücksichtigung finden sollen */
+	.wisy_help, .wisy_rss_link, .wisy_paginate, #wisy_searcharea {
+		display: none !important;
+	}	
+	
+    /* klarere Linien in den Listen */
+    .wisy_list th, .wisy_list td {
+      border-bottom: 1px solid #000;
+    }
+	div.wisy_vcard {
+	  border: 1px solid #000;
+	}
+	div.wisy_vcardtitle {
+		border-bottom: 1px solid #000;
+	}
+	
+	/* einige Schriftgrössen korrigieren */	
+	body {
+		font-size: 15px; /*org: 12px*/
+	}
+
+	h1, h2 {
+		font-size: 24px; /*org: 24px*/
+	}
+
+    div.h1block small, #wisy_copyright_footer,
+	.wisy_list tr.wisy_promoted_head td, span.wisy_promoted_prefix {
+		font-size: 14px; /*org: 11px*/
+	}
+ 
+ .wisy_paginate_pagelink,
+ .wisy_paginate_text,
+ .wisy_paginate,
+ .wisy_paginate .ppp, 
+ .wisyr_paginate_bottom,
+ .wisy_paginate_prev,
+ .wisy_paginate_next,
+ .zurAngeboteSuche,
+ #sw_cloud {
+   display: none !important;
+  }
+
+}

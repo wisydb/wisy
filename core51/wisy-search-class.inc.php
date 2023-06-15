@@ -333,6 +333,7 @@ class WISY_SEARCH_CLASS
 	            if (stristr(trim($ort), trim($synonym)))   { $ort = trim($original); }
 	        }
 	        
+			$ort = str_replace("'", "\'", $ort);
 	        
 	        $this->db->query("SELECT ort, plz FROM plz_ortscron WHERE ort = '".trim($ort)."';");
 	        if( $this->db->next_record() ) {
@@ -1077,7 +1078,14 @@ class WISY_SEARCH_CLASS
 	                case 'creatd':	$orderBy = 'x_kurse.begmod_date DESC';						break;
 	                case 'rand':
 	                    $ip = str_replace('.', '', $_SERVER['REMOTE_ADDR']);
-	                    $seed = ($ip + date('d') );
+						try
+						{
+                            $seed = ((int)$ip + (int)date('d') );
+						}
+	                    catch(Exception $e)
+						{
+							$seed = 1;
+						}
 	                    $this->randSeed;
 	                    $orderBy = 'RAND('.$seed.')';
 	                    break;
@@ -1147,7 +1155,6 @@ class WISY_SEARCH_CLASS
 	                       }
 	                   }
 	                 }
-	                 echo "<br><br><br><br>";
 	        
 	                            
 	        // add result to cache
