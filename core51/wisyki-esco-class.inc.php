@@ -425,6 +425,7 @@ class WISYKI_ESCO_CLASS {
             }
             $search_results[] = [
                 "label" =>  utf8_encode($tag),
+                "uri" => utf8_encode($tag),
             ];
         }
 

@@ -1,9 +1,15 @@
 {
+    "clearinput": "Eingabe leeren",
     "occupationpath:label": "Beruf",
     "occupationstep:heading": "Für welchen Beruf oder welche Tätigkeit suchst Du eine Weiterbildung?",
     "occupationstep:inputplaceholder": "Beruf oder Tätigkeit finden",
-    "occupationstep:clearinput": "Eingabe leeren",
-    "pathstep:heading": "Wilkommen im Weiterbildungsscout",
+    "occupationskillsstep:heading": "Du hast folgendes gewählt",
+    "occupationskillsstep:subheading": "Ich habe Kurse zu folgenden passenden Kompetenzen gefunden. Wähle aus, welche Du erlangen oder weiterentwickeln möchtest. Beachte: Im nächsten Schritt kannst Du weitere Kompetenzen frei wählen.",
+    "pathstep:heading": "Willkommen im Weiterbildungsscout",
     "pathstep:subheading": "Wählen Sie eine der folgenden Pfade",
-    "skillpath:label": "Kompetenz"
+    "path:cancel": "abbrechen",
+    "path:stepnavlabel": "Schritt",
+    "skillpath:label": "Kompetenz",
+    "skillstep:heading": "Möchtest du noch andere Kompetenzen erlangen oder weiterentwickeln? Füge weitere Kompetenzen zu Deiner Liste hinzu.",
+    "skillstep:inputplaceholder": "Kompetenzen finden"
 }

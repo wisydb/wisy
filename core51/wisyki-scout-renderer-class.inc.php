@@ -82,12 +82,12 @@ class WISYKI_SCOUT_RENDERER_CLASS {
 		</head>
 
 		<body>
-			<script src="<?php echo $wisyCore ?>/wisyki/js/scout.js" async></script>
-			<script src="<?php echo $wisyCore ?>/wisyki/js/main.js" async></script>
+			<script src="<?php echo $wisyCore ?>/wisyki/js/scout.js"></script>
+			<script src="<?php echo $wisyCore ?>/wisyki/js/main.js"></script>
 			<?php
 			if ($additional_js) {
 				foreach ($additional_js as $jsfile) {
-					echo ('<script src="' . $jsfile . '" async></script>');
+					echo ('<script src="' . $jsfile . '"></script>');
 				}
 			}
 			?>
