@@ -1,8 +1,8 @@
 <header>
     <h1>Scout</h1>
-    <section class="scout-nav">
+    <section class="scout-nav hide-future-steps">
+        <span>{{ lang.path:stepnavlabel }}</span>
         <div class="scout-nav__progress">
-            <span>{{ lang.path:stepnavlabel }}</span>
             <ul>
                 {{ #steps }}
                 <li><button to-step="{{ index }}">{{ nav_label }}</button></li>
@@ -12,13 +12,13 @@
         <button class="btn-link" id="scout-abort"><span>{{ lang.path:cancel }}</span></button>
     </section>
 </header>
-<main>
-    <section id="steps">
+<section class="steps">
+    <div>
         {{ #steps }}
         <div class="step-container">
             <div class="loader"></div>
             <article class="step" id="{{ name }}"></article>
         </div>
         {{ /steps }}
-    </section>
-</main>
+    </div>
+</section>

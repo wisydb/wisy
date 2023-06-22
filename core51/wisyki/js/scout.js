@@ -93,13 +93,22 @@ class Account {
         }
     }
 
-    async addSkill(label, uri=null, levelGoal = null) {
+    addSkill(label, uri = null, levelGoal = null) {
         const skill = {
             uri: uri,
             label: label,
             levelGoal: levelGoal,
-            isLanguageSkill: await this.isLanguageSkill(uri),
+            isLanguageSkill: null,
         };
+        this.#skills[skill.uri] = skill;
+        this.#store();
+
+        this.updateSkillLanguage(uri);
+    }
+
+    async updateSkillLanguage(uri) {
+        const skill = this.#skills[uri];
+        skill.isLanguageSkill = await this.isLanguageSkill(uri);
         this.#skills[skill.uri] = skill;
         this.#store();
     }
@@ -234,9 +243,9 @@ class Scout {
 
         // Disable and hide the "next"- and "prev"-buttons by default
         disable(this.nextButton);
-        hide(this.nextButton, true);
+        hide(this.nextButton, "visibility");
         disable(this.prevButton);
-        hide(this.prevButton, true);
+        hide(this.prevButton, "visibility");
     }
 
     getPath(pathname) {
@@ -259,6 +268,10 @@ class Scout {
         if (!stepIndex) {
             stepIndex = this.account.getStep();
         } else {
+            console.log(
+                "Current index: " +
+                    this.currentPath.steps.indexOf(this.currentPath.currentStep)
+            );
             if (stepIndex == "next") {
                 stepIndex = this.checkStep(
                     this.currentPath.steps.indexOf(
@@ -274,19 +287,21 @@ class Scout {
             }
         }
 
+        console.log("Go to step: " + stepIndex);
         this.currentPath.update(stepIndex);
     }
 
-    selectPath(pathname) {
-        this.account.setPath(pathname);
+    async selectPath(pathname) {
         if (this.currentPath === this.getPath(pathname)) {
             // Nothing changes.
             return;
         }
+        this.account.reset();
+        this.account.setPath(pathname);
         this.currentPath = this.getPath(pathname);
 
         console.log("Switch to " + pathname);
-        this.currentPath.update(this.account.getStep());
+        await this.currentPath.update(this.account.getStep());
     }
 
     checkStep(index) {
@@ -302,6 +317,7 @@ class Scout {
         }
 
         if (index > 0 && !this.currentPath.steps[index].checkPrerequisites()) {
+            console.log("prereqisites not met.");
             index = this.checkStep(index - 1);
         }
 
@@ -346,6 +362,12 @@ class Path {
     currentStep;
 
     /**
+     * Scout nav node.
+     * @type {Element}
+     */
+    scoutNavNode;
+
+    /**
      * Nav elements for the current path steps.
      * @type {NodeListOf<Element>}
      */
@@ -367,7 +389,7 @@ class Path {
         const response = await fetch("core51/wisyki/templates/path.mustache");
         const template = await response.text();
         const html = Lang.render(template, data);
-        this.node = document.getElementById("path");
+        this.node = document.querySelector("main");
         this.node.innerHTML = html;
         this.node.setAttribute("currentPath", this.name);
 
@@ -375,14 +397,15 @@ class Path {
     }
 
     init() {
-        // Init #steps.
-        this.stepsNode = this.node.querySelector("#steps");
+        // Init main .steps.
+        this.stepsNode = this.node.querySelector(".steps > div");
 
         // Define UI action for aborting the scout.
         const scoutAbortBtn = this.node.querySelector("#scout-abort");
         scoutAbortBtn.addEventListener("click", () => this.scout.abort());
 
         // Define UI-action for ging to a specific step.
+        this.scoutNavNode = this.node.querySelector(".scout-nav");
         this.scoutNavSteps = this.node.querySelectorAll(
             ".scout-nav__progress ul li"
         );
@@ -406,6 +429,12 @@ class Path {
             await this.#render();
         }
 
+        // Set the amount of steps -1 as a css prpoerty.
+        document.documentElement.style.setProperty(
+            "--steps",
+            `${this.steps.length-1}`
+        );
+
         this.updateStep(index);
     }
 
@@ -417,6 +446,9 @@ class Path {
         this.currentStep = step;
         this.scout.account.setStep(stepIndex);
 
+
+        // Update navigation bar.
+        this.updateScoutNav();
         // Scroll to the step and hide the current step node
         this.scrollToStep(stepIndex);
 
@@ -429,25 +461,27 @@ class Path {
         );
 
         // Hide the step while it is beeing updated/rendered.
-        hide(currentStepNode, true); // Check for a loader element and determine if the step content has already been loaded.
+        hide(currentStepNode, "visibility"); // Check for a loader element and determine if the step content has already been loaded.
 
         // Update step.
         await this.currentStep.update();
 
         // If a loader element was found, hide it and show the current step node with a delay.
         if (loader) {
-            hide(loader, true);
+            hide(loader, "visibility");
             setTimeout(() => hide(loader), 300);
             setTimeout(() => show(currentStepNode), 100);
         } else {
             show(currentStepNode);
         }
-
-        // Update navigation bar.
-        this.updateScoutNav();
     }
 
     updateScoutNav() {
+        this.scoutNavNode.classList.remove("hide-future-steps");
+        if (this.currentStep.hideNav()) {
+            this.scoutNavNode.classList.add("hide-future-steps");
+        }
+
         this.scoutNavSteps.forEach((element) => {
             element.classList.remove("done");
             element.classList.remove("current-step");
@@ -464,7 +498,7 @@ class Path {
 
     isRendered() {
         return (
-            document.getElementById("path").getAttribute("currentPath") ===
+            document.querySelector("main").getAttribute("currentPath") ===
             this.name
         );
     }
@@ -648,7 +682,7 @@ class Step {
 
     updateNavButtons() {
         if (this.isFirst()) {
-            hide(this.scout.prevButton, true);
+            hide(this.scout.prevButton, "visibility");
             disable(this.scout.prevButton);
         } else {
             show(this.scout.prevButton);
@@ -656,7 +690,7 @@ class Step {
         }
 
         if (this.isLast()) {
-            hide(this.scout.nextButton, true);
+            hide(this.scout.nextButton, "visibility");
             disable(this.scout.nextButton);
         } else {
             show(this.scout.nextButton);
@@ -675,6 +709,10 @@ class Step {
 
     isRendered() {
         return document.getElementById(this.name).children.length !== 0;
+    }
+
+    hideNav() {
+        return false;
     }
 }
 
@@ -696,10 +734,10 @@ class PathStep extends Step {
 
     init() {
         super.init();
-        const pathBtns = this.node.querySelectorAll(".path-button-list button");
+        const pathBtns = this.node.querySelectorAll("#pathchoice .button-list button");
         pathBtns.forEach((btn) => {
-            btn.addEventListener("click", () => {
-                this.scout.selectPath(btn.getAttribute("pathname"));
+            btn.addEventListener("click", async () => {
+                await this.scout.selectPath(btn.getAttribute("pathname"));
                 this.scout.update("next");
             });
         });
@@ -707,7 +745,7 @@ class PathStep extends Step {
 
     updateNavButtons() {
         if (this.isFirst()) {
-            hide(this.scout.prevButton, true);
+            hide(this.scout.prevButton, "visibility");
             disable(this.scout.prevButton);
         } else {
             show(this.scout.prevButton);
@@ -715,7 +753,7 @@ class PathStep extends Step {
         }
 
         if (this.isLast()) {
-            hide(this.scout.nextButton, true);
+            hide(this.scout.nextButton, "visibility");
             disable(this.scout.nextButton);
         } else {
             show(this.scout.nextButton);
@@ -731,6 +769,10 @@ class PathStep extends Step {
         }
 
         return data;
+    }
+
+    hideNav() {
+        return true;
     }
 }
 
@@ -792,10 +834,25 @@ class OccupationSkillsStep extends Step {
     occupationNode;
     skillsNode;
     occupation;
+    maxSkills;
+    skillCounterTemplate;
+    selectedOccupationNode;
+    skillCounterNode;
 
     constructor(scout, path) {
         super(scout, path);
         this.name = "occupation-skills";
+
+        // this.maxSkills = 5;
+    }
+
+    prepareData() {
+        const data = super.prepareData();
+        if(this.maxSkills) {
+            data.maxskills = this.maxSkills;
+        }
+
+        return data;
     }
 
     checkPrerequisites() {
@@ -811,12 +868,24 @@ class OccupationSkillsStep extends Step {
         // Set up the UI components.
         this.occupationNode = this.node.querySelector(".selected-occupation");
         this.skillsNode = this.node.querySelector(".selectable-skills");
+        this.selectedOccupationNode = this.node.querySelector(".selected-occupation");
+        this.skillCounterNode = this.node.querySelector(".skill-counter");
+        
+        if (this.maxSkills) {
+            this.skillCounterTemplate = Lang.getString("skillcountmaxtemplate");
+            this.node.querySelector(".max-skills").textContent = this.maxSkills;
+        } else {
+            this.skillCounterTemplate = Lang.getString("skillcounttemplate");
+        }
     }
 
     async update() {
         await super.update();
 
         const occupation = this.scout.account.getOccupation();
+        // Update the displayed selected occupation.
+        this.selectedOccupationNode.textContent = occupation.label;
+
         if (!this.occupation || this.occupation != occupation) {
             this.occupation = occupation;
             const loader = this.node.parentNode.querySelector(".loader.hidden");
@@ -833,6 +902,8 @@ class OccupationSkillsStep extends Step {
                 hide(loader);
             }
         }
+        
+        this.updateSkillSelection();
     }
 
     /**
@@ -886,10 +957,11 @@ class OccupationSkillsStep extends Step {
             const checkbox = document.createElement("input");
             checkbox.setAttribute("type", "checkbox");
             // checkbox.setAttribute("label", suggestion.label);
-            checkbox.setAttribute("id", uri);
+            checkbox.setAttribute("id", this.name + uri);
+            checkbox.setAttribute("skilluri", uri);
             li.appendChild(checkbox);
             const label = document.createElement("label");
-            label.setAttribute("for", suggestion.uri);
+            label.setAttribute("for", this.name + uri);
             label.textContent = suggestion.label;
             li.appendChild(label);
             checkboxes.push(checkbox);
@@ -897,7 +969,7 @@ class OccupationSkillsStep extends Step {
             // On change event, add or remove the skill associated with the checkbox and update the view.
             checkbox.addEventListener("change", async () => {
                 if (checkbox.checked) {
-                    await this.scout.account.addSkill(suggestion.label, uri);
+                    this.scout.account.addSkill(suggestion.label, uri);
                 } else {
                     this.scout.account.removeSkill(uri);
                 }
@@ -922,15 +994,44 @@ class OccupationSkillsStep extends Step {
      *
      * @returns {void}
      */
-    updateSkillSelection(checkboxes) {
+    updateSkillSelection(checkboxes = null) {
+        if (checkboxes == null) {
+            checkboxes = this.skillsNode.querySelectorAll("input");
+        }
+
+        console.log(checkboxes);
+
         const skills = this.scout.account.getSkills();
+        const skillcount = Object.keys(skills).length;
+        
         checkboxes.forEach((checkbox) => {
-            if (checkbox.getAttribute("id") in skills) {
-                checkbox.setAttribute("checked", "");
+            // Check the checkbox if the skill is selected.
+            if (checkbox.getAttribute("skilluri") in skills) {
+                checkbox.checked = true;
             } else {
-                checkbox.removeAttribute("checked");
+                checkbox.checked = false;
+            }
+
+            // Disable input if the max amount of selectable skills is reached.
+            enable(checkbox);
+            if (this.maxSkills && skillcount >= this.maxSkills) {
+                if (!checkbox.checked) {
+                    disable(checkbox);
+                }
             }
         });
+
+        this.updateSkillCounter();
+    }
+
+    updateSkillCounter() {
+        const skills = this.scout.account.getSkills();
+        const skillcount = Object.keys(skills).length;
+        const data = {
+            skillcount: skillcount,
+            maxskills: this.maxSkills,
+        }
+        this.skillCounterNode.innerHTML = Mustache.render(this.skillCounterTemplate, data);
     }
 }
 
@@ -947,10 +1048,23 @@ class SkillsStep extends Step {
      */
     autocompleter;
     selectedSkillsNode;
+    maxSkills;
+    skillCounterTemplate;
+    skillCounterNode;
 
     constructor(scout, path) {
         super(scout, path);
         this.name = "skills";
+        // this.maxSkills = 5;
+    }
+
+    prepareData() {
+        const data = super.prepareData();
+        if(this.maxSkills) {
+            data.maxskills = this.maxSkills;
+        }
+
+        return data;
     }
 
     checkPrerequisites() {
@@ -962,21 +1076,26 @@ class SkillsStep extends Step {
 
         // Set up UI-elements.
         this.selectedSkillsNode = this.node.querySelector(".selectable-skills");
+        this.skillCounterNode = this.node.querySelector(".skill-counter");
 
-        this.autocompleter = new Autocompleter(
-            this,
-            async (label, uri) => {
-                await this.scout.account.addSkill(label, uri);
-                this.showSelectedSkills();
-                this.autocompleter.clearInput();
-            }
-        );
+        this.autocompleter = new Autocompleter(this, async (label, uri) => {
+            this.scout.account.addSkill(label, uri);
+            this.showSelectedSkills();
+            this.autocompleter.clearInput();
+        });
+        
+        
+        if (this.maxSkills) {
+            this.skillCounterTemplate = Lang.getString("skillcountmaxtemplate");
+        } else {
+            this.skillCounterTemplate = Lang.getString("skillcounttemplate");
+        }
     }
 
     async update() {
         await super.update();
 
-        this.showSelectedSkills();
+        this.showSelectedSkills(true);
     }
 
     /**
@@ -986,10 +1105,14 @@ class SkillsStep extends Step {
      *
      * @returns {void}
      */
-    showSelectedSkills() {
-        // while (this.skillsNode.lastChild) {
-        //     this.skillsNode.removeChild(this.skillsNode.lastChild);
-        // }
+    showSelectedSkills(rebuild = false) {
+        if (rebuild) {
+            while (this.selectedSkillsNode.lastChild) {
+                this.selectedSkillsNode.removeChild(
+                    this.selectedSkillsNode.lastChild
+                );
+            }
+        }
 
         const checkboxes = [];
 
@@ -1000,7 +1123,9 @@ class SkillsStep extends Step {
             let unchecked = null;
             const skill = skills[uri];
             // Check if the checkbox already exists.
-            let checkbox = this.selectedSkillsNode.querySelector('input[name="' + skill.label + '"]');
+            let checkbox = this.selectedSkillsNode.querySelector(
+                'input[name="' + skill.label + '"]'
+            );
             // If checkbox exist, skip making a new one.
             if (checkbox) {
                 if (checkbox.checked) {
@@ -1015,17 +1140,15 @@ class SkillsStep extends Step {
             const li = document.createElement("li");
             checkbox.setAttribute("type", "checkbox");
             checkbox.setAttribute("name", skill.label);
-            checkbox.setAttribute("id", uri);
+            checkbox.setAttribute("id", this.name + uri);
+            checkbox.setAttribute("skilluri", uri);
             li.appendChild(checkbox);
             const label = document.createElement("label");
-            label.setAttribute("for", skill.uri);
+            label.setAttribute("for", this.name + uri);
             label.textContent = skill.label;
             li.appendChild(label);
             if (unchecked) {
-                this.selectedSkillsNode.insertBefore(
-                    li,
-                    unchecked.parentNode
-                );
+                this.selectedSkillsNode.insertBefore(li, unchecked.parentNode);
                 this.selectedSkillsNode.removeChild(unchecked.parentNode);
             } else {
                 this.selectedSkillsNode.insertBefore(
@@ -1038,7 +1161,7 @@ class SkillsStep extends Step {
             // On change event, add or remove the skill associated with the checkbox and update the view.
             checkbox.addEventListener("change", async (event) => {
                 if (event.target.checked) {
-                    await this.scout.account.addSkill(skill.label, uri);
+                    this.scout.account.addSkill(skill.label, uri);
                 } else {
                     this.scout.account.removeSkill(uri);
                 }
@@ -1060,13 +1183,34 @@ class SkillsStep extends Step {
      */
     updateSkillSelection(checkboxes) {
         const skills = this.scout.account.getSkills();
+        const skillcount = Object.keys(skills).length;
+
+        // Disable autocomplet inpput if max amount of selectable skills is reached.
+        if (skillcount >= this.maxSkills) {
+            disable(this.autocompleter.inputElm);
+        } else {
+            enable(this.autocompleter.inputElm);
+        }
+
         checkboxes.forEach((checkbox) => {
-            if (checkbox.getAttribute("id") in skills) {
-                checkbox.setAttribute("checked", "");
+            if (checkbox.getAttribute("skilluri") in skills) {
+                checkbox.checked = true;
             } else {
-                checkbox.removeAttribute("checked");
+                checkbox.checked = false;
             }
         });
+        
+        this.updateSkillCounter();
+    }
+
+    updateSkillCounter() {
+        const skills = this.scout.account.getSkills();
+        const skillcount = Object.keys(skills).length;
+        const data = {
+            skillcount: skillcount,
+            maxskills: this.maxSkills,
+        }
+        this.skillCounterNode.innerHTML = Mustache.render(this.skillCounterTemplate, data);
     }
 }
 
@@ -1132,7 +1276,6 @@ class Autocompleter {
 
         const ul = document.createElement("ul");
         // Iterate through each suggestion.
-        console.log(completions);
         const skills = this.step.scout.account.getSkills();
         if (completions.length) {
             for (const completion of completions) {
@@ -1153,7 +1296,6 @@ class Autocompleter {
                 btn.addEventListener("mousedown", () => {
                     this.inputElm.value = completion.label;
                     this.clearOutput();
-                    console.log(completion);
                     this.callback(completion.label, completion.uri);
                 });
             }
@@ -1249,20 +1391,25 @@ function setVirtualKeyboardStatus(event) {
  * Hides a given node by adding a CSS class to it.
  *
  * @param {HTMLElement} node - The node to hide.
- * @param {boolean} onlyVisibility - If true, only the visibility is hidden (CSS class 'hidden' is added), otherwise, the node is hidden completely (CSS class 'display-none' is added).
+ * @param {string} mode - Allowed values "display", "visibility", "opacity" to set the strategy for hiding the element.
  *
  * @returns {void}
  */
-function hide(node, onlyVisibility = false) {
-    if (onlyVisibility) {
-        node.classList.add("hidden");
-    } else {
-        node.classList.add("display-none");
+function hide(node, mode = "display") {
+    switch (mode) {
+        case "visibility":
+            node.classList.add("hidden");
+            break;
+        case "opacity":
+            node.classList.add("hidden-opacity");
+            break;
+        default:
+            node.classList.add("display-none");
     }
 }
 
 /**
- * This function shows the given node by removing the "hidden" and "display-none" classes.
+ * This function shows the given node by removing the "hidden", "hidden-opacity" and "display-none" classes.
  *
  * @param {Element} node - The node to show.
  *
@@ -1270,6 +1417,7 @@ function hide(node, onlyVisibility = false) {
  */
 function show(node) {
     node.classList.remove("hidden");
+    node.classList.remove("hidden-opacity");
     node.classList.remove("display-none");
 }
 

@@ -25,7 +25,7 @@ async function predict(title, description) {
  
 	const data = {title: title, description: description}; 
 	// const url = "./wisyki-predict-comp-level.inc.php?" 
-	const url = "https://wisyki.eu.pythonanywhere.com/predictCompLevel"
+	const url = "https://wbhessen.eu.pythonanywhere.com/predictCompLevel"
 	const response = await fetch(url, {
 		method: "POST",
 		body: JSON.stringify(data),

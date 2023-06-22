@@ -1,4 +1,9 @@
-<p>{{ lang.occupationskillsstep:heading }}</p>
-<div class="selected-occupation"></div>
-<p>{{ lang.occupationskillsstep:subheading }}</p>
+<h2>{{ lang.occupationskillsstep:heading }}</h2>
+{{ #maxskills }}
+<p>{{{ lang.occupationskillsstep:subheadingmax }}}</p>
+{{ /maxskills }}
+{{ ^maxskills }}
+<p>{{{ lang.occupationskillsstep:subheading }}}</p>
+{{ /maxskills }}
+<p class="skill-counter"></p>
 <ul class="selectable-skills"></ul>

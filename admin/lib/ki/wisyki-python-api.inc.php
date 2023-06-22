@@ -10,7 +10,7 @@ class WISYKI_PYTHON_API {
     function __construct()
 	{
         $this->pythonlib = dirname(__FILE__) . '/python/';
-        $this->api_uri = "https://wisyki.eu.pythonanywhere.com";
+        $this->api_uri = "https://wbhessen.eu.pythonanywhere.com";
     }
 
     /**

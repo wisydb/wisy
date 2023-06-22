@@ -115,7 +115,7 @@ class WISYKI_SCOUT_RENDERER_CLASS {
 		$this->getPrologue();
 		?>
 
-			<div id="path"></div>
+			<main></main>
 
 		<?php
 		$this->getEpilogue();
@@ -129,10 +129,10 @@ class WISYKI_SCOUT_RENDERER_CLASS {
 	function getEpilogue() {
 		?>
 
-			<section class="bottom-nav">
+			<footer class="bottom-nav button-list">
 				<button id="prev-step" class="hidden disabled" title="Go to previous step"><i class="icon arrow-icon"></i></button>
 				<button id="next-step" class="hidden disabled" title="Go to next step"><i class="icon arrow-icon"></i></button>
-			</section>
+			</footer>
 		</body>
 
 		</html>
