@@ -48,36 +48,16 @@ if( !function_exists('isohtmlspecialchars') ) {
 // load classes as SCOPE_NAME_CLASS from /lib/scope/name.php or from /config/scope/name.php
 spl_autoload_register('cms_autoload');
 function cms_autoload($classname)
-{
-    $filename = strtr(strtolower($classname), array('_class' => '', '_' => '/')) . '.inc.php';
-    //load WisyKi Special-Classes
-    if (isset($GLOBALS['WisyKi'])) {
-
-         $path = dirname(__FILE__) . '/WisyKi/lib/' . $filename;
-        if (file_exists($path)) {
-            require_once($path);
-            return;
-        }
-
-        $path = dirname(__FILE__) . '/WisyKi/config/' . $filename;
-        if (file_exists($path)) {
-            require_once($path);
-            return;
-        }
-   } 
-        $path = dirname(__FILE__) . '/lib/' . $filename;
-        if (file_exists($path)) {
-            require_once($path);
-            return;
-        }
-
-        $path = dirname(__FILE__) . '/config/' . $filename;
-        if (file_exists($path)) {
-            require_once($path);
-            return;
-        }
-    
-}
+{ 
+	$filename = strtr(strtolower($classname), array('_class'=>'', '_'=>'/')) . '.inc.php';
+	$path = dirname(__FILE__) . '/lib/' . $filename;
+	if( file_exists($path) )
+		{ require_once($path); return; }
+	
+	$path = dirname(__FILE__) . '/config/' . $filename;
+	if( file_exists($path) )
+		{ require_once($path); return; }
+} 
 
 
 // for backward compatibility (PHP < 5.4.0) automatic stripslashes() if get_magic_quotes_gpc is enabled
