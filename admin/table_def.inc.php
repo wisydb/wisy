@@ -275,7 +275,7 @@ class Table_Def_Class
 		for( $r = 0; $r < sizeof((array) $this->rows); $r++ )
 		{
 			$row_type = $this->rows[$r]->flags & TABLE_ROW;
-			if( $row_type == TABLE_MATTR )
+			if( $row_type == TABLE_MATTR && ! $row_type & TABLE_DB_IGNORE)
 			{
 				$db->query("DELETE FROM " . $this->name . '_' . $this->rows[$r]->name . " WHERE primary_id=$id");
 			}
@@ -324,6 +324,7 @@ class Table_Def_Class
 				$row_addparam	= isset( $Table_Def[$t]->rows[$r]->addparam ) && is_object( $Table_Def[$t]->rows[$r]->addparam ) ? $Table_Def[$t]->rows[$r]->addparam->name : '';
 				$query			= '';
 				$primary_id		= '';
+				$flags = (isset($Table_Def[$t]->rows[$r]->flags))? $Table_Def[$t]->rows[$r]->flags:0;
 				
 				// get the query to search for references
 				if( $row_type==TABLE_MATTR && $row_addparam == $this->name )
@@ -352,7 +353,7 @@ class Table_Def_Class
 				}
 				
 				// do we have a query?
-				if( $query != '' )
+				if( $query != '' && !$flags & TABLE_DB_IGNORE)
 				{
 					// get the number of references
 					$row_ref = -1;
@@ -703,7 +704,7 @@ function Table_Find_Def($name, $accessCheck = 1)
 
 	for( $t = 0; $t < sizeof((array) $Table_Def); $t++ ) 
 	{
-		if( $Table_Def[$t]->name == $name ) 
+		if( $Table_Def[$t]->name == $name) 
 		{
 		    if( !isset( $_SESSION['g_session_userid'] ) || !is_numeric($_SESSION['g_session_userid']) || $accessCheck == 0) {
 				return $Table_Def[$t]; 
@@ -757,13 +758,12 @@ function Table_Find_Def($name, $accessCheck = 1)
 						$delayedSection = '';
 					}
 					*/
-					
 					$ret->add_row(
 						$rowflags, 
 						$Table_Def[$t]->rows[$r]->name, 
 						$Table_Def[$t]->rows[$r]->descr, 
 						$Table_Def[$t]->rows[$r]->default_value, 
-						$Table_Def[$t]->rows[$r]->addparam, 
+						$Table_Def[$t]->rows[$r]->addparam,
 						$rowsection,
 						$Table_Def[$t]->rows[$r]->prop,
 						$acl

@@ -19,7 +19,7 @@ wie vereinbart bitten wir Sie in diesem Monat, ...
 
 [[pflege_msg]]
 
-Mit freundlichen Grüßen
+Mit freundlichen Grï¿½ï¿½en
 
 Ihr Name
 
@@ -304,13 +304,13 @@ $g_pflege_wege =  '0###alle###'
 
 global $g_nonFilenameChars;
 $g_nonFilenameChars = array(
-	"ä" =>"ae", 
-	"ö" =>"oe", 
-	"ü" =>"ue", 
-	"Ä" =>"Ae", 
-	"Ö" =>"Oe", 
-	"Ü" =>"Ue", 
-	"ß" =>"ss",
+	"ï¿½" =>"ae", 
+	"ï¿½" =>"oe", 
+	"ï¿½" =>"ue", 
+	"ï¿½" =>"Ae", 
+	"ï¿½" =>"Oe", 
+	"ï¿½" =>"Ue", 
+	"ï¿½" =>"ss",
 	"-" =>" ",
 	"+" =>" ",
 	"*" =>" ",
@@ -377,7 +377,7 @@ class EXP_FORMATPFLEGEPROT_CLASS extends EXP_PLUGIN_CLASS
 
 		$this->linewidth = 75;
 
-		$this->remark = 'Dieses Exportmodul erzeugt ein Archiv mit Anschreiben für alle Anbieter, die in dem ausgewählten Monat angeschrieben werden sollen (Wert aus <i>Anbieter.Pfegekontakt.Aktualisieren</i>).<br /><br />'
+		$this->remark = 'Dieses Exportmodul erzeugt ein Archiv mit Anschreiben fï¿½r alle Anbieter, die in dem ausgewï¿½hlten Monat angeschrieben werden sollen (Wert aus <i>Anbieter.Pfegekontakt.Aktualisieren</i>).<br /><br />'
 		.	'Optional k&ouml;nnen die Anschreiben auch gleich per EMail an die unter <i>Anbieter.Pflegekontakt.Pflege EMail</i> angegebene EMail-Adresse versandt werden.';
 	
 		
@@ -385,9 +385,9 @@ class EXP_FORMATPFLEGEPROT_CLASS extends EXP_PLUGIN_CLASS
 		$this->options['dummy1']		=	array('remark', '<a href="https://b2b.kursportal.info/index.php?title=Pflegeprotokoll" target="_blank">Beispiel und <b>wichtige Hinweise</b> zur Formatierung ...</a>');
 		$this->options['monat'] 		=	array('enum', 'Monat', ftime("%m"), $g_monate);
 		$this->options['pflege_weg']	=	array('enum', 'Pflegeweg', -8, $g_pflege_wege);	
-		$this->options['abgel']			=	array('check', 'Abgelaufene Kurse hinzufügen', 1);
-		$this->options['baseurl']		=	array('text', 'Basis-URL für Verweise', 'http:/'.'/hamburg.kursportal.info', 50);
-		$this->options['dummy2']		=	array('remark', 'Verwenden Sie für die Basis-URL bitte die kurzmöglichste funktionierende Form.');
+		$this->options['abgel']			=	array('check', 'Abgelaufene Kurse hinzufï¿½gen', 1);
+		$this->options['baseurl']		=	array('text', 'Basis-URL fï¿½r Verweise', 'http:/'.'/hamburg.kursportal.info', 50);
+		$this->options['dummy2']		=	array('remark', 'Verwenden Sie fï¿½r die Basis-URL bitte die kurzmï¿½glichste funktionierende Form.');
 		
 		$allgroups = acl_get_all_groups();
 		for( $i = 0; $i < sizeof((array) $allgroups); $i++ )
@@ -658,11 +658,11 @@ class EXP_FORMATPFLEGEPROT_CLASS extends EXP_PLUGIN_CLASS
 			}
 
 			if( isset( $kurse[$k]['qzertifikat'] ) && $kurse[$k]['qzertifikat'] ) {
-				$ret .= "\nQualitätsz.: " . $kurse[$k]['qzertifikat'];
+				$ret .= "\nQualitï¿½tsz.: " . $kurse[$k]['qzertifikat'];
 			}
 
 			if( isset( $kurse[$k]['foerderung'] ) && $kurse[$k]['foerderung'] ) {
-				$ret .= "\nFörderung:   " . $kurse[$k]['foerderung'];
+				$ret .= "\nFï¿½rderung:   " . $kurse[$k]['foerderung'];
 			}
 
 			// durchfuehrungen...
@@ -676,8 +676,8 @@ class EXP_FORMATPFLEGEPROT_CLASS extends EXP_PLUGIN_CLASS
 				$ret .= "\n  Ort:       " . $kurse[$k]['durchf'][$d]['ort'];
 			}
 			
-			$ret .=     "\nArbeitsziel: [ ] keine Änderung  [ ] löschen  [ ] online geändert";
-			$ret .=     "\n             [ ] bitte wie hier notiert ändern  [ ] lt. Anlage ändern";
+			$ret .=     "\nArbeitsziel: [ ] keine ï¿½nderung  [ ] lï¿½schen  [ ] online geï¿½ndert";
+			$ret .=     "\n             [ ] bitte wie hier notiert ï¿½ndern  [ ] lt. Anlage ï¿½ndern";
 		}
 		
 		return $ret;
@@ -725,7 +725,7 @@ class EXP_FORMATPFLEGEPROT_CLASS extends EXP_PLUGIN_CLASS
 		
 		if( !isset( $this->param['group'.$db1->f('user_grp')] ) || intval($this->param['group'.$db1->f('user_grp')])==0 )
 		{
-			$this->log("Anbieter ID $anbieterId nicht über die Anbietergruppe ausgewählt -> kein Protokoll.");
+			$this->log("Anbieter ID $anbieterId nicht ï¿½ber die Anbietergruppe ausgewï¿½hlt -> kein Protokoll.");
 			return 0;
 		}
 		else if( intval($db1->f('freigeschaltet')) != 1 && intval($db1->f('freigeschaltet')) != 4 )

@@ -42,7 +42,14 @@ switch( $colors )
 
 
 /*** common ***/
+input.esco {
+	color:<?php echo $link; ?>;
+}
 
+input.esco:hover {
+	cursor: pointer;
+	color:<?php echo $hover; ?>;
+}
 
 body {
 	font-family:Verdana,Arial,sans-serif; font-size:9pt;
@@ -309,6 +316,7 @@ input.addvalues {
 	background-color:white;
 }
 
+
 textarea.monospc {
 	font-size:1em; font-family:"Courier New",monospace;
 }
@@ -453,6 +461,7 @@ div.e_toolbar, div.e_section {
 	display: none;
 }
 
+
 /*attributes*/
 .e_attr {
 	border-bottom: 1px solid <?php echo $inputborder; ?>;
@@ -480,7 +489,7 @@ div.e_toolbar, div.e_section {
 
 
 /*attributes multiline*/
-.e_attrmultiline  .e_attritem {
+.e_attrmultiline  .e_attritem .e_hint {
 	display: block;
 }
 
@@ -495,6 +504,18 @@ div.e_toolbar, div.e_section {
 .e_attractype2048 { /*Verwaltungsstichwort: Gelb*/
 	background-color: #FFFFC0;
 }
+.e_attractype524288, .e_attractype524289, .e_attractype1048576 { /* ESCO-Typen */
+	background-color: #A2E9FF;
+}
+
+.v_attractype524288 { /* ESCO-Vorschlaege */
+	background-color: #EEEE00;
+}
+
+.s_attractype524288 { /* vorausgewaehlte ESCO-Vorschlaege */
+	background-color: #FF9C70;
+}
+
 
 
 /*attributes: references*/

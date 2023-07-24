@@ -873,7 +873,10 @@ require_lang('config/lang/basic');
 
 // further includes
 require_once('table_def.inc.php');
-require_once('config/db.inc.php');
+if (isset($GLOBALS['WisyKi']))
+	require_once('WisyKi/config/db.inc.php');
+else
+	require_once('config/db.inc.php');
 require_once('acl.inc.php');
 
 // create site

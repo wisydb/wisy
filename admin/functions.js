@@ -453,6 +453,8 @@ function popfit(w)
 	popfitted = 1;
 }
 
+
+
 function selUpdtOpnr(id)
 {
 	if( window.opener && !window.opener.closed && window.opener.rcv_id_selection )
