@@ -1,11 +1,24 @@
-<h2>{{ lang.skillstep:heading }}</h2>
+<h2>{{ lang.skillsstep:heading }}</h2>
 <p class="skill-counter"></p>
-<div class="autocomplete-box">
+<section class="autocomplete-box">
     <div class="autocomplete-box__input">
         <i class="icon search-icon"></i>
-        <input type="text" placeholder="{{ lang.skillstep:inputplaceholder }}" name="esco-skill-select" id="esco-skill-select" class="esco-autocomplete" esco-scheme="member-skills,skills-hierarchy,sachstichwort" onlyrelevant=True>
+        <input type="text" placeholder="{{ lang.skillsstep:inputplaceholder }}" name="esco-skill-select"
+            id="esco-skill-select" class="esco-autocomplete" esco-scheme="member-skills,skills-hierarchy,sachstichwort"
+            onlyrelevant=True>
         <button class="clear-input" title="{{ lang.clearinput }}"><i class="icon close-icon"></i></button>
     </div>
     <output name="esco-skill-select" for="esco-skill-select"></output>
-</div>
-<ul class="selectable-skills"></ul>
+</section>
+<section class="selectable-skills">
+    <article class="otherskills">
+        <h4>{{ lang.skillsstep:otherskills }} </h4>
+        <ul></ul>
+    </article>
+    {{ #occupation }}
+    <article class="occupationskills">
+        <h4>{{ lang.skillsstep:skillsfor }} {{ . }}</h4>
+        <ul></ul>
+    </article>
+    {{ /occupation }}
+</section>

@@ -16,7 +16,8 @@ class Account {
 
     constructor() {
         this.#isLoggedIn = this.#checkLogin();
-        this.#load();
+        const scoutid = false; // TODO: Get id from url.
+        this.#load(scoutid);
     }
 
     reset() {
@@ -43,10 +44,10 @@ class Account {
      *
      * @returns {void}
      */
-    #load() {
+    #load(id = false) {
         let storedAccountJSON;
 
-        if (this.#isLoggedIn) {
+        if (this.#isLoggedIn && id) {
             // TODO: Fetch Account from server.
         } else {
             storedAccountJSON = localStorage.getItem("account");
@@ -79,6 +80,46 @@ class Account {
             // TODO: Store account online.
         } else {
             // Store account in local storage.
+
+            // {
+            //     occupation: {
+            //         label: "Polizist/Polizistin",
+            //         uri: "http://data.europa.eu/esco/occupation/5793c124-c037-47b2-85b6-dd4a705968dc",
+            //     },
+            //     skills: {
+            //         "http://data.europa.eu/esco/skill/87454307-a3ad-40ce-8024-1aeb7c94f1e3":
+            //             {
+            //                 uri: "http://data.europa.eu/esco/skill/87454307-a3ad-40ce-8024-1aeb7c94f1e3",
+            //                 label: "Verkehr regeln",
+            //                 levelGoal: null,
+            //                 isLanguageSkill: false,
+            //             },
+            //         "http://data.europa.eu/esco/skill/96de2e86-e287-41f2-88ab-15a2343afc6f":
+            //             {
+            //                 uri: "http://data.europa.eu/esco/skill/96de2e86-e287-41f2-88ab-15a2343afc6f",
+            //                 label: "mit Konfliktsituationen umgehen",
+            //                 levelGoal: null,
+            //                 isLanguageSkill: false,
+            //             },
+            //         "http://data.europa.eu/esco/skill/87cadd76-4e3a-47e5-b66d-559fbc1e8993":
+            //             {
+            //                 uri: "http://data.europa.eu/esco/skill/87cadd76-4e3a-47e5-b66d-559fbc1e8993",
+            //                 label: "auf Anfragen antworten",
+            //                 levelGoal: null,
+            //                 isLanguageSkill: false,
+            //             },
+            //         "Kakaobohnen kosten": {
+            //             uri: "Kakaobohnen kosten",
+            //             label: "Kakaobohnen kosten",
+            //             levelGoal: null,
+            //             isLanguageSkill: false,
+            //         },
+            //     },
+            //     lastvisited: 1689674096956,
+            //     path: "occupation",
+            //     step: 2,
+            // }
+
             localStorage.setItem(
                 "account",
                 JSON.stringify({
@@ -93,22 +134,41 @@ class Account {
         }
     }
 
-    addSkill(label, uri = null, levelGoal = null) {
+    async setSkill(
+        label,
+        uri,
+        levelGoal = null,
+        isLanguageSkill = null,
+        isOccupationSkill = null
+    ) {
         const skill = {
             uri: uri,
             label: label,
             levelGoal: levelGoal,
-            isLanguageSkill: null,
+            isLanguageSkill: isLanguageSkill,
+            isOccupationSkill: isOccupationSkill,
         };
-        this.#skills[skill.uri] = skill;
+        this.#skills[uri] = skill;
         this.#store();
 
-        this.updateSkillLanguage(uri);
+        await this.updateSkillInfo(skill);
     }
 
-    async updateSkillLanguage(uri) {
-        const skill = this.#skills[uri];
-        skill.isLanguageSkill = await this.isLanguageSkill(uri);
+    async updateSkillInfo(skill) {
+        if (skill.isLanguageSkill != null && skill.isOccupationSkill != null) {
+            return;
+        }
+        const skillInfo = await this.getSkillInfo(skill.uri);
+        if (!skillInfo) {
+            skill.isLanguageSkill = false;
+            skill.isOccupationSkill = false;
+        }
+        if (skill.isLanguageSkill == null) {
+            skill.isLanguageSkill = skillInfo.isLanguageSkill;
+        }
+        if (skill.isOccupationSkill == null) {
+            skill.isOccupationSkill = skillInfo.isOccupationSkill;
+        }
         this.#skills[skill.uri] = skill;
         this.#store();
     }
@@ -166,13 +226,16 @@ class Account {
      *
      * @returns {Promise} - A Promise that resolves to true if the skill is a language skill, false otherwise.
      */
-    async isLanguageSkill(uri) {
+    async getSkillInfo(uri) {
         // Return false if uri does not start with http://data.europa.eu/esco/skill/ and is therefore not an actual esco uri.
         if (!uri || !uri.startsWith("http://data.europa.eu/esco/skill/")) {
             return false;
         }
         const params = { uri: uri };
-        const url = "./esco/isLanguageSkill?" + new URLSearchParams(params);
+        if (this.#occupation) {
+            params.occupationuri = this.#occupation.uri;
+        }
+        const url = "./esco/getSkillInfo?" + new URLSearchParams(params);
         const response = await fetch(url);
 
         if (response.ok) {
@@ -292,7 +355,7 @@ class Scout {
     }
 
     async selectPath(pathname) {
-        if (this.currentPath === this.getPath(pathname)) {
+        if (this.account.getPath() === pathname) {
             // Nothing changes.
             return;
         }
@@ -397,6 +460,8 @@ class Path {
     }
 
     init() {
+        // Init steps.
+        this.steps.forEach((step) => step.init());
         // Init main .steps.
         this.stepsNode = this.node.querySelector(".steps > div");
 
@@ -422,6 +487,27 @@ class Path {
         addEventListener("resize", () => {
             this.scrollToStep(this.steps.indexOf(this.currentStep));
         });
+
+        // Set up the level explanation modal and its associated button.
+        const modalBtn = this.node.querySelector(".open-modal-btn");
+        this.helpModal = this.node.querySelector(".modal");
+        modalBtn.addEventListener("click", () => this.toggleHelp());
+
+        // Close the modal if the close button is clicked or somewhere outside of the modal.
+        this.helpModal.addEventListener(
+            "click",
+            (event) => {
+                if (
+                    event.target.closest(".close-modal-btn") ||
+                    event.target.matches(".modal__backdrop")
+                ) {
+                    hide(this.helpModal);
+                }
+            },
+            false
+        );
+
+        this.help = this.node.querySelector(".modal__content article");
     }
 
     async update(index) {
@@ -432,7 +518,7 @@ class Path {
         // Set the amount of steps -1 as a css prpoerty.
         document.documentElement.style.setProperty(
             "--steps",
-            `${this.steps.length-1}`
+            `${this.steps.length - 1}`
         );
 
         this.updateStep(index);
@@ -446,34 +532,21 @@ class Path {
         this.currentStep = step;
         this.scout.account.setStep(stepIndex);
 
-
         // Update navigation bar.
         this.updateScoutNav();
         // Scroll to the step and hide the current step node
         this.scrollToStep(stepIndex);
 
-        // Get the node for the current step and loader.
-        const currentStepNode = this.stepsNode.querySelector(
-            "#" + this.currentStep.name
-        );
-        const loader = currentStepNode.parentNode.querySelector(
-            ".loader:not(.hidden)"
-        );
+        this.currentStep.showLoader();
 
-        // Hide the step while it is beeing updated/rendered.
-        hide(currentStepNode, "visibility"); // Check for a loader element and determine if the step content has already been loaded.
-
+        // Update Helpmodal content.
+        this.help.innerHTML = Lang.getString(
+            this.currentStep.name + "step:help"
+        );
         // Update step.
         await this.currentStep.update();
 
-        // If a loader element was found, hide it and show the current step node with a delay.
-        if (loader) {
-            hide(loader, "visibility");
-            setTimeout(() => hide(loader), 300);
-            setTimeout(() => show(currentStepNode), 100);
-        } else {
-            show(currentStepNode);
-        }
+        this.currentStep.hideLoader();
     }
 
     updateScoutNav() {
@@ -538,6 +611,17 @@ class Path {
         data.label = Lang.getString(this.name + "path:label");
         return data;
     }
+
+    /**
+     * Toggles the display of the help modal.
+     */
+    toggleHelp() {
+        if (this.helpModal.classList.contains("display-none")) {
+            show(this.helpModal);
+        } else {
+            hide(this.helpModal);
+        }
+    }
 }
 
 /**
@@ -555,6 +639,8 @@ class OccupationPath extends Path {
             new OccupationStep(this.scout, this),
             new OccupationSkillsStep(this.scout, this),
             new SkillsStep(this.scout, this),
+            new LevelGoalStep(this.scout, this),
+            new CouseListStep(this.scout, this),
         ];
     }
 
@@ -578,6 +664,8 @@ class SkillPath extends Path {
         this.steps = [
             new PathStep(this.scout, this),
             new SkillsStep(this.scout, this),
+            new LevelGoalStep(this.scout, this),
+            new CouseListStep(this.scout, this),
         ];
     }
 
@@ -623,6 +711,12 @@ class Step {
      */
     node;
 
+    /**
+     * The DOM node of the step loader.
+     * @type {HTMLElement}
+     */
+    loader;
+
     constructor(scout, path) {
         if (this.constructor == Step) {
             throw new Error("Abstract classes can't be instantiated.");
@@ -637,6 +731,24 @@ class Step {
         return data;
     }
 
+    init() {
+        // Get the node for the current step and loader.
+        this.node = document.getElementById(this.name);
+        this.loader = this.node.parentNode.querySelector(
+            ".loader:not(.hidden)"
+        );
+    }
+
+    async update() {
+
+        if (!this.isRendered()) {
+            console.log("is not rendered");
+            await this.#render();
+        }
+
+        this.updateNavButtons();
+    }
+
     async #render() {
         const data = this.prepareData();
         const response = await fetch(
@@ -644,13 +756,31 @@ class Step {
         );
         const template = await response.text();
         const html = Lang.render(template, data);
-        this.node = document.getElementById(this.name);
         this.node.innerHTML = html;
 
-        this.init();
+        this.initRender();
     }
 
-    init() {}
+    initRender() {}
+
+    showLoader() {
+        hide(this.node, "visibility");
+        // Hide the step, show the loader.
+        if (this.loader) {
+            show(this.loader)
+        }
+    }
+
+    hideLoader() {
+        // If a loader element was found, hide it and show the current step node with a delay.
+        if (this.loader) {
+            hide(this.loader, "visibility");
+            setTimeout(() => hide(this.loader), 300);
+            setTimeout(() => show(this.node), 100);
+        } else {
+            show(this.node);
+        }
+    }
 
     isFirst() {
         return this.path.steps.indexOf(this.path.currentStep) == 0;
@@ -672,14 +802,6 @@ class Step {
         ];
     }
 
-    async update() {
-        if (!this.isRendered()) {
-            console.log("is not rendered");
-            await this.#render();
-        }
-        this.updateNavButtons();
-    }
-
     updateNavButtons() {
         if (this.isFirst()) {
             hide(this.scout.prevButton, "visibility");
@@ -697,8 +819,10 @@ class Step {
             const nextStep = this.nextStep();
             if (nextStep && nextStep.checkPrerequisites()) {
                 enable(this.scout.nextButton);
+                console.log('enable next button');
             } else {
                 disable(this.scout.nextButton);
+                console.log('disable next button');
             }
         }
     }
@@ -725,6 +849,7 @@ class Step {
 class PathStep extends Step {
     constructor(scout, path) {
         super(scout, path);
+
         this.name = "pathchoice";
     }
 
@@ -732,9 +857,11 @@ class PathStep extends Step {
         return true;
     }
 
-    init() {
-        super.init();
-        const pathBtns = this.node.querySelectorAll("#pathchoice .button-list button");
+    initRender() {
+        super.initRender();
+        const pathBtns = this.node.querySelectorAll(
+            "#pathchoice .button-list button"
+        );
         pathBtns.forEach((btn) => {
             btn.addEventListener("click", async () => {
                 await this.scout.selectPath(btn.getAttribute("pathname"));
@@ -794,8 +921,8 @@ class OccupationStep extends Step {
         this.name = "occupation";
     }
 
-    init() {
-        super.init();
+    initRender() {
+        super.initRender();
         // Set up UI-elements.
         this.autocompleter = new Autocompleter(this, (label, uri) =>
             this.setOccupation(label, uri)
@@ -815,7 +942,7 @@ class OccupationStep extends Step {
     }
 
     checkPrerequisites() {
-        return this.scout.account.getPath() != null;
+        return this.scout.account.getPath() == this.path.name;
     }
 
     setOccupation(label, uri) {
@@ -841,14 +968,14 @@ class OccupationSkillsStep extends Step {
 
     constructor(scout, path) {
         super(scout, path);
-        this.name = "occupation-skills";
+        this.name = "occupationskills";
 
         // this.maxSkills = 5;
     }
 
     prepareData() {
         const data = super.prepareData();
-        if(this.maxSkills) {
+        if (this.maxSkills) {
             data.maxskills = this.maxSkills;
         }
 
@@ -857,20 +984,22 @@ class OccupationSkillsStep extends Step {
 
     checkPrerequisites() {
         return (
-            this.scout.account.getPath() != null &&
+            this.scout.account.getPath() == this.path.name &&
             this.scout.account.getOccupation() != null
         );
     }
 
-    init() {
-        super.init();
+    initRender() {
+        super.initRender();
 
         // Set up the UI components.
         this.occupationNode = this.node.querySelector(".selected-occupation");
-        this.skillsNode = this.node.querySelector(".selectable-skills");
-        this.selectedOccupationNode = this.node.querySelector(".selected-occupation");
+        this.skillsNode = this.node.querySelector(".selectable-skills ul");
+        this.selectedOccupationNode = this.node.querySelector(
+            ".selected-occupation"
+        );
         this.skillCounterNode = this.node.querySelector(".skill-counter");
-        
+
         if (this.maxSkills) {
             this.skillCounterTemplate = Lang.getString("skillcountmaxtemplate");
             this.node.querySelector(".max-skills").textContent = this.maxSkills;
@@ -902,7 +1031,7 @@ class OccupationSkillsStep extends Step {
                 hide(loader);
             }
         }
-        
+
         this.updateSkillSelection();
     }
 
@@ -969,7 +1098,7 @@ class OccupationSkillsStep extends Step {
             // On change event, add or remove the skill associated with the checkbox and update the view.
             checkbox.addEventListener("change", async () => {
                 if (checkbox.checked) {
-                    this.scout.account.addSkill(suggestion.label, uri);
+                    this.scout.account.setSkill(suggestion.label, uri);
                 } else {
                     this.scout.account.removeSkill(uri);
                 }
@@ -1003,7 +1132,7 @@ class OccupationSkillsStep extends Step {
 
         const skills = this.scout.account.getSkills();
         const skillcount = Object.keys(skills).length;
-        
+
         checkboxes.forEach((checkbox) => {
             // Check the checkbox if the skill is selected.
             if (checkbox.getAttribute("skilluri") in skills) {
@@ -1030,8 +1159,11 @@ class OccupationSkillsStep extends Step {
         const data = {
             skillcount: skillcount,
             maxskills: this.maxSkills,
-        }
-        this.skillCounterNode.innerHTML = Mustache.render(this.skillCounterTemplate, data);
+        };
+        this.skillCounterNode.innerHTML = Mustache.render(
+            this.skillCounterTemplate,
+            data
+        );
     }
 }
 
@@ -1047,7 +1179,8 @@ class SkillsStep extends Step {
      * @type {Autocompleter}
      */
     autocompleter;
-    selectedSkillsNode;
+    selectedOtherSkillsNode;
+    selectedOccupationSkillsNode;
     maxSkills;
     skillCounterTemplate;
     skillCounterNode;
@@ -1060,31 +1193,40 @@ class SkillsStep extends Step {
 
     prepareData() {
         const data = super.prepareData();
-        if(this.maxSkills) {
+        if (this.maxSkills) {
             data.maxskills = this.maxSkills;
+        }
+        if (this.scout.account.getOccupation()) {
+            data.occupation = this.scout.account.getOccupation().label;
         }
 
         return data;
     }
 
     checkPrerequisites() {
-        return this.scout.account.getPath() != null;
+        return this.scout.account.getPath() == this.path.name;
     }
 
-    init() {
-        super.init();
+    initRender() {
+        super.initRender();
 
         // Set up UI-elements.
-        this.selectedSkillsNode = this.node.querySelector(".selectable-skills");
+        this.selectedOtherSkillsNode = this.node.querySelector(
+            ".selectable-skills .otherskills ul"
+        );
+        this.selectedOccupationSkillsNode = this.node.querySelector(
+            ".selectable-skills .occupationskills ul"
+        );
         this.skillCounterNode = this.node.querySelector(".skill-counter");
 
         this.autocompleter = new Autocompleter(this, async (label, uri) => {
-            this.scout.account.addSkill(label, uri);
-            this.showSelectedSkills();
+            this.scout.account.setSkill(label, uri).then(() => {
+                this.showSelectedSkills();
+            });
             this.autocompleter.clearInput();
+            this.updateNavButtons();
         });
-        
-        
+
         if (this.maxSkills) {
             this.skillCounterTemplate = Lang.getString("skillcountmaxtemplate");
         } else {
@@ -1107,10 +1249,17 @@ class SkillsStep extends Step {
      */
     showSelectedSkills(rebuild = false) {
         if (rebuild) {
-            while (this.selectedSkillsNode.lastChild) {
-                this.selectedSkillsNode.removeChild(
-                    this.selectedSkillsNode.lastChild
+            while (this.selectedOtherSkillsNode.lastChild) {
+                this.selectedOtherSkillsNode.removeChild(
+                    this.selectedOtherSkillsNode.lastChild
                 );
+            }
+            if (this.selectedOccupationSkillsNode) {
+                while (this.selectedOccupationSkillsNode.lastChild) {
+                    this.selectedOccupationSkillsNode.removeChild(
+                        this.selectedOccupationSkillsNode.lastChild
+                    );
+                }
             }
         }
 
@@ -1122,8 +1271,14 @@ class SkillsStep extends Step {
         for (const uri in skills) {
             let unchecked = null;
             const skill = skills[uri];
+            if (skill.isOccupationSkill == null) {
+                continue;
+            }
+            const selectedSkillsNode = skill.isOccupationSkill && this.selectedOccupationSkillsNode
+                ? this.selectedOccupationSkillsNode
+                : this.selectedOtherSkillsNode;
             // Check if the checkbox already exists.
-            let checkbox = this.selectedSkillsNode.querySelector(
+            let checkbox = selectedSkillsNode.querySelector(
                 'input[name="' + skill.label + '"]'
             );
             // If checkbox exist, skip making a new one.
@@ -1148,12 +1303,12 @@ class SkillsStep extends Step {
             label.textContent = skill.label;
             li.appendChild(label);
             if (unchecked) {
-                this.selectedSkillsNode.insertBefore(li, unchecked.parentNode);
-                this.selectedSkillsNode.removeChild(unchecked.parentNode);
+                selectedSkillsNode.insertBefore(li, unchecked.parentNode);
+                selectedSkillsNode.removeChild(unchecked.parentNode);
             } else {
-                this.selectedSkillsNode.insertBefore(
+                selectedSkillsNode.insertBefore(
                     li,
-                    this.selectedSkillsNode.firstChild
+                    selectedSkillsNode.firstChild
                 );
             }
             checkboxes.push(checkbox);
@@ -1161,16 +1316,51 @@ class SkillsStep extends Step {
             // On change event, add or remove the skill associated with the checkbox and update the view.
             checkbox.addEventListener("change", async (event) => {
                 if (event.target.checked) {
-                    this.scout.account.addSkill(skill.label, uri);
+                    this.scout.account.setSkill(skill.label, uri).then(() => {
+                        this.showSelectedSkills();
+                    });        
                 } else {
                     this.scout.account.removeSkill(uri);
+                    this.showSelectedSkills();
                 }
-                this.showSelectedSkills();
                 this.updateSkillSelection(checkboxes);
+                this.updateNavButtons();
             });
         }
 
+        // Show message if there are no skills selected yet.
+        this.updateIsEmptyMessage();
+
         this.updateSkillSelection(checkboxes);
+    }
+
+    updateIsEmptyMessage() {
+        let isEmptyMessage = this.selectedOtherSkillsNode.querySelector(".is-empty");
+
+        if (isEmptyMessage && this.selectedOtherSkillsNode.querySelector("input")) {
+            isEmptyMessage.remove();
+        } else if (!isEmptyMessage && !this.selectedOtherSkillsNode.querySelector("input")) {
+            isEmptyMessage = document.createElement("li");
+            isEmptyMessage.className = "is-empty";
+            isEmptyMessage.textContent = Lang.getString(
+                this.name + "step:noskillsselected"
+            );
+            this.selectedOtherSkillsNode.appendChild(isEmptyMessage);
+        }
+
+        if (this.selectedOccupationSkillsNode) {
+            isEmptyMessage = this.selectedOccupationSkillsNode.querySelector(".is-empty");
+            if (isEmptyMessage && this.selectedOccupationSkillsNode.querySelector("input")) {
+                isEmptyMessage.remove();
+            } else if (!isEmptyMessage && !this.selectedOccupationSkillsNode.querySelector("input")) {
+                isEmptyMessage = document.createElement("li");
+                isEmptyMessage.className = "is-empty";
+                isEmptyMessage.textContent = Lang.getString(
+                    this.name + "step:noskillsselected"
+                );
+                this.selectedOccupationSkillsNode.appendChild(isEmptyMessage);
+            }
+        }
     }
 
     /**
@@ -1198,8 +1388,16 @@ class SkillsStep extends Step {
             } else {
                 checkbox.checked = false;
             }
+
+            enable(checkbox);
+            if (skillcount >= this.maxSkills) {
+                console.log(checkbox.checked);
+                if (!checkbox.checked) {
+                    disable(checkbox);
+                }
+            }
         });
-        
+
         this.updateSkillCounter();
     }
 
@@ -1209,8 +1407,319 @@ class SkillsStep extends Step {
         const data = {
             skillcount: skillcount,
             maxskills: this.maxSkills,
+        };
+        this.skillCounterNode.innerHTML = Mustache.render(
+            this.skillCounterTemplate,
+            data
+        );
+    }
+}
+
+/**
+ * SkillsStep.
+ *
+ * @class SkillsStep
+ * @extends {Step}
+ */
+class LevelGoalStep extends Step {
+    levelSelectionList;
+
+    constructor(scout, path) {
+        super(scout, path);
+        this.name = "levelgoal";
+    }
+
+    prepareData() {
+        const data = super.prepareData();
+        return data;
+    }
+
+    checkPrerequisites() {
+        return (
+            this.scout.account.getPath() == this.path.name &&
+            Object.keys(this.scout.account.getSkills()).length
+        );
+    }
+
+    initRender() {
+        super.initRender();
+
+        // Create and update level goal selection list
+        this.levelSelectionList = this.node.querySelector(
+            "ul.level-goal-selection"
+        );
+    }
+
+    async update() {
+        await super.update();
+
+        this.updateLevelSelection();
+    }
+
+    async updateLevelSelection() {
+        while (this.levelSelectionList.lastChild) {
+            this.levelSelectionList.removeChild(
+                this.levelSelectionList.lastChild
+            );
         }
-        this.skillCounterNode.innerHTML = Mustache.render(this.skillCounterTemplate, data);
+
+        const skills = this.scout.account.getSkills();
+        const data = { skills: [] };
+        for (const uri in skills) {
+            const skill = skills[uri];
+            data.skills.push(skill);
+        }
+
+        const response = await fetch(
+            "core51/wisyki/templates/levelgoal-selection.mustache"
+        );
+        const template = await response.text();
+        const html = Lang.render(template, data);
+        // Append html.
+        this.levelSelectionList.innerHTML = html;
+
+        for (const uri in skills) {
+            const skill = skills[uri];
+            if (skill.levelGoal) {
+                const input = document.getElementById(
+                    skill.uri + "-" + skill.levelGoal
+                );
+                if (input) {
+                    input.checked = true;
+                }
+            }
+        }
+
+        // Get a reference to all the radio buttons in the group
+        const fieldsets = this.levelSelectionList.querySelectorAll("fieldset");
+
+        // Add an event listener to each radio button in the group
+        fieldsets.forEach((fieldset) => {
+            const skill = skills[fieldset.getAttribute('skilluri')];
+
+            fieldset.addEventListener("change", () => {
+                // Get the value of the selected radio button
+                const selectedInput = fieldset.querySelector("input:checked");
+                this.scout.account.setSkill(
+                    skill.label,
+                    skill.uri,
+                    selectedInput.value,
+                    skill.isLanguageSkill,
+                    skill.isOccupationSkill
+                );
+            });
+
+            // If not set, set default levelGoal.
+            if (skill.levelGoal) {            
+                const currentSelection = fieldset.querySelector('input[value="'+skill.levelGoal+'"');
+                currentSelection.checked = true;
+            } else {
+                const firstInput = fieldset.querySelector("input");
+                firstInput.checked = true;
+                this.scout.account.setSkill(
+                    skill.label,
+                    skill.uri,
+                    firstInput.value,
+                    skill.isLanguageSkill,
+                    skill.isOccupationSkill
+                );
+            }
+        });
+    }
+}
+
+/**
+ * SkillsStep.
+ *
+ * @class SkillsStep
+ * @extends {Step}
+ */
+class CouseListStep extends Step {
+
+    constructor(scout, path) {
+        super(scout, path);
+        this.name = "courselist";
+    }
+
+    prepareData() {
+        const data = super.prepareData();
+        return data;
+    }
+
+    checkPrerequisites() {
+        return (
+            this.scout.account.getPath() == this.path.name &&
+            Object.keys(this.scout.account.getSkills()).length
+        );
+    }
+
+    initRender() {
+        super.initRender();
+    }
+
+    async update() {
+        await super.update();
+
+        await this.updateCourseResults();
+    }
+
+    async updateCourseResult(skill, detailsNode) {
+        const courselistNode = detailsNode.querySelector('.course-list');
+        hide(courselistNode, 'opacity');
+        const data = []
+        const result = await this.search(skill);
+        let resultscount = result.count + " " + Lang.getString("courses");
+        if (result.count == 1) {
+            resultscount = result.count + " " + Lang.getString("course");
+        }
+        const resultscountNode = detailsNode.querySelector('.result-list__count');
+        resultscountNode.textContent = resultscount;
+
+        data.results = result.exactMatch;
+
+        const response = await fetch(
+            "core51/wisyki/templates/courselist.mustache"
+        );
+        const template = await response.text();
+        const html = Lang.render(template, data);
+        // Append html.
+        while (courselistNode.lastChild) {
+            courselistNode.removeChild(
+                courselistNode.lastChild
+            );
+        }
+        courselistNode.innerHTML = html;
+        show(courselistNode);
+    }
+
+    async updateCourseResults() {
+        const skills = this.scout.account.getSkills();
+        const data = {
+            sets: [
+                {
+                    label: Lang.getString("courseliststep:airecommends"),
+                    resultscount: "0 Kurse",
+                    results: [],
+                },
+            ],
+            filter: {
+                count: 13,
+            },
+        };
+        for (const uri in skills) {
+            const skill = skills[uri];
+            // const result = await this.search(skill, true)
+            const result = await this.search(skill);
+            let resultscount = result.count + " " + Lang.getString("courses");
+            if (result.count == 1) {
+                resultscount = result.count + " " + Lang.getString("course");
+            }
+            data.sets.push({
+                label: skill.label,
+                skill: skill,
+                resultscount: resultscount,
+                results: result.exactMatch,
+            });
+        }
+        const [stepTemplate, courselistTemplate] = await Promise.all([fetch(
+            "core51/wisyki/templates/courselist-step.mustache"
+        ).then((response) => response.text()), fetch(
+            "core51/wisyki/templates/courselist.mustache"
+        ).then((response) => response.text())]);
+        const html = Lang.render(stepTemplate, data, {courselist: courselistTemplate});
+        while (this.node.lastChild) {
+            this.node.removeChild(
+                this.node.lastChild
+            );
+        }
+        // Append html.
+        this.node.innerHTML = html;
+
+        // Get all the <details> elements
+        const accordions = this.node.querySelectorAll('details');
+        if (accordions.length) {
+            accordions[0].open = true;
+
+            // Add event listeners to handle accordion interactions
+            accordions.forEach(accordion => {
+                // When a <details> element is toggled (opened or closed)
+                accordion.addEventListener('toggle', event => {
+                    if (event.target.open) {
+                        // If this section is opened, close all other sections
+                        accordions.forEach(item => {
+                            if (item !== event.target) {
+                                item.open = false;
+                            }
+                        });
+                    }
+                });
+            });
+        }
+
+        // Get a reference to all the radio buttons in the group
+        const fieldsets = this.node.querySelectorAll("fieldset");
+
+        // Add an event listener to each radio button in the group
+        fieldsets.forEach((fieldset) => {
+            const skill = skills[fieldset.getAttribute('skilluri')];
+
+            fieldset.addEventListener("change", () => {
+                // Get the value of the selected radio button
+                const selectedInput = fieldset.querySelector("input:checked");
+                selectedInput.checked = true;
+                console.log(selectedInput.name);
+                console.log(selectedInput.value);
+                skill.levelGoal = selectedInput.value;
+                this.scout.account.setSkill(
+                    skill.label,
+                    skill.uri,
+                    skill.levelGoal,
+                    skill.isLanguageSkill,
+                    skill.isOccupationSkill
+                );
+
+                this.updateCourseResult(skill, fieldset.parentNode);
+            });
+
+            // If not set, set default levelGoal.
+            if (skill.levelGoal) {            
+                const currentSelection = fieldset.querySelector('input[value="'+skill.levelGoal+'"');
+                currentSelection.checked = true;
+            } else {
+                const firstInput = fieldset.querySelector("input");
+                this.scout.account.setSkill(
+                    skill.label,
+                    skill.uri,
+                    firstInput.value,
+                    skill.isLanguageSkill,
+                    skill.isOccupationSkill
+                );
+            }
+        });
+    }
+
+    /**
+     * Gets a search preview for courses based on a given skill and a level goal.
+     *
+     * @param {Object} skill A skill object with the label and levelGoal properties.
+     *
+     * @returns {Object} The response object containing the search ID and the number of courses found.
+     */
+    async search(skill, prepare = false) {
+        const params = {
+            prepare: prepare,
+            label: skill.label,
+            level: skill.levelGoal,
+        };
+
+        const url = "./scout-search?" + new URLSearchParams(params);
+        const response = await fetch(url);
+
+        if (response.ok) {
+            return await response.json();
+        } else {
+            console.error("HTTP-Error: " + response.status);
+        }
     }
 }
 

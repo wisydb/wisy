@@ -512,7 +512,7 @@ class WISYKI_ESCO_CLASS {
         if ($onlyrelevant) {
             $results = $this->filter_is_relevant($results);
         }
-        
+
         usort($results, function ($a, $b) use ($term) {
             return $this->sort_term_first($a, $b, $term);
         });
@@ -545,12 +545,13 @@ class WISYKI_ESCO_CLASS {
     }
 
     /**
-     * Determines whether the ESCO skill identified by the given URI is a language skill.
+     * Determines whether the ESCO skill identified by the given URI is a language skill and wether the skill is linked to a given occupation.
      *
-     * @param string $uri The URI to check.
+     * @param string $uri The URI of the skill to check.
+     * @param string|null $occupationuri The URI of an esco occupation.
      * @return bool Returns true if the skill is a language skill, false otherwise.
      */
-    function is_language_skill(string $uri): bool {
+    function get_skill_info(string $uri, string $occupationuri = null): array {
         // Set up the API request.
         $url = "https://ec.europa.eu/esco/api/resource/skill";
         $dataArray = array(
@@ -578,15 +579,37 @@ class WISYKI_ESCO_CLASS {
 
         curl_close($curl);
 
+        $result = array(
+            'isLanguageSkill' => false,
+            'isOccupationSkill' => false,
+        );
+
         // Decode the API response and check for language skill.
         $response = json_decode($response, true);
         foreach ($response['_links']['isInScheme'] as $scheme) {
             if ($scheme['uri'] === "http://data.europa.eu/esco/concept-scheme/skill-language-groups") {
-                return true;
+                $result['isLanguageSkill'] = true;
             }
         }
+        if ($occupationuri) {
+            foreach ($response['_links']['isEssentialForOccupation'] as $occupation) {
+                if ($occupation['uri'] === $occupationuri) {
+                    $result['isOccupationSkill'] = true;
+                    break;
+                }
+            }
+            if ($result['isOccupationSkill'] == false) {
+                foreach ($response['_links']['isOptionalForOccupation'] as $occupation) {
+                    if ($occupation['uri'] === $occupationuri) {
+                        $result['isOccupationSkill'] = true;
+                        break;
+                    }
+                }
+            }
+        }
+        
 
-        return false;
+        return $result;
     }
 
     /**
@@ -684,15 +707,19 @@ class WISYKI_ESCO_CLASS {
     }
 
     /**
-     * Sends a JSON response for the request to identify wether a given skill identified by its uri is a language skill.
+     * Sends a JSON response for the request with additional info for a esco skill.
      *
      * @return void
      */
-    function render_is_language_skill() {
+    function render_skill_info() {
         if (!isset($_GET['uri'])) {
             JSONResponse::error400('The request is missing the uri parameter.');
         }
-        JSONResponse::send_json_response($this->is_language_skill($_GET['uri']));
+        $occupationuri = null;
+        if (isset($_GET['occupationuri']) && !empty($_GET['occupationuri'])) {
+            $occupationuri = $_GET['occupationuri'];
+        }
+        JSONResponse::send_json_response($this->get_skill_info($_GET['uri'], $occupationuri));
     }
 
     /**
@@ -709,8 +736,8 @@ class WISYKI_ESCO_CLASS {
             case 'autocomplete':
                 $this->render_autocomplete();
                 break;
-            case 'isLanguageSkill':
-                $this->render_is_language_skill();
+            case 'getSkillInfo':
+                $this->render_skill_info();
                 break;
             default:
                 // If the request parameter doesn't match any of the above cases, send a 404 Not Found HTTP response.

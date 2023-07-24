@@ -95,30 +95,38 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_INTELLISEARCH_CLASS {
 		$exactmatch = array();
 		if (!empty($kurse)) {
 			$exactmatch = array_map([$this, 'get_course_details'], $kurse['records']);
-		}
+			// Remove null array items.
+			$exactmatch = array_values(array_filter($exactmatch, function($item) {
+					return $item !== null;
+			}));
+
 
 		// If there arent a lot of exact matches, search for other close matches.
 		// TODO: Search for courses with other levels and related esco skills.
 		$closematch = array();
-		if (!isset($limit) || $kursecount < $limit) {
-			$searcher2 =& createWisyObject('WISY_SEARCH_CLASS', $this->framework);
-			$searcher2->prepare($label);
+		// if (!isset($limit) || $kursecount < $limit) {
+		// 	$searcher2 =& createWisyObject('WISY_SEARCH_CLASS', $this->framework);
+		// 	$searcher2->prepare($label);
 
-			if (!$searcher2->ok()) {
-				JSONResponse::error500();
-			}
+		// 	if (!$searcher2->ok()) {
+		// 		JSONResponse::error500();
+		// 	}
 
-			$morekurse = $searcher2->getKurseRecords(0, $limit ?? 0, 'rand');
-			if (!empty($morekurse)) {
-				foreach ($morekurse['records'] as $key => $closekurs) {
-					foreach ($kurse['records'] as $exactkurs) {
-						if ($closekurs == $exactkurs) {
-							unset($morekurse['records'][$key]);
-						}
-					}
-				}
-				$closematch = array_splice(array_map([$this, 'get_course_details'], $morekurse['records']), 0, $limit-$kursecount);
-			}
+		// 	$morekurse = $searcher2->getKurseRecords(0, $limit ?? 0, 'rand');
+		// 	if (!empty($morekurse)) {
+		// 		foreach ($morekurse['records'] as $key => $closekurs) {
+		// 			foreach ($kurse['records'] as $exactkurs) {
+		// 				if ($closekurs == $exactkurs) {
+		// 					unset($morekurse['records'][$key]);
+		// 				}
+		// 			}
+		// 		}
+		// 		$closematch = array_splice(array_map([$this, 'get_course_details'], $morekurse['records']), 0, $limit-$kursecount);
+		// 		// Remove null array items.
+		// 		$closematch = array_values(array_filter($closematch, function($item) {
+		// 			return $item !== null;
+		// 		}));
+		// 	}
 		}
 
 		JSONResponse::send_json_response(array(
@@ -129,12 +137,15 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_INTELLISEARCH_CLASS {
 			),
 			'exactMatch' => $exactmatch,
 			'closeMatch' => $closematch,
+			'count' => $this->getKurseCount(),
 		));
 	}
 
-	private function get_course_details(array $course): array {
+	private function get_course_details(array $course): array|null {
 		$db = new DB_Admin();
-		$db->query("SELECT anbieter.suchname FROM anbieter WHERE id=" . $course['anbieter']);
+		$db->query("SELECT anbieter.suchname 
+					FROM anbieter 
+					WHERE id=" . $course['anbieter']);
 		if (!$db->next_record()) {
 			JSONResponse::error500();
 		}
@@ -143,9 +154,14 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_INTELLISEARCH_CLASS {
 
 		$db = new DB_Admin();
 		$today = strftime("%Y-%m-%d");
-		$db->query("SELECT d.beginn, d.beginnoptionen, d.ende, d.dauer, d.zeit_von, d.zeit_bis, d.stunden, d.preis, d.ort FROM durchfuehrung d, kurse_durchfuehrung kd, x_kurse WHERE d.id = kd.secondary_id AND kd.primary_id={$course['id']} AND (d.beginn>='$today' OR d.beginn=0) ORDER BY d.beginn ASC LIMIT 1;");
+		$db->query("SELECT d.beginn, d.beginnoptionen, d.ende, d.dauer, d.zeit_von, d.zeit_bis, d.stunden, d.preis, d.ort 
+					FROM durchfuehrung d, kurse_durchfuehrung kd, x_kurse 
+					WHERE d.id = kd.secondary_id 
+					AND kd.primary_id={$course['id']} 
+					AND (d.beginn>='$today' OR d.beginn=0) 
+					ORDER BY d.beginn ASC LIMIT 1;");
 		if (!$db->next_record()) {
-			JSONResponse::error500();
+			return null;
 		}
 		$durchfuehrung = $db->Record;
 
@@ -311,7 +327,7 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_INTELLISEARCH_CLASS {
 	 * @return void
 	 */
 	function render() {
-		if (isset($_GET['prepare'])) {
+		if (isset($_GET['prepare']) AND $_GET['prepare'] === 'true') {
 			$this->render_prepare();
 		} else {
 			$this->render_result();
