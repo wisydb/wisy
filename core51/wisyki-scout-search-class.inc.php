@@ -1,6 +1,7 @@
 <?php
 require_once('wisy-intellisearch-class.inc.php');
 require_once($_SERVER['DOCUMENT_ROOT'] . '/core51/wisyki-json-response.inc.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/core51/wisyki-python-class.inc.php');
 
 /**
  * Class WISYKI_SCOUT_SEARCH_CLASS
@@ -36,12 +37,24 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_INTELLISEARCH_CLASS {
 	/**
 	 * Get the querystring based on the skill label and level.
 	 *
-	 * @param string $label The label of the skill to search for.
-	 * @param string $level The level of the skill to search for.
+	 * @param object $skill The skill to search for.
+	 * @param object $filters Filtersettings to narrow the search results.
 	 * @return string The querystring.
 	 */
-	function get_querystring(string $label, string $level): string {
-		return $label . ', ' . $level;
+	function get_querystring(object $skill, object $filters): string {
+		$querystring = utf8_decode($skill->label);
+		if ($filters->coursemode) {
+			for ($i = 0; $i < count($filters->coursemode); $i++) {
+				$coursemode = $filters->coursemode[$i];
+				if ($i == 0) {
+					$querystring .= ', ' . utf8_decode($coursemode);
+				} else {
+					$querystring .= ' ODER ' . utf8_decode($coursemode);
+				}
+			}
+		}
+
+		return $querystring;
 	}
 
 	/**
@@ -78,67 +91,91 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_INTELLISEARCH_CLASS {
 	 * @return void Echoes a JSON response.
 	 */
 	function render_result() {
-		$label = $_GET['label'];
-		$level = $_GET['level'];
+		$skillsjson = $_GET['skills'];
+		$skills = json_decode($skillsjson);
+		$filterjson = $_GET['filters'];
+		$filters = json_decode($filterjson);
 		$limit = $_GET['limit'];
 
-		$querystring = $this->get_querystring($label, $level);
 
-		$this->prepare($querystring);
+		$results = array();
 
-		if (!$this->ok()) {
-			JSONResponse::error500();
-		}
+		foreach ($skills as $skill) {
+			$querystring = $this->get_querystring($skill, $filters);
 
-		$kurse = $this->getKurseRecords(0, $limit ?? 0, 'rand');
-		$kursecount = $this->getKurseCount();
-		$exactmatch = array();
-		if (!empty($kurse)) {
-			$exactmatch = array_map([$this, 'get_course_details'], $kurse['records']);
-			// Remove null array items.
-			$exactmatch = array_values(array_filter($exactmatch, function($item) {
+			$this->prepare($querystring);
+			if (!$this->ok()) {
+				JSONResponse::error500();
+			}
+
+			$kurse = $this->getKurseRecords(0, $limit ?? 0, 'rand');
+			$kursecount = $this->getKurseCount();
+			$match = array();
+			if (!empty($kurse)) {
+				$match = array_map([$this, 'get_course_details'], $kurse['records']);
+				// Remove null array items.
+				$match = array_values(array_filter($match, function ($item) {
 					return $item !== null;
-			}));
+				}));
+			}
 
+			// Set skill foreach match
+			foreach ($match as $key => $course) {
+				$match[$key]['skill'] = $skill->label;
+			}
 
-		// If there arent a lot of exact matches, search for other close matches.
-		// TODO: Search for courses with other levels and related esco skills.
-		$closematch = array();
-		// if (!isset($limit) || $kursecount < $limit) {
-		// 	$searcher2 =& createWisyObject('WISY_SEARCH_CLASS', $this->framework);
-		// 	$searcher2->prepare($label);
-
-		// 	if (!$searcher2->ok()) {
-		// 		JSONResponse::error500();
-		// 	}
-
-		// 	$morekurse = $searcher2->getKurseRecords(0, $limit ?? 0, 'rand');
-		// 	if (!empty($morekurse)) {
-		// 		foreach ($morekurse['records'] as $key => $closekurs) {
-		// 			foreach ($kurse['records'] as $exactkurs) {
-		// 				if ($closekurs == $exactkurs) {
-		// 					unset($morekurse['records'][$key]);
-		// 				}
-		// 			}
-		// 		}
-		// 		$closematch = array_splice(array_map([$this, 'get_course_details'], $morekurse['records']), 0, $limit-$kursecount);
-		// 		// Remove null array items.
-		// 		$closematch = array_values(array_filter($closematch, function($item) {
-		// 			return $item !== null;
-		// 		}));
-		// 	}
+			$results = array_merge($results, $match);
 		}
 
-		JSONResponse::send_json_response(array(
-			'query' => $querystring,
-			'skill' => array(
-				'label' => $label,
-				'levelGoal' => $level,
-			),
-			'exactMatch' => $exactmatch,
-			'closeMatch' => $closematch,
-			'count' => $this->getKurseCount(),
-		));
+		// Sort the results based on semantic similarity.
+		$pytonapi = new WISYKI_PYTHON_CLASS();
+		$base = '';
+		foreach ($skills as $skill) {
+			$base .= $skill->label . ': ' . $skill->levelGoal . ', ';
+		}
+		$sorted = $pytonapi->sortsemantic($base, $results);
+
+		foreach ($sorted as $key => $course) {
+			// Remove keys that are not relevant for the client.
+			unset($sorted[$key]['description']);
+			unset($sorted[$key]['thema']);
+			unset($sorted[$key]['tags']);
+		}
+
+
+		$sets = array();
+
+		// Get first 5 values from $sorted.
+		$ai_suggestions = array_slice($sorted, 0, 5);
+		$sets[] = array(
+			'label' => 'airecommends',
+			'count' => count($ai_suggestions),
+			'results' => $ai_suggestions,
+		);
+
+		foreach ($skills as $skill) {
+			$skillresults = array();
+			foreach ($sorted as $key => $course) {
+				if ($course['skill'] == $skill->label) {
+					unset($course['skill']);
+					$skillresults[] = $course;
+				}
+			}
+
+			$sets[] = array(
+				'label' => $skill->label,
+				'skill' => $skill,
+				'count' => count($skillresults),
+				'results' => $skillresults,
+			);
+		}
+
+		$response = (object) array(
+			'count' => count($results),
+			'sets' => $sets,
+		);
+
+		JSONResponse::send_json_response($response);
 	}
 
 	private function get_course_details(array $course): array|null {
@@ -165,11 +202,28 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_INTELLISEARCH_CLASS {
 		}
 		$durchfuehrung = $db->Record;
 
+
+		$db = new DB_Admin();
+		$db->query("SELECT k.id, GROUP_CONCAT(s.stichwort SEPARATOR ', ') AS stichwort, t.thema
+					FROM kurse k
+					JOIN kurse_stichwort ks ON k.id = ks.primary_id
+					JOIN stichwoerter s ON ks.attr_id = s.id
+					JOIN themen t ON t.id = k.thema
+					WHERE k.id = {$course['id']}
+					AND s.eigenschaften IN (0, 524288, 1048576)
+					GROUP BY k.id, t.thema;");
+		if (!$db->next_record()) {
+			return null;
+		}
+		$tags = $db->Record['stichwort'];
+		$thema = $db->Record['thema'];
+
 		$courseLevels = array_merge($this->get_course_comp_level($course['id']), $this->get_course_language_level($course['id']));
 
 		return array(
 			'id' => $course['id'],
 			'title' => utf8_encode($course['titel']),
+			'description' => utf8_encode($course['beschreibung']),
 			'provider' => utf8_encode($provider['suchname']),
 			'levels' => $courseLevels,
 			'mode' => utf8_encode($this->get_course_mode($course['id'])),
@@ -177,6 +231,8 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_INTELLISEARCH_CLASS {
 			'workload' => utf8_encode($this->get_workload($durchfuehrung)),
 			'price' => utf8_encode($this->get_price($durchfuehrung)),
 			'location' => utf8_encode($durchfuehrung['ort']),
+			'tags' => utf8_encode($tags),
+			'thema' => utf8_encode($thema),
 		);
 	}
 
@@ -197,7 +253,7 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_INTELLISEARCH_CLASS {
 			$durchfuehrung['preishinweise'],
 			true, // format as HTML
 			array(
-				'showDetails'=>1,
+				'showDetails' => 1,
 			)
 		);
 	}
@@ -222,7 +278,7 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_INTELLISEARCH_CLASS {
 
 		$next_date = "<span class='next-date__date'>$date</span>";
 
-		if($time_begin && $time_end) {
+		if ($time_begin && $time_end) {
 			$time = $time_begin . " - " . $time_end;
 			$next_date .= " <span class='next-date__time'>$time Uhr</span>";
 		}
@@ -327,7 +383,7 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_INTELLISEARCH_CLASS {
 	 * @return void
 	 */
 	function render() {
-		if (isset($_GET['prepare']) AND $_GET['prepare'] === 'true') {
+		if (isset($_GET['prepare']) and $_GET['prepare'] === 'true') {
 			$this->render_prepare();
 		} else {
 			$this->render_result();

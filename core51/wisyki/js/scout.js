@@ -13,6 +13,7 @@ class Account {
     #isLoggedIn;
     #path;
     #step;
+    #filters = {};
 
     constructor() {
         this.#isLoggedIn = this.#checkLogin();
@@ -68,6 +69,7 @@ class Account {
             this.lastvisited = storedAccount.lastvisited;
             this.#step = storedAccount.step;
             this.#path = storedAccount.path;
+            this.#filters = storedAccount.filters;
         } catch (err) {
             console.error(`Error parsing "account" from localStorage:`, err);
         }
@@ -115,6 +117,10 @@ class Account {
             //             isLanguageSkill: false,
             //         },
             //     },
+            //     filters: {
+            //         "maxprice": 1000,
+            //         "coursemode": "online"
+            //     },
             //     lastvisited: 1689674096956,
             //     path: "occupation",
             //     step: 2,
@@ -129,6 +135,7 @@ class Account {
                     lastvisited: this.lastvisited,
                     path: this.#path,
                     step: this.#step,
+                    filters: this.#filters,
                 })
             );
         }
@@ -186,6 +193,19 @@ class Account {
         return this.#skills[uri];
     }
 
+    getFilters() {
+        return this.#filters;
+    }
+
+    getFilter(filter) {
+        return this.#filters[filter];
+    }
+
+    setFilter(filter, value) {
+        this.#filters[filter] = value;
+        this.#store();
+    }
+
     getPath() {
         return this.#path;
     }
@@ -201,6 +221,7 @@ class Account {
         };
 
         this.#occupation = occupation;
+        // Reset skills.
         this.#skills = {};
         this.#store();
     }
@@ -331,10 +352,6 @@ class Scout {
         if (!stepIndex) {
             stepIndex = this.account.getStep();
         } else {
-            console.log(
-                "Current index: " +
-                    this.currentPath.steps.indexOf(this.currentPath.currentStep)
-            );
             if (stepIndex == "next") {
                 stepIndex = this.checkStep(
                     this.currentPath.steps.indexOf(
@@ -350,7 +367,6 @@ class Scout {
             }
         }
 
-        console.log("Go to step: " + stepIndex);
         this.currentPath.update(stepIndex);
     }
 
@@ -363,7 +379,6 @@ class Scout {
         this.account.setPath(pathname);
         this.currentPath = this.getPath(pathname);
 
-        console.log("Switch to " + pathname);
         await this.currentPath.update(this.account.getStep());
     }
 
@@ -380,7 +395,6 @@ class Scout {
         }
 
         if (index > 0 && !this.currentPath.steps[index].checkPrerequisites()) {
-            console.log("prereqisites not met.");
             index = this.checkStep(index - 1);
         }
 
@@ -717,6 +731,10 @@ class Step {
      */
     loader;
 
+    data = {};
+
+    partials = {};
+
     constructor(scout, path) {
         if (this.constructor == Step) {
             throw new Error("Abstract classes can't be instantiated.");
@@ -726,10 +744,7 @@ class Step {
         this.path = path;
     }
 
-    prepareData() {
-        const data = {};
-        return data;
-    }
+    async prepareTemplate() {}
 
     init() {
         // Get the node for the current step and loader.
@@ -740,9 +755,7 @@ class Step {
     }
 
     async update() {
-
         if (!this.isRendered()) {
-            console.log("is not rendered");
             await this.#render();
         }
 
@@ -750,12 +763,13 @@ class Step {
     }
 
     async #render() {
-        const data = this.prepareData();
+        await this.prepareTemplate();
         const response = await fetch(
             "core51/wisyki/templates/" + this.name + "-step.mustache"
         );
         const template = await response.text();
-        const html = Lang.render(template, data);
+
+        const html = Lang.render(template, this.data, this.partials);
         this.node.innerHTML = html;
 
         this.initRender();
@@ -767,7 +781,7 @@ class Step {
         hide(this.node, "visibility");
         // Hide the step, show the loader.
         if (this.loader) {
-            show(this.loader)
+            show(this.loader);
         }
     }
 
@@ -819,10 +833,8 @@ class Step {
             const nextStep = this.nextStep();
             if (nextStep && nextStep.checkPrerequisites()) {
                 enable(this.scout.nextButton);
-                console.log('enable next button');
             } else {
                 disable(this.scout.nextButton);
-                console.log('disable next button');
             }
         }
     }
@@ -888,14 +900,11 @@ class PathStep extends Step {
         }
     }
 
-    prepareData() {
-        const data = super.prepareData();
-        data.paths = [];
+    async prepareTemplate() {
+        this.data.paths = [];
         for (const key in this.scout.paths) {
-            data.paths.push(this.scout.paths[key].prepareData());
+            this.data.paths.push(this.scout.paths[key].prepareData());
         }
-
-        return data;
     }
 
     hideNav() {
@@ -973,13 +982,10 @@ class OccupationSkillsStep extends Step {
         // this.maxSkills = 5;
     }
 
-    prepareData() {
-        const data = super.prepareData();
+    async prepareTemplate() {
         if (this.maxSkills) {
-            data.maxskills = this.maxSkills;
+            this.data.maxskills = this.maxSkills;
         }
-
-        return data;
     }
 
     checkPrerequisites() {
@@ -1128,8 +1134,6 @@ class OccupationSkillsStep extends Step {
             checkboxes = this.skillsNode.querySelectorAll("input");
         }
 
-        console.log(checkboxes);
-
         const skills = this.scout.account.getSkills();
         const skillcount = Object.keys(skills).length;
 
@@ -1153,6 +1157,13 @@ class OccupationSkillsStep extends Step {
         this.updateSkillCounter();
     }
 
+    /**
+     * Updates the skill counter on the webpage.
+     * Retrieves the skills of the scout's account and calculates the number of skills.
+     * Updates the HTML of the skill counter node with the rendered skill counter template.
+     *
+     * @returns {void}
+     */
     updateSkillCounter() {
         const skills = this.scout.account.getSkills();
         const skillcount = Object.keys(skills).length;
@@ -1191,16 +1202,13 @@ class SkillsStep extends Step {
         // this.maxSkills = 5;
     }
 
-    prepareData() {
-        const data = super.prepareData();
+    async prepareTemplate() {
         if (this.maxSkills) {
-            data.maxskills = this.maxSkills;
+            this.data.maxskills = this.maxSkills;
         }
         if (this.scout.account.getOccupation()) {
-            data.occupation = this.scout.account.getOccupation().label;
+            this.data.occupation = this.scout.account.getOccupation().label;
         }
-
-        return data;
     }
 
     checkPrerequisites() {
@@ -1274,9 +1282,10 @@ class SkillsStep extends Step {
             if (skill.isOccupationSkill == null) {
                 continue;
             }
-            const selectedSkillsNode = skill.isOccupationSkill && this.selectedOccupationSkillsNode
-                ? this.selectedOccupationSkillsNode
-                : this.selectedOtherSkillsNode;
+            const selectedSkillsNode =
+                skill.isOccupationSkill && this.selectedOccupationSkillsNode
+                    ? this.selectedOccupationSkillsNode
+                    : this.selectedOtherSkillsNode;
             // Check if the checkbox already exists.
             let checkbox = selectedSkillsNode.querySelector(
                 'input[name="' + skill.label + '"]'
@@ -1318,7 +1327,7 @@ class SkillsStep extends Step {
                 if (event.target.checked) {
                     this.scout.account.setSkill(skill.label, uri).then(() => {
                         this.showSelectedSkills();
-                    });        
+                    });
                 } else {
                     this.scout.account.removeSkill(uri);
                     this.showSelectedSkills();
@@ -1335,11 +1344,18 @@ class SkillsStep extends Step {
     }
 
     updateIsEmptyMessage() {
-        let isEmptyMessage = this.selectedOtherSkillsNode.querySelector(".is-empty");
+        let isEmptyMessage =
+            this.selectedOtherSkillsNode.querySelector(".is-empty");
 
-        if (isEmptyMessage && this.selectedOtherSkillsNode.querySelector("input")) {
+        if (
+            isEmptyMessage &&
+            this.selectedOtherSkillsNode.querySelector("input")
+        ) {
             isEmptyMessage.remove();
-        } else if (!isEmptyMessage && !this.selectedOtherSkillsNode.querySelector("input")) {
+        } else if (
+            !isEmptyMessage &&
+            !this.selectedOtherSkillsNode.querySelector("input")
+        ) {
             isEmptyMessage = document.createElement("li");
             isEmptyMessage.className = "is-empty";
             isEmptyMessage.textContent = Lang.getString(
@@ -1349,10 +1365,17 @@ class SkillsStep extends Step {
         }
 
         if (this.selectedOccupationSkillsNode) {
-            isEmptyMessage = this.selectedOccupationSkillsNode.querySelector(".is-empty");
-            if (isEmptyMessage && this.selectedOccupationSkillsNode.querySelector("input")) {
+            isEmptyMessage =
+                this.selectedOccupationSkillsNode.querySelector(".is-empty");
+            if (
+                isEmptyMessage &&
+                this.selectedOccupationSkillsNode.querySelector("input")
+            ) {
                 isEmptyMessage.remove();
-            } else if (!isEmptyMessage && !this.selectedOccupationSkillsNode.querySelector("input")) {
+            } else if (
+                !isEmptyMessage &&
+                !this.selectedOccupationSkillsNode.querySelector("input")
+            ) {
                 isEmptyMessage = document.createElement("li");
                 isEmptyMessage.className = "is-empty";
                 isEmptyMessage.textContent = Lang.getString(
@@ -1391,7 +1414,6 @@ class SkillsStep extends Step {
 
             enable(checkbox);
             if (skillcount >= this.maxSkills) {
-                console.log(checkbox.checked);
                 if (!checkbox.checked) {
                     disable(checkbox);
                 }
@@ -1427,11 +1449,6 @@ class LevelGoalStep extends Step {
     constructor(scout, path) {
         super(scout, path);
         this.name = "levelgoal";
-    }
-
-    prepareData() {
-        const data = super.prepareData();
-        return data;
     }
 
     checkPrerequisites() {
@@ -1495,7 +1512,7 @@ class LevelGoalStep extends Step {
 
         // Add an event listener to each radio button in the group
         fieldsets.forEach((fieldset) => {
-            const skill = skills[fieldset.getAttribute('skilluri')];
+            const skill = skills[fieldset.getAttribute("skilluri")];
 
             fieldset.addEventListener("change", () => {
                 // Get the value of the selected radio button
@@ -1510,8 +1527,10 @@ class LevelGoalStep extends Step {
             });
 
             // If not set, set default levelGoal.
-            if (skill.levelGoal) {            
-                const currentSelection = fieldset.querySelector('input[value="'+skill.levelGoal+'"');
+            if (skill.levelGoal) {
+                const currentSelection = fieldset.querySelector(
+                    'input[value="' + skill.levelGoal + '"'
+                );
                 currentSelection.checked = true;
             } else {
                 const firstInput = fieldset.querySelector("input");
@@ -1535,15 +1554,16 @@ class LevelGoalStep extends Step {
  * @extends {Step}
  */
 class CouseListStep extends Step {
+    filterMenu;
+    resultList;
 
     constructor(scout, path) {
         super(scout, path);
         this.name = "courselist";
-    }
 
-    prepareData() {
-        const data = super.prepareData();
-        return data;
+        this.filterMenu = new FilterMenu(this, () =>
+            this.updateCourseResults()
+        );
     }
 
     checkPrerequisites() {
@@ -1553,8 +1573,17 @@ class CouseListStep extends Step {
         );
     }
 
+    async prepareTemplate() {
+        this.partials.filtermenu = await this.filterMenu.getTemplate();
+
+        this.data = await this.filterMenu.getData();
+    }
+
     initRender() {
         super.initRender();
+        this.filterMenu.initRender();
+
+        this.resultList = this.node.querySelector(".result-list");
     }
 
     async update() {
@@ -1564,89 +1593,130 @@ class CouseListStep extends Step {
     }
 
     async updateCourseResult(skill, detailsNode) {
-        const courselistNode = detailsNode.querySelector('.course-list');
-        hide(courselistNode, 'opacity');
-        const data = []
-        const result = await this.search(skill);
-        let resultscount = result.count + " " + Lang.getString("courses");
-        if (result.count == 1) {
-            resultscount = result.count + " " + Lang.getString("course");
+        const courselistNode = detailsNode.querySelector(".course-list");
+        const courselistCountNode = detailsNode.querySelector(".result-list__count");
+        hide(courselistNode, "opacity");
+
+        let courselist;
+        this.results.sets.forEach((set) => {
+            if (set.label == skill.label) {
+                courselist = set.results;
+                return;
+            }
+        });
+        const data = {
+            results: this.getFilteredCourselist(courselist, skill.levelGoal),
         }
-        const resultscountNode = detailsNode.querySelector('.result-list__count');
-        resultscountNode.textContent = resultscount;
-
-        data.results = result.exactMatch;
-
+        console.log(data);
         const response = await fetch(
-            "core51/wisyki/templates/courselist.mustache"
+            "core51/wisyki/templates/courselist-step-courselist.mustache"
         );
         const template = await response.text();
         const html = Lang.render(template, data);
         // Append html.
         while (courselistNode.lastChild) {
-            courselistNode.removeChild(
-                courselistNode.lastChild
-            );
+            courselistNode.removeChild(courselistNode.lastChild);
         }
         courselistNode.innerHTML = html;
         show(courselistNode);
+        courselistCountNode.textContent = this.getKurseCountString(data.results.length);
+    }
+
+    getTemplateData(skills) {
+        const data = {
+            count: this.results.count,
+            sets: []
+        };
+        this.results.sets.forEach((set) => {
+            let filteredResults = []
+            let label = set.label;
+            let currentSkill;
+            if (label == 'airecommends') {
+                label = Lang.getString('courseliststep:airecommends');
+                filteredResults = set.results;
+            } else {
+                for (let skill of Object.values(skills)) {
+                    if (skill.label == label) {
+                        currentSkill = skill;
+                    }
+                }
+
+                filteredResults = this.getFilteredCourselist(set.results, currentSkill.levelGoal);
+            }
+
+            const filteredSet = {
+                label: label,
+                countstring: this.getKurseCountString(filteredResults.length),
+                results: filteredResults
+            };
+            if (currentSkill) {
+                filteredSet.skill = currentSkill;
+            }
+            data.sets.push(filteredSet);
+        });
+
+        return data;
+    }
+
+    getKurseCountString(count) {
+        let countstring = count + " " + Lang.getString("courses");
+        if (count == 1) {
+            countstring = count + " " + Lang.getString("course");
+        }
+        return countstring;
+    }
+
+    getFilteredCourselist(courses, level) {
+        const filteredResults = [];
+        courses.forEach((course) => {
+            if (course.levels.includes(level)) {
+                filteredResults.push(course);
+            }
+        });
+        return filteredResults;
     }
 
     async updateCourseResults() {
+        // Get course suggestions and set template data.
         const skills = this.scout.account.getSkills();
-        const data = {
-            sets: [
-                {
-                    label: Lang.getString("courseliststep:airecommends"),
-                    resultscount: "0 Kurse",
-                    results: [],
-                },
-            ],
-            filter: {
-                count: 13,
-            },
-        };
-        for (const uri in skills) {
-            const skill = skills[uri];
-            // const result = await this.search(skill, true)
-            const result = await this.search(skill);
-            let resultscount = result.count + " " + Lang.getString("courses");
-            if (result.count == 1) {
-                resultscount = result.count + " " + Lang.getString("course");
-            }
-            data.sets.push({
-                label: skill.label,
-                skill: skill,
-                resultscount: resultscount,
-                results: result.exactMatch,
-            });
-        }
-        const [stepTemplate, courselistTemplate] = await Promise.all([fetch(
-            "core51/wisyki/templates/courselist-step.mustache"
-        ).then((response) => response.text()), fetch(
-            "core51/wisyki/templates/courselist.mustache"
-        ).then((response) => response.text())]);
-        const html = Lang.render(stepTemplate, data, {courselist: courselistTemplate});
-        while (this.node.lastChild) {
-            this.node.removeChild(
-                this.node.lastChild
-            );
+        this.filterMenu.updateCourseCount(-1);
+        this.results = await this.search();
+
+        const data = this.getTemplateData(skills);
+
+        this.filterMenu.updateCourseCount(data.count);
+
+        // Get mustache templates.
+        const [resultsTemplate, courselistTemplate] = await Promise.all([
+            fetch(
+                "core51/wisyki/templates/courselist-step-results.mustache"
+            ).then((response) => response.text()),
+            fetch(
+                "core51/wisyki/templates/courselist-step-courselist.mustache"
+            ).then((response) => response.text()),
+        ]);
+        const html = Lang.render(resultsTemplate, data, {
+            courselist: courselistTemplate,
+        });
+
+        while (this.resultList.lastChild) {
+            this.resultList.removeChild(this.resultList.lastChild);
         }
         // Append html.
-        this.node.innerHTML = html;
+        this.resultList.innerHTML = html;
 
         // Get all the <details> elements
-        const accordions = this.node.querySelectorAll('details');
+        const accordions = this.resultList.querySelectorAll("details");
         if (accordions.length) {
             accordions[0].open = true;
 
             // Add event listeners to handle accordion interactions
-            accordions.forEach(accordion => {
+            accordions.forEach((accordion) => {
                 // When a <details> element is toggled (opened or closed)
-                accordion.addEventListener('toggle', event => {
+                accordion.addEventListener("toggle", (event) => {
                     if (event.target.open) {
                         // If this section is opened, close all other sections
-                        accordions.forEach(item => {
+                        accordions.forEach((item) => {
                             if (item !== event.target) {
                                 item.open = false;
                             }
@@ -1657,18 +1727,19 @@ class CouseListStep extends Step {
         }
 
         // Get a reference to all the radio buttons in the group
-        const fieldsets = this.node.querySelectorAll("fieldset");
+        const complevelFilters = this.resultList.querySelectorAll(
+            "fieldset.complevel-filter"
+        );
 
-        // Add an event listener to each radio button in the group
-        fieldsets.forEach((fieldset) => {
-            const skill = skills[fieldset.getAttribute('skilluri')];
+        complevelFilters.forEach((complevelFilter) => {
+            // Add an event listener to each radio button in the group
+            const skill = skills[complevelFilter.getAttribute("skilluri")];
 
-            fieldset.addEventListener("change", () => {
+            complevelFilter.addEventListener("change", () => {
                 // Get the value of the selected radio button
-                const selectedInput = fieldset.querySelector("input:checked");
+                const selectedInput =
+                    complevelFilter.querySelector("input:checked");
                 selectedInput.checked = true;
-                console.log(selectedInput.name);
-                console.log(selectedInput.value);
                 skill.levelGoal = selectedInput.value;
                 this.scout.account.setSkill(
                     skill.label,
@@ -1678,15 +1749,17 @@ class CouseListStep extends Step {
                     skill.isOccupationSkill
                 );
 
-                this.updateCourseResult(skill, fieldset.parentNode);
+                this.updateCourseResult(skill, complevelFilter.parentNode);
             });
 
             // If not set, set default levelGoal.
-            if (skill.levelGoal) {            
-                const currentSelection = fieldset.querySelector('input[value="'+skill.levelGoal+'"');
+            if (skill.levelGoal) {
+                const currentSelection = complevelFilter.querySelector(
+                    'input[value="' + skill.levelGoal + '"'
+                );
                 currentSelection.checked = true;
             } else {
-                const firstInput = fieldset.querySelector("input");
+                const firstInput = complevelFilter.querySelector("input");
                 this.scout.account.setSkill(
                     skill.label,
                     skill.uri,
@@ -1699,17 +1772,15 @@ class CouseListStep extends Step {
     }
 
     /**
-     * Gets a search preview for courses based on a given skill and a level goal.
-     *
-     * @param {Object} skill A skill object with the label and levelGoal properties.
+     * Gets search results for courses based on the users skill goals.
      *
      * @returns {Object} The response object containing the search ID and the number of courses found.
      */
-    async search(skill, prepare = false) {
+    async search() {
         const params = {
-            prepare: prepare,
-            label: skill.label,
-            level: skill.levelGoal,
+            prepare: false,
+            skills: JSON.stringify(this.scout.account.getSkills()),
+            filters: JSON.stringify(this.scout.account.getFilters()),
         };
 
         const url = "./scout-search?" + new URLSearchParams(params);
@@ -1719,6 +1790,255 @@ class CouseListStep extends Step {
             return await response.json();
         } else {
             console.error("HTTP-Error: " + response.status);
+        }
+    }
+}
+
+class Filter {
+    menu;
+    selectedChoice = [];
+
+    constructor(menu) {
+        this.menu = menu;
+    }
+
+    async render() {
+        const response = await fetch(
+            "core51/wisyki/templates/" + this.name + "-filter.mustache"
+        );
+        const template = await response.text();
+
+        return Lang.render(template);
+    }
+
+    initRender() {
+        this.node = this.menu.node.querySelector("#filter-" + this.name);
+        this.selectedChoice = this.menu.step.scout.account.getFilter(this.name);
+
+        this.node.addEventListener("change", (event) => this.onChange(event));
+    }
+
+    onChange(event) {
+        this.storeChoice(event.target);
+        this.loadChoice();
+
+        this.menu.onChange();
+    }
+
+    loadChoice() {}
+
+    storeChoice(changed) {}
+
+    reset() {}
+}
+
+class CoursemodeFilter extends Filter {
+    name = "coursemode";
+    choices;
+    selectedChoice;
+    defaultChoice;
+
+    initRender() {
+        super.initRender();
+
+        this.choices = this.node.querySelectorAll("input");
+        this.defaultChoice = this.choices[0];
+
+        this.loadChoice();
+
+        // if (!this.selectedChoice || this.selectedChoice.length == 0) {
+        //     this.defaultChoice.checked = true;
+        // }
+    }
+
+    onChange(event) {
+        super.onChange(event);
+    }
+
+    loadChoice() {
+        this.choices.forEach((choice) => {
+            choice.checked = false;
+            // Check if input value in string array this.selectedChoice.
+            if (this.selectedChoice.includes(choice.value)) {
+                choice.checked = true;
+            }
+        });
+
+        if (!this.selectedChoice || this.selectedChoice.length == 0) {
+            this.defaultChoice.checked = true;
+        }
+    }
+
+    storeChoice(changed) {
+        if (changed == this.defaultChoice && this.defaultChoice.checked) {
+            // Delete filter choices.
+            this.selectedChoice = [];
+        } else {
+            if (changed.checked) {
+                // Add choice if not already set.
+                if (!this.selectedChoice.includes(changed.value)) {
+                    this.selectedChoice.push(changed.value);
+                }
+            } else {
+                // Remove changed.value from this.selectedChoice.
+                this.selectedChoice.splice(
+                    this.selectedChoice.indexOf(changed.value),
+                    1
+                );
+            }
+        }
+
+        this.menu.step.scout.account.setFilter(this.name, this.selectedChoice);
+    }
+
+    reset() {
+        this.selectedChoice = [];
+        this.menu.step.scout.account.setFilter(this.name, this.selectedChoice);
+        this.loadChoice();
+    }
+}
+
+class LocationFilter extends Filter {
+    name = "location";
+}
+
+class FilterMenu {
+    node;
+    step;
+    filters;
+    onChange;
+    courseCountNode;
+
+    constructor(step, onChange) {
+        this.step = step;
+        this.onChange = onChange;
+
+        this.filters = [new CoursemodeFilter(this), new LocationFilter(this)];
+    }
+
+    async getData() {
+        const data = {
+            filters: [],
+        };
+
+        for (const filter of this.filters) {
+            const html = await filter.render();
+            data.filters.push({
+                name: filter.name,
+                label: Lang.getString("courseliststep:filter" + filter.name),
+                html: html,
+            });
+        }
+
+        return data;
+    }
+
+    async getTemplate() {
+        const response = await fetch(
+            "core51/wisyki/templates/courselist-step-filter.mustache"
+        );
+        return await response.text();
+    }
+
+    initRender() {
+        const filterBtn = this.step.node.querySelector(".filter-btn");
+        this.node = this.step.node.querySelector(".filter-modal");
+        filterBtn.addEventListener("click", () => {
+            if (this.node.classList.contains("display-none")) {
+                show(this.node);
+            } else {
+                hide(this.node);
+            }
+        });
+
+        // Setup reset all filters action.
+        this.node
+            .querySelector(".filter-reset-btn")
+            .addEventListener("click", () => this.reset());
+        // Setup goToNextFilter action.
+        this.node
+            .querySelector(".filter-next-btn")
+            .addEventListener("click", () => this.goToNextFilter());
+
+        // Close the modal if the close button is clicked or somewhere outside of the modal.
+        this.node.addEventListener(
+            "click",
+            (event) => {
+                if (
+                    event.target.closest(".filter-close-btn") ||
+                    event.target.matches(".modal__backdrop")
+                ) {
+                    hide(this.node);
+                }
+            },
+            false
+        );
+
+        this.courseCountNode = this.node.querySelector(
+            ".filter-close-btn .coursecount"
+        );
+
+        this.courseCountLoaderNode = this.node.querySelector(
+            ".filter-close-btn .loader"
+        );
+
+        this.filterNav = this.node.querySelector(".filter-nav");
+        this.filterNav.querySelector("input").checked = true;
+        this.filterNavChoices = this.filterNav.querySelectorAll("input");
+
+        this.filterChoices = this.node.querySelectorAll(".filter-choice");
+
+        this.filterNav.addEventListener("change", () => this.updateFilterNav());
+        this.updateFilterNav();
+
+        for (const filter of this.filters) {
+            filter.initRender();
+        }
+    }
+
+    updateCourseCount(courseCount) {
+        if (courseCount < 0) {
+            hide(this.courseCountNode);
+            show(this.courseCountLoaderNode);
+            this.courseCountNode.textContent = '';
+        } else {
+            hide(this.courseCountLoaderNode);
+            show(this.courseCountNode);
+            let text = courseCount + " " + Lang.getString("courses");
+            if (courseCount == 1) {
+                text = courseCount + " " + Lang.getString("course");
+            }
+            this.courseCountNode.textContent = text;
+        }
+    }
+
+    updateFilterNav() {
+        const selectedInput = this.filterNav.querySelector("input:checked");
+        this.filterChoices.forEach((node) => {
+            if (node.id == selectedInput.value) {
+                show(node);
+            } else {
+                hide(node);
+            }
+        });
+    }
+
+    reset() {
+        this.filters.forEach((filter) => filter.reset());
+        this.onChange();
+    }
+
+    goToNextFilter() {
+        const currentSelection = this.filterNav.querySelector("input:checked");
+
+        for (let i = 0; i < this.filterNavChoices.length; i++) {
+            if (this.filterNavChoices[i] == currentSelection) {
+                // Calculate index of next
+                const next = (i + 1) % this.filterNavChoices.length;
+                this.filterNavChoices[next].checked = true;
+                this.updateFilterNav();
+                break;
+            }
         }
     }
 }
@@ -1877,6 +2197,36 @@ class Autocompleter {
     }
 }
 
+class Lang {
+    static #langstrings;
+    static #langcode;
+
+    static async init(langcode = "de") {
+        Lang.#langcode = langcode;
+        const filepath = "core51/wisyki/lang/" + Lang.#langcode + ".json";
+        const response = await fetch(filepath);
+        Lang.#langstrings = await response.json();
+    }
+
+    static getString(key) {
+        if (!Lang.#langstrings.hasOwnProperty(key)) {
+            throw new Error(
+                'Key "' +
+                    key +
+                    '" not found in lang file "' +
+                    Lang.#langcode +
+                    '"'
+            );
+        }
+        return Lang.#langstrings[key];
+    }
+
+    static render(template, view = {}, partials = null, config = null) {
+        view.lang = Lang.#langstrings;
+        return Mustache.render(template, view, partials, config);
+    }
+}
+
 // Detect the height of the app and update value of css property.
 function setCSSPropertyDocHeight() {
     document.documentElement.style.setProperty(
@@ -1954,34 +2304,4 @@ function enable(node) {
     node.classList.remove("disabled");
     node.removeAttribute("disabled");
     show(node);
-}
-
-class Lang {
-    static #langstrings;
-    static #langcode;
-
-    static async init(langcode = "de") {
-        Lang.#langcode = langcode;
-        const filepath = "core51/wisyki/lang/" + Lang.#langcode + ".json";
-        const response = await fetch(filepath);
-        Lang.#langstrings = await response.json();
-    }
-
-    static getString(key) {
-        if (!Lang.#langstrings.hasOwnProperty(key)) {
-            throw new Error(
-                'Key "' +
-                    key +
-                    '" not found in lang file "' +
-                    Lang.#langcode +
-                    '"'
-            );
-        }
-        return Lang.#langstrings[key];
-    }
-
-    static render(template, view, partials, config) {
-        view.lang = Lang.#langstrings;
-        return Mustache.render(template, view, partials, config);
-    }
 }

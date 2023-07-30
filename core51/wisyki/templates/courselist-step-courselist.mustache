@@ -8,6 +8,9 @@
             {{ #levels }}
             <span class="level-goal">{{ . }}</span>
             {{ /levels}}
+            {{ ^levels }}
+            {{ lang.courseliststep:na }}
+            {{ /levels}}
         </span>
         <span class="description-label">{{ lang.courseliststep:nextdate }}</span>
         <span class="description-item">

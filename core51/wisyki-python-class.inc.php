@@ -244,6 +244,68 @@ class WISYKI_PYTHON_CLASS {
     }
 
     /**
+     * Sort documents in referance to a base string based on semantic similarity.
+     *
+     * @param  string $base
+     * @param  array $documents
+     * @return array Sorted documents.
+     */
+    public function sortsemantic(string $base, array $documents) {
+        $endpoint = "/semanticsort";
+
+        // get the titles of the reults.
+		$descriptions = array_map(function ($course) {
+            // Limit string length of $course['description'] to 100
+            if (strlen($course['description']) > 50) {
+                $course['description'] = substr($course['description'], 0, 50) . '...';
+            }
+            $levels = '';
+            if (is_array($course['levels'])) {
+                $levels = join(', ', $course['levels']);
+            }
+			return $course['title'] . ' ' . $course['description'] . ' ' . $course['tags'] . ' ' . $course['thema'] . ' Lernziel: ' . $levels;
+		}, $documents);
+
+        $data = array(
+            "base" => $base,
+            "documents" => $descriptions,
+        );
+
+        $url = $this->api_uri . $endpoint;
+        $curl = curl_init($url);
+        curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLINFO_HEADER_OUT, true);
+        curl_setopt($curl, CURLOPT_POST, true);
+
+        // Set HTTP Header for POST request 
+        curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
+
+        $response = curl_exec($curl);
+
+        if (curl_error($curl)) {
+            JSONResponse::error500('Request Error:' . curl_error($curl));
+        }
+
+        curl_close($curl);
+
+        // Decode response and filter results for title and uri attributes.
+        $response = json_decode($response, true);
+
+        // Add score from response to every document
+        foreach ($documents as $key => $course) {
+            $documents[$key]['score'] = $response[$key];
+        }
+        
+        // sort documents based on score
+        usort($documents, function ($a, $b) {
+            return $a['score'] < $b['score'];
+        });
+
+        return $documents;
+    }
+
+    /**
      * Returns a report with the current statistics of the competency-level prediction model.
      *
      * @return array  An array with the response from the API.
