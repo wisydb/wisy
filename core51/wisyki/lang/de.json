@@ -76,5 +76,7 @@
     "skillsstep:inputplaceholder": "Kompetenzen finden",
     "skillsstep:skillsfor": "Kompetenzen für",
     "skillsstep:otherskills": "Weitere Kompetenzen",
-    "skillsstep:noskillsselected": "Keine Kompetenzen ausgewählt"
+    "skillsstep:noskillsselected": "Keine Kompetenzen ausgewählt",
+    "noresults": "Keine Ergebnisse",
+    "plz": "Postleitzahl"
 }

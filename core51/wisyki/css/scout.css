@@ -52,6 +52,7 @@ h1 {
     font-size: 1.5em;
     color: var(--font-color__light);
     font-weight: 600;
+    font-family: inherit;
 }
 
 h2 {
@@ -59,15 +60,18 @@ h2 {
     color: var(--main-color);
     font-weight: 600;
     margin-bottom: .5em;
+    font-family: inherit;
 }
 
 h3 {
     color: var(--main-color);
+    font-family: inherit;
 }
 
 h4 {
     color: var(--main-color);
     font-weight: normal;
+    font-family: inherit;
 }
 
 
@@ -88,6 +92,7 @@ button {
 
 button:disabled {
     cursor: unset;
+    background-color: var(--main-color__disabled);
 }
 
 .btn-secondary {
@@ -191,6 +196,22 @@ nav {
 nav .labeled-icon-btn {
     height: 60px;
     font-size: .8em;
+    position: relative;
+}
+
+nav a .bubble {
+    position: absolute;
+    top: 7px;
+    right: 8px;
+    background-color: red;
+    color: var(--font-color__light);
+    border-radius: 100%;
+    height: 1.6em;
+    width: 1.6em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8em;
 }
 
 .icon {
@@ -229,6 +250,10 @@ nav .labeled-icon-btn {
 
 .star-icon {
     background-image: url('/files/wisyki/star_outline_blue_24dp.svg');
+}
+
+.filled-star-icon {
+    background-image: url('/files/wisyki/star_filled_blue_24dp.svg');
 }
 
 .help-icon {
@@ -318,7 +343,6 @@ header h1 {
     justify-content: center;
     align-items: center;
     background-image: linear-gradient(to right, var(--main-color), var(--main-color__highlight));
-
 }
 
 /* Scout Nav */
@@ -696,10 +720,6 @@ main .steps>div {
     border-image-source: linear-gradient(to right, var(--main-color), var(--main-color__highlight));
 }
 
-.autocomplete-box input {
-    
-}
-
 input[type="text"] {
     height: 100%;
     width: 100%;
@@ -733,11 +753,18 @@ input[type="text"] {
     position: relative;
     width: 100%;
     padding: .2em;
-    padding-left: 1.5em;
+    padding-left: 20px;
     overflow: hidden;
     text-align: left;
     font-size: 1em;
     text-overflow: ellipsis;
+}
+
+.autocomplete-box output .headline {
+    font-weight: 300;
+    font-size: .8em;
+    color: var(--font-color__dark);
+    margin-top: 1em;
 }
 
 .autocomplete-box output li:not(:last-of-type)::after {
@@ -1232,9 +1259,10 @@ details[open]>summary::after {
 .filter-modal .modal__content {
     position: fixed;
     bottom: 0;
-    left: 0;
+    right: 0;
     width: 100%;
-    height: 600px;
+    max-width: 420px;
+    height: 480px;
     max-height: 90vh;
     background: var(--main-background-color);
     border-radius: 10px 10px 0 0;
@@ -1313,6 +1341,12 @@ details[open]>summary::after {
     display: none;
 }
 
+.filter-choices {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
 .filter-choice {
     display: flex;
     flex-direction: column;
@@ -1337,11 +1371,11 @@ details[open]>summary::after {
 }
 
 .filter-location-name-input {
-    border: 2px solid;
+    /* border: 2px solid;
     border-image-slice: 1;
     border-image-source: linear-gradient(to right, var(--main-color), var(--main-color__highlight));
     background: var(--main-background-color);
-    padding: .5em;
+    padding: .5em; */
 }
 
 .filter-actions {
@@ -1349,12 +1383,14 @@ details[open]>summary::after {
     grid-template-columns: 1fr 1fr;
     grid-template-rows: 1fr 1fr;
     gap: .5em;
+    margin: 0 1em;
+    margin-bottom: 1em;
 }
 
 .filter-actions .filter-reset-btn {
     grid-column: 1;
     grid-row: 2;
-    align-self: end;
+    align-self: center;
 }
 
 .filter-actions .filter-next-btn {

@@ -43,13 +43,26 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_INTELLISEARCH_CLASS {
 	 */
 	function get_querystring(object $skill, object $filters): string {
 		$querystring = utf8_decode($skill->label);
-		if ($filters->coursemode) {
+
+		// Coursemode filter.
+		if (isset($filters->coursemode)) {
 			for ($i = 0; $i < count($filters->coursemode); $i++) {
 				$coursemode = $filters->coursemode[$i];
 				if ($i == 0) {
 					$querystring .= ', ' . utf8_decode($coursemode);
 				} else {
 					$querystring .= ' ODER ' . utf8_decode($coursemode);
+				}
+			}
+		}
+
+		// Location filter.
+		if (isset($filters->location)) {
+			if (isset($filters->location->name) and !empty($filters->location->name)) {
+				$querystring .= ', bei:' . utf8_decode($filters->location->name);
+
+				if (isset($filters->location->perimiter) and !empty($filters->location->perimiter)) {
+					$querystring .= ', km:' . utf8_decode($filters->location->perimiter);
 				}
 			}
 		}
@@ -105,7 +118,7 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_INTELLISEARCH_CLASS {
 
 			$this->prepare($querystring);
 			if (!$this->ok()) {
-				JSONResponse::error500();
+				JSONResponse::error500('Error while preparing searcher class with query: ' . json_encode($this->searcher->error));
 			}
 
 			$kurse = $this->getKurseRecords(0, $limit ?? 0, 'rand');
@@ -173,6 +186,7 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_INTELLISEARCH_CLASS {
 		$response = (object) array(
 			'count' => count($results),
 			'sets' => $sets,
+			'querystring' => utf8_encode($querystring),
 		);
 
 		JSONResponse::send_json_response($response);

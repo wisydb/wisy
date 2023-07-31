@@ -330,6 +330,8 @@ class Scout {
         hide(this.nextButton, "visibility");
         disable(this.prevButton);
         hide(this.prevButton, "visibility");
+
+        this.updateFav();
     }
 
     getPath(pathname) {
@@ -399,6 +401,17 @@ class Scout {
         }
 
         return index;
+    }
+
+    updateFav() {
+        const bubble = document.querySelector('nav a .bubble');
+        const count = fav_count();
+        bubble.textContent = count;
+        if (count > 0) {
+            show(bubble);
+        } else {
+            hide(bubble);
+        }
     }
 }
 
@@ -1594,7 +1607,9 @@ class CouseListStep extends Step {
 
     async updateCourseResult(skill, detailsNode) {
         const courselistNode = detailsNode.querySelector(".course-list");
-        const courselistCountNode = detailsNode.querySelector(".result-list__count");
+        const courselistCountNode = detailsNode.querySelector(
+            ".result-list__count"
+        );
         hide(courselistNode, "opacity");
 
         let courselist;
@@ -1606,8 +1621,7 @@ class CouseListStep extends Step {
         });
         const data = {
             results: this.getFilteredCourselist(courselist, skill.levelGoal),
-        }
-        console.log(data);
+        };
         const response = await fetch(
             "core51/wisyki/templates/courselist-step-courselist.mustache"
         );
@@ -1618,21 +1632,55 @@ class CouseListStep extends Step {
             courselistNode.removeChild(courselistNode.lastChild);
         }
         courselistNode.innerHTML = html;
+
         show(courselistNode);
-        courselistCountNode.textContent = this.getKurseCountString(data.results.length);
+        courselistCountNode.textContent = this.getKurseCountString(
+            data.results.length
+        );
+
+        this.setupFavAction(courselistNode);
+    }
+
+    setupFavAction(courselistNode) {
+        const favBtns = courselistNode.querySelectorAll(".bookmark-btn");
+        favBtns.forEach((btn) => {
+            // Mark favourites.
+            const courseid = btn.getAttribute("courseid");
+            const icon = btn.querySelector("i");
+            if (fav_is_favourite(courseid)) {
+                icon.classList.remove("star-icon");
+                icon.classList.add("filled-star-icon");
+            }
+
+            btn.addEventListener("click", (event) => {
+                if (!fav_is_favourite(courseid)) {
+                    fav_click(event, courseid);
+
+                    icon.classList.remove("star-icon");
+                    icon.classList.add("filled-star-icon");
+                } else {
+                    fav_set_favourite(courseid, false);
+
+                    icon.classList.add("star-icon");
+                    icon.classList.remove("filled-star-icon");
+                }
+
+                this.scout.updateFav();
+            });
+        });
     }
 
     getTemplateData(skills) {
         const data = {
             count: this.results.count,
-            sets: []
+            sets: [],
         };
         this.results.sets.forEach((set) => {
-            let filteredResults = []
+            let filteredResults = [];
             let label = set.label;
             let currentSkill;
-            if (label == 'airecommends') {
-                label = Lang.getString('courseliststep:airecommends');
+            if (label == "airecommends") {
+                label = Lang.getString("courseliststep:airecommends");
                 filteredResults = set.results;
             } else {
                 for (let skill of Object.values(skills)) {
@@ -1641,13 +1689,16 @@ class CouseListStep extends Step {
                     }
                 }
 
-                filteredResults = this.getFilteredCourselist(set.results, currentSkill.levelGoal);
+                filteredResults = this.getFilteredCourselist(
+                    set.results,
+                    currentSkill.levelGoal
+                );
             }
 
             const filteredSet = {
                 label: label,
                 countstring: this.getKurseCountString(filteredResults.length),
-                results: filteredResults
+                results: filteredResults,
             };
             if (currentSkill) {
                 filteredSet.skill = currentSkill;
@@ -1704,6 +1755,8 @@ class CouseListStep extends Step {
         }
         // Append html.
         this.resultList.innerHTML = html;
+
+        this.setupFavAction(this.resultList);
 
         // Get all the <details> elements
         const accordions = this.resultList.querySelectorAll("details");
@@ -1818,18 +1871,28 @@ class Filter {
         this.node.addEventListener("change", (event) => this.onChange(event));
     }
 
-    onChange(event) {
-        this.storeChoice(event.target);
+    onChange(event = null) {
+        if (event) {
+            this.storeChoice(event.target);
+        } else {
+            this.storeChoice();
+        }
         this.loadChoice();
 
         this.menu.onChange();
+        this.menu.update();
     }
 
     loadChoice() {}
 
-    storeChoice(changed) {}
+    storeChoice(changed = null) {}
 
-    reset() {}
+    reset() {
+        this.menu.onChange();
+        this.menu.update();
+    }
+
+    isActive() {}
 }
 
 class CoursemodeFilter extends Filter {
@@ -1844,11 +1907,11 @@ class CoursemodeFilter extends Filter {
         this.choices = this.node.querySelectorAll("input");
         this.defaultChoice = this.choices[0];
 
-        this.loadChoice();
+        if (!this.selectedChoice) {
+            this.selectedChoice = [];
+        }
 
-        // if (!this.selectedChoice || this.selectedChoice.length == 0) {
-        //     this.defaultChoice.checked = true;
-        // }
+        this.loadChoice();
     }
 
     onChange(event) {
@@ -1895,11 +1958,84 @@ class CoursemodeFilter extends Filter {
         this.selectedChoice = [];
         this.menu.step.scout.account.setFilter(this.name, this.selectedChoice);
         this.loadChoice();
+
+        super.reset();
+    }
+
+    isActive() {
+        if (this.selectedChoice.length > 0) {
+            console.log("location active");
+            return true;
+        }
+        return false;
     }
 }
 
 class LocationFilter extends Filter {
     name = "location";
+    autocompleter;
+    umkreisChoices;
+
+    initRender() {
+        super.initRender();
+
+        if (!this.selectedChoice) {
+            this.selectedChoice = {};
+        }
+
+        this.autocompleter = new LocationAutocompleter(
+            this,
+            () => this.storeChoice(),
+            () => {
+                this.storeChoice();
+                this.onChange();
+            }
+        );
+
+        this.loadChoice();
+    }
+
+    loadChoice() {
+        this.autocompleter.inputElm.value = this.selectedChoice.name;
+
+        if (this.selectedChoice.perimiter) {
+            const tobechecked = this.node.querySelector(
+                'input[value="' + this.selectedChoice.perimiter + '"]'
+            );
+            if (tobechecked) {
+                tobechecked.checked = true;
+            }
+        } else {
+            this.node.querySelector('input[type="radio"]').checked = true;
+        }
+    }
+
+    storeChoice() {
+        this.selectedChoice.name = this.autocompleter.inputElm.value ?? null;
+
+        const selectedPerimiterInput = this.node.querySelector(
+            'input[type="radio"]:checked'
+        );
+        this.selectedChoice.perimiter = selectedPerimiterInput.value;
+        this.menu.step.scout.account.setFilter(this.name, this.selectedChoice);
+    }
+
+    isActive() {
+        if (!this.selectedChoice.name) {
+            return false;
+        }
+        console.log("location active");
+        return true;
+    }
+
+    reset() {
+        this.selectedChoice = {};
+        this.menu.step.scout.account.setFilter(this.name, this.selectedChoice);
+        this.loadChoice();
+        this.autocompleter.clearInput();
+
+        super.reset();
+    }
 }
 
 class FilterMenu {
@@ -1994,13 +2130,34 @@ class FilterMenu {
         for (const filter of this.filters) {
             filter.initRender();
         }
+
+        this.bubbleNode = document.querySelector(".filter-bubble");
+
+        this.update();
+    }
+
+    update() {
+        let filtercount = 0;
+
+        this.filters.forEach((filter) => {
+            if (filter.isActive()) {
+                filtercount++;
+            }
+        });
+
+        this.bubbleNode.textContent = filtercount;
+        if (filtercount > 0) {
+            show(this.bubbleNode);
+        } else {
+            hide(this.bubbleNode);
+        }
     }
 
     updateCourseCount(courseCount) {
         if (courseCount < 0) {
             hide(this.courseCountNode);
             show(this.courseCountLoaderNode);
-            this.courseCountNode.textContent = '';
+            this.courseCountNode.textContent = "";
         } else {
             hide(this.courseCountLoaderNode);
             show(this.courseCountNode);
@@ -2049,12 +2206,14 @@ class Autocompleter {
     clearElm;
     step;
     requestID = 0;
-    callback;
+    onSelect;
+    onClear;
 
-    constructor(step, callback) {
+    constructor(step, onSelect, onClear = null) {
         this.step = step;
-        this.callback = callback;
-        this.inputElm = step.node.querySelector(".esco-autocomplete");
+        this.onSelect = onSelect;
+        this.onClear = onClear;
+        this.inputElm = step.node.querySelector(".scout-autocomplete");
         this.outputElm = step.node.querySelector(".autocomplete-box output");
         this.clearElm = step.node.querySelector(".clear-input");
 
@@ -2095,6 +2254,9 @@ class Autocompleter {
         this.inputElm.value = "";
         hide(this.outputElm);
         this.clearOutput();
+        if (this.onClear) {
+            this.onClear();
+        }
     }
 
     updateCompletions(completions, requestid) {
@@ -2125,7 +2287,7 @@ class Autocompleter {
                 btn.addEventListener("mousedown", () => {
                     this.inputElm.value = completion.label;
                     this.clearOutput();
-                    this.callback(completion.label, completion.uri);
+                    this.onSelect(completion.label, completion.uri);
                 });
             }
         } else {
@@ -2194,6 +2356,108 @@ class Autocompleter {
         // Get and display autocomplete results.
         const completions = await this.requestCompletion();
         this.updateCompletions(completions, this.requestID);
+    }
+}
+
+class LocationAutocompleter extends Autocompleter {
+    updateCompletions(completions, requestid) {
+        if (requestid < this.requestID) {
+            return;
+        }
+        this.clearOutput();
+
+        const ul = document.createElement("ul");
+        // Iterate through each suggestion.
+        if (completions.length) {
+            for (const completion of completions) {
+                // Create a button for the completion and add it to the list.
+                const li = document.createElement("li");
+                const btn = document.createElement("button");
+                // Check if completion.label contains headline.
+                if (completion.label.includes("headline")) {
+                    btn.textContent = Lang.getString("plz");
+                    btn.classList.add("headline");
+                    // Zwischenueberschrift
+                    btn.setAttribute("disabled", "");
+                } else {
+                    btn.textContent = completion.label;
+                    btn.addEventListener("mousedown", () => {
+                        this.inputElm.value = completion.label;
+                        this.clearOutput();
+                        this.onSelect(completion.label, completion.value);
+                    });
+                }
+                li.appendChild(btn);
+                ul.appendChild(li);
+            }
+        } else {
+            // If no suggestions were found for this category, display a message.
+            const li = document.createElement("li");
+            const btn = document.createElement("button");
+            btn.textContent = Lang.getString("noresults");
+            btn.setAttribute("disabled", "");
+            li.appendChild(btn);
+            ul.appendChild(li);
+        }
+
+        // Add the list of suggestions to the output element.
+        this.outputElm.appendChild(ul);
+    }
+
+    async requestCompletion() {
+        // Extract search term from input field.
+        const searchterm = this.inputElm.value;
+
+        // If search term is too short, return an empty array.
+        if (searchterm.length < 2) {
+            return [];
+        }
+
+        const params = {
+            q: searchterm,
+            type: "ort",
+            limit: 512,
+            timestamp: new Date().getTime(),
+        };
+
+        // Build and make request.
+        const url = "./autosuggestplzort?" + new URLSearchParams(params);
+        const response = await fetch(url, {
+            headers: {
+                "Content-Type": "text/html; charset=utf-8",
+            },
+        });
+
+        // If response is successful, parse and return the suggestions from the response.
+        if (response.ok) {
+            // Concert character encoding from ISO-8859-1 to utf8 for fetch result.
+            const buffer = await response.arrayBuffer();
+            const decoder = new TextDecoder("iso-8859-1");
+            const encoder = new TextEncoder();
+            const isoText = decoder.decode(buffer);
+            const utf8Text = encoder.encode(isoText);
+            const result = new TextDecoder("utf-8").decode(utf8Text);
+            console.log(result);
+
+            if (result.trim() == "Keine Ortsvorschl&auml;ge m&ouml;glich|") {
+                return [];
+            } else {
+                const data = result.split("\n");
+                const response_data = [];
+                for (let i = 0; i < data.length; i++) {
+                    if (data[i] != "") {
+                        const row = data[i].split("|");
+                        response_data.push({
+                            label: row[0],
+                            value: row[1],
+                        });
+                    }
+                }
+                return response_data;
+            }
+        } else {
+            console.error("HTTP-Error: " + response.status);
+        }
     }
 }
 

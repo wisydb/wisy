@@ -70,6 +70,9 @@ class WISYKI_SCOUT_RENDERER_CLASS {
 			<meta charset="UTF-8">
 			<meta http-equiv="X-UA-Compatible" content="IE=edge">
 			<meta name="viewport" content="width=device-width, initial-scale=1.0">
+			<?php
+			echo $this->framework->getFaviconTags() . $this->framework->getCSSTags();
+			?>
 			<link rel="stylesheet" href="<?php echo $wisyCore ?>/wisyki/css/scout.css">
 			<?php
 			if ($additional_css) {
@@ -77,6 +80,7 @@ class WISYKI_SCOUT_RENDERER_CLASS {
 					echo ("<link rel='stylesheet' href='$cssfile'>");
 				}
 			}
+			echo $this->framework->getJSHeadTags();
 			?>
 			<title><?php echo $pageTitle ?></title>
 		</head>
@@ -95,7 +99,7 @@ class WISYKI_SCOUT_RENDERER_CLASS {
 			<nav>
 				<a href="/index.php" class="img-link"><img class="portal-logo" src="<?php echo ($logo) ?>" alt="Kursportal Schleswig Holstein" height="60px" width="220px"></a>
 				<div class="action-bar">
-					<a class="bookmarks-btn labeled-icon-btn" href="#"><i class="icon bookmarks-icon"></i>Merkliste</a>
+					<a class="bookmarks-btn labeled-icon-btn" href="/search?q=Fav:"><i class="icon bookmarks-icon"></i>Merkliste<span class="bubble display-none"></span></a>
 					<a class="login-btn labeled-icon-btn" href="#"><i class="icon account-icon"></i>Login</a>
 					<div class="menu-btn">
 						<div class="menu-btn__burger"></div>
