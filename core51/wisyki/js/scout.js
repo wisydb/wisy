@@ -310,7 +310,6 @@ class Account {
 
 /**
  * Represents the Scout.
- * @class
  */
 class Scout {
     /**
@@ -774,10 +773,15 @@ class Path {
 /**
  * OccupationPath.
  *
- * @class OccupationPath
  * @extends {Path}
  */
 class OccupationPath extends Path {
+    /**
+     * Creates an instance of OccupationPath.
+     *
+     * @override
+     * @param {Scout} scout - The scout object.
+     */
     constructor(scout) {
         super(scout);
         this.name = "occupation";
@@ -791,6 +795,12 @@ class OccupationPath extends Path {
         ];
     }
 
+    /**
+     * Prepares the template data for OccupationPath.
+     *
+     * @override
+     * @returns {object} - The prepared template data object.
+     */
     prepareData() {
         const data = super.prepareData();
         data.label = Lang.getString("occupationpath:label");
@@ -801,10 +811,15 @@ class OccupationPath extends Path {
 /**
  * SkillPath.
  *
- * @class SkillPath
  * @extends {Path}
  */
 class SkillPath extends Path {
+    /**
+     * Creates an instance of SkillPath.
+     *
+     * @override
+     * @param {Scout} scout - The scout object.
+     */
     constructor(scout) {
         super(scout);
         this.name = "skill";
@@ -816,6 +831,12 @@ class SkillPath extends Path {
         ];
     }
 
+    /**
+     * Prepares the template data for SkillPath.
+     *
+     * @override
+     * @returns {object} - The prepared template data object.
+     */
     prepareData() {
         const data = super.prepareData();
         return data;
@@ -824,8 +845,6 @@ class SkillPath extends Path {
 
 /**
  * Abstract Class Step.
- *
- * @class Step
  */
 class Step {
     /**
@@ -864,10 +883,23 @@ class Step {
      */
     loader;
 
+    /**
+     * The data object for the html templates.
+     * @type {Object}
+     */
     data = {};
 
+    /**
+     * The partial templates of the main template.
+     * @type {Object}
+     */
     partials = {};
 
+    /**
+     * Creates an instance of Step.
+     * @param {Scout} scout - The scout object.
+     * @param {Path} path - The parent path.
+     */
     constructor(scout, path) {
         if (this.constructor == Step) {
             throw new Error("Abstract classes can't be instantiated.");
@@ -877,8 +909,15 @@ class Step {
         this.path = path;
     }
 
+    /**
+     * Prepares the template for the step.
+     * @returns {Promise<void>} - A promise that resolves when the template is prepared.
+     */
     async prepareTemplate() {}
 
+    /**
+     * Initializes the step.
+     */
     init() {
         // Get the node for the current step and loader.
         this.node = document.getElementById(this.name);
@@ -887,6 +926,10 @@ class Step {
         );
     }
 
+    /**
+     * Renders or updates the step, if the step is already redered.
+     * @returns {Promise<void>} - A promise that resolves when the step is updated.
+     */
     async update() {
         if (!this.isRendered()) {
             await this.#render();
@@ -895,6 +938,10 @@ class Step {
         this.updateNavButtons();
     }
 
+    /**
+     * Renders the step.
+     * @returns {Promise<void>} - A promise that resolves when the step is rendered.
+     */
     async #render() {
         await this.prepareTemplate();
         const response = await fetch(
@@ -908,8 +955,14 @@ class Step {
         this.initRender();
     }
 
+    /**
+     * Initializes the rendered step.
+     */
     initRender() {}
 
+    /**
+     * Shows the loader for the step.
+     */
     showLoader() {
         hide(this.node, "visibility");
         // Hide the step, show the loader.
@@ -918,6 +971,9 @@ class Step {
         }
     }
 
+    /**
+     * Hides the loader for the step.
+     */
     hideLoader() {
         // If a loader element was found, hide it and show the current step node with a delay.
         if (this.loader) {
@@ -929,10 +985,18 @@ class Step {
         }
     }
 
+    /**
+     * Checks if the step is the first step in the path.
+     * @returns {boolean} - True if the step is the first step, false otherwise.
+     */
     isFirst() {
         return this.path.steps.indexOf(this.path.currentStep) == 0;
     }
 
+    /**
+     * Checks if the step is the last step in the path.
+     * @returns {boolean} - True if the step is the last step, false otherwise.
+     */
     isLast() {
         return (
             this.path.steps.indexOf(this.path.currentStep) ==
@@ -940,6 +1004,10 @@ class Step {
         );
     }
 
+    /**
+     * Gets the next step in the path.
+     * @returns {Step|null} - The next step object or null if it is the last step.
+     */
     nextStep() {
         if (this.isLast()) {
             return null;
@@ -949,6 +1017,9 @@ class Step {
         ];
     }
 
+    /**
+     * Updates the navigation buttons based on the current step.
+     */
     updateNavButtons() {
         if (this.isFirst()) {
             hide(this.scout.prevButton, "visibility");
@@ -972,36 +1043,58 @@ class Step {
         }
     }
 
+    /**
+     * Checks if the prerequisites for the step are met.
+     * @throws {Error} - Throws an error if the method is not implemented by the subclass.
+     */
     checkPrerequisites() {
         throw new Error("Abstract method needs to be implemented by subclass.");
     }
 
+    /**
+     * Checks if the step has been rendered.
+     * @returns {boolean} - True if the step has been rendered, false otherwise.
+     */
     isRendered() {
         return document.getElementById(this.name).children.length !== 0;
     }
 
+    /**
+     * Hides the navigation for the step.
+     * @returns {boolean} - False.
+     */
     hideNav() {
         return false;
     }
 }
 
 /**
- * PathStep.
- *
- * @class PathStep
- * @extends {Step}
+ * Represents a PathStep object.
+ * @extends Step
  */
 class PathStep extends Step {
+    /**
+     * Constructs a new PathStep object.
+     * @param {Scout} scout - The scout object.
+     * @param {Path} path - The path object.
+     */
     constructor(scout, path) {
         super(scout, path);
 
         this.name = "pathchoice";
     }
 
+    /**
+     * Checks the prerequisites for the PathStep. The pathstep has no special prerequisites.
+     * @returns {boolean} - True if prerequisites are met, false otherwise.
+     */
     checkPrerequisites() {
         return true;
     }
 
+    /**
+     * Initializes the rendering of the PathStep.
+     */
     initRender() {
         super.initRender();
         const pathBtns = this.node.querySelectorAll(
@@ -1015,6 +1108,9 @@ class PathStep extends Step {
         });
     }
 
+    /**
+     * Updates the navigation buttons of the PathStep.
+     */
     updateNavButtons() {
         if (this.isFirst()) {
             hide(this.scout.prevButton, "visibility");
@@ -1033,6 +1129,9 @@ class PathStep extends Step {
         }
     }
 
+    /**
+     * Prepares the template data for the PathStep.
+     */
     async prepareTemplate() {
         this.data.paths = [];
         for (const key in this.scout.paths) {
@@ -1040,6 +1139,10 @@ class PathStep extends Step {
         }
     }
 
+    /**
+     * Hides the navigation of the PathStep.
+     * @returns {boolean} - True if navigation should be hidden, false otherwise.
+     */
     hideNav() {
         return true;
     }
@@ -1048,21 +1151,28 @@ class PathStep extends Step {
 /**
  * OccupationStep.
  *
- * @class OccupationStep
- * @extends {Step}
+ * @extends Step
  */
 class OccupationStep extends Step {
     /**
-     * Autocompleter
+     * Autocompleter object for occupation selection.
      * @type {Autocompleter}
      */
     autocompleter;
 
+    /**
+     * Constructs a new OccupationStep object.
+     * @param {Scout} scout - The scout object.
+     * @param {Path} path - The path object.
+     */
     constructor(scout, path) {
         super(scout, path);
         this.name = "occupation";
     }
 
+    /**
+     * Initializes the rendering of the OccupationStep.
+     */
     initRender() {
         super.initRender();
         // Set up UI-elements.
@@ -1071,6 +1181,9 @@ class OccupationStep extends Step {
         );
     }
 
+    /**
+     * Updates the OccupationStep.
+     */
     async update() {
         await super.update();
 
@@ -1083,10 +1196,19 @@ class OccupationStep extends Step {
         }
     }
 
+    /**
+     * Checks the prerequisites for the OccupationStep.
+     * @returns {boolean} - True if prerequisites are met, false otherwise.
+     */
     checkPrerequisites() {
         return this.scout.account.getPath() == this.path.name;
     }
 
+    /**
+     * Sets the selected occupation.
+     * @param {string} label - The label of the selected occupation.
+     * @param {string} uri - The URI of the selected occupation.
+     */
     setOccupation(label, uri) {
         this.scout.account.setOccupation(label, uri);
         this.updateNavButtons();
@@ -1096,18 +1218,56 @@ class OccupationStep extends Step {
 /**
  * OccupationSkillsStep.
  *
- * @class OccupationSkillsStep
- * @extends {Step}
+ * @extends Step
  */
 class OccupationSkillsStep extends Step {
+    /**
+     * The DOM node for the selected occupation.
+     * @type {HTMLElement}
+     */
     occupationNode;
+
+    /**
+     * The DOM node for the selectable skills.
+     * @type {HTMLElement}
+     */
     skillsNode;
+
+    /**
+     * The selected occupation.
+     * @type {object}
+     */
     occupation;
+
+    /**
+     * The maximum number of skills that can be selected.
+     * @type {number}
+     */
     maxSkills;
+
+    /**
+     * The template for the skill counter.
+     * @type {string}
+     */
     skillCounterTemplate;
+
+    /**
+     * The DOM node for the selected occupation.
+     * @type {HTMLElement}
+     */
     selectedOccupationNode;
+
+    /**
+     * The DOM node for the skill counter.
+     * @type {HTMLElement}
+     */
     skillCounterNode;
 
+    /**
+     * Constructs a new OccupationSkillsStep object.
+     * @param {Scout} scout - The scout object.
+     * @param {Path} path - The parent path object.
+     */
     constructor(scout, path) {
         super(scout, path);
         this.name = "occupationskills";
@@ -1115,12 +1275,19 @@ class OccupationSkillsStep extends Step {
         // this.maxSkills = 5;
     }
 
+    /**
+     * Prepares the template data for the OccupationSkillsStep.
+     */
     async prepareTemplate() {
         if (this.maxSkills) {
             this.data.maxskills = this.maxSkills;
         }
     }
 
+    /**
+     * Checks the prerequisites for the OccupationSkillsStep.
+     * @returns {boolean} - True if prerequisites are met, false otherwise.
+     */
     checkPrerequisites() {
         return (
             this.scout.account.getPath() == this.path.name &&
@@ -1128,6 +1295,9 @@ class OccupationSkillsStep extends Step {
         );
     }
 
+    /**
+     * Initializes the rendering of the OccupationSkillsStep.
+     */
     initRender() {
         super.initRender();
 
@@ -1147,6 +1317,9 @@ class OccupationSkillsStep extends Step {
         }
     }
 
+    /**
+     * Updates the OccupationSkillsStep.
+     */
     async update() {
         await super.update();
 
@@ -1176,10 +1349,8 @@ class OccupationSkillsStep extends Step {
 
     /**
      * Suggests skills based on the given ESCO concept URI.
-     *
-     * @param {string} uri the URI to get skills for.
-     *
-     * @returns {Promise<Object>} An object containing a URI and an array of skills.
+     * @param {string} uri - The URI to get skills for.
+     * @returns {Promise<Object>} - An object containing a URI and an array of skills.
      */
     async suggestSkills(uri) {
         if (!uri.startsWith("http://data.europa.eu/esco/")) {
@@ -1201,10 +1372,7 @@ class OccupationSkillsStep extends Step {
 
     /**
      * Fills the suggestion list in the UI with the given suggestions.
-     *
-     * @param {object} suggestions The suggestions to be displayed.
-     *
-     * @returns {void}
+     * @param {object} suggestions - The suggestions to be displayed.
      */
     showSkillSuggestions(suggestions) {
         if (!suggestions.title) {
@@ -1253,14 +1421,10 @@ class OccupationSkillsStep extends Step {
             }
         }
     }
-
     /**
      * Updates the checkboxes' selection state according to the currently selected skills.
      * Disables the "add more skills" button if the maximum number of skills is already selected.
-     *
-     * @param {Array} checkboxes An array of the checkboxes for each skill.
-     *
-     * @returns {void}
+     * @param {Array} checkboxes - An array of the checkboxes for each skill.
      */
     updateSkillSelection(checkboxes = null) {
         if (checkboxes == null) {
@@ -1294,8 +1458,6 @@ class OccupationSkillsStep extends Step {
      * Updates the skill counter on the webpage.
      * Retrieves the skills of the scout's account and calculates the number of skills.
      * Updates the HTML of the skill counter node with the rendered skill counter template.
-     *
-     * @returns {void}
      */
     updateSkillCounter() {
         const skills = this.scout.account.getSkills();
@@ -1312,29 +1474,61 @@ class OccupationSkillsStep extends Step {
 }
 
 /**
- * SkillsStep.
+ * Represents the Step for searching, selecting and managing skills.
  *
- * @class SkillsStep
- * @extends {Step}
+ * @extends Step
  */
 class SkillsStep extends Step {
     /**
-     * Autocompleter
+     * The autocompleter used for skill suggestions.
      * @type {Autocompleter}
      */
     autocompleter;
+
+    /**
+     * The DOM node for the selected other skills.
+     * @type {HTMLElement}
+     */
     selectedOtherSkillsNode;
+
+    /**
+     * The DOM node for the selected occupation skills.
+     * @type {HTMLElement}
+     */
     selectedOccupationSkillsNode;
+
+    /**
+     * The maximum number of skills that can be selected.
+     * @type {number}
+     */
     maxSkills;
+
+    /**
+     * The template for the skill counter.
+     * @type {string}
+     */
     skillCounterTemplate;
+
+    /**
+     * The DOM node for the skill counter.
+     * @type {HTMLElement}
+     */
     skillCounterNode;
 
+    /**
+     * Constructs a new SkillsStep object.
+     * @param {Scout} scout - The scout object.
+     * @param {Path} path - The parent path object.
+     */
     constructor(scout, path) {
         super(scout, path);
         this.name = "skills";
         // this.maxSkills = 5;
     }
 
+    /**
+     * Prepares the template data for the SkillsStep.
+     */
     async prepareTemplate() {
         if (this.maxSkills) {
             this.data.maxskills = this.maxSkills;
@@ -1344,10 +1538,17 @@ class SkillsStep extends Step {
         }
     }
 
+    /**
+     * Checks the prerequisites for the SkillsStep.
+     * @returns {boolean} - True if prerequisites are met, false otherwise.
+     */
     checkPrerequisites() {
         return this.scout.account.getPath() == this.path.name;
     }
 
+    /**
+     * Initializes the rendering of the SkillsStep.
+     */
     initRender() {
         super.initRender();
 
@@ -1375,6 +1576,9 @@ class SkillsStep extends Step {
         }
     }
 
+    /**
+     * Updates the SkillsStep.
+     */
     async update() {
         await super.update();
 
@@ -1383,10 +1587,7 @@ class SkillsStep extends Step {
 
     /**
      * Fills the suggestion list in the UI with the given suggestions.
-     *
-     * @param {object} suggestions The suggestions to be displayed.
-     *
-     * @returns {void}
+     * @param {object} suggestions - The suggestions to be displayed.
      */
     showSelectedSkills(rebuild = false) {
         if (rebuild) {
@@ -1476,6 +1677,9 @@ class SkillsStep extends Step {
         this.updateSkillSelection(checkboxes);
     }
 
+    /**
+     * Updates the "is empty" message for the selected skills.
+     */
     updateIsEmptyMessage() {
         let isEmptyMessage =
             this.selectedOtherSkillsNode.querySelector(".is-empty");
@@ -1522,10 +1726,7 @@ class SkillsStep extends Step {
     /**
      * Updates the checkboxes' selection state according to the currently selected skills.
      * Disables the "add more skills" button if the maximum number of skills is already selected.
-     *
-     * @param {Array} checkboxes An array of the checkboxes for each skill.
-     *
-     * @returns {void}
+     * @param {Array} checkboxes - An array of the checkboxes for each skill.
      */
     updateSkillSelection(checkboxes) {
         const skills = this.scout.account.getSkills();
@@ -1556,6 +1757,11 @@ class SkillsStep extends Step {
         this.updateSkillCounter();
     }
 
+    /**
+     * Updates the skill counter on the webpage.
+     * Retrieves the skills of the scout's account and calculates the number of skills.
+     * Updates the HTML of the skill counter node with the rendered skill counter template.
+     */
     updateSkillCounter() {
         const skills = this.scout.account.getSkills();
         const skillcount = Object.keys(skills).length;
@@ -1571,19 +1777,30 @@ class SkillsStep extends Step {
 }
 
 /**
- * SkillsStep.
- *
- * @class SkillsStep
- * @extends {Step}
+ * Class representing the level goal step.
+ * @extends Step
  */
 class LevelGoalStep extends Step {
+    /**
+     * Represents the level goal selection list element.
+     * @type {Element}
+     */
     levelSelectionList;
 
+    /**
+     * Create a level goal step.
+     * @param {Scout} scout - The scout object.
+     * @param {Path} path - The parent path object.
+     */
     constructor(scout, path) {
         super(scout, path);
         this.name = "levelgoal";
     }
 
+    /**
+     * Check the prerequisites for the level goal step.
+     * @return {boolean} Return true if the current path is equal to the name of the path and the account has skills.
+     */
     checkPrerequisites() {
         return (
             this.scout.account.getPath() == this.path.name &&
@@ -1591,6 +1808,9 @@ class LevelGoalStep extends Step {
         );
     }
 
+    /**
+     * Initialize the rendering of the level goal step.
+     */
     initRender() {
         super.initRender();
 
@@ -1600,12 +1820,18 @@ class LevelGoalStep extends Step {
         );
     }
 
+    /**
+     * Update the level goal step.
+     */
     async update() {
         await super.update();
 
         this.updateLevelSelection();
     }
 
+    /**
+     * Update the level selection list.
+     */
     async updateLevelSelection() {
         while (this.levelSelectionList.lastChild) {
             this.levelSelectionList.removeChild(
@@ -1681,15 +1907,27 @@ class LevelGoalStep extends Step {
 }
 
 /**
- * SkillsStep.
- *
- * @class SkillsStep
- * @extends {Step}
+ * Class representing a course list step.
+ * @extends Step
  */
 class CouseListStep extends Step {
+    /**
+     * Represents the filter menu of the course list step.
+     * @type {FilterMenu}
+     */
     filterMenu;
+
+    /**
+     * Represents the result list of the course list step.
+     * @type {Element}
+     */
     resultList;
 
+    /**
+     * Create a course list step.
+     * @param {Object} scout - The scout object.
+     * @param {Object} path - The parent path object.
+     */
     constructor(scout, path) {
         super(scout, path);
         this.name = "courselist";
@@ -1699,6 +1937,10 @@ class CouseListStep extends Step {
         );
     }
 
+    /**
+     * Check prerequisites for the course list step.
+     * @returns {boolean} A boolean representing whether the prerequisites are met or not.
+     */
     checkPrerequisites() {
         return (
             this.scout.account.getPath() == this.path.name &&
@@ -1706,12 +1948,18 @@ class CouseListStep extends Step {
         );
     }
 
+    /**
+     * Prepare template for the course list step.
+     */
     async prepareTemplate() {
         this.partials.filtermenu = await this.filterMenu.getTemplate();
 
         this.data = await this.filterMenu.getData();
     }
 
+    /**
+     * Initialize rendering for the course list step.
+     */
     initRender() {
         super.initRender();
         this.filterMenu.initRender();
@@ -1719,12 +1967,20 @@ class CouseListStep extends Step {
         this.resultList = this.node.querySelector(".result-list");
     }
 
+    /**
+     * Update the course list step.
+     */
     async update() {
         await super.update();
 
         await this.updateCourseResults();
     }
 
+    /**
+     * Update course result for a specific skill.
+     * @param {Object} skill - The skill object.
+     * @param {Object} detailsNode - The details node object.
+     */
     async updateCourseResult(skill, detailsNode) {
         const courselistNode = detailsNode.querySelector(".course-list");
         const courselistCountNode = detailsNode.querySelector(
@@ -1768,6 +2024,10 @@ class CouseListStep extends Step {
         this.setupFavAction(courselistNode);
     }
 
+    /**
+     * Setup favourite action for a course list node.
+     * @param {Object} courselistNode - The course list node object.
+     */
     setupFavAction(courselistNode) {
         const favBtns = courselistNode.querySelectorAll(".bookmark-btn");
         favBtns.forEach((btn) => {
@@ -1797,6 +2057,11 @@ class CouseListStep extends Step {
         });
     }
 
+    /**
+     * Get template data for a set of skills.
+     * @param {Object} skills - The skills object.
+     * @returns {Object} The template data.
+     */
     getTemplateData(skills) {
         const uniquecourses = new Set();
         const data = {
@@ -1843,6 +2108,11 @@ class CouseListStep extends Step {
         return data;
     }
 
+    /**
+     * Get string representation for the count of courses.
+     * @param {number} count - The count of courses.
+     * @returns {string} The string representation of the count.
+     */
     getKurseCountString(count) {
         let countstring = count + " " + Lang.getString("courses");
         if (count == 1) {
@@ -1851,6 +2121,12 @@ class CouseListStep extends Step {
         return countstring;
     }
 
+    /**
+     * Get filtered course list based on the level.
+     * @param {Array} courses - The array of courses.
+     * @param {number} level - The level of the course.
+     * @returns {Array} The filtered array of courses.
+     */
     getFilteredCourselist(courses, level) {
         const filteredResults = [];
         courses.forEach((course) => {
@@ -1861,6 +2137,9 @@ class CouseListStep extends Step {
         return filteredResults;
     }
 
+    /**
+     * Update course results for the course list step.
+     */
     async updateCourseResults() {
         // Get course suggestions and set template data.
         const skills = this.scout.account.getSkills();
@@ -1959,8 +2238,7 @@ class CouseListStep extends Step {
     }
 
     /**
-     * Gets search results for courses based on the users skill goals.
-     *
+     * Search for courses based on the users skill goals.
      * @returns {Object} The response object containing the search ID and the number of courses found.
      */
     async search() {
@@ -1982,14 +2260,34 @@ class CouseListStep extends Step {
     }
 }
 
+/**
+ * Class representing a filter.
+ */
 class Filter {
+    /**
+     * Represents the menu of the filter.
+     * @type {Menu}
+     */
     menu;
+
+    /**
+     * Represents the selected choice of the filter.
+     * @type {Array}
+     */
     selectedChoice = [];
 
+    /**
+     * Create a filter.
+     * @param {Menu} menu - The menu object.
+     */
     constructor(menu) {
         this.menu = menu;
     }
 
+    /**
+     * Render the filter.
+     * @returns {Promise} A promise that resolves to the rendered template.
+     */
     async render() {
         const response = await fetch(
             "core51/wisyki/templates/" + this.name + "-filter.mustache"
@@ -1999,6 +2297,9 @@ class Filter {
         return Lang.render(template);
     }
 
+    /**
+     * Initialize rendering of the filter.
+     */
     initRender() {
         this.node = this.menu.node.querySelector("#filter-" + this.name);
         this.selectedChoice = this.menu.step.scout.account.getFilter(this.name);
@@ -2006,6 +2307,10 @@ class Filter {
         this.node.addEventListener("change", (event) => this.onChange(event));
     }
 
+    /**
+     * Handle change event of the filter.
+     * @param {Event} event - The change event.
+     */
     onChange(event = null) {
         if (event) {
             this.storeChoice(event.target);
@@ -2018,22 +2323,58 @@ class Filter {
         this.menu.update();
     }
 
+    /**
+     * Load the selected choice of the filter.
+     */
     loadChoice() {}
 
-    storeChoice(changed = null) {}
+    /**
+     * Store the selected choice of the filter.
+     * @param {Element} changed - The changed element.
+     */
+    storeChoice(_changed = null) {}
 
+    /**
+     * Reset the filter.
+     */
     reset() {
         this.menu.onChange();
         this.menu.update();
     }
 
+    /**
+     * Check if the filter is active.
+     * @returns {boolean} A boolean representing whether the filter is active or not.
+     */
     isActive() {}
 }
+
+/**
+ * Class representing a checkbox filter.
+ * @extends Filter
+ */
 class CheckboxFilter extends Filter {
+    /**
+     * Represents the choices of the checkbox filter.
+     * @type {NodeList}
+     */
     choices;
+
+    /**
+     * Represents the selected choice of the checkbox filter.
+     * @type {Array}
+     */
     selectedChoice;
+
+    /**
+     * Represents the default choice of the checkbox filter.
+     * @type {Element}
+     */
     defaultChoice;
 
+    /**
+     * Initialize rendering of the checkbox filter.
+     */
     initRender() {
         super.initRender();
 
@@ -2047,6 +2388,9 @@ class CheckboxFilter extends Filter {
         this.loadChoice();
     }
 
+    /**
+     * Load the selected choice of the checkbox filter.
+     */
     loadChoice() {
         this.choices.forEach((choice) => {
             choice.checked = false;
@@ -2060,6 +2404,10 @@ class CheckboxFilter extends Filter {
         }
     }
 
+    /**
+     * Store the selected choice of the checkbox filter.
+     * @param {Element} changed - The changed element.
+     */
     storeChoice(changed) {
         if (changed == this.defaultChoice && this.defaultChoice.checked) {
             // Delete filter choices.
@@ -2082,6 +2430,9 @@ class CheckboxFilter extends Filter {
         this.menu.step.scout.account.setFilter(this.name, this.selectedChoice);
     }
 
+    /**
+     * Reset the checkbox filter.
+     */
     reset() {
         this.selectedChoice = [];
         this.menu.step.scout.account.setFilter(this.name, this.selectedChoice);
@@ -2090,6 +2441,10 @@ class CheckboxFilter extends Filter {
         super.reset();
     }
 
+    /**
+     * Check if the checkbox filter is active.
+     * @returns {boolean} A boolean representing whether the checkbox filter is active or not.
+     */
     isActive() {
         if (this.selectedChoice.length > 0) {
             return true;
@@ -2098,23 +2453,62 @@ class CheckboxFilter extends Filter {
     }
 }
 
+/**
+ * Class representing a Coursemode filter.
+ * @extends CheckboxFilter
+ */
 class CoursemodeFilter extends CheckboxFilter {
+    /**
+     * Represents the name of the filter.
+     * @type {string}
+     */
     name = "coursemode";
 }
 
+/**
+ * Class representing a Timeofday filter.
+ * @extends CheckboxFilter
+ */
 class TimeofdayFilter extends CheckboxFilter {
+    /**
+     * Represents the name of the filter.
+     * @type {string}
+     */
     name = "timeofday";
 }
 
+/**
+ * Class representing a Funding filter.
+ * @extends CheckboxFilter
+ */
 class FundingFilter extends CheckboxFilter {
+    /**
+     * Represents the name of the filter.
+     * @type {string}
+     */
     name = "funding";
 }
 
+/**
+ * Class representing a Location filter.
+ * @extends Filter
+ */
 class LocationFilter extends Filter {
+    /**
+     * Represents the name of the filter.
+     * @type {string}
+     */
     name = "location";
-    autocompleter;
-    umkreisChoices;
 
+    /**
+     * Represents the autocompleter of the filter.
+     * @type {LocationAutocompleter}
+     */
+    autocompleter;
+
+    /**
+     * Initialize rendering of the location filter.
+     */
     initRender() {
         super.initRender();
 
@@ -2134,6 +2528,9 @@ class LocationFilter extends Filter {
         this.loadChoice();
     }
 
+    /**
+     * Load the selected choice of the location filter.
+     */
     loadChoice() {
         this.autocompleter.inputElm.value = this.selectedChoice.name;
 
@@ -2149,6 +2546,9 @@ class LocationFilter extends Filter {
         }
     }
 
+    /**
+     * Store the selected choice of the location filter.
+     */
     storeChoice() {
         this.selectedChoice.name = this.autocompleter.inputElm.value ?? null;
 
@@ -2159,6 +2559,10 @@ class LocationFilter extends Filter {
         this.menu.step.scout.account.setFilter(this.name, this.selectedChoice);
     }
 
+    /**
+     * Check if the location filter is active.
+     * @returns {boolean} A boolean representing whether the location filter is active or not.
+     */
     isActive() {
         if (!this.selectedChoice.name) {
             return false;
@@ -2166,6 +2570,9 @@ class LocationFilter extends Filter {
         return true;
     }
 
+    /**
+     * Reset the location filter.
+     */
     reset() {
         this.selectedChoice = {};
         this.menu.step.scout.account.setFilter(this.name, this.selectedChoice);
@@ -2176,9 +2583,20 @@ class LocationFilter extends Filter {
     }
 }
 
+/**
+ * Class representing a Price filter.
+ * @extends Filter
+ */
 class PriceFilter extends Filter {
+    /**
+     * Represents the name of the filter.
+     * @type {string}
+     */
     name = "price";
 
+    /**
+     * Initialize rendering of the price filter.
+     */
     initRender() {
         super.initRender();
 
@@ -2192,6 +2610,9 @@ class PriceFilter extends Filter {
         this.loadChoice();
     }
 
+    /**
+     * Load the selected choice of the price filter.
+     */
     loadChoice() {
         if (!this.selectedChoice) {
             this.defaultChoice.checked = true;
@@ -2204,6 +2625,10 @@ class PriceFilter extends Filter {
         }
     }
 
+    /**
+     * Store the selected choice of the price filter.
+     * @param {Element} changed - The changed element.
+     */
     storeChoice(changed) {
         if (changed == this.defaultChoice) {
             // Delete filter choices.
@@ -2215,6 +2640,9 @@ class PriceFilter extends Filter {
         this.menu.step.scout.account.setFilter(this.name, this.selectedChoice);
     }
 
+    /**
+     * Reset the price filter.
+     */
     reset() {
         this.selectedChoice = null;
         this.menu.step.scout.account.setFilter(this.name, this.selectedChoice);
@@ -2223,6 +2651,10 @@ class PriceFilter extends Filter {
         super.reset();
     }
 
+    /**
+     * Check if the price filter is active.
+     * @returns {boolean} A boolean representing whether the price filter is active or not.
+     */
     isActive() {
         if (this.selectedChoice) {
             return true;
@@ -2231,13 +2663,45 @@ class PriceFilter extends Filter {
     }
 }
 
+/**
+ * Class representing a FilterMenu.
+ */
 class FilterMenu {
+    /**
+     * Represents the node of the filter menu.
+     * @type {Element}
+     */
     node;
+
+    /**
+     * Represents the step object associated with the filter menu.
+     * @type {object}
+     */
     step;
+
+    /**
+     * Represents the filters in the filter menu.
+     * @type {Array}
+     */
     filters;
+
+    /**
+     * Represents the callback function to execute when a filter change occurs.
+     * @type {function}
+     */
     onChange;
+
+    /**
+     * Represents the course count node in the filter menu.
+     * @type {Element}
+     */
     courseCountNode;
 
+    /**
+     * Create a FilterMenu.
+     * @param {object} step - The step object.
+     * @param {function} onChange - The callback to execute when a filter change occurs.
+     */
     constructor(step, onChange) {
         this.step = step;
         this.onChange = onChange;
@@ -2251,6 +2715,10 @@ class FilterMenu {
         ];
     }
 
+    /**
+     * Get data from filters.
+     * @return {object} The data from filters.
+     */
     async getData() {
         const data = {
             filters: [],
@@ -2268,6 +2736,10 @@ class FilterMenu {
         return data;
     }
 
+    /**
+     * Get the template from a specific URL.
+     * @return {string} The text response from the fetch request.
+     */
     async getTemplate() {
         const response = await fetch(
             "core51/wisyki/templates/courselist-step-filter.mustache"
@@ -2275,6 +2747,9 @@ class FilterMenu {
         return await response.text();
     }
 
+    /**
+     * Initialize the rendering of the filter menu.
+     */
     initRender() {
         const filterBtn = this.step.node.querySelector(".filter-btn");
         this.node = this.step.node.querySelector(".filter-modal");
@@ -2335,6 +2810,9 @@ class FilterMenu {
         this.update();
     }
 
+    /**
+     * Update the filter menu based on the active filters.
+     */
     update() {
         let filtercount = 0;
 
@@ -2352,6 +2830,10 @@ class FilterMenu {
         }
     }
 
+    /**
+     * Update the course count display.
+     * @param {number} courseCount - The current count of courses.
+     */
     updateCourseCount(courseCount) {
         if (courseCount < 0) {
             hide(this.courseCountNode);
@@ -2368,6 +2850,9 @@ class FilterMenu {
         }
     }
 
+    /**
+     * Update the filter navigation based on the selected filter.
+     */
     updateFilterNav() {
         const selectedInput = this.filterNav.querySelector("input:checked");
         this.filterChoices.forEach((node) => {
@@ -2379,11 +2864,17 @@ class FilterMenu {
         });
     }
 
+    /**
+     * Reset all filters.
+     */
     reset() {
         this.filters.forEach((filter) => filter.reset());
         this.onChange();
     }
 
+    /**
+     * Navigate to the next filter in the filter navigation.
+     */
     goToNextFilter() {
         const currentSelection = this.filterNav.querySelector("input:checked");
 
@@ -2399,15 +2890,60 @@ class FilterMenu {
     }
 }
 
+/**
+ * Autocompleter class for handling autocomplete functionality.
+ * @class
+ */
 class Autocompleter {
+    /**
+     * The input element for autocomplete.
+     * @type {HTMLElement}
+     */
     inputElm;
+
+    /**
+     * The output element for displaying autocomplete results.
+     * @type {HTMLElement}
+     */
     outputElm;
+
+    /**
+     * The clear element for clearing the autocomplete input.
+     * @type {HTMLElement}
+     */
     clearElm;
+
+    /**
+     * A step this autocompleter belongs to.
+     * @type {Step}
+     */
     step;
+
+    /**
+     * The request ID for tracking autocomplete requests.
+     * @type {number}
+     */
     requestID = 0;
+
+    /**
+     * The function to be called when an autocomplete option is selected.
+     * @type {function}
+     */
     onSelect;
+
+    /**
+     * The function to be called when the autocomplete input is cleared.
+     * @type {function|null}
+     */
     onClear;
 
+    /**
+     * Creates an instance of Autocompleter.
+     * @constructor
+     * @param {number} step - The step number.
+     * @param {function} onSelect - The function to be called when an autocomplete option is selected.
+     * @param {function|null} onClear - The function to be called when the autocomplete input is cleared.
+     */
     constructor(step, onSelect, onClear = null) {
         this.step = step;
         this.onSelect = onSelect;
@@ -2435,6 +2971,10 @@ class Autocompleter {
         this.inputElm.addEventListener("blur", () => hide(this.outputElm));
     }
 
+    /**
+     * Clears the output element by removing its child nodes.
+     * @returns {void}
+     */
     clearOutput() {
         while (this.outputElm.lastChild) {
             this.outputElm.removeChild(this.outputElm.lastChild);
@@ -2442,11 +2982,9 @@ class Autocompleter {
     }
 
     /**
-     * This function clears the given input field and hides the output container by removing its child nodes.
-     *
-     * @param {HTMLElement} input The input field to clear.
-     * @param {HTMLElement} output The output container to clear and hide.
-     *
+     * Clears the input field and hides the output container.
+     * @param {HTMLElement} input - The input field to clear.
+     * @param {HTMLElement} output - The output container to clear and hide.
      * @returns {void}
      */
     clearInput() {
@@ -2458,6 +2996,12 @@ class Autocompleter {
         }
     }
 
+    /**
+     * Updates the autocomplete completions based on the response.
+     * @param {Array} completions - The autocomplete completions.
+     * @param {number} requestid - The request ID.
+     * @returns {void}
+     */
     updateCompletions(completions, requestid) {
         if (requestid < this.requestID) {
             return;
@@ -2503,6 +3047,10 @@ class Autocompleter {
         this.outputElm.appendChild(ul);
     }
 
+    /**
+     * Performs an asynchronous request to retrieve autocomplete suggestions based on a search term.
+     * @returns {Promise<Array>} An array of autocomplete suggestions.
+     */
     async requestCompletion() {
         // Extract search term from input field.
         const searchterm = this.inputElm.value;
@@ -2550,6 +3098,9 @@ class Autocompleter {
         }
     }
 
+    /**
+     * Performs an autocomplete function and updates the displayed autocomplete results.
+     */
     async autocomplete() {
         this.requestID = ++this.requestID;
         // Get and display autocomplete results.
@@ -2558,7 +3109,17 @@ class Autocompleter {
     }
 }
 
+/**
+ * Represents a LocationAutocompleter object that extends Autocompleter.
+ * @extends Autocompleter
+ */
 class LocationAutocompleter extends Autocompleter {
+    /**
+     * Updates the completions based on the provided completions and request ID.
+     * @param {Array} completions - The completions to update.
+     * @param {number} requestid - The request ID.
+     * @returns {void}
+     */
     updateCompletions(completions, requestid) {
         if (requestid < this.requestID) {
             return;
@@ -2603,6 +3164,10 @@ class LocationAutocompleter extends Autocompleter {
         this.outputElm.appendChild(ul);
     }
 
+    /**
+     * Performs an asynchronous request to retrieve autocomplete suggestions based on a search term.
+     * @returns {Promise<Array>} An array of autocomplete suggestions.
+     */
     async requestCompletion() {
         // Extract search term from input field.
         const searchterm = this.inputElm.value;
@@ -2659,10 +3224,29 @@ class LocationAutocompleter extends Autocompleter {
     }
 }
 
+/**
+ * Represents a Lang object for handling language strings.
+ */
 class Lang {
+    /**
+     * Private static property to store language strings.
+     * @private
+     * @type {Object}
+     */
     static #langstrings;
+    /** 
+    * Private static property to store the current language code. 
+    * @private 
+    * @type {string} 
+    */ 
     static #langcode;
 
+     /** 
+     * Initializes the Lang class with the specified language code. 
+     * If no language code is provided, it defaults to "de" (German). 
+     * @param {string} [langcode="de"] - The language code to initialize with. 
+     * @returns {Promise} - A promise that resolves when the initialization is complete. 
+     */ 
     static async init(langcode = "de") {
         Lang.#langcode = langcode;
         const filepath = "core51/wisyki/lang/" + Lang.#langcode + ".json";
@@ -2670,6 +3254,11 @@ class Lang {
         Lang.#langstrings = await response.json();
     }
 
+     /** 
+     * Retrieves a language string based on the provided key. 
+     * @param {string} key - The key of the language string. 
+     * @returns {string} The language string. 
+     */ 
     static getString(key) {
         if (!Lang.#langstrings.hasOwnProperty(key)) {
             console.error(
@@ -2684,13 +3273,24 @@ class Lang {
         return Lang.#langstrings[key];
     }
 
+     /** 
+     * Renders a Mustache template with the provided view and partials. 
+     * @param {string} template - The Mustache template. 
+     * @param {Object} view - The view object. 
+     * @param {Object|null} partials - The partials object. 
+     * @param {Object|null} config - The configuration object. 
+     * @returns {string} The rendered template. 
+     */ 
     static render(template, view = {}, partials = null, config = null) {
         view.lang = Lang.#langstrings;
         return Mustache.render(template, view, partials, config);
     }
 }
 
-// Detect the height of the app and update value of css property.
+ /** 
+ * Sets the CSS property "--doc-height" to the height of the app. 
+ * @returns {void} 
+ */ 
 function setCSSPropertyDocHeight() {
     document.documentElement.style.setProperty(
         "--doc-height",
@@ -2698,6 +3298,11 @@ function setCSSPropertyDocHeight() {
     );
 }
 
+ /** 
+ * Sets the virtual keyboard status based on the provided event. 
+ * @param {Event} event - The event object. 
+ * @returns {void} 
+ */ 
 function setVirtualKeyboardStatus(event) {
     if (
         (event.target.height * event.target.scale) / window.screen.height <
