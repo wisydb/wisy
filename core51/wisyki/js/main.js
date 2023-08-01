@@ -30,5 +30,5 @@ async function main() {
     // TODO: Get lang from user preferneces.
     await Lang.init('de');
     scout = new Scout();
-    scout.update();
+    scout.init();
 }

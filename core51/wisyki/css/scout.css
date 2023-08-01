@@ -357,6 +357,7 @@ header h1 {
     align-items: center;
     z-index: 10;
     position: relative;
+    gap: 1em;
 }
 
 .scout-nav>span {
@@ -1262,7 +1263,7 @@ details[open]>summary::after {
     right: 0;
     width: 100%;
     max-width: 420px;
-    height: 500px;
+    height: 560px;
     max-height: 90vh;
     background: var(--main-background-color);
     border-radius: 10px 10px 0 0;

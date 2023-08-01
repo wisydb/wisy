@@ -1,26 +1,38 @@
 const VIEWPORT_VS_CLIENT_HEIGHT_RATIO = 0.65;
 
 /**
- * Account.
- *
- * @class Account
+ * Class representing a user account.
  */
 class Account {
+    // The name of the user.
     name;
+    // The occupation of the user.
     #occupation;
+    // The skills associated with the user.
     #skills = {};
+    // The last visited date of the user.
     lastvisited;
+    // The login status of the user.
     #isLoggedIn;
+    // The currently selected path of the user.
     #path;
+    // Teh currently selected step of the user.
     #step;
+    // The filters used by the user.
     #filters = {};
 
+    /**
+     * Creates a new user account and checks if the user is logged in.
+     */
     constructor() {
         this.#isLoggedIn = this.#checkLogin();
-        const scoutid = false; // TODO: Get id from url.
+        const scoutid = false; // TODO: Get id from url to load a older saved version of the scout progress.
         this.#load(scoutid);
     }
 
+    /**
+     * Reset the account details.
+     */
     reset() {
         if (this.#isLoggedIn) {
             // TODO: Delete scout progress on server.
@@ -34,16 +46,20 @@ class Account {
         this.#step = null;
     }
 
+    /**
+     * Check if the user is logged in.
+     * @private
+     * @returns {boolean} - Whether the user is logged in.
+     */
     #checkLogin() {
         // TODO: Check if a user is logged into an account.
         return false;
     }
 
     /**
-     * Retrieves a stored version of the users account from the localStorage.
-     * If no valid account exists already, a fresh account is stored instead.
-     *
-     * @returns {void}
+     * Load the user account from local storage or from server if logged in.
+     * @private
+     * @param {boolean} [id=false] - The id of the user account.
      */
     #load(id = false) {
         let storedAccountJSON;
@@ -75,6 +91,10 @@ class Account {
         }
     }
 
+    /**
+     * Store the user account in local storage or online if logged in.
+     * @private
+     */
     #store() {
         this.lastvisited = new Date().getTime();
 
@@ -82,50 +102,6 @@ class Account {
             // TODO: Store account online.
         } else {
             // Store account in local storage.
-
-            // {
-            //     occupation: {
-            //         label: "Polizist/Polizistin",
-            //         uri: "http://data.europa.eu/esco/occupation/5793c124-c037-47b2-85b6-dd4a705968dc",
-            //     },
-            //     skills: {
-            //         "http://data.europa.eu/esco/skill/87454307-a3ad-40ce-8024-1aeb7c94f1e3":
-            //             {
-            //                 uri: "http://data.europa.eu/esco/skill/87454307-a3ad-40ce-8024-1aeb7c94f1e3",
-            //                 label: "Verkehr regeln",
-            //                 levelGoal: null,
-            //                 isLanguageSkill: false,
-            //             },
-            //         "http://data.europa.eu/esco/skill/96de2e86-e287-41f2-88ab-15a2343afc6f":
-            //             {
-            //                 uri: "http://data.europa.eu/esco/skill/96de2e86-e287-41f2-88ab-15a2343afc6f",
-            //                 label: "mit Konfliktsituationen umgehen",
-            //                 levelGoal: null,
-            //                 isLanguageSkill: false,
-            //             },
-            //         "http://data.europa.eu/esco/skill/87cadd76-4e3a-47e5-b66d-559fbc1e8993":
-            //             {
-            //                 uri: "http://data.europa.eu/esco/skill/87cadd76-4e3a-47e5-b66d-559fbc1e8993",
-            //                 label: "auf Anfragen antworten",
-            //                 levelGoal: null,
-            //                 isLanguageSkill: false,
-            //             },
-            //         "Kakaobohnen kosten": {
-            //             uri: "Kakaobohnen kosten",
-            //             label: "Kakaobohnen kosten",
-            //             levelGoal: null,
-            //             isLanguageSkill: false,
-            //         },
-            //     },
-            //     filters: {
-            //         "maxprice": 1000,
-            //         "coursemode": "online"
-            //     },
-            //     lastvisited: 1689674096956,
-            //     path: "occupation",
-            //     step: 2,
-            // }
-
             localStorage.setItem(
                 "account",
                 JSON.stringify({
@@ -141,6 +117,15 @@ class Account {
         }
     }
 
+    /**
+     * Set a skill for the user account.
+     * @async
+     * @param {string} label - The label of the skill.
+     * @param {string} uri - The URI of the skill.
+     * @param {number} [levelGoal=null] - The goal level of the skill.
+     * @param {boolean} [isLanguageSkill=null] - Whether the skill is a language skill.
+     * @param {boolean} [isOccupationSkill=null] - Whether the skill is an occupation skill.
+     */
     async setSkill(
         label,
         uri,
@@ -161,6 +146,11 @@ class Account {
         await this.updateSkillInfo(skill);
     }
 
+    /**
+     * Update the information of a skill.
+     * @async
+     * @param {Object} skill - The skill to update.
+     */
     async updateSkillInfo(skill) {
         if (skill.isLanguageSkill != null && skill.isOccupationSkill != null) {
             return;
@@ -180,40 +170,80 @@ class Account {
         this.#store();
     }
 
+    /**
+     * Remove a skill from the user account.
+     * @param {string} uri - The URI of the skill to remove.
+     */
     removeSkill(uri) {
         delete this.#skills[uri];
         this.#store();
     }
 
+    /**
+     * Get all skills of the user account.
+     * @returns {Object} - The skills of the user account.
+     */
     getSkills() {
         return this.#skills;
     }
 
+    /**
+     * Get a specific skill of the user account.
+     * @param {string} uri - The URI of the skill to get.
+     * @returns {Object} - The requested skill.
+     */
     getSkill(uri) {
         return this.#skills[uri];
     }
 
+    /**
+     * Get all filters of the user account.
+     * @returns {Object} - The filters of the user account.
+     */
     getFilters() {
         return this.#filters;
     }
 
+    /**
+     * Get a specific filter of the user account.
+     * @param {string} filter - The filter to get.
+     * @returns {Object} - The requested filter.
+     */
     getFilter(filter) {
         return this.#filters[filter];
     }
 
+    /**
+     * Set a filter for the user account.
+     * @param {string} filter - The filter to set.
+     * @param {string} value - The value of the filter.
+     */
     setFilter(filter, value) {
         this.#filters[filter] = value;
         this.#store();
     }
 
+    /**
+     * Get the currently selected path of the user.
+     * @returns {string} - The currently selected path of the user.
+     */
     getPath() {
         return this.#path;
     }
 
+    /**
+     * Get the occupation of the user account.
+     * @returns {Object} - The occupation of the user account.
+     */
     getOccupation() {
         return this.#occupation;
     }
 
+    /**
+     * Set the occupation for the user account.
+     * @param {string} label - The label of the occupation.
+     * @param {string} uri - The URI of the occupation.
+     */
     setOccupation(label, uri) {
         const occupation = {
             label: label,
@@ -226,26 +256,37 @@ class Account {
         this.#store();
     }
 
+    /**
+     * Set the path for the user account.
+     * @param {string} path - The path to set.
+     */
     setPath(path) {
         this.#path = path;
         this.#store();
     }
 
+    /**
+     * Get the step of the user account.
+     * @returns {number} - The step of the user account.
+     */
     getStep() {
         return this.#step;
     }
 
+    /**
+     * Set the step for the user account.
+     * @param {number} step - The step to set.
+     */
     setStep(step) {
         this.#step = step;
         this.#store();
     }
 
     /**
-     * Determines if a given skill URI is a language skill by making an HTTP request to the server.
-     *
-     * @param {string} uri - The URI of the skill to check.
-     *
-     * @returns {Promise} - A Promise that resolves to true if the skill is a language skill, false otherwise.
+     * Get information about a specific skill.
+     * @async
+     * @param {string} uri - The URI of the skill to get information about.
+     * @returns {Promise} - A promise that resolves to the information about the skill.
      */
     async getSkillInfo(uri) {
         // Return false if uri does not start with http://data.europa.eu/esco/skill/ and is therefore not an actual esco uri.
@@ -268,13 +309,12 @@ class Account {
 }
 
 /**
- * Scout.
- *
- * @class Scout
+ * Represents the Scout.
+ * @class
  */
 class Scout {
     /**
-     * The diffrent paths available for the user to follow.
+     * The different paths available for the user to follow.
      * @type {Object}
      */
     paths;
@@ -293,10 +333,20 @@ class Scout {
 
     /**
      * UI element to go to the next step.
+     * @type {HTMLElement}
      */
     nextButton;
+
+    /**
+     * UI element to go to the previous step.
+     * @type {HTMLElement}
+     */
     prevButton;
 
+    /**
+     * Creates an instance of Scout.
+     * @constructor
+     */
     constructor() {
         this.account = new Account();
 
@@ -304,10 +354,11 @@ class Scout {
             occupation: new OccupationPath(this),
             skill: new SkillPath(this),
         };
-
-        this.init();
     }
 
+    /**
+     * Initializes the Scout.
+     */
     init() {
         // Init burgermenu.
         const menuBtn = document.querySelector(".menu-btn");
@@ -332,20 +383,38 @@ class Scout {
         hide(this.prevButton, "visibility");
 
         this.updateFav();
+        this.update();
     }
 
+    /**
+     * Gets the path with the specified pathname.
+     * If no pathname is provided, returns the first available path.
+     * @param {string} [pathname] - The pathname of the path.
+     * @returns {Path} The path with the specified pathname, or the first available path if no pathname is provided.
+     */
     getPath(pathname) {
         if (!pathname) {
             pathname = Object.keys(this.paths)[0];
         }
+        if (!this.paths[pathname]) {
+            return Object.values(this.paths)[0];
+        }
         return this.paths[pathname];
     }
 
+    /**
+     * Aborts the current path and resets the account.
+     */
     abort() {
         this.account.reset();
         this.currentPath.update();
     }
 
+    /**
+     * Updates the current path to the specified step index.
+     * If no step index is provided, updates to the current step of the account.
+     * @param {number|string} [stepIndex=null] - The step index to update to, or "next" to go to the next step, or "prev" to go to the previous step.
+     */
     update(stepIndex = null) {
         if (!this.currentPath) {
             this.currentPath = this.getPath(this.account.getPath());
@@ -372,6 +441,12 @@ class Scout {
         this.currentPath.update(stepIndex);
     }
 
+    /**
+     * Selects the path with the specified pathname.
+     * If the selected path is the same as the current path, nothing changes.
+     * @param {string} pathname - The pathname of the path to select.
+     * @returns {Promise} A promise that resolves when the path update is complete.
+     */
     async selectPath(pathname) {
         if (this.account.getPath() === pathname) {
             // Nothing changes.
@@ -384,6 +459,12 @@ class Scout {
         await this.currentPath.update(this.account.getStep());
     }
 
+    /**
+     * Checks if the specified step index is valid for the current path.
+     * If the index is undefined, defaults to 0.
+     * @param {number} index - The step index to check.
+     * @returns {number} The valid step index.
+     */
     checkStep(index) {
         if (index == undefined) {
             index = 0;
@@ -403,6 +484,9 @@ class Scout {
         return index;
     }
 
+    /**
+     * Updates the favorite count UI element.
+     */
     updateFav() {
         const bubble = document.querySelector("nav a .bubble");
         const count = fav_count();
@@ -416,9 +500,8 @@ class Scout {
 }
 
 /**
- * Abstract Class Path.
- *
- * @class Path
+ * Path class is used to manage the path in the application.
+ * This class is abstract and cannot be instantiated directly.
  */
 class Path {
     /**
@@ -463,8 +546,17 @@ class Path {
      */
     scoutNavSteps;
 
+    /**
+     * The main node of the path.
+     * @type {Element}
+     */
     node;
 
+    /**
+     * The constructor for the Path class.
+     * @param {Scout} scout - The scout object.
+     * @throws {Error} Throws an error if trying to instantiate the abstract Path class.
+     */
     constructor(scout) {
         if (this.constructor == Path) {
             throw new Error("Abstract classes can't be instantiated.");
@@ -473,6 +565,10 @@ class Path {
         this.scout = scout;
     }
 
+    /**
+     * The private method to render the path.
+     * @returns {Promise<void>} A promise that resolves when the path is rendered.
+     */
     async #render() {
         const data = this.prepareData();
 
@@ -486,6 +582,9 @@ class Path {
         this.init();
     }
 
+    /**
+     * Initializes the path. Sets up iu elements and user interactions.
+     */
     init() {
         // Init steps.
         this.steps.forEach((step) => step.init());
@@ -537,6 +636,11 @@ class Path {
         this.help = this.node.querySelector(".modal__content article");
     }
 
+    /**
+     * Updates the path.
+     * @param {number} index - The index to update.
+     * @returns {Promise<void>} A promise that resolves when the path is updated.
+     */
     async update(index) {
         if (!this.isRendered()) {
             await this.#render();
@@ -551,6 +655,11 @@ class Path {
         this.updateStep(index);
     }
 
+    /**
+     * Updates the step of the path.
+     * @param {number} stepIndex - The index of the step to update.
+     * @returns {Promise<void>} A promise that resolves when the step is updated.
+     */
     async updateStep(stepIndex) {
         stepIndex = this.scout.checkStep(stepIndex);
 
@@ -576,6 +685,9 @@ class Path {
         this.currentStep.hideLoader();
     }
 
+    /**
+     * Updates the scout navigation.
+     */
     updateScoutNav() {
         this.scoutNavNode.classList.remove("hide-future-steps");
         if (this.currentStep.hideNav()) {
@@ -596,6 +708,10 @@ class Path {
         this.scoutNavSteps[currentStepIndex].classList.add("current-step");
     }
 
+    /**
+     * Checks if the path is rendered.
+     * @returns {boolean} True if the path is rendered, false otherwise.
+     */
     isRendered() {
         return (
             document.querySelector("main").getAttribute("currentPath") ===
@@ -606,8 +722,8 @@ class Path {
     /**
      * Scrolls to the specified step with an optional delay.
      *
-     * @param {number} stepindex The step to scroll to.
-     * @param {number} [delay=0] The delay, in milliseconds, to wait before scrolling.
+     * @param {number} stepindex - The step to scroll to.
+     * @param {number} [delay=0] - The delay, in milliseconds, to wait before scrolling.
      *
      * @returns {Promise} A promise that resolves after the scroll was started.
      */
@@ -623,6 +739,10 @@ class Path {
         });
     }
 
+    /**
+     * Prepares the data for the path.
+     * @returns {Object} The prepared data.
+     */
     prepareData() {
         const data = {};
         data.steps = [];
@@ -1501,7 +1621,7 @@ class LevelGoalStep extends Step {
         }
 
         const response = await fetch(
-            "core51/wisyki/templates/levelgoal-selection.mustache"
+            "core51/wisyki/templates/" + this.name + "-selection.mustache"
         );
         const template = await response.text();
         const html = Lang.render(template, data);
@@ -2552,13 +2672,14 @@ class Lang {
 
     static getString(key) {
         if (!Lang.#langstrings.hasOwnProperty(key)) {
-            throw new Error(
+            console.error(
                 'Key "' +
                     key +
                     '" not found in lang file "' +
                     Lang.#langcode +
                     '"'
             );
+            return key;
         }
         return Lang.#langstrings[key];
     }
