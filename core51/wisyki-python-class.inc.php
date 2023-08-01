@@ -244,27 +244,27 @@ class WISYKI_PYTHON_CLASS {
     }
 
     /**
-     * Sort documents in referance to a base string based on semantic similarity.
+     * Sort courses in referance to a base string based on semantic similarity.
      *
      * @param  string $base
-     * @param  array $documents
+     * @param  array $courses
      * @return array Sorted documents.
      */
-    public function sortsemantic(string $base, array $documents) {
+    public function sortsemantic(string $base, array $courses) {
         $endpoint = "/semanticsort";
 
         // get the titles of the reults.
 		$descriptions = array_map(function ($course) {
             // Limit string length of $course['description'] to 100
-            if (strlen($course['description']) > 50) {
-                $course['description'] = substr($course['description'], 0, 50) . '...';
+            if (strlen($course['description']) > 20) {
+                $course['description'] = substr($course['description'], 0, 20);
             }
             $levels = '';
             if (is_array($course['levels'])) {
                 $levels = join(', ', $course['levels']);
             }
 			return $course['title'] . ' ' . $course['description'] . ' ' . $course['tags'] . ' ' . $course['thema'] . ' Lernziel: ' . $levels;
-		}, $documents);
+		}, $courses);
 
         $data = array(
             "base" => $base,
@@ -293,16 +293,16 @@ class WISYKI_PYTHON_CLASS {
         $response = json_decode($response, true);
 
         // Add score from response to every document
-        foreach ($documents as $key => $course) {
-            $documents[$key]['score'] = $response[$key];
+        foreach ($courses as $key => $course) {
+            $courses[$key]['score'] = $response[$key];
         }
         
         // sort documents based on score
-        usort($documents, function ($a, $b) {
+        usort($courses, function ($a, $b) {
             return $a['score'] < $b['score'];
         });
 
-        return $documents;
+        return $courses;
     }
 
     /**

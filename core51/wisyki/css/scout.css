@@ -1262,7 +1262,7 @@ details[open]>summary::after {
     right: 0;
     width: 100%;
     max-width: 420px;
-    height: 480px;
+    height: 500px;
     max-height: 90vh;
     background: var(--main-background-color);
     border-radius: 10px 10px 0 0;

@@ -404,7 +404,7 @@ class Scout {
     }
 
     updateFav() {
-        const bubble = document.querySelector('nav a .bubble');
+        const bubble = document.querySelector("nav a .bubble");
         const count = fav_count();
         bubble.textContent = count;
         if (count > 0) {
@@ -1613,15 +1613,20 @@ class CouseListStep extends Step {
         hide(courselistNode, "opacity");
 
         let courselist;
-        this.results.sets.forEach((set) => {
+        const skills = this.scout.account.getSkills();
+        this.filterMenu.updateCourseCount(-1);
+        const completedata = this.getTemplateData(skills);
+
+        completedata.sets.forEach((set) => {
             if (set.label == skill.label) {
                 courselist = set.results;
                 return;
             }
         });
         const data = {
-            results: this.getFilteredCourselist(courselist, skill.levelGoal),
+            results: courselist,
         };
+
         const response = await fetch(
             "core51/wisyki/templates/courselist-step-courselist.mustache"
         );
@@ -1637,6 +1642,8 @@ class CouseListStep extends Step {
         courselistCountNode.textContent = this.getKurseCountString(
             data.results.length
         );
+
+        this.filterMenu.updateCourseCount(completedata.count);
 
         this.setupFavAction(courselistNode);
     }
@@ -1671,6 +1678,7 @@ class CouseListStep extends Step {
     }
 
     getTemplateData(skills) {
+        const uniquecourses = new Set();
         const data = {
             count: this.results.count,
             sets: [],
@@ -1704,7 +1712,13 @@ class CouseListStep extends Step {
                 filteredSet.skill = currentSkill;
             }
             data.sets.push(filteredSet);
+            // Add the id of everycourse in filteredResults to uniquercourses set.
+            filteredResults.forEach((course) => {
+                uniquecourses.add(course.id);
+            });
         });
+
+        data.count = uniquecourses.size;
 
         return data;
     }
@@ -1833,6 +1847,7 @@ class CouseListStep extends Step {
         const params = {
             prepare: false,
             skills: JSON.stringify(this.scout.account.getSkills()),
+            occupation: JSON.stringify(this.scout.account.getOccupation()),
             filters: JSON.stringify(this.scout.account.getFilters()),
         };
 
@@ -1894,9 +1909,7 @@ class Filter {
 
     isActive() {}
 }
-
-class CoursemodeFilter extends Filter {
-    name = "coursemode";
+class CheckboxFilter extends Filter {
     choices;
     selectedChoice;
     defaultChoice;
@@ -1914,10 +1927,6 @@ class CoursemodeFilter extends Filter {
         this.loadChoice();
     }
 
-    onChange(event) {
-        super.onChange(event);
-    }
-
     loadChoice() {
         this.choices.forEach((choice) => {
             choice.checked = false;
@@ -1926,7 +1935,6 @@ class CoursemodeFilter extends Filter {
                 choice.checked = true;
             }
         });
-
         if (!this.selectedChoice || this.selectedChoice.length == 0) {
             this.defaultChoice.checked = true;
         }
@@ -1964,11 +1972,22 @@ class CoursemodeFilter extends Filter {
 
     isActive() {
         if (this.selectedChoice.length > 0) {
-            console.log("location active");
             return true;
         }
         return false;
     }
+}
+
+class CoursemodeFilter extends CheckboxFilter {
+    name = "coursemode";
+}
+
+class TimeofdayFilter extends CheckboxFilter {
+    name = "timeofday";
+}
+
+class FundingFilter extends CheckboxFilter {
+    name = "funding";
 }
 
 class LocationFilter extends Filter {
@@ -2024,7 +2043,6 @@ class LocationFilter extends Filter {
         if (!this.selectedChoice.name) {
             return false;
         }
-        console.log("location active");
         return true;
     }
 
@@ -2035,6 +2053,61 @@ class LocationFilter extends Filter {
         this.autocompleter.clearInput();
 
         super.reset();
+    }
+}
+
+class PriceFilter extends Filter {
+    name = "price";
+
+    initRender() {
+        super.initRender();
+
+        if (!this.selectedChoice) {
+            this.selectedChoice = null;
+        }
+
+        this.choices = this.node.querySelectorAll("input");
+        this.defaultChoice = this.choices[0];
+
+        this.loadChoice();
+    }
+
+    loadChoice() {
+        if (!this.selectedChoice) {
+            this.defaultChoice.checked = true;
+        } else {
+            this.choices.forEach((choice) => {
+                if (this.selectedChoice == choice.value) {
+                    choice.checked = true;
+                }
+            });
+        }
+    }
+
+    storeChoice(changed) {
+        if (changed == this.defaultChoice) {
+            // Delete filter choices.
+            this.selectedChoice = null;
+        } else {
+            this.selectedChoice = changed.value;
+        }
+
+        this.menu.step.scout.account.setFilter(this.name, this.selectedChoice);
+    }
+
+    reset() {
+        this.selectedChoice = null;
+        this.menu.step.scout.account.setFilter(this.name, this.selectedChoice);
+        this.loadChoice();
+
+        super.reset();
+    }
+
+    isActive() {
+        if (this.selectedChoice) {
+            return true;
+        }
+        return false;
     }
 }
 
@@ -2049,7 +2122,13 @@ class FilterMenu {
         this.step = step;
         this.onChange = onChange;
 
-        this.filters = [new CoursemodeFilter(this), new LocationFilter(this)];
+        this.filters = [
+            new CoursemodeFilter(this),
+            new LocationFilter(this),
+            new PriceFilter(this),
+            new TimeofdayFilter(this),
+            new FundingFilter(this),
+        ];
     }
 
     async getData() {
@@ -2437,7 +2516,6 @@ class LocationAutocompleter extends Autocompleter {
             const isoText = decoder.decode(buffer);
             const utf8Text = encoder.encode(isoText);
             const result = new TextDecoder("utf-8").decode(utf8Text);
-            console.log(result);
 
             if (result.trim() == "Keine Ortsvorschl&auml;ge m&ouml;glich|") {
                 return [];

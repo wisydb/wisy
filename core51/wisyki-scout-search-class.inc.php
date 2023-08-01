@@ -67,6 +67,35 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_INTELLISEARCH_CLASS {
 			}
 		}
 
+		// Price filter.
+		if (isset($filters->price) and !empty($filters->price)) {
+			$querystring .= ', preis:' . utf8_decode($filters->price);
+		}
+
+		// TimeOfDay filter.
+		if (isset($filters->timeofday)) {
+			for ($i = 0; $i < count($filters->timeofday); $i++) {
+				$timeofday = $filters->timeofday[$i];
+				if ($i == 0) {
+					$querystring .= ', ' . utf8_decode($timeofday);
+				} else {
+					$querystring .= ' ODER ' . utf8_decode($timeofday);
+				}
+			}
+		}
+
+		// Funding filter.
+		if (isset($filters->funding)) {
+			for ($i = 0; $i < count($filters->funding); $i++) {
+				$funding = $filters->funding[$i];
+				if ($i == 0) {
+					$querystring .= ', ' . utf8_decode($funding);
+				} else {
+					$querystring .= ' ODER ' . utf8_decode($funding);
+				}
+			}
+		}
+
 		return $querystring;
 	}
 
@@ -106,6 +135,8 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_INTELLISEARCH_CLASS {
 	function render_result() {
 		$skillsjson = $_GET['skills'];
 		$skills = json_decode($skillsjson);
+		$occupationjson = $_GET['occupation'];
+		$occupation = json_decode($occupationjson);
 		$filterjson = $_GET['filters'];
 		$filters = json_decode($filterjson);
 		$limit = $_GET['limit'];
@@ -134,7 +165,7 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_INTELLISEARCH_CLASS {
 
 			// Set skill foreach match
 			foreach ($match as $key => $course) {
-				$match[$key]['skill'] = $skill->label;
+				$match[$key]['skills'] = [$skill->label];
 			}
 
 			$results = array_merge($results, $match);
@@ -143,8 +174,11 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_INTELLISEARCH_CLASS {
 		// Sort the results based on semantic similarity.
 		$pytonapi = new WISYKI_PYTHON_CLASS();
 		$base = '';
+		if (isset($occupation) && isset($occupation->label)) {
+			$base .= $occupation->label;
+		}
 		foreach ($skills as $skill) {
-			$base .= $skill->label . ': ' . $skill->levelGoal . ', ';
+			$base .= ', ' . $skill->label . ': ' . $skill->levelGoal;
 		}
 		$sorted = $pytonapi->sortsemantic($base, $results);
 
@@ -154,6 +188,19 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_INTELLISEARCH_CLASS {
 			unset($sorted[$key]['thema']);
 			unset($sorted[$key]['tags']);
 		}
+
+		// Remove duplicates in $sorted courses by id and merge skill array.
+		$uniqueCourses = [];
+		for ($index = 0; $index < count($sorted); $index++) {
+			$course = $sorted[$index];
+			$courseId = $course['id'];
+			if (!isset($uniqueCourses[$courseId])) {
+				$uniqueCourses[$courseId] = $course;
+			} else {
+				$uniqueCourses[$courseId]['skills'] = array_merge($uniqueCourses[$courseId]['skills'], $course['skills']);
+			}
+		}
+		$sorted = array_values($uniqueCourses);
 
 
 		$sets = array();
@@ -169,8 +216,7 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_INTELLISEARCH_CLASS {
 		foreach ($skills as $skill) {
 			$skillresults = array();
 			foreach ($sorted as $key => $course) {
-				if ($course['skill'] == $skill->label) {
-					unset($course['skill']);
+				if (in_array($skill->label, $course['skills'])) {
 					$skillresults[] = $course;
 				}
 			}
