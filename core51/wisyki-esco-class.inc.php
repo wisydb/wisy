@@ -383,52 +383,18 @@ class WISYKI_ESCO_CLASS {
      * @return array [{"label":"title1","value":"url1"},{"label":"title2","value":"url2"}]
      */
     function search_wisy($term, $limit = 5) {
-        $url = $_SERVER['HTTP_HOST'] . '/autosuggest';
-
-        $dataArray = array(
-            'q' => $term,
-            'limit' => $limit,
-            'timestamp' => time(),
-        );
-
-        $data = http_build_query($dataArray);
-        $getUrl = $url . "?" . $data;
-
-        $curl = curl_init();
-        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, FALSE);
-        curl_setopt($curl, CURLOPT_FOLLOWLOCATION, TRUE);
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, TRUE);
-        curl_setopt($curl, CURLOPT_URL, $getUrl);
-        curl_setopt($curl, CURLOPT_TIMEOUT, 80);
-
-        $response = curl_exec($curl);
-
-        if (curl_error($curl)) {
-            JSONResponse::error500('Request Error:' . curl_error($curl));
-        }
-
-        curl_close($curl);
+        $tagsuggestor =& createWisyObject('WISY_TAGSUGGESTOR_CLASS', $this->framework);
+        $tags = $tagsuggestor->suggestTags(utf8_decode($term), array("max" => 1, 'q_tag_type_not'=>array(1,65536,4,8,32768,16,32,64,128,512,1024,2048,4096,8192,16384,65, 256)));
 
         $search_results = array();
 
-        $tags = explode('|', $response);
-        for ($i = 0; $i < count($tags); $i++) {
-            if ($i % 4 != 0) {
-                continue;
-            }
-            $tag = preg_replace('/\d+\s*/', '', $tags[$i]);
-            if (empty($tag) || str_contains($tag, 'volltext:')) {
-                continue;
-            }
-            if (str_contains($tag, '[privatrechtlich]')) {
-                continue;
-            }
+        foreach ($tags as $tag) {
+            if ($tag["tag_freq"])
             $search_results[] = [
-                "label" =>  utf8_encode($tag),
-                "uri" => utf8_encode($tag),
+                "label" =>  utf8_encode($tag["tag"]),
+                "uri" => utf8_encode($tag["tag"]),
             ];
         }
-
 
         return $search_results;
     }
