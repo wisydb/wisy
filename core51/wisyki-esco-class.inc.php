@@ -384,7 +384,7 @@ class WISYKI_ESCO_CLASS {
      */
     function search_wisy($term, $limit = 5) {
         $tagsuggestor =& createWisyObject('WISY_TAGSUGGESTOR_CLASS', $this->framework);
-        $tags = $tagsuggestor->suggestTags(utf8_decode($term), array("max" => 1, 'q_tag_type_not'=>array(1,65536,4,8,32768,16,32,64,128,512,1024,2048,4096,8192,16384,65, 256)));
+        $tags = $tagsuggestor->suggestTags(utf8_decode($term), array("max" => $limit, 'q_tag_type_not'=>array(1,65536,4,8,32768,16,32,64,128,512,1024,2048,4096,8192,16384,65, 256)));
 
         $search_results = array();
 
