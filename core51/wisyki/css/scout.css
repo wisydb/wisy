@@ -1,6 +1,6 @@
-/* 
+/*
  * Stylesheet for the WISY@KI feature "Weiterbildungsscout".
- * 
+ *
  * @copyright   2023 ISy TH Lübeck <dev.ild@th-luebeck.de>
  * @author		Pascal Hürten <pascal.huerten@th-luebeck.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -28,6 +28,22 @@
     src: url(/files/wisyki/Inter-VariableFont_slnt\,wght.ttf) format("truetype");
 }
 
+@font-face {
+    src: url("/files/wisyki/roboto/Roboto-Regular.ttf");format("truetype"),
+         url("/files/wisyki/roboto/Roboto-Black.ttf"); format("truetype"),
+         url("/files/wisyki/roboto/Roboto-BlackItalic.ttf");format("truetype"),
+         url("/files/wisyki/roboto/Roboto-Bold.ttf");format("truetype"),
+         url("/files/wisyki/roboto/Roboto-BoldItalic.ttf");format("truetype"),
+         url("/files/wisyki/roboto/Roboto-Italic.ttf");format("truetype"),
+         url("/files/wisyki/roboto/Roboto-Light.ttf");format("truetype"),
+         url("/files/wisyki/roboto/Roboto-LightItalic.ttf");format("truetype"),
+         url("/files/wisyki/roboto/Roboto-Medium.ttf");format("truetype"),
+         url("/files/wisyki/roboto/Roboto-MediumItalic.ttf");format("truetype"),
+         url("/files/wisyki/roboto/Roboto-Thin.ttf");format("truetype"),
+         url("/files/wisyki/roboto/Roboto-ThinItalic.ttf");format("truetype");
+         font-family: "Roboto";
+}
+
 /* Base tags */
 *,
 html {
@@ -40,7 +56,7 @@ html {
 }
 
 body {
-    font-family: 'Inter', sans-serif;
+    font-family: 'Roboto','Inter', sans-serif;
     color: var(--font-color__dark);
     overflow: hidden;
     height: 100vh;
@@ -224,16 +240,24 @@ nav a .bubble {
     display: none;
 }
 
+.recommandation-icon {
+    background-image: url('/files/wisyki/recommandation_blue_24dp.svg');
+}
+
 .filter-icon {
     background-image: url('/files/wisyki/filter_blue_24dp.svg');
 }
 
 .bookmarks-icon {
-    background-image: url('/files/wisyki/assignment_black_24dp.svg');
+    /*background-image: url('/files/wisyki/assignment_black_24dp.svg');*/
+    background-image: url('/files/wisyki/bookmark_blue_24dp.png');
+    background-size: contain;
 }
 
 .account-icon {
-    background-image: url('/files/wisyki/account_circle_black_24dp.svg');
+    /* background-image: url('/files/wisyki/account_circle_black_24dp.svg'); */
+    background-image: url('/files/wisyki/account_blue_24dp.png');
+    background-size: contain;
 }
 
 .arrow-icon {
@@ -261,7 +285,8 @@ nav a .bubble {
 }
 
 .search-icon {
-    background-image: url('/files/wisyki/search_black_24dp.svg');
+    /* background-image: url('/files/wisyki/search_black_24dp.svg'); */
+    background-image: url('/files/wisyki/search_grey_24dp.svg');
 }
 
 button>i {
@@ -338,11 +363,33 @@ header {
 }
 
 header h1 {
-    height: 60px;
+    /*   height: 60px;
+       display: flex;
+       justify-content: center;
+       align-items: center;
+       background-image: linear-gradient(to right, var(--main-color), var(--main-color__highlight));*/
+    height: 40px;
+}
+
+/* Scout-Header-Text*/
+header p {
+    color: var(--font-color__light);
+    font-weight: 500;
+    width: 200px;
+}
+
+/* Scout-Header Text & Image*/
+.scout-head {
     display: flex;
-    justify-content: center;
     align-items: center;
-    background-image: linear-gradient(to right, var(--main-color), var(--main-color__highlight));
+    justify-content: center;
+    /* background-image: linear-gradient(to right, var(--main-color), var(--main-color__highlight));*/
+    background-color: var(--main-color);
+}
+
+/* Scout-Header Image */
+.scout-head img {
+    margin: 0 20px;
 }
 
 /* Scout Nav */
@@ -356,7 +403,6 @@ header h1 {
     grid-template-columns: 1fr 2fr auto;
     align-items: center;
     z-index: 10;
-    position: relative;
     gap: 1em;
 }
 
@@ -1550,4 +1596,17 @@ main .steps {
 .virtual-keyboard-shown main .steps>div {
     height: 100vh - 60px;
     height: calc(var(--doc-height) - 60px);
+}
+
+
+/**
+SCOUT-FOOTER LOGO INTRO STEP1
+ */
+.footer-scout-logo {
+    position: fixed;
+    bottom: 130px;
+}
+
+.footer-scout-logo img {
+    margin: 20px 30px;
 }
