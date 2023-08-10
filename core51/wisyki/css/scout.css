@@ -29,19 +29,19 @@
 }
 
 @font-face {
-    src: url("/files/wisyki/roboto/Roboto-Regular.ttf");format("truetype"),
-         url("/files/wisyki/roboto/Roboto-Black.ttf"); format("truetype"),
-         url("/files/wisyki/roboto/Roboto-BlackItalic.ttf");format("truetype"),
-         url("/files/wisyki/roboto/Roboto-Bold.ttf");format("truetype"),
-         url("/files/wisyki/roboto/Roboto-BoldItalic.ttf");format("truetype"),
-         url("/files/wisyki/roboto/Roboto-Italic.ttf");format("truetype"),
-         url("/files/wisyki/roboto/Roboto-Light.ttf");format("truetype"),
-         url("/files/wisyki/roboto/Roboto-LightItalic.ttf");format("truetype"),
-         url("/files/wisyki/roboto/Roboto-Medium.ttf");format("truetype"),
-         url("/files/wisyki/roboto/Roboto-MediumItalic.ttf");format("truetype"),
-         url("/files/wisyki/roboto/Roboto-Thin.ttf");format("truetype"),
-         url("/files/wisyki/roboto/Roboto-ThinItalic.ttf");format("truetype");
-         font-family: "Roboto";
+    font-family: "Roboto";
+    src: url("/files/wisyki/roboto/Roboto-Regular.ttf") format("truetype"),
+         url("/files/wisyki/roboto/Roboto-Black.ttf") format("truetype"),
+         url("/files/wisyki/roboto/Roboto-BlackItalic.ttf") format("truetype"),
+         url("/files/wisyki/roboto/Roboto-Bold.ttf") format("truetype"),
+         url("/files/wisyki/roboto/Roboto-BoldItalic.ttf") format("truetype"),
+         url("/files/wisyki/roboto/Roboto-Italic.ttf") format("truetype"),
+         url("/files/wisyki/roboto/Roboto-Light.ttf") format("truetype"),
+         url("/files/wisyki/roboto/Roboto-LightItalic.ttf") format("truetype"),
+         url("/files/wisyki/roboto/Roboto-Medium.ttf") format("truetype"),
+         url("/files/wisyki/roboto/Roboto-MediumItalic.ttf") format("truetype"),
+         url("/files/wisyki/roboto/Roboto-Thin.ttf") format("truetype"),
+         url("/files/wisyki/roboto/Roboto-ThinItalic.ttf") format("truetype");
 }
 
 /* Base tags */
@@ -56,7 +56,7 @@ html {
 }
 
 body {
-    font-family: 'Roboto','Inter', sans-serif;
+    font-family: 'Roboto', 'Inter', sans-serif;
     color: var(--font-color__dark);
     overflow: hidden;
     height: 100vh;
@@ -380,24 +380,29 @@ header p {
 
 /* Scout-Header Text & Image*/
 .scout-head {
-    display: flex;
-    align-items: center;
-    justify-content: center;
     /* background-image: linear-gradient(to right, var(--main-color), var(--main-color__highlight));*/
     background-color: var(--main-color);
 }
 
-/* Scout-Header Image */
-.scout-head img {
-    margin: 0 20px;
+.scout-head {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
+
+.scout-head__background {
+    background-image: url("/files/wisyki/scout-header.png");
+    mask-image: linear-gradient(to right, white 0, transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, white 0, transparent 100%);
+    background-size: cover;
+    background-repeat: no-repeat;
 }
 
 /* Scout Nav */
 .scout-nav {
     max-width: 420px;
-    width: 90vw;
     margin: 0 auto;
     position: relative;
+    width: 90vw;
     height: 50px;
     display: grid;
     grid-template-columns: 1fr 2fr auto;
@@ -622,8 +627,8 @@ button .loader::after {
 }
 
 main .steps>div {
-    height: calc(100vh - 60px - 110px - 110px);
-    height: calc(var(--doc-height) - 60px - 110px - 110px);
+    height: calc(100vh - 60px - 150px - 110px);
+    height: calc(var(--doc-height) - 60px - 150px - 110px);
     margin-bottom: 1em;
     display: flex;
     flex-direction: row;
@@ -731,6 +736,13 @@ main .steps>div {
     font-size: 1.2em;
     font-weight: 500;
     color: var(--main-color__highlight);
+}
+
+#pathchoice {
+    height: 100%;
+    display: grid;
+    grid-template-rows: min-content;
+    align-items: start;
 }
 
 #pathchoice .button-list {
@@ -1147,6 +1159,17 @@ ul.result-list {
     margin-bottom: 1em;
 }
 
+.result-list>li:first-of-type details summary span:first-child::before {
+    content: url(/files/wisyki/recommendation_blue_24dp.svg);
+    display: inline-block !important;
+    vertical-align: middle;
+    margin: 0 5px;
+}
+
+.result-list>li:first-of-type details summary span {
+    color: var(--main-color) !important;
+}
+
 details>summary {
     list-style: none;
 }
@@ -1198,7 +1221,13 @@ details[open]>summary::after {
 }
 
 
-.course-list li::before {
+
+.result-list>li:first-of-type summary {
+    border: 2px solid var(--main-color);
+}
+
+
+.course-list>li:before {
     content: '';
     background-image: linear-gradient(to right, var(--main-color), var(--main-color__highlight));
     height: 2px;
@@ -1206,6 +1235,10 @@ details[open]>summary::after {
     top: 0;
     left: 0;
     position: absolute;
+}
+
+.result-list>li:first-of-type .course-list>li:first-of-type:before {
+    background-image: none;
 }
 
 .complevel-filter {
@@ -1320,7 +1353,7 @@ details[open]>summary::after {
     grid-template-rows: auto auto 1fr auto;
 }
 
-.filter-modal .modal__content > * {
+.filter-modal .modal__content>* {
     padding: 0.5em;
 }
 
@@ -1339,6 +1372,7 @@ details[open]>summary::after {
     color: var(--main-color);
     width: 100%;
     grid-column: 2;
+    margin: 0;
 }
 
 .filter-header .filter-close-btn {
@@ -1379,7 +1413,7 @@ details[open]>summary::after {
     border-color: var(--main-color);
 }
 
-.filter-nav input:checked + label {
+.filter-nav input:checked+label {
     color: var(--font-color__light);
     background: var(--main-color);
 }
@@ -1401,19 +1435,19 @@ details[open]>summary::after {
     gap: .5em;
 }
 
-.filter-choice > div {
+.filter-choice>div {
     margin-left: 1em;
     margin-right: 1em;
     display: flex;
 }
 
-.filter-choice > legend {
+.filter-choice>legend {
     color: var(--main-color);
     font-weight: 500;
     margin-bottom: .5em;
 }
 
-.filter-choice input + label {
+.filter-choice input+label {
     margin-left: 1em;
 }
 
@@ -1603,8 +1637,12 @@ main .steps {
 SCOUT-FOOTER LOGO INTRO STEP1
  */
 .footer-scout-logo {
-    position: fixed;
-    bottom: 130px;
+    margin-bottom: 1em;
+    align-self: end;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-content: center;
 }
 
 .footer-scout-logo img {
