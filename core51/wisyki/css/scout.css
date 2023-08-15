@@ -24,24 +24,87 @@
 }
 
 @font-face {
-    font-family: "Inter";
-    src: url(/files/wisyki/Inter-VariableFont_slnt\,wght.ttf) format("truetype");
+    font-family: "Roboto";
+    src: url("/files/wisyki/roboto/Roboto-Thin.ttf") format("truetype");
+    font-weight: 100;
+    font-style: normal;
 }
 
 @font-face {
     font-family: "Roboto";
-    src: url("/files/wisyki/roboto/Roboto-Regular.ttf") format("truetype"),
-         url("/files/wisyki/roboto/Roboto-Black.ttf") format("truetype"),
-         url("/files/wisyki/roboto/Roboto-BlackItalic.ttf") format("truetype"),
-         url("/files/wisyki/roboto/Roboto-Bold.ttf") format("truetype"),
-         url("/files/wisyki/roboto/Roboto-BoldItalic.ttf") format("truetype"),
-         url("/files/wisyki/roboto/Roboto-Italic.ttf") format("truetype"),
-         url("/files/wisyki/roboto/Roboto-Light.ttf") format("truetype"),
-         url("/files/wisyki/roboto/Roboto-LightItalic.ttf") format("truetype"),
-         url("/files/wisyki/roboto/Roboto-Medium.ttf") format("truetype"),
-         url("/files/wisyki/roboto/Roboto-MediumItalic.ttf") format("truetype"),
-         url("/files/wisyki/roboto/Roboto-Thin.ttf") format("truetype"),
-         url("/files/wisyki/roboto/Roboto-ThinItalic.ttf") format("truetype");
+    src: url("/files/wisyki/roboto/Roboto-ThinItalic.ttf") format("truetype");
+    font-weight: 100;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: "Roboto";
+    src: url("/files/wisyki/roboto/Roboto-Light.ttf") format("truetype");
+    font-weight: 200;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "Roboto";
+    src: url("/files/wisyki/roboto/Roboto-LightItalic.ttf") format("truetype");
+    font-weight: 200;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: "Roboto";
+    src: url("/files/wisyki/roboto/Roboto-Regular.ttf") format("truetype");
+    font-weight: 400;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "Roboto";
+    src: url("/files/wisyki/roboto/Roboto-Italic.ttf") format("truetype");
+    font-weight: 400;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: "Roboto";
+    src: url("/files/wisyki/roboto/Roboto-Medium.ttf") format("truetype");
+    font-weight: 600;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "Roboto";
+    src: url("/files/wisyki/roboto/Roboto-MediumItalic.ttf") format("truetype");
+    font-weight: 600;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: "Roboto";
+    src: url("/files/wisyki/roboto/Roboto-Bold.ttf") format("truetype");
+    font-weight: 800;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "Roboto";
+    src: url("/files/wisyki/roboto/Roboto-BoldItalic.ttf") format("truetype");
+    font-weight: 800;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: "Roboto";
+    src: url("/files/wisyki/roboto/Roboto-Black.ttf") format("truetype");
+    font-weight: 900;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "Roboto";
+    src: url("/files/wisyki/roboto/Roboto-BlackItalic.ttf") format("truetype");
+    font-weight: 900;
+    font-style: italic;
 }
 
 /* Base tags */
@@ -56,7 +119,7 @@ html {
 }
 
 body {
-    font-family: 'Roboto', 'Inter', sans-serif;
+    font-family: 'Roboto', sans-serif;
     color: var(--font-color__dark);
     overflow: hidden;
     height: 100vh;
@@ -86,14 +149,14 @@ h3 {
 
 h4 {
     color: var(--main-color);
-    font-weight: normal;
+    font-weight: 400;
     font-family: inherit;
 }
 
 
 a:not(.link) {
-    font-family: 'Inter', sans-serif;
-    font-weight: 500;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 600;
     text-decoration: none;
     color: inherit;
 }
@@ -116,7 +179,7 @@ button:disabled {
     padding: .2em;
     color: var(--main-color);
     font-size: 1em;
-    font-weight: 500;
+    font-weight: 600;
     border: 2px solid;
     border-radius: 3px;
     border-color: var(--main-color);
@@ -125,7 +188,7 @@ button:disabled {
 .btn-primary {
     padding: .2em;
     font-size: 1em;
-    font-weight: 500;
+    font-weight: 600;
     color: var(--font-color__light);
     border-radius: 3px;
     transition: background .3s ease-out;
@@ -374,7 +437,7 @@ header h1 {
 /* Scout-Header-Text*/
 header p {
     color: var(--font-color__light);
-    font-weight: 500;
+    font-weight: 600;
     width: 200px;
 }
 
@@ -382,19 +445,32 @@ header p {
 .scout-head {
     /* background-image: linear-gradient(to right, var(--main-color), var(--main-color__highlight));*/
     background-color: var(--main-color);
+    display: grid;
+    height: 100px;
+    position: relative;
+    overflow: hidden;
 }
 
-.scout-head {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+.scout-head__heading {
+    padding: .3em 0;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.scout-head__heading>* {
+    margin: 0;
+    text-align: center;
 }
 
 .scout-head__background {
-    background-image: url("/files/wisyki/scout-header.png");
-    mask-image: linear-gradient(to right, white 0, transparent 100%);
-    -webkit-mask-image: linear-gradient(to right, white 0, transparent 100%);
-    background-size: cover;
-    background-repeat: no-repeat;
+    mask-image: linear-gradient(to right, white 60px, transparent 35%);
+    -webkit-mask-image: linear-gradient(to right, white 60px, transparent 35%);
+    position: absolute;
 }
 
 /* Scout Nav */
@@ -523,7 +599,7 @@ header p {
 /* Bottom nav */
 
 .bottom-nav {
-    height: 110px;
+    height: 90px;
     width: 100%;
     background: var(--secondary-background-color);
     position: sticky;
@@ -627,8 +703,8 @@ button .loader::after {
 }
 
 main .steps>div {
-    height: calc(100vh - 60px - 150px - 110px);
-    height: calc(var(--doc-height) - 60px - 150px - 110px);
+    height: calc(100vh - 60px - 150px - 100px);
+    height: calc(var(--doc-height) - 60px - 150px - 100px);
     margin-bottom: 1em;
     display: flex;
     flex-direction: row;
@@ -670,7 +746,7 @@ main .steps>div {
 
 .help {
     position: fixed;
-    bottom: 120px;
+    bottom: 100px;
     right: 1em;
     z-index: 100;
 }
@@ -734,7 +810,7 @@ main .steps>div {
     padding: 0.5em;
     margin-top: 1em;
     font-size: 1.2em;
-    font-weight: 500;
+    font-weight: 600;
     color: var(--main-color__highlight);
 }
 
@@ -820,7 +896,7 @@ input[type="text"] {
 }
 
 .autocomplete-box output .headline {
-    font-weight: 300;
+    font-weight: 200;
     font-size: .8em;
     color: var(--font-color__dark);
     margin-top: 1em;
@@ -863,7 +939,7 @@ input[type="text"] {
     text-align: center;
     color: var(--font-color__light); */
     word-wrap: break-word;
-    font-weight: bold;
+    font-weight: 600;
 }
 
 .skill-counter {
@@ -927,7 +1003,7 @@ ul.current-level-selection {
     border-radius: 0px 0px 3px 3px;
     font-size: 1em;
     padding: .3em 0em;
-    font-family: 'Inter', sans-serif;
+    font-family: 'Roboto', sans-serif;
     font-weight: 600;
 }
 
@@ -982,7 +1058,7 @@ ul.level-goal-selection {
 .level-goal-selection fieldset legend {
     padding: 0;
     margin-bottom: 1em;
-    font-weight: 500;
+    font-weight: 600;
     font-size: 1em;
     color: var(--font-color__dark)
 }
@@ -992,7 +1068,7 @@ ul.level-goal-selection {
     align-items: center;
     gap: 1em;
     margin-bottom: .3em;
-    font-weight: 500;
+    font-weight: 600;
     font-size: 1em;
     color: var(--font-color__dark)
 }
@@ -1100,7 +1176,7 @@ p.current-level {
     border-radius: 0px 0px 3px 3px;
     font-size: 1em;
     padding: .3em 0em;
-    font-family: 'Inter', sans-serif;
+    font-family: 'Roboto', sans-serif;
     font-weight: 600;
     margin-bottom: 1em;
     position: relative;
@@ -1284,6 +1360,11 @@ details[open]>summary::after {
     justify-content: space-around;
 }
 
+.noresults {
+    text-align: center;
+    font-style: italic;
+}
+
 .to-course-btn {
     display: flex;
     justify-content: center;
@@ -1407,7 +1488,7 @@ details[open]>summary::after {
     padding: .2em;
     color: var(--main-color);
     font-size: 1em;
-    font-weight: 500;
+    font-weight: 600;
     border: 2px solid;
     border-radius: 3px;
     border-color: var(--main-color);
@@ -1443,20 +1524,12 @@ details[open]>summary::after {
 
 .filter-choice>legend {
     color: var(--main-color);
-    font-weight: 500;
+    font-weight: 600;
     margin-bottom: .5em;
 }
 
 .filter-choice input+label {
     margin-left: 1em;
-}
-
-.filter-location-name-input {
-    /* border: 2px solid;
-    border-image-slice: 1;
-    border-image-source: linear-gradient(to right, var(--main-color), var(--main-color__highlight));
-    background: var(--main-background-color);
-    padding: .5em; */
 }
 
 .filter-actions {
@@ -1557,6 +1630,11 @@ details[open]>summary::after {
 }
 
 @media screen and (min-width: 700px) {
+    .scout-head__background {
+        mask-image: linear-gradient(to right, white 60px, transparent 100%);
+        -webkit-mask-image: linear-gradient(to right, white 60px, transparent 100%);
+    }
+
     .scout-nav__progress ul {
         gap: 35px;
     }
@@ -1616,7 +1694,7 @@ main .steps {
 
 .virtual-keyboard-shown header,
 .virtual-keyboard-shown main .steps {
-    transform: translate(0px, -126px);
+    transform: translate(0px, -166px);
 }
 
 .virtual-keyboard-shown footer.bottom-nav {
@@ -1630,6 +1708,10 @@ main .steps {
 .virtual-keyboard-shown main .steps>div {
     height: 100vh - 60px;
     height: calc(var(--doc-height) - 60px);
+}
+
+.virtual-keyboard-shown .help {
+    bottom: 20px;
 }
 
 
