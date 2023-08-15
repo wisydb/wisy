@@ -3,15 +3,12 @@
     <div class="course-details">
         <span class="description-label">{{ lang.courseliststep:coursetitle }}</span>
         <span class="description-item">{{ title }}</span>
+        {{ #levels }}
         <span class="description-label">{{ lang.courseliststep:levelgoal }}</span>
         <span class="description-item level-goal-list">
-            {{ #levels }}
-            <span class="level-goal">{{ . }}</span>
-            {{ /levels}}
-            {{ ^levels }}
-            {{ lang.courseliststep:na }}
-            {{ /levels}}
+            <span>{{ . }}</span>
         </span>
+        {{ /levels}}
         <span class="description-label">{{ lang.courseliststep:nextdate }}</span>
         <span class="description-item">
             {{{ nextDate }}}
@@ -34,5 +31,10 @@
             <span>{{ lang.courseliststep:gotocourse }}</span>
         </a>
     </div>
+</li>
+{{ /results }}
+{{ ^results }}
+<li class="course-preview">
+    <span class="noresults">{{ lang.noresults }}</span>
 </li>
 {{ /results }}

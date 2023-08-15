@@ -125,13 +125,15 @@ class Account {
      * @param {number} [levelGoal=null] - The goal level of the skill.
      * @param {boolean} [isLanguageSkill=null] - Whether the skill is a language skill.
      * @param {boolean} [isOccupationSkill=null] - Whether the skill is an occupation skill.
+     * @param {boolean} [similarSkills=null] - Other skills that are similar.
      */
     async setSkill(
         label,
         uri,
         levelGoal = null,
         isLanguageSkill = null,
-        isOccupationSkill = null
+        isOccupationSkill = null,
+        similarSkills = null
     ) {
         const skill = {
             uri: uri,
@@ -139,6 +141,7 @@ class Account {
             levelGoal: levelGoal,
             isLanguageSkill: isLanguageSkill,
             isOccupationSkill: isOccupationSkill,
+            similarSkills: similarSkills,
         };
         this.#skills[uri] = skill;
         this.#store();
@@ -152,7 +155,7 @@ class Account {
      * @param {Object} skill - The skill to update.
      */
     async updateSkillInfo(skill) {
-        if (skill.isLanguageSkill != null && skill.isOccupationSkill != null) {
+        if (skill.isLanguageSkill != null && skill.isOccupationSkill != null && skill.similarSkills != null) {
             return;
         }
         const skillInfo = await this.getSkillInfo(skill.uri);
@@ -165,6 +168,9 @@ class Account {
         }
         if (skill.isOccupationSkill == null) {
             skill.isOccupationSkill = skillInfo.isOccupationSkill;
+        }
+        if (skill.similarSkills == null) {
+            skill.similarSkills = skillInfo.similarSkills;
         }
         this.#skills[skill.uri] = skill;
         this.#store();
@@ -1643,7 +1649,7 @@ class SkillsStep extends Step {
             li.appendChild(checkbox);
             const label = document.createElement("label");
             label.setAttribute("for", this.name + uri);
-            label.textContent = skill.label;
+            label.textContent = skill.label.replace(/ +\(ESCO\)/, "");
             li.appendChild(label);
             if (unchecked) {
                 selectedSkillsNode.insertBefore(li, unchecked.parentNode);
@@ -1842,7 +1848,9 @@ class LevelGoalStep extends Step {
         const skills = this.scout.account.getSkills();
         const data = { skills: [] };
         for (const uri in skills) {
-            const skill = skills[uri];
+            // Copy skills[uri] to const skill
+            const skill = Object.assign({}, skills[uri]);
+            skill.label = skill.label.replace(/ +\(ESCO\)/, "");
             data.skills.push(skill);
         }
 
@@ -1881,7 +1889,8 @@ class LevelGoalStep extends Step {
                     skill.uri,
                     selectedInput.value,
                     skill.isLanguageSkill,
-                    skill.isOccupationSkill
+                    skill.isOccupationSkill,
+                    skill.similarSkills
                 );
             });
 
@@ -1894,12 +1903,14 @@ class LevelGoalStep extends Step {
             } else {
                 const firstInput = fieldset.querySelector("input");
                 firstInput.checked = true;
+                console.log(skill);
                 this.scout.account.setSkill(
                     skill.label,
                     skill.uri,
                     firstInput.value,
                     skill.isLanguageSkill,
-                    skill.isOccupationSkill
+                    skill.isOccupationSkill,
+                    skill.similarSkills
                 );
             }
         });
@@ -1922,6 +1933,13 @@ class CouseListStep extends Step {
      * @type {Element}
      */
     resultList;
+
+    
+    levelmapping = {
+        'Niveau A': Lang.getString('complevela'),
+        'Niveau B': Lang.getString('complevelb'),
+        'Niveau C': Lang.getString('complevelc'),
+    };
 
     /**
      * Create a course list step.
@@ -1994,7 +2012,8 @@ class CouseListStep extends Step {
         const completedata = this.getTemplateData(skills);
 
         completedata.sets.forEach((set) => {
-            if (set.label == skill.label) {
+            console.log(set);
+            if (set.skilllabel == skill.label) {
                 courselist = set.results;
                 return;
             }
@@ -2070,14 +2089,14 @@ class CouseListStep extends Step {
         };
         this.results.sets.forEach((set) => {
             let filteredResults = [];
-            let label = set.label;
+            let label = set.label.replace(/ +\(ESCO\)/, "");
             let currentSkill;
             if (label == "airecommends") {
                 label = Lang.getString("courseliststep:airecommends");
                 filteredResults = set.results;
             } else {
                 for (let skill of Object.values(skills)) {
-                    if (skill.label == label) {
+                    if (skill.label == set.skill.label) {
                         currentSkill = skill;
                     }
                 }
@@ -2090,6 +2109,7 @@ class CouseListStep extends Step {
 
             const filteredSet = {
                 label: label,
+                skilllabel: set.label,
                 countstring: this.getKurseCountString(filteredResults.length),
                 results: filteredResults,
             };
@@ -2131,7 +2151,11 @@ class CouseListStep extends Step {
         const filteredResults = [];
         courses.forEach((course) => {
             if (course.levels.includes(level)) {
-                filteredResults.push(course);
+                // Copy course object to new variable.
+
+                const newcourse = Object.assign({}, course);
+                newcourse.levels = null;
+                filteredResults.push(newcourse);
             }
         });
         return filteredResults;
@@ -2212,7 +2236,8 @@ class CouseListStep extends Step {
                     skill.uri,
                     skill.levelGoal,
                     skill.isLanguageSkill,
-                    skill.isOccupationSkill
+                    skill.isOccupationSkill,
+                    skill.similarSkills
                 );
 
                 this.updateCourseResult(skill, complevelFilter.parentNode);
@@ -2231,7 +2256,8 @@ class CouseListStep extends Step {
                     skill.uri,
                     firstInput.value,
                     skill.isLanguageSkill,
-                    skill.isOccupationSkill
+                    skill.isOccupationSkill,
+                    skill.similarSkills
                 );
             }
         });
@@ -2243,7 +2269,6 @@ class CouseListStep extends Step {
      */
     async search() {
         const params = {
-            prepare: false,
             skills: JSON.stringify(this.scout.account.getSkills()),
             occupation: JSON.stringify(this.scout.account.getOccupation()),
             filters: JSON.stringify(this.scout.account.getFilters()),
@@ -2253,7 +2278,20 @@ class CouseListStep extends Step {
         const response = await fetch(url);
 
         if (response.ok) {
-            return await response.json();
+            const results = await response.json();
+            for (const setid in results.sets) {
+                const set = results.sets[setid];
+                for (const resultid in set.results) {
+                    const result = results.sets[setid].results[resultid];
+                    for (const levelid in result.levels) {
+                        const level = results.sets[setid].results[resultid].levels[levelid];
+                        if (Object.keys(this.levelmapping).includes(level)) {
+                            results.sets[setid].results[resultid].levels[levelid] = this.levelmapping[level];
+                        }
+                    }
+                }
+            }
+            return results;
         } else {
             console.error("HTTP-Error: " + response.status);
         }
@@ -3023,7 +3061,8 @@ class Autocompleter {
                 // Create a button for the completion and add it to the list.
                 const li = document.createElement("li");
                 const btn = document.createElement("button");
-                btn.textContent = completion.label;
+                //  Remove " (ESCO)" from completion.label string
+                btn.textContent = completion.label.replace(/ +\(ESCO\)/, "");
                 li.appendChild(btn);
                 ul.appendChild(li);
 

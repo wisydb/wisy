@@ -410,7 +410,7 @@ class WISYKI_ESCO_CLASS {
         $db = new DB_Admin();
         $filtered = array();
         foreach ($skills as $index => $skill) {
-            $sql = 'SELECT * FROM x_tags WHERE tag_name = "' . $skill['label'] . '"';
+            $sql = 'SELECT * FROM x_tags WHERE tag_name = "' . utf8_decode($skill['label']) . '"';
             $db->query($sql);
             if ($db->next_record()) {
                 $filtered[$index] = $skill;
@@ -458,9 +458,12 @@ class WISYKI_ESCO_CLASS {
                 // Example: "Statistik (ESCO)" -> "Statistik"
                 $stichwortlabel = preg_replace('/ *\(.*\)/', '', $stichwort['label']);
                 $duplicate = false;
-                foreach ($results as $skill) {
+                foreach ($results as $key => $skill) {
                     $skilllabel = preg_replace('/ *\(.*\)/', '', $skill['label']);
                     if ($stichwortlabel == $skilllabel) {
+                        if (strpos($stichwort['label'], ' (ESCO)') !== false) {
+                            $results[$key]['label'] = $stichwort['label'];
+                        }
                         $duplicate = true;
                         break;
                     }
@@ -571,6 +574,33 @@ class WISYKI_ESCO_CLASS {
                         break;
                     }
                 }
+            }
+        }
+
+        $result['similarSkills'] = array('broader' => array(), 'narrower' => array());
+        if (isset($response['_links']['broaderSkill']) && !empty($response['_links']['broaderSkill'])) {
+            foreach ($response['_links']['broaderSkill'] as $broaderSkill) {
+                $result['similarSkills']['broader'][] = $broaderSkill['title'];
+            }
+        } 
+        if (isset($response['_links']['broaderHierarchyConcept']) && !empty($response['_links']['broaderHierarchyConcept'])) {
+            foreach ($response['_links']['broaderHierarchyConcept'] as $broaderHierarchyConcept) {
+                $result['similarSkills']['broader'][] = $broaderHierarchyConcept['title'];
+            }
+        }
+        if (isset($response['_links']['narrowerSkill']) && !empty($response['_links']['narrowerSkill'])) {
+            foreach ($response['_links']['narrowerSkill'] as $narrowerSkill) {
+                $result['similarSkills']['narrower'][] = $narrowerSkill['title'];
+            }
+        }
+        if (isset($response['_links']['isOptionalForSkill']) && !empty($response['_links']['isOptionalForSkill'])) {
+            foreach ($response['_links']['isOptionalForSkill'] as $isOptionalForSkill) {
+                $result['similarSkills']['narrower'][] = $isOptionalForSkill['title'];
+            }
+        }
+        if (isset($response['_links']['isEssentialForSkill']) && !empty($response['_links']['isEssentialForSkill'])) {
+            foreach ($response['_links']['isEssentialForSkill'] as $isEssentialForSkill) {
+                $result['similarSkills']['narrower'][] = $isEssentialForSkill['title'];
             }
         }
         

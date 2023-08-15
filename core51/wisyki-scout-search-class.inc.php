@@ -15,13 +15,23 @@ require_once($_SERVER['DOCUMENT_ROOT'] . '/core51/wisyki-python-class.inc.php');
  * @author		Pascal Hürten <pascal.huerten@th-luebeck.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class WISYKI_SCOUT_SEARCH_CLASS extends WISY_INTELLISEARCH_CLASS {
+class WISYKI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 	/**
 	 * Helper functions for rendering info about a 'durchfuhrung'.
 	 *
 	 * @var WISY_DURCHF_CLASS
 	 */
 	private WISY_DURCHF_CLASS $durchfClass;
+
+
+	private $complevel_durs = array();
+	private $anbieter_durs = array();
+	private $durchf_durs = array();
+	private $stichwort_durs = array();
+	private $orderBySkillMatches = '';
+	private $selectSkillMatches = '';
+	private $orderBy = 'rand';
+	private $queries = array();
 
 	/**
 	 * Constructor for WISYKI_SCOUT_SEARCH_CLASS.
@@ -37,12 +47,37 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_INTELLISEARCH_CLASS {
 	/**
 	 * Get the querystring based on the skill label and level.
 	 *
-	 * @param object $skill The skill to search for.
+	 * @param ocject $skills The skills to search for.
 	 * @param object $filters Filtersettings to narrow the search results.
 	 * @return string The querystring.
 	 */
-	function get_querystring(object $skill, object $filters): string {
-		$querystring = utf8_decode($skill->label);
+	function get_querystring(object $skills, object $filters, ): string {
+		$querystring = '';
+
+		$tags = array();
+		foreach ($skills as $skill) {
+			$querystring .= " ODER " . utf8_decode($skill->label);
+			// Alternative skills.
+			if (isset($skill->similarSkills) and !empty($skill->similarSkills)) {
+				$tags[] = $this->lookupTag($skill->label);
+				for ($i = 0; $i < count($skill->similarSkills->narrower); $i++) {
+					$narrowerSkill = utf8_decode($skill->similarSkills->narrower[$i]);
+					$querystring .= ' ODER ' . $narrowerSkill;
+					$tags[] = $this->lookupTag($narrowerSkill);
+				}
+				for ($i = 0; $i < count($skill->similarSkills->broader); $i++) {
+					$broaderSkill = utf8_decode($skill->similarSkills->broader[$i]);
+					// $querystring .= ' ODER ' . $similarSkill;
+					$tags[] = $this->lookupTag($broaderSkill);
+				}
+			}
+		}
+		$this->selectSkillMatches = ', SUM(CASE WHEN xk.tag_id IN (' . join(', ', $tags) . ') THEN 1 ELSE 0 END) as skillMatches';
+		$this->orderBySkillMatches = 'skillMatches DESC';
+		$this->orderBy = 'skillMatches';
+
+		// Remove leading " ODER " od $querystring.
+		$querystring = substr($querystring, 5);
 
 		// Coursemode filter.
 		if (isset($filters->coursemode)) {
@@ -96,35 +131,40 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_INTELLISEARCH_CLASS {
 			}
 		}
 
+		// Complevel filter.
+		$querystring .= ', WISY@KI - Kompetenzniveaumodell ODER Sprachniveau';
+
 		return $querystring;
 	}
 
-	/**
-	 * Renders the search results after preparing the search based on the skill label and level.
-	 * 
-	 * @return void Echoes the an overview of the Search in JSON format.
-	 */
-	function render_prepare() {
-		$label = $_GET['label'];
-		$level = $_GET['level'];
+	function search($skills, $filters) {
+		$matches = array();
+		$querystring = $this->get_querystring($skills, $filters);
 
-		$querystring = $this->get_querystring($label, $level);
-
+		// Run sarch query.
 		$this->prepare($querystring);
-		// TODO: Cache the search results for later retrieval.
-
 		if (!$this->ok()) {
-			JSONResponse::error500();
+			if ($this->error["id"] == "tag_not_found") {
+				return $matches;
+			}
+			JSONResponse::error500('Error while preparing searcher class with query: ' . json_encode($this->error));
 		}
 
-		JSONResponse::send_json_response(array(
-			'query' => $querystring,
-			'skill' => array(
-				'label' => $label,
-				'levelGoal' => $level,
-			),
-			'count' => $this->getKurseCount(),
-		));
+		// Get search results.
+		$kurse = $this->getKurseRecords(0, $limit ?? 0, $this->orderBy);
+		if (empty($kurse)) {
+			return $matches;
+		}
+
+		// Get course details.
+		$matches = array_map([$this, 'get_course_details'], $kurse['records']);
+
+		// Remove empty array items.
+		$matches = array_values(array_filter($matches, function ($item) {
+			return $item !== null;
+		}));
+
+		return $matches;
 	}
 
 	/**
@@ -132,7 +172,8 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_INTELLISEARCH_CLASS {
 	 *
 	 * @return void Echoes a JSON response.
 	 */
-	function render_result() {
+	function render() {
+		$start1 = new DateTime();
 		$skillsjson = $_GET['skills'];
 		$skills = json_decode($skillsjson);
 		$occupationjson = $_GET['occupation'];
@@ -140,36 +181,35 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_INTELLISEARCH_CLASS {
 		$filterjson = $_GET['filters'];
 		$filters = json_decode($filterjson);
 		$limit = $_GET['limit'];
+		$filterDurs = array();
 
+		// Get search results for every skill.
+		$results = $this->search($skills, $filters);
 
-		$results = array();
+		$start2 = new DateTime();
 
-		foreach ($skills as $skill) {
-			$querystring = $this->get_querystring($skill, $filters);
-
-			$this->prepare($querystring);
-			if (!$this->ok()) {
-				JSONResponse::error500('Error while preparing searcher class with query: ' . json_encode($this->searcher->error));
+		// Remove duplicates in $results courses by id and merge skill array.
+		$uniqueCourses = [];
+		for ($index = 0; $index < count($results); $index++) {
+			$course = $results[$index];
+			$courseId = $course['id'];
+			if (!isset($uniqueCourses[$courseId])) {
+				$uniqueCourses[$courseId] = $course;
 			}
-
-			$kurse = $this->getKurseRecords(0, $limit ?? 0, 'rand');
-			$kursecount = $this->getKurseCount();
-			$match = array();
-			if (!empty($kurse)) {
-				$match = array_map([$this, 'get_course_details'], $kurse['records']);
-				// Remove null array items.
-				$match = array_values(array_filter($match, function ($item) {
-					return $item !== null;
-				}));
-			}
-
-			// Set skill foreach match
-			foreach ($match as $key => $course) {
-				$match[$key]['skills'] = [$skill->label];
-			}
-
-			$results = array_merge($results, $match);
 		}
+		$results = array_values($uniqueCourses);
+
+		// Remove keys that are not relevant for the client.
+		foreach ($results as $key => $course) {
+			unset($results[$key]['description']);
+		}
+
+
+		// Order search results by skill and ai recommendations.
+		$sets = array();
+
+		// Get the first 3 courses as ai_suggestions. These are the courses that match the most skills.
+		$ai_suggestions = array_slice($results, 0, 3);
 
 		// Sort the results based on semantic similarity.
 		$pytonapi = new WISYKI_PYTHON_CLASS();
@@ -180,43 +220,23 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_INTELLISEARCH_CLASS {
 		foreach ($skills as $skill) {
 			$base .= ', ' . $skill->label . ': ' . $skill->levelGoal;
 		}
-		$sorted = $pytonapi->sortsemantic($base, $results);
-
-		foreach ($sorted as $key => $course) {
-			// Remove keys that are not relevant for the client.
-			unset($sorted[$key]['description']);
-			unset($sorted[$key]['thema']);
-			unset($sorted[$key]['tags']);
-		}
-
-		// Remove duplicates in $sorted courses by id and merge skill array.
-		$uniqueCourses = [];
-		for ($index = 0; $index < count($sorted); $index++) {
-			$course = $sorted[$index];
-			$courseId = $course['id'];
-			if (!isset($uniqueCourses[$courseId])) {
-				$uniqueCourses[$courseId] = $course;
-			} else {
-				$uniqueCourses[$courseId]['skills'] = array_merge($uniqueCourses[$courseId]['skills'], $course['skills']);
-			}
-		}
-		$sorted = array_values($uniqueCourses);
-
-
-		$sets = array();
-
-		// Get first 5 values from $sorted.
-		$ai_suggestions = array_slice($sorted, 0, 5);
+		// Sort the next 10 courses for the best semantic fit.
+		$semanticMatches = $pytonapi->sortsemantic($base, array_slice($results, 3, 10));
+		// Add the 2 best fitting coursesto the AI suggestions.
+		$ai_suggestions = array_merge($ai_suggestions, array_slice($semanticMatches, 0, 2));
+		
+		// Build the result set for the ai suggestions.
 		$sets[] = array(
 			'label' => 'airecommends',
 			'count' => count($ai_suggestions),
 			'results' => $ai_suggestions,
 		);
 
+		// Build results sets for every skill by ordering all results by skill.
 		foreach ($skills as $skill) {
 			$skillresults = array();
-			foreach ($sorted as $key => $course) {
-				if (in_array($skill->label, $course['skills'])) {
+			foreach ($results as $key => $course) {
+				if (in_array(utf8_encode($skill->label), $course['tags'])) {
 					$skillresults[] = $course;
 				}
 			}
@@ -229,16 +249,65 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_INTELLISEARCH_CLASS {
 			);
 		}
 
+		$end2 = new DateTime();
+		$dur2 = $start2->diff($end2);
+		// Print duration in milliseconds.
+		$filterDurs[] = 'Duration: ' . $dur2->format('%s.%f') . ' seconds';
+		$end1 = new DateTime();
+		$dur1 = $start1->diff($end1);
+
+		// Get average duration of $this->anbieter_durs
+		$avg_anbieter = 0.0;
+		foreach ($this->anbieter_durs as $dur) {
+			$avg_anbieter += $dur->f;
+		}
+		if (count($this->anbieter_durs) > 0) {
+			$avg_anbieter /= count($this->anbieter_durs);
+		}
+
+		$avg_durchf = 0.0;
+		foreach ($this->durchf_durs as $dur) {
+			$avg_durchf += $dur->f;
+		}
+		if (count($this->durchf_durs) > 0) {
+			$avg_durchf /= count($this->durchf_durs);
+		}
+
+		$avg_complevel = 0.0;
+		foreach ($this->complevel_durs as $dur) {
+			$avg_complevel += $dur->f;
+		}
+		if (count($this->complevel_durs) > 0) {
+			$avg_complevel /= count($this->complevel_durs);
+		}
+
+		$avg_stichwort = 0.0;
+		foreach ($this->stichwort_durs as $dur) {
+			$avg_stichwort += $dur->f;
+		}
+		if (count($this->stichwort_durs) > 0) {
+			$avg_stichwort /= count($this->stichwort_durs);
+		}
+
+		// Build and send response object as json.
 		$response = (object) array(
+			'overallDur' => 'Duration: ' . $dur1->format('%s.%f') . ' seconds',
+			'durPerFilter' => $filterDurs,
+			'avg_anbieter' => $avg_anbieter,
+			'avg_durchf' => $avg_durchf,
+			'avg_complevel' => $avg_complevel,
+			'avg_stichwort' => $avg_stichwort,
 			'count' => count($results),
 			'sets' => $sets,
-			'querystring' => utf8_encode($querystring),
+			'queries' => $this->queries,
 		);
 
 		JSONResponse::send_json_response($response);
 	}
 
 	private function get_course_details(array $course): array|null {
+		$start = new DateTime();
+
 		$db = new DB_Admin();
 		$db->query("SELECT anbieter.suchname 
 					FROM anbieter 
@@ -248,6 +317,13 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_INTELLISEARCH_CLASS {
 		}
 		$provider = $db->Record;
 
+		$end = new DateTime();
+		$dur = $start->diff($end);
+		$this->anbieter_durs[] = $dur;
+
+
+
+		$start = new DateTime();
 
 		$db = new DB_Admin();
 		$today = strftime("%Y-%m-%d");
@@ -262,23 +338,40 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_INTELLISEARCH_CLASS {
 		}
 		$durchfuehrung = $db->Record;
 
+		$end = new DateTime();
+		$dur = $start->diff($end);
+		$this->durchf_durs[] = $dur;
+
+
+		$start = new DateTime();
 
 		$db = new DB_Admin();
-		$db->query("SELECT k.id, GROUP_CONCAT(s.stichwort SEPARATOR ', ') AS stichwort, t.thema
+		$db->query("SELECT GROUP_CONCAT(s.tag_name) as tags, t.thema
 					FROM kurse k
-					JOIN kurse_stichwort ks ON k.id = ks.primary_id
-					JOIN stichwoerter s ON ks.attr_id = s.id
-					JOIN themen t ON t.id = k.thema
+					LEFT JOIN x_kurse_tags ks ON k.id = ks.kurs_id
+					LEFT JOIN x_tags s ON ks.tag_id = s.tag_id
+					LEFT JOIN themen t ON k.thema = t.id
 					WHERE k.id = {$course['id']}
-					AND s.eigenschaften IN (0, 524288, 1048576)
+					AND s.tag_eigenschaften IN (-1, 0, 524288, 1048576)
+					AND s.tag_type = 0
 					GROUP BY k.id, t.thema;");
 		if (!$db->next_record()) {
 			return null;
 		}
-		$tags = $db->Record['stichwort'];
+		$tags = $db->Record['tags'];
 		$thema = $db->Record['thema'];
 
+		$end = new DateTime();
+		$dur = $start->diff($end);
+		$this->stichwort_durs[] = $dur;
+
+		$start = new DateTime();
+
 		$courseLevels = array_merge($this->get_course_comp_level($course['id']), $this->get_course_language_level($course['id']));
+
+		$end = new DateTime();
+		$dur = $start->diff($end);
+		$this->complevel_durs[] = $dur;
 
 		return array(
 			'id' => $course['id'],
@@ -291,8 +384,13 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_INTELLISEARCH_CLASS {
 			'workload' => utf8_encode($this->get_workload($durchfuehrung)),
 			'price' => utf8_encode($this->get_price($durchfuehrung)),
 			'location' => utf8_encode($durchfuehrung['ort']),
-			'tags' => utf8_encode($tags),
+			// 'nextDate' => utf8_encode("k. A."),
+			// 'workload' => utf8_encode("k. A."),
+			// 'price' => utf8_encode("k. A."),
+			// 'location' => utf8_encode("k. A."),
+			'tags' => explode(',', utf8_encode($tags)),
 			'thema' => utf8_encode($thema),
+			'skillMatches' => $course['skillMatches'],
 		);
 	}
 
@@ -350,7 +448,7 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_INTELLISEARCH_CLASS {
 	 * Get the competency level associated with a given course. 
 	 *
 	 * @param integer $courseID
-	 * @return array Possible return values are ['A', 'B', 'C', 'D', '']. Empty if no level is associated with a course.
+	 * @return array Possible return values are ['A', 'B', 'C', '']. Empty if no level is associated with a course.
 	 */
 	function get_course_comp_level(int $courseID): array {
 		$db = new DB_Admin();
@@ -362,7 +460,6 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_INTELLISEARCH_CLASS {
 				AND (stichwoerter.stichwort = 'Niveau A'
 					OR stichwoerter.stichwort = 'Niveau B'
 					OR stichwoerter.stichwort = 'Niveau C'
-					OR stichwoerter.stichwort = 'Niveau D'
 				)
 			;";
 
@@ -370,7 +467,7 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_INTELLISEARCH_CLASS {
 
 		$result = array();
 		while ($db->next_record()) {
-			$result[] = str_replace('Niveau ', '', utf8_encode($db->Record['level']));
+			$result[] = utf8_encode($db->Record['level']);
 		}
 		return $result;
 	}
@@ -434,19 +531,140 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_INTELLISEARCH_CLASS {
 		return join(', ', $modes);
 	}
 
-	/**
-	 * Renders the search reults.
-	 * 
-	 * @var $_GET['prepare] determines wether the search is only supposed to be prepared
-	 *  and an overview of the search result rendered or the complete reults should be rendered.
-	 *
-	 * @return void
-	 */
-	function render() {
-		if (isset($_GET['prepare']) and $_GET['prepare'] === 'true') {
-			$this->render_prepare();
-		} else {
-			$this->render_result();
+	function getKurseRecords($offset, $rows, $orderBy) {
+
+		$ret = array('records' => array());
+
+		if ($this->error === false) {
+			$start = $this->framework->microtime_float();
+
+			global $wisyPortalId;
+			$do_recreate = true;
+			$cacheKey = "wisysearch.$wisyPortalId.$this->queryString.$offset.$rows.$orderBy";
+			if ($this->rawCanCache && ($temp = $this->dbCache->lookup($cacheKey)) != '') {
+				// result in cache :-)
+				$ret = unserialize($temp);
+				if ($ret === false) {
+					if (isset($_COOKIE['debug'])) {
+						echo "<p style=\"background-color: yellow;\">getKurseRecords(): bad result for key <i>$cacheKey</i>, recreating  ...</p>";
+					}
+				} else {
+					$do_recreate = false;
+					if (isset($_COOKIE['debug'])) {
+						echo "<p style=\"background-color: yellow;\">getKurseRecords(): result for key <i>$cacheKey</i> loaded from cache ...</p>";
+					}
+				}
+			}
+
+
+			if ($do_recreate) {
+				switch ($orderBy) {
+					case 'a':
+						$orderBy = "x_kurse.anbieter_sortonly";
+						break;	// sortiere nach anbieter
+					case 'ad':
+						$orderBy = "x_kurse.anbieter_sortonly DESC";
+						break;
+					case 't':
+						$orderBy = 'kurse.titel_sorted';
+						break;	// sortiere nach titel
+					case 'td':
+						$orderBy = 'kurse.titel_sorted DESC';
+						break;
+					case 'b':
+						$orderBy = "x_kurse.beginn='0000-00-00', x_kurse.beginn";
+						break;	// sortiere nach beginn, spezielle Daten ans Ende der Liste verschieben
+					case 'bd':
+						$orderBy = "x_kurse.beginn='9999-09-09', x_kurse.beginn DESC";
+						break;
+					case 'd':
+						$orderBy = 'x_kurse.dauer=0, x_kurse.dauer';
+						break;	// sortiere nach dauer
+					case 'dd':
+						$orderBy = 'x_kurse.dauer DESC';
+						break;
+					case 'p':
+						$orderBy = 'x_kurse.preis=-1, x_kurse.preis';
+						break;	// sortiere nach preis
+					case 'pd':
+						$orderBy = 'x_kurse.preis DESC';
+						break;
+					case 'o':
+						$orderBy = "x_kurse.ort_sortonly='', x_kurse.ort_sortonly";
+						break;	// sortiere nach ort
+					case 'od':
+						$orderBy = "x_kurse.ort_sortonly DESC";
+						break;
+					case 'creat':
+						$orderBy = 'x_kurse.begmod_date';
+						break;	// sortiere nach beginnaenderungsdatum (hauptsaechlich fuer die RSS-Feeds interessant)
+					case 'creatd':
+						$orderBy = 'x_kurse.begmod_date DESC';
+						break;
+					case 'rand':
+						$ip = str_replace('.', '', $_SERVER['REMOTE_ADDR']);
+						try {
+							$seed = ((int)$ip + (int)date('d'));
+						} catch (Exception $e) {
+							$seed = 1;
+						}
+						$this->randSeed;
+						$orderBy = 'RAND(' . $seed . ')';
+						break;
+					case 'skillMatches':
+						$ip = str_replace('.', '', $_SERVER['REMOTE_ADDR']);
+						try {
+							$seed = ((int)$ip + (int)date('d'));
+						} catch (Exception $e) {
+							$seed = 1;
+						}
+						$this->randSeed;
+						$orderBy = $this->orderBySkillMatches . ', x_kurse.begmod_date DESC';
+						break;
+					default:
+						$orderBy = 'kurse.id';
+						die('invalid order!');
+				}
+
+
+
+				$sql = $this->getKurseRecordsSql("kurse.id, kurse.user_grp, kurse.anbieter, kurse.thema, kurse.freigeschaltet, kurse.titel, kurse.vollstaendigkeit, kurse.date_modified, kurse.bu_nummer, kurse.fu_knr, kurse.azwv_knr, x_kurse.begmod_date, x_kurse.bezirk, x_kurse.ort_sortonly, x_kurse.ort_sortonly_secondary" . $this->fulltext_select);
+
+
+				$sql .= " GROUP BY id ORDER BY $orderBy, vollstaendigkeit DESC, x_kurse.kurs_id";
+
+
+				if ($rows != 0) $sql .= " LIMIT $offset, $rows ";
+
+				$this->queries[] = utf8_encode($sql);
+
+				$this->db->query("SET SQL_BIG_SELECTS=1"); // optional
+				$this->db->query($sql);
+
+				while ($this->db->next_record()) {
+					$ret['records'][] = $this->db->Record;
+				}
+				$this->db->free();
+
+
+				// add result to cache
+				// $this->dbCache->insert($cacheKey, serialize($ret));
+
+				if (isset($_COOKIE['debug'])) {
+					echo '<p style="background-color: yellow;">getKurseRecords(): ' . htmlspecialchars($sql) . '</p>';
+				}
+			}
+
+			$this->secneeded += $this->framework->microtime_float() - $start;
 		}
+
+		return $ret;
 	}
-};
+
+	function getKurseRecordsSql($fields) {
+		$sql =  "SELECT DISTINCT $fields" . $this->selectSkillMatches . "
+				   FROM kurse LEFT JOIN x_kurse ON x_kurse.kurs_id=kurse.id " . $this->rawJoin . ' LEFT JOIN x_kurse_tags xk ON x_kurse.kurs_id = xk.kurs_id' . $this->rawWhere;
+
+		return $sql;
+	}
+}
