@@ -59,23 +59,24 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 			$skilllabel = utf8_decode($skill->label);
 			$skilllabelWithoutESCO = preg_replace('/ +\(ESCO\)/', '', $skilllabel);
 			$skilllabelWithoutESCOTagID = $this->lookupTag($skilllabelWithoutESCO);
+
 			$querystring .= " ODER " . $skilllabel;
 			if ($skilllabel != $skilllabelWithoutESCO && $skilllabelWithoutESCOTagID) {
-				// Also add 
 				$querystring .= " ODER " . $skilllabelWithoutESCO;
 			}
+
 			// Alternative skills.
 			if (isset($skill->similarSkills) and !empty($skill->similarSkills)) {
 				$tags[] = $this->lookupTag($skilllabel);
 				if ($skilllabelWithoutESCOTagID) {
-					$tags[] = $this->lookupTag($skilllabelWithoutESCO);
+					// $tags[] = $this->lookupTag($skilllabelWithoutESCO);
 				}
 				for ($i = 0; $i < count($skill->similarSkills->narrower); $i++) {
 					$narrowerSkill = utf8_decode($skill->similarSkills->narrower[$i]);
 					$narrowerSkillTagID = $this->lookupTag($narrowerSkill);
 					if ($narrowerSkillTagID) {
 						$querystring .= ' ODER ' . $narrowerSkill;
-						$tags[] = $narrowerSkillTagID;
+						// $tags[] = $narrowerSkillTagID;
 					}
 				}
 				for ($i = 0; $i < count($skill->similarSkills->broader); $i++) {
