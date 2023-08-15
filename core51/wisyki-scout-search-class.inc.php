@@ -56,19 +56,35 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 
 		$tags = array();
 		foreach ($skills as $skill) {
-			$querystring .= " ODER " . utf8_decode($skill->label);
+			$skilllabel = utf8_decode($skill->label);
+			$skilllabelWithoutESCO = preg_replace('/ +\(ESCO\)/', '', $skilllabel);
+			$skilllabelWithoutESCOTagID = $this->lookupTag($skilllabelWithoutESCO);
+			$querystring .= " ODER " . $skilllabel;
+			if ($skilllabel != $skilllabelWithoutESCO && $skilllabelWithoutESCOTagID) {
+				// Also add 
+				$querystring .= " ODER " . $skilllabelWithoutESCO;
+			}
 			// Alternative skills.
 			if (isset($skill->similarSkills) and !empty($skill->similarSkills)) {
-				$tags[] = $this->lookupTag($skill->label);
+				$tags[] = $this->lookupTag($skilllabel);
+				if ($skilllabelWithoutESCOTagID) {
+					$tags[] = $this->lookupTag($skilllabelWithoutESCO);
+				}
 				for ($i = 0; $i < count($skill->similarSkills->narrower); $i++) {
 					$narrowerSkill = utf8_decode($skill->similarSkills->narrower[$i]);
-					$querystring .= ' ODER ' . $narrowerSkill;
-					$tags[] = $this->lookupTag($narrowerSkill);
+					$narrowerSkillTagID = $this->lookupTag($narrowerSkill);
+					if ($narrowerSkillTagID) {
+						$querystring .= ' ODER ' . $narrowerSkill;
+						$tags[] = $narrowerSkillTagID;
+					}
 				}
 				for ($i = 0; $i < count($skill->similarSkills->broader); $i++) {
 					$broaderSkill = utf8_decode($skill->similarSkills->broader[$i]);
-					// $querystring .= ' ODER ' . $similarSkill;
-					$tags[] = $this->lookupTag($broaderSkill);
+					$broaderSkillTagID = $this->lookupTag($broaderSkill);
+					if ($broaderSkillTagID) {
+						// $querystring .= ' ODER ' . $similarSkill;
+						$tags[] = $broaderSkillTagID;
+					}
 				}
 			}
 		}
@@ -210,6 +226,9 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 
 		// Get the first 3 courses as ai_suggestions. These are the courses that match the most skills.
 		$ai_suggestions = array_slice($results, 0, 3);
+		foreach ($ai_suggestions as $key => $course) {
+			$ai_suggestions[$key]['reason'][] = 'mostSkillsMatched';
+		}
 
 		// Sort the results based on semantic similarity.
 		$pytonapi = new WISYKI_PYTHON_CLASS();
@@ -221,9 +240,27 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 			$base .= ', ' . $skill->label . ': ' . $skill->levelGoal;
 		}
 		// Sort the next 10 courses for the best semantic fit.
-		$semanticMatches = $pytonapi->sortsemantic($base, array_slice($results, 3, 10));
+		$semanticMatches = $pytonapi->sortsemantic($base, array_slice($results, 0, 10));
+		$topSemanticMatches = array_slice($semanticMatches, 0, 3);
+		foreach ($topSemanticMatches as $key => $course) {
+			$topSemanticMatches[$key]['reason'][] = 'semanticMatch';
+		}
 		// Add the 2 best fitting coursesto the AI suggestions.
-		$ai_suggestions = array_merge($ai_suggestions, array_slice($semanticMatches, 0, 2));
+		$ai_suggestions = array_merge($ai_suggestions, $topSemanticMatches);
+
+		// Remove duplicates from ai_suggestions.
+		$uniqueCourses2 = [];
+		for ($index = 0; $index < count($ai_suggestions); $index++) {
+			$course = $ai_suggestions[$index];
+			$courseId = $course['id'];
+			if (!isset($uniqueCourses2[$courseId])) {
+				$uniqueCourses2[$courseId] = $course;
+			} else {
+				$uniqueCourses2[$courseId]['reason'] = array_merge($uniqueCourses2[$courseId]['reason'], $course['reason']);
+			}
+		}
+		$ai_suggestions = array_values($uniqueCourses2);
+
 		
 		// Build the result set for the ai suggestions.
 		$sets[] = array(
@@ -236,7 +273,7 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 		foreach ($skills as $skill) {
 			$skillresults = array();
 			foreach ($results as $key => $course) {
-				if (in_array(utf8_encode($skill->label), $course['tags'])) {
+				if (in_array(utf8_encode($skill->label), $course['tags']) OR in_array(utf8_encode(preg_replace('/ +\(ESCO\)/', '', $skill->label)), $course['tags'])) {
 					$skillresults[] = $course;
 				}
 			}
