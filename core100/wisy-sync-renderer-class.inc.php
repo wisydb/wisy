@@ -1985,11 +1985,6 @@ class WISY_SYNC_RENDERER_CLASS
 		require_once($_SERVER['DOCUMENT_ROOT'] . '/core51/wisyki-python-class.inc.php');
 		$pythonAPI = new WISYKI_PYTHON_CLASS;
 
-		// The min probability score required, for the ai suggestions to be accepted.
-		$minrequiredscore = .7; // Set default.
-		if (!empty($_REQUEST['minrequiredscore']) && intval($_REQUEST['minrequiredscore']) >= 0 && intval($_REQUEST['minrequiredscore']) <= 1) {
-			$minrequiredscore = intval($_REQUEST['minrequiredscore']);
-		}
 
 		// The amount of courses to be classified. 30 Courses take about 1 minute to compute.
 		$batchsize = 1; // Set default.
@@ -1997,7 +1992,6 @@ class WISY_SYNC_RENDERER_CLASS
 			$batchsize = intval($_REQUEST['batchsize']);
 		}
 
-		// The amount of courses to be classified. 30 Courses take about 1 minute to compute.
 		$wherecourseidsql = ""; // Set default.
 		if (!empty($_REQUEST['courseid']) && intval($_REQUEST['courseid']) > 0) {
 			$wherecourseidsql = "AND kurse.id = " . intval($_REQUEST['courseid']);
@@ -2033,9 +2027,6 @@ class WISY_SYNC_RENDERER_CLASS
 			], 
 			'C' => [
 				'name' => 'Fortgeschrittenenstufe', 'id' => ''
-			], 
-			'D' => [
-				'name' => 'Expertenstufe', 'id' => ''
 			],
 		];
 		$levels = $this->get_level_ids($levels);
@@ -2166,7 +2157,12 @@ class WISY_SYNC_RENDERER_CLASS
 							// Map skill to course.
 							$sql = "INSERT INTO kurse_stichwort (primary_id, attr_id) VALUES ({$course['id']}, $skillid)"; 
 							if (!$escodb->query($sql)) {
-								$this->log(" - Error: Couldn't map Skill '{$result['title']}' tag to course.)");
+								$this->log(" - Error: Couldn't map Skill '{$result['title']}' tag to course. Table kurse_stichwort.)");
+								continue;
+							}
+							$sql = "INSERT INTO kurse_kompetenz (primary_id, attr_id, attr_url, suggestion) VALUES ({$course['id']}, $skillid, '{$result['uri']}', 1)"; 
+							if (!$escodb->query($sql)) {
+								$this->log(" - Error: Couldn't map Skill '{$result['title']}' tag to course. kurse_kompetenz)");
 								continue;
 							}
 							$this->log(" - Mapped skill '{$result['title']}' tag to course. DB updated sucessfully.");

@@ -1,8 +1,8 @@
 <?php
 
-require_once($_SERVER['DOCUMENT_ROOT'] . "/admin/sql_curr.inc.php");
-require_once($_SERVER['DOCUMENT_ROOT'] . "/admin/config/config.inc.php");
-require_once($_SERVER['DOCUMENT_ROOT'] . '/core51/wisyki-json-response.inc.php');
+// require_once($_SERVER['DOCUMENT_ROOT'] . "/admin/sql_curr.inc.php");
+// require_once($_SERVER['DOCUMENT_ROOT'] . "/admin/config/config.inc.php");
+// require_once($_SERVER['DOCUMENT_ROOT'] . '/core51/wisyki-json-response.inc.php');
 
 /**
  * Class WISYKI_PYTHON_CLASS
@@ -165,22 +165,19 @@ class WISYKI_PYTHON_CLASS {
      * @param  array $sachstichworte    The sachstichworte of the course.
      * @return mixed
      */
-    public function predict_esco_terms(string $title, string $doc, string $thema, array $abschluesse, array $sachstichworte) {
-        $endpoint = "/predictESCO";
+    public function predict_esco_terms(string $title, string $description, string $thema, array $abschluesse, array $sachstichworte) {
+        $endpoint = "/chatsearch";
         $wisytags = $sachstichworte;
         $wisytags = array_merge($wisytags, $abschluesse);
-        $keywords = [$title, $thema];
-        $keywords = array_merge($keywords, $wisytags);
+
         // Add Keywords and topic to course description to influence the outcome of the esco suggestions, in case the course description is not descriptive enough on its own. 
-        $doc .= ' ' . $title . ' ' . join(', ', $wisytags) . join(', ', $wisytags) . ' ' . $thema;
+        $doc = $title . ' ' . $description . ' ' . join(', ', $wisytags) . ' ' . $thema;
 
         $data = [
-            "searchterms" => [
-                "keywords" => $keywords
-            ],
             "doc" => $doc,
-            "extract_keywords" => count($sachstichworte) <= 1,
-            "exclude_irrelevant" => true
+            "top_k" => 20,
+            "openai_api_key" => OPENAI_API_KEY,
+            "strict" => 2
         ];
 
         $post_data = json_encode($data);
