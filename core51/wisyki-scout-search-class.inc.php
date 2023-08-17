@@ -365,14 +365,26 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 
 		$db = new DB_Admin();
 		$today = strftime("%Y-%m-%d");
-		$db->query("SELECT d.beginn, d.beginnoptionen, d.ende, d.dauer, d.zeit_von, d.zeit_bis, d.stunden, d.preis, d.ort 
-					FROM durchfuehrung d, kurse_durchfuehrung kd, x_kurse 
-					WHERE d.id = kd.secondary_id 
-					AND kd.primary_id={$course['id']} 
-					AND (d.beginn>='$today' OR d.beginn=0) 
-					ORDER BY d.beginn ASC LIMIT 1;");
+		$db->query("SELECT d.beginn, d.beginnoptionen, d.ende, d.dauer, d.zeit_von, d.zeit_bis, d.stunden, d.preis, d.ort
+					FROM durchfuehrung d
+					INNER JOIN kurse_durchfuehrung kd ON d.id = kd.secondary_id
+					WHERE kd.primary_id = {$course['id']}
+					AND d.beginn = 0
+					ORDER BY d.beginn ASC
+					LIMIT 1;
+		");
 		if (!$db->next_record()) {
-			return null;
+			$db->query("SELECT d.beginn, d.beginnoptionen, d.ende, d.dauer, d.zeit_von, d.zeit_bis, d.stunden, d.preis, d.ort
+					FROM durchfuehrung d
+					INNER JOIN kurse_durchfuehrung kd ON d.id = kd.secondary_id
+					WHERE kd.primary_id = {$course['id']}
+					AND d.beginn >= '$today'
+					ORDER BY d.beginn ASC
+					LIMIT 1;
+			");
+			if (!$db->next_record()) {
+				return null;
+			}
 		}
 		$durchfuehrung = $db->Record;
 
