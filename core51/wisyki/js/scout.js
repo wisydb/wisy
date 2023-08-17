@@ -2154,7 +2154,7 @@ class CouseListStep extends Step {
                 // Copy course object to new variable.
 
                 const newcourse = Object.assign({}, course);
-                newcourse.levels = null;
+                // newcourse.levels = null;
                 filteredResults.push(newcourse);
             }
         });
