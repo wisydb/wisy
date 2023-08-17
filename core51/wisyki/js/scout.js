@@ -155,7 +155,11 @@ class Account {
      * @param {Object} skill - The skill to update.
      */
     async updateSkillInfo(skill) {
-        if (skill.isLanguageSkill != null && skill.isOccupationSkill != null && skill.similarSkills != null) {
+        if (
+            skill.isLanguageSkill != null &&
+            skill.isOccupationSkill != null &&
+            skill.similarSkills != null
+        ) {
             return;
         }
         const skillInfo = await this.getSkillInfo(skill.uri);
@@ -1903,7 +1907,6 @@ class LevelGoalStep extends Step {
             } else {
                 const firstInput = fieldset.querySelector("input");
                 firstInput.checked = true;
-                console.log(skill);
                 this.scout.account.setSkill(
                     skill.label,
                     skill.uri,
@@ -1934,11 +1937,12 @@ class CouseListStep extends Step {
      */
     resultList;
 
-    
+    lastState = {};
+
     levelmapping = {
-        'Niveau A': Lang.getString('complevela'),
-        'Niveau B': Lang.getString('complevelb'),
-        'Niveau C': Lang.getString('complevelc'),
+        "Niveau A": Lang.getString("complevela"),
+        "Niveau B": Lang.getString("complevelb"),
+        "Niveau C": Lang.getString("complevelc"),
     };
 
     /**
@@ -1950,9 +1954,12 @@ class CouseListStep extends Step {
         super(scout, path);
         this.name = "courselist";
 
-        this.filterMenu = new FilterMenu(this, () =>
-            this.updateCourseResults()
-        );
+        this.filterMenu = new FilterMenu(this, () => {
+            this.filterMenu.updateCourseCount(-1);
+            debounce(async () => {
+                this.updateCourseResults();
+            }, 500)(); // Adjust the delay time (in milliseconds) as needed.
+        });
     }
 
     /**
@@ -2012,7 +2019,6 @@ class CouseListStep extends Step {
         const completedata = this.getTemplateData(skills);
 
         completedata.sets.forEach((set) => {
-            console.log(set);
             if (set.skilllabel == skill.label) {
                 courselist = set.results;
                 return;
@@ -2154,7 +2160,7 @@ class CouseListStep extends Step {
                 // Copy course object to new variable.
 
                 const newcourse = Object.assign({}, course);
-                // newcourse.levels = null;
+                newcourse.levels = null;
                 filteredResults.push(newcourse);
             }
         });
@@ -2167,8 +2173,11 @@ class CouseListStep extends Step {
     async updateCourseResults() {
         // Get course suggestions and set template data.
         const skills = this.scout.account.getSkills();
-        this.filterMenu.updateCourseCount(-1);
-        this.results = await this.search();
+
+        const results = await this.search();
+        if (results) {
+            this.results = results;
+        }
 
         const data = this.getTemplateData(skills);
 
@@ -2244,13 +2253,14 @@ class CouseListStep extends Step {
             });
 
             // If not set, set default levelGoal.
-            if (skill.levelGoal) {
-                const currentSelection = complevelFilter.querySelector(
-                    'input[value="' + skill.levelGoal + '"'
-                );
+            const currentSelection = complevelFilter.querySelector(
+                'input[value="' + skill.levelGoal + '"'
+            );
+            if (skill.levelGoal && currentSelection) {
                 currentSelection.checked = true;
             } else {
                 const firstInput = complevelFilter.querySelector("input");
+                firstInput.checked = true;
                 this.scout.account.setSkill(
                     skill.label,
                     skill.uri,
@@ -2274,6 +2284,14 @@ class CouseListStep extends Step {
             filters: JSON.stringify(this.scout.account.getFilters()),
         };
 
+        const newState = JSON.stringify(params);
+
+        if (this.lastState == newState) {
+            console.log("nothing changed");
+            return;
+        }
+        this.lastState = newState;
+
         const url = "./scout-search?" + new URLSearchParams(params);
         const response = await fetch(url);
 
@@ -2284,9 +2302,14 @@ class CouseListStep extends Step {
                 for (const resultid in set.results) {
                     const result = results.sets[setid].results[resultid];
                     for (const levelid in result.levels) {
-                        const level = results.sets[setid].results[resultid].levels[levelid];
+                        const level =
+                            results.sets[setid].results[resultid].levels[
+                                levelid
+                            ];
                         if (Object.keys(this.levelmapping).includes(level)) {
-                            results.sets[setid].results[resultid].levels[levelid] = this.levelmapping[level];
+                            results.sets[setid].results[resultid].levels[
+                                levelid
+                            ] = this.levelmapping[level];
                         }
                     }
                 }
@@ -2304,7 +2327,7 @@ class CouseListStep extends Step {
 class Filter {
     /**
      * Represents the menu of the filter.
-     * @type {Menu}
+     * @type {FilterMenu}
      */
     menu;
 
@@ -2376,7 +2399,7 @@ class Filter {
      * Reset the filter.
      */
     reset() {
-        this.menu.onChange();
+        // this.menu.onChange();
         this.menu.update();
     }
 
@@ -2548,17 +2571,19 @@ class LocationFilter extends Filter {
      * Initialize rendering of the location filter.
      */
     initRender() {
-        super.initRender();
+        this.node = this.menu.node.querySelector("#filter-" + this.name);
+        this.selectedChoice = this.menu.step.scout.account.getFilter(this.name);
 
         if (!this.selectedChoice) {
             this.selectedChoice = {};
         }
 
         this.autocompleter = new LocationAutocompleter(
-            this,
-            () => this.storeChoice(),
+            this.menu.step,
             () => {
-                this.storeChoice();
+                this.onChange();
+            },
+            () => {
                 this.onChange();
             }
         );
@@ -2907,7 +2932,7 @@ class FilterMenu {
      */
     reset() {
         this.filters.forEach((filter) => filter.reset());
-        this.onChange();
+        // this.onChange();
     }
 
     /**
@@ -2991,7 +3016,12 @@ class Autocompleter {
         this.clearElm = step.node.querySelector(".clear-input");
 
         // Set up actions of autocomplete input.
-        this.inputElm.addEventListener("input", () => this.autocomplete());
+        this.inputElm.addEventListener(
+            "input",
+            debounce(async () => {
+                this.autocomplete();
+            }, 300)
+        );
 
         // Set up action to clear autocomplete-input.
         this.clearElm.addEventListener("click", () => {
@@ -3273,19 +3303,19 @@ class Lang {
      * @type {Object}
      */
     static #langstrings;
-    /** 
-    * Private static property to store the current language code. 
-    * @private 
-    * @type {string} 
-    */ 
+    /**
+     * Private static property to store the current language code.
+     * @private
+     * @type {string}
+     */
     static #langcode;
 
-     /** 
-     * Initializes the Lang class with the specified language code. 
-     * If no language code is provided, it defaults to "de" (German). 
-     * @param {string} [langcode="de"] - The language code to initialize with. 
-     * @returns {Promise} - A promise that resolves when the initialization is complete. 
-     */ 
+    /**
+     * Initializes the Lang class with the specified language code.
+     * If no language code is provided, it defaults to "de" (German).
+     * @param {string} [langcode="de"] - The language code to initialize with.
+     * @returns {Promise} - A promise that resolves when the initialization is complete.
+     */
     static async init(langcode = "de") {
         Lang.#langcode = langcode;
         const filepath = "core51/wisyki/lang/" + Lang.#langcode + ".json";
@@ -3293,11 +3323,11 @@ class Lang {
         Lang.#langstrings = await response.json();
     }
 
-     /** 
-     * Retrieves a language string based on the provided key. 
-     * @param {string} key - The key of the language string. 
-     * @returns {string} The language string. 
-     */ 
+    /**
+     * Retrieves a language string based on the provided key.
+     * @param {string} key - The key of the language string.
+     * @returns {string} The language string.
+     */
     static getString(key) {
         if (!Lang.#langstrings.hasOwnProperty(key)) {
             console.error(
@@ -3312,24 +3342,24 @@ class Lang {
         return Lang.#langstrings[key];
     }
 
-     /** 
-     * Renders a Mustache template with the provided view and partials. 
-     * @param {string} template - The Mustache template. 
-     * @param {Object} view - The view object. 
-     * @param {Object|null} partials - The partials object. 
-     * @param {Object|null} config - The configuration object. 
-     * @returns {string} The rendered template. 
-     */ 
+    /**
+     * Renders a Mustache template with the provided view and partials.
+     * @param {string} template - The Mustache template.
+     * @param {Object} view - The view object.
+     * @param {Object|null} partials - The partials object.
+     * @param {Object|null} config - The configuration object.
+     * @returns {string} The rendered template.
+     */
     static render(template, view = {}, partials = null, config = null) {
         view.lang = Lang.#langstrings;
         return Mustache.render(template, view, partials, config);
     }
 }
 
- /** 
- * Sets the CSS property "--doc-height" to the height of the app. 
- * @returns {void} 
- */ 
+/**
+ * Sets the CSS property "--doc-height" to the height of the app.
+ * @returns {void}
+ */
 function setCSSPropertyDocHeight() {
     document.documentElement.style.setProperty(
         "--doc-height",
@@ -3337,11 +3367,11 @@ function setCSSPropertyDocHeight() {
     );
 }
 
- /** 
- * Sets the virtual keyboard status based on the provided event. 
- * @param {Event} event - The event object. 
- * @returns {void} 
- */ 
+/**
+ * Sets the virtual keyboard status based on the provided event.
+ * @param {Event} event - The event object.
+ * @returns {void}
+ */
 function setVirtualKeyboardStatus(event) {
     if (
         (event.target.height * event.target.scale) / window.screen.height <
@@ -3412,3 +3442,21 @@ function enable(node) {
     node.removeAttribute("disabled");
     show(node);
 }
+
+/**
+ * Creates a debounced version of a function that delays its execution until a certain delay has passed
+ * since the last invocation.
+ *
+ * @param {Function} func - The function to be debounced.
+ * @param {number} delay - The delay in milliseconds before invoking the function.
+ * @returns {Function} - The debounced version of the function.
+ */
+function debounce(func, delay) {
+    return function (...args) {
+        clearTimeout(timerId);
+        timerId = setTimeout(() => {
+            func.apply(this, args);
+        }, delay);
+    };
+}
+let timerId;

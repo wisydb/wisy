@@ -1252,7 +1252,7 @@ details[open]>summary::after {
     position: sticky;
     top: -43px;
     background-color: white;
-    z-index: 200;
+    z-index: 20;
 }
 
 .result-link {
@@ -1309,7 +1309,7 @@ details[open]>summary::after {
     position: sticky;
     top: -16px;
     background-color: white;
-    z-index: 100;
+    z-index: 10;
 }
 
 .complevel-filter::after {
