@@ -154,7 +154,7 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 		return $querystring;
 	}
 
-	function search($skills, $filters) {
+	function search($skills, $filters, $limit) {
 		$matches = array();
 		$querystring = $this->get_querystring($skills, $filters);
 
@@ -201,7 +201,7 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 		$filterDurs = array();
 
 		// Get search results for every skill.
-		$results = $this->search($skills, $filters);
+		$results = $this->search($skills, $filters, $limit);
 
 		$start2 = new DateTime();
 
@@ -275,7 +275,7 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 		foreach ($skills as $skill) {
 			$skillresults = array();
 			foreach ($results as $key => $course) {
-				if (in_array(utf8_encode($skill->label), $course['tags']) OR in_array(utf8_encode(preg_replace('/ +\(ESCO\)/', '', $skill->label)), $course['tags'])) {
+				if (in_array($skill->label, $course['tags']) OR in_array(preg_replace('/ +\(ESCO\)/', '', $skill->label), $course['tags'])) {
 					$skillresults[] = $course;
 				}
 			}
@@ -365,27 +365,15 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 		$start = new DateTime();
 
 		$db = new DB_Admin();
-		$today = strftime("%Y-%m-%d");
 		$db->query("SELECT d.beginn, d.beginnoptionen, d.ende, d.dauer, d.zeit_von, d.zeit_bis, d.stunden, d.preis, d.ort
 					FROM durchfuehrung d
 					INNER JOIN kurse_durchfuehrung kd ON d.id = kd.secondary_id
 					WHERE kd.primary_id = {$course['id']}
-					AND d.beginn = 0
-					ORDER BY d.beginn ASC
+					ORDER BY  d.beginn = '0000-00-00 00:00:00', d.beginn
 					LIMIT 1;
 		");
 		if (!$db->next_record()) {
-			$db->query("SELECT d.beginn, d.beginnoptionen, d.ende, d.dauer, d.zeit_von, d.zeit_bis, d.stunden, d.preis, d.ort
-					FROM durchfuehrung d
-					INNER JOIN kurse_durchfuehrung kd ON d.id = kd.secondary_id
-					WHERE kd.primary_id = {$course['id']}
-					AND d.beginn >= '$today'
-					ORDER BY d.beginn ASC
-					LIMIT 1;
-			");
-			if (!$db->next_record()) {
-				return null;
-			}
+			$durchfuehrung = array('preis' => -1);
 		}
 		$durchfuehrung = $db->Record;
 
@@ -407,7 +395,8 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 					AND s.tag_type = 0
 					GROUP BY k.id, t.thema;");
 		if (!$db->next_record()) {
-			return null;
+			$tags = array();
+			$thema = "";
 		}
 		$tags = $db->Record['tags'];
 		$thema = $db->Record['thema'];

@@ -1134,6 +1134,10 @@ p.current-level {
     gap: 5px;
 }
 
+.level-goal-list span:not(:last-of-type)::after {
+    content: ",";
+}
+
 .level-goal-list .level-goal {
     flex-grow: 1;
     text-align: center;

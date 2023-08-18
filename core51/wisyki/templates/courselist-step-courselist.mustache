@@ -6,12 +6,20 @@
         {{ /reason }}
         <span class="description-label">{{ lang.courseliststep:coursetitle }}</span>
         <span class="description-item">{{ title }}</span>
-        {{ #levels }}
-        <span class="description-label">{{ lang.courseliststep:levelgoal }}</span>
-        <span class="description-item level-goal-list">
+        {{ #provider }}
+        <span class="description-label">{{ lang.courseliststep:provider }}</span>
+        <span class="description-item">
             <span>{{ . }}</span>
         </span>
-        {{ /levels}}
+        {{ /provider}}
+        {{ #showLevels }}
+        <span class="description-label">{{ lang.courseliststep:levelgoal }}</span>
+        <span class="description-item level-goal-list">
+            {{ #levels }}
+            <span>{{ . }}</span>
+            {{ /levels}}
+        </span>
+        {{ /showLevels }}
         <span class="description-label">{{ lang.courseliststep:nextdate }}</span>
         <span class="description-item">
             {{{ nextDate }}}

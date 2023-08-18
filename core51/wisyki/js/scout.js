@@ -2097,9 +2097,10 @@ class CouseListStep extends Step {
             let filteredResults = [];
             let label = set.label.replace(/ +\(ESCO\)/, "");
             let currentSkill;
-            if (label == "airecommends") {
-                label = Lang.getString("courseliststep:airecommends");
-                filteredResults = set.results;
+            if (!set.skill) {
+                label = Lang.getString("courseliststep:" + set.label);
+
+                filteredResults = this.getFilteredCourselist(set.results);
             } else {
                 for (let skill of Object.values(skills)) {
                     if (skill.label == set.skill.label) {
@@ -2153,14 +2154,19 @@ class CouseListStep extends Step {
      * @param {number} level - The level of the course.
      * @returns {Array} The filtered array of courses.
      */
-    getFilteredCourselist(courses, level) {
+    getFilteredCourselist(courses, level = false) {
         const filteredResults = [];
         courses.forEach((course) => {
-            if (course.levels.includes(level)) {
-                // Copy course object to new variable.
-
+            if (level) {
+                if (course.levels.includes(level)) {
+                    // Copy course object to new variable.
+                    const newcourse = Object.assign({}, course);
+                    newcourse.showLevels = false;
+                    filteredResults.push(newcourse);
+                }
+            } else {
                 const newcourse = Object.assign({}, course);
-                newcourse.levels = null;
+                newcourse.showLevels = true;
                 filteredResults.push(newcourse);
             }
         });
@@ -2312,19 +2318,19 @@ class CouseListStep extends Step {
                 // Translate levels Niveau A, B, C to the level names definded by the language file.
                 for (const levelid in result.levels) {
                     const level =
-                        results.sets[setid].results[resultid].levels[
-                            levelid
-                        ];
+                        results.sets[setid].results[resultid].levels[levelid];
                     if (Object.keys(this.levelmapping).includes(level)) {
-                        results.sets[setid].results[resultid].levels[
-                            levelid
-                        ] = this.levelmapping[level];
+                        results.sets[setid].results[resultid].levels[levelid] =
+                            this.levelmapping[level];
                     }
                 }
 
                 // Get LangString for ai reccomendation reasons.
                 if (results.sets[setid].results[resultid].reason) {
-                    results.sets[setid].results[resultid].reason = Lang.getString(results.sets[setid].results[resultid].reason[0]);
+                    results.sets[setid].results[resultid].reason =
+                        Lang.getString(
+                            results.sets[setid].results[resultid].reason[0]
+                        );
                 }
             }
         }
