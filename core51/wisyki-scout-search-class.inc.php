@@ -51,7 +51,7 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 	 * @param object $filters Filtersettings to narrow the search results.
 	 * @return string The querystring.
 	 */
-	function get_querystring(object $skills, object $filters, ): string {
+	function get_querystring(object $skills, object $filters): string {
 		$querystring = '';
 
 		$tags = array();
@@ -240,13 +240,14 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 		foreach ($skills as $skill) {
 			$base .= ', ' . $skill->label . ': ' . $skill->levelGoal;
 		}
-		// Sort the next 10 courses for the best semantic fit.
+		// Sort the top 10 courses for the best semantic fit. 
 		$semanticMatches = $pytonapi->sortsemantic($base, array_slice($results, 0, 10));
+		// Select the top 3 semantic matches. 
 		$topSemanticMatches = array_slice($semanticMatches, 0, 3);
 		foreach ($topSemanticMatches as $key => $course) {
 			$topSemanticMatches[$key]['reason'][] = 'semanticMatch';
 		}
-		// Add the 2 best fitting coursesto the AI suggestions.
+		// Add the best fitting courses to the AI suggestions. 
 		$ai_suggestions = array_merge($ai_suggestions, $topSemanticMatches);
 
 		// Remove duplicates from ai_suggestions.
@@ -262,7 +263,7 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 		}
 		$ai_suggestions = array_values($uniqueCourses2);
 
-		
+
 		// Build the result set for the ai suggestions.
 		$sets[] = array(
 			'label' => 'airecommends',
@@ -434,10 +435,6 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 			'workload' => utf8_encode($this->get_workload($durchfuehrung)),
 			'price' => utf8_encode($this->get_price($durchfuehrung)),
 			'location' => utf8_encode($durchfuehrung['ort']),
-			// 'nextDate' => utf8_encode("k. A."),
-			// 'workload' => utf8_encode("k. A."),
-			// 'price' => utf8_encode("k. A."),
-			// 'location' => utf8_encode("k. A."),
 			'tags' => explode(',', utf8_encode($tags)),
 			'thema' => utf8_encode($thema),
 			'skillMatches' => $course['skillMatches'],

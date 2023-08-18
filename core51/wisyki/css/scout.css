@@ -1212,11 +1212,19 @@ ul.result-list {
     margin-bottom: 1em;
 }
 
-.result-list>li:first-of-type details summary span:first-child::before {
+.result-list>li:first-of-type details summary span:first-child::before, .ai-recommendation-reason::before {
     content: url(/files/wisyki/recommendation_blue_24dp.svg);
     display: inline-block !important;
     vertical-align: middle;
     margin: 0 5px;
+}
+
+.ai-recommendation-reason {
+    grid-column: span 2;
+}
+
+.ai-recommendation-reason::before {
+    margin-left: 0;
 }
 
 .result-list>li:first-of-type details summary span {
@@ -1282,6 +1290,7 @@ details[open]>summary::after {
 
 .result-list>li:first-of-type summary {
     border: 2px solid var(--main-color);
+    box-shadow: 0px 4px 4px -3px rgba(0,0,0, 0.2);
 }
 
 
@@ -1310,6 +1319,7 @@ details[open]>summary::after {
     top: -16px;
     background-color: white;
     z-index: 10;
+    box-shadow: 0px 4px 4px -3px rgba(0,0,0, 0.2);
 }
 
 .complevel-filter::after {

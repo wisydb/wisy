@@ -2297,27 +2297,39 @@ class CouseListStep extends Step {
 
         if (response.ok) {
             const results = await response.json();
-            for (const setid in results.sets) {
-                const set = results.sets[setid];
-                for (const resultid in set.results) {
-                    const result = results.sets[setid].results[resultid];
-                    for (const levelid in result.levels) {
-                        const level =
-                            results.sets[setid].results[resultid].levels[
-                                levelid
-                            ];
-                        if (Object.keys(this.levelmapping).includes(level)) {
-                            results.sets[setid].results[resultid].levels[
-                                levelid
-                            ] = this.levelmapping[level];
-                        }
-                    }
-                }
-            }
-            return results;
+            return this.cleanResults(results);
         } else {
             console.error("HTTP-Error: " + response.status);
         }
+    }
+
+    cleanResults(results) {
+        // Go over every result.
+        for (const setid in results.sets) {
+            const set = results.sets[setid];
+            for (const resultid in set.results) {
+                const result = results.sets[setid].results[resultid];
+                // Translate levels Niveau A, B, C to the level names definded by the language file.
+                for (const levelid in result.levels) {
+                    const level =
+                        results.sets[setid].results[resultid].levels[
+                            levelid
+                        ];
+                    if (Object.keys(this.levelmapping).includes(level)) {
+                        results.sets[setid].results[resultid].levels[
+                            levelid
+                        ] = this.levelmapping[level];
+                    }
+                }
+
+                // Get LangString for ai reccomendation reasons.
+                if (results.sets[setid].results[resultid].reason) {
+                    results.sets[setid].results[resultid].reason = Lang.getString(results.sets[setid].results[resultid].reason[0]);
+                }
+            }
+        }
+
+        return results;
     }
 }
 

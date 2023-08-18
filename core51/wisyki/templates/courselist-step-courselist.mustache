@@ -1,6 +1,9 @@
 {{ #results }}
 <li class="course-preview">
     <div class="course-details">
+        {{ #reason }}
+        <span class="ai-recommendation-reason">{{ . }}</span>
+        {{ /reason }}
         <span class="description-label">{{ lang.courseliststep:coursetitle }}</span>
         <span class="description-item">{{ title }}</span>
         {{ #levels }}
