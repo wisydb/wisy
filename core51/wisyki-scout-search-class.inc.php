@@ -84,7 +84,7 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 					$broaderSkillTagID = $this->lookupTag($broaderSkill);
 					if ($broaderSkillTagID) {
 						// $querystring .= ' ODER ' . $similarSkill;
-						$tags[] = $broaderSkillTagID;
+						// $tags[] = $broaderSkillTagID;
 					}
 				}
 			}
@@ -216,11 +216,6 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 		}
 		$results = array_values($uniqueCourses);
 
-		// Remove keys that are not relevant for the client.
-		foreach ($results as $key => $course) {
-			unset($results[$key]['description']);
-		}
-
 
 		// Order search results by skill and ai recommendations.
 		$sets = array();
@@ -240,8 +235,8 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 		foreach ($skills as $skill) {
 			$base .= ', ' . $skill->label . ': ' . $skill->levelGoal;
 		}
-		// Sort the top 10 courses for the best semantic fit. 
-		$semanticMatches = $pytonapi->sortsemantic($base, array_slice($results, 0, 10));
+		// Sort all courses for the best semantic fit. 
+		$semanticMatches = $pytonapi->sortsemantic($base, $results);
 		// Select the top 3 semantic matches. 
 		$topSemanticMatches = array_slice($semanticMatches, 0, 3);
 		foreach ($topSemanticMatches as $key => $course) {
@@ -259,9 +254,16 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 				$uniqueCourses2[$courseId] = $course;
 			} else {
 				$uniqueCourses2[$courseId]['reason'] = array_merge($uniqueCourses2[$courseId]['reason'], $course['reason']);
+				$uniqueCourses2[$courseId]['score'] = $course['score'];
 			}
 		}
 		$ai_suggestions = array_values($uniqueCourses2);
+
+		// Remove keys that are not relevant for the client.
+		foreach ($semanticMatches as $key => $course) {
+			unset($semanticMatches[$key]['description']);
+			unset($semanticMatches[$key]['embedding']);
+		}
 
 
 		// Build the result set for the ai suggestions.
@@ -274,8 +276,9 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 		// Build results sets for every skill by ordering all results by skill.
 		foreach ($skills as $skill) {
 			$skillresults = array();
-			foreach ($results as $key => $course) {
+			foreach ($semanticMatches as $key => $course) {
 				if (in_array($skill->label, $course['tags']) OR in_array(preg_replace('/ +\(ESCO\)/', '', $skill->label), $course['tags'])) {
+					unset($course['tags']);
 					$skillresults[] = $course;
 				}
 			}
@@ -352,7 +355,7 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 					FROM anbieter 
 					WHERE id=" . $course['anbieter']);
 		if (!$db->next_record()) {
-			JSONResponse::error500();
+			JSONResponse::error500('Provider not found for course with id: ' . $course['id']);
 		}
 		$provider = $db->Record;
 
@@ -385,11 +388,12 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 		$start = new DateTime();
 
 		$db = new DB_Admin();
-		$db->query("SELECT GROUP_CONCAT(s.tag_name) as tags, t.thema
+		$db->query("SELECT GROUP_CONCAT(s.tag_name) as tags, t.thema, ke.embedding
 					FROM kurse k
 					LEFT JOIN x_kurse_tags ks ON k.id = ks.kurs_id
 					LEFT JOIN x_tags s ON ks.tag_id = s.tag_id
 					LEFT JOIN themen t ON k.thema = t.id
+					LEFT JOIN kurse_embedding ke ON ke.kurs_id = k.id
 					WHERE k.id = {$course['id']}
 					AND s.tag_eigenschaften IN (-1, 0, 524288, 1048576)
 					AND s.tag_type = 0
@@ -397,9 +401,11 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 		if (!$db->next_record()) {
 			$tags = array();
 			$thema = "";
+			$embedding = null;
 		}
 		$tags = $db->Record['tags'];
 		$thema = $db->Record['thema'];
+		$embedding = $db->Record['embedding'];
 
 		$end = new DateTime();
 		$dur = $start->diff($end);
@@ -416,7 +422,6 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 		return array(
 			'id' => $course['id'],
 			'title' => utf8_encode($course['titel']),
-			'description' => utf8_encode($course['beschreibung']),
 			'provider' => utf8_encode($provider['suchname']),
 			'levels' => $courseLevels,
 			'mode' => utf8_encode($this->get_course_mode($course['id'])),
@@ -427,6 +432,7 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 			'tags' => explode(',', utf8_encode($tags)),
 			'thema' => utf8_encode($thema),
 			'skillMatches' => $course['skillMatches'],
+			'embedding' => $embedding,
 		);
 	}
 

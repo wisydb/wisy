@@ -1979,8 +1979,95 @@ class WISY_SYNC_RENDERER_CLASS
 			$lastsync = $this->statetable->readState('lastsync.kurse.global', '0000-00-00 00:00:00');
 	}
 
-	function classifyLearningOutcome($deepupdate)
-	{
+	function updateEmbeddings($deepupdate) {
+		$this->prepareEditEnv($deepupdate);
+
+		// Check for UserId.
+		if (!isset($_REQUEST['userid'])) {
+			$this->log("userid ist zwingend erforderlich.");
+			exit();
+		} else {
+			$_SESSION['g_session_userid'] = $_REQUEST['userid'];
+		}
+
+		// create a new DB_Admin object
+		$db = new DB_Admin();
+
+		require_once($_SERVER['DOCUMENT_ROOT'] . '/core51/wisyki-python-class.inc.php');
+		$pythonAPI = new WISYKI_PYTHON_CLASS;
+
+		// The amount of courses to be classified. 30 Courses take about 1 minute to compute.
+		$limit = ""; // Set default.
+		if (!empty($_REQUEST['batchsize']) && intval($_REQUEST['batchsize']) > 0) {
+			$limit = 'ORDER BY RAND() LIMIT ' . intval($_REQUEST['batchsize']);
+		}
+		$wherecourseidsql = ""; // Set default.
+		if (!empty($_REQUEST['courseid']) && intval($_REQUEST['courseid']) > 0) {
+			$wherecourseidsql = "AND k.id = " . intval($_REQUEST['courseid']);
+		}
+
+		// build the SQL query to retrieve courses without levels
+		$sql = "SELECT k.id, k.titel, k.beschreibung, GROUP_CONCAT(s.tag_name) as tags, t.thema
+				FROM kurse k
+				LEFT JOIN x_kurse_tags ks ON k.id = ks.kurs_id
+				LEFT JOIN x_tags s ON ks.tag_id = s.tag_id
+				LEFT JOIN themen t ON k.thema = t.id
+				LEFT JOIN kurse_embedding ke ON ke.kurs_id = k.id
+				WHERE k.freigeschaltet IN (1, 4)
+				$wherecourseidsql
+				AND (
+					-- Courses without embedding or with old embedding
+					ke.kurs_id IS NULL -- No embedding present
+					OR ke.date_modified < k.date_modified -- Embedding older than kurs
+				)
+				AND (
+					-- Courses that have skills associated with tehm and therefore are relevant for the scout
+					(s.tag_eigenschaften IN (0, 524288, 1048576) AND s.tag_type = 0) -- Sachstichwort OR ESCO-Kompetenz OR ESCO-Tätigkeit
+					OR s.tag_id IN (288, 258, 107, 354, 350, 349) -- Sprachniveaus A1-C2
+				)
+				GROUP BY k.id, t.thema
+				$limit";
+
+		// execute the SQL query and retrieve the courses
+		if (!$db->query($sql)) {
+			$this->log("Error executing sql: $sql");
+		}
+		
+		$this->log("For " . $db->ResultNumRows . " courses embeddings will be calculated.");
+
+		$coursecount = 0;
+		$updatedcount = 0;
+
+		// loop through the courses and generate and store the embeddings for the course description.
+		while ($db->next_record()) {
+			$coursecount++;
+			$course = $db->Record;
+			
+			$doc = utf8_encode($course['title']) . ' ' . utf8_encode($course['beschreibung']) . ' ' . utf8_encode($course['tags']) . ' ' . utf8_encode($course['thema']);
+
+			$this->log("Calculating embedding for course {$course['id']}, " . $course['title']);
+			$embeddings = $pythonAPI->getEmbeddings(array($doc));
+			if(!$embeddings) {
+				$this->log("- Failed calculating embedding.");
+				exit();
+			}
+			$embedding = json_encode($embeddings[0]);
+			
+			$db2 = new DB_Admin();
+			$sql = "REPLACE INTO kurse_embedding (kurs_id, embedding, date_modified) VALUES ({$course['id']}, '$embedding', NOW())";
+
+			if ($db2->query($sql)) {
+				$this->log(" - Calculated embedding successfully.");
+				$updatedcount++;
+			} else {
+				$this->log(" - Error: Couldn't store embedding in db.");
+			}
+		}
+		
+		$this->log("Successfully updated embeddings for $updatedcount/$coursecount courses.");
+	}
+
+	function classifyLearningOutcome($deepupdate) {
 		$this->prepareEditEnv($deepupdate);
 		require_once($_SERVER['DOCUMENT_ROOT'] . '/core51/wisyki-python-class.inc.php');
 		$pythonAPI = new WISYKI_PYTHON_CLASS;
@@ -2656,7 +2743,14 @@ class WISY_SYNC_RENDERER_CLASS
 			$this->log("********** $host: starting Classification of competency levels - if you do not read \"done.\" below, we're aborted unexpectedly and things may not work!");
 			try {
 				$this->classifyLearningOutcome(false);
-			} catch (Exception $e) {		
+			} catch (Exception $e) {
+				$this->log("********** ERROR: " . $e->getMessage());
+			}
+		} else if (isset($_GET['updateEmbeddings'])) {
+			$this->log("********** $host: starting update of course embeddings - if you do not read \"done.\" below, we're aborted unexpectedly and things may not work!");
+			try {
+				$this->updateEmbeddings(false);
+			} catch (Exception $e) {
 				$this->log("********** ERROR: " . $e->getMessage());
 			}
 		} else {
