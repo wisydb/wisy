@@ -260,9 +260,16 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 		$ai_suggestions = array_values($uniqueCourses2);
 
 		// Remove keys that are not relevant for the client.
+		foreach ($ai_suggestions as $key => $course) {
+			unset($ai_suggestions[$key]['embedding']);
+			unset($ai_suggestions[$key]['tags']);
+			unset($ai_suggestions[$key]['thema']);
+		}
+
+		// Remove keys that are not relevant for the client.
 		foreach ($semanticMatches as $key => $course) {
-			unset($semanticMatches[$key]['description']);
 			unset($semanticMatches[$key]['embedding']);
+			unset($semanticMatches[$key]['thema']);
 		}
 
 
@@ -690,7 +697,7 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 
 
 				// add result to cache
-				// $this->dbCache->insert($cacheKey, serialize($ret));
+				$this->dbCache->insert($cacheKey, serialize($ret));
 
 				if (isset($_COOKIE['debug'])) {
 					echo '<p style="background-color: yellow;">getKurseRecords(): ' . htmlspecialchars($sql) . '</p>';
