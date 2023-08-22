@@ -1216,7 +1216,7 @@ ul.result-list {
     margin-bottom: 1em;
 }
 
-.result-list>li:first-of-type details summary span:first-child::before, .ai-recommendation-reason::before {
+.result-list .airecommends details summary span:first-child::before, .ai-recommendation-reason::before {
     content: url(/files/wisyki/recommendation_blue_24dp.svg);
     display: inline-block !important;
     vertical-align: middle;
@@ -1231,7 +1231,7 @@ ul.result-list {
     margin-left: 0;
 }
 
-.result-list>li:first-of-type details summary span {
+.result-list .airecommends details summary span {
     color: var(--main-color) !important;
 }
 
@@ -1262,7 +1262,7 @@ details[open]>summary::after {
     align-items: center;
     
     position: sticky;
-    top: -43px;
+    top: -42px;
     background-color: white;
     z-index: 20;
 }
@@ -1292,7 +1292,7 @@ details[open]>summary::after {
 
 
 
-.result-list>li:first-of-type summary {
+.result-list .airecommends summary {
     border: 2px solid var(--main-color);
     box-shadow: 0px 4px 4px -3px rgba(0,0,0, 0.2);
 }
@@ -1308,7 +1308,7 @@ details[open]>summary::after {
     position: absolute;
 }
 
-.result-list>li:first-of-type .course-list>li:first-of-type:before {
+.result-list .airecommends .course-list>li:first-of-type:before {
     background-image: none;
 }
 

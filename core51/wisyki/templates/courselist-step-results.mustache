@@ -1,5 +1,10 @@
 {{ #sets }}
+{{ #skill }}
 <li>
+{{ /skill }}
+{{ ^skill }}
+<li class="airecommends">
+{{ /skill }}
     <details>
         <summary><span class="result-list__label">{{ label }}</span><span class="result-list__count">{{ countstring }}</span></summary>
         {{ #skill }}

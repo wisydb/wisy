@@ -6,7 +6,7 @@
     "course": "Kurs",
     "courses": "Kurse",
     "mostSkillsMatched": "Dieser Kurs vereint mehrere Kompetenzen",
-    "semanticMatch": "Dieser Kurs passt inhaltlich gut zu dir",
+    "semanticMatch": "Dieser Kurs passt inhaltlich zu dir zu {{ score }}%",
     "courseliststep:coursetitle": "Titel",
     "courseliststep:provider": "Anbieter",
     "courseliststep:levelgoal": "Lernziel",

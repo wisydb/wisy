@@ -2099,7 +2099,7 @@ class CouseListStep extends Step {
             let currentSkill;
             if (!set.skill) {
                 label = Lang.getString("courseliststep:" + set.label);
-
+                
                 filteredResults = this.getFilteredCourselist(set.results);
             } else {
                 for (let skill of Object.values(skills)) {
@@ -2327,9 +2327,17 @@ class CouseListStep extends Step {
 
                 // Get LangString for ai reccomendation reasons.
                 if (results.sets[setid].results[resultid].reason) {
+                    const score = results.sets[setid].results[resultid].score;
+                    const data = {};
+                    if (score) {
+                        data.score = Math.round(score*100);
+                    }
                     results.sets[setid].results[resultid].reason =
-                        Lang.getString(
-                            results.sets[setid].results[resultid].reason[0]
+                        Mustache.render(
+                            Lang.getString(
+                                results.sets[setid].results[resultid].reason[0]
+                            ),
+                            data
                         );
                 }
             }

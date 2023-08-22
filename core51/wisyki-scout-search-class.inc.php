@@ -220,14 +220,11 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 		// Order search results by skill and ai recommendations.
 		$sets = array();
 
-		// Get the first 3 courses as ai_suggestions. These are the courses that match the most skills.
-		$ai_suggestions = array_slice($results, 0, 3);
-		foreach ($ai_suggestions as $key => $course) {
-			$ai_suggestions[$key]['reason'][] = 'mostSkillsMatched';
-		}
-
 		// Sort the results based on semantic similarity.
 		$pytonapi = new WISYKI_PYTHON_CLASS();
+
+		// Build string describing the user.
+		// TODO Add additional info from account, if user loggedin.
 		$base = '';
 		if (isset($occupation) && isset($occupation->label)) {
 			$base .= $occupation->label;
@@ -235,35 +232,53 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 		foreach ($skills as $skill) {
 			$base .= ', ' . $skill->label . ': ' . $skill->levelGoal;
 		}
+
 		// Sort all courses for the best semantic fit. 
 		$semanticMatches = $pytonapi->sortsemantic($base, $results);
-		// Select the top 3 semantic matches. 
-		$topSemanticMatches = array_slice($semanticMatches, 0, 3);
-		foreach ($topSemanticMatches as $key => $course) {
-			$topSemanticMatches[$key]['reason'][] = 'semanticMatch';
-		}
-		// Add the best fitting courses to the AI suggestions. 
-		$ai_suggestions = array_merge($ai_suggestions, $topSemanticMatches);
 
-		// Remove duplicates from ai_suggestions.
-		$uniqueCourses2 = [];
-		for ($index = 0; $index < count($ai_suggestions); $index++) {
-			$course = $ai_suggestions[$index];
-			$courseId = $course['id'];
-			if (!isset($uniqueCourses2[$courseId])) {
-				$uniqueCourses2[$courseId] = $course;
-			} else {
-				$uniqueCourses2[$courseId]['reason'] = array_merge($uniqueCourses2[$courseId]['reason'], $course['reason']);
-				$uniqueCourses2[$courseId]['score'] = $course['score'];
+		$ai_suggestions = array();
+		// Get top results as the courses with the most skill matches.
+		$mostSkillMatches = array_slice($results, 0, 5);
+		// Max 5 ai suggestions. Otherwise not more than 20% of all the courses.
+		$max_suggestions = min(round(count($semanticMatches) * .2), 5);
+
+		for ($i = 0; $i < count($semanticMatches) && count($ai_suggestions) <= $max_suggestions; $i++) {
+			if ($semanticMatches[$i]['score'] < .75) {
+				// Do not recommend any courses where score is loaer than .75
+				break;
+			}
+
+			// Check if course is one of the courses with the most skill matches.
+			$mostSkillsMatched = false;
+			foreach ($mostSkillMatches as $key => $course) {
+				if ($course['id'] == $semanticMatches[$i]['id']) {
+					$mostSkillsMatched = true;
+					$semanticMatches[$i]['reason'][] = 'mostSkillsMatched';
+					break;
+				}
+			}
+			
+			// Add to ai suggestion if score is higer than 85% or mostSkillsMatched is true.
+			if ($semanticMatches[$i]['score'] > .85 OR $mostSkillsMatched) {
+				$semanticMatches[$i]['reason'][] = 'semanticMatch';
+				$ai_suggestions[] = $semanticMatches[$i];
 			}
 		}
-		$ai_suggestions = array_values($uniqueCourses2);
 
-		// Remove keys that are not relevant for the client.
-		foreach ($ai_suggestions as $key => $course) {
-			unset($ai_suggestions[$key]['embedding']);
-			unset($ai_suggestions[$key]['tags']);
-			unset($ai_suggestions[$key]['thema']);
+		// Build the result set for the ai suggestions.
+		if (count($ai_suggestions)) {
+			// Remove keys that are not relevant for the client.
+			foreach ($ai_suggestions as $key => $course) {
+				unset($ai_suggestions[$key]['embedding']);
+				unset($ai_suggestions[$key]['tags']);
+				unset($ai_suggestions[$key]['thema']);
+			}
+
+			$sets[] = array(
+				'label' => 'airecommends',
+				'count' => count($ai_suggestions),
+				'results' => $ai_suggestions,
+			);
 		}
 
 		// Remove keys that are not relevant for the client.
@@ -272,19 +287,11 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 			unset($semanticMatches[$key]['thema']);
 		}
 
-
-		// Build the result set for the ai suggestions.
-		$sets[] = array(
-			'label' => 'airecommends',
-			'count' => count($ai_suggestions),
-			'results' => $ai_suggestions,
-		);
-
 		// Build results sets for every skill by ordering all results by skill.
 		foreach ($skills as $skill) {
 			$skillresults = array();
 			foreach ($semanticMatches as $key => $course) {
-				if (in_array($skill->label, $course['tags']) OR in_array(preg_replace('/ +\(ESCO\)/', '', $skill->label), $course['tags'])) {
+				if (in_array($skill->label, $course['tags']) or in_array(preg_replace('/ +\(ESCO\)/', '', $skill->label), $course['tags'])) {
 					unset($course['tags']);
 					$skillresults[] = $course;
 				}
