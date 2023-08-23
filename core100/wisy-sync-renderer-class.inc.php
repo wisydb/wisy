@@ -1696,8 +1696,8 @@ class WISY_SYNC_RENDERER_CLASS
 				$eigenschaften = 64;
 			else
 				$eigenschaften = 524288;
-			$sqlESCO = "INSERT INTO stichwoerter (date_created, date_modified, user_created, user_modified, user_grp, user_access, stichwort, stichwort_sorted, eigenschaften, zusatzinfo, notizen, scope_note, algorithmus ) 
-		 VALUES ('$creationDate', '$creationDate','$userCreated', '$userCreated', '$userGrp', '$userAccess', '$lab','$sorted', '$eigenschaften', '$zusatzinfo', '$notizen', '$scope_note', '$algorithmus')";
+			$sqlESCO = "INSERT INTO stichwoerter (date_created, date_modified, user_created, user_modified, user_grp, user_access, stichwort, stichwort_sorted, eigenschaften, zusatzinfo, notizen, scope_note, algorithmus, esco_url ) 
+		 VALUES ('$creationDate', '$creationDate','$userCreated', '$userCreated', '$userGrp', '$userAccess', '$lab','$sorted', '$eigenschaften', '$zusatzinfo', '$notizen', '$scope_note', '$algorithmus', '$uri')";
 			$db->query($sqlESCO);
 			$sqlESCO = "SELECT stichwoerter.id FROM stichwoerter WHERE stichwoerter.stichwort = '$lab' LIMIT 1";
 			$db->query($sqlESCO);
