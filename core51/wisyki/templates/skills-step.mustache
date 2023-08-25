@@ -1,4 +1,9 @@
-<h2>{{ lang.skillsstep:heading }}</h2>
+{{ #occupation }}
+<h2>{{ lang.skillsstep:headingwithoccupation }}</h2>
+{{ /occupation }}
+{{ ^occupation }}
+<h2>{{ lang.skillsstep:headingwithoutoccupation }}</h2>
+{{ /occupation }}
 <p class="skill-counter"></p>
 <section class="autocomplete-box">
     <div class="autocomplete-box__input">
