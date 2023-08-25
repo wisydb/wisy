@@ -1898,15 +1898,20 @@ class WISY_SYNC_RENDERER_CLASS
 		curl_close($this->curl_session);
 	}
 
-	function get_level_ids($levels) {
+	function get_levels() {
+		$levels = array(
+			'A' => '',
+			'B' => '',
+			'C' => ''
+		);
 		$db = new DB_Admin(); 
-		foreach ($levels as $key => $value) {
-			$sql = 'SELECT id FROM stichwoerter WHERE stichwoerter.stichwort = "Niveau ' . $key . '"'; 
+		foreach ($levels as $key => $level) {
+			$sql = "SELECT id FROM stichwoerter WHERE stichwoerter.stichwort = 'Niveau $key'"; 
 			$db->query($sql); 
 			if ($db->next_record()) {
-				$levels[$key]['id'] = $db->Record['id']; 
+				$levels[$key] = $db->Record['id']; 
 			} 
-		} 
+		}
 	
 		return $levels; 
 	}
@@ -2021,7 +2026,7 @@ class WISY_SYNC_RENDERER_CLASS
 					OR ke.date_modified < k.date_modified -- Embedding older than kurs
 				)
 				AND (
-					-- Courses that have skills associated with tehm and therefore are relevant for the scout
+					-- Courses that have skills associated with them and therefore are relevant for the scout
 					(s.tag_eigenschaften IN (0, 524288, 1048576) AND s.tag_type = 0) -- Sachstichwort OR ESCO-Kompetenz OR ESCO-Tätigkeit
 					OR s.tag_id IN (288, 258, 107, 354, 350, 349) -- Sprachniveaus A1-C2
 				)
@@ -2067,6 +2072,17 @@ class WISY_SYNC_RENDERER_CLASS
 		$this->log("Successfully updated embeddings for $updatedcount/$coursecount courses.");
 	}
 
+	function get_filterconcepts($themaid) {
+		$concepts = array();
+		$db = new DB_Admin();
+		$sql = "SELECT concepturi FROM thema_esco WHERE themaid = $themaid";
+		$db->query($sql);
+		while ($db->next_record()) {
+			$concepts[] = $db->Record['concepturi'];
+		}
+		return $concepts;
+	}
+
 	function classifyLearningOutcome($deepupdate) {
 		$this->prepareEditEnv($deepupdate);
 		require_once($_SERVER['DOCUMENT_ROOT'] . '/core51/wisyki-python-class.inc.php');
@@ -2093,6 +2109,11 @@ class WISY_SYNC_RENDERER_CLASS
 		if (isset($_REQUEST['doESCO'])) {
 			$doESCO = boolval($_REQUEST['doESCO']);
 		}
+		
+		$asSuggestion = false; // Set default.
+		if (isset($_REQUEST['asSuggestion'])) {
+			$asSuggestion = boolval($_REQUEST['asSuggestion']);
+		}
 
 		// Check for UserId.
 		if (!isset($_REQUEST['userid'])) {
@@ -2105,23 +2126,8 @@ class WISY_SYNC_RENDERER_CLASS
 		// create a new DB_Admin object
 		$db = new DB_Admin();
 
-		$levels = [
-			'A' => [
-				'name' => 'Grundstufe', 'id' => ''
-			], 
-			'B' => [
-				'name' => 'Aufbaustufe', 'id' => ''
-			], 
-			'C' => [
-				'name' => 'Fortgeschrittenenstufe', 'id' => ''
-			],
-		];
-		$levels = $this->get_level_ids($levels);
-		$levelids = array();
-		foreach ($levels as $level) {
-			$levelids[] = $level['id'];
-		}
-		$levelidlist = join(", ", $levelids);
+		$levels = $this->get_levels();
+		$levelidlist = join(", ", array_values($levels));
 
 		$wherenocomplevel = "1=1";
 		if ($doCompLevel) {
@@ -2134,16 +2140,27 @@ class WISY_SYNC_RENDERER_CLASS
 		}
 
 		$whereesco = "1=1";
+		$wherenoescoskills = "";
 		if ($doESCO) {
+			$wherenoescoskills = "AND t.tag_eigenschaften = 524288";
 			$whereesco = "kurse.notizen NOT LIKE '%wisyki-bot-classification-esco%'";
 		}
 
 		// build the SQL query to retrieve courses without levels
-		$sql = "SELECT kurse.id, kurse.titel, kurse.beschreibung, kurse.notizen, themen.thema
+		$sql = "SELECT kurse.id, kurse.titel, kurse.beschreibung, kurse.notizen, kurse.thema as themaid, themen.thema
 				FROM kurse
 				LEFT JOIN themen
 					ON themen.id = kurse.thema
-				WHERE kurse.freigeschaltet = 1
+				WHERE kurse.freigeschaltet in (1, 4)
+				AND NOT kurse.thema = 119 -- Do not get kurse where thema is Persönliche Lebensfragen: 119
+				AND NOT EXISTS (
+					SELECT 1
+					FROM x_kurse_tags ks
+					LEFT JOIN x_tags t ON t.tag_id = ks.tag_id
+					WHERE ks.kurs_id = kurse.id
+					AND ks.tag_id = 105
+					$wherenoescoskills
+				) -- Do not get kurse that have the tag 'Sprachen'
 				$wherecourseidsql
 				AND (
 					$wherenocomplevel
@@ -2155,6 +2172,9 @@ class WISY_SYNC_RENDERER_CLASS
 
 		// execute the SQL query and retrieve the courses
 		$db->query($sql);
+		$count = $db->ResultNumRows;
+		$this->log("Start classification of $count courses");
+		$this->log("");
 
 		$updatedlevelcount = 0;
 		$updatedescocount = 0;
@@ -2185,7 +2205,7 @@ class WISY_SYNC_RENDERER_CLASS
 				if (!empty($level_prediction)) {
 					$this->log(" - AI suggests " . $level_prediction['level'] . " " . round($level_prediction['target_probability']*100, 2) . "%");
 					if ($level_prediction['target_probability'] >= $minrequiredscore) {
-						$levelid = $levels[$level_prediction['level']]['id'];
+						$levelid = $levels[$level_prediction['level']];
 						$leveldb = new DB_Admin(); 
 
 						// If there are already levels associated with the course, delete them.
@@ -2215,7 +2235,11 @@ class WISY_SYNC_RENDERER_CLASS
 			} elseif (str_contains($course['notizen'], 'wisyki-bot-classification-esco')) {
 				$this->log(" - skip esco-classification, course has already been classified");
 			} else {
-				$esco_prediction = $pythonAPI->predict_esco_terms(utf8_encode($course['titel']), utf8_encode($course['beschreibung']), utf8_encode($course['thema']), $course['tags']['Abschluss'], $course['tags']['Sachstichwort']);
+				$filterconcepts = $this->get_filterconcepts($course['themaid']);
+				if(empty($filterconcepts)) {
+					$this->log(" - no filterconcepts available for Thema: " . $course['thema']);
+				}
+				$esco_prediction = $pythonAPI->predict_esco_terms(utf8_encode($course['titel']), utf8_encode($course['beschreibung']), utf8_encode($course['thema']), $course['tags']['Abschluss'], $course['tags']['Sachstichwort'], $filterconcepts);
 				if (!empty($esco_prediction)) {
 					if (empty($esco_prediction["results"])) {
 						$this->log(" - No releveant ESCO terms found for this course.");
@@ -2241,16 +2265,24 @@ class WISY_SYNC_RENDERER_CLASS
 								continue;
 							}
 
-							// Map skill to course.
-							$sql = "INSERT INTO kurse_stichwort (primary_id, attr_id) VALUES ({$course['id']}, $skillid)"; 
-							if (!$escodb->query($sql)) {
-								$this->log(" - Error: Couldn't map Skill '{$result['title']}' tag to course. Table kurse_stichwort.)");
-								continue;
-							}
-							$sql = "INSERT INTO kurse_kompetenz (primary_id, attr_id, attr_url, suggestion) VALUES ({$course['id']}, $skillid, '{$result['uri']}', 1)"; 
-							if (!$escodb->query($sql)) {
-								$this->log(" - Error: Couldn't map Skill '{$result['title']}' tag to course. kurse_kompetenz)");
-								continue;
+							if ($asSuggestion) {
+								$sql = "REPLACE INTO kurse_kompetenz (primary_id, attr_id, attr_url, suggestion) VALUES ({$course['id']}, $skillid, '{$result['uri']}', 1)"; 
+								if (!$escodb->query($sql)) {
+									$this->log(" - Error: Couldn't map Skill '{$result['title']}' tag to course. kurse_kompetenz)");
+									continue;
+								}
+							} else {
+								$sql = "REPLACE INTO kurse_kompetenz (primary_id, attr_id, attr_url, suggestion) VALUES ({$course['id']}, $skillid, '{$result['uri']}', 0)"; 
+								if (!$escodb->query($sql)) {
+									$this->log(" - Error: Couldn't map Skill '{$result['title']}' tag to course. kurse_kompetenz)");
+									continue;
+								}
+								// Map skill to course.
+								$sql = "REPLACE INTO kurse_stichwort (primary_id, attr_id) VALUES ({$course['id']}, $skillid)"; 
+								if (!$escodb->query($sql)) {
+									$this->log(" - Error: Couldn't map Skill '{$result['title']}' tag to course. Table kurse_stichwort.)");
+									continue;
+								}
 							}
 							$this->log(" - Mapped skill '{$result['title']}' tag to course. DB updated sucessfully.");
 							$skillsmappedcount++;
@@ -2270,7 +2302,7 @@ class WISY_SYNC_RENDERER_CLASS
 					$notizen = addslashes(utf8_decode($notizen));
 					$kursdb = new DB_Admin();
 					$sql = "UPDATE kurse
-							SET notizen = '$notizen', date_modified = '$creationDate'
+							SET notizen = '$notizen', date_modified = '$creationDate', user_modified = '" . $_REQUEST['userid'] . "'
 							WHERE kurse.id = " . $course['id'];
 					$kursdb->query($sql);
 				}

@@ -162,9 +162,10 @@ class WISYKI_PYTHON_CLASS {
      * @param  string $thema            The thema of the course.
      * @param  array $abschluesse       The abschluesse of the course.
      * @param  array $sachstichworte    The sachstichworte of the course.
+     * @param  array $filterconcepts    An optional array of esco concepts for filtering the predictions. Default is an empty array. 
      * @return mixed
      */
-    public function predict_esco_terms(string $title, string $description, string $thema, array $abschluesse, array $sachstichworte) {
+    public function predict_esco_terms(string $title, string $description, string $thema, array $abschluesse, array $sachstichworte, array $filterconcepts = array()) {
         $endpoint = "/chatsearch";
         $wisytags = $sachstichworte;
         $wisytags = array_merge($wisytags, $abschluesse);
@@ -175,8 +176,10 @@ class WISYKI_PYTHON_CLASS {
         $data = [
             "doc" => $doc,
             "top_k" => 20,
-            "openai_api_key" => OPENAI_API_KEY,
-            "strict" => 2
+            // Check if constant 'OPENAI_API_KEY' is set
+            "openai_api_key" => defined('OPENAI_API_KEY') ? OPENAI_API_KEY : null,
+            "strict" => 2,
+            "filterconcepts" => $filterconcepts,
         ];
 
         $post_data = json_encode($data);
