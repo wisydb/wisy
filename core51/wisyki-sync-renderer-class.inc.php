@@ -994,10 +994,10 @@ class WISYKI_SYNC_RENDERER_CLASS
 		ignore_user_abort(true);
 
 		// allocate exclusive access
-		// if (!$this->statetable->allocateUpdatestick()) {
-		// 	$this->log("********** ERROR: $host: cannot sync now, update stick in use, please try again in about 10 minutes.");
-		// 	return;
-		// }
+		if (!$this->statetable->allocateUpdatestick()) {
+			$this->log("********** ERROR: $host: cannot sync now, update stick in use, please try again in about 10 minutes.");
+			return;
+		}
 
 		// see what to do ...
 		if (isset($_GET['syncESCO'])) {
