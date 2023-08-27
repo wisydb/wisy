@@ -719,9 +719,9 @@ class WISYKI_SYNC_RENDERER_CLASS
 
 
 		// The amount of courses to be classified. 30 Courses take about 1 minute to compute.
-		$batchsize = 1; // Set default.
+		$limit = "";
 		if (!empty($_REQUEST['batchsize']) && intval($_REQUEST['batchsize']) > 0) {
-			$batchsize = intval($_REQUEST['batchsize']);
+			$limit = "ORDER BY RAND() LIMIT " . intval($_REQUEST['batchsize']);
 		}
 
 		$wherecourseidsql = ""; // Set default.
@@ -769,20 +769,17 @@ class WISYKI_SYNC_RENDERER_CLASS
 		$levelidlist = join(", ", array_values($levels));
 
 		$wherenocomplevel = "1=1";
+		$wherenocomplevelnotice = "";
 		if ($doCompLevel) {
-			$wherenocomplevel = "(kurse.id NOT IN (
-									SELECT kurse_stichwort.primary_id 
-									FROM kurse_stichwort 
-									WHERE kurse_stichwort.attr_id IN ($levelidlist)
-								)
-								AND kurse.notizen NOT LIKE '%wisyki-bot-classification-complevel%')";
+			$wherenocomplevelnotice = "kurse.notizen NOT LIKE '%wisyki-bot-classification-complevel%'";
+			$wherenocomplevel = "OR ks.attr_id IN ($levelidlist)";
 		}
 
-		$whereesco = "1=1";
+		$wherenoesconotice = "1=1";
 		$wherenoescoskills = "";
 		if ($doESCO) {
-			$wherenoescoskills = "AND s.eigenschaften = 524288";
-			$whereesco = "kurse.notizen NOT LIKE '%wisyki-bot-classification-esco%'";
+			$wherenoescoskills = "OR s.eigenschaften = 524288";
+			$wherenoesconotice = "kurse.notizen NOT LIKE '%wisyki-bot-classification-esco%'";
 		}
 
 		// build the SQL query to retrieve courses without levels
@@ -799,17 +796,20 @@ class WISYKI_SYNC_RENDERER_CLASS
 					FROM kurse_stichwort ks
 					LEFT JOIN stichwoerter s ON ks.attr_id = s.id
 					WHERE kurse.id = ks.primary_id
-					AND ks.attr_id IN (6714, 5471, 5472, 5473, 5474, 5475, 5476) -- Do not get kurse that have the tag 'Sprachen' or Sprachniveaus A1-C2
-					$wherenoescoskills
+					AND (
+						ks.attr_id IN (6714, 5471, 5472, 5473, 5474, 5475, 5476) -- Do not get kurse that have the tag 'Sprachen' or Sprachniveaus A1-C2
+						$wherenoescoskills
+						$wherenocomplevel
+					)
 				)
 				$wherecourseidsql
 				AND (
-					$wherenocomplevel
+					$wherenocomplevelnotice
 					OR
-					$whereesco
+					$wherenoesconotice
 				)
-				ORDER BY RAND()
-				LIMIT $batchsize";
+				GROUP BY kurse.id
+				$limit";
 
 		// execute the SQL query and retrieve the courses
 		$db->query($sql);
