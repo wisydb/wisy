@@ -1,6 +1,9 @@
 window.onload = init
 
 function init() { 
+	if (!document.querySelector('select[name="f_level"]')) {
+		return;
+	}
 	const descInput = document.querySelector('textarea[name="f_beschreibung"]'); 
 	const titelInput = document.querySelector('input[name="f_titel"]'); 
 	titelInput.addEventListener('blur', () => predict(titelInput.value, descInput.value)) 
@@ -10,6 +13,8 @@ function init() {
 	descInput.addEventListener('focus', hideLevelSuggestion); 
  
 	showLevelSuggestionLoad(); 
+
+	predict(titelInput.value, descInput.value)
 } 
  
 async function predict(title, description) { 
@@ -25,7 +30,7 @@ async function predict(title, description) {
  
 	const data = {title: title, description: description}; 
 	// const url = "./wisyki-predict-comp-level.inc.php?" 
-	const url = "https://wbhessen.eu.pythonanywhere.com/predictCompLevel"
+	const url = "https://wbhessen.eu.pythonanywhere.com/predictCompLevel";
 	const response = await fetch(url, {
 		method: "POST",
 		body: JSON.stringify(data),

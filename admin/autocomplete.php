@@ -33,7 +33,7 @@ arrows beside the suggested values):
 ******************************************************************************/
 
 
-
+require_once("WisyKi/wisykistart.php");
 if( isset($_REQUEST['term']) )
 {
 	// the JSON callback
