@@ -435,6 +435,7 @@ class EDIT_DATA_CLASS
 	private function get_level_ids()
 	{
 		$levels = ['Niveau A', 'Niveau B', 'Niveau C', 'Niveau D'];
+		$levelids = array();
 
 		$db = new DB_Admin();
 		foreach ($levels as $level) {
