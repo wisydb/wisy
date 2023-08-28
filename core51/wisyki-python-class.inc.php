@@ -162,10 +162,11 @@ class WISYKI_PYTHON_CLASS {
      * @param  string $thema            The thema of the course.
      * @param  array $abschluesse       The abschluesse of the course.
      * @param  array $sachstichworte    The sachstichworte of the course.
-     * @param  array $filterconcepts    An optional array of esco concepts for filtering the predictions. Default is an empty array. 
+     * @param  array $filterconcepts    An optional array of esco concepts for filtering the predictions. Default is an empty array.
+     * @param  int $strict              Level of strictness of filtering the results.
      * @return mixed
      */
-    public function predict_esco_terms(string $title, string $description, string $thema, array $abschluesse, array $sachstichworte, array $filterconcepts = array()) {
+    public function predict_esco_terms(string $title, string $description, string $thema, array $abschluesse, array $sachstichworte, array $filterconcepts = array(), int $strict = 2) {
         $endpoint = "/chatsearch";
         $wisytags = $sachstichworte;
         $wisytags = array_merge($wisytags, $abschluesse);
@@ -178,7 +179,7 @@ class WISYKI_PYTHON_CLASS {
             "top_k" => 20,
             // Check if constant 'OPENAI_API_KEY' is set
             "openai_api_key" => defined('OPENAI_API_KEY') ? OPENAI_API_KEY : null,
-            "strict" => 2,
+            "strict" => $strict,
             "filterconcepts" => $filterconcepts,
         ];
 

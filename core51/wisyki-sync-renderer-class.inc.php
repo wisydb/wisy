@@ -754,6 +754,11 @@ class WISYKI_SYNC_RENDERER_CLASS
 			$minrequiredscore = floatval($_REQUEST['minrequiredscore']);
 		}
 
+		$strict = 2;
+		if (isset($_REQUEST['strict'])) {
+			$strict = intval($_REQUEST['strict']);
+		}
+
 		// Check for UserId.
 		if (!isset($_REQUEST['userid'])) {
 			$this->log("userid ist zwingend erforderlich.");
@@ -881,7 +886,7 @@ class WISYKI_SYNC_RENDERER_CLASS
 				if(empty($filterconcepts)) {
 					$this->log(" - no filterconcepts available for Thema: " . $course['thema']);
 				}
-				$esco_prediction = $this->pythonAPI->predict_esco_terms(utf8_encode($course['titel']), utf8_encode($course['beschreibung']), utf8_encode($course['thema']), $course['stichworte']['Abschluss'], $course['stichworte']['Sachstichwort'], $filterconcepts);
+				$esco_prediction = $this->pythonAPI->predict_esco_terms(utf8_encode($course['titel']), utf8_encode($course['beschreibung']), utf8_encode($course['thema']), $course['stichworte']['Abschluss'], $course['stichworte']['Sachstichwort'], $filterconcepts, $strict);
 				if (!empty($esco_prediction)) {
 					if (empty($esco_prediction["results"])) {
 						$this->log(" - No releveant ESCO terms found for this course.");
