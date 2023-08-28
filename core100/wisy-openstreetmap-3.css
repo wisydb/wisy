@@ -1,9 +1,0 @@
-
-/* our changes to the leaflet css */
-
-/* flat, transparent attribution field */
-.leaflet-container .leaflet-control-attribution		{ background-color:inherit; box-shadow:none; margin:0; }
-.leaflet-container .leaflet-control-attribution a	{ color: black; font-weight: normal; }
-
-/* no underlined zoom buttons */
-.leaflet-control-zoom-in, .leaflet-control-zoom-out	{ text-decoration: none !important; } 

@@ -1,0 +1,40 @@
+<header>
+    <div class="scout-head">
+        <img src="/files/wisyki/scout-header.png" class="scout-head__background"></img>
+        <div class="scout-head__heading">
+            <h1>Scout</h1>
+            <p>{{ lang.scoutheadtext }}</p>
+        </div>
+    </div>
+    <section class="scout-nav hide-future-steps">
+        <span>{{ lang.path:stepnavlabel }}</span>
+        <div class="scout-nav__progress">
+            <ul>
+                {{ #steps }}
+                <li><button to-step="{{ index }}">{{ nav_label }}</button></li>
+                {{ /steps }}
+            </ul>
+        </div>
+        <button class="btn-link" id="scout-abort"><span>{{ lang.path:cancel }}</span></button>
+    </section>
+</header>
+<section class="steps">
+    <div>
+        {{ #steps }}
+        <div class="step-container">
+            <div class="loader"></div>
+            <article class="step" id="{{ name }}"></article>
+        </div>
+        {{ /steps }}
+    </div>
+    <section class="help">
+        <div class="modal help-modal display-none">
+            <div class="modal__backdrop"></div>
+            <div class="modal__content">
+                <article>{{{ lang.skillstep:help }}}</article>
+                <button type="button" class="close-modal-btn btn-link" title="{{ lang.help:understood }}">{{ lang.help:understood }}</button>
+            </div>
+        </div>
+        <button type="button" class="open-modal-btn btn-link" title="{{ lang.help }}"><i class="icon help-icon"></i></button>
+    </section>
+</section>

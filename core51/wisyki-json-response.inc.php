@@ -61,7 +61,7 @@ class JSONResponse {
         http_response_code(500);
         echo json_encode(array(
             'error_code' => '500',
-            'error_message' => isset($message) ? $message : 'Server error - please retry again at a later time.',
+            'error_message' => !empty($message) ? $message : 'Server error - please retry again at a later time.',
         ));
         die();
     }

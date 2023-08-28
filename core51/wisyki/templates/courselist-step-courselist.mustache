@@ -1,0 +1,51 @@
+{{ #results }}
+<li class="course-preview">
+    <div class="course-details">
+        {{ #reason }}
+        <span class="ai-recommendation-reason">{{ . }}</span>
+        {{ /reason }}
+        <span class="description-label">{{ lang.courseliststep:coursetitle }}</span>
+        <span class="description-item">{{ title }}</span>
+        {{ #provider }}
+        <span class="description-label">{{ lang.courseliststep:provider }}</span>
+        <span class="description-item">
+            <span>{{ . }}</span>
+        </span>
+        {{ /provider}}
+        {{ #showLevels }}
+        <span class="description-label">{{ lang.courseliststep:levelgoal }}</span>
+        <span class="description-item level-goal-list">
+            {{ #levels }}
+            <span>{{ . }}</span>
+            {{ /levels}}
+        </span>
+        {{ /showLevels }}
+        <span class="description-label">{{ lang.courseliststep:nextdate }}</span>
+        <span class="description-item">
+            {{{ nextDate }}}
+        </span>
+        <span class="description-label">{{ lang.courseliststep:mode }}</span>
+        <span class="description-item">{{ mode }}</span>
+        <span class="description-label">{{ lang.courseliststep:price }}</span>
+        <span class="description-item">{{{ price }}}</span>
+        <span class="description-label">{{ lang.courseliststep:location }}</span>
+        <span class="description-item">{{ location }}</span>
+    </div>
+    <div class="course-preview__actions">
+        <button class="bookmark-btn labeled-icon-btn" courseid="{{ id }}">
+            <i class="icon star-icon"></i>{{ lang.courseliststep:addtofavourites }}
+        </button>
+        <button class="share-btn labeled-icon-btn">
+            <i class="icon share-icon"></i>{{ lang.courseliststep:share }}
+        </button>
+        <a class="to-course-btn btn" href="/k{{ id }}" target="_blank" rel="noreferrer noopener">
+            <span>{{ lang.courseliststep:gotocourse }}</span>
+        </a>
+    </div>
+</li>
+{{ /results }}
+{{ ^results }}
+<li class="course-preview">
+    <span class="noresults">{{ lang.noresults }}</span>
+</li>
+{{ /results }}

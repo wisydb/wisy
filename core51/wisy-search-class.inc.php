@@ -42,7 +42,6 @@ class WISY_SEARCH_CLASS
 	var $framework;
 	
 	var $db;
-	private $dbCache;
 	
 	var $error;
 	var $tokens;
@@ -56,7 +55,11 @@ class WISY_SEARCH_CLASS
 	var $assumedLocation;
 	var $globalTagHeap;
 	
-	private $rawCanCache;
+	protected $dbCache;
+	protected $rawCanCache;
+	protected $secneeded;
+	protected $queryString;
+	protected $randSeed;
 	
 	function __construct(&$framework, $param)
 	{

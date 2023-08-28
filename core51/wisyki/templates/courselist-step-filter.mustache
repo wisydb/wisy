@@ -1,0 +1,25 @@
+<div class="modal filter-modal display-none">
+    <div class="modal__backdrop"></div>
+    <div class="modal__content">
+        <div class="filter-header">
+            <p>{{ lang.courseliststep:filter }}</p>
+            <button class="filter-close-btn" title="{{ lang.courseliststep:filterclose }}"><i class="icon close-icon"></i></button>
+        </div>
+        <fieldset class="filter-nav">
+            {{ #filters }}
+                <input type="radio" id="filter-nav-{{ name }}" name="filter-nav" value="filter-{{ name }}">
+                <label for="filter-nav-{{ name }}" class="btn-secondary">{{ label }}</label>
+            {{ /filters }}
+        </fieldset>
+        <div class="filter-choices">
+            {{ #filters }}
+                {{{ html }}}
+            {{ /filters }}
+        </div>
+        <div class="filter-actions">
+            <button class="btn-link filter-reset-btn"><span>{{ lang.courseliststep:filterreset }}</span></button>
+            <button class="btn-primary filter-next-btn">{{ lang.courseliststep:filternext }}</button>
+            <button class="btn-secondary filter-close-btn"><span>{{ lang.courseliststep:filtershowcourses }}</span><span class="coursecount"></span><span class="loader"></span></button>
+        </div>
+    </div>
+</div>

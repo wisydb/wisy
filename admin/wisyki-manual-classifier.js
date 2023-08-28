@@ -168,7 +168,7 @@ async function suggestSkills(title, text, thema, abschluesse, sachstichworte) {
 
     console.log(data);
 
-    const url = "https://wisyki.eu.pythonanywhere.com/predictESCO";
+    const url = "https://wbhessen.eu.pythonanywhere.com/predictESCO";
     const response = await fetch(url, {
         method: 'POST',
         headers: {

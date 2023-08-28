@@ -2,7 +2,6 @@
 
 require_once($_SERVER['DOCUMENT_ROOT'] . "/admin/sql_curr.inc.php");
 require_once($_SERVER['DOCUMENT_ROOT'] . "/admin/config/config.inc.php");
-require_once($_SERVER['DOCUMENT_ROOT'] . '/core51/wisyki-json-response.inc.php');
 
 /**
  * Class WISYKI_PYTHON_CLASS
@@ -35,8 +34,8 @@ class WISYKI_PYTHON_CLASS {
      * Constructor of WISYKI_PYTHON_CLASS.
      */
     function __construct() {
-        $this->pythonlib = dirname(__FILE__) . '/python/';
-        $this->api_uri = "https://wisyki.eu.pythonanywhere.com";
+        $this->pythonlib = dirname(__FILE__) . '/wisyki/python/';
+        $this->api_uri = "https://wbhessen.eu.pythonanywhere.com";
     }
 
     /**
@@ -62,7 +61,7 @@ class WISYKI_PYTHON_CLASS {
         $result = exec($cmd, $output, $exitcode);
 
         if (!$result) {
-            throw new Exception($errorlangstr . "\nPython output: " . implode(", ", $output) . "\n", $exitcode);
+            throw new Exception($errorlangstr . "\nPython output start: " . implode(", ", $output) . " - python output end\n", $exitcode);
         }
 
         return [$result, $exitcode];
@@ -74,7 +73,7 @@ class WISYKI_PYTHON_CLASS {
      * @param  string $text The text to extract keywords from.
      * @return mixed        Returns an array of keywords or NULL on failure.
      */
-    public function extract_keywords(string $title=null, string $text) {
+    public function extract_keywords(string $title = null, string $text) {
         // Remove wisy headings like '''Inhalte:'''.
         $text = preg_replace("/'{3}.+?'{3}/", "", $text);
         // Extracts keywords from a given text using a remote API.
@@ -103,7 +102,7 @@ class WISYKI_PYTHON_CLASS {
         $response = curl_exec($curl);
 
         if (curl_error($curl)) {
-            JSONResponse::error500('Request Error:' . curl_error($curl));
+            throw new Exception('Request Error:' . curl_error($curl));
         }
 
         curl_close($curl);
@@ -144,7 +143,7 @@ class WISYKI_PYTHON_CLASS {
         $response = curl_exec($curl);
 
         if (curl_error($curl)) {
-            JSONResponse::error500('Request Error:' . curl_error($curl));
+            throw new Exception('Request Error:' . curl_error($curl));
         }
 
         curl_close($curl);
@@ -163,24 +162,25 @@ class WISYKI_PYTHON_CLASS {
      * @param  string $thema            The thema of the course.
      * @param  array $abschluesse       The abschluesse of the course.
      * @param  array $sachstichworte    The sachstichworte of the course.
+     * @param  array $filterconcepts    An optional array of esco concepts for filtering the predictions. Default is an empty array.
+     * @param  int $strict              Level of strictness of filtering the results.
      * @return mixed
      */
-    public function predict_esco_terms(string $title, string $doc, string $thema, array $abschluesse, array $sachstichworte) {
-        $endpoint = "/predictESCO";
+    public function predict_esco_terms(string $title, string $description, string $thema, array $abschluesse, array $sachstichworte, array $filterconcepts = array(), int $strict = 2) {
+        $endpoint = "/chatsearch";
         $wisytags = $sachstichworte;
         $wisytags = array_merge($wisytags, $abschluesse);
-        $keywords = [$title, $thema];
-        $keywords = array_merge($keywords, $wisytags);
+
         // Add Keywords and topic to course description to influence the outcome of the esco suggestions, in case the course description is not descriptive enough on its own. 
-        $doc .= ' ' . $title . ' ' . join(', ', $wisytags) . join(', ', $wisytags) . ' ' . $thema;
+        $doc = $title . ' ' . $description . ' ' . join(', ', $wisytags) . ' ' . $thema;
 
         $data = [
-            "searchterms" => [
-                "keywords" => $keywords
-            ],
             "doc" => $doc,
-            "extract_keywords" => count($wisytags) == 0,
-            "exclude_irrelevant" => true
+            "top_k" => 20,
+            // Check if constant 'OPENAI_API_KEY' is set
+            "openai_api_key" => defined('OPENAI_API_KEY') ? OPENAI_API_KEY : null,
+            "strict" => $strict,
+            "filterconcepts" => $filterconcepts,
         ];
 
         $post_data = json_encode($data);
@@ -188,7 +188,7 @@ class WISYKI_PYTHON_CLASS {
         $url = $this->api_uri . $endpoint;
         $curl = curl_init($url);
         curl_setopt($curl, CURLOPT_POSTFIELDS, $post_data);
-        curl_setopt($curl, CURLOPT_TIMEOUT, 80);
+        curl_setopt($curl, CURLOPT_TIMEOUT, 40);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($curl, CURLINFO_HEADER_OUT, true);
         curl_setopt($curl, CURLOPT_POST, true);
@@ -199,7 +199,7 @@ class WISYKI_PYTHON_CLASS {
         $response = curl_exec($curl);
 
         if (curl_error($curl)) {
-            JSONResponse::error500('Request Error:' . curl_error($curl));
+            // throw new Exception(('Request Error:' . curl_error($curl));
             throw new Exception('Request Error:' . curl_error($curl), 1);
         }
 
@@ -233,7 +233,7 @@ class WISYKI_PYTHON_CLASS {
         $response = curl_exec($curl);
 
         if (curl_error($curl)) {
-            JSONResponse::error500('Request Error:' . curl_error($curl));
+            throw new Exception('Request Error:' . curl_error($curl));
         }
 
         curl_close($curl);
@@ -241,6 +241,138 @@ class WISYKI_PYTHON_CLASS {
         // Decode response and filter results for title and uri attributes.
         $response = json_decode($response, true);
         return $response;
+    }
+
+    /**
+     * Sort courses in referance to a base string based on semantic similarity.
+     *
+     * @param  string $base
+     * @param  array $courses
+     * @return array Sorted documents.
+     */
+    public function sortsemantic(string $base, array $courses) {
+        $endpoint = "/getEmbeddings";
+
+        $data = array(
+            "docs" => array($base),
+        );
+
+        $url = $this->api_uri . $endpoint;
+        $curl = curl_init($url);
+        curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLINFO_HEADER_OUT, true);
+        curl_setopt($curl, CURLOPT_POST, true);
+
+        // Set HTTP Header for POST request 
+        curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
+
+        $response = curl_exec($curl);
+
+        if (curl_error($curl)) {
+            throw new Exception('Request Error:' . curl_error($curl));
+        }
+
+        curl_close($curl);
+
+        // Decode response and filter results for title and uri attributes.
+        $base_embeddings = json_decode($response, true);
+        $base_embedding = $base_embeddings[0];
+
+        $doc_embeddings = array_map(function ($course) {
+            return json_decode($course['embedding']);
+        }, $courses);
+
+        // Calculate cosine similarity for each pair of vector arrays
+        $similarityMatrix = [];
+        $row = [];
+        foreach ($doc_embeddings as $doc_embedding) {
+            $similarity = $this->cosineSimilarity($base_embedding, $doc_embedding);
+            $row[] = $similarity;
+        }
+        $similarityMatrix = $row;
+
+        // Add score from response to every document
+        foreach ($courses as $index => $course) {
+            $courses[$index]['score'] = $similarityMatrix[$index];
+        }
+
+        // sort documents based on score
+        usort($courses, function ($a, $b) {
+            return $a['score'] < $b['score'];
+        });
+
+        return $courses;
+    }
+
+    /**
+     * Calculates the cosine similarity between two vectors.
+     * 
+     * @param array $vectorA - The first vector.
+     * @param array $vectorB - The second vector.
+     * @return float - The cosine similarity between the two vectors.
+     */
+    function cosineSimilarity($vectorA, $vectorB) {
+        if (!$vectorB) {
+            return 0;
+        }
+        // Calculate the dot product of the two vectors
+        $dotProduct = 0;
+        foreach ($vectorA as $index => $value) {
+            if (isset($vectorB[$index])) {
+                $dotProduct += $value * $vectorB[$index];
+            }
+        }
+
+        // Calculate the magnitudes of the vectors
+        $magnitudeA = sqrt(array_sum(array_map(function ($val) {
+            return $val * $val;
+        }, $vectorA)));
+
+        $magnitudeB = sqrt(array_sum(array_map(function ($val) {
+            return $val * $val;
+        }, $vectorB)));
+
+        // Calculate the cosine similarity
+        if ($magnitudeA > 0 && $magnitudeB > 0) {
+            return $dotProduct / ($magnitudeA * $magnitudeB);
+        } else {
+            return 0; // Handle division by zero case
+        }
+    }
+
+    /**
+     * Sort courses in referance to a base string based on semantic similarity.
+     *
+     * @param  array $courses
+     * @return array Sorted documents.
+     */
+    public function getEmbeddings(array $documents) {
+        $endpoint = "/getEmbeddings";
+
+        $data = array(
+            "docs" => $documents,
+        );
+
+        $url = $this->api_uri . $endpoint;
+        $curl = curl_init($url);
+        curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLINFO_HEADER_OUT, true);
+        curl_setopt($curl, CURLOPT_POST, true);
+
+        // Set HTTP Header for POST request 
+        curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
+
+        $response = curl_exec($curl);
+
+        if (curl_error($curl)) {
+            throw new Exception('Request Error:' . curl_error($curl));
+        }
+
+        curl_close($curl);
+
+        return json_decode($response, true);
     }
 
     /**
@@ -261,7 +393,7 @@ class WISYKI_PYTHON_CLASS {
         $response = curl_exec($curl);
 
         if (curl_error($curl)) {
-            JSONResponse::error500('Request Error:' . curl_error($curl));
+            throw new Exception('Request Error:' . curl_error($curl));
         }
 
         curl_close($curl);

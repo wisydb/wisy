@@ -2634,6 +2634,9 @@ class WISY_FRAMEWORK_CLASS
 
 			case 'scout-search':
 				return createWisyObject('WISYKI_SCOUT_SEARCH_CLASS', $this);
+			
+			case 'wisykisync':
+				return createWisyObject('WISYKI_SYNC_RENDERER_CLASS', $this);
 
 			case 'esco':
 				return createWisyObject('WISYKI_ESCO_CLASS', $this, $wisykiRequestPaths[1]);
