@@ -688,6 +688,11 @@ class Path {
         this.help.innerHTML = Lang.getString(
             this.currentStep.name + "step:help"
         );
+        // Update Loader text content.
+        const loadertext = this.currentStep.loader.querySelector(".loader__text");
+        loadertext.textContent = Lang.getString(
+            this.currentStep.name + "step:loading"
+        );
         // Update step.
         await this.currentStep.update();
 

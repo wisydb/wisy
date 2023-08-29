@@ -603,25 +603,37 @@ main .steps {
 
 /* Step */
 .loader {
+    margin-top: 5em;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+}
+
+.spinner {
     border: 12px solid var(--secondary-background-color);
     border-top: 12px solid var(--main-color);
     border-radius: 50%;
     width: 8em;
     height: 8em;
     animation: spin 2s linear infinite, zoomIn .4s ease-out 1;
-    position: absolute;
-    margin: 0 auto;
-    top: 5em;
-    left: calc(50vw - 4em);
     transform: scale(1);
     transition: border .2s ease-out, scale .2s ease-in;
 }
 
-.loader.hidden {
+.spinner.hidden {
     transform: scale(0);
     visibility: unset !important;
     border-top: 12px solid transparent;
     border: 12px solid transparent;
+}
+
+.loader__text {
+    margin-top: 1em;
 }
 
 button .loader {

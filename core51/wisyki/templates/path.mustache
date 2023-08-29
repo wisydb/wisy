@@ -22,7 +22,10 @@
     <div>
         {{ #steps }}
         <div class="step-container">
-            <div class="loader"></div>
+            <div class="loader">
+                <div class="spinner"></div>
+                <p class="loader__text"></p>
+            </div>
             <article class="step" id="{{ name }}"></article>
         </div>
         {{ /steps }}
