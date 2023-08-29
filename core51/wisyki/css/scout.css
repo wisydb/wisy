@@ -99,6 +99,14 @@ body {
     position: relative;
 }
 
+p {
+    color: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+    margin-bottom: inherit;
+}
+
 h1 {
     font-size: 1.5em;
     color: var(--font-color__light);
@@ -112,6 +120,7 @@ h2 {
     font-weight: bold;
     margin-bottom: .5em;
     font-family: inherit;
+    line-height: unset;
 }
 
 h3 {
@@ -123,6 +132,14 @@ h4 {
     color: var(--main-color);
     font-weight: normal;
     font-family: inherit;
+}
+
+hr {
+    background-image: linear-gradient(to right, var(--main-color), var(--main-color__highlight));
+    height: 2px;
+    width: 100%;
+    margin: unset;
+    border: unset;
 }
 
 
@@ -769,8 +786,11 @@ main .steps>div {
 }
 
 .modal__content h3 {
-    /* text-align: center; */
     margin-bottom: 1em;
+}
+
+.modal__content h4 {
+    margin-top: .3em;
 }
 
 .open-modal-btn {
