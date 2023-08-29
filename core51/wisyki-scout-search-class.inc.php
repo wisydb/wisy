@@ -65,9 +65,10 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 				$querystring .= " ODER " . $skilllabelWithoutESCO;
 			}
 
+			$tags[] = $this->lookupTag($skilllabel);
+
 			// Alternative skills.
 			if (isset($skill->similarSkills) and !empty($skill->similarSkills)) {
-				$tags[] = $this->lookupTag($skilllabel);
 				if ($skilllabelWithoutESCOTagID) {
 					// $tags[] = $this->lookupTag($skilllabelWithoutESCO);
 				}
