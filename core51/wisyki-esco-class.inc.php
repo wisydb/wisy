@@ -212,8 +212,8 @@ class WISYKI_ESCO_CLASS {
         ];
 
         // Build request url.
-        // $url = "https://ec.europa.eu/esco/api/search";
-        $url = "https://ec.europa.eu/esco/api/suggest2";
+        $url = "https://ec.europa.eu/esco/api/search";
+        // $url = "https://ec.europa.eu/esco/api/suggest2";
         $dataArray = array(
             'text' => $term,
             'language' => 'de',
@@ -407,10 +407,17 @@ class WISYKI_ESCO_CLASS {
      * @return array Array containing skills that have equivalent tags in the wisy databse.
      */
     function filter_is_relevant(array $skills): array {
+		global $wisyPortalId;
         $db = new DB_Admin();
         $filtered = array();
         foreach ($skills as $index => $skill) {
-            $sql = 'SELECT * FROM x_tags WHERE tag_name = "' . utf8_decode($skill['label']) . '"';
+            $label = utf8_decode($skill['label']);
+            $sql = "SELECT * 
+                    FROM x_tags 
+                    LEFT JOIN x_tags_freq freq 
+                        ON freq.tag_id = x_tags.tag_id 
+                    WHERE x_tags.tag_name = '$label'
+                    AND freq.portal_id = $wisyPortalId";
             $db->query($sql);
             if ($db->next_record()) {
                 $filtered[$index] = $skill;
