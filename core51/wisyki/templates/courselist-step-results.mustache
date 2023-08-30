@@ -9,6 +9,8 @@
         <summary><span class="result-list__label">{{ label }}</span><span class="result-list__count">{{ countstring }}</span></summary>
         {{ #skill }}
         <fieldset class="complevel-filter" skilluri="{{ uri }}">
+            <input type="radio" id="courseliststep_{{ uri }}-{{ lang.all }}" name="courseliststep_{{ uri }}" value="">
+            <label for="courseliststep_{{ uri }}-{{ lang.all }}">{{ lang.all }}</label>
             {{ ^isLanguageSkill }}
             <input type="radio" id="courseliststep_{{ uri }}-{{ lang.complevela }}" name="courseliststep_{{ uri }}" value="{{ lang.complevela }}">
             <label for="courseliststep_{{ uri }}-{{ lang.complevela }}">{{ lang.complevela }}</label>
