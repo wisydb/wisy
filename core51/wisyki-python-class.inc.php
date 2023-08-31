@@ -28,14 +28,17 @@ class WISYKI_PYTHON_CLASS {
      *
      * @var string
      */
-    private string $api_uri;
+    private string $api_endpoint;
 
     /**
      * Constructor of WISYKI_PYTHON_CLASS.
      */
     function __construct() {
         $this->pythonlib = dirname(__FILE__) . '/wisyki/python/';
-        $this->api_uri = "https://wbhessen.eu.pythonanywhere.com";
+        if (!defined('WISYKI_API')) {
+            throw new Exception('WISYKI_API not set in admin/config/config.inc.php');
+        }
+        $this->api_endpoint = WISYKI_API;
     }
 
     /**
@@ -88,7 +91,7 @@ class WISYKI_PYTHON_CLASS {
 
         $post_data = json_encode($data);
 
-        $url = $this->api_uri . $endpoint;
+        $url = $this->api_endpoint . $endpoint;
         $curl = curl_init($url);
         curl_setopt($curl, CURLOPT_POSTFIELDS, $post_data);
         curl_setopt($curl, CURLOPT_TIMEOUT, 80);
@@ -129,7 +132,7 @@ class WISYKI_PYTHON_CLASS {
 
         $post_data = json_encode($data);
 
-        $url = $this->api_uri . $endpoint;
+        $url = $this->api_endpoint . $endpoint;
         $curl = curl_init($url);
         curl_setopt($curl, CURLOPT_POSTFIELDS, $post_data);
         curl_setopt($curl, CURLOPT_TIMEOUT, 80);
@@ -185,7 +188,7 @@ class WISYKI_PYTHON_CLASS {
 
         $post_data = json_encode($data);
 
-        $url = $this->api_uri . $endpoint;
+        $url = $this->api_endpoint . $endpoint;
         $curl = curl_init($url);
         curl_setopt($curl, CURLOPT_POSTFIELDS, $post_data);
         curl_setopt($curl, CURLOPT_TIMEOUT, 40);
@@ -220,7 +223,7 @@ class WISYKI_PYTHON_CLASS {
     public function train_comp_level_model(string $training_data) {
         $endpoint = "/trainCompLevel";
 
-        $url = $this->api_uri . $endpoint;
+        $url = $this->api_endpoint . $endpoint;
         $curl = curl_init($url);
         curl_setopt($curl, CURLOPT_POSTFIELDS, $training_data);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
@@ -257,7 +260,7 @@ class WISYKI_PYTHON_CLASS {
             "docs" => array($base),
         );
 
-        $url = $this->api_uri . $endpoint;
+        $url = $this->api_endpoint . $endpoint;
         $curl = curl_init($url);
         curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
@@ -354,7 +357,7 @@ class WISYKI_PYTHON_CLASS {
             "docs" => $documents,
         );
 
-        $url = $this->api_uri . $endpoint;
+        $url = $this->api_endpoint . $endpoint;
         $curl = curl_init($url);
         curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
@@ -383,7 +386,7 @@ class WISYKI_PYTHON_CLASS {
     public function get_comp_level_report() {
         $endpoint = "/getCompLevelReport";
 
-        $url = $this->api_uri . $endpoint;
+        $url = $this->api_endpoint . $endpoint;
         $curl = curl_init($url);
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, FALSE);
         curl_setopt($curl, CURLOPT_FOLLOWLOCATION, TRUE);

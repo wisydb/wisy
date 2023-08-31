@@ -8,6 +8,7 @@ class WISYKI_COMPETENCE_CLASS
 	public $curl_session;
 	public $minRel = 0.90;
 	public $firstnum = 10;
+	private $api_endpoint;
 
 	function __construct($db = null)
 	{
@@ -31,6 +32,11 @@ class WISYKI_COMPETENCE_CLASS
 		if (isset($GLOBALS['MaxPop'])) {
 			$this->firstnum = $GLOBALS['MaxPop'];
 		}
+		
+        if (!defined('WISYKI_API')) {
+            throw new Exception('WISYKI_API not set in admin/config/config.inc.php');
+        }
+		$this->api_endpoint = WISYKI_API;
 	}
 	function correctsql($sql, $level, $selectedid = NULL)
 	{
@@ -207,7 +213,8 @@ class WISYKI_COMPETENCE_CLASS
 				);
 			}
 		}
-		$url = "https://wbhessen.eu.pythonanywhere.com/chatsearch";
+
+		$url = $this->api_endpoint . "/chatsearch";
 		$curl_session = curl_init($url);
 		$search_params = array(
 			// 'searchterms' => $kw,
