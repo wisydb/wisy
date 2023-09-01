@@ -412,11 +412,17 @@ class WISYKI_ESCO_CLASS {
         $filtered = array();
         foreach ($skills as $index => $skill) {
             $label = utf8_decode($skill['label']);
+            $stichwortlabel = preg_replace('/ *\(.*\)/', '', $label);
+            $labels = array($label);
+            if ($stichwortlabel != $label) {
+                $labels[] = $stichwortlabel;
+            }
+            $labels = join("', '", $labels);
             $sql = "SELECT * 
                     FROM x_tags 
-                    LEFT JOIN x_tags_freq freq 
+                    LEFT JOIN x_scout_tags_freq freq 
                         ON freq.tag_id = x_tags.tag_id 
-                    WHERE x_tags.tag_name = '$label'
+                    WHERE x_tags.tag_name IN ('$labels')
                     AND freq.portal_id = $wisyPortalId";
             $db->query($sql);
             if ($db->next_record()) {
