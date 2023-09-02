@@ -36,7 +36,22 @@ define('_EXP_LINEBREAKS',                "Zeilenumbruch");
 define('_EXP_MIX',                       "Mix-Datei");
 define('_EXP_NRECORDSDONE___',           "\$1 - \$2 Datensätze bearbeitet...");
 define('_EXP_PLEASEWAIT___',             "Bitte warten...");
-define('_EXP_RECORDSQREMARK',            "z.B. <i>modified(today)</i> - wenn Sie die Anfrage leer lassen, werden alle Datensätze der Tabelle exportiert.<br><br>Weitere Beispiele:<br><br><code>anbieter(12345) AND freigeschaltet(2) AND notizen(TEXT(*01.01.18: Import (xy)*))</code><br>Alle Angebote des Anbieters 12345, die gesperrt sind und im Journal den Text '01.01.18: Import (xy)' enthalten.<br><br><code>anbieter(2322) AND freigeschaltet(1) AND durchfuehrung.beginn(timewindow(-45m-33m))</code><br>Alle Angebote des Anbieters 12345, die freigegeben sind und die zwischen 45 und 33 Monate alt sind.<br><br>");
+define('_EXP_RECORDSQREMARK',            "z.B. <i>modified(today)</i> - wenn Sie die Anfrage leer lassen, werden alle Datenätze der Tabelle exportiert."
+    . "<br><br>Weitere Beispiele:<br><br><code>anbieter(12345) AND freigeschaltet(2) AND notizen(TEXT(*01.01.18: Import (xy)*))</code>"
+    . "<br>Alle Angebote des Anbieters 12345, die gesperrt sind und im Journal den Text '01.01.18: Import (xy)' enthalten."
+    . "<br><br><code>anbieter(2322) AND freigeschaltet(1) AND durchfuehrung.beginn(timewindow(-45m-33m))</code>"
+    . "<br>Alle Angebote des Anbieters 12345, die freigegeben sind und die zwischen 45 und 33 Monate alt sind.<br><br><br>"
+    . "Aus der EQL-Dokumentation:<br><br>"
+    . "Operatoren:<br>"
+    . "and, or, xor, not, =, <>, >, <, >=, <= <br><br>"
+    . "Vordefinierte Funktionen (andernfalls sind die 'Funktionen' = die Namen der Spalten der betroffenen Tabelle, die ein Einschänkungskriterium darstellen):<br>"
+    . "not(), id(), date(), timewindow(), oneof(), allof(), exact(), fuzzy(), lazy(), job(), active(), created(), createdby(), modified(), modifiedby(), group(), rights() <br><br>"
+    . "Funktionen können mit Klammern oder Operatoren genutzt werden, z.B.: <br>"
+    . "title(important document)	[...]	id(12) <br>"
+    . "title=important document		[...]   id>=10 and id <=20 <br><br>"
+    . "Funktionen können auch geschachtelt werden: <br>"
+    . "date.timewindow=today			date(timewindow(today)) <br><br>"
+    );
 define('_EXP_RECORDSQUERY',              "Anfrage");
 define('_EXP_SIZE',                      "Größe");
 define('_EXP_SOURCE',                    "Quellcode");

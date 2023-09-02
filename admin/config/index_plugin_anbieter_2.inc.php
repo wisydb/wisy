@@ -13,6 +13,7 @@ if( !isset($_SESSION['g_session_index_sql']['anbieter']) )
 
 $to = "";           // contact email address
 $batch_limit = 249; // max. emails to be sent per batch
+$trenner = ";";
 
 
 // get BCC list
@@ -44,7 +45,7 @@ for($x = 0; $x < $batch_cnt; $x++) {
 	for( $i = 0; $i < $batch_limit; $i++) {
 		$index = ($x*$batch_limit)+$i;
 		if($index+1 <= count($allEmails) && $allEmails[$index]) {
-			$bcc .= $bcc==""? "" : ", ";
+		    $bcc .= $bcc==""? "" : $trenner." ";
 			$bcc .= $allEmails[$index];
 		}
 	}
@@ -64,7 +65,7 @@ $site->pageStart(array('popfit'=>1));
 	
 	$site->skin->workspaceStart();
 	
-	echo "Statistik:<br>"
+	echo "<br><b>Die \"AN:\" - Mailadresse muss noch im Mailprogramm definiert werden!</b><br>Bitte die blauen Links/&Uuml;berschriften verwenden - nicht Copy&Paste der Liste. So landen die E-Mailadressen automatisch im BCC-Feld.<br><br>Statistik:<br><br>"
 					."E-Mail-Adressen insgesamt: ".count($allEmailsFull).", nach Duplikat-Entfernung: ".count($allEmails)."<br>"
 					."Max. Anzahl an E-mails, die auf einmal gesendet werden d&uuml;rfen: ".$batch_limit."<br>";
 					if(count($allEmails) % $batch_limit == 0)
@@ -74,13 +75,13 @@ $site->pageStart(array('popfit'=>1));
 					echo "<br><br>";
 	
 	for($i = 0; $i < count($allBatches); $i++) {
-		echo	($i+1).") ".'<a href="mailto:' .$to. '?bcc=' .$allBatches[$i] /*urlencode is not understood by outlook*/. '"><b>E-Mail erstellen mit '.(substr_count($allBatches[$i], ",")+1).' E-Mail-Adressen</b></a><br>'
+	    echo	($i+1).") ".'<a href="mailto:' .$to. '?bcc=' .$allBatches[$i] /*urlencode is not understood by outlook*/. '"><b>E-Mail erstellen mit '.(substr_count($allBatches[$i], $trenner)+1).' E-Mail-Adressen</b></a><br>'
 						.'<textarea style="width: 100%; height: 30%;">'.$allBatches[$i].'</textarea><br><br>';
 	}
 	
 	echo "<small>(Einige Versionen von Outlook unterst&uuml;tzen nicht die &Uuml;bergabe beliebig vieler Email-Adressen; sollte Outlook nicht starten, versuchen Sie eine Auswahl mit weniger Anbietern)</small>";
 	
-	echo "<hr><br>SQL-Abfrage:<br>".$sql."</hr><br><br>";
+	echo "<hr>SQL-Abfrage:<br>".$sql."</hr><br><br>";
 	
 	$site->skin->workspaceEnd();
 	

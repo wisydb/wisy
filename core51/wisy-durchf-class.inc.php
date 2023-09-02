@@ -284,8 +284,8 @@ class WISY_DURCHF_CLASS
 		            || $stichwort['id'] == $controlTags['Umschulung']
 		            || $stichwort['id'] == $controlTags['Aktivierungsgutschein']
 		            || $stichwort['id'] == $controlTags['DeuFoeV']
-		            || $stichwort['id'] == $controlTags['Integrationskurs']
-		            || $stichwort['id'] == $controlTags['Integrationskurs zu speziellem Foerderbedarf']
+		            || $stichwort['id'] == $controlTags['Integrationskurs allgemein']
+		            || $stichwort['id'] == $controlTags['Integrationskurs spezielle Kursarten']
 		            || $stichwort['id'] == $controlTags['Integrationskurs Intensivkurs']
 		            || $stichwort['id'] == $controlTags['Integrationskurs mit Alphabetisierung']
 		            || $stichwort['id'] == $controlTags['Integrationskurs fuer Zweitschriftlernende']
@@ -585,8 +585,8 @@ class WISY_DURCHF_CLASS
 		        || $this->stichw_in_array($addParam['stichwoerter'], $controlTags['Umschulung'])
 		        || $this->stichw_in_array($addParam['stichwoerter'], $controlTags['Orientierungskurs'])
 		        || $this->stichw_in_array($addParam['stichwoerter'], $controlTags['Aktivierungsgutschein'] )
-		        || $this->stichw_in_array($addParam['stichwoerter'], $controlTags['Integrationskurs'] )
-		        || $this->stichw_in_array($addParam['stichwoerter'], $controlTags['Integrationskurs zu speziellem Foerderbedarf'] )
+		        || $this->stichw_in_array($addParam['stichwoerter'], $controlTags['Integrationskurs allgemein'] )
+		        || $this->stichw_in_array($addParam['stichwoerter'], $controlTags['Integrationskurs spezielle Kursarten'] )
 		        || $this->stichw_in_array($addParam['stichwoerter'], $controlTags['Integrationskurs Intensivkurs'] )
 		        || $this->stichw_in_array($addParam['stichwoerter'], $controlTags['Integrationskurs mit Alphabetisierung'] )
 		        || $this->stichw_in_array($addParam['stichwoerter'], $controlTags['Integrationskurs fuer Zweitschriftlernende'] )

@@ -6,6 +6,9 @@ define('USER_ONLINEBAGATELLE',19);
 define('USER_ONLINEPFLEGE', 20);
 define('USER_MENUCHECK', -1); // to be defined
 define('TAG_EINRICHTUNGSORT', 806392);// links course-Title in serp to portrait
+
+// define('PHPMAILER_PATH', __DIR__.'/../../files/phpmailer/autoload.php');
+
 define('aeJS', '\u00e4', false);
 define('AEJS', '\u00c4', false);
 define('ueJS', '\u00fc', false);
@@ -43,9 +46,9 @@ $controlTags = array(
     'Umschulung' => 6013,
     'Orientierungskurs' => 7074,
     'Integrationskurs Intensivkurs' => 7093,
-    'Integrationskurs zu speziellem Foerderbedarf' => 7094,
+    'Integrationskurs spezielle Kursarten' => 7094, // ehem. "zu speziellem Förderbedarf"
     'Fernunterricht' => 7721,
-    'Integrationskurs' => 9774,
+    'Integrationskurs allgemein' => 9774, // ehem. "Integrationskurs"
     'Aktivierungsgutschein' => 16311,
     'Integrationskurs fuer Frauen' => 7090, // 2022, vorher Synonym
     'Integrationskurs fuer Eltern' => 7091, // 2022, vorher Synonym
@@ -68,7 +71,7 @@ $controlTags = array(
     'Glossar:azwv_knr' => 14161,
     'Glossar:bu_nummer' => 14141,
     'Glossar:stichwoerter' => 14251,
-    "Glossar:unterrichtsart_speichern" => 14201
+    'Glossar:unterrichtsart_speichern' => 14201
 );
 
 global $nonvenues;

@@ -31,8 +31,12 @@ class WISY_KURS_RENDERER_CLASS
 						  LEFT JOIN anbieter a ON a.id=k.anbieter
 						  WHERE k.id=$kursId && a.freigeschaltet=1"); // "a.suchname" etc. kann mit "LEFT JOIN anbieter a ON a.id=k.anbieter" zus. abgefragt werden
 		
-		if( !$db->next_record() )
+		if( !$db->next_record() ) {
+		    if( isset($_GET['debug']) && $_GET['debug'] == "nodisplay" )
+		        echo "<b>Seite wird nicht angezeigt, da der Kurs nicht existiert oder nicht freigeschaltet ist.</b>";
+		        
 		    $this->framework->error404();
+		}
 		
 		$title 				= $db->fs('titel');
 		$originaltitel		= $db->fs('org_titel');;
@@ -106,9 +110,14 @@ class WISY_KURS_RENDERER_CLASS
 		// #404gesperrteseiten
 		$freigeschaltet404 = array_map("trim", explode(",", $this->framework->iniRead('seo.set404_kurs_freigeschaltet', "")));
 		
-		if( in_array($freigeschaltet, $freigeschaltet404) && ( !isset($_SESSION['loggedInAnbieterId']) || !$_SESSION['loggedInAnbieterId'] ) )
-		    $this->framework->error404();
+		if( in_array($freigeschaltet, $freigeschaltet404) && ( !isset($_SESSION['loggedInAnbieterId']) || !$_SESSION['loggedInAnbieterId'] ) ) {
 		    
+		    if( isset($_GET['debug']) && $_GET['debug'] == "nodisplay" )
+		        echo "<b>Seite wird nicht angezeigt, da Freischaltstatus dieses Angebots laut Portaleinstellung 'seo.set404_kurs_freigeschaltet' einen 404-Fehler produzieren soll und Besucher/in nicht in Onlinepflege eingeloggt.</b>";
+		        
+		        $this->framework->error404();
+		}
+		
 		// page start
 		headerDoCache();
 		
@@ -476,12 +485,21 @@ class WISY_KURS_RENDERER_CLASS
 	
 	function filter_foreign_k(&$db, $wisyPortalId, $kursId, $date_created) {
 	    
+	    $outputReason = isset($_GET['debug']) && $_GET['debug'] == "nodisplay";
+	    
 	    // if portal has no filter, display course
 	    if( ( !isset($GLOBALS['wisyPortalFilter']['stdkursfilter']) || !$GLOBALS['wisyPortalFilter']['stdkursfilter'] )
 	        || ( !isset($GLOBALS['wisyPortalFilter']['stdkursfilter']) || trim($GLOBALS['wisyPortalFilter']['stdkursfilter']) == '' )
-	        )
-	        return true;
-	        
+	        ) {
+	            if( $outputReason )
+	               echo "Kein Portalfilter vorhanden.<br>";
+	            
+	            return true;
+	       
+	        } elseif( $outputReason ) {   
+    	        echo "Portalfilter vorhanden.<br>";
+    	}
+    	
 	    // check if course in search index (=allowed by portal filter)
 	    $searcher2 =& createWisyObject('WISY_SEARCH_CLASS', $this->framework);
 	    $searcher2->prepare('kid:' . $kursId);
@@ -489,8 +507,11 @@ class WISY_KURS_RENDERER_CLASS
 	        
 	    // show why this page is visible or not visible in this portal
 	    // ok to display publicly
-	    if( isset($_GET['debug']) && $_GET['debug'] == "nodisplay" && $anzahlKurse == 1) { 
+	    if( $outputReason ) {
+	        if($anzahlKurse == 1)
 	         echo "<br>Seite portaleigen!<br>";
+	        else
+	         echo "Dieses Angebot ist nicht portal-eigen => weitere Kriterien pr&uuml;fen....<br>";
 	    }
 	        
 	    if($anzahlKurse == 1)
@@ -500,32 +521,55 @@ class WISY_KURS_RENDERER_CLASS
 	    $k_created = strtotime($this->framework->formatDatum($date_created));
 	    $k_min_lifespan = strtotime(date("Y-m-d H:i:s"))-(60*60*$this->h_before_coursefilter); // now - 27 hours (we want to ignore GMT time zone + daylight saving time)
 	    $k_oldenough = $k_created < $k_min_lifespan;
-	       
-	    $exclude_foreign_k = trim($this->framework->iniRead('seo.set404_fremdkurse', true));
-	    $filter_active = $exclude_foreign_k && $k_oldenough;
-	       
-	    if( trim($this->framework->iniRead('disable.kurse', false)) && !$this->framework->is_editor_active($db, $this->h_before_dontshowteditorforeign_k) && !$this->framework->is_frondendeditor_active() ) {
-	           
-	       $docRoot = isset($_SERVER['DOCUMENT_ROOT']) ? $_SERVER['DOCUMENT_ROOT'] : '';
-	       $httpRef = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '';
-	       $qString = isset($_SERVER['QUERY_STRING']) ? $_SERVER['QUERY_STRING'] : '';
-	       $reqURI  = isset($_SERVER['REQUEST_URI']) ?  $_SERVER['REQUEST_URI'] : '';
-	           
-	       $file = $docRoot .'/kursportal.dat';
-	       $current = file_get_contents($file);
-	       $current .= $httpRef . " - " . $qString . " - " . $reqURI ."\n";
-	       file_put_contents($file, $current);
-	       $this->framework->error404("Fehler 404 - Seite <i>in diesem Portal</i> nicht gefunden", "<ul><li><a href='/edit?action=ek&id=0'>Zur Seite wechseln: \"Onlinepflege-Login f&uuml;r Anbieter\" ...</a></li></ul>");
-	    }
+	    $k_timediff = strtotime( date("Y-m-d H:i:s") ) - $k_created;
+	    
+	    if( $outputReason ) {
+	        if($k_oldenough)
+	           echo "Dieses Angebot (erstellt: " . date("Y-m-d h:i:s", $k_created) . ") ist vor mehr als 28h angelegt worden (" . ceil($k_timediff/3600) . ") => weitere Kriterien pr&uuml;fen....<br>";
+            else
+	           echo "Dieses Angebot (erstellt: " . date("Y-m-d h:i:s", $k_created) . ") ist vor weniger als 28h  (" . ceil($k_timediff/3600) . ") angelegt worden => weitere Kriterien k&ouml;nnen noch nicht greifen. => Erst mal anzeigen!<br>";
+        }
+	        
+        $exclude_foreign_k = intval( $this->framework->iniRead('seo.set404_fremdkurse', true) );
+        $filter_active = $exclude_foreign_k && $k_oldenough;
+        
+        if( $outputReason ) {
+            if( $exclude_foreign_k )
+                echo "Einstellung: Fremde Kurse sollen grunds&auml;tzlich nicht angezeigt werden.<br>";
+            else
+                echo "Portal-Einstellung 'seo.set404_fremdkurse' gibt vor: Fremde Kurse sollen grunds&auml;tzlich angezeigt werden!<br>";
+        }
+        
+        // meta portal disables *foreign* courses for public
+        // but allows for editing link
+        if( intval($this->framework->iniRead('disable.kurse', false))
+            && !$this->framework->is_editor_active($db, $this->h_before_dontshowteditorforeign_k)
+            && !$this->framework->is_frondendeditor_active() ) {
+                
+            if( $outputReason )
+                echo "<b>Portaleinstellung 'disable.kurse' unterbindet generell die Anzeige von Angeboten, so auch dieses Angebots.</b><br>";
+                
+            $this->framework->error404("Fehler 404 - Seite <i>in diesem Portal</i> nicht gefunden", "<ul><li><a href='/edit?action=ek&id=0'>Zur Seite wechseln: \"Onlinepflege-Login f&uuml;r Anbieter\" ...</a></li></ul>");
+         }
 	    
 	    // show why this page is visible or not visible in this portal
 	    // ok to display publicly
-	    if( isset($_GET['debug']) && $_GET['debug'] == "nodisplay") {
+         if( $outputReason ) {
 	        echo "Anzahl Kurse: ".$anzahlKurse."<br>Exclude foreign Kurse:".$exclude_foreign_k."<br>Alt genug: ".$k_oldenough." <small><br>[created: ".date("d.m.Y H:i", $k_created)."<br>sp&auml;testens: ".date("d.m.Y H:i", $k_min_lifespan)."]</small><br>Editor active ".$this->framework->is_editor_active($db, $this->h_before_dontshowteditorforeign_k)."<br>Online-Pflege: ".intval($this->framework->is_frondendeditor_active())."<br>";
 	    }
 	    
-	    if($filter_active && !$this->framework->is_editor_active($db, $this->h_before_dontshowteditorforeign_k) && !$this->framework->is_frondendeditor_active()) // now - 27 hours (we want to ignore GMT time zone + daylight saving time)
+	    // Generate 404 error if foreign courses to be excluded and not logged into CMS or frodn end editor
+	    if($filter_active && !$this->framework->is_editor_active($db, $this->h_before_dontshowteditorforeign_k) && !$this->framework->is_frondendeditor_active()) { // now - 27 hours (we want to ignore GMT time zone + daylight saving time)
+	        
+	        if( $outputReason )
+	            echo "<b>Seite wird nicht angzeigt, da fremde Angebote nicht anzuzeigen sind und diese/r Besucher/in nicht in das Redaktionssystem oder die Onlinepflege eingeloggt ist.</b><br>";
+	            
 	        $this->framework->error404("Fehler 404 - Seite <i>in diesem Portal</i> nicht gefunden", "<ul><li><a href='/edit?action=ek&id=0'>Zur Seite wechseln: \"Onlinepflege-Login f&uuml;r Anbieter\" ...</a></li></ul>");
+	    }
+	    elseif( $outputReason && $this->framework->is_editor_active($db, $this->h_before_dontshowteditorforeign_k) )
+	       echo "<b>Seite wird nur angezeigt, da aktuell im Redaktionssystem eingeloggt.</b>";
+	       elseif( isset($_GET['debug']) && $_GET['debug'] == "nodisplay" && $this->framework->is_frondendeditor_active() )
+	       echo "<b>Seite wird nur angezeigt, da aktuell in Onlinepflege eingeloggt.</b>";
 	        
 	} // end: filter_foreign_k
 };

@@ -70,22 +70,22 @@ class WISY_EDIT_FORGOTPW_CLASS
 							|| $this->framework->iniRead('portal.https', '') )
 							$protocol = 'https';
 						
-						$f_link = "{$protocol}://__HTTP_HOST__/edit?action=forgotpw&c={$f_confirm}";
-						
-						$f_subject  = 'Ihr neues Passwort für '.$_SEERVER['HTTP_HOST'].' ('.$GLOBALS['wisyPortalKurzname'].')';
-						$f_mailbody =
-						"Hallo $f_email -
-						
-Sie (oder jemand der sich als Kursanbieter auf __HTTP_HOST__ bzw. \"__NAME__ \"ausgegeben hat) haben unter https://__HTTP_HOST__/edit ein neues Passwort für Ihren Account beantragt.
+							$f_link = "{$protocol}://__HTTP_HOST__/edit?action=forgotpw&c={$f_confirm}";
+							
+							$f_subject  = utf8_decode('Ihr neues Passwort für '.$_SERVER['HTTP_HOST'].' ( "'.utf8_encode($GLOBALS['wisyPortalName']).'" )');
+							$f_mailbody =
+							"Hallo $f_email,
+							
+Sie (oder jemand) haben auf __HTTP_HOST__ ein neues Passwort für Ihren Anbieter-Account beantragt.
 
-Wenn Sie KEIN neues Passwort beantragt haben oder wenn Ihnen Ihr altes Passwort zwischenzeitlich wieder eingefallen ist, so ignorieren und löschen Sie bitte diese E-Mail.
+Wenn Sie KEIN neues Passwort beantragt haben oder wenn Ihnen Ihr altes Passwort zwischenzeitlich wieder eingefallen ist, können Sie diese E-Mail ignorieren und löschen.
 
-Nur WENN Sie ein neues Passwort beantragt haben, klicken Sie bitte auf den folgenden Link, um ein neues Passwort zu erhalten und sich damit wieder in Ihrem Account einloggen zu können: $f_link
+Nur WENN Sie ein neues Passwort beantragt haben, klicken Sie bitte auf den folgenden Link, um ein neues Passwort zu erhalten und sich damit wieder in Ihrem Account einloggen zu können:
+$f_link
 
-Mit freundlichen Grüßen,
-__NAME__";
+Freundliche Grüße";
 						
-						$f_subject  = $this->replaceForgotPwPlaceholders(mb_encode_mimeheader($f_subject,'UTF-8','Q'));
+
 						$f_mailbody = $this->replaceForgotPwPlaceholders($f_mailbody);
 						
 						$logwriter->addData('email', $f_email);
@@ -217,20 +217,68 @@ __NAME__";
 	
 	function sendMail($to, $subject, $text)
 	{
-	
-		if( substr($_SERVER['HTTP_HOST'], -6)=='.local' )
-		{
-			echo '<pre>';
-				echo 'To: ' . htmlspecialchars($to) . "\n";
-				echo 'Subject: ' . htmlspecialchars($subject) . "\n\n";
-				echo htmlspecialchars($text);
-			echo '</pre>';
-			return true;
-		}
-		else
-		{
-			return mail($to, $subject, $text, "From: noreply@".$_SERVER['HTTP_HOST']);
-		}
+	    $UsePHPMailer = $this->framework->iniRead('mail.extern', '');
+	    
+	    if( substr($_SERVER['HTTP_HOST'], -6)=='.local' )
+	    {
+	        echo '<pre>';
+	        echo 'To: ' . htmlspecialchars($to) . "\n";
+	        echo 'Subject: ' . htmlspecialchars($subject) . "\n\n";
+	        echo htmlspecialchars($text);
+	        echo '</pre>';
+	        return true;
+	    }
+	    elseif( $UsePHPMailer && defined('PHPMAILER_PATH') && file_exists(PHPMAILER_PATH) )
+	    {
+	        require PHPMAILER_PATH;
+	        $mail = new PHPMailer\PHPMailer\PHPMailer();
+	        
+	        $PHPMailer_useSMTP = $this->framework->iniRead('mail.extern.useSMTP', '');
+	        $mail->isSMTP();
+	        $PHPMailer_Host       = $this->framework->iniRead('mail.extern.host', '');
+	        $PHPMailer_Port       = $this->framework->iniRead('mail.extern.port', '');
+	        $PHPMailer_SMTPSecure = $this->framework->iniRead('mail.extern.smtpSecure', '');
+	        $PHPMailer_SMTPAuth   = (Bool) $this->framework->iniRead('mail.extern.smtpAuth', '');
+	        $PHPMailer_Username   = $this->framework->iniRead('mail.extern.username', '');
+	        $PHPMailer_Password   = $this->framework->iniRead('mail.extern.password', '');
+	        $PHPMailer_From       = $this->framework->iniRead('mail.extern.from', '');
+	        $PHPMailer_FromName   = $this->framework->iniRead('mail.extern.fromName', '');
+	        $PHPMailer_Debug      = $this->framework->iniRead('mail.extern.debug', false);
+	        
+	        $mail->Host = $PHPMailer_Host;
+	        $mail->Port = $PHPMailer_Port;
+	        
+	        if ($PHPMailer_SMTPSecure) {
+	            $mail->SMTPSecure = $PHPMailer_SMTPSecure;
+	        }
+	        $mail->SMTPAuth = $PHPMailer_SMTPAuth;
+	        
+	        if ($PHPMailer_Debug == 1) {
+	            $mail->SMTPDebug = 3;
+	        }
+	        if ($PHPMailer_SMTPAuth == 'true') {
+	            $mail->Username = $PHPMailer_Username;
+	            $mail->Password = $PHPMailer_Password;
+	        }
+	        if ($PHPMailer_From) {
+	            $mail->From = $PHPMailer_From;
+	        } else {
+	            $mail->From = "noreply@".$_SERVER['HTTP_HOST'];
+	        }
+	        $mail->FromName = $PHPMailer_FromName; // $_SERVER['HTTP_HOST'];
+	        $mail->addAddress($to);
+	        $mail->Subject = utf8_decode($subject); // im Code
+	        $mail->Body    = $text;
+	        return $mail->send();
+	        
+	    } elseif( $UsePHPMailer ) {
+	        echo "Konfigurationsproblem PHP-Mailer: a) ".defined(PHPMAILER_PATH).", b) ".file_exists(PHPMAILER_PATH); // Debug: .", c) ".PHPMAILER_PATH;
+	    }
+	    else
+	    {
+	        $subject  = $this->replaceForgotPwPlaceholders(mb_encode_mimeheader($subject,'UTF-8','Q'));
+	        return mail($to, $subject, $text, "From: dont-reply@".$_SERVER['SERVER_NAME']."\r\nReply-To: dont-reply@".$_SERVER['SERVER_NAME']);
+	    }
 	}
 	
 	

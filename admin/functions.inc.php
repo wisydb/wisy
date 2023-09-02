@@ -915,8 +915,8 @@ if( isset( $_SESSION['g_session_userid'] ) && is_numeric($_SESSION['g_session_us
 		              
 		          
 		          } catch (\Throwable $e) {
-		        die( "<span style='font-size: 2em; color: darkred;'>Exception abgefangen: " .  $e->getMessage() . "</span>\n" );
-		      }
+		              echo( "<span style='font-size: 2em; color: darkred;'>Fehler beim Laden von Einstellungen/Joblisten: " .  $e->getMessage() . "</span>\n" );
+		          }
 		}
 		else {
 
@@ -939,7 +939,7 @@ if( isset( $_SESSION['g_session_userid'] ) && is_numeric($_SESSION['g_session_us
 			         
 			         
 			     } catch (\Throwable $e) {
-			        die ( "<span style='font-size: 2em; color: darkred;'>Exception abgefangen: " .  $e->getMessage() . "</span>\n" );
+			         echo ( "<span style='font-size: 2em; color: darkred;'>Fehler beim Laden von Einstellungen/Joblisten: " .  $e->getMessage() . "</span>\n" );
 			     }
 			}
 		}

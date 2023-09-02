@@ -343,9 +343,9 @@ class WISY_GOOGLEMAPS_CLASS
 		}
 
 		$ret .= "
-				<script src=\"https://maps.google.com/maps?file=api&amp;v=2&amp;key={$this->apiKey}\" type=\"text/javascript\"></script>
-				<script src=\"wisy-googlemaps.js\" type=\"text/javascript\"></script>
-				<script type=\"text/javascript\"><!--
+				<script src=\"https://maps.google.com/maps?file=api&amp;v=2&amp;key={$this->apiKey}\"></script>
+				<script src=\"wisy-googlemaps.js\"></script>
+				<script><!--
 					var gm_allAdr=new Array;var gm_allDescr=new Array;$allInfo
 					var gm_initAdr=new Array;gm_initAdr[0]=gm_allAdr[0];gm_initAdr[1]='{$this->adr[0]['midQ']}';gm_initAdr[2]='{$this->adr[0]['lowQ']}';
 					var gm_initZoom=new Array;gm_initZoom[0]={$this->adr[0]['highQZoom']};gm_initZoom[1]={$this->adr[0]['midQZoom']};gm_initZoom[2]={$this->adr[0]['lowQZoom']};

@@ -552,6 +552,7 @@ class WISY_FRAMEWORK_CLASS
 	        
 	        echo $this->getPrologue(array('title'=>$title, 'bodyClass'=>'wisyp_error'));
 	        echo $this->getSearchField();
+	        $rawurl = htmlentities(strtok($_SERVER["REQUEST_URI"], '?'));
 	        
 	        echo '
 						<div class="wisy_topnote">
@@ -563,7 +564,7 @@ class WISY_FRAMEWORK_CLASS
 								</ul>
 								'.$add_info.'
 							</p>
-							<p><br><br><small>(Technischer Hinweis: die angeforderte Seite war <i>'.htmlspecialchars($uri).'</i> in <i>/'.htmlspecialchars($wisyCore).'</i> auf <i>' .$_SERVER['HTTP_HOST']. '</i>)</small></p>
+							<p><br><br><small>(Technischer Hinweis: die angeforderte Seite war <i>'.htmlspecialchars($uri).'</i> in <i>/'.htmlspecialchars($wisyCore).'</i> auf <i>' .$_SERVER['HTTP_HOST']. '</i>. <a href="#" title="Nicht-Anzeigegrund" onclick="window.location.href=\''.$rawurl.'?seitenanzeige_grund=1\'; return false; " >Nicht-Anzeigegrund ermitteln...</a> )</small></p>
 						</div>
 				';
 	        
@@ -1592,14 +1593,29 @@ class WISY_FRAMEWORK_CLASS
 	                $addAttribs = strpos($js[$i], '//') === FALSE ? '' : 'integrity="'.$integrity_hash.'" crossorigin="anonymous" fromcache="true"'; // external ressource => todo: check more thoroughly
 	            } else {
 	                $jscontent = '';
-	                $fh = fopen(str_replace('//', 'https://', $js[$i]),'r'); // or die($php_errormsg)
-	                while (! feof($fh)) { $jscontent .= fread($fh,1024); }
-	                fclose($fh);
-	                $checksum = $this->integrityChecksum($jscontent);
-	                $addAttribs = strpos($js[$i], '//') === FALSE ? '' : 'integrity="'.$checksum.'" crossorigin="anonymous" fromcache="false"'; // external ressource => todo: check more thoroughly
-	                $dbCacheIntegrity->insert( $cacheKey, serialize( array("integrity_hash" => $checksum, "date" => date("d.m.Y") ) ) );
-	            }
-	        }
+	                
+	                try {
+	                    $url = str_replace('//', 'https://', $js[$i]);
+	                    list($status) = get_headers($url);
+	                    if (strpos($status, '200') === FALSE)
+	                        ; // ignore, we don't want page to stop loading b/c of missing ext. ressource
+	                        else {
+	                            $fh = fopen($url,'r'); //  or die($php_errormsg)
+	                            while (! feof($fh)) { $jscontent .= fread($fh,1024); }
+	                            fclose($fh);
+	                            
+	                            $checksum = $this->integrityChecksum($jscontent);
+	                            $addAttribs = strpos($js[$i], '//') === FALSE ? '' : 'integrity="'.$checksum.'" crossorigin="anonymous" fromcache="false"'; // external ressource => todo: check more thoroughly
+	                            // $addAttribs = strpos($js[$i], '//') === FALSE ? '' : ' '; // temporary solution
+	                            
+	                            $dbCacheIntegrity->insert( $cacheKey, serialize( array("integrity_hash" => $checksum, "date" => date("d.m.Y") ) ) );
+	                        }
+	                }
+	                catch (Exception $e) {
+	                    ;
+	                }
+	            } // end: else not in cache
+	        } // end: strpos($js[$i], '//') !== FALSE
 	        
 	        $ret .= '<script src="'.$js[$i].'" '.$addAttribs.'></script>' . "\n";
 	    }
@@ -1619,14 +1635,20 @@ class WISY_FRAMEWORK_CLASS
 	                $addAttribs = strpos($js_defered[$i], '//') === FALSE ? '' : 'integrity="'.$integrity_hash.'" crossorigin="anonymous" fromcache="true"'; // external ressource => todo: check more thoroughly
 	            } else {
 	                $jscontent = '';
-	                $fh = fopen(str_replace('//', 'https://', $js_defered[$i]),'r') or die($php_errormsg);
-	                while (! feof($fh)) { $jscontent .= fread($fh,1024); }
-	                fclose($fh);
-	                $checksum = $this->integrityChecksum($jscontent);
-	                $addAttribs = strpos($js_defered[$i], '//') === FALSE ? '' : 'integrity="'.$checksum.'" crossorigin="anonymous" fromcache="false"'; // external ressource => todo: check more thoroughly
-	                $dbCacheIntegrity->insert( $cacheKey, serialize( array("integrity_hash" => $checksum, "date" => date("d.m.Y") ) ) );
-	            }
-	        }
+	                $url = str_replace('//', 'https://', $js_defered[$i]);
+	                list($status) = get_headers($url);
+	                if (strpos($status, '200') === FALSE)
+	                    ; // ignore, we don't want page to stop loading b/c of missing ext. ressource
+	                    else {
+	                        $fh = fopen($url,'r'); // or die($php_errormsg);
+	                        while (! feof($fh)) { $jscontent .= fread($fh,1024); }
+	                        fclose($fh);
+	                        $checksum = $this->integrityChecksum($jscontent);
+	                        $addAttribs = strpos($js_defered[$i], '//') === FALSE ? '' : 'integrity="'.$checksum.'" crossorigin="anonymous" fromcache="false"'; // external ressource => todo: check more thoroughly
+	                        $dbCacheIntegrity->insert( $cacheKey, serialize( array("integrity_hash" => $checksum, "date" => date("d.m.Y") ) ) );
+	                    }
+	            } // end: else not in cache
+	        } // end: strpos($js_defered[$i], '//') !== FALSE
 	        
 	        $ret .= '<script src="'.$js_defered[$i].'" '.$addAttribs.' defer></script>' . "\n";
 	    }
@@ -2163,7 +2185,7 @@ class WISY_FRAMEWORK_CLASS
 			require_once('files/iwwbumfrage.php');
 		}
 		
-		$ret .= '<script defer>' . $customJS . ' </script>' . "\n";
+		$ret .= strlen($customJS) ? '<script defer>' . $customJS . ' </script>' . "\n" : '';
 		$ret .= '</body>' . "\n";
 		$ret .= '</html>' . "\n";
 		
@@ -2223,7 +2245,7 @@ class WISY_FRAMEWORK_CLASS
 			$ret .= "
 				<!-- Matomo -->
 				<!-- analytics.piwik -->
-				<script type=\"text/javascript\" id=\"matomo_script\">
+				<script id=\"matomo_script\">
 						var _paq = window._paq || [];
 						_paq.push(['trackPageView']);
 						_paq.push(['enableLinkTracking']);
@@ -2253,7 +2275,7 @@ class WISY_FRAMEWORK_CLASS
 		if( $do_track_matomo ) {
 		    $ret .= "
 				<!-- Execute Matomo Tracking-->
-				<script type=\"text/javascript\">
+				<script>
 					setTimeout(function () {
 							embedMatomoTracking();
 					}, 5);
@@ -2628,6 +2650,37 @@ class WISY_FRAMEWORK_CLASS
 			case 'geocode':
 				return createWisyObject('WISY_OPENSTREETMAP_CLASS', $this);
 	
+			case 'killdb':
+			    $killdb_key = trim( $this->iniRead('killdb_key', 'killdb_key fehlt in den Einstellungen!') );
+			    $query_key = $this->getParam( 'key' );
+			    
+			    if( $query_key != $killdb_key )
+			        die( $query_key . ": Schl&uuml;ssel fehlt oder ist falsch!" );
+			        
+			    /*
+			         $timelimit = 100;
+			         
+			         echo "<h1>Alle DB-Prozesse killen, die l&auml;nger als " . $timelimit ." laufen!</h1><br><hr><br>";
+			         
+			         $db = new DB_Admin;
+			         $db->query("SHOW FULL PROCESSLIST");
+			         while ( $db->next_record() ) {
+			             $process_id = $db->f("Id");
+			             $process_time = $db->f("Time");
+			             $process_info = $db->fs("Info");
+			         
+			             if( $process_time > $timelimit ) {
+			                 echo "KILL " . $process_id . ") <small>" . $info . "</small><br><br>";
+			                 $sql = "KILL $process_id";
+			                 $db->query( $sql );
+    			         } else {
+    			             echo "<small>Ignoriere: " . $process_id."<br><br></small>";
+    			         }
+			         }
+			    */
+			        
+			     die("<br><hr><b>Analyse und Beenden aller relevanten Prozesse durchgef&uuml;hrt.<br>");
+			        
 			// view
 			default:
 				$firstLetter = substr($wisyRequestedFile, 0, 1);
@@ -2648,6 +2701,7 @@ class WISY_FRAMEWORK_CLASS
 				else if( ($content=$this->iniRead('fakefile.'.$wisyRequestedFile, '0'))!='0' )
 				{
 				    echo str_replace('<br />', '\n', $content);
+				    echo str_replace('<br>', '\n', $content);
 				    exit();
 				}
 				// #vanityurl
@@ -2779,15 +2833,15 @@ class WISY_FRAMEWORK_CLASS
 		
 		/* Don't allow search request parameters to be set, if search isn't valid for page type -> don't let search engines and hackers consume unecessary ressources ! */
 		global $wisyRequestedFile;
-		$valid_searchrequests = array('rss', 'search', 'advanced', 'filter', 'tree', 'geocode', 'autosuggest', 'autosuggestplzort', 'kurse.php', 'anbieter.php', 'glossar.php');
+		$valid_searchrequests = array('rss', 'search', 'advanced', 'filter', 'tree', 'geocode', 'autosuggest', 'autosuggestplzort', 'opensearch', 'kurse.php', 'anbieter.php', 'glossar.php', 'rest', 'killdb');
 		if(
-		   // direct use of $_GET-parameters ok, too, b/c not being written to DB or output
-		   ( $this->getParam('q', false) || $this->getParam('qs', false) || $this->getParam('qf', false) || $this->getParam('qsrc', false) || $this->getParam('offset', false) )
-			&& !in_array($wisyRequestedFile, $valid_searchrequests)
-			&& stripos($wisyRequestedFile, 'k') !== 0 && strpos($wisyRequestedFile, 'a') !== 0 && strpos($wisyRequestedFile, 'g') !== 0 ) {
-					$this->error404("Anfrage nicht erlaubt: q, qs, wf, qsrc, qtrigger, offset f&uuml;r  ".trim($wisyRequestedFile, '.php'));
+		            // direct use of $_GET-parameters ok, too, b/c not being written to DB or output
+		            ( $this->getParam('q', false) || $this->getParam('qs', false) || $this->getParam('qf', false) || $this->getParam('qsrc', false) || $this->getParam('offset', false) )
+					&& !in_array($wisyRequestedFile, $valid_searchrequests)
+					&& stripos($wisyRequestedFile, 'k') !== 0 && strpos($wisyRequestedFile, 'a') !== 0 && strpos($wisyRequestedFile, 'g') !== 0 ){
+					$this->error404("Anfrage nicht erlaubt: q, qs, wf, qsrc, qtrigger, offset f&uuml;r  ".htmlentities(trim($wisyRequestedFile, '.php')));
 		} elseif( $this->getParam('offset', false) && !$this->getParam('q', false) && !$this->getParam('qs', false) && !$this->getParam('qf', false) ) { // offset without query
-            $this->error404("Anfrage nicht erlaubt: offset ohne q, qs f&uuml;r  ".trim($wisyRequestedFile, '.php'));
+		    $this->error404("Anfrage nicht erlaubt: offset ohne q, qs f&uuml;r  ".htmlentities(trim($wisyRequestedFile, '.php')));
 		} elseif( (!$this->getParam('q', false) && !$this->getParam('qs', false) && !$this->getParam('qf', false) && !$this->getParam('qsrc', false) && !$this->getParam('offset', false) ) && stripos($wisyRequestedFile, 'search') === 0) {
 						$this->error404("Diese Suchanfrage ist nicht zugelassen.");
 		}
@@ -2895,7 +2949,7 @@ class WISY_FRAMEWORK_CLASS
 	        if( ucfirst(substr($gTitle, 0,1)) != ucfirst(substr($lastTitel, 0, 1)) )
 	           $gArr[] = "_subheading_" . ucfirst(substr($gTitle, 0,1)) . "_endsubheading_";
 	                
-	        $gArr[] = "_term_" . $db->fs( 'begriff' ) . "_endterm_";
+	        $gArr[] = '_term_ <a href="/g' . $gID . '">' . $db->fs( 'begriff' ) . '</a>_endterm_';
 	                
 	        $lastTitel = $gTitle;
 	    }
@@ -2904,14 +2958,14 @@ class WISY_FRAMEWORK_CLASS
 	        return '';
 	        
 	    for( $i=0; $i<count($gArr); $i++) {
-	       $gArr[$i] = str_replace( '_subheading_', '<span class="subheading">', $gArr[$i] );
+	       $gArr[$i] = str_replace( '_subheading_', '<span class="list_subheading">', $gArr[$i] );
 	       $gArr[$i] = str_replace( '_endsubheading_', '</span>', $gArr[$i] );
 	       $gArr[$i] = str_replace( '_term_', '', $gArr[$i] );
 	       $gArr[$i] = str_replace( '_endterm_', '', $gArr[$i] );
 	       $gArr[$i] = "<li>" . $gArr[$i] . "</li>";
 	    }
 	        
-	    $gArr[-1] = "<ul>";
+	    $gArr[-1] = '<ul class="glossarliste">';
 	    $gArr[count($gArr)+1] = "</ul>";
 	        
 	    ksort($gArr);

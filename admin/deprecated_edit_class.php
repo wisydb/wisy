@@ -1354,7 +1354,7 @@ class Table_Inst_Class
 
 				case TABLE_INT:
 					// errors
-					if( strlen(intval($this->values[$r])) != strlen(trim($this->values[$r])) ) {
+				    if( strlen(intval($this->values[$r])) != strlen(trim($this->values[$r])) && !$rowflags&TABLE_READONLY) {
 						$error = htmlconstant('_EDIT_ERRENTERANUMBER');
 					}
 					else if( isset( $table_def->rows[$r]->addparam ) && $table_def->rows[$r]->addparam ) {

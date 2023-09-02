@@ -330,6 +330,15 @@ img.seal_small {
  float: right;
 }
 
+.seal_small {
+  display: inline-block;
+  margin-right: 4px;
+}
+
+.wisy_list td a.help {
+	padding: 0px;
+}
+
 .wisyr_termin_weitere  {
   display: block;
 }
@@ -596,6 +605,10 @@ autocomplete styles v2
 
 .ac_results_v2 .ac_headline .tag_name,
 .ac_results_v2 .ac_more .tag_name { width: 100%; }
+
+.ac_results_v2 .tag_name { line-height: 1.6em; }
+
+.ac_results_v2 .ac_results_v2 li { padding: 2px !important; }
 
 /* Vorschläge im Hauptfenster */
 .wisy_tagtable { border-spacing: 1px; }

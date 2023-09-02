@@ -157,7 +157,7 @@ function g_eql_normalize_func_name($funcName, $pluralS = 1)
 function g_eql_normalize_words($words_, $unique = 0, $keepNumbers = 0, $keepWildcards = 0)
 {
     // convert void characters to spaces
-    $tr = 					"«»@^_=&´`.:,;/!'~+-#|<>()[]\{}\$%§\"\\\n\r\t";
+    $tr = 					"ï¿½ï¿½@^_=&ï¿½`.:,;/!'~+-#|<>()[]\{}\$%ï¿½\"\\\n\r\t";
     if(!$keepNumbers)$tr  .="0123456789";
     if(!$keepWildcards)$tr.="?*";
     $words = strtr( strval($words_),	$tr, "                                                                ");
@@ -210,17 +210,17 @@ function g_eql_normalize_natsort($str)
     $str = strtolower($str);
     
     // convert accented characters
-    $str = strtr($str,	'áàâåãæçéèêëíìîïñóòôõøúùûýÿ',
+    $str = strtr($str,	'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½',
         'aaaaaaceeeeiiiinooooouuuyy');
     
     // convert german umlaute
-    $str = strtr($str,	array('ä'=>'ae', 'ö'=>'oe', 'ü'=>'ue', 'ß'=>'ss'));
+    $str = strtr($str,	array('ï¿½'=>'ae', 'ï¿½'=>'oe', 'ï¿½'=>'ue', 'ï¿½'=>'ss'));
     
     // convert numbers to a 'natural' sorting order
     $str = preg_replace_callback('/[0-9]+/', 'g_eql_normalize_natsort_callback', $str); // make sure abc3 -> abc4 -> abc321 and not: abc3 -> abc321 -> abc4
     
     // strip special characters
-    $str = strtr($str,	'\'\\!°"§$%&/(){}[]=?+*~#,;.:-_<>|@€©®£¥  ',
+    $str = strtr($str,	'\'\\!ï¿½"ï¿½$%&/(){}[]=?+*~#,;.:-_<>|@ï¿½ï¿½ï¿½ï¿½ï¿½  ',
         '                                        ');
     
     // remove spaces
@@ -749,9 +749,9 @@ class EQL_PARSER_CLASS
 		}
 		else
 		{
-		    $ident = strtr($ident, '\?', '\\#');	// save explicite search of '?'
+		    $ident = strtr($ident, '\?', '\\'.chr(186) );	// save explicite search of '?' triple # b/c one might search for #
 		    $ident = strtr($ident, '*?', '%_');		// no idea what this is for exactly, no real regex - but we need to get around that for explicit search of '?'
-		    $ident = strtr($ident, '\\#', '\\?');	// search for actual '?' == escaped '?'
+		    $ident = strtr($ident, '\\'.chr(186), '\\?');	// search for actual '?' == escaped '?'
 		    
 			return "$tableDefName.$field LIKE '$ident'";
 			
@@ -1200,9 +1200,9 @@ class EQL_PARSER_CLASS
 					}
 					else {
 					    
-					    $word = strtr($word, '\?', '\\#');	// save explicite search of '?'
+					    $word = strtr($word, '\?', '\\'.chr(186));	// save explicite search of '?'.
 					    $word = strtr($word, '*?', '%_');	// no idea what this is for exactly, no real regex - but we need to get around that for explicit search of '?'
-					    $word = strtr($word, '\\#', '\\?');	// search for actual '?' == escaped '?'
+					    $word = strtr($word, '\\'.chr(186), '\\?');	// search for actual '?' == escaped '?'
 					    
 						$word = "LIKE '$word'";
 					}

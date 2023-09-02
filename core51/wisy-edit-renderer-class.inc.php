@@ -1662,7 +1662,7 @@ class WISY_EDIT_RENDERER_CLASS
 	    $ret .= '<a href="" onclick="add_chars($(this), \'\\\'\\\'\', \'\\\'\\\'\'); return false;" style="font-style:italic; letter-spacing: 1px;" title="Markieren Sie den kursiv darzustellenden Text und klicken Sie dann diese Schaltfl&auml;che" >\'\'Kursiv\'\'</a> &nbsp; ';
 	    if( $addKursUrl )
 	    {
-	        $ret .= '<a href="" onclick="add_chars($(this), \'[[http://verweis.com | Kurs-URL\', \']]\'); return false;" style="letter-spacing: 1px;" title="Markieren Sie den Text, den Sie als Verweis verwenden m&ouml;chten, und klicken Sie dann diese Schaltfl&auml;che">[[Verweis]]</a> &nbsp; ';
+	        $ret .= '<a href="" onclick="add_chars($(this), \'[[http://verweis.com | Kurs-URL\', \']]\'); return false;" style="letter-spacing: 1px;" title="">[[Verweis]]</a> &nbsp; ';
 	    }
 	    $ret .= '</small><br />';
 		return $ret;

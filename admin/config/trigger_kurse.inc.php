@@ -190,52 +190,49 @@ function update_kurs_state($kurs_id, $param)
 	$db->query("SELECT attr_id FROM kurse_stichwort WHERE primary_id=$kurs_id;");
 	while ( $db->next_record() )
 	{
-		switch( $db->f('attr_id') )
-		{
-		    case isset($controlTags['Fernunterricht']) && $controlTags['Fernunterricht']:								
-			    $has_fernunterricht_stichw = true; 
-			    break;
-		    case isset($controlTags['E-Learning']) && $controlTags['E-Learning']:									
-			    $has_elearning_stichw = true; 
-			    break;
-		    case isset($controlTags['Bildungsgutschein']) && $controlTags['Bildungsgutschein']: 							
-			    $has_bildungsgutschein_stichw = true; 
-			    break;
-		    case isset($controlTags['Aktivierungsgutschein']) && $controlTags['Aktivierungsgutschein']: 						
-			    $has_aktivierungsgutschein_stichw = true; 
-			    break;
-		    case isset($controlTags['Umschulung']) && $controlTags['Umschulung']: 									
-			    $has_umschulung_stichw = true; 
-			    break;
-		    case isset($controlTags['Orientierungskurs']) && $controlTags['Orientierungskurs']:
-			    $has_orientierungskurs_stichw = true; 
-			    break;
-		    case isset($controlTags['Integrationskurs (Intensivkurs)']) && $controlTags['Integrationskurs (Intensivkurs)']:
-			    $has_integrationskurs_intensiv_stichw = true; 
-			    break;
-		    case isset($controlTags['Integrationskurs (zu speziellem Förderbedarf)']) && $controlTags['Integrationskurs (zu speziellem Förderbedarf)']: 
-			    $has_integrationskurs_speziell_stichw = true; 
-			    break;
-		    case isset($controlTags['Integrationskurs']) && $controlTags['Integrationskurs']: 								
-			    $has_integrationskurs_stichw = true; 
-			    break;
-		    case isset($controlTags['Integrationskurs (mit Alphabetisierung)']) && $controlTags['Integrationskurs (mit Alphabetisierung)']: 		
-			    $has_integrationskurs_alpha_stichw = true; 
-			    break;
-		    case isset($controlTags['DeuFoeV']) && $controlTags['DeuFoeV']: 										
-			    $has_deufoev_stichw = true; 
-			    break;
-		    case isset($controlTags['Integrationskurs für Zweitschriftlernende']) && $controlTags['Integrationskurs für Zweitschriftlernende']: 	
-		        $has_integrationskurs_zweitschrift_stichw = true; 
-		        break;
-		    case isset($controlTags['Preis komplex']) && $controlTags['Preis komplex']: 								
-			    $has_preiskomplex_stichw = true; 
-			    break;
-		    case isset($controlTags['Einstieg bis Kursende moeglich']) && $controlTags['Einstieg bis Kursende moeglich']:
-			    $einstieg_bis_kursende_moeglich = true; 
-			    break;
-		}
-		$anz_stichw ++;
+	    $attr_id = $db->f('attr_id');
+	    
+	    if( isset($controlTags['E-Learning']) && $controlTags['E-Learning'] == $attr_id )
+	       $has_elearning_stichw = true;
+	        
+	    if( isset($controlTags['Bildungsgutschein']) && $controlTags['Bildungsgutschein'] == $attr_id )
+	       $has_bildungsgutschein_stichw = true;
+	            
+	    if( isset($controlTags['Aktivierungsgutschein']) && $controlTags['Aktivierungsgutschein'] == $attr_id )
+	       $has_aktivierungsgutschein_stichw = true;
+	                
+	    if( isset($controlTags['Umschulung']) && $controlTags['Umschulung'] == $attr_id )
+	       $has_umschulung_stichw = true;
+	                    
+	    if( isset($controlTags['Orientierungskurs']) && $controlTags['Orientierungskurs'] == $attr_id )
+	       $has_orientierungskurs_stichw = true;
+	                        
+	    if( isset($controlTags['Integrationskurs Intensivkurs']) && $controlTags['Integrationskurs Intensivkurs'] == $attr_id )
+	       $has_integrationskurs_intensiv_stichw = true;
+	                            
+	    if( isset($controlTags['Integrationskurs spezielle Kursarten']) && $controlTags['Integrationskurs spezielle Kursarten'] == $attr_id )
+	       $has_integrationskurs_speziell_stichw = true;
+	                                
+	    if( isset($controlTags['Integrationskurs allgemein']) && $controlTags['Integrationskurs allgemein'] == $attr_id )
+	       $has_integrationskurs_stichw = true;
+	                                    
+	    if( isset($controlTags['Integrationskurs mit Alphabetisierung']) && $controlTags['Integrationskurs mit Alphabetisierung'] == $attr_id )
+	       $has_integrationskurs_alpha_stichw = true;
+	                                        
+	    if( isset($controlTags['DeuFoeV']) && $controlTags['DeuFoeV'] == $attr_id )
+	       $has_deufoev_stichw = true;
+	                                            
+	    if( isset($controlTags['Integrationskurs fuer Zweitschriftlernende']) && $controlTags['Integrationskurs fuer Zweitschriftlernende'] == $attr_id )
+	       $has_integrationskurs_zweitschrift_stichw = true;
+	                                                
+	    if( isset($controlTags['Preis komplex']) && $controlTags['Preis komplex'] == $attr_id )
+	       $has_preiskomplex_stichw = true;
+	                                                    
+	    if( isset($controlTags['Einstieg bis Kursende moeglich']) && $controlTags['Einstieg bis Kursende moeglich'] == $attr_id )
+	       $einstieg_bis_kursende_moeglich = true;
+	                                                        
+	    $anz_stichw++;
+	                                                        
 	}
 
 	if( $bu_nummer != '' ) $anz_stichw ++;

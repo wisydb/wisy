@@ -369,7 +369,10 @@ function popup(theAnchor, window_w, window_h, href, target)
 	
 	// store window object in the context of the current window
 	if( theAnchor!==0 ) {
-		eval(theAnchor.target + "=w;");
+		if( theAnchor.target != "" )
+			eval(theAnchor.target + "=w;");
+		else
+			window.myPopup = w;
 	}
 
 	// avoid standard hyperlink processing
@@ -463,7 +466,9 @@ function selUpdtOpnr(id)
 	}
 	else
 	{
-		alert('Das zu dieser Attributauswahl geh'+oe+'rige Fenster ist bereits geschlossen.');
+		alert( 'Das zu dieser Attributauswahl geh'+oe+'rige Fenster ist bereits geschlossen.');
+	    alert( 'Opener' + window.opener + ', geschlossen: ' + window.opener.closed + ', Auswahl: ' + window.opener.rcv_id_selection );
+		alert( 'W ist ' + (typeof w) + ', myPopup: ' + (typeof window.myPopup ) );
 	}
 }
 
@@ -931,7 +936,7 @@ if( jQuery("form[name=edit]").find("input[name=table]").val() == "portale") {
 if( jQuery("form[name=edit]").find("input[name=table]").val() == "portale") {
   var portal_id = jQuery("form[name=edit]").find("input[name=id]").val();
    if(portal_id > 0)
-     jQuery("#fheader table.sm td.sml a:last-child").before('<a href="module.php?module=plugin_portale_1_statistiken&id='+portal_id+'&what=Durchfuehrungen&strokeColor=tomato" target="plugin_cache_portale_0" onclick="return popup(this,750,550);"> &nbsp;Statistiken&nbsp; </a></td>');
+     jQuery("#fheader table.sm td.sml a:last-child").before('<a href="module.php?module=plugin_portale_1_statistiken&id='+portal_id+'&what=Durchfuehrungen&strokeColor=tomato" target="plugin_cache_portale_0" onclick="return popup(this,100%,860);"> &nbsp;Statistiken&nbsp; </a></td>');
 }
 
 /* ********************************************************** */

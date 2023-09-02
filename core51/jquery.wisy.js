@@ -33,7 +33,7 @@ a.expires?"; expires="+a.expires.toUTCString():"",a.path?"; path="+a.path:"",a.d
 window.sameSiteDefault = "Strict";
 
 function setCookieSafely(title, value, options) {
-	/* optout check makes no sense b/c opt in required anyway
+	/* optout check makes no sense b/c opt in required anyway */
 	if (window.cookiebanner && window.cookiebanner.optedOut && window.cookiebanner.optoutCookies && window.cookiebanner.optoutCookies.length) {
 		var blacklist = window.cookiebanner.optoutCookies.split(',');
 		for (var i = 0; i < blacklist.length; i++) {
@@ -41,7 +41,7 @@ function setCookieSafely(title, value, options) {
 				return false;
 			}
 		}
-	} */
+	}
 	$.cookie(title, value, options);
 }
 
@@ -186,15 +186,12 @@ function fav_update_bar()
 
 function fav_click(jsObj, id)
 {
-	/*
+
 	if (window.cookiebanner && window.cookiebanner.optedOut) {
 		alert(window.cookiebanner.favOptoutMessage);
 		window.cookieconsent.popup.open();
 			return false;
-		} else
-	*/
-	 
-	if($.cookie('cconsent_merkliste') != "allow") {
+	} else if($.cookie('cconsent_merkliste') != "allow") {
 		  alert("Um diese Funktion nutzen zu k"+oe+"nnen, m"+ue+"ssen Sie dem Speichern von Cookies f"+ue+"r diese Funktion zustimmen (im Cookie-Hinweisfenster).");
 		  hightlightCookieConsentOption('merkliste');
 		  window.cookieconsent.popup.open();
@@ -217,6 +214,7 @@ function fav_click(jsObj, id)
 		}
 	}
 }
+
 function fav_delete_all()
 {
 	if( !confirm('Gesamte Merkliste l'+oe+'schen?') )
@@ -1009,7 +1007,14 @@ function describeFeedback()
 
 function sendFeedback(rating)
 {
-	$('#wisy_feedback_yesno').html('<strong class="wisy_feedback_thanks">Vielen Dank f'+ue+'r Ihr Feedback!</strong>');
+	var feedbackThxTxt = '';
+	if( typeof window.feedbackThx != "undefined" )
+		feedbackThxTxt = window.feedbackThx;
+	else
+		feedbackThxTxt = '<b style="color: green;">Vielen Dank f'+ue+'r Ihr Feedback!</b>';
+		
+	$('#wisy_feedback_yesno').html( '<br><br><span class="wisy_feedback_thanks">' + feedbackThxTxt + '</span><br>' );
+	
 	
 	if( rating == 0 )
 	{
@@ -1250,30 +1255,39 @@ $().ready(function()
 	   });
 	 }
 	
-	 // Human triggered search, propagate to filter form + pagination
-	 if(window.qtrigger)
+	 // Human trigger search, propagate to filter form + pagination
+	if(window.qtrigger)
 	  $("form[name='filterform']").prepend("<input type=hidden name='qtrigger' value="+window.qtrigger+">");
-	 if(window.force)
+	if(window.force)
 	  $("form[name='filterform']").prepend("<input type=hidden name='force' value="+window.force+">");
-
-	 // Make sure human triggered fulltext search through menu appends necessary parameters
-	 $('a[data-searchtype="volltext"]').click(function(event){
-	  event.preventDefault();
-	  href = $(this).attr('href')+'&qsrc=m&qtrigger=h';
-	  window.location.href = href;
-	 });
 	
-	 // Add human trigger signal to fulltext links.
-	 // They should only have this parameter through Javascript as simple "if human check", so fulltext search isn't indexed by search engine etc.
-	 if( jQuery('.wisyp_search').length ) { 
-		jQuery( 'a[data-volltextlink]' ).each( function(){ jQuery(this).attr('href', jQuery(this).attr('href')+'&qtrigger=h'); }); 
-	 }
+	// Make sure human triggered fulltext search through menu appends necessary parameters
+	$('a[data-searchtype="volltext"]').click(function(event){
+	    event.preventDefault();
+	    let href = $(this).attr('href');
+	    href += href.includes('?') ? '&qsrc=m&qtrigger=h' : '?qsrc=m&qtrigger=h';
+	    window.location.href = href;
+	});
 	
-	 // Add signal to menu link clicks
-	 if( jQuery('#themenmenue').length ) {
-	  jQuery('#themenmenue .dropdown a').click(function(){ jQuery(this).attr('href', jQuery(this).attr('href')+'&qtrigger=m') });
-	 }
+	// Add human trigger signal to fulltext links.
+	// They should only have this parameter through Javascript as simple "if human check", so fulltext search isn't indexed by search engine etc.
+	if (jQuery('.wisyp_search').length) { 
+	    jQuery('a[data-volltextlink]').each(function() { 
+	        let url = jQuery(this).attr('href');
+	        url += url.includes('?') ? '&qtrigger=h' : '?qtrigger=h';
+	        jQuery(this).attr('href', url); 
+	    }); 
+	}
 	
+	// Add signal to menu link clicks
+	if (jQuery('#themenmenue').length) {
+	    jQuery('#themenmenue .dropdown a').click(function() { 
+	        let url = jQuery(this).attr('href');
+	        url += url.includes('?') ? '&qtrigger=m' : '?qtrigger=m';
+	        jQuery(this).attr('href', url); 
+	    });
+	}
+   
 });
 
 function initializeTranslate() {

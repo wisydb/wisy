@@ -1576,6 +1576,43 @@ class WISY_SYNC_RENDERER_CLASS
 		}
 	}
 				
+	// Anzahl der Kurse je Status fuer alle Anbieter ermitteln, die noch keinen Counter haben (nicht runtergezaehlte: waere 0)
+	// die Counter selbst werden als Trigger in der Tabelle kurse hoch-/runtergezaehlt
+	// Fuer RESET: UPDATE anbieter SET x_cntkurse_status_0 = NULL, x_cntkurse_status_1 = NULL, x_cntkurse_status_2 = NULL, x_cntkurse_status_3 = NULL, x_cntkurse_status_4 = NULL;
+	function updateAnbieterKurseCnt( ) {
+	    
+	    echo "Update Anbieter Kurse Counter..." . "\n";
+	    
+	    $db    = new DB_ADMIN;
+	    $db1   = new DB_ADMIN;
+	    
+	    $sql = "SELECT id FROM anbieter
+              WHERE x_cntkurse_status_0 IS NULL
+                 OR x_cntkurse_status_1 IS NULL
+                 OR x_cntkurse_status_2 IS NULL
+                 OR x_cntkurse_status_3 IS NULL
+                 OR x_cntkurse_status_4 IS NULL";
+	    
+	    $db->query( $sql );
+	    
+	    while( $db->next_record() ) {
+	        $aID = $db->f('id');
+	        
+	        // Fuer alle Updaten: k.anbieter = a.id
+	        $sql   = "UPDATE anbieter a SET
+                   x_cntkurse_status_0 = (SELECT COUNT(id) FROM kurse k WHERE k.anbieter = " . $aID . " AND k.freigeschaltet = 0),
+                   x_cntkurse_status_1 = (SELECT COUNT(id) FROM kurse k WHERE k.anbieter = " . $aID . " AND k.freigeschaltet = 1),
+                   x_cntkurse_status_2 = (SELECT COUNT(id) FROM kurse k WHERE k.anbieter = " . $aID . " AND k.freigeschaltet = 2),
+                   x_cntkurse_status_3 = (SELECT COUNT(id) FROM kurse k WHERE k.anbieter = " . $aID . " AND k.freigeschaltet = 3),
+                   x_cntkurse_status_4 = (SELECT COUNT(id) FROM kurse k WHERE k.anbieter = " . $aID . " AND k.freigeschaltet = 4)
+                   WHERE a.id = " . $aID;
+	        
+	        $db1->query( $sql );
+	    }
+	    
+	}
+	
+	
     function doGeoMapping() {
        $db = new DB_ADMIN;
        $file_geodef = "config/geo.php";
@@ -1963,6 +2000,8 @@ class WISY_SYNC_RENDERER_CLASS
 		
 		// allocate exclusive access
 		if( !$this->statetable->allocateUpdatestick() ) { $this->log("********** ERROR: $host: cannot sync now, update stick in use, please try again in about 10 minutes."); return; }
+		
+		$this->updateAnbieterKurseCnt();
 		
 		// do geo mapping
 		$this->doGeoMapping();

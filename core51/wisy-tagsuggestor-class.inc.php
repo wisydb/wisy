@@ -266,15 +266,15 @@ class WISY_TAGSUGGESTOR_CLASS
 					
 							// Find Ancestor(s)
 							{
+							    // 32 = verstecktes Synonym, 256 = Volltext Titel, 512 = Volltext Beschreibung, 2048 = Verwaltungsstichwort, 8192 = Schlagwort nicht verwenden
+							    $dontdisplay = array(32, 256, 512, 2048, 8192);
+							    
 							    // 1. Anhand $tag_name in stichwoerter die stichwort-ID ermitteln
-							    $sql = "SELECT id FROM stichwoerter WHERE stichwort=". $this->db4->quote($tag_name);
+							    $sql = "SELECT id, eigenschaften FROM stichwoerter WHERE stichwort=". $this->db4->quote($tag_name);
 							    $this->db4->query($sql);
 							    
 							    if( $this->db4->next_record() )
 							    {
-							        // 32 = verstecktes Synonym, 256 = Volltext Titel, 512 = Volltext Beschreibung, 2048 = Verwaltungsstichwort, 8192 = Schlagwort nicht verwenden
-							        $dontdisplay = array(32, 256, 512, 2048, 8192);
-							        
 							        $stichwort_id = $this->db4->fcs8('id');
 							        
 							        // 2. in stichwoerter_verweis2 Oberbegriffe finden

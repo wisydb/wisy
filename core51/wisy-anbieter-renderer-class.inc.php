@@ -57,7 +57,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 	            $subject .= ' -- "'.($k_orgtitle != "" ? $k_orgtitle : "").'"';
 	        }
 	        /* $subject .= ' [Ticket #'.time().']'; */
-	        $link .= '?subject='.rawurlencode($subject);
+	        $link .= '?subject='.rawurlencode(utf8_encode($subject));
 	        
 	        // add cc, if needed
 	        $cc = $this->framework->iniRead('mailto.anbieter.cc', '');

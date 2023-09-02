@@ -143,17 +143,17 @@ class WISY_ROBOTS_RENDERER_CLASS
 		echo "User-agent: SemrushBot-SA\n";
 		echo "Disallow: /\n";
 		
-		echo "\n\n";
-		echo "User-agent: bingbot\n";
-		echo "Crawl-delay: 30\n";
+		// echo "\n\n";
+		// echo "User-agent: bingbot\n";
+		// echo "Crawl-delay: 30\n";
 		
-		echo "\n\n";
-		echo "User-agent: Seekport Crawler\n";
-		echo "Disallow: /\n";
+		// echo "\n\n";
+		// echo "User-agent: Seekport Crawler\n";
+		// echo "Disallow: /\n";
 		
-		echo "\n\n";
-		echo "User-agent: petalbot\n";
-		echo "Disallow: /\n";
+		// echo "\n\n";
+		// echo "User-agent: petalbot\n";
+		// echo "Disallow: /\n";
 	}
 
 

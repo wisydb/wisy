@@ -149,7 +149,7 @@ class CONTROL_TEXT_CLASS extends CONTROL_BASE_CLASS
 		}
 		
 		$html .= ( isset( $label ) && $label ? '<label for="#' . strval( $this->name ) . '" class="'.$this->row_def->prop['layout.descr.class'].'">'.$label.'</label>' : '')
-		.'<input id="#' . strval( $this->name ) . '" name="' . $this->name . '" type="'.( isset( $this->row_def->prop['layout.input.hide'] ) && $this->row_def->prop['layout.input.hide'] ? 'hidden' : 'text' ).'" value="'.$value.'"' . $this->tooltip_attr() . $this->readonly_attr();
+		.'<input id="' . strval( $this->name ) . '" name="' . $this->name . '" type="'.( isset( $this->row_def->prop['layout.input.hide'] ) && $this->row_def->prop['layout.input.hide'] ? 'hidden' : 'text' ).'" value="'.$value.'"' . $this->tooltip_attr() . $this->readonly_attr();
 		
 		if( isset( $this->row_def->prop['ctrl.placeholder'] ) && ($placeholder=strval($this->row_def->prop['ctrl.placeholder'])) != '' ) {
 		    if( $placeholder == '1' ) $placeholder = trim($this->row_def->descr);

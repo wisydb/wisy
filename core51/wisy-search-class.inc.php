@@ -38,28 +38,33 @@ require_once('admin/config/codes.inc.php');
 
 class WISY_SEARCH_CLASS
 {
-	// all private!
-	var $framework;
-	
-	var $db;
-	private $dbCache;
-	
-	var $error;
-	var $tokens;
-	
-	var $last_lat;
-	var $last_lng;
-	
-	var $rawJoin;
-	var $rawWhere;
-	var $fulltext_select;
-	var $assumedLocation;
-	var $globalTagHeap;
-	
-	private $rawCanCache;
-	
-	function __construct(&$framework, $param)
-	{
+    // all private!
+    var $framework;
+    
+    var $db;
+    protected $dbCache;
+    
+    var $error;
+    var $tokens;
+    
+    var $last_lat;
+    var $last_lng;
+    
+    var $rawJoin;
+    var $rawWhere;
+    var $fulltext_select;
+    var $fulltextSections;
+    
+    var $assumedLocation;
+    var $globalTagHeap;
+    
+    var $postScript;
+    var $changedQueryString;
+    
+    protected $rawCanCache;
+    
+    function __construct(&$framework, $param)
+    {
 		global $wisyPortalId;
 	
 		$this->framework	=& $framework;
@@ -249,30 +254,32 @@ class WISY_SEARCH_CLASS
 	        $redundantFound = $this->isRedundantSearchTag($tag, $tag_heap, array("ancestor", "descendant"), $maxlevels);
 	        
 	        // curent value may still be a synonym => descendant/ancestor would not be found => check referenced tag
-	        if(!$redundantFound["found"] == "descendant" && !$redundantFound["found"] == "ancestor") {
-	            // Look for: 64 = Synonym, 32 = verstecktes Synonym
-	            $sql = "SELECT stichwort FROM stichwoerter WHERE id IN (SELECT stichwoerter_verweis.attr_id AS id "
-	                ."FROM stichwoerter, stichwoerter_verweis WHERE stichwoerter.stichwort = '".addslashes($tag)."' AND stichwoerter.eigenschaften IN (64,32) AND stichwoerter_verweis.primary_id = stichwoerter.id)";
-	                $this->db->query($sql);
-	                while($this->db->next_record()) {
-	                    // Current value = synonym => check referenced original for ancestors/descendants
-	                    $redundantFound = $this->isRedundantSearchTag($this->db->f('stichwort'), $tag_heap, array("ancestor", "descendant"), $maxlevels);
-	                }
-	        }
-	        
-	        if($redundantFound["found"] == "ancestor") {
-	            if (($key = array_search( strtolower($redundantFound["tag"]), array_map("strtolower", $tag_heap) )) !== false) {  // descendant is second tag
-	                unset($tag_heap[$key]);
-	                array_push($this->double_tags, "Entfernt wurde: \"<strike>".$redundantFound["tag"]."</strike>\" - Grund: Oberbegriff von \"".$tag."\"");
+	        if( ( !isset($redundantFound["found"]) || !$redundantFound["found"] == "descendant" )
+	            && ( !isset($redundantFound["found"]) || !$redundantFound["found"] == "ancestor" )
+	            ) {
+	                // Look for: 64 = Synonym, 32 = verstecktes Synonym
+	                $sql = "SELECT stichwort FROM stichwoerter WHERE id IN (SELECT stichwoerter_verweis.attr_id AS id "
+	                    ."FROM stichwoerter, stichwoerter_verweis WHERE stichwoerter.stichwort = '".addslashes($tag)."' AND stichwoerter.eigenschaften IN (64,32) AND stichwoerter_verweis.primary_id = stichwoerter.id)";
+	                    $this->db->query($sql);
+	                    while($this->db->next_record()) {
+	                        // Current value = synonym => check referenced original for ancestors/descendants
+	                        $redundantFound = $this->isRedundantSearchTag($this->db->f('stichwort'), $tag_heap, array("ancestor", "descendant"), $maxlevels);
+	                    }
 	            }
 	            
-	        } elseif($redundantFound["found"] == "descendant") {
-	            if (($key = array_search( strtolower($tag), array_map("strtolower", $tag_heap) )) !== false)
-	                unset($tag_heap[$key]);
-	                array_push($this->double_tags, "Entfernt wurde: \"<strike>".$tag."</strike>\" - Grund: Oberbegriff von \"".$redundantFound["tag"]."\"");
-	                $continue_redundant = true;
-	        }
-	        
+	            if( isset($redundantFound["found"]) && $redundantFound["found"] == "ancestor") {
+	                if (($key = array_search( strtolower($redundantFound["tag"]), array_map("strtolower", $tag_heap) )) !== false) {  // descendant is second tag
+	                    unset($tag_heap[$key]);
+	                    array_push($this->double_tags, "Entfernt wurde: \"<strike>".$redundantFound["tag"]."</strike>\" - Grund: Oberbegriff von \"".$tag."\"");
+	                }
+	                
+	            } elseif( isset($redundantFound["found"]) && $redundantFound["found"] == "descendant") {
+	                if (($key = array_search( strtolower($tag), array_map("strtolower", $tag_heap) )) !== false)
+	                    unset($tag_heap[$key]);
+	                    array_push($this->double_tags, "Entfernt wurde: \"<strike>".$tag."</strike>\" - Grund: Oberbegriff von \"".$redundantFound["tag"]."\"");
+	                    $continue_redundant = true;
+	            }
+	            
 	    }
 	    
 	    return array("continue_redundant" => $continue_redundant, "tag_heap" => $tag_heap);
@@ -283,40 +290,280 @@ class WISY_SEARCH_CLASS
 	 * end: handle redundant tags *
 	 * ************************** */
 	
-	function checkqueryString($queryString)
-	{
-	    // Excel in Mainz => Excel, Mainz if "Excel in Mainz" not a tag
-	    global $ignoreWords_DE;
+	// optimize query string:
+	// look for signal words / separators like "in", "für" => convert to "," to make them as searchable as possible
+	// already checked if $queryString ist tag => no.
+	function replaceSignalWordsInQuery( $queryString, $i, $ignoreWords_DE ) {
 	    
-	    $queryArr = explode(',', $queryString);
-	    for( $i = 0; $i < sizeof($queryArr); $i++ )
-	    {
-	        $value = trim($queryArr[$i]);
-	        if ($this->lookupTag($value) == 0) {
-	            $parts =  explode(' ', $value);
-	            for( $j = 0; $j < sizeof($parts); $j++ ) {
-	                if (in_array($parts[$j], $ignoreWords_DE)) {
-	                    $parts[$j] = "";
-	                } else {
-	                    $rort = $this->lookupOrt($parts[$j]);
-	                    if ($rort) {
-	                        
-	                        if (sizeof($parts) == 1) {
-	                        } else if ($i == 0) {
-	                            $parts[$j] = ",".$rort.",";
-	                        } else {
-	                            $parts[$j] = ",".$rort;
-	                        }
-	                        break;
-	                    }
-	                }
+        // check if queryString is 3 parts revolving around signal word:
+        // spaces before/after signal word important => otherwise possibly part of word or at end auf section => wrong
+	    $signal = ( stripos( $queryString, " in " ) !== FALSE ) ? " in " : false;
+	    $signal = !$signal && stripos( $queryString, utf8_decode( " für " ) ) !== FALSE ? utf8_decode( " für " ) : $signal;
+	    
+	    // neither "in" nor "für" found
+	    if( !$signal ) 
+	      return array( 'querySection' => $queryString, 'changedQueryString' => false );
+	    
+	    // get sub-section within sub-string (already between commas)
+	    $sections = explode( $signal, $queryString); 
+
+	    // make sure to continue only if signal word is in the center of 2 sections
+	    // I.e. applies if two signal words 
+	    if( count($sections) != 2 )  
+	        return array( 'querySection' => $queryString, 'changedQueryString' => false );
+
+	            
+	    // check if one or both sections (having one or more words) around the signal word are tags
+	    $newQueryString = "";
+
+	    foreach( $sections AS $section ) {
+	        if( in_array( $section, $ignoreWords_DE ) && stripos($signal, "in") === FALSE ) { // skip ignorewords if part of city
+	            $section = "";                                 // if in ignore list skip word/words of this section, but also erase from search string
+	            continue;                                          
+	        }
+	        elseif( stripos( $section, ':' ) !== FALSE ) 
+	            continue;                                          // if already volltext:, km:, preis: etc. => ignore
+	        elseif( $this->lookupTag( $section ) != 0 )
+	            $newQueryString .= $section . ',';                 // if word/section is a tag just add comma
+	        elseif( $signal == " in " ) {
+	           if( $this->lookupOrt( $section ) )
+	               $newQueryString .= $section . ',';              // if signal word is "in" assume venue search => lookup City etc. (1. Bezirk, 2. Stadtteil, 3. Ort)
+	           else {                                              // initally not a city
+	            $words = explode(' ', trim($section));
+	            
+	            if( sizeof( $words ) == 2 || sizeof( $words ) == 3 ) {      // city of two or max 3 words
+	                if( $this->lookupOrt( $words[0] ) )
+	                    $newQueryString .= $words[0] . ','.$words[1] . (isset($words[2]) ? ','.$words[2] : '');
+	                else
+	                    ; // cut
+	            } else {
+	                ;     // ?
 	            }
-	            $queryArr[$i] = implode(" ",  (array)$parts);
+	           }
+	           
+	        }
+	        else {
+	           // !!! if is_word $section?
+	           $newQueryString .= 'volltext:' . $section . ',';    // if current word/section not a tag and not a venue/city => try as fulltext, comma separated
+	           if( $this->framework->getParam('qtrigger', '') == 'h' )
+	               $src = 'h';
+	           else if( $this->framework->getParam('qtrigger', '') == 'm' )
+	               $src = 'm';
+	                   
+	           if( $src != '' ) {
+	               global $wisyPortalId;
+	               $date = strtotime( date('Y-m-d H:i:s') );
+	               $secSame = 30;
+	               $dateRound = date('Y-m-d H:i:s', round(($date+$secSame/2)/$secSame)*$secSame); // always round to next $secSame seconds
+	               $key = md5( $dateRound.$_SERVER['REMOTE_ADDR'].$this->queryString ); // make sure: same user using the same query string within 30 seconds is the same call
+	               $query1 = utf8_decode( $section );
+	                       
+	               $dbQueries = new DB_Admin;
+	                       
+	               $sql = 'INSERT INTO x_searchqueries SET ukey = "' . $key . '", datum_uhrzeit = "' . $dateRound . '", portal_id = ' . $wisyPortalId . ', domain = "' . $_SERVER['SERVER_NAME'] . '"'
+	                    . ', status = "volltext_transfer", src = "' . $src . '", query1 = "' . $query1 . '", query2 = "", query3 = ""
+                            ON DUPLICATE KEY UPDATE ukey = ukey;'; // ukey = ukey just stands for: do nothing if key already exists, but don't throw an error in this case.
+	                           
+	               $dbQueries->query( $sql );
+	           }
 	        }
 	    }
-	    $queryString = implode(",", $queryArr);
+
+	    $newQueryString = trim( $newQueryString , ',' );
 	    
+	    return array( 'querySection' => $newQueryString, 'changedQueryString' => true );
+	    
+	}
+	
+	function isWord( $word ) {
+
+	    $db = new DB_Admin();
+
+	    // if lookup table missing => skip comparison, assume: is word!
+	    $db->query( "SHOW TABLES LIKE 'openth_term' " );
+	    if( $db->num_rows() != 1 ) 
+	        return true;          
+	    
+	    // safety and efficiency: a word can't be anything but an alpha(numeric) sequence of chars and -, but without space
+	    // remove everything not matching that!
+	    $ue=chr(129); $ae=chr(132); $oe=chr(148); $ueU=chr(154); $aeU=chr(142); $oeU=chr(153); $sz=chr(225); $ee=chr(130); $eeU=chr(144);
+	    $ii=chr(139); $nn=chr(164); $nnU=chr(165); $aee=chr(145); $aeeU=chr(146);
+	    $word = preg_replace("/[^a-zA-Z0-9".$ue.$ae.$oe.$ueU.$aeU.$oeU.$sz.$ee.$eeU.$ii.$nn.$nnU.$aee.$aeeU."-]+/", "", $word);
+
+	    // if word does not exist in german (english) language: return false
+	    $db->query( "SELECT DISTINCT word FROM openth_term WHERE word = '" . $word . "' " );
+	    if( $db->num_rows() != 1 ) {
+
+	        $sql = "SELECT DISTINCT * FROM openth_word_mapping WHERE fullform = '" . $word . "'";
+            
+	        $db->query( $sql );
+	       
+	        if( $db->num_rows() != 1 ) {
+	           return false; 
+	        } else {
+	            if( $db->next_record() ) {
+	                $baseform1 = $db->fs( 'baseform' );
+	                
+	                $sql = "SELECT DISTINCT * FROM openth_word_mapping WHERE fullform = '" . $baseform1 . "'";
+	                $db->query( $sql );
+	                
+	                if( $db->next_record() ) {
+	                       $baseform2 = $db->fs( 'baseform' );
+	                       return $baseform2;
+	                } else {
+	                       return $baseform1;
+	                }
+	            }
+	        }
+	    }
+	    
+	    return $word;
+	}
+	
+	function getSynonyms( $word ) {
+	    $db = new DB_Admin();
+	    $db2 = new DB_Admin();
+	    
+	    // safety and efficiency: a word can't be anything but an alpha(numeric) sequence of chars and -, but without space
+	    // remove everything not matching that!
+	    $ue=chr(129); $ae=chr(132); $oe=chr(148); $ueU=chr(154); $aeU=chr(142); $oeU=chr(153); $sz=chr(225); $ee=chr(130); $eeU=chr(144);
+	    $ii=chr(139); $nn=chr(164); $nnU=chr(165); $aee=chr(145); $aeeU=chr(146);
+	    $word = preg_replace("/[^a-zA-Z0-9".$ue.$ae.$oe.$ueU.$aeU.$oeU.$sz.$ee.$eeU.$ii.$nn.$nnU.$aee.$aeeU."-]+/", "", $word);
+	    
+	    // check if synonyms exist in german (english) language 
+	    $db->query( "SELECT DISTINCT synset_id FROM openth_term WHERE openth_term.word = '" . $word . "' LIMIT 5" ); // Limit: 5 contexts auf synonyms
+	    
+	    $synonyms = array();
+	    while( $db->next_record() ) {
+	        $db2->query( "SELECT DISTINCT word FROM openth_term, openth_synset WHERE openth_synset.id = openth_term.synset_id AND openth_synset.is_visible = 1 AND openth_term.synset_id = " . $db->f( 'synset_id' ) );
+	        while( $db2->next_record() ) {
+	            $synonyms[] = $db2->fs( 'word' );
+	        }
+	    }
+	    
+	    return count( $synonyms ) ? $synonyms : false;
+	}
+
+	// optimize query string:
+	// search non-separated words as tags OR as fulltext and tags OR discard if multiple words != tags
+	function separateSearchTags( $section, $i, $ignoreWords_DE, $cntSearchSections ) {
+	    
+	    // if already volltext:, km:, preis: etc. => ignore - neu!
+	    if( stripos( $section, ':' ) !== FALSE ) 
+	        return array( 'querySection' => $section, 'changedQueryString' =>false );
+	    
+	    $parts = explode( " ", $section );
+	    
+	    // if no signal words -> but all tokens == tags => just add "," as separator
+	    // if serach section == two words AND one token == tag && one token != tag => search token1,volltext:token2
+	    $allTokensTags = true;
+	    
+	    for( $j = 0; $j < sizeof($parts); $j++ ) {             // for each token of THIS comma separated search section
+	        
+	        if( in_array( $parts[ $j ], $ignoreWords_DE ) ) {  // is a in list of to-be-filtered words (like "und")
+	            
+	            if( !$this->isWord($section) ) {               // word filter applies => cut this section from search string
+	                $parts[ $j ] = "";
+	            }
+	            else
+	                ;                                          // keep anyways if proper word, for may be matched to synonym later => has potential to be replaced
+	                
+	            continue;                                      // if in ignore list skip word/words of this section, but also erase from search string
+	        }
+	            
+	        if( stripos( trim($parts[ $j ]), '-' ) === 0 )
+	           continue;                                      // if NOT search
+	                
+	        $parts[ $j ] = trim( $parts[ $j ] );
+	                
+	        if( $this->lookupTag( $parts[ $j ] ) == 0 ) {      // if current word != tag
+	           $allTokensTags = false;
+	                    
+	           if( sizeof($parts) == 2 && $j == 0 ) {         // if word is first word of two word-string => search as fulltext b/c not tag
+	               $checkedWord = $this->isWord( $parts[ $j ] );
+	               $parts[ $j ] = $checkedWord ? ",volltext:" . $checkedWord : ''; // not need for trailing comma if next token == tag
+	               $changedQueryString = true;
+	           }
+	           elseif( sizeof($parts) == 2 && $j == 1 ) {     // if word is second word of two word-string => search as fulltext b/c not tag
+	               $checkedWord = $this->isWord( $parts[ $j ] );
+	               $parts[ $j ] = stripos($parts[ $j-1 ], 'volltext') === FALSE && $checkedWord ? ",volltext:" . $checkedWord : ''; // if preceding token no volltext => token 2 = volltext, else if: both tokens != tag => search only first word as volltext and discard second
+	               $changedQueryString = true;
+	           } else {
+                   $checkedWord = $this->isWord( $parts[ $j ] );
+    	           if( $checkedWord ) {                           // careful: returns true if openth-Thesaurus is missing in DB!
+    	                                                          // 2nd word is non-tag but word - odd
+    	               $parts[ $j ] = ",volltext:" . $checkedWord;
+    	               $changedQueryString = true;
+    	           } else {                                        // not a word
+                        if( $cntSearchSections > 1 ) {
+    	                   $parts[ $j ] = "";
+    	                   $changedQueryString = true;
+    	                } else {                                   // is only one token => no tag and no acutal word => return empty string b/c tag search + fulltext doesn't make sense
+    	                    // $parts[ $j ] = "";                  // careful: empty doesn't produce error but: "zeige:kurse" :-/
+    	                }
+    	           }
+	           }
+	        }
+	        else {
+	               // if this word is a tag => add comma as separator, so it can be searched!
+	               $parts[ $j ] = "," . $parts[ $j ];
+	               $changedQueryString = true;
+	        } 
+	    }
+	    
+	    return array( 'querySection' => implode( "",  (array) $parts ), 'changedQueryString' => $changedQueryString );
+	}
+	
+	function checkqueryString( $queryString ) {
+	    
+	    // don't analyze empty strings
+	    if( !strlen(trim( $queryString )) )
+	        return $queryString;
+	        
+	    // dont' analyze strings containing ODER => would make things complicated
+	    if( stripos($queryString, 'ODER' ) !== FALSE )
+	       return $queryString;
+	            
+	            
+	    global $ignoreWords_DE;
+	    $queryArr = explode(',', $queryString);
+	            
+	    // for each section of query string
+	    for( $i = 0; $i < sizeof($queryArr); $i++ ) {
+	       $value = trim($queryArr[$i]);
+	                
+	       if ( $this->lookupTag( $value ) != 0 ) {   // only this section of search string is tag?
+	           ;                                      // section of query string is a tag => don't try to recognize anything further in search string, but keep part for later            
+	       } else {  // section of query string is not a tag:
+                $result = $this->replaceSignalWordsInQuery( $value, $i, $ignoreWords_DE );  // returns: array( 'querySection' => $queryArr[$i], 'changedQueryString' => $changedQueryString )
+	            $queryArr[$i] = $result[ 'querySection' ];
+	            $changedQueryString = $result[ 'changedQueryString' ];
+	                    
+	            if( $changedQueryString == false ) {
+	               // ?! reset( $parts );
+	               $result = $this->separateSearchTags( $value, $i, $ignoreWords_DE, sizeof($queryArr) );      // returns: array( 'querySection' => $queryArr[$i], 'changedQueryString' => $changedQueryString )
+	               $queryArr[$i] = $result[ 'querySection' ];
+	               $changedQueryString = $result[ 'changedQueryString' ];
+	            }
+	                    
+	        }    
+	    } // end: for each section of query string
+	            
+	    $queryString = implode( ',', $queryArr); // re-build querystring from tags and recognized tags
+	    $queryString = trim( str_replace( array(" ,", ", "), ",", $queryString), ',' );
+	    	            
+	    if( $queryString && $changedQueryString) 
+	       $this->changedQueryString = $queryString;
+	                
 	    return $queryString;
+	}
+	
+	function get_postScript() {
+	    return $this->postScript;
+	}
+	
+	function get_changedQueryString() {
+	    return $this->changedQueryString;
 	}
 	
 	function lookupOrt($ort)
@@ -325,20 +572,20 @@ class WISY_SEARCH_CLASS
 	    $bezirk = 0;
 	    $stadtteil = 0;
 	    
-	    if( $ort != '' )
-	    {
+	    if( $ort != '' ) {
+	        
 	        global $geomap_orte;
 	        
 	        foreach($geomap_orte AS $synonym => $original) {
 	            if (stristr(trim($ort), trim($synonym)))   { $ort = trim($original); }
 	        }
 	        
-	        
-	        $this->db->query("SELECT ort, plz FROM plz_ortscron WHERE ort = '".trim($ort)."';");
-	        if( $this->db->next_record() ) {
-	            $this->assumedLocation = $ort;
-	            return $ort;
-	        }
+	        // safety and efficiancy: a word can't be anything but an alpha(numeric) sequence of chars and space and -
+	        // remove everything not matching that!
+	        $ue=chr(129); $ae=chr(132); $oe=chr(148); $ueU=chr(154); $aeU=chr(142); $oeU=chr(153); $sz=chr(225); $ee=chr(130); $eeU=chr(144);
+	        $ii=chr(139); $nn=chr(164); $nnU=chr(165); $aee=chr(145); $aeeU=chr(146);
+	        $bezirk_name = preg_replace("/[^a-zA-Z0-9".$ue.$ae.$oe.$ueU.$aeU.$oeU.$sz.$ee.$eeU.$ii.$nn.$nnU.$aee.$aeeU." -]+/", "", $bezirk_name);
+	        $ort = preg_replace("/[^a-zA-Z0-9".$ue.$ae.$oe.$ueU.$aeU.$oeU.$sz.$ee.$eeU.$ii.$nn.$nnU.$aee.$aeeU." -]+/", "", $ort);
 	        
 	        $bezirk_name = str_replace('(Bezirk)', '', $ort); // space can't be part of ort
 	        $this->db->query("SELECT tag_name FROM x_tags WHERE tag_name LIKE '".trim($bezirk_name)."%' AND tag_descr = 'Bezirk'");
@@ -355,6 +602,17 @@ class WISY_SEARCH_CLASS
 	                $this->assumedLocation = $ort." (Stadtteil)";
 	                return $ort;
 	            }
+	            
+	            $this->db->query( "SHOW TABLES LIKE 'plz_ortscron' " );
+	            if( !$this->db->num_rows() )
+	                return 0;
+	                
+	                $this->db->query("SELECT ort, plz FROM plz_ortscron WHERE ort = '".trim($ort)."';");
+	                if( $this->db->next_record() ) {
+	                    $this->assumedLocation = $ort;
+	                    return $ort;
+	                }
+	                
 	    }
 	    
 	    
@@ -371,7 +629,7 @@ class WISY_SEARCH_CLASS
 		global $wisyPortalId;
 		
 		// Ortsnamen im Suchstring nach dem Trennwort in umsetzen
-		if ( $this->framework->getParam('qs', false) ) {
+		if ( $this->framework->getParam('qs', false) && !$this->framework->iniRead('search.skip_analyse', false) ) {
 		    $queryString = $this->checkqueryString($queryString);
 		}
 		
@@ -394,7 +652,7 @@ class WISY_SEARCH_CLASS
 		$this->last_lng = 0;
 		$has_bei = false;
 		$max_km = 500;
-		$default_km = $this->framework->iniRead('radiussearch.defaultkm', 2);
+		$default_km = $this->framework->iniRead('radiussearch.defaultkm', -100);
 		$km = floatval($default_km);
 		for( $i = 0; $i < sizeof((array) $this->tokens['cond']); $i++ )
 		{
@@ -490,7 +748,7 @@ class WISY_SEARCH_CLASS
 					{
 					    // simple AND- or NOT search
 					    $op = '';
-					    if( $value[0] == '-' )
+					    if( strpos($value, '-') === 0 ) // PHP 7.4
 					    {
 					        $value = substr($value, 1);
 					        $op = 'not';
@@ -552,15 +810,19 @@ class WISY_SEARCH_CLASS
 					                    $this->rawJoin  .= " LEFT JOIN x_tags_freq k$i ON k$i.tag_id=j$i.tag_id";
 					                    
 					                    $tag_ids = explode("#", $tag_id);
-					                    $this->rawWhere .= '(';
 					                    
+					                    if(count($tag_ids))
+					                        $this->rawWhere .= "(";
+					                        
 					                    for($k = 0; $k < count($tag_ids); $k++) {
-					                        $this->rawWhere .= "(j$i.tag_id=".$tag_ids[$k]." AND k$i.portal_id = ".$GLOBALS['wisyPortalId'].") OR ";	//  AND k$i.tag_freq > 0 -- not necessary -> if in table x_tags_freq must be used at least once
+					                       $this->rawWhere .= "(j$i.tag_id=".$tag_ids[$k]." AND k$i.portal_id = ".$GLOBALS['wisyPortalId'].") OR ";	//  AND k$i.tag_freq > 0 -- not necessary -> if in table x_tags_freq must be used at least once
 					                    }
+					                        
 					                    $this->rawWhere = substr($this->rawWhere, 0, strlen($this->rawWhere)-4); // remove last OR
-					                    
-					                    $this->rawWhere .= ')'; // brackets necessary, otherwise "AND x_kurse.beginn>=" etc. will only apply to last operand in OR-chain
-					                    
+					                        
+					                    if(count($tag_ids))
+					                       $this->rawWhere .= ")"; // brackets necessary, otherwise "AND x_kurse.beginn>=" etc. will only apply to last operand in OR-chain
+					                            
 					                } else {
 					                    $this->rawWhere .= "j$i.tag_id=$tag_id";
 					                } 
@@ -612,7 +874,7 @@ class WISY_SEARCH_CLASS
 				            } elseif(strtolower(trim($value)) == strtolower($codes_array[$y])) {
 				                $code_found = true;
 				                $this->rawWhere .= $this->rawWhere? ' AND ' : ' WHERE ';
-				                $this->rawWhere .= "x_kurse.kurs_id IN (SELECT x_kurse_tags.kurs_id FROM x_kurse_tags, x_tags WHERE x_kurse_tags.tag_id = x_tags.tag_id AND x_tags.tag_type = '".$codes_array[$y-1]."')";
+				                $this->rawWhere .= "x_kurse.kurs_id IN (SELECT x_kurse_tags.kurs_id FROM x_kurse_tags, x_tags WHERE x_kurse_tags.tag_id = x_tags.tag_id AND x_tags.tag_type = '".$value."')";
 				            }
 				            
 				        }
@@ -663,7 +925,8 @@ class WISY_SEARCH_CLASS
 				case 'fav':
 				case 'favprint': // favprint is deprecated
 					$ids = array();
-					$temp = $this->tokens['cond'][$i]['field']=='fav'? $_COOKIE['fav'] : $value;
+					$fav = isset($_COOKIE['fav']) ? $_COOKIE['fav'] : '';
+					$temp = $this->tokens['cond'][$i]['field']=='fav'? $fav : $value;
 					$temp = explode(',', strtr($temp, ' /',',,'));
 					for( $j = 0; $j < sizeof($temp); $j++ ) {
 						$ids[] = intval($temp[$j]); // safely get the IDs - do not use the Cookie/Request-String directly!
@@ -708,6 +971,28 @@ class WISY_SEARCH_CLASS
 				    break;
 				
 				case 'bei':
+				    
+				    if( $km == -100 ) {
+				        
+				        $value = preg_replace('/^\d+\s+/', '', $value);     // cut possible PLZ und whitespace
+				        
+				        $tag_id = $this->lookupTag($value);                 // here no intval() ! $tag_id may be string containing "#" for 1:n synonyms!
+				        
+				        if( $tag_id == 0 )
+				        {
+				            $this->error = array('id'=>'tag_not_found', 'tag'=>$value, 'first_bad_tag'=>$i);
+				            break;
+				        }
+				        else
+				        {
+				            $this->rawWhere .= $this->rawWhere? ' AND ' : ' WHERE ';
+				            $this->rawJoin  .= " LEFT JOIN x_kurse_tags j$i ON x_kurse.kurs_id=j$i.kurs_id";
+				            $this->rawWhere .= "j$i.tag_id=$tag_id";
+				        }
+				        break;
+				        
+				    }
+				    
 				    if( preg_match('/^\s*(\d+(\.\d+)?)\s*\/\s*(\d+(\.\d+)?)\s*$/', $value, $matches) ) // angabe lat/lng
 				    {
 				        $lat = floatval($matches[1]);
@@ -730,7 +1015,7 @@ class WISY_SEARCH_CLASS
 				        }
 				    }
 				    
-				    if($_GET['debug'] == "ort") {
+				    if( isset($_GET['debug']) && $_GET['debug'] == "ort") {
 				        echo "<br>Gesuchter Ort:<br><b>".(mb_detect_encoding($value, 'UTF-8', true) ? utf8_decode($value): $value)."</b><br><br>"
 				            ."Umlaut-Codierung Deutsch (ISO-8859-1)?:<br><b>".(mb_detect_encoding($value, 'ISO-8859-1', true) ? 'ja' : 'nein')."</b><br><br>"
 				            ."Umlaut-Codierung Deutsch (UTF-8)?:<br><b>".(mb_detect_encoding($value, 'UTF-8', true) ? 'ja' : 'nein')."</b><br><br>"
@@ -939,6 +1224,7 @@ class WISY_SEARCH_CLASS
 		// return an information-array
 		// NOTE: "no records found" is no error if the query is fine. 
 		return array(
+		    'changed_query' => $this->get_changedQueryString(),
 			'show'		=>	$this->tokens['show'],
 			'error'		=>	$this->error,
 			'secneeded'	=>	$this->secneeded,
@@ -955,6 +1241,9 @@ class WISY_SEARCH_CLASS
 	function getKurseCount()
 	{
 		$ret = 0;
+		
+		if( isset($_COOKIE['debug']) && $this->error)
+		    echo "<br><p style=\"background-color: yellow;\">getKurseCount(): Error: ".$this->error['id'].": <pre>".print_r($this->error, true)."</pre></p>";
 		
 		if( $this->error === false )
 		{
@@ -1164,6 +1453,10 @@ class WISY_SEARCH_CLASS
 	    return $ret;
 	}
 
+	function getQueryString() {
+	    return $this->queryString;
+	}
+	
 	function getAnbieterCount()
 	{
 		$ret = 0;
