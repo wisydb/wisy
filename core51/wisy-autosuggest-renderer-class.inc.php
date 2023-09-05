@@ -48,9 +48,15 @@ class WISY_AUTOSUGGEST_RENDERER_CLASS
 	function render()
 	{
 	    $querystring = utf8_decode( strval( $this->framework->getParam('q') ) );
-	    $querystring = strip_tags($querystring);
-		
-		$tagsuggestor =& createWisyObject('WISY_TAGSUGGESTOR_CLASS', $this->framework);
+	    $querystring = $this->framework->deXSS($querystring); // strip_tags($querystring);
+	    $querystring = trim($querystring, ','); // remove leading and trailing commma b/c without relevance for string comparison
+	    
+	    $tagsuggestor =& createWisyObject('WISY_TAGSUGGESTOR_CLASS', $this->framework);
+	    
+	    if( !$this->framework->iniRead('portal.inframe', 0) ) {
+	        header("X-Frame-Options: SAMEORIGIN");
+	        header("Content-Security-Policy: frame-ancestors 'none'");
+	    }
 
 		switch( $this->framework->getParam('format') )
 		{
@@ -103,6 +109,23 @@ class WISY_AUTOSUGGEST_RENDERER_CLASS
                 
                 // Filter out suggestions with tag_freq == 0
                 $filtered_tags = array();
+                
+                // Redundant search suggestions link as first element
+                // Only display if querystring has least 3 letters (default)
+                // and there are at least 10 search tags available (in the suggestion window) (default)
+                if(
+                    $this->framework->iniRead('search.ajax.suchvorschlaege.oben', 0)
+                    && strlen($querystring) > $this->framework->iniRead('search.ajax.suchvorschlaege.laenge', 3)
+                    && count($tags) > $this->framework->iniRead('search.ajax.suchvorschlaege.minsw', 9)
+                    ) {
+                        $filtered_tags[] = array(
+                            'tag'	=>	$querystring,
+                            'tag_descr' => 'Alle Suchvorschl'.(PHP7 ? utf8_decode("ä") : 'ä').'ge anzeigen',
+                            'tag_type'	=> 0,
+                            'tag_help'	=> 1 // indicates "more"
+                        );
+                }   
+                    
                 for( $i = 0; $i < sizeof((array) $tags); $i++ )
                 {
                     $skip = false;
@@ -141,15 +164,21 @@ class WISY_AUTOSUGGEST_RENDERER_CLASS
                             'tag_help'	=> -2 // indicates "no results"
                         );
                         // addMoreLink at the end when more than 10 entries have been found
-                    } else if(count($filtered_tags) > 9) {
-                        
-                        $filtered_tags[] = array(
-                            'tag'	=>	$querystring,
-                            'tag_descr' => 'Alle Suchvorschl'.(PHP7 ? utf8_decode("ä") : 'ä').'ge anzeigen',
-                            'tag_type'	=> 0,
-                            'tag_help'	=> 1 // indicates "more"
-                        );
-                    }
+                    } else if(
+                        strlen($querystring) > $this->framework->iniRead('search.ajax.suchvorschlaege.laenge', 3)
+                        && count($tags) > $this->framework->iniRead('search.ajax.suchvorschlaege.minsw', 9)
+                        ) {
+                            
+                            // Only display if querystring has least 3 letters (default)
+                            // and there are at least 10 search tags available (in the suggestion window) (default)
+                            $filtered_tags[] = array(
+                                'tag'	=>	$querystring,
+                                'tag_descr' => 'Alle Suchvorschl'.(PHP7 ? utf8_decode("ä") : 'ä').'ge anzeigen',
+                                'tag_type'	=> 0,
+                                'tag_help'	=> 1 // indicates "more"
+                            );
+                            
+                        }
                 }
 				
 				if( SEARCH_CACHE_ITEM_LIFETIME_SECONDS > 0 )
@@ -173,6 +202,3 @@ class WISY_AUTOSUGGEST_RENDERER_CLASS
 		}
 	}
 }
-
-
-

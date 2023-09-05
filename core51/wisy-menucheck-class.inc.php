@@ -35,7 +35,7 @@ class WISY_MENUCHECK_CLASS
 		$this->framework		=& $framework;
 		$this->statetable		= new WISY_SYNC_STATETABLE_CLASS($this->framework);
 		$this->menuclass		= new WISY_MENU_CLASS($this->framework, array('prefix'=>''));
-		$this->today_datetime   = strftime("%Y-%m-%d %H:%M:%S");
+		$this->today_datetime   = ftime("%Y-%m-%d %H:%M:%S");
 		
 	}
 	

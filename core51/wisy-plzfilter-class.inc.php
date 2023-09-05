@@ -35,12 +35,12 @@ class WISY_PLZFILTER_CLASS
 
 	function __construct(&$framework, $addparam)
 	{
-		// constructor
-		$this->framework =& $framework;
-
-		$this->plz_allow = $this->get_plz_array_($addparam['durchf.plz.allow']);
-		$this->plz_deny  = $this->get_plz_array_($addparam['durchf.plz.deny']);
-		$this->plz_order = str_replace(' ', '', $addparam['durchf.plz.order']); // durchf.plz.order ist akt. (21:57 16.01.2013) nicht dokumentiert und inoffiziell!
+	    // constructor
+	    $this->framework =& $framework;
+	    
+	    $this->plz_allow = $this->get_plz_array_( (isset($addparam['durchf.plz.allow']) ? $addparam['durchf.plz.allow'] : '') );
+	    $this->plz_deny  = $this->get_plz_array_( (isset($addparam['durchf.plz.deny']) ? $addparam['durchf.plz.deny'] : '') );
+	    $this->plz_order = isset($addparam['durchf.plz.order']) ? str_replace(' ', '', $addparam['durchf.plz.order']) : ''; // durchf.plz.order ist akt. (21:57 16.01.2013) nicht dokumentiert und inoffiziell!
 	}
 		
 	private function get_plz_array_($plz_list_as_string)
@@ -58,51 +58,51 @@ class WISY_PLZFILTER_CLASS
 	
 	private function is_plz_in_array_($plz, $arr)
 	{
-		for( $i = strlen($plz); $i >= 1; $i-- ) {
-			if( $arr[ substr($plz, 0, $i) ] )
-				return true;
-		}
-		
-		return false;
+	    for( $i = strlen($plz); $i >= 1; $i-- ) {
+	        if( isset($arr[ substr($plz, 0, $i) ]) && $arr[ substr($plz, 0, $i) ] )
+	            return true;
+	    }
+	    
+	    return false;
 	}
 	
 	function is_valid_plz($plz)
 	{
-		// correct the PLZ given
-		$plz = trim($plz);
-		if( $plz == '' ) {
-			$plz = 'empty';
-		}
-		
-		// check, if a PLU is denied or allowed by default; the latter is the standard setting
-		if( $this->plz_order == 'deny,allow' )
-		{
-		    // deny,allow
-		    if( sizeof((array) $this->plz_deny ) ) {
-		        if( $this->is_plz_in_array_($plz, $this->plz_deny ) ) {
-		            if( sizeof((array) $this->plz_allow) == 0 || !$this->is_plz_in_array_($plz, $this->plz_allow) ) {
-		                return false;
-		            }
-		        }
-		    }
-		}
-		else
-		{
-		    // allow,deny - standard behaviour
-		    if( sizeof((array) $this->plz_allow) ) {
-		        if( !$this->is_plz_in_array_($plz, $this->plz_allow) ) {
-		            return false;
-		        }
-		    }
-		    
-		    if( sizeof((array) $this->plz_deny ) ) {
-		        if(  $this->is_plz_in_array_($plz, $this->plz_deny ) ) {
-		            return false;
-		        }
-		    }
-		}
-		
-		return true;
+	    // correct the PLZ given
+	    $plz = trim($plz);
+	    if( $plz == '' ) {
+	        $plz = 'empty';
+	    }
+	    
+	    // check, if a PLU is denied or allowed by default; the latter is the standard setting
+	    if( isset($this->plz_order) && $this->plz_order == 'deny,allow' )
+	    {
+	        // deny,allow
+	        if( sizeof((array) $this->plz_deny ) ) {
+	            if( $this->is_plz_in_array_($plz, $this->plz_deny ) ) {
+	                if( sizeof((array) $this->plz_allow) == 0 || !$this->is_plz_in_array_($plz, $this->plz_allow) ) {
+	                    return false;
+	                }
+	            }
+	        }
+	    }
+	    else
+	    {
+	        // allow,deny - standard behaviour
+	        if( isset($this->plz_allow) && sizeof((array) $this->plz_allow) ) {
+	            if( !$this->is_plz_in_array_($plz, $this->plz_allow) ) {
+	                return false;
+	            }
+	        }
+	        
+	        if( isset($this->plz_deny) && sizeof((array) $this->plz_deny ) ) {
+	            if(  $this->is_plz_in_array_($plz, $this->plz_deny ) ) {
+	                return false;
+	            }
+	        }
+	    }
+	    
+	    return true;
 	}
 	
 	function is_valid_plz_in_hash($plz_hash)

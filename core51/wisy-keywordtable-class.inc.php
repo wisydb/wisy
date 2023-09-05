@@ -82,16 +82,16 @@ class WISY_KEYWORDTABLE_CLASS
 			else
 				$row_postfix = ($tag_freq==1? '1 Kurs' : "$tag_freq Kurse") . $row_preposition . $row_postfix;
 		} else {
-		    return "<small>Z.Z. leider keine Angebote ".$row_preposition . $row_postfix.": ".htmlentities(cs8($tag_name))."</small>";
+		    return "<small>Z.Z. leider keine Angebote ".$row_preposition . $row_postfix.": ".htmlentities(strval(cs8($tag_name)))."</small>";
 		}
 
 
-		$row_postfix = PHP7 ? utf8_decode($row_postfix) : $row_postfix;
+		$row_postfix = PHP7 ? utf8_decode(strval($row_postfix)) : strval($row_postfix);
 		
 		if( $tag_descr )
 		{
-		    $tag_descr = cs8($tag_descr);
-		    $row_postfix = htmlentities(html_entity_decode($tag_descr)) . ', ' . htmlentities(html_entity_decode(strip_tags($row_postfix)));
+		    $tag_descr = strval(cs8($tag_descr));
+		    $row_postfix = $tag_descr . ', ' . $row_postfix;
 		}
 		
 		if( $row_postfix != '' )
@@ -101,8 +101,8 @@ class WISY_KEYWORDTABLE_CLASS
 
 		/*col1*/
 		$ret .= '<span class="' .$row_class. '">';
-		$ret .= ' <a href="' . $this->framework->getUrl('search', array('q'=>cs8($tag_name))). '">' . htmlentities(cs8($tag_name)). '</a> ';
-		$ret .= $row_postfix;
+		$ret .= ' <a href="' . $this->framework->getUrl('search', array('q'=>cs8($tag_name))). '">' . htmlentities(strval(cs8($tag_name))). '</a> ';
+			$ret .= $row_postfix;
 		$ret .= '</span>';
 		
 		/*col2*/
@@ -269,7 +269,7 @@ class WISY_KEYWORDTABLE_CLASS
 		
 		$secneeded = $this->framework->microtime_float() - $this->start;
 		$secneeded_str = sprintf("%1.3f", $secneeded); $secneeded_str = str_replace('.', ',', $secneeded_str);
-		$ret .= '<div class="wisy_glskeytime">Erstellt '.strftime('%Y-%m-%d %H:%M:%S').' in '.$secneeded_str.' s</div>';
+		$ret .= '<div class="wisy_glskeytime">Erstellt '.ftime('%Y-%m-%d %H:%M:%S').' in '.$secneeded_str.' s</div>';
 
 		// add to cache
 		$this->dbCache->insert($cacheKey, $ret);		
@@ -280,5 +280,3 @@ class WISY_KEYWORDTABLE_CLASS
 	
 		
 };
-
-

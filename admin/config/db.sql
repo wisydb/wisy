@@ -556,6 +556,173 @@ CREATE TABLE `kurse_verweis` (
 
 -- --------------------------------------------------------
 
+-- Nachfolgende Tabellen werden nur verwendet, wenn man
+-- den OpenThesaurus von openthesaurus.de importiert.
+-- Wenn diese Tabellen nicht existieren, wird das entsprechende
+-- Feature in der Suche einfach uebersprungen.
+
+--
+-- Tabellenstruktur fuer Tabelle `openth_category`
+--
+--
+-- CREATE TABLE `openth_category` (
+--  `id` bigint(20) NOT NULL,
+--  `version` bigint(20) NOT NULL,
+--  `category_name` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
+--  `is_disabled` bit(1) DEFAULT NULL
+-- ) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Tabellenstruktur fuer Tabelle `openth_category_link`
+--
+--
+-- CREATE TABLE `openth_category_link` (
+--  `id` bigint(20) NOT NULL,
+--  `version` bigint(20) NOT NULL,
+--  `category_id` bigint(20) NOT NULL,
+--  `synset_id` bigint(20) NOT NULL
+-- ) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Tabellenstruktur fuer Tabelle `openth_synset`
+--
+--
+-- CREATE TABLE `openth_synset` (
+--  `id` bigint(20) NOT NULL,
+--  `version` bigint(20) NOT NULL,
+--  `evaluation` int(11) DEFAULT NULL,
+--  `is_visible` bit(1) NOT NULL,
+--  `original_id` int(11) DEFAULT NULL,
+--  `preferred_category_id` bigint(20) DEFAULT NULL,
+--  `section_id` bigint(20) DEFAULT NULL,
+--  `source_id` bigint(20) DEFAULT NULL,
+--  `synset_preferred_term` varchar(255) DEFAULT NULL
+-- ) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+--
+-- --------------------------------------------------------
+
+--
+-- Tabellenstruktur fuer Tabelle `openth_synset_link`
+--
+--
+-- CREATE TABLE `openth_synset_link` (
+--  `id` bigint(20) NOT NULL,
+--  `version` bigint(20) NOT NULL,
+--  `evaluation_status` int(11) DEFAULT NULL,
+--  `fact_count` int(11) DEFAULT NULL,
+--  `link_type_id` bigint(20) NOT NULL,
+--  `synset_id` bigint(20) NOT NULL,
+-- `target_synset_id` bigint(20) NOT NULL
+-- ) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Tabellenstruktur fuer Tabelle `openth_tag`
+--
+--
+-- CREATE TABLE `openth_tag` (
+--  `id` bigint(20) NOT NULL,
+--  `version` bigint(20) NOT NULL,
+--  `color` varchar(255) DEFAULT NULL,
+--  `created` datetime NOT NULL,
+--  `created_by` varchar(255) NOT NULL,
+--  `name` varchar(255) NOT NULL,
+--  `short_name` varchar(255) DEFAULT NULL,
+--  `is_visible` bit(1) DEFAULT NULL
+-- ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Tabellenstruktur fuer Tabelle `openth_term`
+--
+
+-- CREATE TABLE `openth_term` (
+--  `id` bigint(20) NOT NULL,
+--  `version` bigint(20) NOT NULL,
+--  `language_id` bigint(20) NOT NULL,
+--  `level_id` bigint(20) DEFAULT NULL,
+--  `normalized_word` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL,
+--  `original_id` int(11) DEFAULT NULL,
+--  `synset_id` bigint(20) NOT NULL,
+--  `user_comment` varchar(400) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL,
+--  `word` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+--  `normalized_word2` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL
+-- ) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Tabellenstruktur fuer Tabelle `openth_term_level`
+--
+--
+-- CREATE TABLE `openth_term_level` (
+--  `id` bigint(20) NOT NULL,
+--  `version` bigint(20) NOT NULL,
+--  `level_name` varchar(255) NOT NULL,
+--  `short_level_name` varchar(255) NOT NULL,
+--  `sort_value` int(11) DEFAULT NULL
+-- ) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Tabellenstruktur fuer Tabelle `openth_term_link`
+--
+--
+-- CREATE TABLE `openth_term_link` (
+--  `id` bigint(20) NOT NULL,
+--  `version` bigint(20) NOT NULL,
+--  `link_type_id` bigint(20) NOT NULL,
+--  `target_term_id` bigint(20) NOT NULL,
+--  `term_id` bigint(20) NOT NULL
+-- ) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Tabellenstruktur fuer Tabelle `openth_term_link_type`
+--
+--
+-- CREATE TABLE `openth_term_link_type` (
+--  `id` bigint(20) NOT NULL,
+--  `version` bigint(20) NOT NULL,
+--  `link_name` varchar(255) NOT NULL,
+--  `other_direction_link_name` varchar(255) NOT NULL,
+--  `verb_name` varchar(255) NOT NULL
+-- ) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Tabellenstruktur fuer Tabelle `openth_term_tag`
+--
+--
+-- CREATE TABLE `openth_term_tag` (
+--  `term_tags_id` bigint(20) DEFAULT NULL,
+--  `tag_id` bigint(20) DEFAULT NULL
+-- ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Tabellenstruktur fuer Tabelle `openth_word_mapping`
+--
+--
+-- CREATE TABLE `openth_word_mapping` (
+--  `fullform` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+--  `baseform` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL
+-- ) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci COMMENT='Mapping Vollform nach Grundform aus Morphy';
+
+-- Ende: openthesaurus --
+
+-- --------------------------------------------------------
+
 --
 -- Tabellenstruktur fuer Tabelle `plztool`
 --
@@ -1145,6 +1312,24 @@ CREATE TABLE `x_querystats` (
 -- --------------------------------------------------------
 
 --
+-- Tabellenstruktur fuer Tabelle `x_searchqueries`
+--
+
+CREATE TABLE `x_searchqueries` (
+  `ukey` varchar(32) NOT NULL,
+  `datum_uhrzeit` varchar(19) DEFAULT NULL,
+  `portal_id` int(11) DEFAULT NULL,
+  `domain` varchar(255) DEFAULT NULL,
+  `status` varchar(255) DEFAULT NULL,
+  `src` varchar(2) DEFAULT NULL,
+  `query1` varchar(255) DEFAULT NULL,
+  `query2` varchar(255) DEFAULT NULL,
+  `query3` varchar(255) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Tabellenstruktur fuer Tabelle `x_state`
 --
 
@@ -1194,9 +1379,17 @@ CREATE TABLE `x_tags_syn` (
   `lemma_id` int(11) NOT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci;
 
+
 --
 -- Indizes der exportierten Tabellen
 --
+
+--
+-- Indizes fuer die Tabelle `x_searchqueries`
+--
+
+ALTER TABLE `x_searchqueries`
+  ADD PRIMARY KEY (`ukey`);
 
 --
 -- Indizes fuer die Tabelle `anbieter`
@@ -1359,6 +1552,106 @@ ALTER TABLE `kurse_stichwort`
 ALTER TABLE `kurse_verweis`
   ADD KEY `kurse_verweis_i0` (`primary_id`),
   ADD KEY `kurse_verweis_i1` (`attr_id`);
+-- Ende: openthesaurus --
+-- Nachfolgende Tabellen werden nur verwendet, wenn man
+-- den OpenThesaurus von openthesaurus.de importiert.
+-- Wenn diese Tabellen nicht existieren, wird das entsprechende
+-- Feature in der Suche einfach uebersprungen.
+
+--
+-- Indizes fuer die Tabelle `openth_category`
+--
+-- ALTER TABLE `openth_category`
+--  ADD PRIMARY KEY (`id`),
+--  ADD UNIQUE KEY `category_name` (`category_name`);
+
+--
+-- Indizes fuer die Tabelle `openth_category_link`
+--
+-- ALTER TABLE `openth_category_link`
+--  ADD PRIMARY KEY (`id`),
+--  ADD KEY `FK142F1A9BA3843755` (`synset_id`),
+--  ADD KEY `FK142F1A9B6197A215` (`category_id`);
+
+--
+-- Indizes fuer die Tabelle `openth_synset`
+--
+-- ALTER TABLE `openth_synset`
+--  ADD PRIMARY KEY (`id`),
+--  ADD KEY `FKCB1A289A4A27BB5` (`source_id`),
+--  ADD KEY `FKCB1A289AED375357` (`preferred_category_id`),
+--  ADD KEY `FKCB1A289AD9BB831F` (`section_id`),
+--  ADD KEY `is_visible` (`is_visible`),
+--  ADD KEY `original_id` (`original_id`);
+
+--
+-- Indizes fuer die Tabelle `openth_synset_link`
+--
+-- ALTER TABLE `openth_synset_link`
+--  ADD PRIMARY KEY (`id`),
+--  ADD KEY `FK6336907FA3843755` (`synset_id`),
+--  ADD KEY `FK6336907FE4B8FC6A` (`link_type_id`),
+--  ADD KEY `FK6336907F9933A227` (`target_synset_id`);
+
+--
+-- Indizes fuer die Tabelle `openth_tag`
+--
+-- ALTER TABLE `openth_tag`
+--  ADD PRIMARY KEY (`id`),
+--  ADD UNIQUE KEY `name` (`name`),
+--  ADD UNIQUE KEY `short_name` (`short_name`);
+
+--
+-- Indizes fuer die Tabelle `openth_term`
+--
+-- ALTER TABLE `openth_term`
+--  ADD PRIMARY KEY (`id`),
+--  ADD KEY `FK36446CA3843755` (`synset_id`),
+--  ADD KEY `FK36446C534B2C73` (`level_id`),
+--  ADD KEY `FK36446C5CA8CBD5` (`language_id`),
+--  ADD KEY `word` (`word`),
+--  ADD KEY `normalized_word` (`normalized_word`),
+--  ADD KEY `normalized_word2` (`normalized_word2`);
+
+--
+-- Indizes fuer die Tabelle `openth_term_level`
+--
+-- ALTER TABLE `openth_term_level`
+--  ADD PRIMARY KEY (`id`),
+--  ADD UNIQUE KEY `level_name` (`level_name`),
+--  ADD UNIQUE KEY `short_level_name` (`short_level_name`);
+
+--
+-- Indizes fuer die Tabelle `openth_term_link`
+--
+-- ALTER TABLE `openth_term_link`
+--  ADD PRIMARY KEY (`id`),
+--  ADD KEY `FK78CD07EDDBDC7376` (`link_type_id`),
+--  ADD KEY `FK78CD07ED36F08D5` (`term_id`),
+--  ADD KEY `FK78CD07ED2D3F0027` (`target_term_id`);
+
+--
+-- Indizes fuer die Tabelle `openth_term_link_type`
+--
+-- ALTER TABLE `openth_term_link_type`
+--  ADD PRIMARY KEY (`id`),
+--  ADD UNIQUE KEY `link_name` (`link_name`),
+--  ADD UNIQUE KEY `verb_name` (`verb_name`);
+
+--
+-- Indizes fuer die Tabelle `openth_term_tag`
+--
+-- ALTER TABLE `openth_term_tag`
+-- ADD KEY `FKB9931D47C610557F` (`tag_id`),
+-- ADD KEY `FKB9931D47AD241D35` (`term_tags_id`);
+
+--
+-- Indizes fuer die Tabelle `openth_word_mapping`
+--
+-- ALTER TABLE `openth_word_mapping`
+--  ADD KEY `idx` (`fullform`);
+
+-- Ende: openthesaurus --
 
 --
 -- Indizes fuer die Tabelle `plztool`

@@ -96,6 +96,7 @@ define('_SETTINGS_SEARCHSHOWFUZZYINFO',     "alternative W&ouml;rter bei fehlert
 define('_SETTINGS_SEARCHSHOWPCODE',         "Interpretation der Suchanfrage anzeigen, falls keine Datens&auml;tze gefunden wurden");
 define('_SETTINGS_SEPERATOR',               "Trennzeichen");
 define('_SETTINGS_SHOWCHANGES',             "Zeige DF-&Auml;nderungen in Kursmaske");
+define('_SETTINGS_SHOWEMPTY',               "Zeige leere DF-Felder in &Uuml;bersichten als 'k.A.'<br>('0' bleibt aber '0'. Suche: nicht nach 'k.A.' sondern nach '') ");
 define('_SETTINGS_SHOWLOGO',                "Logo anzeigen");
 define('_SETTINGS_SKIN',                    "Skin");
 define('_SETTINGS_DIALOGTITLE',             "Ihre pers&ouml;nlichen Einstellungen");

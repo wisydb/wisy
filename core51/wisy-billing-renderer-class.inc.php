@@ -19,8 +19,8 @@ class WISY_BILLING_RENDERER_CLASS
 		$allPrices = explode(';', $allPrices);
 		for( $a = 0; $a < sizeof($allPrices); $a+=2 )
 		{	
-			$amount = intval($allPrices[$a]);
-			$price  = floatval($allPrices[$a+1]);
+		    $amount = isset($allPrices[$a]) ? intval($allPrices[$a]) : '';
+		    $price  = isset($allPrices[$a+1]) ? floatval($allPrices[$a+1]) : '';
 			if( $amount > 0 && $price > 0.0 )
 				$this->allPrices[] = array($amount, $price);
 		}
@@ -51,7 +51,7 @@ class WISY_BILLING_RENDERER_CLASS
 		$user_access  = intval($db->fcs8('user_access'));
 		
 		// Eintrag in Log schreiben
-		$todayHour     = strftime("%Y-%m-%d %H:%M:%S");
+		$todayHour    = ftime("%Y-%m-%d %H:%M:%S");
 		$db->query(  "INSERT INTO anbieter_billing
 					 (user_created,  user_modified, user_grp,  user_access,  date_created, date_modified, anbieter_id, portal_id,     bill_type, credits,          eur,      raw_data) VALUES
 					 ($user_created, $user_created, $user_grp, $user_access, '$todayHour', '$todayHour',  $anbieterId, $wisyPortalId, $bill_type, $credits_to_add, '$price', '".addslashes($raw_data)."')");

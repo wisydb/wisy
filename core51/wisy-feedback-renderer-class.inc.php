@@ -37,8 +37,8 @@ class WISY_FEEDBACK_RENDERER_CLASS
 		$email  = trim(utf8_decode( $this->framework->getParam('email') ));
 		
 		// connect to db
-		$today = strftime("%Y-%m-%d %H:%M:%S");
-		$threeHours = strftime("%Y-%m-%d %H:%M:%S", time()+3*60*60);
+		$today = ftime("%Y-%m-%d %H:%M:%S");
+		$threeHours = ftime("%Y-%m-%d %H:%M:%S", time()+3*60*60);
 		
 		$db = new DB_Admin;
 		$db->query("SELECT id FROM feedback WHERE url='".addslashes($url)."' AND ip='".addslashes($ip)."' AND date_created<'$threeHours';");

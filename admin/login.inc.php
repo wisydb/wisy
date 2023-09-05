@@ -60,7 +60,6 @@ function login_screen()
 	//
 	// get login data from cookie
 	//
-	/*
 	if( regGet('login.remember', 0) 
 	 && !$enter_loginname 
 	 && $_COOKIE['g_cookie_login'] ) 
@@ -76,7 +75,6 @@ function login_screen()
 	{
 		$enter_password = '';
 	}
-	*/
 
 	//
 	// additional message
@@ -199,13 +197,11 @@ function login_screen()
 			//
 			// ...remember login
 			//
-			/*
 			if( regGet('login.remember', 0) ) {
 				form_control_start(htmlconstant('_REMEMBERLOGIN'));
 					form_control_check('enter_rememberlogin', $_COOKIE['g_cookie_login']?1:0);
 				form_control_end();
 			}
-			*/
 			
 	$site->skin->dialogEnd();
 
@@ -253,34 +249,57 @@ function login_check()
     $db = new DB_Admin;
     $ip = $_SERVER['REMOTE_ADDR'];
     
-    $sqlstmt = "DELETE FROM x_logins WHERE timestamp < DATE_SUB( NOW( ) , INTERVAL 24 HOUR )";  // alles was aelter als 24 h loeschen
+    // delete logins attempts (not freigeschalten) older than 24 hours
+    // will also be reset with every correct login
+    $sqlstmt = "DELETE FROM x_logins WHERE timestamp < date_sub(now(),interval 24 hour)";
     $db->query($sqlstmt);
     
-    /* if( $_REQUEST['enter_subsequent'] && $_REQUEST['enter_loginname'] && !is_array($_REQUEST['enter_loginname']) ) {
-     $sqlstmt = "INSERT INTO x_logins (ip, login_name) VALUES (AES_ENCRYPT('$ip', '$salt'), '".addslashes(strval( $_REQUEST['enter_loginname'] ))."')";
-     $db->query($sqlstmt);
-     } */
-    
-    $sqlstmt = "SELECT COUNT(*) AS COUNT FROM x_logins WHERE AES_DECRYPT(ip, '$salt') = '$ip' and freischalten > NOW() OR freischalten = '0000-00-00 00:00:00'";
-    $db->query($sqlstmt);
-    $db->next_record();
-    $loginversuche = $db->fs('COUNT');
-    if ($loginversuche > 50) {
-        /* if($_REQUEST['enter_subsequent']) {
-            $sqlstmt = "UPDATE x_logins SET freischalten = now()+ 144000 WHERE AES_DECRYPT(ip, '$salt') = '$ip'";
+    // login sent:
+    if(    isset($_REQUEST['enter_subsequent']) && $_REQUEST['enter_subsequent']
+        && isset($_REQUEST['enter_loginname']) && $_REQUEST['enter_loginname']
+        && ( !isset($_REQUEST['enter_loginname']) || !is_array($_REQUEST['enter_loginname']) )
+        ) {
+            $sqlstmt = "INSERT INTO x_logins (ip, login_name) VALUES ( AES_ENCRYPT('$ip', '$salt'), '".addslashes(strval( $_REQUEST['enter_loginname'] ))."' )";
             $db->query($sqlstmt);
         }
-        $denymessage = "Zu viele falsche Login-Versuche. Ihre IP-Adresse wurde f&uuml;r 24 Stunden gesperrt"; */
-    } else if ($loginversuche > 10) {
-     /* if($_REQUEST['enter_subsequent']) {
-            $sqlstmt = "UPDATE x_logins SET freischalten = now()+ 1000 WHERE AES_DECRYPT(ip, '$salt') = '$ip'";
-            $db->query($sqlstmt);
+        
+        // and freischalten == 0 (=still allowing login tries)
+        // OR > NOW() (=already blocked for ceratain time interval)
+        $sqlstmt = "SELECT COUNT(*) AS COUNT FROM x_logins WHERE AES_DECRYPT(ip, '$salt') = '$ip' AND (freischalten = '0000-00-00 00:00:00' OR freischalten > NOW())";
+        $db->query($sqlstmt);
+        $db->next_record();
+        $loginversuche = $db->fs('COUNT');
+        
+        if ($loginversuche > 30) {
+            
+            if($_REQUEST['enter_subsequent']) {
+                $sqlstmt = "UPDATE x_logins SET freischalten = date_add(now(),interval 1440 minute) WHERE AES_DECRYPT(ip, '$salt') = '$ip'";
+                $db->query($sqlstmt);
+            }
+            
+            $denymessage = "Zu viele falsche Login-Versuche. Ihre IP-Adresse wurde f&uuml;r 24 Stunden gesperrt";
+            
+            die( $denymessage );
+            
+        } else if ($loginversuche > 10) {
+            
+            
+            if($_REQUEST['enter_subsequent']) {
+                
+                $sqlstmt = "UPDATE x_logins SET freischalten = date_add(now(),interval 10 minute) WHERE AES_DECRYPT(ip, '$salt') = '$ip'";
+                $db->query($sqlstmt);
+                
+            }
+            $denymessage = "Zu viele falsche Login-Versuche. Ihre IP-Adresse wurde f&uuml;r 10 Minuten gesperrt";
+            
+            die( $denymessage );
+            
+        } else {
+            ; // less than 10 failed logins today...
         }
-        $denymessage = "Zu viele falsche Login-Versuche. Ihre IP-Adresse wurde f&uuml;r 10 Minuten gesperrt"; */
-    }
-    
-
-	// if a role-confirmation screen was printed, the user already entered the password successfully; read it from the session in this case
+        
+        
+    // if a role-confirmation screen was printed, the user already entered the password successfully; read it from the session in this case
 	if( isset($_REQUEST['role_confirm_ok']) ) {
 	    $_REQUEST['enter_password'] = isset($_SESSION['g_role_confirm_login_credential_pw']) ? strval($_SESSION['g_role_confirm_login_credential_pw']) : '';
 	}
@@ -406,7 +425,6 @@ function login_check()
 	 		&&
 	 		(
 	 			crypt($enter_password, $db_password) == $db_password 
-				/*
 				||
 				(
 					regGet('login.remember', 0)
@@ -415,7 +433,6 @@ function login_check()
 					&&
 	 				crypt($db_password, $cookie_password) == $cookie_password 
 	 			)
-				*/
 				||
 				(
 					strlen($db_password) < 12 
@@ -432,7 +449,6 @@ function login_check()
 		}
 		
 		// set / remove cookie
-		/*
 		if( regGet('login.remember', 0) ) {
 			if( isset($_REQUEST['enter_rememberlogin']) ) {
 				setcookie('g_cookie_login', urlencode($_SESSION['g_session_language'])."&".urlencode($enter_loginname)."&".strlen($enter_password)."&".urlencode(crypt($db_password, $salt)), time()+(10*24*60*60)); // expires in 10 days
@@ -441,7 +457,6 @@ function login_check()
 				setcookie('g_cookie_login'); // remove cookie
 			}
 		}
-		*/
 		
 		// set last login time, reset login error counter
 		$new_login_errors = $enter_as? 0 : 1;
@@ -556,6 +571,8 @@ function login_check()
 	//
 	require_lang('lang/overview');
 	$site->msgAdd(htmlconstant('_LOGIN_WELCOME', "<b>$username</b>", sql_date_to_human($db_last_login, 'datetime')) . "\n", 'i');
+	
+	// $site->msgAdd("\n\n<h3 style='font-weight: bold; color: #346d88;'><date>: Additional new feature to be announced to editors.</h3>\n\n", 'i');
 	
 	$sqlstmt = "DELETE FROM x_logins WHERE AES_DECRYPT(ip, '$salt') = '$ip'";  // bei erfolgreichem login werden die Versuche geloescht
 	$db->query($sqlstmt);

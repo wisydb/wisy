@@ -78,6 +78,7 @@ settings are (for values, the first value is the default in most cases):
 	index.searchplusminusword	{0|1}
 	index.searchshowpcode		{1|0}
 	index.searchfuzzyinfo2		{1|0}
+	index.showempty             {1|0}
 	login.as					{0|1}
 	login.lastpage				{|<last page before logout>}
 	login.password.minlen		{4|<otherlen>}
@@ -566,6 +567,7 @@ if( isset($settings_ok) || isset($settings_apply) )
 		    regSet('index.searchplusminusword', isset($_REQUEST['otherallowplusminusword']) && $_REQUEST['otherallowplusminusword'] ? 1 : 0, 0);
 		    regSet('index.searchshowpcode', isset($_REQUEST['othershowpcode'])              && $_REQUEST['othershowpcode'] ? 1 : 0, 1);
 		    regSet('index.searchfuzzyinfo2', isset($_REQUEST['otherfuzzyinfo'])             && $_REQUEST['otherfuzzyinfo'] ? 1 : 0, 1);
+		    regSet('index.showempty', isset( $_REQUEST['shempty'] )                         && $_REQUEST['shempty']        ? 1 : 0, 1);
 		}
 		else if( $table_def && $scope == 'edit' )
 		{
@@ -810,13 +812,16 @@ if( $scope == 'index' && $table_def )
 			form_control_start(htmlconstant('_SETTINGS_SEARCHINPUT'));
 
 				form_control_check('otherallowplusminusword', regGet('index.searchplusminusword', 0), '', 0, 1);
-				echo '<label for="otherallowplusminusword">' . htmlconstant('_SETTINGS_ALLOWMINUSPLUSWORD') . '</label><br />';
+				echo '<label for="otherallowplusminusword">' . htmlconstant('_SETTINGS_ALLOWMINUSPLUSWORD') . '</label><br>';
 			
 				form_control_check('othershowpcode', regGet('index.searchshowpcode', 1), '', 0, 1);
-				echo '<label for="othershowpcode">' . htmlconstant('_SETTINGS_SEARCHSHOWPCODE') . '</label><br />';
+				echo '<label for="othershowpcode">' . htmlconstant('_SETTINGS_SEARCHSHOWPCODE') . '</label><br>';
 
 				form_control_check('otherfuzzyinfo', regGet('index.searchfuzzyinfo2', 1), '', 0, 1);
-				echo '<label for="otherfuzzyinfo">' . htmlconstant('_SETTINGS_SEARCHSHOWFUZZYINFO') . '</label>';
+				echo '<label for="otherfuzzyinfo">' . htmlconstant('_SETTINGS_SEARCHSHOWFUZZYINFO') . '</label><br>';
+				
+				form_control_check('shempty', regGet('index.showempty', 1), '', 0, 1);
+				echo '<label for="shempty">' . htmlconstant('_SETTINGS_SHOWEMPTY') . '</label><br>';
 			
 			form_control_end();
 
@@ -958,7 +963,7 @@ else if( $scope == 'edit' && $table_def )
 		$site->skin->submenuEnd();		
 		$site->skin->workspaceStart();
 			form_control_check('usetabs', regGet('edit.rowrider', 1), '', 0, 1);
-			echo '<label for="usetabs">' . htmlconstant('_SETTINGS_USETABS') . '</label><br />';						
+			echo '<label for="usetabs">' . htmlconstant('_SETTINGS_USETABS') . '</label><br>';						
 		$site->skin->workspaceEnd();
 
 
@@ -1519,7 +1524,7 @@ $site->skin->sectionStart();
 			echo '<hr />';
 		}
 
-		echo '&nbsp;<br />';
+		echo '&nbsp;<br>';
 
 		$ob = new COLTABLE_CLASS;
 		echo $ob->tableStart(2);
@@ -1575,16 +1580,16 @@ $site->skin->sectionStart();
 						closedir($handle);
 					}
 				form_control_enum('edtskin', regGet('skin.folder', 'skins/default'), $skins);
-				echo '<br />';
+				echo '<br>';
 			}
 
 			/*
 			form_control_check('rowcursor', regGet('index.rowcursor', 1), '', 0, 1);
-			echo '<label for="rowcursor">' . htmlconstant('_SETTINGS_ROWCURSOR') . '</label><br />';
+			echo '<label for="rowcursor">' . htmlconstant('_SETTINGS_ROWCURSOR') . '</label><br>';
 			*/
 
 			form_control_check('neweditor', regGet('edit.oldeditor', 0)? 0 : 1, '', 0, 1);
-			echo '<label for="neweditor">' . 'Neuer Editor' . '</label> <a href="https://b2b.kursportal.info/index.php?title=Neuer_Editor" target="_blank" rel="noopener noreferrer">weitere Informationen...</a><br />';
+			echo '<label for="neweditor">' . 'Neuer Editor' . '</label> <a href="https://b2b.kursportal.info/index.php?title=Neuer_Editor" target="_blank" rel="noopener noreferrer">weitere Informationen...</a><br>';
 
 			
 
@@ -1594,16 +1599,16 @@ $site->skin->sectionStart();
 		form_control_start(htmlconstant('_SETTINGS_TOOLBAR'));
 			
 			form_control_check('tbbin', regGet('toolbar.bin', 1), '', 0, 1);
-			echo '<label for="tbbin">' . htmlconstant('_SETTINGS_USEJOBLISTS') . '</label><br />';
+			echo '<label for="tbbin">' . htmlconstant('_SETTINGS_USEJOBLISTS') . '</label><br>';
 
 			if( regGet('login.tipsntricks.use', 1) ) {
 				form_control_check('tbtnt', regGet('login.tipsntricks', 1), '', 0, 1);
-				echo '<label for="tbtnt">' . htmlconstant('_SETTINGS_TIPSNTRICKS') . '</label><br />';
+				echo '<label for="tbtnt">' . htmlconstant('_SETTINGS_TIPSNTRICKS') . '</label><br>';
 			}
 			
 			form_control_check('shchng', regGet('edit.df.showchanges', 1), '', 0, 1);
 			if( regGet('edit.df.showchanges.use', 1) ) {
-			    echo '<label for="shchng">' . htmlconstant('_SETTINGS_SHOWCHANGES') . '</label><br />';
+			    echo '<label for="shchng">' . htmlconstant('_SETTINGS_SHOWCHANGES') . '</label><br>';
 			    // regSet('edit.df.showchanges', isset( $_REQUEST['shchng'] ) && $_REQUEST['shchng'] ? 1:0, 1);
 			}
 
@@ -1616,19 +1621,19 @@ $site->skin->sectionStart();
 			$dateSetting = str_replace(',', ' ', '  '.regGet('date.global', 'relative, weekdays').' ');
 			
 			form_control_check("otherrelative", strpos($dateSetting, ' relative '), '', 0, 1);
-			echo "<label for=\"otherrelative\">" . htmlconstant('_SETTINGS_DATESHOWRELDATE') . '</label><br />';
+			echo "<label for=\"otherrelative\">" . htmlconstant('_SETTINGS_DATESHOWRELDATE') . '</label><br>';
 		
 			form_control_check("otherweekdays", strpos($dateSetting, ' weekdays '), '', 0, 1);
-			echo "<label for=\"otherweekdays\">" . htmlconstant('_SETTINGS_DATESHOWWEEKDAYS') . '</label><br />';
+			echo "<label for=\"otherweekdays\">" . htmlconstant('_SETTINGS_DATESHOWWEEKDAYS') . '</label><br>';
 		
 			form_control_check("othercentury", strpos($dateSetting, ' century '), '', 0, 1);
-			echo "<label for=\"othercentury\">" .  htmlconstant('_SETTINGS_DATESHOWCENTURY') . '</label><br />';
+			echo "<label for=\"othercentury\">" .  htmlconstant('_SETTINGS_DATESHOWCENTURY') . '</label><br>';
 		
 			$time = strpos($dateSetting, ' time ')? 1 : 0;
 			form_control_check("othertime", $time, 
 				"if(this.checked)sectd('seconds',1);else sectd('seconds',0);return true;", 
 				0, 1);
-			echo "<label for=\"othertime\">" . htmlconstant('_SETTINGS_DATESHOWTIME') . '</label><br />';
+			echo "<label for=\"othertime\">" . htmlconstant('_SETTINGS_DATESHOWTIME') . '</label><br>';
 			
 			echo '<div id="seconds" style="display:' .($time? 'block' : 'none'). ';">';
 			
@@ -1766,7 +1771,7 @@ if( regGet('settings.editable', 1) )
 if( !regGet('settings.editable', 1) )
 {
 	$site->skin->msgStart('w');
-		echo '<b>' . htmlconstant('_SETTINGS_REMARK1') . '</b><br /><br />' . htmlconstant('_SETTINGS_REMARK2');
+		echo '<b>' . htmlconstant('_SETTINGS_REMARK1') . '</b><br><br>' . htmlconstant('_SETTINGS_REMARK2');
 	$site->skin->msgEnd();
 }
 

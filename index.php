@@ -72,6 +72,10 @@ if( isset($_GET['setcookie']) )
 
 require_once("admin/sql_curr.inc.php");
 require_once("admin/config/config.inc.php");
+
+if( !class_exists('DB_Admin') )
+    die( "Verzeichnis ung&uuml;ltig." );
+    
 $db = new DB_Admin;
 
 
@@ -85,8 +89,8 @@ function isohtmlspecialchars($a, $f=ENT_COMPAT) { return htmlspecialchars($a, $f
 function isohtmlentities    ($a, $f=ENT_COMPAT) { return htmlentities    ($a, $f, 'ISO-8859-1'); }
 
 // temporary functions for switching between html5/html3.2 rendering
-function html5($h) { return $GLOBALS['wisyPortalEinstellungen']['html5']? $h : ''; }
-function html3($h) { return $GLOBALS['wisyPortalEinstellungen']['html5']? '' : $h; }
+function html5($h) { return isset($GLOBALS['wisyPortalEinstellungen']['html5']) && $GLOBALS['wisyPortalEinstellungen']['html5'] ? $h : ''; }
+function html3($h) { return isset($GLOBALS['wisyPortalEinstellungen']['html5']) && $GLOBALS['wisyPortalEinstellungen']['html5'] ? '' : $h; }
 
 function explodeSettings__($in, &$out, $follow_includes)
 {
@@ -158,25 +162,26 @@ function fwd301($fwdTo)
 
 function error404($msg = "")
 {
-	global $wisyCore;
-	header("HTTP/1.1 404 Not Found");
-	header('Content-Type: text/html; charset=ISO8859-15');
-	
-	echo '<html>
+    $httpHost = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '';
+    global $wisyCore;
+    header("HTTP/1.1 404 Not Found");
+    header('Content-Type: text/html; charset=ISO8859-15');
+    
+    echo '<html>
 			<head>
 				<title>Fehler 404 - Seite nicht gefunden</title>
 			</head>
 			<body>
 				<h1>Fehler 404 - Seite nicht gefunden</h1>
-                <h2 style="color: darkgreen;">'.$msg.'</h2>
-				<p>Entschuldigung, aber die von Ihnen gew&uuml;nschte Seite (<i>'.isohtmlspecialchars($_SERVER['REQUEST_URI']).'</i> in <i>/'.isohtmlspecialchars($wisyCore).'</i> auf <i>' .$_SERVER['HTTP_HOST']. '</i>) konnte leider nicht gefunden werden. Sie k&ouml;nnen jedoch ...
+				<h2 style="color: darkgreen;">'.$msg.'</h2>
+				<p>Entschuldigung, aber die von Ihnen gew&uuml;nschte Seite (<i>'.isohtmlspecialchars(isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '').'</i> in <i>/'.isohtmlspecialchars($wisyCore).'</i> auf <i>' . $httpHost . '</i>) konnte leider nicht gefunden werden. Sie k&ouml;nnen jedoch ...
 				<ul>
-					<li><a href="http://'.$_SERVER['HTTP_HOST'].'">Die Startseite von '.$_SERVER['HTTP_HOST'].' aufrufen ...</a></li>
+					<li><a href="http://'. $httpHost .'">Die Startseite von '. $httpHost .' aufrufen ...</a></li>
 					<li><a href="javascript:history.back();">Zur&uuml;ck zur zuletzt besuchten Seite wechseln ...</a></li>
 				</ul>
 			</body>
 		  </html>';
-	exit();
+    exit();
 }
 
 
@@ -187,33 +192,47 @@ function error404($msg = "")
 
 function selectPortalOrFwd301()
 {
-	global $db;
-	$ist_domain = strtolower($_SERVER['HTTP_HOST']);
-
-	// do forward by default - however, we skip forwarding on special domains
-	$do_fwd = true;
-	
-	// some special domain handling
-	if( substr($ist_domain, 0, 7)=='sandbox' ) // remove sandbox prefix
-	{
-	    if(preg_match("/sandbox[0-9]/i", substr($ist_domain, 0, 8)) && !preg_match("/sandbox[10-18]/i", substr($ist_domain, 0, 9)))
-	        $ist_domain = substr($ist_domain, 8 + 1 /*dot or minus*/ );
-	    elseif(preg_match("/sandbox[10-18]/i", substr($ist_domain, 0, 9)))
-	        $ist_domain = substr($ist_domain, 9 + 1 /*dot or minus*/ );
-		else
-			$ist_domain = substr($ist_domain, 7 + 1 /*dot or minus*/ );
-		$do_fwd = false;
-	}
-
-	else if( substr($ist_domain, -6)=='.local' ) // ... special domain needed for development
-	{	
-		$ist_domain = str_replace('.local', '.info', $ist_domain);
-		$do_fwd = false;
-	}
-	else if( substr($_SERVER['REQUEST_URI'], 0, 5)=='/sync' ) // ... do not forward on sync as we may use special domains with more CPU-Time (as kursportal.domainfactory-kunde.de with 9 additional minutes CPU time)
-	{
-		$do_fwd = false;
-	}
+    
+    global $db;
+    $ist_domain = strtolower( isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '' );
+    
+    // do forward by default - however, we skip forwarding on special domains
+    $do_fwd = true;
+    
+    // some special domain handling
+    if( substr($ist_domain, 0, 7)=='sandbox' ) // remove sandbox prefix
+    {
+        if( preg_match("/^sandbox1/i", substr($ist_domain, 0, 8)) && !preg_match("/^sandbox[1][0-9]/i", substr($ist_domain, 0, 9)) ) {
+            $ist_domain = substr($ist_domain, 8 + 1 /*dot or minus*/ );
+        }
+        elseif(preg_match("/sandbox[2-9]/i", substr($ist_domain, 0, 8)) && !preg_match("/^sandbox[2-9][0-9]/i", substr($ist_domain, 0, 9))) {
+            $ist_domain = substr($ist_domain, 8 + 1 /*dot or minus*/ );
+        }
+        elseif(preg_match("/sandbox[1-9][0-9]/i", substr($ist_domain, 0, 9))) {
+            $ist_domain = substr($ist_domain, 9 + 1 /*dot or minus*/ );
+        }
+        else {
+            $ist_domain = substr($ist_domain, 7 + 1 /*dot or minus*/ );
+        }
+        
+        $do_fwd = false;
+    }
+    else if( substr($ist_domain, 0, 6)=='backup' ) // remove backup prefix -- backup domains may have the form backup-org-domain-de.host-domain.de
+    {
+        $ist_domain = substr($ist_domain, 6 + 1 /*dot or minus*/ );
+        $ist_domain = explode('.', $ist_domain);
+        $ist_domain = strtr($ist_domain[0], array('-'=>'.'));
+        $do_fwd = false;
+    }
+    else if( substr($ist_domain, -6)=='.local' ) // ... special domain needed for development
+    {
+        $ist_domain = str_replace('.local', '.info', $ist_domain);
+        $do_fwd = false;
+    }
+    else if( isset($_SERVER['REQUEST_URI']) && substr($_SERVER['REQUEST_URI'], 0, 5)=='/sync' ) // ... do not forward on sync as we may use special domains with more CPU-Time (as kursportal.domainfactory-kunde.de with 9 additional minutes CPU time)
+    {
+        $do_fwd = false;
+    }
 	
 	// find all matching domains
 	$sql = "SELECT * FROM portale WHERE status=1 AND domains LIKE '%" . addslashes(str_replace('www.', '', $ist_domain)) . "%';";
@@ -240,8 +259,8 @@ function selectPortalOrFwd301()
 				}
 				else if( str_replace('www.', '', $domain)==str_replace('www.', '', $ist_domain) )
 				{
-					if( $do_fwd )
-						fwd301("http://" . $first_domain . $_SERVER["REQUEST_URI"]);
+				    if( $do_fwd )
+				        fwd301("http://" . $first_domain . (isset($_SERVER["REQUEST_URI"]) ? $_SERVER["REQUEST_URI"] : ''));
 					else
 						return; // success - $db contains a pointer to the current portal now
 				}
@@ -269,8 +288,8 @@ function selectPortalOrFwd301()
 			$domain = strtolower($domains[$i]);
 			if( $domain != '' )
 			{
-				if( $do_fwd )
-					fwd301("http://" . $domain . $_SERVER["REQUEST_URI"]);
+			    if( $do_fwd )
+			        fwd301("http://" . $domain . (isset($_SERVER["REQUEST_URI"]) ? $_SERVER["REQUEST_URI"] : ''));
 				else
 					return; // success - $db contains a pointer to the current portal now
 			}
@@ -304,9 +323,10 @@ define('DEF_STICHWORTTYP_QZERTIFIKAT',	4);
 $request_uri = parse_url($_SERVER['REQUEST_URI']);
 $wisykiRequestPaths = explode('/', trim($request_uri['path'], '/'));
 $wisyRequestedFile = 'index.php';
-if( preg_match('#/([^/\?]+)#', $_SERVER['REQUEST_URI'], $temp) )
+$requestURI = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
+if( preg_match('#/([^/\?]+)#', $requestURI, $temp) )
 {
-	$wisyRequestedFile = $temp[1];
+    $wisyRequestedFile = $temp[1];
 }
 
 $wisyRequestedExt = '';
@@ -322,19 +342,19 @@ if( ($temp=strrpos($wisyRequestedFile, '.')) !== false )
 *******************************************************************************/
 
 $wisyCore = 'core20';
-/*if( strval($_GET['filecore']) != '' )
- {
- // $wisyCore = 'core' . strval($_GET['filecore']);
- }
- else */
-if( strval(isset($_COOKIE['core'])) && $_COOKIE['core'] !='' )
+/* if( isset($_GET['filecore']) && strval($_GET['filecore']) != '' )
+{
+    $wisyCore = 'core' . strval($_GET['filecore']);
+} else */
+if( isset($_COOKIE['core']) && strval($_COOKIE['core']) != '' )
 {
     $wisyCore = 'core' . strval($_COOKIE['core']);
 }
-else if( strval($wisyPortalEinstellungen['core']) != '' )
+else if( isset($wisyPortalEinstellungen['core']) && strval($wisyPortalEinstellungen['core']) != '' )
 {
     $wisyCore = 'core' . strval($wisyPortalEinstellungen['core']);
 }
+
 
 
 

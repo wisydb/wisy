@@ -752,8 +752,12 @@ class EQL_PARSER_CLASS
 		}
 		else
 		{
-			$ident = strtr($ident, '*?', '%_');
+		    $ident = strtr($ident, '\?', '\\'.chr(186) );	// save explicite search of '?' triple # b/c one might search for #
+		    $ident = strtr($ident, '*?', '%_');		// no idea what this is for exactly, no real regex - but we need to get around that for explicit search of '?'
+		    $ident = strtr($ident, '\\'.chr(186), '\\?');	// search for actual '?' == escaped '?'
+		    
 			return "$tableDefName.$field LIKE '$ident'";
+			
 		}
 	}
 
@@ -1198,7 +1202,11 @@ class EQL_PARSER_CLASS
 						$word = "='$word'";
 					}
 					else {
-						$word = strtr($word, '*?', '%_');
+					    
+					    $word = strtr($word, '\?', '\\'.chr(186));	// save explicite search of '?'.
+					    $word = strtr($word, '*?', '%_');	// no idea what this is for exactly, no real regex - but we need to get around that for explicit search of '?'
+					    $word = strtr($word, '\\'.chr(186), '\\?');	// search for actual '?' == escaped '?'
+					    
 						$word = "LIKE '$word'";
 					}
 

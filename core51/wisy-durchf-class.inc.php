@@ -279,25 +279,29 @@ class WISY_DURCHF_CLASS
 		    $aid_output = false;
 		    
 		    foreach( $addParam['stichwoerter'] as $stichwort ) {
-		         
-		         if( !$aid_output && ($stichwort['id'] == $controlTags['Bildungsgutschein']
-		             || $stichwort['id'] == $controlTags['Umschulung']
-		             || $stichwort['id'] == $controlTags['Aktivierungsgutschein']
-		             || $stichwort['id'] == $controlTags['DeuFoeV']
-		             || $stichwort['id'] == $controlTags['Integrationskurs']
-		             || $stichwort['id'] == $controlTags['Integrationskurs (zu speziellem Förderbedarf)']
-		             || $stichwort['id'] == $controlTags['Integrationskurs (Intensivkurs)']
-		             || $stichwort['id'] == $controlTags['Integrationskurs (mit Alphabetisierung)']
-		             || $stichwort['id'] == $controlTags['Integrationskurs für Zweitschriftlernende']
-		             || $stichwort['id'] == $controlTags['Orientierungskurs'] )
-		             ) {
-		                 $preishinweise_arr[] = cs8('kostenlos&nbsp;bei&nbsp;F&ouml;rderung');
-		                 $aid_output = true;
-		             }
-		             
-		        if( $stichwort['id'] == $controlTags['Preis komplex'] )
-		          $preishinweise_arr[] = cs8('Preisstruktur komplex - ggf. beim Anbieter einholen.');       
-		    } 
+		        
+		        if( !$aid_output && ($stichwort['id'] == $controlTags['Bildungsgutschein']
+		            || $stichwort['id'] == $controlTags['Umschulung']
+		            || $stichwort['id'] == $controlTags['Aktivierungsgutschein']
+		            || $stichwort['id'] == $controlTags['DeuFoeV']
+		            || $stichwort['id'] == $controlTags['Integrationskurs allgemein']
+		            || $stichwort['id'] == $controlTags['Integrationskurs spezielle Kursarten']
+		            || $stichwort['id'] == $controlTags['Integrationskurs Intensivkurs']
+		            || $stichwort['id'] == $controlTags['Integrationskurs mit Alphabetisierung']
+		            || $stichwort['id'] == $controlTags['Integrationskurs fuer Zweitschriftlernende']
+		            || $stichwort['id'] == $controlTags['Orientierungskurs']
+		            || $stichwort['id'] == $controlTags['Integrationskurs fuer Frauen']
+		            || $stichwort['id'] == $controlTags['Integrationskurs fuer Eltern']
+		            || $stichwort['id'] == $controlTags['Integrationskurs fuer junge Erwachsene'] )
+		            ) {
+		                $preishinweise_arr[] = cs8('kostenlos&nbsp;bei&nbsp;F&ouml;rderung');
+		                $aid_output = true;
+		            }
+		            
+		            if( $stichwort['id'] == $controlTags['Preis komplex'] )
+		                $preishinweise_arr[] = cs8('Preisstruktur komplex - ggf. beim Anbieter einholen.');
+		                
+		    } // end: foreach
 		    
 		    if( $preishinweise_str ) $preishinweise_arr[] = $preishinweise_str;
 			
@@ -307,7 +311,7 @@ class WISY_DURCHF_CLASS
 			    $ret = str_replace(array("k. A.", "k.A."), "", $ret);
 			    if( $html ) {
 			        $preishinweise_out = cs8($preishinweise_out);
-			        $ret .= '<div class="wisyr_preis_hinweise">' .  str_replace(chr(128), "&euro;", htmlentities(html_entity_decode($preishinweise_out))) . '</div>'; // str_replace(chr(0xE2).chr(0x82).chr(0xAC), "&euro;",
+			        $ret .= '<div class="wisyr_preis_hinweise">' .  str_replace(chr(128), "&euro;", htmlentities(html_entity_decode(strval($preishinweise_out)))) . '</div>'; // str_replace(chr(0xE2).chr(0x82).chr(0xAC), "&euro;",
 			    }
 			    else {
 			        $ret .= " ($preishinweise_out)";
@@ -332,14 +336,14 @@ class WISY_DURCHF_CLASS
 			{
 				case 0:
 					// nur Kurse anzeigen, die noch nicht begonnen haben
-					$where = " AND (beginn>='".strftime("%Y-%m-%d 00:00:00")."' OR (beginn='0000-00-00 00:00:00' AND beginnoptionen>0))";	
+					$where = " AND (beginn>='".ftime("%Y-%m-%d 00:00:00")."' OR (beginn='0000-00-00 00:00:00' AND beginnoptionen>0))";	
 					break;
 				
 				case 1:
-					// Stichwort 315/"Einstieg beis kursende Möglich"
+				    // Stichwort 315/"Einstieg bis kursende moeglich"
 					$db->query("SELECT attr_id FROM kurse_stichwort WHERE primary_id=$kursId AND attr_id=315");
 					if( $db->next_record() ) {
-						$where = " AND (ende>='".strftime("%Y-%m-%d 00:00:00")."')";
+						$where = " AND (ende>='".ftime("%Y-%m-%d 00:00:00")."')";
 					}
 					else {
 						continue 2;
@@ -407,17 +411,19 @@ class WISY_DURCHF_CLASS
             
             // this ORDER BY puts durchfuehrungen with beginn = '0000-00-00 00:00:00' at the end(!) and sorts everything else by beginn ASC.
             // using -beginn DESC doesn't work b/c '0000-00-00 00:00:00' seems not to be treated as empty
-            $db->query("SELECT id, nr, dauer, bemerkungen, preis, teilnehmer, kurstage, sonderpreis, sonderpreistage, plz, strasse,
-						 land, stadtteil, preishinweise, beginn, beginnoptionen, ende, ort, tagescode, stunden, zeit_von, zeit_bis, bg_nummer, bg_nummer_count
-					  FROM durchfuehrung
-							WHERE id IN (".implode(",", $durchfuehrungIds).") ORDER BY  beginn = '0000-00-00 00:00:00', beginn");
+            $db->query( "SELECT id, nr, dauer, bemerkungen, preis, teilnehmer, kurstage, sonderpreis, sonderpreistage, plz, strasse, rollstuhlgerecht, "
+                . "land, stadtteil, preishinweise, beginn, beginnoptionen, ende, ort, tagescode, stunden, zeit_von, zeit_bis, bg_nummer, bg_nummer_count "
+                . "FROM durchfuehrung "
+                . "WHERE id IN (".implode(",", $durchfuehrungIds).") ORDER BY  beginn = '0000-00-00 00:00:00', beginn "
+                );
             
         } elseif(!is_array($durchfuehrungId)) {
             
-            $db->query("SELECT id, nr, dauer, bemerkungen, preis, teilnehmer, kurstage, sonderpreis, sonderpreistage, plz, strasse,
-						 land, stadtteil, preishinweise, beginn, beginnoptionen, ende, ort, tagescode, stunden, zeit_von, zeit_bis, bg_nummer, bg_nummer_count
-					  FROM durchfuehrung
-							WHERE id=$durchfuehrungId");
+            $db->query( "SELECT id, nr, dauer, bemerkungen, preis, teilnehmer, kurstage, sonderpreis, sonderpreistage, plz, strasse, rollstuhlgerecht, "
+                . "land, stadtteil, preishinweise, beginn, beginnoptionen, ende, ort, tagescode, stunden, zeit_von, zeit_bis, bg_nummer, bg_nummer_count "
+                . "FROM durchfuehrung "
+                . "WHERE id=$durchfuehrungId"
+                );
         }
         if( $db->next_record() )
         {
@@ -458,7 +464,7 @@ class WISY_DURCHF_CLASS
 		
 		// termin abgelaufen?
 		$termin_abgelaufen = false;
-		$heute_datum = strftime("%Y-%m-%d 00:00:00");
+		$heute_datum = ftime("%Y-%m-%d 00:00:00");
 		if( $this->stichw_in_array($addParam['stichwoerter'], 315 /*Einstieg bis Kursende möglich?*/ ) 
 		 && $endesql > '0000-00-00 00:00:00' )
 		{
@@ -506,7 +512,7 @@ class WISY_DURCHF_CLASS
 		        $cell .= "<span class=\"wisyr_termin_zeit\" data-title=\"Zeit\">{$zeit_von}&nbsp;-&nbsp;{$zeit_bis}&nbsp;Uhr</span>";
 		    }
 		    else if( $zeit_von ) {
-		        $cell .= "<span class=\"wisyr_termin_zeit\">{$zeit_von}&nbsp;Uhr</span>";
+		        $cell .= "&nbsp;<span class=\"wisyr_termin_zeit\">{$zeit_von}&nbsp;Uhr</span>";
 		    }
 		    
 		    if( $addParam['record']['freigeschaltet'] == 4 )
@@ -566,7 +572,7 @@ class WISY_DURCHF_CLASS
 		    $temp = $this->formatPreis($record['preis'],
 		        $record['sonderpreis'], $record['sonderpreistage'],
 		        $record['beginn'], $details? $record['preishinweise'] : '',
-		        true, // format as HTML
+		        true, /*format as HTML*/
 		        array(
 		            'showDetails'=>$details,
 		            'stichwoerter'=>$addParam['stichwoerter']
@@ -574,16 +580,19 @@ class WISY_DURCHF_CLASS
 		        );
 		    
 		    global $controlTags;
-		    $freeFinancialAid = (	 $this->stichw_in_array($addParam['stichwoerter'], $controlTags['Bildungsgutschein'])
+		    $freeFinancialAid = (      $this->stichw_in_array($addParam['stichwoerter'], $controlTags['Bildungsgutschein'])
 		        || $this->stichw_in_array($addParam['stichwoerter'], $controlTags['DeuFoeV'])
 		        || $this->stichw_in_array($addParam['stichwoerter'], $controlTags['Umschulung'])
 		        || $this->stichw_in_array($addParam['stichwoerter'], $controlTags['Orientierungskurs'])
 		        || $this->stichw_in_array($addParam['stichwoerter'], $controlTags['Aktivierungsgutschein'] )
-		        || $this->stichw_in_array($addParam['stichwoerter'], $controlTags['Integrationskurs'] )
-		        || $this->stichw_in_array($addParam['stichwoerter'], $controlTags['Integrationskurs (zu speziellem Förderbedarf)'] )
-		        || $this->stichw_in_array($addParam['stichwoerter'], $controlTags['Integrationskurs (Intensivkurs)'] )
-		        || $this->stichw_in_array($addParam['stichwoerter'], $controlTags['Integrationskurs (mit Alphabetisierung)'] )
-		        || $this->stichw_in_array($addParam['stichwoerter'], $controlTags['Integrationskurs für Zweitschriftlernende'] )
+		        || $this->stichw_in_array($addParam['stichwoerter'], $controlTags['Integrationskurs allgemein'] )
+		        || $this->stichw_in_array($addParam['stichwoerter'], $controlTags['Integrationskurs spezielle Kursarten'] )
+		        || $this->stichw_in_array($addParam['stichwoerter'], $controlTags['Integrationskurs Intensivkurs'] )
+		        || $this->stichw_in_array($addParam['stichwoerter'], $controlTags['Integrationskurs mit Alphabetisierung'] )
+		        || $this->stichw_in_array($addParam['stichwoerter'], $controlTags['Integrationskurs fuer Zweitschriftlernende'] )
+		        || $this->stichw_in_array($addParam['stichwoerter'], $controlTags['Integrationskurs fuer Frauen'] )
+		        || $this->stichw_in_array($addParam['stichwoerter'], $controlTags['Integrationskurs fuer Eltern'] )
+		        || $this->stichw_in_array($addParam['stichwoerter'], $controlTags['Integrationskurs fuer junge Erwachsene'] )
 		        );
 		    
 		    //  && (is_array($preishinweise_arr) && !in_array("kostenlos", $preishinweise_arr))
@@ -606,7 +615,7 @@ class WISY_DURCHF_CLASS
 		    } else
 		        echo $this->shy($temp);
 		        
-		    echo ' </td>' . "\n";
+		        echo ' </td>' . "\n";
 		}
 		
 		if (($spalten & 32) > 0)
@@ -618,7 +627,7 @@ class WISY_DURCHF_CLASS
 			// get ort
 		    $strasse	= str_replace(" ", "&nbsp;", cs8($record['strasse']));
 			$plz		= $record['plz'];
-			$ort		= htmlentities(cs8($record['ort'])); // hier wird noch der Stadtteil angehaengt
+			$ort		= htmlentities(strval(cs8($record['ort']))); 
 			$stadt		= $ort;
 			$stadtteil	= cs8($record['stadtteil']);
 			
@@ -782,7 +791,7 @@ class WISY_DURCHF_CLASS
 			echo '    <td class="wisyr_nr" data-title="Nr">';
 			$nr = $record['nr'];
 			$nr = cs8($nr);
-			echo $nr? htmlentities($nr) : 'k. A.';
+			echo $nr? htmlentities(strval($nr)) : 'k. A.';
 			echo ' </td>' . "\n";
 		}
 		
@@ -792,11 +801,15 @@ class WISY_DURCHF_CLASS
 		    if($details)
 		    {
 		        echo '    <td class="wisyr_bemerkungen" data-title="Bemerkungen">';
-		        if( $record['teilnehmer'] ) echo '<p class="wisyr_art_teilnehmer">max. ' . intval($record['teilnehmer']) . ' Teilnehmer</p>';
+		        if( $record['teilnehmer'] ) echo '<p class="wisyr_art_teilnehmer">max. ' . intval($record['teilnehmer']) . ' Teilnehmende</p>';
 		        $wiki2html =& createWisyObject('WISY_WIKI2HTML_CLASS', $this->framework);
 		        $bemerkungen = $record['bemerkungen'];
 		        $bemerkungen = str_replace(chr(128), "&euro;", $bemerkungen); // str_replace(chr(0xE2).chr(0x82).chr(0xAC), "&euro;",
 		        echo cs8($wiki2html->run($bemerkungen));
+		        
+		        if( isset($record['rollstuhlgerecht']) && $record['rollstuhlgerecht'] )
+		            echo '<small class="rollstuhlgerecht">Dieser Ort ist&nbsp;rollstuhlgerecht.<br>Details bitte beim Anbieter erfragen.</small><br>';
+		        
 		        echo ' </td>' . "\n";
 		    } 
 		}

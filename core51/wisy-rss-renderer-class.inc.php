@@ -87,8 +87,8 @@ class WISY_RSS_RENDERER_CLASS
 				// ort
 				if( $ort == '' )
 				{
-					$ort            = $db->fcs8('ort'); // hier wird noch der Stadtteil angehaegt
-					$stadtteil      = $db->fcs8('stadtteil');
+				    $ort            = strval($db->fcs8('ort')); // hier wird noch der Stadtteil angehaegt
+				    $stadtteil      = strval($db->fcs8('stadtteil'));
 					if( $ort!='' && $stadtteil!='' ) {
 						if( strpos($ort, $stadtteil)===false ) {
 							$ort = htmlentities($ort) . '-' . htmlentities($stadtteil);

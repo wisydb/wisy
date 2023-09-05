@@ -1,6 +1,6 @@
 <?php
 
-// Encoding: ISO8859-15, Test:: üäö
+// Encoding: ISO8859-15, Test: üäö
 
 // deprecated
 $use_neweditor = true;
@@ -70,6 +70,9 @@ $stichwoerter = new Table_Def_Class(TABLE_PRIMARY|TABLE_SYNCABLE,			'stichwoerte
 $stichwoerter->add_row(TABLE_TEXT|TABLE_SUMMARY|TABLE_LIST|TABLE_MUST|TABLE_UNIQUE,
 																			'stichwort',		'Deskriptor', 0, 0, '', array('ctrl.size'=>'20-70', 'help.tooltip'=>'Deskriptor, ohne Erklärungen und so kurz und so einfach wie möglich', 'layout.bg.class'=>'e_bglite', 'layout.descr.class'=>'e_bolder', 'ctrl.class'=>'e_bolder'));
 $stichwoerter->add_row(TABLE_TEXT,											'zusatzinfo',		'Zusatzinfo', 0, 0, '', array('ctrl.size'=>'20-70', 'help.tooltip'=>'Kurze Informationen zur evtl. notwendigen Erklärung'));
+
+// $stichwoerter->add_row(TABLE_TEXT,								            'logo',				'Siegel', '', '', '', array('layout.bg.class'=>'e_bgbottom'));
+
 $stichwoerter->add_row(TABLE_MATTR|TABLE_SHOWREF,							'verweis',			'Synonym für', 0, 0 /*set below*/, '', array('ref.name'=>'Synonym von'));
 $stichwoerter->add_row(TABLE_MATTR|TABLE_SHOWREF,							'verweis2',			'Oberbegriff für', 0, 0 /*set below*/, '', array('help.tooltip'=>'Das aktuelle Stichwort wird automatisch vergeben, wenn eines der hier angegebenen Stichwörter vergeben wird', 'ref.name'=>'Unterbegriff von'));
 $stichwoerter->add_row(TABLE_ENUM|TABLE_SUMMARY|TABLE_LIST|TABLE_NEWSECTION,'eigenschaften',	'Typ', 0, $codes_stichwort_eigenschaften, 'Klassifizierung', array('layout.section'=>'Klassifizierung'));
@@ -246,7 +249,7 @@ $durchfuehrung->add_row(TABLE_ENUM,							'tagescode',		'Tagescode', 0, $codes_t
 if( $use_neweditor )
 {
 	$durchfuehrung->add_row(TABLE_ENUM,						'dauer',			'Dauer', 0, $codes_dauer, '', array('layout.defhide'=>1, 'layout.descr.hide'=>1, 'layout.join'=>1, 'help.tooltip'=>'Die Dauer wird aus Beginn- und Endedatum automatisch berechnet; nur wenn dort keine Angaben gemacht werden, gilt der direkt eingestellte Wert'));
-	$durchfuehrung->add_row(TABLE_BITFIELD|TABLE_LIST,		'dauer_fix',		'Dauer Fix', 0, '1###', '', array('layout.defhide'=>1, 'layout.join'=>1, 'ctrl.checkboxes'=>1, 'layout.descr.class'=>'dauer_fix_label', 'ctrl.class'=>'dauer_fix'));
+	$durchfuehrung->add_row(TABLE_BITFIELD|TABLE_LIST,		'dauer_fix',		'Dauer Fix', 0, '1###aktiviert', '', array('layout.defhide'=>1, 'layout.join'=>1, 'ctrl.checkboxes'=>1, 'layout.descr.class'=>'dauer_fix_label', 'ctrl.class'=>'dauer_fix'));
 	$durchfuehrung->add_row(TABLE_ENUM|TABLE_SUMMARY,		'beginnoptionen',	'Terminoption', 0, $codes_beginnoptionen, '', array('layout.join'=>1, 'layout.defhide'=>1, 'layout.descr.hide'=>1)); // nur ca. 10% der Kurse haben eine Terminoption, kann man also verstecken ...
 }
 $durchfuehrung->add_row(TABLE_TEXT|TABLE_NEWSECTION|TABLE_ACNESTSTART,
@@ -256,7 +259,7 @@ $durchfuehrung->add_row(TABLE_TEXT|TABLE_ACNEST,			'ort',				'Ort ', '', '', '',
 $durchfuehrung->add_row(TABLE_TEXT|TABLE_ACNEST,			'stadtteil',		'Stadtteil ', '', '', '', array('ctrl.size'=>'8-16-48', 'layout.defhide.tooltip'=>'weitere Ortsangaben')); // , 'layout.defhide'=>1
 $durchfuehrung->add_row(TABLE_TEXT|TABLE_ACNEST,			'bezirk',			'Bezirk ', '', '', '', array('layout.descr.hide'=>1, 'ctrl.class'=>'df_bezirk', 'layout.defhide'=>1, 'ctrl.placeholder'=>1));
 $durchfuehrung->add_row(TABLE_TEXT|TABLE_ACNEST,			'land',				'Land ', '', 3, '', array('layout.defhide'=>1));
-$durchfuehrung->add_row(TABLE_FLAG,							'rollstuhlgerecht',	'Rollstuhlgerecht', '', '', '', array('layout.defhide'=>1));
+$durchfuehrung->add_row(TABLE_INT,							'rollstuhlgerecht',	'Rollstuhlgerecht', 0, '0###1', '', array('ctrl.intAsCheck'=>true, 'layout.defhide'=>1) );
 $durchfuehrung->add_row(TABLE_TEXTAREA|TABLE_WIKI,			'bemerkungen',		'Bemerkungen', '', '', '', array('layout.defhide'=>1, 'ctrl.rows'=>2));
 if( !$use_neweditor )
 {
@@ -268,7 +271,7 @@ if( !$use_neweditor )
 	$durchfuehrung->add_row(TABLE_TEXT, 						'azwv_dnr', 	'AZAV-Durchführungsnummer');
 }
 
-// $durchfuehrung->add_row(TABLE_TEXT|TABLE_ACNEST,			'url',				'URL ', '', 3, '', array('layout.defhide'=>1));
+$durchfuehrung->add_row(TABLE_TEXT|TABLE_ACNEST,			'url',				'URL ', '', '50', '', array() ); // array('layout.defhide'=>1)
 
 // $durchfuehrung->add_row(TABLE_DATETIME|TABLE_LIST|TABLE_READONLY, 'date_modified',			'Änderungsdatum', '', '', '', array('layout.descr'=>'Änderungsdatum', 'ctrl.class'=>'df_aenderungsdatum_ctrl', 'layout.descr.class'=>'df_aenderungsdatum_descr', 'layout.bg.class'=>'df_aenderungsdatum_bg'));
 $durchfuehrung->set_trigger('config/trigger_durchfuehrung.inc.php');    // make sure changes to DF trigger calculations, like last df change date
@@ -296,7 +299,7 @@ $portale->add_row(TABLE_TEXTAREA,					'notizen',			'Journal', '', '', '');
 $kurse = new Table_Def_Class(TABLE_PRIMARY|TABLE_SYNCABLE,		'kurse',			$use_neweditor? 'Angebote' : 'Kurse');
 if($use_neweditor) {
 	$kurse->add_row(TABLE_TEXT, 									'azwv_knr', 		'AZAV-Kursnr.', '','', '',		array('ctrl.size'=>'3-10-40', 'layout.defhide'=>1, 'layout.join'=>1, 'layout.defhide.tooltip'=>'weitere Verwaltungsnummern'));
-	$kurse->add_row(TABLE_TEXT|TABLE_NEWSECTION,					'bu_nummer',		'BU-Kursnr.', '','', 'Kurs-IDs',	array('ctrl.size'=>'10-40', 'layout.defhide'=>1, 'layout.join'=>1));
+	$kurse->add_row(TABLE_TEXT|TABLE_NEWSECTION,					'bu_nummer',		'BU-Kursnr.', '','', 'Kurs-IDs',	array('ctrl.size'=>'10-40', 'layout.defhide'=>2, 'layout.join'=>1));
 	//$kurse->add_row(TABLE_TEXT, 									'res_nummer', 		'BU-Kursnr.', '','', '',		array('ctrl.size'=>'10-40', 'layout.defhide'=>2, 'layout.join'=>1));
 	$kurse->add_row(TABLE_TEXT, 									'fu_knr', 		    'FU-Kursnr.', '','', '',		array('ctrl.size'=>'10-40', 'layout.defhide'=>2, 'layout.join'=>1));
 	$kurse->add_row(TABLE_TEXT, 									'foerder_knr', 		'Förder-Kursnr.', '','', '',	array('ctrl.size'=>'10-40', 'layout.defhide'=>2, 'layout.join'=>1));
@@ -496,4 +499,3 @@ $g_addsettings_userTemplateOnly = array( 'export.apikey' );                     
 
 // in dieses Verzeichnis werden zu exportierende Dateien temporär gelagert; andere Dateien in diesem Verzeichnis werden gelöscht!
 $g_temp_dir = '../temp';
-

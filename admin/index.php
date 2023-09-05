@@ -535,12 +535,8 @@ if (!isset($_REQUEST['rows'])) {
 	regSet("$settingsPrefix.$table.rows", $rows, 10);
 }
 
-if ($rows < 1) {
-	$rows = 1;
-}
-if ($rows > 500) {
-	$rows = 500;
-}
+if( $rows < 1 ) { $rows = 1; }
+if( $rows > 5000 ) { $rows = 5000; }
 
 // order
 if (!isset($_REQUEST['orderby'])) {
@@ -958,34 +954,53 @@ if ($select_numrows) {
 								}
 							}
 						}
-					}
-
-					// go through all secondary rows and render 
-					$hi = $hiBak;
-					for ($sr = 0; $sr < sizeof((array) $sTableDef->rows); $sr++) {
-						$rowflags	= $sTableDef->rows[$sr]->flags;
-						$rowtype	= $rowflags & TABLE_ROW;
-
-						if ($columnsHash[$hi++]) {
-							$site->skin->cellStart();
-							if (canRead()) {
-								$valuesOut = 0;
-
-								if (isset($secondaryHash[$sTableDef->rows[$sr]->name]) && is_array($secondaryHash[$sTableDef->rows[$sr]->name])) {
-									reset($secondaryHash[$sTableDef->rows[$sr]->name]);
-									foreach (array_keys($secondaryHash[$sTableDef->rows[$sr]->name]) as $value) {
-										$value = strval($value);
-										if ($value != '' && $value != '&nbsp;') {
-											echo $valuesOut ? ', ' : '';
-											echo $value;
-											$valuesOut++;
-										}
-									}
-								}
-
-								if ($valuesOut == 0) {
-									echo '&nbsp;';
-								}
+						
+						// go through all secondary rows and render 
+						$hi = $hiBak;
+						for( $sr = 0; $sr < sizeof((array) $sTableDef->rows); $sr++ )
+						{
+							$rowflags	= $sTableDef->rows[$sr]->flags;
+							$rowtype	= $rowflags&TABLE_ROW;
+							
+							if( $columnsHash[$hi++] )
+							{
+							    $site->skin->cellStart();
+							    if( canRead() )
+							    {
+							        $valuesOut = 0;
+							        
+							        if( isset($secondaryHash[$sTableDef->rows[$sr]->name]) && is_array($secondaryHash[$sTableDef->rows[$sr]->name]) )
+							        {
+							            reset($secondaryHash[$sTableDef->rows[$sr]->name]);
+							            
+							            foreach(array_keys($secondaryHash[$sTableDef->rows[$sr]->name]) as $value) {
+							                
+							                $value = strval($value);
+							                
+							                // !
+							                $storedValue = '';
+							                
+							                if( regGet('index.showempty', 1) && ($value == '' || $value == '&nbsp;') ) {
+							                    $storedValue = $value;
+							                    $value = '<span class="keineAngabe">k.A.</span>';
+							                }
+							                
+							                if( $value != '' && $value != '&nbsp;' ) {
+							                    echo $valuesOut? ', ' : '';
+							                    echo $value;
+							                    $valuesOut++;
+							                }
+							                
+							                if( regGet('index.showempty', 1) && $value == 'k.A.')
+							                    $value = $storedValue;
+							            }
+							        }
+							        
+							        if( $valuesOut == 0 ) {
+							            echo '&nbsp;';
+							        }
+							    }
+							    $site->skin->cellEnd();
 							}
 							$site->skin->cellEnd();
 						}
@@ -1102,34 +1117,24 @@ if ($select_numrows) {
 	if (!isset($_REQUEST['selectobject'])) $site->skin->fixedFooterStart();
 	$site->skin->submenuStart();
 
-	$eqlShort = $eql;
-	if (strlen($eqlShort) > 40 && (!isset($_REQUEST['eqlfull']) || !$_REQUEST['eqlfull'])) {
-		$eqlShort = isohtmlspecialchars(substr($eqlShort, 0, 40)) . '<a href="' . isohtmlspecialchars("$baseurl&eqlfull=1") . '">...</a>';
-	} else {
-		$eqlShort = isohtmlspecialchars($eqlShort);
-	}
-
-	echo htmlconstant($select_numrows == 1 ? '_OVERVIEW_QUERYSUMMARYS' : '_OVERVIEW_QUERYSUMMARYP', "<i>$eqlShort</i>", $select_numrows);
-
-	if (acl_grp_filter_active()) {
-		echo ' ' . htmlconstant('_OVERVIEW_QUERYSUMMARYFILTERACTIVE');
-	}
-
-	if ($aclCond) {
-		echo ' ' . htmlconstant('_OVERVIEW_QUERYSUMMARYMAYBEHIDDEN');
-	}
-
-	$site->skin->submenuBreak();
-
-	echo htmlconstant('_OVERVIEW_ROWS') . ' ' . rows_per_page_sel("$baseurl&searchoffset=0&rows=", $rows);
-	if (!isset($_REQUEST['selectobject'])) {
-		echo " | <a href=\"log.php?table=$table\" target=\"_blank\" rel=\"noopener noreferrer\">" . htmlconstant('_LOG') . '</a>';
-	}
-
-	$site->skin->submenuEnd(true);
-
-	if (!isset($_REQUEST['selectobject'])) $site->skin->fixedFooterEnd();
-} else {
+		$site->skin->submenuBreak();
+			
+			echo htmlconstant('_OVERVIEW_ROWS') . ' ' . rows_per_page_sel("$baseurl&searchoffset=0&rows=", $rows);
+			
+			echo " &nbsp; <a href='#' rel='noopener noreferrer' onclick='exportTableToCSV( document, \"table.tb > thead tr\", \"table.tb > tbody tr\" )' id='csvExportTable'><img src='/admin/lib/exp/CSV.png' style='height:20px;' alt='Exportiere Tabelle dieser Ansicht als CSV-Datei'></a>";
+			
+			echo " &nbsp; <a href='#' rel='noopener noreferrer' onclick='exportTableToCSV( document, false, \"table tr\", \"/admin/print.php?table=kurse&id=&prevview=list&printArea=selected&view=list&pagebreak=0&repeathead=1&ok=Drucken\" )' id='csvExportTable'><img src='/admin/lib/exp/CSV_plus.png' style='height:20px;' alt='Exportiere Tabelle aller Reiter als CSV-Datei'></a>";
+			
+			if( !isset($_REQUEST['selectobject']) ) {
+			    echo " &nbsp; <a href=\"log.php?table=$table\" target=\"_blank\" rel=\"noopener noreferrer\">" . htmlconstant('_LOG') . '</a>';
+			}
+			
+	    $site->skin->submenuEnd(true);
+		
+	if( !isset($_REQUEST['selectobject']) ) $site->skin->fixedFooterEnd();
+}
+else
+{
 	// cancel button to show all
 	$site->skin->buttonsStart();
 	$hasError = isset($hasError) ? $hasError : false;

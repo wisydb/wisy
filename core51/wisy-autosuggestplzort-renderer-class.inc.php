@@ -20,6 +20,7 @@ class WISY_AUTOSUGGESTPLZORT_RENDERER_CLASS
 	function render()
 	{
 	    $querystring = utf8_decode( strval($this->framework->getParam('q', '')) );
+	    $querystring = $this->framework->deXSS($querystring); // strip_tags($querystring);	
 		$db = new DB_Admin;
 		
 		// collect all PLZ/Ort into an array as ort=>array(plz1, plz2, ...)

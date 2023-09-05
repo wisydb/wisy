@@ -118,7 +118,7 @@ class EDIT_RENDERER_CLASS
 			$can_prev_next = ( $this->data->db_name == '' && $this->data->id != -1 )? true : false;
 			
 			$prev_url = '';
-			$can_prev = ($can_prev_next && isset($this->no_paging) && $this->no_paging != 'prev');
+			$can_prev = ($can_prev_next && $this->no_paging != 'prev');
 			if( $can_prev ) {
 				if( ($prev_id=$paging_ob->search_id($this->data->table_name, $this->data->id, 'prev')) != 0 ) {
 					$prev_url = "<a href=\"edit.php?table={$this->data->table_name}&amp;id={$prev_id}\">";
@@ -130,7 +130,7 @@ class EDIT_RENDERER_CLASS
 			$site->menuItem('mprev', htmlconstant('_PREVIOUS'), $prev_url);
 			
 			$next_url = '';
-			$can_next = ($can_prev_next && isset($this->no_paging) && $this->no_paging != 'next');
+			$can_next = ($can_prev_next && $this->no_paging != 'next');
 			if( $can_next ) {
 				if( ($next_id=$paging_ob->search_id($this->data->table_name, $this->data->id, 'next')) != 0 ) {
 					$next_url = "<a href=\"edit.php?table={$this->data->table_name}&amp;id={$next_id}\">";
@@ -357,6 +357,8 @@ class EDIT_RENDERER_CLASS
 		
 		$this->data->connect_to_db_();
 		$this->defhide_id = 1; // note: the ID is only guaranteed to be unique inside the same object! if objects are duplicated, they will have the same IDs!
+		$controlTableRowID = 0;
+		
 		for( $f = 0; $f < sizeof((array) $this->data->controls); $f++ )
 		{
 		    // don't display row if dependent upon setting and setting is 0
@@ -382,6 +384,7 @@ class EDIT_RENDERER_CLASS
 				}
 					
 				echo "<input name=\"{$control->name}\" {$attr}type=\"hidden\" value=\"".isohtmlspecialchars($control->dbval)."\" />\n";
+				$controlTableRowID = $control->dbval;
 
 				if( isset($control->row_def->prop['__META__']) ) {
 				 switch( $control->row_def->prop['__META__'] )
@@ -459,7 +462,8 @@ class EDIT_RENDERER_CLASS
 				
 				echo $control->render_html(array(
 									'dba'	=>	$this->data->dba,
-									'id'	=>	$this->data->id	// may be -1, 0 or invalid otherwise
+				                    'id'	=>	$this->data->id,	// may be -1, 0 or invalid otherwise
+				                    'controlTableRowID' => $controlTableRowID
 								));
 				
 				// stuff after the control
@@ -680,7 +684,7 @@ class EDIT_RENDERER_CLASS
 				$this->render_data_();
 				$html = ob_get_contents();
 			ob_end_clean();
-			echo utf8_encode($html);
+			echo $html;
 			exit();
 		}
 		else

@@ -18,6 +18,8 @@ define('_INDEX_PLUGIN_KURSE_1',        "Adr.Probleme (Umkr.Suche)");
 define('_INDEX_PLUGIN_KURSE_2',        "Paralleldurchf&uuml;hrungen im gleichen Kurs");
 define('_INDEX_PLUGIN_STICHWOERTER_0', "MultiEdit");
 define('_INDEX_PLUGIN_STICHWOERTER_1', "Baum");
+define('_INDEX_PLUGIN_FEEDBACK_0',     "Feedbacks bereinigen...");
+define('_INDEX_PLUGIN_FEEDBACK_1',     "Unbeliebteste und beliebteste Seiten");
 define('_PRINT_ANBIETER_DETAILS',      "Detailansicht wie im Portal");
 define('_PRINT_KURSE_DETAILS',         "Detailansicht wie im Portal");
 define('_PRINT_KURSE_LIST',            "Listenansicht wie im Portal");

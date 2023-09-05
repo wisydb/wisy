@@ -1,5 +1,7 @@
 <?php
 
+//üöä (ISO8859!)
+
 require_once("codes.inc.php");
 
 /*****************************************************************************
@@ -188,57 +190,56 @@ function update_kurs_state($kurs_id, $param)
 	$db->query("SELECT attr_id FROM kurse_stichwort WHERE primary_id=$kurs_id;");
 	while ( $db->next_record() )
 	{
-		switch( $db->f('attr_id') )
-		{
-		    case isset($controlTags['Fernunterricht']) && $controlTags['Fernunterricht']:								
-			    $has_fernunterricht_stichw = true; 
-			    break;
-		    case isset($controlTags['E-Learning']) && $controlTags['E-Learning']:									
-			    $has_elearning_stichw = true; 
-			    break;
-		    case isset($controlTags['Bildungsgutschein']) && $controlTags['Bildungsgutschein']: 							
-			    $has_bildungsgutschein_stichw = true; 
-			    break;
-		    case isset($controlTags['Aktivierungsgutschein']) && $controlTags['Aktivierungsgutschein']: 						
-			    $has_aktivierungsgutschein_stichw = true; 
-			    break;
-		    case isset($controlTags['Umschulung']) && $controlTags['Umschulung']: 									
-			    $has_umschulung_stichw = true; 
-			    break;
-		    case isset($controlTags['Orientierungskurs']) && $controlTags['Orientierungskurs']:
-			    $has_orientierungskurs_stichw = true; 
-			    break;
-		    case isset($controlTags['Integrationskurs (Intensivkurs)']) && $controlTags['Integrationskurs (Intensivkurs)']:
-			    $has_integrationskurs_intensiv_stichw = true; 
-			    break;
-		    case isset($controlTags['Integrationskurs (zu speziellem Förderbedarf)']) && $controlTags['Integrationskurs (zu speziellem Förderbedarf)']: 
-			    $has_integrationskurs_speziell_stichw = true; 
-			    break;
-		    case isset($controlTags['Integrationskurs']) && $controlTags['Integrationskurs']: 								
-			    $has_integrationskurs_stichw = true; 
-			    break;
-		    case isset($controlTags['Integrationskurs (mit Alphabetisierung)']) && $controlTags['Integrationskurs (mit Alphabetisierung)']: 		
-			    $has_integrationskurs_alpha_stichw = true; 
-			    break;
-		    case isset($controlTags['DeuFoeV']) && $controlTags['DeuFoeV']: 										
-			    $has_deufoev_stichw = true; 
-			    break;
-		    case isset($controlTags['Integrationskurs für Zweitschriftlernende']) && $controlTags['Integrationskurs für Zweitschriftlernende']: 	
-		        $has_integrationskurs_zweitschrift_stichw = true; 
-		        break;
-		    case isset($controlTags['Preis komplex']) && $controlTags['Preis komplex']: 								
-			    $has_preiskomplex_stichw = true; 
-			    break;
-		    case isset($controlTags['Einstieg bis Kursende moeglich']) && $controlTags['Einstieg bis Kursende moeglich']:
-			    $einstieg_bis_kursende_moeglich = true; 
-			    break;
-		}
-		$anz_stichw ++;
+	    $attr_id = $db->f('attr_id');
+	    
+	    if( isset($controlTags['E-Learning']) && $controlTags['E-Learning'] == $attr_id )
+	       $has_elearning_stichw = true;
+	        
+	    if( isset($controlTags['Bildungsgutschein']) && $controlTags['Bildungsgutschein'] == $attr_id )
+	       $has_bildungsgutschein_stichw = true;
+	            
+	    if( isset($controlTags['Aktivierungsgutschein']) && $controlTags['Aktivierungsgutschein'] == $attr_id )
+	       $has_aktivierungsgutschein_stichw = true;
+	                
+	    if( isset($controlTags['Umschulung']) && $controlTags['Umschulung'] == $attr_id )
+	       $has_umschulung_stichw = true;
+	                    
+	    if( isset($controlTags['Orientierungskurs']) && $controlTags['Orientierungskurs'] == $attr_id )
+	       $has_orientierungskurs_stichw = true;
+	                        
+	    if( isset($controlTags['Integrationskurs Intensivkurs']) && $controlTags['Integrationskurs Intensivkurs'] == $attr_id )
+	       $has_integrationskurs_intensiv_stichw = true;
+	                            
+	    if( isset($controlTags['Integrationskurs spezielle Kursarten']) && $controlTags['Integrationskurs spezielle Kursarten'] == $attr_id )
+	       $has_integrationskurs_speziell_stichw = true;
+	                                
+	    if( isset($controlTags['Integrationskurs allgemein']) && $controlTags['Integrationskurs allgemein'] == $attr_id )
+	       $has_integrationskurs_stichw = true;
+	                                    
+	    if( isset($controlTags['Integrationskurs mit Alphabetisierung']) && $controlTags['Integrationskurs mit Alphabetisierung'] == $attr_id )
+	       $has_integrationskurs_alpha_stichw = true;
+	                                        
+	    if( isset($controlTags['DeuFoeV']) && $controlTags['DeuFoeV'] == $attr_id )
+	       $has_deufoev_stichw = true;
+	                                            
+	    if( isset($controlTags['Integrationskurs fuer Zweitschriftlernende']) && $controlTags['Integrationskurs fuer Zweitschriftlernende'] == $attr_id )
+	       $has_integrationskurs_zweitschrift_stichw = true;
+	                                                
+	    if( isset($controlTags['Preis komplex']) && $controlTags['Preis komplex'] == $attr_id )
+	       $has_preiskomplex_stichw = true;
+	                                                    
+	    if( isset($controlTags['Einstieg bis Kursende moeglich']) && $controlTags['Einstieg bis Kursende moeglich'] == $attr_id )
+	       $einstieg_bis_kursende_moeglich = true;
+	                                                        
+	    $anz_stichw++;
+	                                                        
 	}
 
 	if( $bu_nummer != '' ) $anz_stichw ++;
 	if( $azwv_knr != '' )  $anz_stichw ++;
 	if( $thema != 0 )	   $anz_stichw ++;
+	
+	remove_tagsToBeCalculated( $kurs_id );
 	
 	// alle durchfuehrungen checken
 	$baD					= array();
@@ -246,8 +247,10 @@ function update_kurs_state($kurs_id, $param)
 	/*$neuer_status_gueltig	= true;*/
 	for( $i = 0; $i < $anz_durchf; $i++ )
 	{
-		$db->query("SELECT beginn, beginnoptionen, ende, kurstage, preis, strasse, plz, ort, stadtteil, bemerkungen, dauer, dauer_fix, tagescode, nr, stunden, teilnehmer, zeit_von, zeit_bis " 
-		         . " FROM durchfuehrung WHERE id={$durchf_ids[$i]};");
+	    $db->query("SELECT beginn, beginnoptionen, ende, kurstage, preis, strasse, plz, ort, stadtteil, bemerkungen, dauer, dauer_fix, tagescode, nr, "
+	        . "stunden, teilnehmer, zeit_von, zeit_bis, rollstuhlgerecht "
+	        . "FROM durchfuehrung "
+	        . "WHERE id={$durchf_ids[$i]};");
 		
 		if( $db->next_record() )
 		{
@@ -269,10 +272,18 @@ function update_kurs_state($kurs_id, $param)
 			$teilnehmer		= intval($db->f('teilnehmer'));
 			$zeit_von		= $db->fs('zeit_von'); if( $zeit_von == '00:00' ) $zeit_von = '';
 			$zeit_bis		= $db->fs('zeit_bis'); if( $zeit_bis == '00:00' ) $zeit_bis = '';
+			$rollstuhlgerecht = $db->f('rollstuhlgerecht');
 			$ret['returnmsg'] = isset( $ret['returnmsg'] ) ? $ret['returnmsg'] : '';
 			
 			$update = '';
 			
+			global $controlTags;
+			
+			// Wenn Datum in Zukunft oder oefter beginnend oder Kurs ist dauerhaft => SW Rollstuhlgerecht anhaengen solang eine DF die entspr. Option hat.
+			if( intval($rollstuhlgerecht) != 0 ) {
+			    if( $alter_status == 4 || strtotime($beginn) >= strtotime(date('Y-m-d H:i:s')) || $beginnoptionen > 0  )
+			        add_tagToCourse( $kurs_id, array( $controlTags['rollstuhlgerecht'] ) );
+			}
 			
 			// beginnstatus ueberpruefen
 			/* -- 11:54 18.12.2012: Fehlende Beginndaten fuehren nicht mehr zu freigeschalteten Kursen!
@@ -697,4 +708,41 @@ function update_titel_sorted($kurs_id, $titel = "") {
 			$titel					= $db->fs('titel');
 		}
 		$db->query("UPDATE kurse SET titel_sorted = '".g_eql_normalize_natsort($titel)."' WHERE id=".$kurs_id);
+}
+
+function add_tagToCourse($kursId, $newStichwoerter)
+{
+    if( !is_array($newStichwoerter) )
+        return;
+        
+    $db = new DB_Admin;
+        
+    // write all tags as a whole (this includes the new ones)
+    foreach($newStichwoerter as $newStichwort) {
+        $db->query("SELECT * FROM kurse_stichwort WHERE primary_id=$kursId AND attr_id=$newStichwort");
+            
+        if( $db->next_record() )
+            return; // tag already attached to course
+                
+        $db->query("SELECT MAX(structure_pos) AS sp FROM kurse_stichwort WHERE primary_id=$kursId");
+        $db->next_record();
+        $structurePos = intval($db->f('sp'))+1;
+                
+        $db->query("INSERT INTO kurse_stichwort (primary_id, attr_id, structure_pos) VALUES($kursId, $newStichwort, $structurePos);");
+    }
+}
+
+function remove_tagsToBeCalculated($kursId) {
+    global $controlTags;
+    
+    if( $kursId == 0 || $kursId == null )
+        return;
+        
+    $id_rollstuhlgerecht = $controlTags['rollstuhlgerecht'];
+        
+    if( $id_rollstuhlgerecht == 0 || $id_rollstuhlgerecht == null )
+        return;
+            
+    $db = new DB_Admin;
+    $db->query( "DELETE FROM kurse_stichwort WHERE primary_id = $kursId AND attr_id = $id_rollstuhlgerecht" );
 }

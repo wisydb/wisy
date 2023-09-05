@@ -49,7 +49,7 @@ class WISY_PROMOTE_CLASS
 		// this function is called for EVERY promoted record and has about 6-7 sql commands ...
 	
 		global $wisyPortalId;
-		$todayHour     = strftime("%Y-%m-%d %H:%M:%S");
+		$todayHour     = ftime("%Y-%m-%d %H:%M:%S");
 		//$cleanupCache	= false;
 
 		// check if the ip was not used in the last time ...
@@ -101,7 +101,7 @@ class WISY_PROMOTE_CLASS
 					break;
 				
 				case 'date':
-					if( $promote_param < strftime("%Y-%m-%d") )
+					if( $promote_param < ftime("%Y-%m-%d") )
 					{
 						$promote_active = 0; /*$cleanupCache = true;*/
 						$this->db->query("UPDATE anbieter_promote SET promote_active=$promote_active, date_modified='$todayHour' WHERE anbieter_id=$anbieterId AND portal_id=$wisyPortalId AND promote_active=1;");
@@ -135,8 +135,8 @@ class WISY_PROMOTE_CLASS
 	function incLparam($kursId, $anbieterId, $event_type)
 	{
 		global $wisyPortalId;
-		$todayMidnight = strftime("%Y-%m-%d 00:00:00");
-		$todayHour     = strftime("%Y-%m-%d %H:%M:%S");
+		$todayMidnight = ftime("%Y-%m-%d 00:00:00");
+		$todayHour     = ftime("%Y-%m-%d %H:%M:%S");
 		$this->db->query("UPDATE anbieter_promote_log SET lparam=lparam+1, date_modified='$todayHour' WHERE kurs_id=$kursId AND date_created='$todayMidnight' AND portal_id=$wisyPortalId AND event_type=$event_type;");
 		if( $this->db->affected_rows() == 0 )
 		{
@@ -156,7 +156,7 @@ class WISY_PROMOTE_CLASS
 	function setCredits($anbieterId, $credits)
 	{
 		global $wisyPortalId;
-		$todayHour     = strftime("%Y-%m-%d %H:%M:%S");
+		$todayHour     = ftime("%Y-%m-%d %H:%M:%S");
 		$this->db->query("UPDATE anbieter_promote_log SET lparam=$credits, date_modified='$todayHour' WHERE anbieter_id=$anbieterId AND portal_id=$wisyPortalId AND event_type=2001;");
 		if( $this->db->affected_rows() == 0 )
 		{
@@ -168,7 +168,7 @@ class WISY_PROMOTE_CLASS
 	{
 		// should be called after credits are available again ...
 		global $wisyPortalId;
-		$today = strftime("%Y-%m-%d");
+		$today = ftime("%Y-%m-%d");
 		if( $active )
 		{
 			$this->db->query( "UPDATE anbieter_promote SET promote_active=1 WHERE anbieter_id=$anbieterId AND portal_id=$wisyPortalId "

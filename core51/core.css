@@ -136,6 +136,11 @@ h1.wisy_df_headline {
     font-weight: bold;
 }
 
+.wisyr_bemerkungen .rollstuhlgerecht {
+	font-size: .9em;
+	color: #676767;
+}
+
 /*******************************************************************************
 wisy_searcharea
 *******************************************************************************/
@@ -455,10 +460,15 @@ input.wisy_hinted {
 
 .edit_hint_enable {
     color: #0F3B7F;
+  color: #0F3B7F;
+  cursor: pointer;
 }
 .edit_hint_disable, .edit_hint_a.edit_hint_disable, .edit_hint_b.edit_hint_disable {
     color: #555;
     cursor: auto;
+.edit_hint_disable {
+  color: #888888;
+  cursor: pointer;
 }
 
 a.wisy_help_hint {
@@ -467,15 +477,30 @@ a.wisy_help_hint {
     border: 2px solid #FAD163;
     padding: 1px 8px 1px 8px;
     font-weight: normal !important;
+.wisyp_edit #edit_beschreibung,
+.wisyp_edit .edit_bemerkungen {
+  resize: both;
+  overflow: auto;
+  min-height: 100px;
+  padding: 1em;
+  background: white;
+  border: 0; 
+  width: auto; 
+  border-top: 1px solid #ddd;
 }
 
 .wisyp_edit select {
     min-width: 50%;
+.wisyp_edit .edit_bemerkungen {
+	border: 1px solid grey;
 }
 
 .wisyp_edit .editFoerderungDiv table td {
     vertical-align: top;
     text-align: left !important;
+.wisyp_edit #edit_beschreibung ul, 
+.wisyp_edit #edit_beschreibung ol {
+	padding-left: 1em;
 }
 
 .wisyp_edit .edithinweis {
@@ -483,11 +508,50 @@ a.wisy_help_hint {
     margin-bottom: 1em;
     color: #555;
     font-size:.8em;
+.wisyp_edit .format_buttons a {
+	font-size: 1.3em;
+	display: inline-block;
+	padding-top: .3em;
+	padding-bottom: .3em;
+	padding-right: .3em;
+	color: black;
 }
 
 .wisyp_edit  .edithinweis small {
     color: #555;
     font-size:.8em;
+.wisyp_edit .format_buttons a:hover {
+	text-decoration: none;
+	background-color: black;
+	color: white;
+	margin-left: -.3em;
+	padding-left: .3em;
+}
+
+.wisyp_edit .format_buttons a[data-role=bold] {
+	font-weight: bold;
+}
+
+.wisyp_edit .format_buttons a[data-role=italic] {
+	font-style: italic;
+}
+
+.wisyp_edit .format_buttons a[data-role=superscript] span {
+	vertical-align: super;
+	font-size: .5em;
+}
+
+.wisyp_edit .format_buttons a[data-role=subscript] span {
+	vertical-align: sub;
+	font-size: .5em;
+}
+
+.wisyp_edit .editFoerderungDiv td {
+	vertical-align: top;
+}
+
+.wisyp_edit .wisy_topnote.haserrors {
+	  border: 1px solid darkred;
 }
 
 /*******************************************************************************

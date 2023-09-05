@@ -103,7 +103,7 @@ function &createWisyObject($className, &$anyobject, $anyparam = 0)
 	{
 		define('WISY_MODULES_LOADED', true);
 		global $wisyPortalEinstellungen;
-		if( $wisyPortalEinstellungen['module'] != '' )
+		if( isset($wisyPortalEinstellungen['module']) && $wisyPortalEinstellungen['module'] != '' )
 		{
 			$module = explode(',', $wisyPortalEinstellungen['module']);
 			for( $m = 0; $m < sizeof($module); $m++ )
@@ -154,7 +154,7 @@ function &createWisyObject($className, &$anyobject, $anyparam = 0)
 function main()
 {
 	// for backward compatibility (PHP < 5.4.0) automatic stripslashes() if get_magic_quotes_gpc is enabled
-	if( function_exists('get_magic_quotes_gpc') && get_magic_quotes_gpc() ) { 
+    if( function_exists('get_magic_quotes_gpc') && @get_magic_quotes_gpc() ) { // @ PHP7.4 
 		require_once('admin/lib/g/stripslashes.inc.php');
 		G_STRIPSLASHES_CLASS::stripAll(); 
 	}

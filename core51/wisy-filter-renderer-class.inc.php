@@ -70,7 +70,7 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 			$renderformData['records_dauer'] = array();
 			$renderformData['records_dauer_min'] = 0;
 			$renderformData['records_dauer_max'] = 0;
-    		$this->db->query("SELECT preis, beginn, plz, ort, dauer FROM kurse_durchfuehrung, durchfuehrung WHERE primary_id IN($kursids) AND id=secondary_id AND (beginn>='".strftime("%Y-%m-%d 00:00:00")."' OR (beginn='0000-00-00 00:00:00' AND beginnoptionen>0))");
+    		$this->db->query("SELECT preis, beginn, plz, ort, dauer FROM kurse_durchfuehrung, durchfuehrung WHERE primary_id IN($kursids) AND id=secondary_id AND (beginn>='".ftime("%Y-%m-%d 00:00:00")."' OR (beginn='0000-00-00 00:00:00' AND beginnoptionen>0))");
     		while( $this->db->next_record() )
     		{
     		    $renderformData['preis'] = intval($this->db->fcs8('preis'));
@@ -320,25 +320,29 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 	        $orders = $orders_custom;
 	    }
 	    
+	    
 	    $portal_order = $this->framework->specialSortOrder ? $this->framework->specialSortOrder : $this->framework->iniRead('kurse.sortierung', false);
 	    
+	    // $portal_order = $this->framework->iniRead('kurse.sortierung', false); // ?
 	    if($portal_order && $renderformData['order'] == '') $renderformData['order'] = $portal_order;
 	    if($renderformData['order'] == '') $renderformData['order'] = 'b';
 	    
 	    // display sort order filter, except if fulltext search (b/c then sorted by match category automatically + RAND as secondary criteria)
 	    if( stripos($this->framework->QS, 'volltext:') === FALSE && stripos($this->framework->QF, 'volltext:') === FALSE ) {
-    	    echo '<fieldset class="wisyr_filtergroup wisyr_filter_select filter_sortierung ui-front">';
-    	    echo '	<legend data-filtervalue="' . str_replace('- '.$this->max_preis, '', $orders[$renderformData['order']]) . '" >Sortierung</legend>';
-    	    echo '	<select name="filter_order" class="wisyr_selectmenu">';
-    	    foreach($orders as $key => $value)
-    	    {
-    	        echo '		<option value="' . $key . '"';
-    	        if($key == $renderformData['order']) echo ' selected="selected"';
-    	        echo ' class="order_'.$key.'"';
-    	        echo '>' . $value . '</option>';
-    	    }
-    	    echo '	</select>';
-    	    echo '</fieldset>';
+	        echo '<fieldset class="wisyr_filtergroup wisyr_filter_select filter_sortierung ui-front ">';
+	        echo '	<legend data-filtervalue="' . str_replace('- '.$this->max_preis, '', $orders[$renderformData['order']]) . '" >Sortierung</legend>';
+	        echo '	<select name="filter_order" class="wisyr_selectmenu">';
+	        foreach($orders as $key => $value)
+	        {
+	            if( $this->framework->getSearchType() != "Anbietersuche" || in_array($key, array('a')) ) {
+	                echo '		<option value="' . $key . '" ';
+	                if($key == $renderformData['order']) echo ' selected="selected"';
+	                echo ' class="order_'.$key.'"';
+	                echo '>' . $value . '</option>';
+	            }
+	        }
+	        echo '	</select>';
+	        echo '</fieldset>';
 	    }
 	    
 	    echo '</form>';
@@ -528,7 +532,7 @@ class WISY_FILTERMENU_ITEM
                             $processed_value = $this->getProcessedValue($function, $value, $label);
                             $disabled = $this->getDisabledValue($function, $value, $label, $processed_value, $fieldvalue, $fieldname);
                             
-                            $ret .= '<div class="wisyr_radiowrapper">';
+                            $ret .= '<div class="wisyr_radiowrapper" id="filter_wrapper_' . $fieldname . '_' . $this->framework->cleanClassname($value, true) . '">';
                             $ret .= '	<input type="radio" name="filter_' . $fieldname . '[]" id="filter_' . $fieldname . '_' . $this->framework->cleanClassname($value, true) . '" value="' . ($label == 'Alle' ? '' : str_replace('"', '%20', str_replace(',', ' ', $label))) . '"';
                             
                             if(str_replace(',', ' ', $label) == $fieldvalue) {
@@ -591,7 +595,9 @@ class WISY_FILTERMENU_ITEM
                             $checked = $this->getCheckedValue($function, $value, $label, $processed_value, $fieldvalue, $fieldname);
                             $disabled = $this->getDisabledValue($function, $value, $label, $processed_value, $fieldvalue, $fieldname);
                             
-                            $ret .= '<option value="' . $processed_value . '"';
+                            $ret .= '<option '
+                                .'id="option_' . $fieldname . '_' . $this->framework->cleanClassname($processed_value, true) . '" '
+                                    .'value="' . $processed_value . '"';
                             if($checked) $ret .= ' selected="selected"';
                             if($disabled && $processed_value != '') $ret .= ' disabled="disabled"';
                             $ret .= '>' . $label . '</option>';
@@ -662,50 +668,51 @@ class WISY_FILTERMENU_ITEM
     
     function getFiltervalues($data)
     {
+        
         switch($data['datafunction']) {
             
             case 'anbieter':
                 return $this->framework->filterer->getAnbieterFilters($this->framework->tokens['cond'], $this->renderformData['records_anbieter']);
-            break;
-            
+                break;
+                
             case 'foerderungen':
-    		    return $this->getSpezielleStichw(2, $data['datawhitelist']);
-            break;
-            
+                return $this->getSpezielleStichw(2, $data['datawhitelist'], false, $data['datablacklist']);
+                break;
+                
             case 'zielgruppen':
-                return $this->getSpezielleStichw(8, $data['datawhitelist']);
-            break;
-
+                return $this->getSpezielleStichw(8, $data['datawhitelist'], false, $data['datablacklist']);
+                break;
+                
 			case 'niveau':
 				return $this->getSpezielleStichw(64, $data['datawhitelist']);
 			break;
             
             case 'qualitaetszertifikate':
-                return $this->getSpezielleStichw(4, $data['datawhitelist']);
-            break;
-            
+                return $this->getSpezielleStichw(4, $data['datawhitelist'], false, $data['datablacklist']);
+                break;
+                
             case 'zertifikate':
-                return $this->getSpezielleStichw(65536, $data['datawhitelist']);
+                return $this->getSpezielleStichw(65536, $data['datawhitelist'], false, $data['datablacklist']);
                 break;
                 
             case 'sonstigemerkmale':
-                return $this->getSpezielleStichw(1024, $data['datawhitelist']);
+                return $this->getSpezielleStichw(1024, $data['datawhitelist'], false, $data['datablacklist']);
                 break;
                 
             case 'abschluesse':
-                return $this->getSpezielleStichw(1, $data['datawhitelist']);
+                return $this->getSpezielleStichw(1, $data['datawhitelist'], false, $data['datablacklist']);
                 break;
                 
             case 'abschlussarten':
-                return $this->getSpezielleStichw(16, $data['datawhitelist']);
+                return $this->getSpezielleStichw(16, $data['datawhitelist'], false, $data['datablacklist']);
                 break;
-            
+                
             case 'unterrichtsarten':
-                return $this->getSpezielleStichw(32768, $data['datawhitelist']);
+                return $this->getSpezielleStichw(32768, $data['datawhitelist'], false, $data['datablacklist']);
                 break;
                 
             case 'sonstigesmerkmal':
-                return $this->getSpezielleStichw(1024, $data['datawhitelist'], $data['orderbywhitelist']);
+                return $this->getSpezielleStichw(1024, $data['datawhitelist'], false, $data['orderbywhitelist']);
                 break;
                 
             default:
@@ -836,11 +843,11 @@ class WISY_FILTERMENU_ITEM
 	    return $checked;
 	}
     
-	private function getSpezielleStichw($flag, $whitelist='', $orderbywhitelist=false)
+	private function getSpezielleStichw($flag, $whitelist='', $orderbywhitelist=false, $blacklist=false)
 	{
 	    // nur die Stichwoerter zurueckgeben, die im aktuellem Portal auch verwendet werden!
 	    $keyPrefix = "advStichw.$flag";
-	    $magic = strftime("%Y-%m-%d-v5-").md5($GLOBALS['wisyPortalFilter']['stdkursfilter']);
+	    $magic = ftime("%Y-%m-%d-v5-").md5($GLOBALS['wisyPortalFilter']['stdkursfilter']);
 	    if( $this->framework->cacheRead("adv_stichw.$flag.magic") != $magic )
 	    {
 	        $specialInfo =& createWisyObject('WISY_SPECIAL_INFO_CLASS', $this->framework);
@@ -861,24 +868,30 @@ class WISY_FILTERMENU_ITEM
 	        $ids_filtered = implode(',', $ids_filtered);
 	    }
 	    
+	    $blacklist = explode(',', $blacklist);
+	    
 	    // query!
 	    $ret = array(''=>'Alle');
 	    if(strlen(trim($ids_filtered))) {
 	        $db = new DB_Admin;
 	        if($orderbywhitelist) {
-	            $db->query("SELECT stichwort FROM stichwoerter WHERE id IN ($ids_filtered) ORDER BY FIELD(id, $ids_filtered);");
+	            $db->query("SELECT id, stichwort FROM stichwoerter WHERE id IN ($ids_filtered) ORDER BY FIELD(id, $ids_filtered);");
 	        } else {
-	            $db->query("SELECT stichwort FROM stichwoerter WHERE id IN ($ids_filtered) ORDER BY stichwort_sorted;");
+	            $db->query("SELECT id, stichwort FROM stichwoerter WHERE id IN ($ids_filtered) ORDER BY stichwort_sorted;");
 	        }
 	        while( $db->next_record() )
 	        {
-	            $stichw = htmlspecialchars($db->fcs8('stichwort'));
-	            $stichw = trim(strtr($stichw, array(': '=>' ', ':'=>' ', ', '=>' ', ','=>' ')));
-	            
-	            $ret[ $stichw ] = $stichw;
+	            if( in_array($db->f('id'), (array) $blacklist) )
+	                continue;
+	                
+	                $stichw = htmlspecialchars($db->fcs8('stichwort'));
+	                $stichw = trim(strtr($stichw, array(': '=>' ', ':'=>' ', ', '=>' ', ','=>' ')));
+	                
+	                $ret[ $stichw ] = $stichw;
 	        }
 	        $db->free();
 	    }
+	    
 	    return $ret;
 	}
 	

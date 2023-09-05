@@ -46,12 +46,12 @@ class WISY_CACHE_CLASS
 
 	function __construct(&$framework, $param)
 	{
-		// constructor
-		$this->framework			 =& $framework;
-		$this->table				= $param['table'];
-		$this->itemLifetimeSeconds	= intval($param['itemLifetimeSeconds']);
-		$this->storeBlobs			= (isset($param['storeBlobs']) && $param['storeBlobs']) ? true : false;
-		$this->db 					= new DB_Admin();
+	    // constructor
+	    $this->framework			 =& $framework;
+	    $this->table				= isset($param['table']) ? $param['table'] : '';
+	    $this->itemLifetimeSeconds	= isset($param['itemLifetimeSeconds']) ? intval($param['itemLifetimeSeconds']) : null;
+	    $this->storeBlobs			= isset($param['storeBlobs']) && $param['storeBlobs'] ? true : false;
+	    $this->db 					= new DB_Admin();
 	}
 	
 	function createKey($ckey)
@@ -78,7 +78,7 @@ class WISY_CACHE_CLASS
 		{
 			if( $this->itemLifetimeSeconds > 0 )
 			{
-				$deleteIfOlder = strftime("%Y-%m-%d %H:%M:%S", time()-$this->itemLifetimeSeconds);
+			    $deleteIfOlder = ftime("%Y-%m-%d %H:%M:%S", time()-$this->itemLifetimeSeconds);
 				if( $this->db->fcs8('cdateinserted') < $deleteIfOlder )
 				{
 					$this->db->query("DELETE FROM $this->table WHERE cdateinserted<'$deleteIfOlder';");
@@ -106,7 +106,7 @@ class WISY_CACHE_CLASS
 			@$this->db->query("INSERT INTO $this->table (ckey) VALUES('".addslashes($ckey)."');");
 		}
 		
-		@$this->db->query("UPDATE $this->table SET cvalue='".addslashes($cvalue)."', cdateinserted='".strftime("%Y-%m-%d %H:%M:%S")."' WHERE ckey='".addslashes($ckey)."';");
+		@$this->db->query("UPDATE $this->table SET cvalue='".addslashes($cvalue)."', cdateinserted='".ftime("%Y-%m-%d %H:%M:%S")."' WHERE ckey='".addslashes($ckey)."';");
 	}
 	
 	function cleanup()
@@ -116,7 +116,7 @@ class WISY_CACHE_CLASS
 	
 	function deleteOldEntries()
 	{
-		$deleteIfOlder = strftime("%Y-%m-%d %H:%M:%S", time()-$this->itemLifetimeSeconds);
+	    $deleteIfOlder = ftime("%Y-%m-%d %H:%M:%S", time()-$this->itemLifetimeSeconds);
 		$this->db->query("DELETE FROM $this->table WHERE cdateinserted<'$deleteIfOlder';");
 	}
 };

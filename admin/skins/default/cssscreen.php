@@ -1,5 +1,7 @@
 <?php
 
+// ��� (ISO8859!)
+
 // make sure, the file is cached
 header("Cache-Control: public");
 header('Expires: ' . gmdate("D, d M Y H:i:s", intval(time()+43200)) . ' GMT'); // in 12 hours
@@ -15,7 +17,7 @@ $evencell	= '#E7EFFF';
 $msgbox		= '#E9E9E9';
 $inputborder= '#BBB';
 
-$colors = isset( $_REQUEST['colors'] ) ? $_REQUEST['colors'] : null;
+$colors = $_REQUEST['colors'] ?? '';
 
 switch( $colors )
 {
@@ -32,6 +34,11 @@ switch( $colors )
 		$msgbox		= '#EEEEEE';
 		
 		break;
+		
+	case 'sh':
+	    ;
+	    
+	    break;
 }
 
 // Herausfinden, wieviel Prozent der User welche Schrift aus font-family zu Gesicht bekommen:
@@ -40,6 +47,181 @@ switch( $colors )
 ?>
 
 
+<?php
+
+$colors = $_REQUEST['colors'] ?? '';
+
+switch( $colors )
+{
+    case 'sh':
+?>
+
+ #logo_bildungsportal {
+  float: none;
+	clear: both;
+	width: 200px;
+ }
+
+ #fheader {
+	position: relative;
+	padding-top: 10px;
+	height: 6em;
+ }
+
+ #fheader #fcontent1 {
+	height: initial;
+ }
+
+ #fheader a[title=Systeminfo] {
+	display: none;
+ }
+ 
+ #fheader .mmr img:nth-child(3) {
+	display: none !important;
+}
+
+ #fheader2 {
+  position: relative;
+ }
+
+ td.mml a {
+  color: #3f88b7;
+  font-size: 1.1em;
+  font-weight: bold;
+ }
+
+ td.mml a.mms {
+  color: white;
+  background-color: #8bb21e;
+  padding-bottom: 0em;
+ }
+
+ td.mml a:hover {
+  color: white;
+  background-color: #3f88b7;
+ }
+ 
+ .nw a {
+  color: #255a81;
+ }
+  
+ #fcontent1 { 
+  height: 5px;
+ }
+
+ #fheader .sml {
+	color: #465459;
+	font-weight: bold;
+ }
+
+ #fheader td.sml, #fheader td.smr {
+  border-bottom: 1px solid #aaa;
+  box-shadow: rgba(17, 17, 26, 0.1) 0px  5px 10px -3px;
+  /* box-shadow: rgba(0, 0, 0, 0.1) 0px 10px 15px -3px, rgba(0, 0, 0, 0.05) 0px 4px 6px -2px; */
+ }
+
+ #sectmsg0 .msgc a {
+	color: black;
+ }
+
+ table.tb > thead > tr > th {
+  font-weight: bold;
+ }
+
+ #fheader .sml a:hover {
+	color: white;
+	box-shadow: none;
+ }
+
+ table.tb th a:hover {
+	color: white;
+ }
+
+ .nw a.clicktr {
+	font-weight: bold;
+	letter-spacing: .04em;
+ }
+
+ .nw a.clicktr:hover {
+	color: #8bb21e;
+ }
+
+ div.ws {
+	margin-bottom: 1.5em;
+ }
+
+ #fcontent1 {
+	margin-top: 1.5em;
+ } 
+
+
+ td.mml a {
+    color: #3f88b7;
+    font-size: 1.1em;
+    font-weight: bold;
+    margin-top: -0.1em !important;
+    display: inline-block;
+ }
+
+ .tb .val_durchfuehrung_stunden, .tb .head_durchfuehrung_stunden,
+ .tb .val_durchfuehrung_preis, .tb .head_durchfuehrung_preis {
+	text-align: right;
+ }
+ 
+form[name="dbsearch"] {
+  background-image: url(/admin/skins/sh/header-hgr.png);
+  background-repeat: no-repeat;
+  background-position: right -80px;
+  background-size: 400px;
+  padding-bottom: 10px;
+  box-shadow: rgba(17, 17, 26, 0.1) 0px  5px 10px -3px;
+  border-bottom: 1px dotted #255a81;
+  min-height: 40px;
+  padding-top: 2em;
+ }
+
+ #wisyat {
+	color: #888;
+	display: block;
+    position: absolute;
+	right: 0;
+	margin-right: 231px;
+	margin-top: 3px;
+	font-size: 24px;
+	letter-spacing: .1em;
+ }
+ 
+ #ffooter a:hover {
+	color: white;
+ }
+ 
+ td.mml a:hover {
+  color: #465459;
+ }
+ 
+ a:link, a:visited, a:active {
+  color: #465459;
+ }
+  
+ td.mml a.mms {
+	color: black;
+ }
+  
+ div.ws {
+  	margin-top: 0px !important;
+ }
+  
+ #fcontent1 {
+	height: 58px !important;
+ }
+  
+<?php        
+        $link = "#465459";
+        
+        break;
+}
+
+?>
 
 /*** common ***/
 input.esco {
@@ -531,6 +713,11 @@ div.e_toolbar, div.e_section {
 }
 
 /* show DF modify dates upon hover */
+
+.e_secondary .e_tb tr:last-child {
+ line-height: 1em !important;
+}
+
 .df_aenderungsdatum_descr, .e_clr.df_aenderungsdatum_bg {
 	opacity: 0;
 	font-size: '.7em';
@@ -676,7 +863,7 @@ input[name='resetlogin'] {
 	color: #777 !important;
 }
 
-div[data-descr="Durchführung"] + .e_tb {
+div[data-descr="Durchf�hrung"] + .e_tb {
   border-top: 1px solid #eee;
   margin-bottom: 1em;
 }
@@ -688,10 +875,42 @@ div[data-descr="Durchführung"] + .e_tb {
 	font-size: 1em;
 }
 
-/* div[data-descr="Durchführung"] + .e_tb {
+/* div[data-descr="Durchf�hrung"] + .e_tb {
   line-height: 1em;
 }
 
-div[data-descr="Durchführung"] + .e_tb * {
+div[data-descr="Durchf�hrung"] + .e_tb * {
 	padding: 0px;
 } */
+
+.keineAngabe {
+	color: #bbb !important;
+}
+
+/* HTML Overlay fuer HTML in Angebot-Beschreibung */
+
+#overlay {
+	position: fixed; 
+	top: 1em;
+	left: 30vW;
+	width: 40vW;
+	background-color: rgba(255,255,255,1);
+	padding: 1em;
+	z-index: 10000;
+	border: 1px solid silver;
+	overflow: auto;
+	resize: both;
+}
+
+#overlay:hover {
+	cursor: pointer;
+}
+
+#overlay * {
+	max-width: 35vW;
+}
+
+
+#overlayButton {
+ font-size: .9em;
+}
