@@ -904,6 +904,11 @@ class WISYKI_SYNC_RENDERER_CLASS {
 			$asSuggestion = boolval($_REQUEST['asSuggestion']);
 		}
 
+		$onlyBeruflich = true; // Set default.
+		if (isset($_REQUEST['onlyBeruflich'])) {
+			$onlyBeruflich = boolval($_REQUEST['onlyBeruflich']);
+		}
+
 		$minrequiredscore = 0.7;
 		if (isset($_REQUEST['minrequiredscore'])) {
 			$minrequiredscore = floatval($_REQUEST['minrequiredscore']);
@@ -932,13 +937,13 @@ class WISYKI_SYNC_RENDERER_CLASS {
 		$wherenocomplevelnotice = "";
 		if ($doCompLevel) {
 			$wherenocomplevelnotice = "kurse.notizen NOT LIKE '%wisyki-bot-classification-complevel%'";
-			$wherenocomplevel = "OR ks.attr_id IN ($levelidlist)";
+			$wherenocomplevel = "ks.attr_id IN ($levelidlist)";
 		}
 
 		$wherenoesconotice = "1=1";
 		$wherenoescoskills = "";
 		if ($doESCO) {
-			$wherenoescoskills = "OR s.eigenschaften = 524288";
+			$wherenoescoskills = "s.eigenschaften = 524288";
 			$wherenoesconotice = "kurse.notizen NOT LIKE '%wisyki-bot-classification-esco%'";
 		}
 
@@ -950,6 +955,32 @@ class WISYKI_SYNC_RENDERER_CLASS {
 				LEFT JOIN kurse_stichwort ks ON kurse.id = ks.primary_id
 				LEFT JOIN stichwoerter s ON ks.attr_id = s.id
 				WHERE kurse.freigeschaltet in (1, 4)
+				";
+
+		if ($onlyBeruflich) {
+			$sql .= "";
+			$sql .= "
+				AND NOT EXISTS (
+					SELECT 1
+					FROM kurse_stichwort ks
+					LEFT JOIN stichwoerter s ON ks.attr_id = s.id
+					WHERE kurse.id = ks.primary_id
+					AND (
+						$wherenoescoskills
+						OR $wherenocomplevel
+					)
+				)
+				AND EXISTS (
+					SELECT 1
+					FROM kurse_stichwort ks
+					LEFT JOIN stichwoerter s ON ks.attr_id = s.id
+					WHERE kurse.id = ks.primary_id
+					AND (
+						s.stichwort = 'Berufliche Bildung'
+					)
+				)";
+		} else {
+			$sql .= "
 				AND NOT kurse.thema = 119 -- Do not get kurse where thema is Persönliche Lebensfragen: 119
 				AND NOT EXISTS (
 					SELECT 1
@@ -958,10 +989,12 @@ class WISYKI_SYNC_RENDERER_CLASS {
 					WHERE kurse.id = ks.primary_id
 					AND (
 						ks.attr_id IN (6714, 5471, 5472, 5473, 5474, 5475, 5476) -- Do not get kurse that have the tag 'Sprachen' or Sprachniveaus A1-C2
-						$wherenoescoskills
-						$wherenocomplevel
+						OR $wherenoescoskills
+						OR $wherenocomplevel
 					)
-				)
+				)";
+		}
+		$sql .= "
 				$wherecourseidsql
 				AND (
 					$wherenocomplevelnotice
@@ -976,7 +1009,6 @@ class WISYKI_SYNC_RENDERER_CLASS {
 		$count = $db->ResultNumRows;
 		$this->log("Start classification of $count courses");
 		$this->log("");
-
 		$updatedlevelcount = 0;
 		$updatedescocount = 0;
 		$updatedembeddingcount = 0;
