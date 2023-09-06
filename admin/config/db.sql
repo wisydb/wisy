@@ -76,8 +76,13 @@ CREATE TABLE `anbieter` (
   `foerder_annr` varchar(200) DEFAULT NULL,
   `fu_annr` varchar(200) DEFAULT NULL,
   `azwv_annr` varchar(200) DEFAULT NULL,
-  `settings` longtext NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+  `settings` longtext NOT NULL,
+  `x_cntkurse_status_0` int(11) DEFAULT NULL,
+  `x_cntkurse_status_1` int(11) DEFAULT NULL,
+  `x_cntkurse_status_2` int(11) DEFAULT NULL,
+  `x_cntkurse_status_3` int(11) DEFAULT NULL,
+  `x_cntkurse_status_4` int(11) DEFAULT NULL
+) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 --
 -- Trigger `anbieter`
@@ -511,13 +516,57 @@ CREATE TABLE `kurse` (
 -- Trigger `kurse`
 --
 DELIMITER $$
-CREATE TRIGGER `kurse_bi_v9_10_1` BEFORE INSERT ON `kurse` FOR EACH ROW BEGIN
+CREATE TRIGGER `kurse_AFTER_DELETE` AFTER DELETE ON `kurse` FOR EACH ROW UPDATE anbieter SET 
+        x_cntkurse_status_0 = x_cntkurse_status_0 - CASE WHEN OLD.freigeschaltet = 0 THEN 1 ELSE 0 END,
+        x_cntkurse_status_1 = x_cntkurse_status_1 - CASE WHEN OLD.freigeschaltet = 1 THEN 1 ELSE 0 END,
+        x_cntkurse_status_2 = x_cntkurse_status_2 - CASE WHEN OLD.freigeschaltet = 2 THEN 1 ELSE 0 END,
+        x_cntkurse_status_3 = x_cntkurse_status_3 - CASE WHEN OLD.freigeschaltet = 3 THEN 1 ELSE 0 END,
+        x_cntkurse_status_4 = x_cntkurse_status_4 - CASE WHEN OLD.freigeschaltet = 4 THEN 1 ELSE 0 END
+WHERE id = OLD.anbieter
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `kurse_AFTER_INSERT` AFTER INSERT ON `kurse` FOR EACH ROW UPDATE anbieter 
+ SET 
+	x_cntkurse_status_0 = x_cntkurse_status_0 + CASE WHEN NEW.freigeschaltet = 0 THEN 1 ELSE 0 END, 
+	x_cntkurse_status_1 = x_cntkurse_status_1 + CASE WHEN NEW.freigeschaltet = 1 THEN 1 ELSE 0 END, 
+	x_cntkurse_status_2 = x_cntkurse_status_2 + CASE WHEN NEW.freigeschaltet = 2 THEN 1 ELSE 0 END, 
+	x_cntkurse_status_3 = x_cntkurse_status_3 + CASE WHEN NEW.freigeschaltet = 3 THEN 1 ELSE 0 END, 
+	x_cntkurse_status_4 = x_cntkurse_status_4 + CASE WHEN NEW.freigeschaltet = 4 THEN 1 ELSE 0 END 
+ WHERE id = NEW.anbieter
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `kurse_AFTER_UPDATE` AFTER UPDATE ON `kurse` FOR EACH ROW BEGIN
+ IF OLD.freigeschaltet <> NEW.freigeschaltet THEN
+        UPDATE anbieter SET 
+            x_cntkurse_status_0 = x_cntkurse_status_0 
+                                 - CASE WHEN OLD.freigeschaltet = 0 THEN 1 ELSE 0 END
+                                 + CASE WHEN NEW.freigeschaltet = 0 THEN 1 ELSE 0 END,
+            x_cntkurse_status_1 = x_cntkurse_status_1 
+                                 - CASE WHEN OLD.freigeschaltet = 1 THEN 1 ELSE 0 END
+                                 + CASE WHEN NEW.freigeschaltet = 1 THEN 1 ELSE 0 END,
+            x_cntkurse_status_2 = x_cntkurse_status_2 
+                                 - CASE WHEN OLD.freigeschaltet = 2 THEN 1 ELSE 0 END
+                                 + CASE WHEN NEW.freigeschaltet = 2 THEN 1 ELSE 0 END,
+            x_cntkurse_status_3 = x_cntkurse_status_3 
+                                 - CASE WHEN OLD.freigeschaltet = 3 THEN 1 ELSE 0 END
+                                 + CASE WHEN NEW.freigeschaltet = 3 THEN 1 ELSE 0 END,
+            x_cntkurse_status_4 = x_cntkurse_status_4 
+                                 - CASE WHEN OLD.freigeschaltet = 4 THEN 1 ELSE 0 END
+                                 + CASE WHEN NEW.freigeschaltet = 4 THEN 1 ELSE 0 END
+        WHERE id = NEW.anbieter;
+ END IF;
+END
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `kurse_bi_v9_10_2` BEFORE INSERT ON `kurse` FOR EACH ROW BEGIN
 									SET auto_increment_increment = 10;
 									SET auto_increment_offset = 1;
 								  END
 $$
 DELIMITER ;
-
 -- --------------------------------------------------------
 
 --
@@ -1860,6 +1909,12 @@ ALTER TABLE `x_querystats`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indizes fuer die Tabelle `x_searchqueries`
+--
+ALTER TABLE `x_searchqueries`
+  ADD PRIMARY KEY (`ukey`);
+
+--
 -- Indizes fuer die Tabelle `x_state`
 --
 ALTER TABLE `x_state`
@@ -1949,6 +2004,60 @@ ALTER TABLE `glossar`
 --
 ALTER TABLE `kurse`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT fuer Tabelle `openth_category`
+--
+-- ALTER TABLE `openth_category`
+--  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT fuer Tabelle `openth_category_link`
+--
+-- ALTER TABLE `openth_category_link`
+--  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT fuer Tabelle `openth_synset`
+--
+-- ALTER TABLE `openth_synset`
+--  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT fuer Tabelle `openth_synset_link`
+--
+-- ALTER TABLE `openth_synset_link`
+--  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT fuer Tabelle `openth_tag`
+--
+-- ALTER TABLE `openth_tag`
+--  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT fuer Tabelle `openth_term`
+--
+-- ALTER TABLE `openth_term`
+--  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT fuer Tabelle `openth_term_level`
+--
+-- ALTER TABLE `openth_term_level`
+--  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT fuer Tabelle `openth_term_link`
+--
+-- ALTER TABLE `openth_term_link`
+--  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT fuer Tabelle `openth_term_link_type`
+--
+-- ALTER TABLE `openth_term_link_type`
+--  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT fuer Tabelle `plztool`

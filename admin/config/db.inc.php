@@ -211,6 +211,13 @@ $anbieter->add_row(TABLE_INT|TABLE_EMPTYONNULL,				'herkunft',			'Herkunft', 0, 
 	$anbieter->add_row(TABLE_SATTR|TABLE_TRACKDEFAULTS,			'thema',			'Thema', 0, $themen, '', array('layout.join'=>1, 'layout.defhide'=>2)); // 1/2014: Verwendung der Anbieter-Themen unklar, wird nur in 88 Kursen verwendet. 
 } */
 
+$anbieter->add_row(TABLE_INT|TABLE_READONLY,                    'x_cntkurse_status_0', 'Kurse In Vorbereitung ', '', '', '', array( 'layout.section'=>'Statistiken', 'layout.defhide'=> 1  ) );
+$anbieter->add_row(TABLE_INT|TABLE_READONLY,                    'x_cntkurse_status_1', 'Kurse Freigegeben ', '', '', '', array( 'layout.defhide'=>1, 'layout.join'=>1 ) );
+$anbieter->add_row(TABLE_INT|TABLE_READONLY,                    'x_cntkurse_status_2', 'Kurse Gesperrt ', '', '', '', array( 'layout.defhide'=>1, 'layout.join'=>1 ) );
+$anbieter->add_row(TABLE_INT|TABLE_READONLY,                    'x_cntkurse_status_3', 'Kurse Abgelaufen ', '', '', '', array( 'layout.defhide'=>1, 'layout.join'=>1 ) );
+$anbieter->add_row(TABLE_INT|TABLE_READONLY,                    'x_cntkurse_status_4', 'Kurse Dauerhaft ', '', '', '', array( 'layout.defhide'=>1, 'layout.join'=>1 ) );
+
+
 $anbieter->rows[$use_neweditor? 10 : 2]->addparam = $anbieter;
 
 

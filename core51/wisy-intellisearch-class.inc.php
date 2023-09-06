@@ -81,11 +81,11 @@ class WISY_INTELLISEARCH_CLASS
 	}	
 
 	function ok()
-	{	
-		if( $this->searcher->error['id'] == 'tag_not_found' )
-			return true;
-			
-		return $this->searcher->ok();
+	{
+	    if( is_array($this->searcher->error) && $this->searcher->error['id'] == 'tag_not_found' )
+	        return true;
+	        
+	    return $this->searcher->ok(); // e.g. ->error == false (initial)
 	}
 	
 	function getInfo()
@@ -127,7 +127,8 @@ class WISY_INTELLISEARCH_CLASS
 	{
 		$ret = array();
 
-		switch( $this->searcher->error['id'] )
+		$check = $this->searcher->error['id'] ?? '';
+		switch( $check )
 		{
 			case 'tag_not_found':
 				// show a list simelar to the ajax-suggestions

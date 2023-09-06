@@ -148,6 +148,8 @@ class WISY_SEARCH_CLASS
 	        
 	        $sql = "SELECT id FROM stichwoerter WHERE stichwort='".addslashes($q_tag)."';";
 	        
+	        $tag_orig_id = false;
+	        
 	        $this->db->query($sql);
 	        if( $this->db->next_record() )
 	            $tag_orig_id = intval($this->db->f('id'));
@@ -552,7 +554,7 @@ class WISY_SEARCH_CLASS
 	    $queryString = implode( ',', $queryArr); // re-build querystring from tags and recognized tags
 	    $queryString = trim( str_replace( array(" ,", ", "), ",", $queryString), ',' );
 	    	            
-	    if( $queryString && $changedQueryString) 
+	    if( $queryString && isset($changedQueryString) && $changedQueryString ) 
 	       $this->changedQueryString = $queryString;
 	                
 	    return $queryString;
@@ -861,20 +863,32 @@ class WISY_SEARCH_CLASS
 				                
 				                foreach($val_arr AS $val) {
 				                    if(strtolower(trim($val)) == strtolower($codes_array[$y])) {
+				                        
+				                        if( is_numeric($codes_array[$y]) && !is_numeric($codes_array[$y+1]) ) // then +1 is the name like "Zertifikat"
+				                            $typenum = $codes_array[$y];
+				                        elseif( is_numeric($codes_array[$y-1]) && !is_numeric($codes_array[$y]) ) // then -1 is the name like "Zertifikat"
+				                            $typenum = $codes_array[$y-1];
+				                            
 				                        $cnt_types++;
 				                        $code_found = true;
 				                        $this->rawWhere .= $this->rawWhere? ($cnt_types == 1 ? ' AND ( ' : ' OR ') : ' WHERE ( ';
-				                        $this->rawWhere .= "x_kurse.kurs_id IN (SELECT x_kurse_tags.kurs_id FROM x_kurse_tags, x_tags WHERE x_kurse_tags.tag_id = x_tags.tag_id AND x_tags.tag_type = '".$codes_array[$y-1]."')";
+				                        $this->rawWhere .= "x_kurse.kurs_id IN (SELECT x_kurse_tags.kurs_id FROM x_kurse_tags, x_tags WHERE x_kurse_tags.tag_id = x_tags.tag_id AND x_tags.tag_type = '".$typenum."')";
 				                        if($cnt_types == count($val_arr))
 				                            $this->rawWhere .= ")";
-				                            
+				                                
 				                    }
 				                }
 				                
 				            } elseif(strtolower(trim($value)) == strtolower($codes_array[$y])) {
+				                
+				                if( is_numeric($codes_array[$y]) && !is_numeric($codes_array[$y+1]) ) // then +1 is the name like "Zertifikat"
+				                    $typenum = $codes_array[$y];
+				                elseif( is_numeric($codes_array[$y-1]) && !is_numeric($codes_array[$y]) ) // then -1 is the name like "Zertifikat"
+				                    $typenum = $codes_array[$y-1];
+				                    
 				                $code_found = true;
 				                $this->rawWhere .= $this->rawWhere? ' AND ' : ' WHERE ';
-				                $this->rawWhere .= "x_kurse.kurs_id IN (SELECT x_kurse_tags.kurs_id FROM x_kurse_tags, x_tags WHERE x_kurse_tags.tag_id = x_tags.tag_id AND x_tags.tag_type = '".$value."')";
+				                $this->rawWhere .= "x_kurse.kurs_id IN (SELECT x_kurse_tags.kurs_id FROM x_kurse_tags, x_tags WHERE x_kurse_tags.tag_id = x_tags.tag_id AND x_tags.tag_type = '".$typenum."')";
 				            }
 				            
 				        }
@@ -1367,7 +1381,7 @@ class WISY_SEARCH_CLASS
 	                case 'rand':
 	                    $ip = str_replace('.', '', $_SERVER['REMOTE_ADDR']);
 	                    $seed = ($ip + date('d') );
-	                    $this->randSeed;
+	                    // $this->randSeed; ?
 	                    $orderBy = 'RAND('.$seed.')';
 	                    break;
 	                default:		$orderBy = 'kurse.id';										die('invalid order!');

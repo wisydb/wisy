@@ -62,7 +62,7 @@ function login_screen()
 	//
 	if( regGet('login.remember', 0) 
 	 && !$enter_loginname 
-	 && $_COOKIE['g_cookie_login'] ) 
+	 && isset($_COOKIE['g_cookie_login']) ) 
 	{
 		$enter_loginname = explode('&', $_COOKIE['g_cookie_login']);
 		$enter_password = '';
@@ -199,7 +199,7 @@ function login_screen()
 			//
 			if( regGet('login.remember', 0) ) {
 				form_control_start(htmlconstant('_REMEMBERLOGIN'));
-					form_control_check('enter_rememberlogin', $_COOKIE['g_cookie_login']?1:0);
+				    form_control_check('enter_rememberlogin', ($_COOKIE['g_cookie_login'] ?? 1) );
 				form_control_end();
 			}
 			

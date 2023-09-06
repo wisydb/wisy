@@ -89,6 +89,8 @@ class REST_API_CLASS
 	strcuture
 	======================================================================== */
 
+    var $table_Def = array();
+    
 	var $fields = array
 	(
 		'kurse'	=> array
@@ -688,9 +690,20 @@ class REST_API_CLASS
 	    // add a new record to the given table
 	    $today     	= strftime("%Y-%m-%d %H:%M:%S");
 	    
+	    foreach($this->table_Def as $def) {
+	        if( $def->name == $table ) {
+	            $def_fieldStr = '';
+	            $def_valStr = '';
+	            foreach( $def->get_DBFieldsUponCreation() AS $field => $value ) {
+	                $def_fieldStr = ', ' . $field;
+	                $def_valStr   = ', ' . $value;
+	            }
+	        }
+	    }
+	    
 	    $db = new DB_Admin;
 	    $db->Halt_On_Error = 'no';
-	    $db->query("INSERT INTO $table (date_created, date_modified, user_access) VALUES('$today', '$today', 508);");
+	    $db->query("INSERT INTO $table (date_created, date_modified, user_access". (strlen($def_fieldStr) ? $def_fieldStr : '').") VALUES('$today', '$today', 508".(strlen($def_valStr) ? $def_valStr : '').");");
 	    
 	    if( $db->Errno ) $this->halt(400, "post: bad condition, mysql says: ".$db->Error . " -- full sql: " . $sql);
 	    
@@ -867,11 +880,13 @@ Global Part
 ============================================================================ */
 
 // connect to db
+require('../../admin/table_def.inc.php');
+require('../../admin/config/db.inc.php');
 require('../../admin/sql_curr.inc.php');
 require('../../admin/config/config.inc.php');
 require_once('../../admin/config/trigger_durchfuehrung.inc.php');
 
 // do the REST :-)
-$obj = new REST_API_CLASS();
+$obj = new REST_API_CLASS( $Table_Def );
 $obj->handleRequest();
 

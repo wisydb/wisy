@@ -1590,7 +1590,7 @@ class WISY_FRAMEWORK_CLASS
 	                $cacheArr = unserialize($temp);
 	                $integrity_hash = $cacheArr['integrity_hash'];
 	                $date = $cacheArr['date'];
-	                $addAttribs = strpos($js[$i], '//') === FALSE ? '' : 'integrity="'.$integrity_hash.'" crossorigin="anonymous" fromcache="true"'; // external ressource => todo: check more thoroughly
+	                $addAttribs = strpos($js[$i], '//') === FALSE ? '' : 'integrity="'.$integrity_hash.'" crossorigin="anonymous" data-fromcache="true"'; // external ressource => todo: check more thoroughly
 	            } else {
 	                $jscontent = '';
 	                
@@ -1632,7 +1632,7 @@ class WISY_FRAMEWORK_CLASS
 	                $cacheArr = unserialize($temp);
 	                $integrity_hash = $cacheArr['integrity_hash'];
 	                $date = $cacheArr['date'];
-	                $addAttribs = strpos($js_defered[$i], '//') === FALSE ? '' : 'integrity="'.$integrity_hash.'" crossorigin="anonymous" fromcache="true"'; // external ressource => todo: check more thoroughly
+	                $addAttribs = strpos($js_defered[$i], '//') === FALSE ? '' : 'integrity="'.$integrity_hash.'" crossorigin="anonymous" data-fromcache="true"'; // external ressource => todo: check more thoroughly
 	            } else {
 	                $jscontent = '';
 	                $url = str_replace('//', 'https://', $js_defered[$i]);
@@ -1644,7 +1644,7 @@ class WISY_FRAMEWORK_CLASS
 	                        while (! feof($fh)) { $jscontent .= fread($fh,1024); }
 	                        fclose($fh);
 	                        $checksum = $this->integrityChecksum($jscontent);
-	                        $addAttribs = strpos($js_defered[$i], '//') === FALSE ? '' : 'integrity="'.$checksum.'" crossorigin="anonymous" fromcache="false"'; // external ressource => todo: check more thoroughly
+	                        $addAttribs = strpos($js_defered[$i], '//') === FALSE ? '' : 'integrity="'.$checksum.'" crossorigin="anonymous" data-fromcache="false"'; // external ressource => todo: check more thoroughly
 	                        $dbCacheIntegrity->insert( $cacheKey, serialize( array("integrity_hash" => $checksum, "date" => date("d.m.Y") ) ) );
 	                    }
 	            } // end: else not in cache
@@ -1985,7 +1985,7 @@ class WISY_FRAMEWORK_CLASS
 		$q = explode(',', $q);
 		for( $i = 0; $i < sizeof($q); $i++ )
 		{
-			if( $q[$i] != '' && !$added[ $q[$i] ] )
+		    if( isset($q[$i]) && $q[$i] != '' && (!isset($added[ $q[$i] ]) || !$added[ $q[$i] ]) )
 			{
 				$ret .= $ret==''? '' : ' ';
 				$ret .= 'wisyq_' . $q[$i];
@@ -2098,7 +2098,7 @@ class WISY_FRAMEWORK_CLASS
 		// $this->getRSSTags() .
 		$bodyStart = str_replace('__HEADTAGS__',
 		    $this->getTitleTags(  $param['title'], ( isset($param['ort']) ? $param['ort'] : '' ), ( isset($param['anbieter_name']) ? $param['anbieter_name'] : '' ) )
-		    . $this->getFaviconTags() . $this->getOpensearchTags() . $this->getCSSTags()
+		    . $this->getFaviconTags() . $this->getCSSTags()
 		    . $this->getCanonicalTag( (isset($param['canonical']) ? $param['canonical'] : '' ) )
 		    . $this->getMobileAlternateTag( (isset($param['canonical']) ? $param['canonical'] : '' ) )
 		    . $this->getJSHeadTags()
@@ -2295,6 +2295,7 @@ class WISY_FRAMEWORK_CLASS
 		$q = $this->simplified ? $this->Q : $this->getParam('q', '');
 		$q_orig = $q;
 		$tokens = $this->tokens;
+		$metatags = "";
 		
 		// radius search?
 		if( $this->iniRead('searcharea.radiussearch', 0) )
@@ -2364,9 +2365,9 @@ class WISY_FRAMEWORK_CLASS
 		if($richtext) {
 		    echo '<div itemscope itemtype="'.$schema.'">';
 		    
-		    $websiteurl .= trim($this->iniRead('meta.portalurl', ""));
+		    $websiteurl = trim($this->iniRead('meta.portalurl', ""));
 		    
-		    if($websiteurl)
+		    if( strlen($websiteurl) > 3 )
 		        $metatags .= '<meta itemprop="url" content="'.$websiteurl.'">'."\n";
 		        
 		}
@@ -2413,16 +2414,16 @@ class WISY_FRAMEWORK_CLASS
 		    // This makes sure that a q parameter that is set by a google link and encoded in UTF-8 (like T%C3%B6pfern) is convertet to ISO-8859-15 for search
 		    // While this also converts non-Umlaaut-strings as well, like "deutsch", that doesn't matte
 		    if((strpos($_SERVER["HTTP_REFERER"], "google.") !== FALSE) && trim($this->getParam('q', '')) != "" && mb_check_encoding(rawurldecode($this->getParam('q', '')), "ISO-8859-15") && mb_check_encoding(rawurldecode($this->getParam('q', '')), "UTF-8")) // deutsch oder T%C3%B6pfern, nicht (wie es korrekt w√§re ):T%F6pfern (ISO-8859)
-		        $this->QS = utf8_decode($this->QS);
+		        $this->QS = utf8_decode(($this->QS??''));
 		        
 		        $qs = $this->getParam('suchfeld_leer') == 1 ? '' : $this->QS;
 		        
 		        echo '<input '.$queryinput.' type="text" id="wisy_searchinput" class="' . $autocomplete_class . '" name="qs" value="' .$qs. '" placeholder="' . $searchinput_placeholder . '" data-onemptyvalue="' . $this->iniRead('search.emptyvalue', '') . '"/>' . "\n";
-		        echo '<input type="hidden" id="wisy_searchinput_q" name="q" value="' . addslashes($this->Q) . '" />' . "\n"; // str_replace(array('"', "'"), '', addslashes( - addslashes not for anti-xss per se but rendering success for problematic chars - str_replace not necessary but better rendering if addslashes applied twice somehow
+		        echo '<input type="hidden" id="wisy_searchinput_q" name="q" value="' . addslashes( ($this->Q??'') ) . '" />' . "\n"; // str_replace(array('"', "'"), '', addslashes( - addslashes not for anti-xss per se but rendering success for problematic chars - str_replace not necessary but better rendering if addslashes applied twice somehow
 		        
-		        if( stripos($this->QF, 'fav:') === FALSE) // don't submit q=fav: additionally as qf=fav: b/c will override following manual search
-		          echo '<input type="hidden" id="wisy_searchinput_qf" name="qf" value="' . addslashes($this->QF) . '" />' . "\n"; // str_replace(array('"', "'"), '', addslashes( - addslashes not for anti-xss per se but rendering success for problematic chars - str_replace not necessary but better rendering if addslashes applied twice somehow
-		        
+		        if( stripos( ($this->QF??''), 'fav:') === FALSE) // don't submit q=fav: additionally as qf=fav: b/c will override following manual search
+		            echo '<input type="hidden" id="wisy_searchinput_qf" name="qf" value="' . addslashes( ($this->QF??'') ) . '" />' . "\n"; // str_replace(array('"', "'"), '', addslashes( - addslashes not for anti-xss per se but rendering success for problematic chars - str_replace not necessary but better rendering if addslashes applied twice somehow
+		            
 		        // if(isset( $this->qtrigger )
 		        //    echo '<input type="hidden" id="qtrigger" name="qtrigger" value="' .  $this->qtrigger  . '" />' . "\n";
 		        
@@ -2435,7 +2436,7 @@ class WISY_FRAMEWORK_CLASS
 		        $active_filters = $this->filterer->getActiveFilters();
 		        $hintwithfilters = $this->iniRead('searcharea.hintwithfilters', 0);
 		        if($active_filters == '' || $hintwithfilters) {
-		            $hint = ($hintwithfilters && $active_filters) ? $hintwithfilters : ($hint =="") ? $this->replacePlaceholders($this->iniRead('searcharea.hint', $DEFAULT_BOTTOM_HINT)) : $hint;
+		            $hint = ($hintwithfilters && $active_filters) ? $hintwithfilters : ( (!isset($hint) || $hint == "") ? $this->replacePlaceholders($this->iniRead('searcharea.hint', $DEFAULT_BOTTOM_HINT)) : $hint ); // PHP 8
 		            echo '<div class="wisy_searchhints">' .  $hint;
 		            
 		            if( $this->getParam('anbieterRedirect') == 1)
@@ -2833,7 +2834,7 @@ class WISY_FRAMEWORK_CLASS
 		
 		/* Don't allow search request parameters to be set, if search isn't valid for page type -> don't let search engines and hackers consume unecessary ressources ! */
 		global $wisyRequestedFile;
-		$valid_searchrequests = array('rss', 'search', 'advanced', 'filter', 'tree', 'geocode', 'autosuggest', 'autosuggestplzort', 'opensearch', 'kurse.php', 'anbieter.php', 'glossar.php', 'rest', 'killdb');
+		$valid_searchrequests = array('rss', 'search', 'advanced', 'filter', 'tree', 'geocode', 'autosuggest', 'autosuggestplzort', 'kurse.php', 'anbieter.php', 'glossar.php', 'rest', 'killdb');
 		if(
 		            // direct use of $_GET-parameters ok, too, b/c not being written to DB or output
 		            ( $this->getParam('q', false) || $this->getParam('qs', false) || $this->getParam('qf', false) || $this->getParam('qsrc', false) || $this->getParam('offset', false) )

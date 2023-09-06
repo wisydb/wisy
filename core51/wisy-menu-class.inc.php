@@ -147,6 +147,7 @@ class WISY_MENU_CLASS
     function &createRootThemenItems($title, $startIdOrKuerzel, $aparam, $level)
     {
         global $g_themen;
+        $multiThemaIndices = array();
         
         // alle themengebiete laden ...
         if( !is_array($g_themen) )
@@ -397,8 +398,10 @@ class WISY_MENU_CLASS
             if( $title == '' ) $title = 'OhneName';
         }
         
-        $wisy_menu_item = new WISY_MENU_ITEM($title, $url, $aparam, $level);
-        return array( $wisy_menu_item );
+        $menuitem = new WISY_MENU_ITEM($title, $url, $aparam, $level);
+        $wisy_menu_item = $menuitem ? array( $menuitem ) : array();
+        
+        return $wisy_menu_item;
     }
     
     function getHtml()

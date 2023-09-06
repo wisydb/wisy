@@ -232,17 +232,17 @@ function sql_date_to_human($d, $options = 'datetime')
 	$year = $optionCentury? $d[0] : substr($d[0], 2, 2);
 	if( $format == 'dd.mm.yyyy' || $format=='_CONST_DATEFORMAT' )
 	{
-		$ret = $d[2] /*day*/ . '.' . $d[1] /*month*/ . '.' . $year;
+	    $ret = ($d[2] ?? '') /*day*/ . '.' . ($d[1] ?? '') /*month*/ . '.' . $year;
 	}
 	else
 	{
-		$ret = $d[1] /*month*/ . '/' . $d[2] /*day*/ . '/' . $year;
+	    $ret = ($d[1] ?? '') /*month*/ . '/' . ($d[2] ?? '') /*day*/ . '/' . $year;
 	}
 	
 	// add weekday or relative date
-	if( !$optionEditable 
-	 && checkdate($d[1], $d[2], $d[0]) 
-	 && $d[0]>1970 /*cannot find out weekdays for older dates*/ ) 
+	if( !$optionEditable
+	    && checkdate( ($d[1] ?? -1), ($d[2] ?? -1), ($d[0] ?? -1) )
+	    && $d[0]>1970 /*cannot find out weekdays for older dates*/ )
 	{
 		$relDateSet = 0;
 		
@@ -282,10 +282,10 @@ function sql_date_to_human($d, $options = 'datetime')
 	// add time
 	if( $optionTime )
 	{
-		$ret .= ', ' . strval($d[3]) . ':' . strval($d[4]);
-		if( $optionSeconds ) {
-		    $ret .= ':' . (isset($d[5]) ? strval($d[5]) : '');
-		}
+	    $ret .= ', ' . strval( ($d[3] ?? '') ) . ':' . strval( ($d[4] ?? '') );
+	    if( $optionSeconds ) {
+	        $ret .= ':' . strval( ($d[5] ?? '') );
+	    }
 	}
 	
 	return $ret;
