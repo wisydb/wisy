@@ -169,7 +169,7 @@ class WISYKI_PYTHON_CLASS {
      * @param  int $strict              Level of strictness of filtering the results.
      * @return mixed
      */
-    public function predict_esco_terms(string $title, string $description, string $thema, array $abschluesse, array $sachstichworte, array $filterconcepts = array(), int $strict = 2) {
+    public function predict_esco_terms(string $title, string $description, string $thema, array $abschluesse, array $sachstichworte, array $filterconcepts = array(), int $strict = 2, int $requesttimeout = 20) {
         $endpoint = "/chatsearch";
         $wisytags = $sachstichworte;
         $wisytags = array_merge($wisytags, $abschluesse);
@@ -184,6 +184,7 @@ class WISYKI_PYTHON_CLASS {
             "openai_api_key" => defined('OPENAI_API_KEY') ? OPENAI_API_KEY : null,
             "strict" => $strict,
             "filterconcepts" => $filterconcepts,
+            "requesttimeout" => $requesttimeout,
         ];
 
         $post_data = json_encode($data);
