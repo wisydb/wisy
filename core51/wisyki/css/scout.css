@@ -93,6 +93,7 @@ html {
 body {
     font-family: 'Roboto', sans-serif;
     color: var(--font-color__dark);
+    background-color: white;
     overflow: hidden;
     height: 100vh;
     height: var(--doc-height);
