@@ -511,16 +511,21 @@ class WISYKI_ESCO_CLASS {
      * @return int Returns -1 if $a starts with $searchterm, 1 if $b starts with $searchterm and 0 if both do not.
      */
     function sort_term_first($a, $b, $searchterm) {
-        $a_starts_with_search_string = (substr($a["label"], 0, strlen($searchterm)) === $searchterm);
-        $b_starts_with_search_string = (substr($b["label"], 0, strlen($searchterm)) === $searchterm);
+        // labels to lower case
+        $a_label = strtolower($a["label"]);
+        $b_label = strtolower($b["label"]);
+        $searchterm = strtolower($searchterm);
+    
+        $a_starts_with_search_string = (substr($a_label, 0, strlen($searchterm)) === $searchterm);
+        $b_starts_with_search_string = (substr($b_label, 0, strlen($searchterm)) === $searchterm);
 
         if ($a_starts_with_search_string && !$b_starts_with_search_string) {
             return -1;
         } else if (!$a_starts_with_search_string && $b_starts_with_search_string) {
             return 1;
         } else if ($a_starts_with_search_string && $b_starts_with_search_string) {
-            return strlen($a["label"]) > strlen($b["label"]);
-            // return strcmp($a["label"], $b["label"]);
+            return strlen($a_label) > strlen($b_label);
+            // return strcmp($a_label, $b_label);
         } else {
             return 0;
         }
