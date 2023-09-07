@@ -1035,7 +1035,12 @@ class WISYKI_SYNC_RENDERER_CLASS {
 			} elseif (str_contains($course['notizen'], 'wisyki-bot-classification-complevel')) {
 				$this->log(" - skip complevel-classification, course has already been classified");
 			} else {
-				$level_prediction = $this->pythonAPI->predict_comp_level(utf8_encode($course['titel']), utf8_encode($course['beschreibung']));
+				try {
+					$level_prediction = $this->pythonAPI->predict_comp_level(utf8_encode($course['titel']), utf8_encode($course['beschreibung']));
+				} catch (Exception $e) {
+					$this->log(" - " . $e->getMessage());
+					continue;
+				}
 				if (!empty($level_prediction)) {
 					$this->log(" - AI suggests " . $level_prediction['level'] . " " . round($level_prediction['target_probability'] * 100, 2) . "%");
 					if ($level_prediction['target_probability'] >= $minrequiredscore) {
