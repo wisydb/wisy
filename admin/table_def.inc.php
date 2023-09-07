@@ -142,6 +142,7 @@ class Table_Def_Class
 	var $addparam;
 	var $color;
 	var $trigger_script;
+	var $defaultDBFields;
 	public $delete_uponunlink;
 	
 	function __construct($flags, $name, $descr, $addparam = 0, $acl = 0, $delete_uponunlink = false)
@@ -155,6 +156,7 @@ class Table_Def_Class
 	    $this->addparam			= is_array($addparam)? $addparam : array();
 	    $this->acl				= $acl;
 	    $this->trigger_script	= '';
+	    $this->defaultDBFields  = '';
 	}
 
 	// name and descr must not be given in HTML manner
@@ -172,6 +174,14 @@ class Table_Def_Class
 	function set_trigger($script)
 	{
 		$this->trigger_script = $script;
+	}
+	
+	function set_DBFieldsUponCreation( $fields ) {
+	    $this->defaultDBFields = $fields;
+	}
+	
+	function get_DBFieldsUponCreation() {
+	    return $this->defaultDBFields;
 	}
 	
 	function is_delete_uponunlink() {
@@ -727,6 +737,7 @@ function Table_Find_Def($name, $accessCheck = 1)
 			    $Table_Def[$t]->delete_uponunlink
 			);
 			
+			$ret->set_DBFieldsUponCreation($Table_Def[$t]->defaultDBFields);
 			$ret->set_trigger($Table_Def[$t]->trigger_script);
 			
 			/*

@@ -118,7 +118,7 @@ class EDIT_RENDERER_CLASS
 			$can_prev_next = ( $this->data->db_name == '' && $this->data->id != -1 )? true : false;
 			
 			$prev_url = '';
-			$can_prev = ($can_prev_next && $this->no_paging != 'prev');
+			$can_prev = ($can_prev_next && (!isset($this->no_paging) || $this->no_paging != 'prev') );
 			if( $can_prev ) {
 				if( ($prev_id=$paging_ob->search_id($this->data->table_name, $this->data->id, 'prev')) != 0 ) {
 					$prev_url = "<a href=\"edit.php?table={$this->data->table_name}&amp;id={$prev_id}\">";
@@ -130,7 +130,7 @@ class EDIT_RENDERER_CLASS
 			$site->menuItem('mprev', htmlconstant('_PREVIOUS'), $prev_url);
 			
 			$next_url = '';
-			$can_next = ($can_prev_next && $this->no_paging != 'next');
+			$can_next = ($can_prev_next && (!isset($this->no_paging) || $this->no_paging != 'next') );
 			if( $can_next ) {
 				if( ($next_id=$paging_ob->search_id($this->data->table_name, $this->data->id, 'next')) != 0 ) {
 					$next_url = "<a href=\"edit.php?table={$this->data->table_name}&amp;id={$next_id}\">";

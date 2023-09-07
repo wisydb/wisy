@@ -159,32 +159,32 @@ class WISY_SEARCH_RENDERER_CLASS
 			if( $anbieterName )
 			{
 				$aparam = array('id'=>$currAnbieterId, 'q'=>$param['q']);
-				if( $param['promoted'] )
+				if( isset($param['promoted']) && $param['promoted'] )
 				{
 					$aparam['promoted'] = intval($param['kurs_id']);
 					echo '<span class="wisy_promoted_prefix">Anzeige von:</span> ';
 				}
 			
-				if( $param['clickableName'] ) echo '<a href="'.$this->framework->getUrl('a', $aparam).'">';
+				if( isset($param['clickableName']) && $param['clickableName'] ) echo '<a href="'.$this->framework->getUrl('a', $aparam).'">';
 					
 				    $kursAnalyzer1 =& createWisyObject('WISY_KURS_ANALYZER_CLASS', $this->framework);
 				
-					if( $param['addIcon'] ) {
+				    if( isset($param['addIcon']) && $param['addIcon'] ) {
 						if( $record['typ'] == 2 ) echo '<span class="wisy_icon_beratungsstelle">Beratungsstelle<span class="dp">:</span></span> ';
 					}
 					
 					echo htmlspecialchars($this->framework->encode_windows_chars( cs8($anbieterName) ));
 					
-				if( $param['clickableName'] ) echo '</a>';
+				if( isset($param['clickableName']) && $param['clickableName'] ) echo '</a>';
 
-				if( $param['addPhone'] && $anspr_tel )
+				if( isset($param['addPhone']) && $param['addPhone'] && $anspr_tel )
 				{
 				    // $anspr_tel = str_replace(' ', '', $anspr_tel); // macht Aerger, da in den Telefonnummern teilw. Erklaerungen/Preise mitstehen. Auskommentiert am 5.9.2008 (bp)
 				    $anspr_tel = str_replace('/', ' / ', $anspr_tel);
 				    echo '<span class="wisyr_comma">,</span><span class="wisyr_anbieter_telefon"> ' . htmlspecialchars( cs8($anspr_tel) ) . '</span>';
 				}
 				
-				if( !$param['clickableName'] )  echo '<span class="wisyr_anbieter_profil"> - <a href="'.$this->framework->getUrl('a', $aparam).'">Anbieterprofil...</a></span>';
+				if( !isset($param['clickableName']) || !$param['clickableName'] )  echo '<span class="wisyr_anbieter_profil"> - <a href="'.$this->framework->getUrl('a', $aparam).'">Anbieterprofil...</a></span>';
 			}
 			else
 			{
@@ -414,7 +414,7 @@ class WISY_SEARCH_RENDERER_CLASS
 
 		// build skip hash
 		$recordsToSkipHash = array();
-		if( is_array($recordsToSkip['records']) )
+		if( isset($recordsToSkip['records']) && is_array($recordsToSkip['records']) )
 		{
 			reset($recordsToSkip['records']);
 			foreach($recordsToSkip['records'] as $i => $record)
@@ -482,19 +482,20 @@ class WISY_SEARCH_RENDERER_CLASS
 			$durchfuehrungenIds = $durchfClass->getDurchfuehrungIds($db, $currKursId);
 
 			// record already promoted? if so, skip the normal row
-			if( $recordsToSkipHash[ $currKursId ] )
+			if( isset($recordsToSkipHash[ $currKursId ]) )
 				continue;
 
 			// dump kurs
 			$rows ++;
 				
-			if( $param['promoted'] )
+			if( isset($param['promoted']) )
 			    $class = ' class="wisy_promoted"';
 			else
 			    $class = ($rows%2)==0? ' class="wisy_even"' : '';
 				        
 				        
 			// fulltext: ' ' ist explode criteria
+			$record['fulltext_matchall'] = $record['fulltext_matchall'] ?? '';
 			$record['fulltext_matchall'] = trim($record['fulltext_matchall']);
 				        
 			// fulltext: get statistics, jump-links & sub-heading-row
@@ -508,7 +509,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			$fulltext['match_descr'] = intval($this->title_relevance === 0) && intval($this->beschreibung_relevance === 1); // 1:1 match in description only
 			$fulltext['match_one'] = (isset($record['title_relevance']) && isset($record['beschreibung_relevance']) && $this->title_relevance === 0 && $this->beschreibung_relevance === 0); // no 1:1 match, but one of the search terms found in title or description
 				            
-			echo "  <tr$class data-title_relevance_substr='".$record['title_relevance_substr']."' data-beschreibung_relevance='".$record['beschreibung_relevance']."' >\n";
+			echo "  <tr$class data-title_relevance_substr='".($record['title_relevance_substr']??'')."' data-beschreibung_relevance='".($record['beschreibung_relevance']??'')."' >\n";
 				            
 			// SPALTE: kurstitel
 			$db->query("SELECT id, suchname, pruefsiegel_seit, anspr_tel, typ, freigeschaltet FROM anbieter WHERE id=$currAnbieterId");
@@ -522,7 +523,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		    echo '    <td class="wisy_kurstitel wisyr_angebot" data-title="Angebot">';
 		    
 			$aparam = array('id'=>$currKursId, 'q'=>$param['q']);
-			if( $param['promoted'] ) {$aparam['promoted'] = $currKursId;}
+			if( isset($param['promoted']) ) {$aparam['promoted'] = $currKursId;}
 					
 			$aclass = '';
 			if( $fav_use ) {
@@ -551,13 +552,13 @@ class WISY_SEARCH_RENDERER_CLASS
 		    $title = htmlspecialchars($this->framework->encode_windows_chars( cs8($record['titel']) ));
 		    
 		    // fulltext: mark matches in title
-		    $title = $this->get_fulltextTitleMarker($title, array('fulltext_query' => $record['fulltext_query'], 'fulltext_matchall' => $record['fulltext_matchall']) , ($fulltext['match_both'] || $fulltext['match_title']), $fulltext['match_one']);
+		    $title = $this->get_fulltextTitleMarker($title, array('fulltext_query' => ($record['fulltext_query']??''), 'fulltext_matchall' => $record['fulltext_matchall']) , ($fulltext['match_both'] || $fulltext['match_title']), $fulltext['match_one']);
 		    
 		    echo $title;
 		    
 		    // fulltext: show under title: mark matches in description excerpt
 		    // signature correct???
-		    echo $this->get_fulltextDetails( $record['beschreibung'] , ($fulltext['match_both'] ||$fulltext['match_descr']), $fulltext['match_one'], array('fulltext_query' => $record['fulltext_query'], 'fulltext_matchall' => $record['fulltext_matchall']) );
+		    echo $this->get_fulltextDetails( ($record['beschreibung']??'') , ($fulltext['match_both'] ||$fulltext['match_descr']), $fulltext['match_one'], array('fulltext_query' => ($record['fulltext_query']??''), 'fulltext_matchall' => $record['fulltext_matchall']) );
 		    
 		    echo '</a>';
 		    if( $loggedInAnbieterId == $currAnbieterId )
@@ -574,7 +575,7 @@ class WISY_SEARCH_RENDERER_CLASS
 			{
 			     // SPALTE: anbieter
 				 // #richtext
-				 $anbieterName = $this->renderAnbieterCell2($db, $anbieter_record, array('q'=>$param['q'], 'addPhone'=>true, 'promoted'=>$param['promoted'], 'kurs_id'=>$currKursId));
+			     $anbieterName = $this->renderAnbieterCell2($db, $anbieter_record, array('q'=>$param['q'], 'addPhone'=>true, 'promoted'=>($param['promoted']??''), 'kurs_id'=>$currKursId));
 			}
 				
 			// SPALTEN: durchfuehrung
@@ -966,7 +967,7 @@ class WISY_SEARCH_RENDERER_CLASS
 	        // example: /search?qs=Fu%DFballspiegel&q=Fu%DFball [...] trigger
 	        if( !$this->emptymsg_output && ( $info['changed_query'] || sizeof((array) $info['suggestions']) ) )
 	        {
-	            $this->render_emptysearchresult_message($info, $false, $hlevel, $sqlCount, $queryString);
+	            $this->render_emptysearchresult_message($info, ($false??null), $hlevel, $sqlCount, $queryString);
 	            $this->emptymsg_output = true;
 	        }
 	        
@@ -1097,7 +1098,7 @@ class WISY_SEARCH_RENDERER_CLASS
 	            // render table start
 	            echo "\n".'<table class="wisy_list wisyr_kursliste">' . "\n";
 	            
-	            if($_GET['debug'] == 'Ortsinfo') {
+	            if( isset($_GET['debug']) && $_GET['debug'] == 'Ortsinfo') {
 	                // not form Cache?
 	                echo '<div class="venue_info">Adresse (Umkreis-Mittelpunkt) wurde verstanden als:<br><span style="font-size: 0.8em; font-weight: bold;">'.$searcher->getFoundVenue().'<br><br></span></div>';
 	            }
@@ -1229,7 +1230,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		    {
 		        $tag_cloud = $temp." <!-- tag cloud from cache -->";
 		    }
-		    elseif($tags_heap)
+		    elseif( isset($tags_heap) && $tags_heap )
 		    {
 		        $filtersw = array_map("trim", explode(",", $this->framework->iniRead('sw_cloud.filtertyp', "32, 2048, 8192")));
 		        $distinct_tags = array();
@@ -1279,7 +1280,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		    echo $tag_cloud;
 		} // end: tag cloud
 			
-		if( !$nexturl && $_SERVER['HTTPS']!='on' && !$this->framework->editSessionStarted ) {
+		if( (!isset($nexturl) || !$nexturl) && $_SERVER['HTTPS']!='on' && !$this->framework->editSessionStarted ) {
 
 			echo '	<div id="iwwb"><!-- BANNER IWWB START -->
 				<script>
@@ -1702,7 +1703,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		}
 		
 		// We need original chars for searches. Check Filter-class constructTokens function for details. Also: https://www.php.net/manual/de/function.htmlspecialchars.php
-		$queryString = str_replace(array("&amp;", "&quot;", "&#039;", "&apos;", "&lt;", "&gt;"), array("&", '"', "'", "'", "<", ">"), $queryString);
+		$queryString = isset($queryString) && strlen($queryString) ? str_replace(array("&amp;", "&quot;", "&#039;", "&apos;", "&lt;", "&gt;"), array("&", '"', "'", "'", "<", ">"), $queryString) : '';
 		
 		$redirect = false;
 	
@@ -1813,7 +1814,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		}
 		$q_qs = $this->framework->getParam('q').",".$this->framework->getParam('qs');
 		$q_str = str_replace("Seite", "<br>Seite", $this->framework->getTitleString($q_qs));
-		$print_title = strtoupper($q_str). ($sort ? $sort : "") . '<br><span class="url">' . $_SERVER["SERVER_NAME"] . '</span>';
+		$print_title = strtoupper($q_str). (isset($sort) ?? $sort) . '<br><span class="url">' . $_SERVER["SERVER_NAME"] . '</span>';
 		// htmlentities not necessary for print or anti-xss but good for further rendering of page if search contains problematic chars
 		echo "\n".'<div class="printonly search_title" style="display: none;">'.htmlentities(strip_tags(strval($print_title))).'</div>'."\n";
 		
@@ -1921,7 +1922,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		// page / ajax end
 		// --------------------------------------------------------------------
 		
-		if( is_object( $searcher ) && $changedQueryString = $searcher->get_changedQueryString() ) {
+		if( isset($searcher) && is_object( $searcher ) && $changedQueryString = $searcher->get_changedQueryString() ) {
 		    $customJS = '$( "#wisy_searchinput" ).val("' . $this->framework->deXSS($changedQueryString) . '").addClass( "changedQueryString" );';
 		}
 		
@@ -1931,7 +1932,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		}
 		else
 		{
-		    echo $this->framework->getEpilogue( $customJS );
+		    echo $this->framework->getEpilogue( ($customJS??'') );
 		}
 	}
 };

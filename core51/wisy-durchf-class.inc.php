@@ -498,7 +498,7 @@ class WISY_DURCHF_CLASS
 		    }
 		    else if( $beginnoptionen )
 		    {
-		        $cell .= '<span class="wisyr_termin_optionen">' . str_replace(' ', '&nbsp;', $beginnoptionen) . '&nbsp;</span>';
+		        $cell .= '<span class="wisyr_termin_optionen">' . str_replace(' ', '&nbsp;', $beginnoptionen) . '&nbsp;</span>'; // &nbsp;
 		    }
 		    
 		    if( $details && $this->framework->iniRead('details.kurstage', 1)==1 ) {
@@ -627,7 +627,7 @@ class WISY_DURCHF_CLASS
 			// get ort
 		    $strasse	= str_replace(" ", "&nbsp;", cs8($record['strasse']));
 			$plz		= $record['plz'];
-			$ort		= htmlentities(strval(cs8($record['ort']))); 
+			$ort		= htmlentities(strval(cs8($record['ort']))); // hier wird noch der Stadtteil angehaengt
 			$stadt		= $ort;
 			$stadtteil	= cs8($record['stadtteil']);
 			
@@ -719,7 +719,7 @@ class WISY_DURCHF_CLASS
 			        
 			}
 			
-			if( is_object($this->framework->map) )
+			if( isset($this->framework->map) && is_object($this->framework->map) )
 			{
 				$this->framework->map->addPoint2($record, $durchfuehrungId);
 			}

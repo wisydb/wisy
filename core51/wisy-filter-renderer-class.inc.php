@@ -6,7 +6,6 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 {
 	var $framework;
     var $tokens;
-    var $checked_values_combStr = array();
     var $max_preis = '999999';
 
 	function __construct(&$framework)
@@ -321,14 +320,14 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 	    }
 	    
 	    
-	    $portal_order = $this->framework->specialSortOrder ? $this->framework->specialSortOrder : $this->framework->iniRead('kurse.sortierung', false);
+	    $portal_order = $this->framework->specialSortOrder ?? $this->framework->iniRead('kurse.sortierung', false);
 	    
 	    // $portal_order = $this->framework->iniRead('kurse.sortierung', false); // ?
 	    if($portal_order && $renderformData['order'] == '') $renderformData['order'] = $portal_order;
 	    if($renderformData['order'] == '') $renderformData['order'] = 'b';
 	    
 	    // display sort order filter, except if fulltext search (b/c then sorted by match category automatically + RAND as secondary criteria)
-	    if( stripos($this->framework->QS, 'volltext:') === FALSE && stripos($this->framework->QF, 'volltext:') === FALSE ) {
+	    if( stripos(($this->framework->QS??''), 'volltext:') === FALSE && stripos( ($this->framework->QF??''), 'volltext:') === FALSE ) {
 	        echo '<fieldset class="wisyr_filtergroup wisyr_filter_select filter_sortierung ui-front ">';
 	        echo '	<legend data-filtervalue="' . str_replace('- '.$this->max_preis, '', $orders[$renderformData['order']]) . '" >Sortierung</legend>';
 	        echo '	<select name="filter_order" class="wisyr_selectmenu">';
@@ -358,6 +357,7 @@ class WISY_FILTERMENU_ITEM
     var $renderformData;
     var $children;
     var $zindex;
+    var $checked_values_combStr;
     var $max_preis = '999999';
     
     function __construct($framework, $data, $renderformData, $zindex)
@@ -366,6 +366,7 @@ class WISY_FILTERMENU_ITEM
         $this->data = $data;
         $this->renderformData = $renderformData;
         $this->children = array();
+        $this->checked_values_combStr = array();
         $this->zindex = $zindex;
     }
     
@@ -413,14 +414,15 @@ class WISY_FILTERMENU_ITEM
         foreach($sections as $key => $data) {
             
             $filterclasses = $this->getFilterclasses($data);
-            $legendvalue = $this->getLegendvalue($data['legendkey']);
+            $lkey = isset($data['legendkey']) ? $data['legendkey'] : '';
+            $legendvalue = $this->getLegendvalue($lkey);
             
             if(isset($data['resetfilter']) && strlen($data['resetfilter'])) {
                 $ret .= '<a class="wisyr_filterform_reset" href="' . $this->framework->filterer->getSearchUrlWithoutFilters() . ( $this->framework->qtrigger ? '&qtrigger='.$this->framework->qtrigger : '') . ( $this->framework->force ? '&force='.$this->framework->force : '') . '">' . $data['resetfilter'] . '</a>';
                 continue;
             }
             
-            $title = PHP7 ? $data['title'] : $data['title']; // utf8_decode(
+            $title = isset($data['title']) ? $data['title'] : '';
             $ret .= '<fieldset class="' . $filterclasses . '">';
             $ret .= '<legend data-filtervalue="' . str_replace('-'.$this->max_preis, '', $legendvalue) . '" >' . $title . '</legend>';
             
@@ -484,6 +486,7 @@ class WISY_FILTERMENU_ITEM
                 $autofilltarget = '';
                 $autocomplete = 1;
                 $clearbutton = false;
+                $fieldlabel = '';
                 
                 if(isset($input['type'])) $type = $input['type'];
                 if(isset($input['value'])) $fieldvaluename = $input['value'];
@@ -543,8 +546,14 @@ class WISY_FILTERMENU_ITEM
                             if($disabled) $ret .= ' disabled="disabled"';
                             
                             $ret .= ' />';
-                            $ret .= '	<label for="filter_' . $fieldname . '_' . $this->framework->cleanClassname($value, true) . '">' . $label . '</label>';
                             
+                            if( is_array($label) && isset($label['title']))
+                                $labelstr = $label['title'];
+                            else
+                                $labelstr = $label;
+                                    
+                            $ret .= '	<label for="filter_' . $fieldname . '_' . $this->framework->cleanClassname($value, true) . '">' . $labelstr . '</label>';
+                                    
                             $ret .= '</div>';
                         }
                         
@@ -615,8 +624,12 @@ class WISY_FILTERMENU_ITEM
                             $processed_value = $this->getProcessedValue($function, $value, $label);
                             $checked = $this->getCheckedValue($function, $value, $label, $processed_value, $fieldvalue, $fieldname);
                             
-                            if($checked && !$returnFields)
-                                $this->checked_values_combStr[$fieldname] .= $processed_value.",";
+                            if($checked && !$returnFields) {
+                                if( isset($this->checked_values_combStr[$fieldname]) )
+                                    $this->checked_values_combStr[$fieldname] .= $processed_value.",";
+                                else
+                                    $this->checked_values_combStr[$fieldname] = $processed_value.",";
+                            }
                         }
                         
                         foreach((array) $filtervalues as $value => $label) {  // array must be cast(!), bc. values with '.' reduces no. of elements
@@ -636,7 +649,8 @@ class WISY_FILTERMENU_ITEM
                             $ret .= '<div class="wisyr_checkboxwrapper wisyr_checkbutton">';
                             
                             // save all checked values other than the current boxes input to be added to current box input value
-                            $other_values = trim(str_replace($processed_value.',', '', $this->checked_values_combStr[$fieldname]), ',');
+                            $chkValCombStr = isset( $this->checked_values_combStr[$fieldname] ) ? $this->checked_values_combStr[$fieldname] : '';
+                            $other_values = trim(str_replace($processed_value.',', '', $chkValCombStr), ',');
                             
                             
                             $for = 'filter_' . $fieldname . '_' . $this->framework->cleanClassname($value, true);
@@ -669,7 +683,8 @@ class WISY_FILTERMENU_ITEM
     function getFiltervalues($data)
     {
         
-        switch($data['datafunction']) {
+        $check = $data['datafunction'] ?? '';
+        switch( $check ) {
             
             case 'anbieter':
                 return $this->framework->filterer->getAnbieterFilters($this->framework->tokens['cond'], $this->renderformData['records_anbieter']);
@@ -724,7 +739,7 @@ class WISY_FILTERMENU_ITEM
 			
 		$legendvalue = '';
 				
-        if(strlen($legendkey)) {
+		if( isset($legendkey) && strlen($legendkey) ) {
             $legendvalue = $this->renderformData['fv_' . $legendkey];
 			
 			switch($legendkey) {
@@ -906,7 +921,7 @@ class WISY_FILTERMENU_ITEM
 	            $stichw = htmlspecialchars($db->fcs8('stichwort'));
 	            $stichw = trim(strtr($stichw, array(': '=>' ', ':'=>' ', ', '=>' ', ','=>' ')));
 	            
-	            $ret[ $stichw ] = strlen($label) ? $label : $stichw;
+	            $ret[ $stichw ] = isset($label) && $label != '' ? $label : $stichw;
 	        }
 	    }
 	    return $ret;
@@ -948,13 +963,14 @@ class WISY_FILTERMENU_CLASS
 	            // √ A. is_numeric -> title (filtermenu.2 = Preis)
 	            // √ B. is_numeric and "parent" is "options" -> option (filtermenu.2.1.input.1.options.0 = Kostenlos)
 	            // √ C. Attribute -> (filtermenu.1.class = filter_zweispaltig)
-	            // √ D. "options" -> array() (filtermenu.2.1.input.1.options)
+	            // √ D. "options" -> array() (filtermenu.2.1.input.1.options) //  ? <= working
 	            // √ E. is_numeric and "parent" is_numeric -> sections (filtermenu.2.1)
 	            
 	            $levels = substr($key, $allPrefixLen);
-	            $newStructure = false;
+	            $newStructure = array();
 	            $elements = explode(".", $levels);
-	            if(count((array) $elements) > 1) {
+	            if(is_array($elements) && count($elements) > 1) {
+	                
 	                $last = &$newStructure[ $elements[0] ];
 	                
 	                // merge values that where separated falsely for containing '.'
@@ -980,7 +996,7 @@ class WISY_FILTERMENU_CLASS
 	                    $wasNumeric = $isNumeric;
 	                    
 	                    // Check for "options" elements:
-	                    $wasOption = $isOption;
+	                    $wasOption = $isOption; // <= working? removing = filter labels missing
 	                    $isOption = ($el == 'options');
 	                    
 	                    if($k == 0) continue;

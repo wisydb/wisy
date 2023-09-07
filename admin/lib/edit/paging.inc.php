@@ -8,7 +8,8 @@ class EDIT_PAGING_CLASS
 		{
 			if( ($i=array_search($id, $_SESSION['g_session_list_results'][$table_name])) !== false )
 			{
-				return intval($_SESSION['g_session_list_results'][$table_name][ $dir=='next'? $i+1 : $i-1 ]); // 0 on array start/end, !=0 on success
+			    $value = $_SESSION['g_session_list_results'][$table_name][ $dir=='next'? $i+1 : $i-1 ] ?? null;
+			    return intval($value); // 0 on array start/end, !=0 on success
 			}
 		}
 		
