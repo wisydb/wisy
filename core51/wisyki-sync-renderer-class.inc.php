@@ -841,7 +841,12 @@ class WISYKI_SYNC_RENDERER_CLASS {
 		$doc = utf8_encode($course['title']) . ' ' . utf8_encode($course['beschreibung']) . ' ' . utf8_encode($course['tags']) . ' ' . utf8_encode($course['thema']);
 
 		$this->log("Calculating embedding for course {$course['id']}, " . $course['title']);
-		$embeddings = $this->pythonAPI->getEmbeddings(array($doc));
+		try {
+			$embeddings = $this->pythonAPI->getEmbeddings(array($doc));
+		} catch (Exception $e) {
+			$this->log($e->getMessage());
+			return false;
+		}
 		if (!$embeddings) {
 			$this->log("- Failed calculating embedding.");
 			exit();
