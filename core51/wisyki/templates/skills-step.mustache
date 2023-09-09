@@ -17,7 +17,12 @@
 </section>
 <section class="selectable-skills">
     <article class="otherskills">
+        {{ #occupation }}
         <h4>{{ lang.skillsstep:otherskills }} </h4>
+        {{ /occupation }}
+        {{ ^occupation }}
+        <h4>{{ lang.skillsstep:selectedskills }} </h4>
+        {{ /occupation }}
         <ul></ul>
     </article>
     {{ #occupation }}

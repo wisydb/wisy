@@ -1,3 +1,4 @@
+{{ #skillsfound }}
 <h2>{{ lang.occupationskillsstep:heading }}</h2>
 {{ #maxskills }}
 <p>{{{ lang.occupationskillsstep:subheadingmax }}}</p>
@@ -9,7 +10,22 @@
 <section class="selectable-skills">
     <article class="occupationskills">
         <p class="skill-counter"></p>
-        <ul class="selectable-skills"></ul>
+        <ul>
+            {{ #skills }}
+            <li>
+                <input type="checkbox" id="occupationskills:{{ uri }}" skilluri="{{ uri }}" skilllabel="{{ label }}" data-protonpass-ignore="">
+                <label for="occupationskills:{{ uri }}">{{ label }}</label>
+            </li>
+            {{ /skills }}
+        </ul>
     </article>
 </section>
-<ul class="selectable-skills"></ul>
+{{ /skillsfound }}
+{{ ^skillsfound }}
+<h2>{{ lang.occupationskillsstep:nooccupationskillsfound }}</h2>
+<p>{{{ lang.occupationskillsstep:nooccupationskillsfounddescription }}}</h2>
+<div class="button-list">
+    <button type="button" stepname="occupation" class="btn-primary">{{ lang.occupationskillsstep:gotooccupationstep }}</button>
+    <button type="button" stepname="skills" class="btn-primary">{{ lang.occupationskillsstep:gotoskillsstep }}</button>
+</div>
+{{ /skillsfound }}

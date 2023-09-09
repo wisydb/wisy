@@ -240,10 +240,10 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 		$ai_suggestions = array();
 		// Get top results as the courses with the most skill matches.
 		$mostSkillMatches = array_slice($results, 0, 5);
-		// Max 5 ai suggestions. Otherwise not more than 20% of all the courses.
-		$max_suggestions = min(round(count($semanticMatches) * .2), 5);
+		// Max 5 ai suggestions.
+		$max_suggestions = 5;
 
-		for ($i = 0; $i < count($semanticMatches) && count($ai_suggestions) <= $max_suggestions; $i++) {
+		for ($i = 0; $i < count($semanticMatches) && count($ai_suggestions) < $max_suggestions; $i++) {
 			if ($semanticMatches[$i]['score'] < .75) {
 				// Do not recommend any courses where score is loaer than .75
 				break;

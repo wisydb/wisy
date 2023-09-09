@@ -9,37 +9,10 @@
         <summary><span class="result-list__label">{{ label }}</span><span class="result-list__count">{{ countstring }}</span></summary>
         {{ #skill }}
         <fieldset class="complevel-filter" skilluri="{{ uri }}">
-            <input type="radio" id="courseliststep_{{ uri }}-{{ lang.all }}" name="courseliststep_{{ uri }}" value="">
-            <label for="courseliststep_{{ uri }}-{{ lang.all }}">{{ lang.all }}</label>
-            {{ ^isLanguageSkill }}
-            <input type="radio" id="courseliststep_{{ uri }}-{{ lang.complevela }}" name="courseliststep_{{ uri }}" value="{{ lang.complevela }}">
-            <label for="courseliststep_{{ uri }}-{{ lang.complevela }}">{{ lang.complevela }}</label>
-            
-            <input type="radio" id="courseliststep_{{ uri }}-{{ lang.complevelb }}" name="courseliststep_{{ uri }}" value="{{ lang.complevelb }}">
-            <label for="courseliststep_{{ uri }}-{{ lang.complevelb }}">{{ lang.complevelb }}</label>
-
-            <input type="radio" id="courseliststep_{{ uri }}-{{ lang.complevelc }}" name="courseliststep_{{ uri }}" value="{{ lang.complevelc }}">
-            <label for="courseliststep_{{ uri }}-{{ lang.complevelc }}">{{ lang.complevelc }}</label>
-            {{ /isLanguageSkill }}
-            {{ #isLanguageSkill }}
-            <input type="radio" id="courseliststep_{{ uri }}-{{ lang.languagelevela1 }}" name="courseliststep_{{ uri }}" value="{{ lang.languagelevela1 }}">
-            <label for="courseliststep_{{ uri }}-{{ lang.languagelevela1 }}">{{ lang.languagelevela1 }}</label>
-            
-            <input type="radio" id="courseliststep_{{ uri }}-{{ lang.languagelevela2 }}" name="courseliststep_{{ uri }}" value="{{ lang.languagelevela2 }}">
-            <label for="courseliststep_{{ uri }}-{{ lang.languagelevela2 }}">{{ lang.languagelevela2 }}</label>
-            
-            <input type="radio" id="courseliststep_{{ uri }}-{{ lang.languagelevelb1 }}" name="courseliststep_{{ uri }}" value="{{ lang.languagelevelb1 }}">
-            <label for="courseliststep_{{ uri }}-{{ lang.languagelevelb1 }}">{{ lang.languagelevelb1 }}</label>
-            
-            <input type="radio" id="courseliststep_{{ uri }}-{{ lang.languagelevelb2 }}" name="courseliststep_{{ uri }}" value="{{ lang.languagelevelb2 }}">
-            <label for="courseliststep_{{ uri }}-{{ lang.languagelevelb2 }}">{{ lang.languagelevelb2 }}</label>
-            
-            <input type="radio" id="courseliststep_{{ uri }}-{{ lang.languagelevelc1 }}" name="courseliststep_{{ uri }}" value="{{ lang.languagelevelc1 }}">
-            <label for="courseliststep_{{ uri }}-{{ lang.languagelevelc1 }}">{{ lang.languagelevelc1 }}</label>
-            
-            <input type="radio" id="courseliststep_{{ uri }}-{{ lang.languagelevelc2 }}" name="courseliststep_{{ uri }}" value="{{ lang.languagelevelc2 }}">
-            <label for="courseliststep_{{ uri }}-{{ lang.languagelevelc2 }}">{{ lang.languagelevelc2 }}</label>
-            {{ /isLanguageSkill }}
+            {{ #levels }}
+            <input type="radio" id="courseliststep_{{ uri }}-{{ level }}" name="courseliststep_{{ uri }}" value="{{ level }}">
+            <label for="courseliststep_{{ uri }}-{{ level }}">{{ levellabel }} ({{ count }})</label>
+            {{ /levels }}
         </fieldset>
         {{ /skill }}
         <ul class="course-list">

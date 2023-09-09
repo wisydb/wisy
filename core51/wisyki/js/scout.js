@@ -444,6 +444,15 @@ class Scout {
                         this.currentPath.currentStep
                     ) - 1
                 );
+            } else {
+                for (const step of this.currentPath.steps) {
+                    if (step.name == stepIndex) {
+                        stepIndex = this.currentPath.steps.indexOf(
+                            step
+                        )
+                        break;
+                    }
+                }
             }
         }
 
@@ -562,6 +571,12 @@ class Path {
     node;
 
     /**
+     * Currently ongoing processes that should block further actions like going to the next step until resolved.
+     * @type {Array}
+     */
+    blockingProcesses = [];
+
+    /**
      * The constructor for the Path class.
      * @param {Scout} scout - The scout object.
      * @throws {Error} Throws an error if trying to instantiate the abstract Path class.
@@ -646,11 +661,26 @@ class Path {
     }
 
     /**
+     * @returns {Promise<void>} A promise that resolves when all blocking processes are finished.
+     */
+    async finishBlockingProcesses() {
+        if (this.blockingProcesses.length == 0) {
+            return;
+        }
+
+        await Promise.all(this.blockingProcesses);
+        this.blockingProcesses = [];
+    }
+
+    /**
      * Updates the path.
      * @param {number} index - The index to update.
      * @returns {Promise<void>} A promise that resolves when the path is updated.
      */
     async update(index) {
+        // Wait until all blocking processes are done.
+        await this.finishBlockingProcesses();
+
         if (!this.isRendered()) {
             await this.#render();
         }
@@ -689,7 +719,8 @@ class Path {
             this.currentStep.name + "step:help"
         );
         // Update Loader text content.
-        const loadertext = this.currentStep.loader.querySelector(".loader__text");
+        const loadertext =
+            this.currentStep.loader.querySelector(".loader__text");
         loadertext.textContent = Lang.getString(
             this.currentStep.name + "step:loading"
         );
@@ -1267,12 +1298,6 @@ class OccupationSkillsStep extends Step {
     skillCounterTemplate;
 
     /**
-     * The DOM node for the selected occupation.
-     * @type {HTMLElement}
-     */
-    selectedOccupationNode;
-
-    /**
      * The DOM node for the skill counter.
      * @type {HTMLElement}
      */
@@ -1294,8 +1319,26 @@ class OccupationSkillsStep extends Step {
      * Prepares the template data for the OccupationSkillsStep.
      */
     async prepareTemplate() {
+        this.data.skillsfound = null;
+        this.data.skills = null;
+
         if (this.maxSkills) {
             this.data.maxskills = this.maxSkills;
+        }
+
+        this.occupation = this.scout.account.getOccupation();
+        if (!this.occupation) {
+            console.error("no occupation selected");
+            return;
+        }
+
+        this.data.occupation = this.occupation.label;
+
+        const skills = await this.suggestSkills(this.occupation.uri);
+
+        if (skills.length) {
+            this.data.skillsfound = true;
+            this.data.skills = skills;
         }
     }
 
@@ -1319,9 +1362,35 @@ class OccupationSkillsStep extends Step {
         // Set up the UI components.
         this.occupationNode = this.node.querySelector(".selected-occupation");
         this.skillsNode = this.node.querySelector(".selectable-skills ul");
-        this.selectedOccupationNode = this.node.querySelector(
-            ".selected-occupation"
-        );
+
+        if (!this.skillsNode) {
+            const goToStepBtns = this.node.querySelectorAll('button');
+            goToStepBtns.forEach((btn) =>
+                btn.addEventListener("click", async () => {
+                    this.scout.update(btn.getAttribute('stepname'));
+                })
+            );
+        } else {
+            this.checkboxes = this.skillsNode.querySelectorAll("input");
+            // On change event, add or remove the skill associated with the checkbox and update the view.
+            this.checkboxes.forEach((checkbox) =>
+                checkbox.addEventListener("change", async () => {
+                    if (checkbox.checked) {
+                        const promise = this.scout.account.setSkill(
+                            checkbox.getAttribute("skilllabel"),
+                            checkbox.getAttribute("skilluri")
+                        );
+                        this.path.blockingProcesses.push(promise);
+                    } else {
+                        this.scout.account.removeSkill(
+                            checkbox.getAttribute("skilluri")
+                        );
+                    }
+                    this.updateSkillSelection(this.checkboxes);
+                })
+            );
+        }
+
         this.skillCounterNode = this.node.querySelector(".skill-counter");
 
         if (this.maxSkills) {
@@ -1338,38 +1407,20 @@ class OccupationSkillsStep extends Step {
     async update() {
         await super.update();
 
-        const occupation = this.scout.account.getOccupation();
-        // Update the displayed selected occupation.
-        this.selectedOccupationNode.textContent = occupation.label;
-
-        if (!this.occupation || this.occupation != occupation) {
-            this.occupation = occupation;
-            const loader = this.node.parentNode.querySelector(".loader.hidden");
-
-            if (loader) {
-                show(loader);
-            }
-
-            this.occupationNode.textContent = occupation.label;
-            const suggestions = await this.suggestSkills(occupation.uri);
-            this.showSkillSuggestions(suggestions);
-
-            if (loader) {
-                hide(loader);
-            }
+        if (this.skillsNode) {
+            this.updateSkillSelection();
         }
-
-        this.updateSkillSelection();
     }
 
     /**
      * Suggests skills based on the given ESCO concept URI.
      * @param {string} uri - The URI to get skills for.
-     * @returns {Promise<Object>} - An object containing a URI and an array of skills.
+     * @returns {Promise<Array>} - An array of skills.
+     * @throws {Error} - If the given URI is not a valid ESCO concept URI.
      */
     async suggestSkills(uri) {
         if (!uri.startsWith("http://data.europa.eu/esco/")) {
-            return { uri: uri };
+            throw new Error("invalid ESCO concept URI");
         }
 
         const limit = 10;
@@ -1377,79 +1428,26 @@ class OccupationSkillsStep extends Step {
 
         const url = "./esco/getConceptSkills?" + new URLSearchParams(params);
         const response = await fetch(url);
+        let result = [];
 
         if (response.ok) {
-            return await response.json();
+            const json = await response.json();
+            result = Object.values(json.skills);
         } else {
             console.error("HTTP-Error: " + response.status);
         }
+        return result;
     }
 
-    /**
-     * Fills the suggestion list in the UI with the given suggestions.
-     * @param {object} suggestions - The suggestions to be displayed.
-     */
-    showSkillSuggestions(suggestions) {
-        if (!suggestions.title) {
-            return;
-        }
-
-        while (this.skillsNode.lastChild) {
-            this.skillsNode.removeChild(this.skillsNode.lastChild);
-        }
-
-        const checkboxes = [];
-
-        // For every suggested skill, display a checkbox.
-        // Check if there are skills that are already selected and set the checkbox state accordingly.
-        for (const uri in suggestions.skills) {
-            const suggestion = suggestions.skills[uri];
-            const li = document.createElement("li");
-            const checkbox = document.createElement("input");
-            checkbox.setAttribute("type", "checkbox");
-            // checkbox.setAttribute("label", suggestion.label);
-            checkbox.setAttribute("id", this.name + uri);
-            checkbox.setAttribute("skilluri", uri);
-            li.appendChild(checkbox);
-            const label = document.createElement("label");
-            label.setAttribute("for", this.name + uri);
-            label.textContent = suggestion.label;
-            li.appendChild(label);
-            checkboxes.push(checkbox);
-
-            // On change event, add or remove the skill associated with the checkbox and update the view.
-            checkbox.addEventListener("change", async () => {
-                if (checkbox.checked) {
-                    this.scout.account.setSkill(suggestion.label, uri);
-                } else {
-                    this.scout.account.removeSkill(uri);
-                }
-                this.updateSkillSelection(checkboxes);
-            });
-
-            const skills = this.scout.account.getSkills();
-            if (uri in skills) {
-                checkbox.setAttribute("checked", "True");
-                this.skillsNode.insertBefore(li, this.skillsNode.firstChild);
-            } else {
-                this.skillsNode.appendChild(li);
-            }
-        }
-    }
     /**
      * Updates the checkboxes' selection state according to the currently selected skills.
      * Disables the "add more skills" button if the maximum number of skills is already selected.
-     * @param {Array} checkboxes - An array of the checkboxes for each skill.
      */
-    updateSkillSelection(checkboxes = null) {
-        if (checkboxes == null) {
-            checkboxes = this.skillsNode.querySelectorAll("input");
-        }
-
+    updateSkillSelection() {
         const skills = this.scout.account.getSkills();
         const skillcount = Object.keys(skills).length;
 
-        checkboxes.forEach((checkbox) => {
+        this.checkboxes.forEach((checkbox) => {
             // Check the checkbox if the skill is selected.
             if (checkbox.getAttribute("skilluri") in skills) {
                 checkbox.checked = true;
@@ -1485,6 +1483,14 @@ class OccupationSkillsStep extends Step {
             this.skillCounterTemplate,
             data
         );
+    }
+
+    /**
+     * Checks if the step has been rendered.
+     * @returns {boolean} - True if the step has been rendered, false otherwise.
+     */
+    isRendered() {
+        return document.getElementById(this.name).children.length !== 0 && this.occupation == this.scout.account.getOccupation();
     }
 }
 
@@ -1577,9 +1583,10 @@ class SkillsStep extends Step {
         this.skillCounterNode = this.node.querySelector(".skill-counter");
 
         this.autocompleter = new Autocompleter(this, async (label, uri) => {
-            this.scout.account.setSkill(label, uri).then(() => {
+            const promise = this.scout.account.setSkill(label, uri).then(() => {
                 this.showSelectedSkills();
             });
+            this.path.blockingProcesses.push(promise);
             this.autocompleter.clearInput();
             this.updateNavButtons();
         });
@@ -1674,9 +1681,10 @@ class SkillsStep extends Step {
             // On change event, add or remove the skill associated with the checkbox and update the view.
             checkbox.addEventListener("change", async (event) => {
                 if (event.target.checked) {
-                    this.scout.account.setSkill(skill.label, uri).then(() => {
+                    const promise = this.scout.account.setSkill(skill.label, uri).then(() => {
                         this.showSelectedSkills();
                     });
+                    this.path.blockingProcesses.push(promise);
                 } else {
                     this.scout.account.removeSkill(uri);
                     this.showSelectedSkills();
@@ -1942,12 +1950,33 @@ class CouseListStep extends Step {
      */
     resultList;
 
+    /**
+     * Represents the last state of the course list step.
+     * @type {Object}
+     */
     lastState = {};
 
-    levelmapping = {
+    /**
+     * Represents the comp level mapping to the Lang strings.
+     * @type {Object}
+     */
+    complevelmapping = {
         "Niveau A": Lang.getString("complevela"),
         "Niveau B": Lang.getString("complevelb"),
         "Niveau C": Lang.getString("complevelc"),
+    };
+
+    /**
+     * Represents the language level mapping to the Lang strings.
+     * @type {Object}
+     */
+    langlevelmapping = {
+        "A1": Lang.getString("languagelevela1"),
+        "A2": Lang.getString("languagelevela2"),
+        "B1": Lang.getString("languagelevelb1"),
+        "B2": Lang.getString("languagelevelb2"),
+        "C1": Lang.getString("languagelevelc1"),
+        "C2": Lang.getString("languagelevelc2"),
     };
 
     /**
@@ -2099,13 +2128,16 @@ class CouseListStep extends Step {
             sets: [],
         };
         this.results.sets.forEach((set) => {
-            let filteredResults = [];
+            let currentLevelResults = [];
             let label = set.label.replace(/ +\(ESCO\)/, "");
             let currentSkill;
+
             if (!set.skill) {
                 label = Lang.getString("courseliststep:" + set.label);
-                
-                filteredResults = this.getFilteredCourselist(set.results);
+
+                const filteredResults = this.getFilteredCourselist(set.results);
+
+                currentLevelResults = filteredResults[""]
             } else {
                 for (let skill of Object.values(skills)) {
                     if (skill.label == set.skill.label) {
@@ -2113,24 +2145,36 @@ class CouseListStep extends Step {
                     }
                 }
 
-                filteredResults = this.getFilteredCourselist(
-                    set.results,
-                    currentSkill.levelGoal
-                );
+                let levels = [""].concat(Object.values(this.complevelmapping));
+                if (currentSkill.isLanguageSkill) {
+                    levels = [""].concat(Object.values(this.langlevelmapping));
+                }
+                const filteredResults = this.getFilteredCourselist(set.results, levels);
+
+                currentSkill.levels = [];
+                levels.forEach((level) => {
+                    currentSkill.levels.push({
+                        level: level,
+                        levellabel: level ? level : Lang.getString("all"),
+                        count: filteredResults[level].length
+                    });
+                });
+
+                currentLevelResults = filteredResults[currentSkill.levelGoal]
             }
 
             const filteredSet = {
                 label: label,
                 skilllabel: set.label,
-                countstring: this.getKurseCountString(filteredResults.length),
-                results: filteredResults,
+                countstring: this.getKurseCountString(currentLevelResults.length),
+                results: currentLevelResults,
             };
             if (currentSkill) {
                 filteredSet.skill = currentSkill;
             }
             data.sets.push(filteredSet);
             // Add the id of everycourse in filteredResults to uniquercourses set.
-            filteredResults.forEach((course) => {
+            currentLevelResults.forEach((course) => {
                 uniquecourses.add(course.id);
             });
         });
@@ -2156,25 +2200,30 @@ class CouseListStep extends Step {
     /**
      * Get filtered course list based on the level.
      * @param {Array} courses - The array of courses.
-     * @param {number} level - The level of the course.
+     * @param {Array} levels - The levels to sort the results by.
      * @returns {Array} The filtered array of courses.
      */
-    getFilteredCourselist(courses, level = false) {
-        const filteredResults = [];
-        courses.forEach((course) => {
-            if (level) {
-                if (course.levels.includes(level)) {
-                    // Copy course object to new variable.
-                    const newcourse = Object.assign({}, course);
-                    newcourse.showLevels = false;
-                    filteredResults.push(newcourse);
-                }
-            } else {
+    getFilteredCourselist(courses, levels = null) {
+        const filteredResults = {};
+        if (!levels) {
+            filteredResults[""] = [];
+            courses.forEach((course) => {
                 const newcourse = Object.assign({}, course);
                 newcourse.showLevels = true;
-                filteredResults.push(newcourse);
-            }
-        });
+                filteredResults[""].push(newcourse);
+            });
+        } else {
+            levels.forEach((level) => {
+                filteredResults[level] = [];
+                courses.forEach((course) => {
+                    if (level == "" || course.levels.includes(level)) {
+                        const newcourse = Object.assign({}, course);
+                        newcourse.showLevels = false;
+                        filteredResults[level].push(newcourse);
+                    }
+                });
+            });
+        }
         return filteredResults;
     }
 
@@ -2298,7 +2347,6 @@ class CouseListStep extends Step {
         const newState = JSON.stringify(params);
 
         if (this.lastState == newState) {
-            console.log("nothing changed");
             return;
         }
         this.lastState = newState;
@@ -2324,9 +2372,9 @@ class CouseListStep extends Step {
                 for (const levelid in result.levels) {
                     const level =
                         results.sets[setid].results[resultid].levels[levelid];
-                    if (Object.keys(this.levelmapping).includes(level)) {
+                    if (Object.keys(this.complevelmapping).includes(level)) {
                         results.sets[setid].results[resultid].levels[levelid] =
-                            this.levelmapping[level];
+                            this.complevelmapping[level];
                     }
                 }
 
@@ -2335,7 +2383,7 @@ class CouseListStep extends Step {
                     const score = results.sets[setid].results[resultid].score;
                     const data = {};
                     if (score) {
-                        data.score = Math.round(score*100);
+                        data.score = Math.round(score * 100);
                     }
                     results.sets[setid].results[resultid].reason =
                         Mustache.render(
@@ -3383,7 +3431,10 @@ class Lang {
      */
     static render(template, view = {}, partials = null, config = null) {
         view.lang = Lang.#langstrings;
-        return Mustache.render(template, view, partials, config);
+        return Mustache.render(
+            Mustache.render(template, view, partials, config),
+            view
+        );
     }
 }
 
