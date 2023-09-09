@@ -369,15 +369,6 @@ class Scout {
      * Initializes the Scout.
      */
     init() {
-        // Init burgermenu.
-        const menuBtn = document.querySelector(".menu-btn");
-        menuBtn.addEventListener("click", () => {
-            if (!menuBtn.classList.contains("open")) {
-                menuBtn.classList.add("open");
-            } else {
-                menuBtn.classList.remove("open");
-            }
-        });
 
         // Define UI-action for going to the next or previous step.
         this.nextButton = document.querySelector("#next-step");
@@ -2142,6 +2133,9 @@ class CouseListStep extends Step {
                 for (let skill of Object.values(skills)) {
                     if (skill.label == set.skill.label) {
                         currentSkill = skill;
+                        if (currentSkill.levelGoal === null) {
+                            currentSkill.levelGoal = "";
+                        }
                     }
                 }
 
@@ -2160,6 +2154,7 @@ class CouseListStep extends Step {
                     });
                 });
 
+                console.log(currentSkill.levelGoal);
                 currentLevelResults = filteredResults[currentSkill.levelGoal]
             }
 

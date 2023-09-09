@@ -101,9 +101,6 @@ class WISYKI_SCOUT_RENDERER_CLASS {
 				<div class="action-bar">
 					<a class="bookmarks-btn labeled-icon-btn" href="/search?q=Fav:"><i class="icon bookmarks-icon"></i>Merkliste<span class="bubble display-none"></span></a>
 					<a class="login-btn labeled-icon-btn" href="#"><i class="icon account-icon"></i>Login</a>
-					<div class="menu-btn">
-						<div class="menu-btn__burger"></div>
-					</div>
 				</div>
 			</nav>
 		<?php
