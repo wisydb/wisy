@@ -369,7 +369,6 @@ class Scout {
      * Initializes the Scout.
      */
     init() {
-
         // Define UI-action for going to the next or previous step.
         this.nextButton = document.querySelector("#next-step");
         this.prevButton = document.querySelector("#prev-step");
@@ -438,9 +437,7 @@ class Scout {
             } else {
                 for (const step of this.currentPath.steps) {
                     if (step.name == stepIndex) {
-                        stepIndex = this.currentPath.steps.indexOf(
-                            step
-                        )
+                        stepIndex = this.currentPath.steps.indexOf(step);
                         break;
                     }
                 }
@@ -607,8 +604,24 @@ class Path {
         this.stepsNode = this.node.querySelector(".steps > div");
 
         // Define UI action for aborting the scout.
-        const scoutAbortBtn = this.node.querySelector("#scout-abort");
-        scoutAbortBtn.addEventListener("click", () => this.scout.abort());
+        const scoutShowAbortModalBtn = this.node.querySelector("#scout-abort");
+        const scoutAbortModal = this.node.querySelector(".abort-modal");
+        const scoutAbortBtn = this.node.querySelector(
+            ".abort-modal .btn-secondary"
+        );
+        const scoutAbortCloseModalBtns = this.node.querySelectorAll(
+            ".abort-modal .close-modal-btn"
+        );
+        scoutShowAbortModalBtn.addEventListener("click", () =>
+            show(scoutAbortModal)
+        );
+        scoutAbortBtn.addEventListener("click", () => {
+            hide(scoutAbortModal);
+            this.scout.abort();
+        });
+        scoutAbortCloseModalBtns.forEach((btn) =>
+            btn.addEventListener("click", () => hide(scoutAbortModal))
+        );
 
         // Define UI-action for ging to a specific step.
         this.scoutNavNode = this.node.querySelector(".scout-nav");
@@ -1355,10 +1368,10 @@ class OccupationSkillsStep extends Step {
         this.skillsNode = this.node.querySelector(".selectable-skills ul");
 
         if (!this.skillsNode) {
-            const goToStepBtns = this.node.querySelectorAll('button');
+            const goToStepBtns = this.node.querySelectorAll("button");
             goToStepBtns.forEach((btn) =>
                 btn.addEventListener("click", async () => {
-                    this.scout.update(btn.getAttribute('stepname'));
+                    this.scout.update(btn.getAttribute("stepname"));
                 })
             );
         } else {
@@ -1481,7 +1494,10 @@ class OccupationSkillsStep extends Step {
      * @returns {boolean} - True if the step has been rendered, false otherwise.
      */
     isRendered() {
-        return document.getElementById(this.name).children.length !== 0 && this.occupation == this.scout.account.getOccupation();
+        return (
+            document.getElementById(this.name).children.length !== 0 &&
+            this.occupation == this.scout.account.getOccupation()
+        );
     }
 }
 
@@ -1672,9 +1688,11 @@ class SkillsStep extends Step {
             // On change event, add or remove the skill associated with the checkbox and update the view.
             checkbox.addEventListener("change", async (event) => {
                 if (event.target.checked) {
-                    const promise = this.scout.account.setSkill(skill.label, uri).then(() => {
-                        this.showSelectedSkills();
-                    });
+                    const promise = this.scout.account
+                        .setSkill(skill.label, uri)
+                        .then(() => {
+                            this.showSelectedSkills();
+                        });
                     this.path.blockingProcesses.push(promise);
                 } else {
                     this.scout.account.removeSkill(uri);
@@ -1962,12 +1980,12 @@ class CouseListStep extends Step {
      * @type {Object}
      */
     langlevelmapping = {
-        "A1": Lang.getString("languagelevela1"),
-        "A2": Lang.getString("languagelevela2"),
-        "B1": Lang.getString("languagelevelb1"),
-        "B2": Lang.getString("languagelevelb2"),
-        "C1": Lang.getString("languagelevelc1"),
-        "C2": Lang.getString("languagelevelc2"),
+        A1: Lang.getString("languagelevela1"),
+        A2: Lang.getString("languagelevela2"),
+        B1: Lang.getString("languagelevelb1"),
+        B2: Lang.getString("languagelevelb2"),
+        C1: Lang.getString("languagelevelc1"),
+        C2: Lang.getString("languagelevelc2"),
     };
 
     /**
@@ -2128,7 +2146,7 @@ class CouseListStep extends Step {
 
                 const filteredResults = this.getFilteredCourselist(set.results);
 
-                currentLevelResults = filteredResults[""]
+                currentLevelResults = filteredResults[""];
             } else {
                 for (let skill of Object.values(skills)) {
                     if (skill.label == set.skill.label) {
@@ -2143,25 +2161,30 @@ class CouseListStep extends Step {
                 if (currentSkill.isLanguageSkill) {
                     levels = [""].concat(Object.values(this.langlevelmapping));
                 }
-                const filteredResults = this.getFilteredCourselist(set.results, levels);
+                const filteredResults = this.getFilteredCourselist(
+                    set.results,
+                    levels
+                );
 
                 currentSkill.levels = [];
                 levels.forEach((level) => {
                     currentSkill.levels.push({
                         level: level,
                         levellabel: level ? level : Lang.getString("all"),
-                        count: filteredResults[level].length
+                        count: filteredResults[level].length,
                     });
                 });
 
                 console.log(currentSkill.levelGoal);
-                currentLevelResults = filteredResults[currentSkill.levelGoal]
+                currentLevelResults = filteredResults[currentSkill.levelGoal];
             }
 
             const filteredSet = {
                 label: label,
                 skilllabel: set.label,
-                countstring: this.getKurseCountString(currentLevelResults.length),
+                countstring: this.getKurseCountString(
+                    currentLevelResults.length
+                ),
                 results: currentLevelResults,
             };
             if (currentSkill) {

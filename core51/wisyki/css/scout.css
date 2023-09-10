@@ -752,6 +752,15 @@ main .steps>div {
     z-index: 100;
 }
 
+.abort {
+    position: fixed;
+    top: 30%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    z-index: 100;
+}
+
 .modal {
     z-index: -1;
     position: relative;
@@ -761,6 +770,26 @@ main .steps>div {
     width: 80vw;
     max-height: 80vh;
     max-width: 400px;
+}
+
+.abort-modal {
+    max-width: 400px;
+}
+
+.abort-actions {
+    padding-top: 1em;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+
+.abort-actions button {
+    padding: .5em;
+}
+
+.abort-info {
+    font-weight: 700;
+    color: var(--main-color);
 }
 
 .modal__backdrop {
@@ -774,14 +803,36 @@ main .steps>div {
     z-index: -100;
 }
 
-.help-modal .modal__content {
+.help-modal .modal__content,
+.abort-modal .modal__content {
     background: var(--main-background-color);
-    border-radius: 25px;
-    transform: translate(-24px, 28px);
     padding: 2em;
     box-shadow: 0px 0px 8px #0000005c;
+}
+
+.abort-modal .modal__content {
+    padding-right: 2.5em;
+    border-radius: 10px;
+}
+
+.help-modal .modal__content {
+    transform: translate(-24px, 28px);
+    border-radius: 25px;
     max-height: 65vh;
     overflow: auto;
+}
+
+.help-modal .modal__content::-webkit-scrollbar,
+.abort-modal .modal__content::-webkit-scrollbar {
+    background-color: transparent;
+    width: 5px;
+}
+
+.help-modal .modal__content::-webkit-scrollbar-thumb,
+.abort-modal .modal__content::-webkit-scrollbar-thumb {
+    background-color: var(--font-color__soft);
+    background-color: transparent;
+    border-radius: 10px;
 }
 
 .modal__content h3 {
@@ -802,20 +853,27 @@ main .steps>div {
 .open-modal-btn .icon {
     min-width: 32px;
     min-height: 32px;
-    background-size: cover;
+    background-size: contain;
 }
 
 .open-modal-btn span {
     text-decoration: underline;
 }
 
-.close-modal-btn {
+
+.help-modal .close-modal-btn {
     float: right;
     padding: 0.5em;
     margin-top: 1em;
     font-size: 1.2em;
     font-weight: bold;
     color: var(--main-color__highlight);
+}
+
+.abort-modal .modal__content>.close-modal-btn {
+    position: absolute;
+    top: .7em;
+    right: .7em;
 }
 
 #pathchoice {
@@ -1259,7 +1317,7 @@ ul.result-list {
     margin-bottom: 1em;
 }
 
-.result-list .airecommends details summary span:first-child::before, 
+.result-list .airecommends details summary span:first-child::before,
 .ai-recommendation-reason::before {
     content: url(/files/wisyki/recommendation_blue_24dp.svg);
     display: inline-block;
@@ -1344,12 +1402,12 @@ details[open]>summary::after {
 
 
 
-.result-list .airecommends summary { 
+.result-list .airecommends summary {
     padding-top: 2px;
     border-radius: 3px;
     background-color: var(--main-color);
     color: var(--font-color__light);
-    box-shadow: 0px 4px 4px -3px rgba(0,0,0, 0.2);
+    box-shadow: 0px 4px 4px -3px rgba(0, 0, 0, 0.2);
 }
 
 
@@ -1377,7 +1435,7 @@ details[open]>summary::after {
     top: -16px;
     background-color: white;
     z-index: 10;
-    box-shadow: 0px 4px 4px -3px rgba(0,0,0, 0.2);
+    box-shadow: 0px 4px 4px -3px rgba(0, 0, 0, 0.2);
 }
 
 .complevel-filter::after {

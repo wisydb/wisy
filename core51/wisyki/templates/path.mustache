@@ -40,4 +40,19 @@
         </div>
         <button type="button" class="open-modal-btn btn-link" title="{{ lang.help }}"><i class="icon help-icon"></i></button>
     </section>
+    <section class="abort">
+        <div class="modal abort-modal display-none">
+            <div class="modal__backdrop"></div>
+            <div class="modal__content">
+                <button type="button" class="close-modal-btn btn-link" title="{{ lang.close }}"><i class="icon close-icon"></i></button>
+                <article>
+                    <div class="abort-info">{{{ lang.abort:info }}}</div>
+                    <div class="abort-actions">
+                        <button type="button" class="btn-secondary" title="{{ lang.abort:yes }}">{{ lang.abort:yes }}</button>
+                        <button type="button" class="close-modal-btn btn-primary" title="{{ lang.abort:no }}">{{ lang.abort:no }}</button>
+                    </div>
+                </article>
+                </div>
+        </div>
+    </section>
 </section>
