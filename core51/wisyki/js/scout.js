@@ -2369,8 +2369,14 @@ class CouseListStep extends Step {
         }
         this.lastState = newState;
 
-        const url = "./scout-search?" + new URLSearchParams(params);
-        const response = await fetch(url);
+        const url = "./scout-search";
+        const response = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(params),
+        });
 
         if (response.ok) {
             const results = await response.json();

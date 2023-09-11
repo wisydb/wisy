@@ -191,14 +191,17 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 	 * @return void Echoes a JSON response.
 	 */
 	function render() {
+		// Get json post data
+		$json = file_get_contents('php://input');
+		$data = json_decode($json, true);
 		$start1 = new DateTime();
-		$skillsjson = $_GET['skills'];
+		$skillsjson = $data['skills'];
 		$skills = json_decode($skillsjson);
-		$occupationjson = $_GET['occupation'];
+		$occupationjson = $data['occupation'];
 		$occupation = json_decode($occupationjson);
-		$filterjson = $_GET['filters'];
+		$filterjson = $data['filters'];
 		$filters = json_decode($filterjson);
-		$limit = $_GET['limit'];
+		$limit = $data['limit'];
 		$filterDurs = array();
 
 		// Get search results for every skill.
