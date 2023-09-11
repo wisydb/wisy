@@ -2234,9 +2234,13 @@ class CouseListStep extends Step {
             levels.forEach((level) => {
                 filteredResults[level] = [];
                 courses.forEach((course) => {
-                    if (level == "" || course.levels.includes(level)) {
+                    if (course.levels.includes(level)) {
                         const newcourse = Object.assign({}, course);
                         newcourse.showLevels = false;
+                        filteredResults[level].push(newcourse);
+                    } else if (level == "") {
+                        const newcourse = Object.assign({}, course);
+                        newcourse.showLevels = true;
                         filteredResults[level].push(newcourse);
                     }
                 });
@@ -2393,12 +2397,16 @@ class CouseListStep extends Step {
             for (const resultid in set.results) {
                 const result = results.sets[setid].results[resultid];
                 // Translate levels Niveau A, B, C to the level names definded by the language file.
-                for (const levelid in result.levels) {
-                    const level =
-                        results.sets[setid].results[resultid].levels[levelid];
-                    if (Object.keys(this.complevelmapping).includes(level)) {
-                        results.sets[setid].results[resultid].levels[levelid] =
-                            this.complevelmapping[level];
+                if (result.levels.length == 0) {
+                    result.levels = [Lang.getString('courseliststep:na')];
+                } else {
+                    for (const levelid in result.levels) {
+                        const level =
+                            results.sets[setid].results[resultid].levels[levelid];
+                        if (Object.keys(this.complevelmapping).includes(level)) {
+                            results.sets[setid].results[resultid].levels[levelid] =
+                                this.complevelmapping[level];
+                        }
                     }
                 }
 

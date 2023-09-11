@@ -150,7 +150,7 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 		}
 
 		// Complevel filter.
-		$querystring .= ', WISY@KI - Kompetenzniveaumodell ODER Sprachniveau';
+		$querystring .= ', Berufliche Bildung ODER Sprache';
 
 		return $querystring;
 	}
