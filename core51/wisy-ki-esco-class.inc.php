@@ -1,10 +1,10 @@
 <?php
 
-require_once($_SERVER['DOCUMENT_ROOT'] . '/core51/wisyki-python-class.inc.php');
-require_once($_SERVER['DOCUMENT_ROOT'] . '/core51/wisyki-json-response.inc.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/core51/wisy-ki-python-class.inc.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/core51/wisy-ki-json-response.inc.php');
 
 /**
- * Class WISYKI_ESCO_CLASS 
+ * Class WISY_KI_ESCO_CLASS 
  * 
  * This class provides functionality for working with the ESCO taxonomy.
  * 
@@ -15,7 +15,7 @@ require_once($_SERVER['DOCUMENT_ROOT'] . '/core51/wisyki-json-response.inc.php')
  * @author		Pascal Hürten <pascal.huerten@th-luebeck.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class WISYKI_ESCO_CLASS {
+class WISY_KI_ESCO_CLASS {
     /**
      * The framework of the wisy frontend. Provides basic functionalities to navigate the system. 
      *
@@ -26,9 +26,9 @@ class WISYKI_ESCO_CLASS {
     /**
      * Class that handles requests to the PYTHON-AI-API.
      *
-     * @var WISYKI_PYTHON_CLASS
+     * @var WISY_KI_PYTHON_CLASS
      */
-    private WISYKI_PYTHON_CLASS $pythonAPI;
+    private WISY_KI_PYTHON_CLASS $pythonAPI;
 
     /**
      * The second part of the requested URI path.
@@ -48,7 +48,7 @@ class WISYKI_ESCO_CLASS {
     function __construct(WISY_FRAMEWORK_CLASS &$framework = null, string $request = '') {
         // constructor
         $this->framework = &$framework;
-        $this->pythonAPI = new WISYKI_PYTHON_CLASS();
+        $this->pythonAPI = new WISY_KI_PYTHON_CLASS();
         if (isset($request)) {
             $this->request = $request;
         }

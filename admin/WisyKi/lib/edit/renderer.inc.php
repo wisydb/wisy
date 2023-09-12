@@ -891,7 +891,7 @@ class EDIT_RENDERER_CLASS
 						}
 
 
-						$comp = new WISYKI_COMPETENCE_CLASS();
+						$comp = new WISY_KI_COMPETENCE_CLASS();
 
 						$res = $comp->WisyKi_competence_search($this->data->controls, $id);
 						if ($res == false)
@@ -952,7 +952,7 @@ class EDIT_RENDERER_CLASS
 					if (!$load_from_post_ok && is_object($site)) {
 						$site->msgAdd("\n" . htmlconstant('_EDIT_RECORDNOTSAVED'), 'e');
 					} else {
-						$comp = new WISYKI_COMPETENCE_CLASS();
+						$comp = new WISY_KI_COMPETENCE_CLASS();
 						$new_ids = $comp->WisyKi_find_competence_proposuals($this->data->controls);
 						$db1 = new DB_Admin();
 						$old_ids = $comp->read_simple_list_($db1, "SELECT attr_id AS ret FROM kurse_kompetenz WHERE primary_id=$id ORDER BY structure_pos;");

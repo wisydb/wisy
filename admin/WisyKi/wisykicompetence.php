@@ -1,7 +1,7 @@
 <?php
 require_once('index_form.inc.php');
 
-class WISYKI_COMPETENCE_CLASS
+class WISY_KI_COMPETENCE_CLASS
 {
 	public $db;
 	public $par;

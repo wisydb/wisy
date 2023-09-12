@@ -2743,16 +2743,16 @@ class WISY_FRAMEWORK_CLASS
 
 			case 'edit':
 			case 'scout':
-				return createWisyObject('WISYKI_SCOUT_RENDERER_CLASS', $this, $wisykiRequestPaths[1]);
+				return createWisyObject('WISY_KI_SCOUT_RENDERER_CLASS', $this, $wisykiRequestPaths[1]);
 
 			case 'scout-search':
-				return createWisyObject('WISYKI_SCOUT_SEARCH_CLASS', $this);
+				return createWisyObject('WISY_KI_SCOUT_SEARCH_CLASS', $this);
 			
 			case 'wisykisync':
-				return createWisyObject('WISYKI_SYNC_RENDERER_CLASS', $this);
+				return createWisyObject('WISY_KI_SYNC_RENDERER_CLASS', $this);
 
 			case 'esco':
-				return createWisyObject('WISYKI_ESCO_CLASS', $this, $wisykiRequestPaths[1]);
+				return createWisyObject('WISY_KI_ESCO_CLASS', $this, $wisykiRequestPaths[1]);
 				
 			    if( intval($this->iniRead('useredit', 0)) == 2 )
 			        return createWisyObject('WISY_EDIT_NEW_RENDERER_CLASS', $this);

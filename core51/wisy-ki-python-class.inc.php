@@ -4,9 +4,9 @@ require_once($_SERVER['DOCUMENT_ROOT'] . "/admin/sql_curr.inc.php");
 require_once($_SERVER['DOCUMENT_ROOT'] . "/admin/config/config.inc.php");
 
 /**
- * Class WISYKI_PYTHON_CLASS
+ * Class WISY_KI_PYTHON_CLASS
  *
- * Represents a library of functions to handle request to the WISYKI-API.
+ * Represents a library of functions to handle request to the WISY_KI-API.
  * 
  * The "Weiterbildungsscout" was created by the project consortium "WISY@KI" as part of the Innovationswettbewerb INVITE 
  * and was funded by the Bundesinstitut für Berufsbildung and the Federal Ministry of Education and Research.
@@ -15,7 +15,7 @@ require_once($_SERVER['DOCUMENT_ROOT'] . "/admin/config/config.inc.php");
  * @author		Pascal Hürten <pascal.huerten@th-luebeck.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class WISYKI_PYTHON_CLASS {
+class WISY_KI_PYTHON_CLASS {
     /**
      * Filelocation where all python scripts reside.
      *
@@ -24,14 +24,14 @@ class WISYKI_PYTHON_CLASS {
     private string $pythonlib;
 
     /**
-     * URI of the WISYKI-API.
+     * URI of the WISY_KI-API.
      *
      * @var string
      */
     private string $api_endpoint;
 
     /**
-     * Constructor of WISYKI_PYTHON_CLASS.
+     * Constructor of WISY_KI_PYTHON_CLASS.
      */
     function __construct() {
         $this->pythonlib = dirname(__FILE__) . '/wisyki/python/';

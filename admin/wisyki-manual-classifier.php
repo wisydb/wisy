@@ -1,9 +1,9 @@
 <?php
 require_once('lib/ki/wisyki-python-api.inc.php');
-require_once('../core51/wisyki-esco-class.inc.php');
+require_once('../core51/wisy-ki-esco-class.inc.php');
 
-$pythonAPI = new WISYKI_PYTHON_API;
-$escoAPI = new WISYKI_ESCO_CLASS; 
+$pythonAPI = new WISY_KI_PYTHON_API;
+$escoAPI = new WISY_KI_ESCO_CLASS; 
 
 function get_course_without_level($levelidlist) {
     $db = new DB_Admin();

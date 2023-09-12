@@ -2,7 +2,7 @@
 header('Content-Type: application/json');
 require_once('lib/ki/wisyki-python-api.inc.php');
 
-$pythonAPI = new WISYKI_PYTHON_API;
+$pythonAPI = new WISY_KI_PYTHON_API;
 
 $db = new DB_Admin();
 $kurse = get_kurse_with_level();

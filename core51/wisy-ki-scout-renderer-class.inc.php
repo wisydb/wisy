@@ -1,5 +1,5 @@
 <?php
-require_once($_SERVER['DOCUMENT_ROOT'] . '/core51/wisyki-json-response.inc.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/core51/wisy-ki-json-response.inc.php');
 
 /**
  * This class provides all necessary methods to render the HTML needed for the feature "Weiterbildungsscout".
@@ -15,7 +15,7 @@ require_once($_SERVER['DOCUMENT_ROOT'] . '/core51/wisyki-json-response.inc.php')
  * @author		Pascal Hürten <pascal.huerten@th-luebeck.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class WISYKI_SCOUT_RENDERER_CLASS {
+class WISY_KI_SCOUT_RENDERER_CLASS {
 	/**
 	 * The framework of the wisy frontend. Provides basic functionalities to navigate the system. 
 	 *
@@ -97,7 +97,7 @@ class WISYKI_SCOUT_RENDERER_CLASS {
 			?>
 			<script src="https://unpkg.com/mustache@latest"></script>
 			<nav>
-				<a href="/index.php" class="img-link"><img class="portal-logo" src="<?php echo ($logo) ?>" alt="Kursportal Schleswig Holstein" height="60px" width="220px"></a>
+				<a href="/index.php" class="img-link"><img class="portal-logo" src="<?php echo ($logo) ?>" alt="<?php print(htmlspecialchars($GLOBALS['wisyPortalName'])); ?>"></a> 
 				<div class="action-bar">
 					<a class="bookmarks-btn labeled-icon-btn" href="/search?q=Fav:"><i class="icon bookmarks-icon"></i>Merkliste<span class="bubble display-none"></span></a>
 					<a class="login-btn labeled-icon-btn" href="#"><i class="icon account-icon"></i>Login</a>

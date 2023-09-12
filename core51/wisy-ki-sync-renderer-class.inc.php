@@ -57,7 +57,7 @@ date_default_timezone_set('Europe/Berlin');
 /* WISY_SYNC_RENDERER_CLASS
  *****************************************************************************/
 
-class WISYKI_SYNC_RENDERER_CLASS {
+class WISY_KI_SYNC_RENDERER_CLASS {
 	private $framework;
 	private $statetable;
 	private $par;
@@ -78,7 +78,7 @@ class WISYKI_SYNC_RENDERER_CLASS {
 
 		$this->framework = &$framework;
 		$this->statetable = new WISY_SYNC_STATETABLE_CLASS($this->framework);
-		$this->pythonAPI = new WISYKI_PYTHON_CLASS;
+		$this->pythonAPI = new WISY_KI_PYTHON_CLASS;
 		$this->tagtable	= new TAGTABLE_CLASS();
 		$this->today_datetime   = strftime("%Y-%m-%d %H:%M:%S");
 	}

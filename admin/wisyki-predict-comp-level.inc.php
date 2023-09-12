@@ -2,7 +2,7 @@
 header('Content-Type: application/json; charset=utf-8');
 require_once('lib/ki/wisyki-python-api.inc.php');
 
-$pythonAPI = new WISYKI_PYTHON_API;
+$pythonAPI = new WISY_KI_PYTHON_API;
 
 $json = file_get_contents('php://input');
 $data = json_decode($json, true);

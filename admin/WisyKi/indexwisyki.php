@@ -151,7 +151,7 @@ if (!$searchForm->changeStateFromUrl("$settingsPrefix.$table")) {
 	$sql = '';
 	//Search for Wisy@Ki Competences in ESCO
 	if (isset($GLOBALS['WisyKi'])) {
-		$comp = new WISYKI_COMPETENCE_CLASS($db);
+		$comp = new WISY_KI_COMPETENCE_CLASS($db);
 		if (isset($_REQUEST['rtypes'])) //special case for keywords restricted to special types
 		{
 

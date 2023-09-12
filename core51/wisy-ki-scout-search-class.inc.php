@@ -1,10 +1,10 @@
 <?php
 require_once('wisy-intellisearch-class.inc.php');
-require_once($_SERVER['DOCUMENT_ROOT'] . '/core51/wisyki-json-response.inc.php');
-require_once($_SERVER['DOCUMENT_ROOT'] . '/core51/wisyki-python-class.inc.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/core51/wisy-ki-json-response.inc.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/core51/wisy-ki-python-class.inc.php');
 
 /**
- * Class WISYKI_SCOUT_SEARCH_CLASS
+ * Class WISY_KI_SCOUT_SEARCH_CLASS
  *
  * Represents a search for courses based on a specific skill and competency level.
  * 
@@ -15,7 +15,7 @@ require_once($_SERVER['DOCUMENT_ROOT'] . '/core51/wisyki-python-class.inc.php');
  * @author		Pascal Hürten <pascal.huerten@th-luebeck.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class WISYKI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
+class WISY_KI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 	/**
 	 * Helper functions for rendering info about a 'durchfuhrung'.
 	 *
@@ -34,7 +34,7 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 	private $queries = array();
 
 	/**
-	 * Constructor for WISYKI_SCOUT_SEARCH_CLASS.
+	 * Constructor for WISY_KI_SCOUT_SEARCH_CLASS.
 	 *
 	 * @param WISY_FRAMEWORK_CLASS $framework The framework class instance.
 	 * @param array $param An array of additional parameters.
@@ -225,7 +225,7 @@ class WISYKI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 		$sets = array();
 
 		// Sort the results based on semantic similarity.
-		$pytonapi = new WISYKI_PYTHON_CLASS();
+		$pytonapi = new WISY_KI_PYTHON_CLASS();
 
 		// Build string describing the user.
 		// TODO Add additional info from account, if user loggedin.
