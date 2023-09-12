@@ -308,6 +308,7 @@ class WISY_KURS_RENDERER_CLASS
             }
             echo '</span>';
             echo '<span class="wisy-kurs-share"> <img src="files/sh/img/sh-share.svg" alt="teilen"></span>';
+
             echo '</div>';
 
 
@@ -315,7 +316,7 @@ class WISY_KURS_RENDERER_CLASS
 
             echo '<div class="wisy_kursnav">';
             echo '<span class="wisy_kursanmeldung_section"><a href="#wisy_termin_anmeldung_section">Anmeldung</a></span>';
-            echo '<span class="wisy_kursfoerder_section"><a href="#wisy_foerderstellen_section"> F&ouml;rderung</a></span>';
+            echo '<span class="wisy_kursfoerder_section"><a href="#wisy_foerderstellen_section"> F&ouml;rderstellen</a></span>';
             echo '<span class="wisy_kursberatung_section"><a href="#wisy_beratungsstellen_section">Beratungsstellen</a></span>';
             echo '</div>';
 
@@ -464,8 +465,8 @@ class WISY_KURS_RENDERER_CLASS
             echo '<label for="wisy_foerderstellen"><h1>F&ouml;rderm&ouml;glichkeiten <img src="/files/sh/img/arrow-sh.svg" class="accordion-image" id="foerderstellen_image" style="float: right; margin-top: 10px;"></h1></label>';
             echo '<input type="checkbox" name="accordion" id="wisy_foerderstellen" onchange="updateAccordion(\'wisy_foerderstellen_section\', \'wisy_foerderstellen\', \'foerderstellen_image\');" checked>';
             echo '<div class="wisy_foerderstellen_content wisy_foerber_con">';
-            echo '<p>Weiterbildung ist f&ouml;rderbar. Hier findest Du eine Auswahl interessanter F&ouml;rderm&ouml;glichkeiten.</p>';
             echo '<div class="wisy_foerderungstellen__content">';
+            echo '<p>Weiterbildung ist f&ouml;rderbar. Hier findest Du eine Auswahl interessanter F&ouml;rderm&ouml;glichkeiten.</p>';
             echo $this->foerderungen();
             echo '</div></div>';
             echo '</section>';
@@ -476,8 +477,8 @@ class WISY_KURS_RENDERER_CLASS
             echo '<label for="wisy_beratungsstellen"><h1>Beratungsstellen <img src="/files/sh/img/arrow-sh.svg" class="accordion-image" id="beratungsstellen_image" style="float: right; margin-top: 10px;"></h1></label>';
             echo '<input type="checkbox" name="accordion" id="wisy_beratungsstellen" onchange="updateAccordion(\'wisy_beratungsstellen_section\', \'wisy_beratungsstellen\', \'beratungsstellen_image\');" checked>';
             echo '<div class="wisy_beratungsstellen_content wisy_foerber_con">';
-            echo '<p>Du kannst Dich beraten lassen. Hier findest Du interessante Beratungsangebote.</p>';
             echo '<div class="wisy_beratungsstellen__content">';
+            echo '<p>Du kannst Dich beraten lassen. Hier findet Du interessante Beratungsangebote.</p>';
             echo $this->beratungsstellen();
             echo '</div></div>';
             echo '</section>';
@@ -487,9 +488,7 @@ class WISY_KURS_RENDERER_CLASS
             echo '<footer class="wisy_kurs_footer">';
             // dont display word clouds while online editing
 
-            $cleaned_tag_cloud = str_replace(',', '', $tag_cloud);
-
-            echo $cleaned_tag_cloud;
+            echo $tag_cloud;
             /*    $nivstufe='';
 
                 if ($this->framework->iniRead('sw_cloud.kurs_anzeige', 0) && !$this->framework->editSessionStarted) {
@@ -676,7 +675,7 @@ class WISY_KURS_RENDERER_CLASS
             $val = '';
             foreach ($keyValueArray as $item) {
                 if (strpos($item['name'], 'F') === 0) {
-                    $val .= '<a href="' . $item['value'] . '"target="_blank"><span class="wisy_foerderstellen_fn">' . $item['name'] . '<p>Der Navigator hilft Dir bei der Suche nach einer f&uuml;r Dich passenden F&ouml;rderung.</p></span></a>';
+                    $val .= '<a href="' . $item['value'] . '"target="_blank"><span class="wisy_foerderstellen_fn">' . $item['name'] . '<p>Der Navigator hilft Dir bei der Suche nach einer f&uuml;r Dich passenden F&ouml;rderung</p></span></a>';
                 } else {
                     $val .= '<a href="' . $item['value'] . '"target="_blank"><span class="wisy_foerderstellen_' . $item['name'] . '">' . $item['name'] . '</span></a>';
                 }
@@ -706,7 +705,3 @@ class WISY_KURS_RENDERER_CLASS
         return $val;
     }
 }
-
-;
-
-
