@@ -2699,6 +2699,8 @@ class LocationFilter extends Filter {
             }
         );
 
+        this.node.addEventListener("change", (event) => this.onChange(event));
+
         this.loadChoice();
     }
 
