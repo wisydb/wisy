@@ -2709,7 +2709,11 @@ class LocationFilter extends Filter {
             }
         );
 
-        this.node.addEventListener("change", (event) => this.onChange(event));
+        this.node.addEventListener("change", (event) => {
+            if (this.selectedChoice.name) {
+                this.onChange(event);
+            }
+        });
 
         this.loadChoice();
     }
@@ -3001,12 +3005,25 @@ class FilterMenu {
      */
     update() {
         let filtercount = 0;
+        
+        this.filterNavChoices.forEach((node) => {
+            node.classList.remove('active');
+        });
 
         this.filters.forEach((filter) => {
             if (filter.isActive()) {
                 filtercount++;
+
+                // Show dot for active filter in nav.
+                this.filterNavChoices.forEach((node) => {
+                    if (node.value == filter.node.id) {
+                        node.classList.add('active');
+                    }
+                });
             }
         });
+
+        
 
         this.bubbleNode.textContent = filtercount;
         if (filtercount > 0) {

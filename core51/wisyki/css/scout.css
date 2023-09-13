@@ -1626,6 +1626,30 @@ details[open]>summary::after {
     background: var(--main-color);
 }
 
+.filter-nav input.active+label {
+    position: relative;
+}
+
+.filter-nav input:checked.active+label::after {
+    background-color: var(--main-background-color);
+}
+
+.filter-nav input.active+label::after {
+    background-color: var(--main-color);
+}
+
+.filter-nav input:checked.active+label::after,
+.filter-nav input.active+label::after {
+    content: "";
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    margin-left: 5px;
+}
+
 .filter-nav input {
     display: none;
 }
