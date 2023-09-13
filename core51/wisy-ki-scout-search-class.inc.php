@@ -401,20 +401,24 @@ class WISY_KI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 
 
 		$start = new DateTime();
-
+		$today = strftime("%Y-%m-%d %H:%M:%S");
 		$db = new DB_Admin();
 		$db->query("SELECT d.beginn, d.beginnoptionen, d.ende, d.dauer, d.zeit_von, d.zeit_bis, d.stunden, d.preis, d.ort
 					FROM durchfuehrung d
 					INNER JOIN kurse_durchfuehrung kd ON d.id = kd.secondary_id
 					WHERE kd.primary_id = {$course['id']}
-					ORDER BY  d.beginn = '0000-00-00 00:00:00', d.beginn
-					LIMIT 1;
+					ORDER BY  d.beginn = '0000-00-00 00:00:00', d.beginn;
 		");
-		if (!$db->next_record()) {
+		$durchfuehrung = null;
+		while ($db->next_record()) {
+			if ($db->Record['beginn'] >= $today || $db->Record['beginn'] == '0000-00-00 00:00:00') {
+				$durchfuehrung = $db->Record;
+				break;
+			}
+		}
+		if (!$durchfuehrung) {
 			$durchfuehrung = array('preis' => -1);
 		}
-		$durchfuehrung = $db->Record;
-
 		$end = new DateTime();
 		$dur = $start->diff($end);
 		$this->durchf_durs[] = $dur;
