@@ -252,9 +252,10 @@ class WISY_KI_PYTHON_CLASS {
      *
      * @param  string $base
      * @param  array $courses
+     * @param bool $sort Defaults to true. If true the courses are sorted by score.
      * @return array Sorted documents.
      */
-    public function sortsemantic(string $base, array $courses) {
+    public function score_semantically(string $base, array $courses, bool $sort = true) {
         $endpoint = "/getEmbeddings";
 
         $data = array(
@@ -301,10 +302,12 @@ class WISY_KI_PYTHON_CLASS {
             $courses[$index]['score'] = $similarityMatrix[$index];
         }
 
-        // sort documents based on score
-        usort($courses, function ($a, $b) {
-            return $a['score'] < $b['score'];
-        });
+        if ($sort) {
+            // sort documents based on score
+            usort($courses, function ($a, $b) {
+                return $a['score'] < $b['score'];
+            });
+        }
 
         return $courses;
     }

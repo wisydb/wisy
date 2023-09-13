@@ -225,7 +225,7 @@ class WISY_KI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 		$sets = array();
 
 		// Sort the results based on semantic similarity.
-		$pytonapi = new WISY_KI_PYTHON_CLASS();
+		$pythonapi = new WISY_KI_PYTHON_CLASS();
 
 		// Build string describing the user.
 		// TODO Add additional info from account, if user loggedin.
@@ -234,28 +234,35 @@ class WISY_KI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 			$base .= $occupation->label;
 		}
 		foreach ($skills as $skill) {
-			$base .= ', ' . $skill->label . ': ' . $skill->levelGoal;
+			$base .= ', ' . $skill->label . ': ' . $skill->levelGoal . ', ' . $skill->levelGoalID;
 		}
 
 		// Sort all courses for the best semantic fit. 
-		$semanticMatches = $pytonapi->sortsemantic($base, $results);
+		$semanticMatches = $pythonapi->score_semantically($base, $results, false);
 
 		// Adjust score based on levelGoal-Matching
 		foreach ($semanticMatches as $coursekey => $course) {
 			$fitsLevelGoal = false;
 			foreach ($skills as $skillkey => $skill) {
-				if (in_array($skill->levelGoalID, $course['levels'])) {
+				if (!in_array($skill->label, $course['tags']) AND  !in_array(preg_replace('/ +\(ESCO\)/', '', $skill->label), $course['tags'])) {
+					continue;
+				}
+				if ($skill->levelGoalID == "" OR in_array($skill->levelGoalID, $course['levels'])) {
 					$fitsLevelGoal = true;
 					break;
 				}
 			}
 
-			$semanticMatches[$coursekey]['fitsLevelGoal'] = true;
+			$semanticMatches[$coursekey]['fitsLevelGoal'] = $fitsLevelGoal;
 			if (!$fitsLevelGoal) {
 				$semanticMatches[$coursekey]['score'] += -.1;
-				$semanticMatches[$coursekey]['fitsLevelGoal'] = false;
 			}
 		}
+
+        // Sort courses based on score.
+        usort($semanticMatches, function ($a, $b) {
+            return $a['score'] < $b['score'];
+        });
 
 		$ai_suggestions = array();
 		// Get top results as the courses with the most skill matches.
