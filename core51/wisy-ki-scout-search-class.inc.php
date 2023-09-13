@@ -240,6 +240,23 @@ class WISY_KI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 		// Sort all courses for the best semantic fit. 
 		$semanticMatches = $pytonapi->sortsemantic($base, $results);
 
+		// Adjust score based on levelGoal-Matching
+		foreach ($semanticMatches as $coursekey => $course) {
+			$fitsLevelGoal = false;
+			foreach ($skills as $skillkey => $skill) {
+				if (in_array($skill->levelGoalID, $course['levels'])) {
+					$fitsLevelGoal = true;
+					break;
+				}
+			}
+
+			$semanticMatches[$coursekey]['fitsLevelGoal'] = true;
+			if (!$fitsLevelGoal) {
+				$semanticMatches[$coursekey]['score'] += -.1;
+				$semanticMatches[$coursekey]['fitsLevelGoal'] = false;
+			}
+		}
+
 		$ai_suggestions = array();
 		// Get top results as the courses with the most skill matches.
 		$mostSkillMatches = array_slice($results, 0, 5);

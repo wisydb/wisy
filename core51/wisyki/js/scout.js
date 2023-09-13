@@ -2360,8 +2360,18 @@ class CouseListStep extends Step {
      * @returns {Object} The response object containing the search ID and the number of courses found.
      */
     async search() {
+        const skills = this.scout.account.getSkills();
+        for (const skill of Object.values(skills)) {
+            let levelGoalID = "";
+            if (skill.isLanguageSkill) {
+                levelGoalID = Object.keys(this.langlevelmapping)[Object.values(this.langlevelmapping).indexOf(skill.levelGoal)];
+            } else {
+                levelGoalID = Object.keys(this.complevelmapping)[Object.values(this.complevelmapping).indexOf(skill.levelGoal)];
+            }
+            skill.levelGoalID = levelGoalID;
+        }
         const params = {
-            skills: JSON.stringify(this.scout.account.getSkills()),
+            skills: JSON.stringify(skills),
             occupation: JSON.stringify(this.scout.account.getOccupation()),
             filters: JSON.stringify(this.scout.account.getFilters()),
         };
