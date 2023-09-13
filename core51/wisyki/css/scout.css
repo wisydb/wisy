@@ -843,6 +843,11 @@ main .steps>div {
     margin-top: .3em;
 }
 
+.modal__content ul {
+    margin: .5em 0;
+    margin-inline-start: 2em;
+}
+
 .open-modal-btn {
     background: var(--secondary-background-color);
     border-radius: 100%;
