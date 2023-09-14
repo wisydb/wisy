@@ -255,7 +255,7 @@ class WISY_KI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 
 			$semanticMatches[$coursekey]['fitsLevelGoal'] = $fitsLevelGoal;
 			if (!$fitsLevelGoal) {
-				$semanticMatches[$coursekey]['score'] += -.1;
+				$semanticMatches[$coursekey]['score'] += -.05;
 			}
 		}
 
@@ -272,7 +272,7 @@ class WISY_KI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 
 		for ($i = 0; $i < count($semanticMatches) && count($ai_suggestions) < $max_suggestions; $i++) {
 			if ($semanticMatches[$i]['score'] < .75) {
-				// Do not recommend any courses where score is loaer than .75
+				// Do not recommend any courses where score is lower than .75
 				break;
 			}
 
