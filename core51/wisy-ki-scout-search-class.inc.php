@@ -279,7 +279,7 @@ class WISY_KI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 			// Check if course is one of the courses with the most skill matches.
 			$mostSkillsMatched = false;
 			foreach ($mostSkillMatches as $key => $course) {
-				if ($course['id'] == $semanticMatches[$i]['id']) {
+				if ($course['skillMatches'] > 1 && $course['id'] == $semanticMatches[$i]['id']) {
 					$mostSkillsMatched = true;
 					$semanticMatches[$i]['reason'][] = 'mostSkillsMatched';
 					break;
