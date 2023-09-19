@@ -28,6 +28,7 @@ class WISY_KI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 	private $anbieter_durs = array();
 	private $durchf_durs = array();
 	private $stichwort_durs = array();
+	private $embedding_durs = array();
 	private $orderBySkillMatches = '';
 	private $selectSkillMatches = '';
 	private $orderBy = 'rand';
@@ -192,9 +193,9 @@ class WISY_KI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 	 */
 	function render() {
 		// Get json post data
+		$start1 = new DateTime();
 		$json = file_get_contents('php://input');
 		$data = json_decode($json, true);
-		$start1 = new DateTime();
 		$skillsjson = $data['skills'];
 		$skills = json_decode($skillsjson);
 		$occupationjson = $data['occupation'];
@@ -202,7 +203,6 @@ class WISY_KI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 		$filterjson = $data['filters'];
 		$filters = json_decode($filterjson);
 		$limit = $data['limit'];
-		$filterDurs = array();
 
 		// Get search results for every skill.
 		$results = $this->search($skills, $filters, $limit);
@@ -333,54 +333,60 @@ class WISY_KI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 			);
 		}
 
-		$end2 = new DateTime();
-		$dur2 = $start2->diff($end2);
-		// Print duration in milliseconds.
-		$filterDurs[] = 'Duration: ' . $dur2->format('%s.%f') . ' seconds';
 		$end1 = new DateTime();
 		$dur1 = $start1->diff($end1);
+		$end2 = new DateTime();
+		$filterDur = $start2->diff($end2);
 
-		// Get average duration of $this->anbieter_durs
-		$avg_anbieter = 0.0;
+		$e = new DateTime('00:00');
+		$f = clone $e;
+		$total_anbieter = $e;
 		foreach ($this->anbieter_durs as $dur) {
-			$avg_anbieter += $dur->f;
+			$total_anbieter->add($dur);
 		}
-		if (count($this->anbieter_durs) > 0) {
-			$avg_anbieter /= count($this->anbieter_durs);
-		}
+		$total_anbieter = $total_anbieter->diff($f);
 
-		$avg_durchf = 0.0;
+		$e = new DateTime('00:00');
+		$f = clone $e;
+		$total_durchf = $e;
 		foreach ($this->durchf_durs as $dur) {
-			$avg_durchf += $dur->f;
+			$total_durchf->add($dur);
 		}
-		if (count($this->durchf_durs) > 0) {
-			$avg_durchf /= count($this->durchf_durs);
-		}
+		$total_durchf = $total_durchf->diff($f);
 
-		$avg_complevel = 0.0;
+		$e = new DateTime('00:00');
+		$f = clone $e;
+		$total_complevel = $e;
 		foreach ($this->complevel_durs as $dur) {
-			$avg_complevel += $dur->f;
+			$total_complevel->add($dur);
 		}
-		if (count($this->complevel_durs) > 0) {
-			$avg_complevel /= count($this->complevel_durs);
-		}
-
-		$avg_stichwort = 0.0;
+		$total_complevel = $total_complevel->diff($f);
+		
+		$e = new DateTime('00:00');
+		$f = clone $e;
+		$total_stichwort = $e;
 		foreach ($this->stichwort_durs as $dur) {
-			$avg_stichwort += $dur->f;
+			$total_stichwort->add($dur);
 		}
-		if (count($this->stichwort_durs) > 0) {
-			$avg_stichwort /= count($this->stichwort_durs);
+		$total_stichwort = $total_stichwort->diff($f);
+		
+		$e = new DateTime('00:00');
+		$f = clone $e;
+		$total_embedding = $e;
+		foreach ($this->embedding_durs as $dur) {
+			$total_embedding->add($dur);
 		}
+		$total_embedding = $total_embedding->diff($f);
 
 		// Build and send response object as json.
 		$response = (object) array(
-			'overallDur' => 'Duration: ' . $dur1->format('%s.%f') . ' seconds',
-			'durPerFilter' => $filterDurs,
-			'avg_anbieter' => $avg_anbieter,
-			'avg_durchf' => $avg_durchf,
-			'avg_complevel' => $avg_complevel,
-			'avg_stichwort' => $avg_stichwort,
+			'dur_overall' => $dur1->s + $dur1->f,
+			'dur_filterandsorting' => $filterDur->s + $filterDur->f,
+			'dur_anbieter_sql' => $total_anbieter->s+ $total_anbieter->f,
+			'dur_durchf_sql' => $total_durchf->s + $total_durchf->f,
+			'dur_complevel_sql' => $total_complevel->s + $total_complevel->f,
+			'dur_stichwort_sql' => $total_stichwort->s + $total_stichwort->f,
+			'dur_embedding_sql' => $total_embedding->s + $total_embedding->f,
 			'count' => count($results),
 			'sets' => $sets,
 			'queries' => $this->queries,
@@ -434,12 +440,11 @@ class WISY_KI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 		$start = new DateTime();
 
 		$db = new DB_Admin();
-		$db->query("SELECT GROUP_CONCAT(s.tag_name) as tags, t.thema, ke.embedding
+		$db->query("SELECT GROUP_CONCAT(s.tag_name ORDER BY s.tag_name) as tags, t.thema
 					FROM kurse k
-					LEFT JOIN x_kurse_tags ks ON k.id = ks.kurs_id
-					LEFT JOIN x_tags s ON ks.tag_id = s.tag_id
-					LEFT JOIN themen t ON k.thema = t.id
-					LEFT JOIN kurse_embedding ke ON ke.kurs_id = k.id
+					INNER JOIN x_kurse_tags ks ON k.id = ks.kurs_id
+					INNER JOIN x_tags s ON ks.tag_id = s.tag_id
+					INNER JOIN themen t ON k.thema = t.id
 					WHERE k.id = {$course['id']}
 					AND s.tag_eigenschaften IN (-1, 0, 524288, 1048576)
 					AND s.tag_type = 0
@@ -447,15 +452,31 @@ class WISY_KI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 		if (!$db->next_record()) {
 			$tags = array();
 			$thema = "";
-			$embedding = null;
+		} else {
+			$tags = $db->Record['tags'];
+			$thema = $db->Record['thema'];
 		}
-		$tags = $db->Record['tags'];
-		$thema = $db->Record['thema'];
-		$embedding = $db->Record['embedding'];
 
 		$end = new DateTime();
 		$dur = $start->diff($end);
 		$this->stichwort_durs[] = $dur;
+
+
+		$start = new DateTime();
+
+		$db = new DB_Admin();
+		$db->query("SELECT ke.embedding
+					FROM kurse_embedding ke
+					WHERE ke.kurs_id = {$course['id']};");
+		if (!$db->next_record()) {
+			$embedding = null;
+		} else {
+			$embedding = $db->Record['embedding'];
+		}
+
+		$end = new DateTime();
+		$dur = $start->diff($end);
+		$this->embedding_durs[] = $dur;
 
 		$start = new DateTime();
 
@@ -542,14 +563,10 @@ class WISY_KI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 		$db = new DB_Admin();
 
 		$sql = "SELECT stichwoerter.stichwort as level 
-			FROM kurse_stichwort, stichwoerter
-			WHERE primary_id = $courseID
-				AND attr_id = stichwoerter.id
-				AND (stichwoerter.stichwort = 'Niveau A'
-					OR stichwoerter.stichwort = 'Niveau B'
-					OR stichwoerter.stichwort = 'Niveau C'
-				)
-			;";
+				FROM kurse_stichwort
+				JOIN stichwoerter ON kurse_stichwort.attr_id = stichwoerter.id
+				WHERE kurse_stichwort.primary_id = $courseID
+				AND stichwoerter.stichwort IN ('Niveau A', 'Niveau B', 'Niveau C');";
 
 		$db->query($sql);
 
@@ -570,23 +587,16 @@ class WISY_KI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 		$db = new DB_Admin();
 
 		$sql = "SELECT stichwoerter.stichwort as level 
-			FROM kurse_stichwort, stichwoerter
-			WHERE primary_id = $courseID
-				AND attr_id = stichwoerter.id
-				AND (stichwoerter.stichwort = 'A1'
-					OR stichwoerter.stichwort = 'A2'
-					OR stichwoerter.stichwort = 'B1'
-					OR stichwoerter.stichwort = 'B2'
-					OR stichwoerter.stichwort = 'C1'
-					OR stichwoerter.stichwort = 'C2'
-				)
-			;";
+				FROM kurse_stichwort
+				JOIN stichwoerter ON kurse_stichwort.attr_id = stichwoerter.id
+				WHERE kurse_stichwort.primary_id = $courseID
+				AND stichwoerter.stichwort IN ('A1', 'A2', 'B1', 'B2', 'C1', 'C2');";
 
 		$db->query($sql);
 
 		$result = array();
 		while ($db->next_record()) {
-			$result[] = str_replace('Niveau ', '', utf8_encode($db->Record['level']));
+			$result[] = utf8_encode($db->Record['level']);
 		}
 		return $result;
 	}

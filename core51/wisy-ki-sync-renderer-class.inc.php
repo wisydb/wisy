@@ -73,7 +73,7 @@ class WISY_KI_SYNC_RENDERER_CLASS {
 		require_once("admin/eql.inc.php");
 		require_once("admin/config/codes.inc.php");
 		require_once("core51/wisy-sync-renderer-class.inc.php");
-		require_once("core51/wisyki-python-class.inc.php");
+		require_once("core51/wisy-ki-python-class.inc.php");
 		require_once("admin/config/trigger_kurse.inc.php");
 
 		$this->framework = &$framework;
@@ -250,7 +250,7 @@ class WISY_KI_SYNC_RENDERER_CLASS {
 					}
 
 					if ($v != '')
-						$db->query("INSERT INTO x_scout_tags_freq (tag_id, portal_id, tag_freq) VALUES $v;");
+						$db->query("REPLACE INTO x_scout_tags_freq (tag_id, portal_id, tag_freq) VALUES $v;");
 
 					if ($portalIdFor == 0) $portalIdFor0Out = true;
 				}
