@@ -723,17 +723,6 @@ main .steps>div {
     height: 100%;
     overflow: auto;
     position: relative;
-
-    /* Hide scrollbar for IE, Edge and Firefox */
-    -ms-overflow-style: none;
-    /* IE and Edge */
-    scrollbar-width: none;
-    /* Firefox */
-}
-
-/* Hide scrollbar for Chrome, Safari and Opera */
-.step-container::-webkit-scrollbar {
-    display: none;
 }
 
 
