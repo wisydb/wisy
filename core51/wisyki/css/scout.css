@@ -256,6 +256,7 @@ nav {
 }
 
 .labeled-icon-btn {
+    height: unset;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -1311,6 +1312,14 @@ ul.result-list {
     margin-bottom: 1em;
 }
 
+details > summary {
+    list-style: none;
+}
+
+details > summary::-webkit-details-marker {
+    display: none;
+}
+
 .result-list .airecommends details summary span:first-child::before,
 .ai-recommendation-reason::before {
     content: url(/files/wisyki/recommendation_blue_24dp.svg);
@@ -1531,6 +1540,7 @@ details[open]>summary::after {
 
 .filter-modal {
     z-index: 1000;
+    position: fixed;
 }
 
 .filter-modal .modal__content {
