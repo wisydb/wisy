@@ -52,8 +52,8 @@ function select_WisyKi()
 	else{
 		error404();
 	}
-	if (strval($wisyPortalEinstellungen['wisyki'] != '')){
-        $GLOBALS['WisyKi'] = true;
+	if (strval($wisyPortalEinstellungen['wisyki'] != '')) {
+		$GLOBALS['WisyKi'] = true;
 	}
 	
 }
@@ -464,6 +464,8 @@ Global Part begins here
 if (isset($_REQUEST['object'])) require_once('deprecated_edit_class.php'); // must be included _before_ the session is started in functions.inc.php as the edit instances may be stored in the session
 
 require_once("WisyKi/wisykistart.php");
+if (isset($GLOBALS['WisyKi']))
+	require_once("WisyKi/wisykicompetence.php");
 
 require_once('functions.inc.php');
 require_once('index_tools.inc.php');
@@ -570,7 +572,7 @@ $columnsHash = array();
 $sqlFields = '';
 $columnsCount = createColumnsHash($tableDef->name);
 $sqlFields = 'id' . $sqlFields;
-
+$comp = NULL;
 
 
 // select records
@@ -609,22 +611,94 @@ $searchForm->setAction('index.php', $addparam);
 if (!$searchForm->changeStateFromUrl("$settingsPrefix.$table")) {
 	$select_numrows = 0;
 } else {
-	$hasError = 0;
-	$eql2sql = new EQL2SQL_CLASS($table, regGet('index.searchplusminusword', 0));
-	$eql = $searchForm->getEql();
+	$sql = '';
+	//Search for Wisy@Ki Competences in ESCO
+	if (isset($GLOBALS['WisyKi'])) {
+		$comp = new WISY_KI_COMPETENCE_CLASS($db);
+		if (isset($_REQUEST['rtypes'])) //special case for keywords restricted to special types
+		{
 
-	// get SQL from EQL...
-	$sql = $eql2sql->eql2sql($eql, $sqlFields, $aclCond, "$orderby, id");
-	if ($sql == '0') {
-		// ...error - can't get SQL
-		$site->msgAdd($eql2sql->lastError, 'e');
-		$hasError = 1;
-		$sql = "SELECT $sqlFields FROM $table WHERE id=-1";
+			if ($_REQUEST['rtypes'] == "ESCO")
+				$table = "escocategories";
+		}
+		if (isset($_REQUEST['table'])) {
+			$hasError = 0;
+			$eql2sql = new EQL2SQL_CLASS($table, regGet('index.searchplusminusword', 0));
+			$eql = $searchForm->getEql();
+
+			// get SQL from EQL...
+			$sql = $eql2sql->eql2sql($eql, $sqlFields, $aclCond, "$orderby, id");
+			if (isset($_REQUEST['rtypes']))
+				$sql = $comp->competencesearch($sql);
+
+			if ($sql == '0') {
+				// ...error - can't get SQL
+				$site->msgAdd($eql2sql->lastError, 'e');
+				$hasError = 1;
+				$sql = "SELECT $sqlFields FROM $table WHERE id=-1";
+			}
+			if ($_REQUEST['table'] == "escocategories") {
+				$level = 1;
+				if (isset($_REQUEST['escolevel']))
+					$level = $_REQUEST['escolevel'];
+				if (isset($_REQUEST['id'])) {
+					$id = intval($_REQUEST['id']);
+					$sql = $comp->correctsql($sql, $level, $id);
+				} else
+					$sql = $comp->correctsql($sql, $level);
+			}
+		} else {
+			$hasError = 0;
+			$eql2sql = new EQL2SQL_CLASS($table, regGet('index.searchplusminusword', 0));
+			$eql = $searchForm->getEql();
+
+			// get SQL from EQL...
+			$sql = $eql2sql->eql2sql($eql, $sqlFields, $aclCond, "$orderby, id");
+			if ($sql == '0') {
+				// ...error - can't get SQL
+				$site->msgAdd($eql2sql->lastError, 'e');
+				$hasError = 1;
+				$sql = "SELECT $sqlFields FROM $table WHERE id=-1";
+			}
+		}
+	} else {
+		$hasError = 0;
+		$eql2sql = new EQL2SQL_CLASS($table, regGet('index.searchplusminusword', 0));
+		$eql = $searchForm->getEql();
+
+		// get SQL from EQL...
+		$sql = $eql2sql->eql2sql($eql, $sqlFields, $aclCond, "$orderby, id");
+		if ($sql == '0') {
+			// ...error - can't get SQL
+			$site->msgAdd($eql2sql->lastError, 'e');
+			$hasError = 1;
+			$sql = "SELECT $sqlFields FROM $table WHERE id=-1";
+		}
 	}
 
 	// get the number of rows - we have an SQL statement anyway this time
 	$select_numrows = $eql2sql->sqlCount($sql);
-
+	if ($select_numrows == 0 && isset($_REQUEST['id']) && isset($_REQUEST['escolevel'])) {
+		if ($comp != null)
+			$sql = $comp->searchForScills($_REQUEST['id']);
+		$table = "escoskills";
+		$baseurl = "index.php?table=$table";
+		$eql2sql = new EQL2SQL_CLASS($table, regGet('index.searchplusminusword', 0));
+		$select_numrows = $eql2sql->sqlCount($sql);
+		if ($select_numrows == 0) {
+			echo 	'<html><head><title>Test</title>';
+			echo '<script type="text/javascript">';
+			echo 'alert("Keine ESCO-Kompetenzen gefunden");';
+			echo 'window.close()';
+			echo '</script>';
+			echo '</head>';
+			echo '<body>';
+			echo '</body></html>';
+			exit;
+		}
+	}
+	if (isset($_REQUEST['rtypes'])) //special case for keywords restricted to special types
+		$rows = $select_numrows;
 	if ($select_numrows == 0 && !$hasError) {
 		$site->msgAdd("\n\n" . htmlconstant('_OVERVIEW_NORECORDSFOUND', '<a href="' . isohtmlspecialchars($allurl) . '">', '</a>') . "\n\n", 'i');
 		$searchedButNothingFound = 1;
@@ -758,7 +832,10 @@ if (isset($_REQUEST['selectobject'])) {
 	$site->menuBinParam		= "table=$tableDef->name";
 	$site->menuHelpScope	= (isset($_REQUEST['object']) ? 'iattrselection' : ($tableDef->name . '.ioverviewrecords'));
 	$site->menuLogoutUrl	= 'index.php?table=' . $table;
-	$site->menuOut();
+	if ($table == "escocategories" || $table == "escoskills")
+		$site->menuOut(1);
+	else
+		$site->menuOut();
 }
 
 
@@ -771,9 +848,11 @@ search formular, pagee selector and attribute selection hint out
 
 
 // search formular
-$site->skin->workspaceStart();
-echo $searchForm->render();
-$site->skin->workspaceEnd();
+if ($table != "escocategories" && $table != "escoskills") {
+	$site->skin->workspaceStart();
+	echo $searchForm->render();
+	$site->skin->workspaceEnd();
+}
 
 if ($select_numrows) {
 	// page selector
@@ -827,7 +906,7 @@ if ($select_numrows) {
 	} else {
 		$tr_a_attr = ' class="clicktr" title="' . htmlconstant('_OVERVIEW_EDIT') . '" '; // clicktr makes this url open on a click anywhere in the row
 	}
-
+	$level++;
 	// go through all records
 	$db->query("$sql LIMIT $searchoffset,$rows");
 	while ($db->next_record()) {
@@ -847,6 +926,12 @@ if ($select_numrows) {
 		// get action			
 		if (isset($_REQUEST['selectobject'])) {
 			$actionUri = "javascript:selUpdtOpnr($id);";
+		} else if ($table == "escocategories") {
+			$actionUri = "index.php?table=escocategories&escolevel=$level&id=$id&orderby=kategorie%20ASC";
+		} else if ($table == "escoskills") {
+			//$actionUri = 'edit.php?table=escoskills&subseq&inputescoskill&id=$id onclick="window.close; return;"';
+			// $tr_a_attr = 'target="_blank" rel="noopener noreferrer" onclick="return popdown(this);"' ;
+			$actionUri = "javascript:escopopupclose($id);";
 		} else {
 			$actionUri = "edit.php?table=$table&id=$id";
 		}
