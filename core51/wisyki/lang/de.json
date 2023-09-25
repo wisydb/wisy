@@ -1,11 +1,12 @@
 {
     "all": "Alle",
     "clearinput": "Eingabe leeren",
+    "complevel0": "ohne Vorkenntnisse",
     "complevela": "Grundstufe",
     "complevelb": "Fortgeschrittenenstufe",
     "complevelc": "Expert*innenstufe",
-    "course": "Kurs",
-    "courses": "Kurse",
+    "viewcourse": "Kurs",
+    "viewcourses": "Kurse",
     "close": "Schließen",
     "abort:info": "<p>Möchtest du diesen Schritt wirklich abbrechen?</p><p>Du verlierst deine Eingaben.</p>",
     "abort:yes": "Ja, zurück!",
@@ -73,8 +74,11 @@
     "courseliststep:airecommends": "Die KI empfiehlt",
     "courseliststep:help": "<h3>Kursempfehlungen</h3><p>Auf dieser Seite erhältst du Empfehlungen für Kurse, die auf deine Kompetenzziele (z. B. Kommunikationskompetenz) abgestimmt sind. Für jeden Kurs werden die wichtigsten Informationen angezeigt. Wenn du mehr über einen Kurs erfahren möchtest, klicke auf die Schaltfläche \"Kurs ansehen\". Gefällt dir ein Kurs und du möchtest ihn für später vormerken, füge ihn über die Schaltfläche \"Merken\" deiner Merkliste hinzu. Wenn du einen Kurs mit Freunden oder Arbeitskollegen teilen möchtest, kannst du dies über die \"Teilen\"-Funktion tun. Die Kursergebnisse sind in folgende Ergebnislisten unterteilt:</p><br><h4>KI-Empfehlungen</h4><p>Die KI schlägt Kurse vor, die möglichst viele deiner Kompetenzziele erfüllen oder inhaltlich gut zu dir passen.</p><p/Zur Bewertung der inhaltlichen Übereinstimmung werden deine Zieltätigkeit, deine Lernziele und dein Zielniveau herangezogen. Hast du einen Account angelegt, werden deine dort hinterlegten biografischen Daten und Präferenzen ebenfalls berücksichtigt. Infos dazu findest du in deinem Account. Du kannst auch entscheiden, welche Angaben du hinterlegst.</p></br><h4>Kompetenzspezifische Ergebnisse</h4><p>Hier werden die Ergebnisse nach deinen einzelnen Kompetenzzielen sortiert und jeweils in einer Liste dargestellt.</p></br><h4>Filterung</h4><p>Durch Klicken auf die Schaltfläche \"Filter\", kannst du nach folgenden Aspekten filtern:</p><ul><li>Unterrichtsart</li><li>Ort</li><li>Preis</li><li>Tageszeit</li><li>Förderung</li></ul><p>Während der Auswahl von Filteroptionen wird dir live angezeigt, wie viele Kurse zu deinen Filterkriterien passen. In jeder der kompetenzspezifischen Ergebnislisten kannst du zusätzlich nach Lernziel (z. B. Grundstufe) filtern. Das vorab ausgewählte Lernziel ist hier standardmäßig eingestellt. Wenn keine passenden Kurse zum gewählten Lernziel angezeigt werden, versuche es doch einmal mit einem anderen Lernziel.</p></br><h4>Sortierung</h4><p>Die Kurse werden in jeder Liste nach Relevanz sortiert. Dabei werden Kurse in absteigender Reihenfolge angezeigt, basierend darauf, wie gut die inhaltliche Übereinstimmung zwischen der Kursbeschreibung (inkl. Titel und Verschlagwortung) und deinen Kompetenz- und Lernzielen ist.</p>",
     "courseliststep:loading": "Lade Kursvorschläge",
+    "courseviewstep:help": "",
+    "courseviewstep:loading": "Lade Kurs",
     "help": "Hilfe",
     "help:understood": "Verstanden",
+    "languagelevel0": "ohne Vorkenntnisse",
     "languagelevela1": "A1",
     "languagelevela2": "A2",
     "languagelevelb1": "B1",
@@ -118,5 +122,9 @@
     "skillsstep:noskillsselected": "Keine Kompetenzen ausgewählt",
     "noresults": "Keine Ergebnisse",
     "plz": "Postleitzahl",
-    "scoutheadtext": "Finde den passenden Weiterbildungskurs"
+    "scoutheadtext": "Finde den passenden Weiterbildungskurs",
+    "levelcurrentstep:heading": "Dein Kenntnisstand",
+    "levelcurrentstep:help": "<h3>Lernziel</h3><p>Du brauchst <strong>mehr Informationen</strong>? Eine ausführliche Erklärung zu den drei Kompetenzstufen bzw. sechs Sprachniveaus findest du hier.</p><br><h2>Grundstufe</h2><h4>Wissen und Fertigkeiten</h4><p>Ich kann diese Kompetenzen für grundlegende Aufgaben nach Anleitung einsetzen.</p><br><h4>Personelle Kompetenzen</h4><p>Ich kann diese Kompetenzen einsetzen, um Handlungen wahrzunehmen und einzuschätzen.</p><br><h2>Fortgeschrittenenstufe</h2><h4>Wissen und Fertigkeiten</h4><p>Ich kann diese Kompetenzen für spezialisierte Aufgaben selbstständig einsetzen.</p><br><h4>Personelle Kompetenzen</h4><p>Ich kann diese Kompetenzen einsetzen, um Prozesse kooperativ zu gestalten und andere anzuleiten.</p><br><h2>Expert/innenstufe</h2><h4>Wissen und Fertigkeiten</h4><p>Ich kann diese Kompetenzen für komplexe Aufgaben eigenverantwortlich einsetzen.</p><br><h4>Personelle Kompetenzen</h4><p>Ich kann diese Kompetenzen einsetzen, um Personen oder Organisationen zu führen.</p><br><hr><br><h2>A1 - Anfänger</h2><p>Ich kann ganz einfache Sätze verstehen und verwenden.</p><br><h2>A2 - Grundlegende Kenntnisse</h2><p>Ich kann elementare Sätze und häufig gebrauchte Ausdrücke verstehen und verwenden.</p><br><h2>B1 - Fortgeschrittene Sprachverwendung</h2><p>Ich kann klare Standardsprache verstehen und verwenden.</p><br><h2>B2 - Selbständige Sprachverwendung</h2><p>Ich kann die Sprache selbständig in einem breiten Themenspektrum verwenden.</p><br><h2>C1 - Fachkundige Sprachkenntnisse</h2><p>Ich kann die Sprache und anspruchsvolle Texte verstehen und fließend, strukturiert kommunizieren.</p><br><h2>C2 - Annähernd muttersprachliche Kenntnisse</h2><p>Ich kann die gesprochene Sprache und geschriebene Texte mühelos verstehen und selbst anwenden.</p>",
+    "levelcurrentstep:loading": "Lade nächsten Schritt",
+    "levelcurrentstep:subheading": "Bitte schätze deinen Kenntnissstand in den gewählten Kompetenzen ein, damit ich dir einen passenden Kurs vorschlagen kann."
 }

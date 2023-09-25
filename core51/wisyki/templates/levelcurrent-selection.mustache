@@ -1,0 +1,66 @@
+{{ #skills }}
+<li>
+    {{ ^isLanguageSkill }}
+    <div class="scoutboxwhiteskill complevel-selection" skilluri="{{ uri }}" >
+        <div class="skillheader">
+        <div class="skillheaderbox">{{ skillnumber }}</div>
+        <strong>{{ label }}</strong><br>
+        {{ lang.skillsboxheading }}
+        </div>
+        <div>
+        <input type="radio" id="levelgoalstep_{{ uri }}-{{ lang.complevel0 }}" name="levelgoalstep_{{ uri }}" value="">
+        <label for="levelgoalstep_{{ uri }}-{{ lang.complevel0 }}">{{ lang.complevel0 }}</label>
+        </div>
+        <div>
+        <input type="radio" id="levelgoalstep_{{ uri }}-{{ lang.complevela }}" name="levelgoalstep_{{ uri }}" value="{{ lang.complevela }}">
+        <label for="levelgoalstep_{{ uri }}-{{ lang.complevela }}">{{ lang.complevela }}</label>
+        </div>
+        <div>
+        <input type="radio" id="levelgoalstep_{{ uri }}-{{ lang.complevelb }}" name="levelgoalstep_{{ uri }}" value="{{ lang.complevelb }}">
+        <label for="levelgoalstep_{{ uri }}-{{ lang.complevelb }}">{{ lang.complevelb }}</label>
+        </div>
+        <div>
+        <input type="radio" id="levelgoalstep_{{ uri }}-{{ lang.complevelc }}" name="levelgoalstep_{{ uri }}" value="{{ lang.complevelc }}">
+        <label for="levelgoalstep_{{ uri }}-{{ lang.complevelc }}">{{ lang.complevelc }}</label>
+        </div>
+    </div>
+    {{ /isLanguageSkill }}
+    {{ #isLanguageSkill }}
+    <div class="scoutboxwhiteskill languagelevel-selection" skilluri="{{ uri }}">
+        <div class="skillheader">
+        <div class="skillheaderbox">{{ skillnumber }}</div>
+        <strong>{{ label }}</strong><br>
+        {{ lang.skillsboxheading }}
+        </div>
+        <div>
+        <input type="radio" id="levelgoalstep_{{ uri }}-{{ lang.languagelevel0 }}" name="levelgoalstep_{{ uri }}" value="">
+        <label for="levelgoalstep_{{ uri }}-{{ lang.languagelevel0 }}">{{ lang.languagelevel0 }}</label>
+        </div>
+        <div>
+        <input type="radio" id="levelgoalstep_{{ uri }}-{{ lang.languagelevela1 }}" name="levelgoalstep_{{ uri }}" value="{{ lang.languagelevela1 }}">
+        <label for="levelgoalstep_{{ uri }}-{{ lang.languagelevela1 }}">{{ lang.languagelevela1 }}</label>
+        </div>
+        <div>
+        <input type="radio" id="levelgoalstep_{{ uri }}-{{ lang.languagelevela2 }}" name="levelgoalstep_{{ uri }}" value="{{ lang.languagelevela2 }}">
+        <label for="levelgoalstep_{{ uri }}-{{ lang.languagelevela2 }}">{{ lang.languagelevela2 }}</label>
+        </div>
+        <div>
+        <input type="radio" id="levelgoalstep_{{ uri }}-{{ lang.languagelevelb1 }}" name="levelgoalstep_{{ uri }}" value="{{ lang.languagelevelb1 }}">
+        <label for="levelgoalstep_{{ uri }}-{{ lang.languagelevelb1 }}">{{ lang.languagelevelb1 }}</label>
+        </div>
+        <div>
+        <input type="radio" id="levelgoalstep_{{ uri }}-{{ lang.languagelevelb2 }}" name="levelgoalstep_{{ uri }}" value="{{ lang.languagelevelb2 }}">
+        <label for="levelgoalstep_{{ uri }}-{{ lang.languagelevelb2 }}">{{ lang.languagelevelb2 }}</label>
+        </div>
+        <div>
+        <input type="radio" id="levelgoalstep_{{ uri }}-{{ lang.languagelevelc1 }}" name="levelgoalstep_{{ uri }}" value="{{ lang.languagelevelc1 }}">
+        <label for="levelgoalstep_{{ uri }}-{{ lang.languagelevelc1 }}">{{ lang.languagelevelc1 }}</label>
+        </div>
+        <div>
+        <input type="radio" id="levelgoalstep_{{ uri }}-{{ lang.languagelevelc2 }}" name="levelgoalstep_{{ uri }}" value="{{ lang.languagelevelc2 }}">
+        <label for="levelgoalstep_{{ uri }}-{{ lang.languagelevelc2 }}">{{ lang.languagelevelc2 }}</label>
+        </div>
+    </div>
+    {{ /isLanguageSkill }}
+</li>
+{{ /skills }}

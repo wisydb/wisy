@@ -33,6 +33,8 @@ class WISY_KI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 	private $selectSkillMatches = '';
 	private $orderBy = 'rand';
 	private $queries = array();
+	private $complevelids = array();
+	private $langlevelids = array();
 
 	/**
 	 * Constructor for WISY_KI_SCOUT_SEARCH_CLASS.
@@ -43,6 +45,19 @@ class WISY_KI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 	function __construct(&$framework, $param) {
 		parent::__construct($framework, $param);
 		$this->durchfClass = &createWisyObject('WISY_DURCHF_CLASS', $this->framework);
+		$this->complevelids = $this->getTagIds(array('Niveau A', 'Niveau B', 'Niveau C'));
+		$this->langlevelids = $this->getTagIds(array('A1', 'A2', 'B1', 'B2', 'C1', 'C2'));
+	}
+
+	function getTagIds (array $tags) {
+		
+		$levelids = array();
+		$sql = "SELECT tag_id FROM x_tags WHERE tag_name IN ('" . join("', '", $tags) . "')";
+		$this->db->query($sql);
+		while ($this->db->next_record()) {
+			$levelids[] = $this->db->Record['tag_id'];
+		}
+		return $levelids;
 	}
 
 	/**
@@ -195,14 +210,11 @@ class WISY_KI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 		// Get json post data
 		$start1 = new DateTime();
 		$json = file_get_contents('php://input');
-		$data = json_decode($json, true);
-		$skillsjson = $data['skills'];
-		$skills = json_decode($skillsjson);
-		$occupationjson = $data['occupation'];
-		$occupation = json_decode($occupationjson);
-		$filterjson = $data['filters'];
-		$filters = json_decode($filterjson);
-		$limit = $data['limit'];
+		$data = json_decode($json);
+		$skills = $data->skills;
+		$occupation = $data->occupation;
+		$filters = $data->filters;
+		$limit = $data->limit;
 
 		// Get search results for every skill.
 		$results = $this->search($skills, $filters, $limit);
@@ -398,14 +410,14 @@ class WISY_KI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 	private function get_course_details(array $course): array|null {
 		$start = new DateTime();
 
-		$db = new DB_Admin();
-		$db->query("SELECT anbieter.suchname 
+		
+		$this->db->query("SELECT anbieter.suchname 
 					FROM anbieter 
 					WHERE id=" . $course['anbieter']);
-		if (!$db->next_record()) {
+		if (!$this->db->next_record()) {
 			JSONResponse::error500('Provider not found for course with id: ' . $course['id']);
 		}
-		$provider = $db->Record;
+		$provider = $this->db->Record;
 
 		$end = new DateTime();
 		$dur = $start->diff($end);
@@ -415,17 +427,17 @@ class WISY_KI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 
 		$start = new DateTime();
 		$today = strftime("%Y-%m-%d %H:%M:%S");
-		$db = new DB_Admin();
-		$db->query("SELECT d.beginn, d.beginnoptionen, d.ende, d.dauer, d.zeit_von, d.zeit_bis, d.stunden, d.preis, d.ort
+		
+		$this->db->query("SELECT d.beginn, d.beginnoptionen, d.ende, d.dauer, d.zeit_von, d.zeit_bis, d.stunden, d.preis, d.ort
 					FROM durchfuehrung d
 					INNER JOIN kurse_durchfuehrung kd ON d.id = kd.secondary_id
 					WHERE kd.primary_id = {$course['id']}
 					ORDER BY  d.beginn = '0000-00-00 00:00:00', d.beginn;
 		");
 		$durchfuehrung = null;
-		while ($db->next_record()) {
-			if ($db->Record['beginn'] >= $today || $db->Record['beginn'] == '0000-00-00 00:00:00') {
-				$durchfuehrung = $db->Record;
+		while ($this->db->next_record()) {
+			if ($this->db->Record['beginn'] >= $today || $this->db->Record['beginn'] == '0000-00-00 00:00:00') {
+				$durchfuehrung = $this->db->Record;
 				break;
 			}
 		}
@@ -439,8 +451,8 @@ class WISY_KI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 
 		$start = new DateTime();
 
-		$db = new DB_Admin();
-		$db->query("SELECT GROUP_CONCAT(s.tag_name ORDER BY s.tag_name) as tags, t.thema
+		
+		$this->db->query("SELECT GROUP_CONCAT(s.tag_name ORDER BY s.tag_name) as tags, t.thema
 					FROM kurse k
 					INNER JOIN x_kurse_tags ks ON k.id = ks.kurs_id
 					INNER JOIN x_tags s ON ks.tag_id = s.tag_id
@@ -449,12 +461,12 @@ class WISY_KI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 					AND s.tag_eigenschaften IN (-1, 0, 524288, 1048576)
 					AND s.tag_type = 0
 					GROUP BY k.id, t.thema;");
-		if (!$db->next_record()) {
+		if (!$this->db->next_record()) {
 			$tags = array();
 			$thema = "";
 		} else {
-			$tags = $db->Record['tags'];
-			$thema = $db->Record['thema'];
+			$tags = $this->db->Record['tags'];
+			$thema = $this->db->Record['thema'];
 		}
 
 		$end = new DateTime();
@@ -464,14 +476,14 @@ class WISY_KI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 
 		$start = new DateTime();
 
-		$db = new DB_Admin();
-		$db->query("SELECT ke.embedding
+		
+		$this->db->query("SELECT ke.embedding
 					FROM kurse_embedding ke
 					WHERE ke.kurs_id = {$course['id']};");
-		if (!$db->next_record()) {
+		if (!$this->db->next_record()) {
 			$embedding = null;
 		} else {
-			$embedding = $db->Record['embedding'];
+			$embedding = $this->db->Record['embedding'];
 		}
 
 		$end = new DateTime();
@@ -557,22 +569,22 @@ class WISY_KI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 	 * Get the competency level associated with a given course. 
 	 *
 	 * @param integer $courseID
-	 * @return array Possible return values are ['A', 'B', 'C', '']. Empty if no level is associated with a course.
+	 * @return array Possible return values are ['Niveau A', 'Niveau B', 'Niveau C']. Empty if no level is associated with a course.
 	 */
 	function get_course_comp_level(int $courseID): array {
-		$db = new DB_Admin();
+		
 
-		$sql = "SELECT stichwoerter.stichwort as level 
-				FROM kurse_stichwort
-				JOIN stichwoerter ON kurse_stichwort.attr_id = stichwoerter.id
-				WHERE kurse_stichwort.primary_id = $courseID
-				AND stichwoerter.stichwort IN ('Niveau A', 'Niveau B', 'Niveau C');";
+		$sql = "SELECT t.tag_name as level
+				FROM x_tags t
+				JOIN x_kurse_tags kt ON kt.tag_id = t.tag_id
+				WHERE kt.kurs_id = $courseID
+				AND t.tag_id IN (" . join(', ', $this->complevelids) . ")";
 
-		$db->query($sql);
+		$this->db->query($sql);
 
 		$result = array();
-		while ($db->next_record()) {
-			$result[] = utf8_encode($db->Record['level']);
+		while ($this->db->next_record()) {
+			$result[] = utf8_encode($this->db->Record['level']);
 		}
 		return $result;
 	}
@@ -581,22 +593,20 @@ class WISY_KI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 	 * Get the language level associated with a given course. 
 	 *
 	 * @param integer $courseID
-	 * @return array Possible return values are ['A1', 'A2', 'B1', 'B2', 'C1', 'C2', '']. Empty if no level is associated with a course.
+	 * @return array Possible return values are ['A1', 'A2', 'B1', 'B2', 'C1', 'C2']. Empty if no level is associated with a course.
 	 */
 	function get_course_language_level(int $courseID): array {
-		$db = new DB_Admin();
+		$sql = "SELECT t.tag_name as level
+				FROM x_tags t
+				JOIN x_kurse_tags kt ON kt.tag_id = t.tag_id
+				WHERE kt.kurs_id = $courseID
+				AND t.tag_id IN (" . join(', ', $this->langlevelids) . ")";
 
-		$sql = "SELECT stichwoerter.stichwort as level 
-				FROM kurse_stichwort
-				JOIN stichwoerter ON kurse_stichwort.attr_id = stichwoerter.id
-				WHERE kurse_stichwort.primary_id = $courseID
-				AND stichwoerter.stichwort IN ('A1', 'A2', 'B1', 'B2', 'C1', 'C2');";
-
-		$db->query($sql);
+		$this->db->query($sql);
 
 		$result = array();
-		while ($db->next_record()) {
-			$result[] = utf8_encode($db->Record['level']);
+		while ($this->db->next_record()) {
+			$result[] = utf8_encode($this->db->Record['level']);
 		}
 		return $result;
 	}
@@ -608,8 +618,6 @@ class WISY_KI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 	 * @return string The course mode, empty if no coursemode is associated with the course.
 	 */
 	function get_course_mode(int $courseID): string {
-		$db = new DB_Admin();
-
 		$modes = [];
 
 		$sql = "SELECT stichwoerter.stichwort as mode 
@@ -618,10 +626,10 @@ class WISY_KI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 				AND attr_id = stichwoerter.id
 				AND stichwoerter.eigenschaften = 32768;";
 
-		$db->query($sql);
+		$this->db->query($sql);
 
-		while ($db->next_record()) {
-			$modes[] = $db->Record['mode'];
+		while ($this->db->next_record()) {
+			$modes[] = $this->db->Record['mode'];
 		}
 		if (empty($modes)) {
 			return '';

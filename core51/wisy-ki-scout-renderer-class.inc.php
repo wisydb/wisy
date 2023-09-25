@@ -21,29 +21,16 @@ class WISY_KI_SCOUT_RENDERER_CLASS {
 	 *
 	 * @var WISY_FRAMEWORK_CLASS
 	 */
-	private WISY_FRAMEWORK_CLASS $framework;
-
-	/**
-	 * The second part of the requested URI path.
-	 * For the URI <host>/scout/occupationSkills $request would be "occupationSkills".
-	 * This parameter is used to identify wich part of the scout the client is requesting to be rendered.
-	 *
-	 * @var string
-	 */
-	private string $request = '';
+	protected WISY_FRAMEWORK_CLASS $framework;
 
 	/**
 	 * Constructor.
 	 *
 	 * @param WISY_FRAMEWORK_CLASS $framework
-	 * @param string|null $request
 	 */
-	function __construct(&$framework, string|null $request) {
+	function __construct(&$framework) {
 		// constructor
 		$this->framework = $framework;
-		if (isset($request)) {
-			$this->request = $request;
-		}
 	}
 
 	/**

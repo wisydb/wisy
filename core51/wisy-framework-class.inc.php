@@ -2745,7 +2745,10 @@ class WISY_FRAMEWORK_CLASS
                 return createWisyObject('WISY_EDIT_RENDERER_CLASS', $this);
 
 			case 'scout':
-				return createWisyObject('WISY_KI_SCOUT_RENDERER_CLASS', $this, $wisykiRequestPaths[1]);
+				return createWisyObject('WISY_KI_SCOUT_RENDERER_CLASS', $this);
+
+			case 'scoutk':
+				return createWisyObject('WISY_KI_KURS_RENDERER_CLASS', $this);
 
 			case 'scout-search':
 				return createWisyObject('WISY_KI_SCOUT_SEARCH_CLASS', $this);

@@ -11,7 +11,9 @@
         <div class="scout-nav__progress">
             <ul>
                 {{ #steps }}
+                {{ #showInNav }} 
                 <li><button to-step="{{ index }}">{{ nav_label }}</button></li>
+                {{ /showInNav }} 
                 {{ /steps }}
             </ul>
         </div>
@@ -21,12 +23,12 @@
 <section class="steps">
     <div>
         {{ #steps }}
-        <div class="step-container">
+        <div class="step-container" id="{{ name }}">
             <div class="loader">
                 <div class="spinner"></div>
                 <p class="loader__text"></p>
             </div>
-            <article class="step" id="{{ name }}"></article>
+            <article class="step"></article>
         </div>
         {{ /steps }}
     </div>

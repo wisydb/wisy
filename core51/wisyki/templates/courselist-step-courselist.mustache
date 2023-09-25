@@ -38,9 +38,9 @@
         <button class="share-btn labeled-icon-btn">
             <i class="icon share-icon"></i>{{ lang.courseliststep:share }}
         </button>
-        <a class="to-course-btn btn" href="/k{{ id }}" target="_blank" rel="noreferrer noopener">
+        <button class="to-course-btn btn primary-btn" courseid="{{ id }}">
             <span>{{ lang.courseliststep:gotocourse }}</span>
-        </a>
+        </button>
     </div>
 </li>
 {{ /results }}

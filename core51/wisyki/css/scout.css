@@ -470,7 +470,7 @@ header p {
     width: 90vw;
     height: 50px;
     display: grid;
-    grid-template-columns: 1fr 2fr auto;
+    grid-template-columns: auto 1fr auto;
     align-items: center;
     z-index: 10;
     gap: 1em;
@@ -487,6 +487,7 @@ header p {
 
 .scout-nav__progress {
     grid-column: 2;
+    justify-self: center;
 }
 
 .scout-nav__progress ul {
@@ -705,7 +706,7 @@ button .loader::after {
 
 main .steps>div {
     height: calc(100vh - 60px - 150px - 100px);
-    height: calc(var(--doc-height) - 60px - 150px - 100px);
+    height: calc(var(--doc-height) - 60px - 150px - 90px - 4px);
     margin-bottom: 1em;
     display: flex;
     flex-direction: row;
@@ -871,7 +872,7 @@ main .steps>div {
     right: .7em;
 }
 
-#pathchoice {
+#pathchoice .step {
     height: 90%;
     display: grid;
     grid-template-rows: min-content;
@@ -1765,6 +1766,30 @@ details[open]>summary::after {
 .level-D {
     background-color: var(--main-color);
     color: var(--font-color__light);
+}
+
+#courseview {
+    margin: 0;
+    padding: 4px;
+}
+
+
+#courseview h1 {
+    color: unset;
+    line-height: unset;
+}
+
+
+#courseview {
+    font-size: 14px;
+}
+
+#courseview .step {
+    max-width: 880px;
+}
+
+#courseview .wisy_showalloffers, #courseview .wisyr_anbieter_link{
+    display: none;
 }
 
 
