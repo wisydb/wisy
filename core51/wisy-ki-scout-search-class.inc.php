@@ -280,7 +280,7 @@ class WISY_KI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
         usort($mostSkillMatches, function ($a, $b) {
             return $a['skillMatches'] < $b['skillMatches'];
         });
-		$mostSkillMatches = array_slice($results, 0, 5);
+		$mostSkillMatches = array_slice($mostSkillMatches, 0, 5);
 		// Max 5 ai suggestions.
 		$max_suggestions = 5;
 
@@ -333,7 +333,7 @@ class WISY_KI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 		foreach ($skills as $skill) {
 			$skillresults = array();
 			foreach ($semanticMatches as $key => $course) {
-				if (in_array($skill->label, $course['tags']) or in_array(preg_replace('/ +\(ESCO\)/', '', $skill->label), $course['tags'])) {
+				if (in_array($skill->label, $course['tags']) or in_array(preg_replace('/ +\(ESCO\)/', '', $skill->label), $course['tags']) or in_array($skill->label . " (ESCO)", $course['tags'])) {
 					unset($course['tags']);
 					$skillresults[] = $course;
 				}
