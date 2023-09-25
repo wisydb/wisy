@@ -645,4 +645,15 @@ class WISY_KI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 		}
 		return join(', ', $modes);
 	}
+ 
+	function getKurseRecordsSql($fields) { 
+		// Only get courses that are freigeschaltet or dauerhaft
+		$this->rawWhere .= $this->rawWhere ? ' AND ' : ' WHERE ';
+		$this->rawWhere .= "kurse.freigeschaltet IN (1, 4)";
+		$sql =  "SELECT DISTINCT $fields
+				FROM kurse LEFT JOIN x_kurse ON x_kurse.kurs_id=kurse.id " . $this->rawJoin . ' LEFT JOIN x_kurse_tags xk ON x_kurse.kurs_id = xk.kurs_id' . $this->rawWhere; 
+ 
+ 		$this->queries[] = utf8_encode($sql); 
+		return $sql; 
+	}
 }
