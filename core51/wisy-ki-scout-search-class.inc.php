@@ -29,12 +29,11 @@ class WISY_KI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 	private $durchf_durs = array();
 	private $stichwort_durs = array();
 	private $embedding_durs = array();
-	private $orderBySkillMatches = '';
-	private $selectSkillMatches = '';
 	private $orderBy = 'rand';
 	private $queries = array();
 	private $complevelids = array();
 	private $langlevelids = array();
+	private $skilltags = array();
 
 	/**
 	 * Constructor for WISY_KI_SCOUT_SEARCH_CLASS.
@@ -82,6 +81,7 @@ class WISY_KI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 			}
 
 			$tags[] = $this->lookupTag($skilllabel);
+			$this->skilltags[] = $skilllabel;
 
 			// Alternative skills.
 			if (isset($skill->similarSkills) and !empty($skill->similarSkills)) {
@@ -106,9 +106,6 @@ class WISY_KI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 				}
 			}
 		}
-		$this->selectSkillMatches = ', SUM(CASE WHEN xk.tag_id IN (' . join(', ', $tags) . ') THEN 1 ELSE 0 END) as skillMatches';
-		$this->orderBySkillMatches = 'skillMatches DESC';
-		$this->orderBy = 'skillMatches';
 
 		// Remove leading " ODER " od $querystring.
 		$querystring = substr($querystring, 5);
@@ -278,6 +275,11 @@ class WISY_KI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 
 		$ai_suggestions = array();
 		// Get top results as the courses with the most skill matches.
+		$mostSkillMatches = $results;
+		// Sort courses based on score.
+        usort($mostSkillMatches, function ($a, $b) {
+            return $a['skillMatches'] < $b['skillMatches'];
+        });
 		$mostSkillMatches = array_slice($results, 0, 5);
 		// Max 5 ai suggestions.
 		$max_suggestions = 5;
@@ -463,9 +465,16 @@ class WISY_KI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 					GROUP BY k.id, t.thema;");
 		if (!$this->db->next_record()) {
 			$tags = array();
+			$skillMatches = 0;
 			$thema = "";
 		} else {
-			$tags = $this->db->Record['tags'];
+			$tags = explode(',', utf8_encode($this->db->Record['tags']));
+			$skillMatches = 0;
+			foreach ($this->skilltags as $skilltag) {
+				if (in_array($skilltag, $tags)) {
+					$skillMatches++;
+				}
+			}
 			$thema = $this->db->Record['thema'];
 		}
 
@@ -508,9 +517,9 @@ class WISY_KI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 			'workload' => utf8_encode($this->get_workload($durchfuehrung)),
 			'price' => utf8_encode($this->get_price($durchfuehrung)),
 			'location' => utf8_encode($durchfuehrung['ort']),
-			'tags' => explode(',', utf8_encode($tags)),
+			'tags' => $tags,
 			'thema' => utf8_encode($thema),
-			'skillMatches' => $course['skillMatches'],
+			'skillMatches' => $skillMatches,
 			'embedding' => $embedding,
 		);
 	}
@@ -635,142 +644,5 @@ class WISY_KI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 			return '';
 		}
 		return join(', ', $modes);
-	}
-
-	function getKurseRecords($offset, $rows, $orderBy) {
-
-		$ret = array('records' => array());
-
-		if ($this->error === false) {
-			$start = $this->framework->microtime_float();
-
-			global $wisyPortalId;
-			$do_recreate = true;
-			$cacheKey = "wisysearch.$wisyPortalId.$this->queryString.$offset.$rows.$orderBy";
-			if ($this->rawCanCache && ($temp = $this->dbCache->lookup($cacheKey)) != '') {
-				// result in cache :-)
-				$ret = unserialize($temp);
-				if ($ret === false) {
-					if (isset($_COOKIE['debug'])) {
-						echo "<p style=\"background-color: yellow;\">getKurseRecords(): bad result for key <i>$cacheKey</i>, recreating  ...</p>";
-					}
-				} else {
-					$do_recreate = false;
-					if (isset($_COOKIE['debug'])) {
-						echo "<p style=\"background-color: yellow;\">getKurseRecords(): result for key <i>$cacheKey</i> loaded from cache ...</p>";
-					}
-				}
-			}
-
-
-			if ($do_recreate) {
-				switch ($orderBy) {
-					case 'a':
-						$orderBy = "x_kurse.anbieter_sortonly";
-						break;	// sortiere nach anbieter
-					case 'ad':
-						$orderBy = "x_kurse.anbieter_sortonly DESC";
-						break;
-					case 't':
-						$orderBy = 'kurse.titel_sorted';
-						break;	// sortiere nach titel
-					case 'td':
-						$orderBy = 'kurse.titel_sorted DESC';
-						break;
-					case 'b':
-						$orderBy = "x_kurse.beginn='0000-00-00', x_kurse.beginn";
-						break;	// sortiere nach beginn, spezielle Daten ans Ende der Liste verschieben
-					case 'bd':
-						$orderBy = "x_kurse.beginn='9999-09-09', x_kurse.beginn DESC";
-						break;
-					case 'd':
-						$orderBy = 'x_kurse.dauer=0, x_kurse.dauer';
-						break;	// sortiere nach dauer
-					case 'dd':
-						$orderBy = 'x_kurse.dauer DESC';
-						break;
-					case 'p':
-						$orderBy = 'x_kurse.preis=-1, x_kurse.preis';
-						break;	// sortiere nach preis
-					case 'pd':
-						$orderBy = 'x_kurse.preis DESC';
-						break;
-					case 'o':
-						$orderBy = "x_kurse.ort_sortonly='', x_kurse.ort_sortonly";
-						break;	// sortiere nach ort
-					case 'od':
-						$orderBy = "x_kurse.ort_sortonly DESC";
-						break;
-					case 'creat':
-						$orderBy = 'x_kurse.begmod_date';
-						break;	// sortiere nach beginnaenderungsdatum (hauptsaechlich fuer die RSS-Feeds interessant)
-					case 'creatd':
-						$orderBy = 'x_kurse.begmod_date DESC';
-						break;
-					case 'rand':
-						$ip = str_replace('.', '', $_SERVER['REMOTE_ADDR']);
-						try {
-							$seed = ((int)$ip + (int)date('d'));
-						} catch (Exception $e) {
-							$seed = 1;
-						}
-						$this->randSeed;
-						$orderBy = 'RAND(' . $seed . ')';
-						break;
-					case 'skillMatches':
-						$ip = str_replace('.', '', $_SERVER['REMOTE_ADDR']);
-						try {
-							$seed = ((int)$ip + (int)date('d'));
-						} catch (Exception $e) {
-							$seed = 1;
-						}
-						$this->randSeed;
-						$orderBy = $this->orderBySkillMatches . ', x_kurse.begmod_date DESC';
-						break;
-					default:
-						$orderBy = 'kurse.id';
-						die('invalid order!');
-				}
-
-
-
-				$sql = $this->getKurseRecordsSql("kurse.id, kurse.user_grp, kurse.anbieter, kurse.thema, kurse.freigeschaltet, kurse.titel, kurse.vollstaendigkeit, kurse.date_modified, kurse.bu_nummer, kurse.fu_knr, kurse.azwv_knr, x_kurse.begmod_date, x_kurse.bezirk, x_kurse.ort_sortonly, x_kurse.ort_sortonly_secondary" . $this->fulltext_select);
-
-
-				$sql .= " GROUP BY id ORDER BY $orderBy, vollstaendigkeit DESC, x_kurse.kurs_id";
-
-
-				if ($rows != 0) $sql .= " LIMIT $offset, $rows ";
-
-				$this->queries[] = utf8_encode($sql);
-
-				$this->db->query("SET SQL_BIG_SELECTS=1"); // optional
-				$this->db->query($sql);
-
-				while ($this->db->next_record()) {
-					$ret['records'][] = $this->db->Record;
-				}
-				$this->db->free();
-
-
-				// add result to cache
-				$this->dbCache->insert($cacheKey, serialize($ret));
-
-				if (isset($_COOKIE['debug'])) {
-					echo '<p style="background-color: yellow;">getKurseRecords(): ' . htmlspecialchars($sql) . '</p>';
-				}
-			}
-
-			$this->secneeded += $this->framework->microtime_float() - $start;
-		}
-
-		return $ret;
-	}
-
-	function getKurseRecordsSql($fields) {
-		$sql =  "SELECT DISTINCT $fields" . $this->selectSkillMatches . "
-				   FROM kurse LEFT JOIN x_kurse ON x_kurse.kurs_id=kurse.id " . $this->rawJoin . ' LEFT JOIN x_kurse_tags xk ON x_kurse.kurs_id = xk.kurs_id' . $this->rawWhere;
-
-		return $sql;
 	}
 }
