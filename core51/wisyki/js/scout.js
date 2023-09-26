@@ -2367,6 +2367,14 @@ class SearchStep extends Step {
         return true;
     }
 
+    /**
+     * Controls whether the view should be rebuilt when the step runs an update.
+     * @type {boolean}
+     */
+    rebuildOnUpdate()  {
+        return true;
+    }
+
     cleanResults(results) {
         // Go over every result.
         for (const setid in results.sets) {
@@ -2775,14 +2783,6 @@ class CourseListStep extends SearchStep {
                 );
             }
         });
-    }
-
-    /**
-     * Controls whether the view should be rebuilt when the step runs an update.
-     * @type {boolean}
-     */
-    rebuildOnUpdate()  {
-        return false;
     }
 
     /**
