@@ -1,122 +1,9 @@
 <?php if( !defined('IN_WISY') ) die('!IN_WISY');
 
-class WISY_TAGSUGGESTOR_CLASS
+loadWisyClass("WISY_TAGSUGGESTOR_CLASS");
+
+class WISY_KI_TAGSUGGESTOR_CLASS extends WISY_TAGSUGGESTOR_CLASS
 {
-	// all private!
-	var $framework;
-
-	function __construct(&$framework, $param)
-	{
-		$this->framework	=& $framework;
-		$this->db			= new DB_Admin;
-		$this->db2			= new DB_Admin;
-		$this->db3			= new DB_Admin;
-		$this->db4			= new DB_Admin;
-	}
-
-	
-	//
-	// manually addeed suggestions, they must be defined in the settings using tag.<tag> = <other>;<another>;<com>,<bined>;<etc>
-	//
-	protected function get_manual_suggestions($tag_name)
-	{
-		$ret = array('sug' => array());
-		
-		$all = $this->framework->iniRead('tag.'.$tag_name, '');
-		if( $all != '' ) {
-			$all = explode(';', $all);
-			for( $m = 0; $m < sizeof($all); $m++ ) {
-				$one = trim($all[$m]);
-				if( $one != '' ) {
-					$ret['sug'][] = array('tag_name'=>$one);
-				}
-			}
-		}
-		
-		return $ret;
-	}
-	
-	public function keyword2tagName($keyword)
-	{
-		// function takes keywords or an offerer name and converts it into a tag by just removing the characters ":" and "," and double spaces
-		$tag = strtr($keyword, ':,', '  ');
-		while( strpos($tag, '  ')!==false ) {
-			$tag = str_replace('  ', ' ', $tag);
-		}
-		return $tag;
-	}
-	
-	public function getTagId($keyword_or_tag_name)
-	{
-		// returns the tag id for a given keyword/offerer name/tag name
-		$tag = $this->keyword2tagName($keyword_or_tag_name);
-		$this->db2->query("SELECT tag_id FROM x_tags WHERE tag_name=".$this->db2->quote($tag));
-		if( $this->db2->next_record() ) {
-		    return $this->db2->fcs8('tag_id');
-		}
-		return 0;
-	}
-
-	public function getWisyPortalTagId()
-	{
-		if( !isset($this->getWisyPortalTagId_cache) ) {	
-			if( $GLOBALS['wisyPortalFilter']['stdkursfilter']!='' ) {
-				$this->getWisyPortalTagId_cache = $this->getTagId('.portal'.$GLOBALS['wisyPortalId']);
-			}
-			else {
-				$this->getWisyPortalTagId_cache = 0;
-			}
-		}
-		return $this->getWisyPortalTagId_cache;
-	}
-
-	public function getTagFreq($tag_ids_arr)
-	{
-	    
-	    if( sizeof((array) $tag_ids_arr) == 1 )
-	    {
-	            
-	            $portalIdCond = '';
-	            if( $GLOBALS['wisyPortalFilter']['stdkursfilter']!='' ) {
-	                $portalIdCond = ' AND portal_id=' . $GLOBALS['wisyPortalId'] . ' ';
-	            }
-	            else {
-	                $portalIdCond = ' AND portal_id=0 ';
-	            }
-	            $this->db2->query("SELECT tag_freq FROM x_tags_freq WHERE tag_id=".intval($tag_ids_arr[0]) . $portalIdCond); // x_tags_freq only contains recent offers, date checking is not required
-	            if( $this->db2->next_record() ) {
-	                return $this->db2->fcs8('tag_freq');
-	            }
-	    }
-	    // more than one tag id
-	    else if( sizeof((array) $tag_ids_arr) > 1 )
-	    {
-	            $portalTagId = $this->getWisyPortalTagId();
-	            if( $portalTagId ) {
-	                $tag_ids_arr[] = $portalTagId;
-	            }
-	            
-	            $sql = "SELECT DISTINCT t.kurs_id AS cnt
-			          FROM x_kurse_tags t
-			          LEFT JOIN x_kurse k ON t.kurs_id=k.kurs_id
-			         WHERE t.tag_id=" . intval($tag_ids_arr[0]);
-	            for( $i = 1; $i < sizeof((array) $tag_ids_arr); $i++ ) {
-	                $sql .= " AND t.kurs_id IN(SELECT kurs_id FROM x_kurse_tags WHERE tag_id=".intval($tag_ids_arr[$i]) . ") ";
-	            }
-	            $sql .= " AND k.beginn>=".$this->db2->quote(ftime("%Y-%m-%d"));
-	                
-	                $freq = 0;
-	                $this->db2->query($sql);
-	                while( $this->db2->next_record() ) {
-	                    $freq++;
-	                }
-	                return $freq;
-	    }
-	    
-	    return 0;
-	}
-
-
 	//
 	// suggest some tags
 	//
@@ -177,6 +64,13 @@ class WISY_TAGSUGGESTOR_CLASS
 					$COND_TAGTYPE .= " AND NOT(tag_type & " . intval($qttn) . ")";
 				}
 			}
+
+			if(isset($param['q_tag_eigenschaften_not']) && is_array($param['q_tag_eigenschaften_not'])) {          
+				foreach($param['q_tag_eigenschaften_not'] as $qten)
+				{
+					$COND_TAGTYPE .= " AND NOT(tag_eigenschaften = " . intval($qten) . ")";
+				}
+			}
 			
 			$portalIdCond = '';
 			if( $GLOBALS['wisyPortalFilter']['stdkursfilter']!='' ) {
@@ -195,14 +89,14 @@ class WISY_TAGSUGGESTOR_CLASS
 			{
 			    // First try: search for tags containing q-string
 				$COND .= $COND_TAGTYPE;
-                $sql = "SELECT t.tag_id, tag_name, tag_descr, tag_type, tag_help, SUM(tag_freq) AS tag_freq 
+                $sql = "SELECT t.tag_id, tag_name, tag_descr, tag_type, tag_eigenschaften, tag_help, SUM(tag_freq) AS tag_freq 
 							FROM x_tags t 
 							LEFT JOIN x_tags_freq f ON f.tag_id=t.tag_id $portalIdCond
 							WHERE ( $COND )
 							$portalIdCond
 							GROUP BY tag_name 
 							ORDER BY LEFT(tag_name,$LEN)<>'$QUERY', tag_name LIMIT 0, $max"; // sort alphabetically - matching word beginning esp. important! Group By because multiple same tag_name entries
-                            
+                
 				$this->db->query($sql); 
 				while( $this->db->next_record() )
 				{

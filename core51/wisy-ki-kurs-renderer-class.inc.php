@@ -238,8 +238,8 @@ class WISY_KI_KURS_RENDERER_CLASS
                     "C1" => "<span><a href='/search?q=C1'>C1</a></span> ",
                     "C2" => "<span><a href='/search?q=C2'>C2</a></span> ",
                     "Niveau A" => "<span><a href='/search?q=Niveau+A'>Grundstufe</a></span> ",
-                    "Niveau B" => "<span><a href='/search?q=Niveau+B'>Aufbaustufe</a></span> ",
-                    "Niveau C" => "<span><a href='/search?q=Niveau+C'>Fortgeschrittenenstufe</a></span> ",
+                    "Niveau B" => "<span><a href='/search?q=Niveau+B'>Fortgeschrittenenstufe</a></span> ",
+                    "Niveau C" => "<span><a href='/search?q=Niveau+C'>Expert*innenstufe</a></span> ",
                     "Niveau D" => "<span><a href='/search?q=Niveau+D'>Expert*innenstufe</a></span> "
                 );
 
@@ -435,6 +435,32 @@ class WISY_KI_KURS_RENDERER_CLASS
             echo '</article><!-- /.wisy_kurs_durchf -->';
             echo '</section><!-- /.wisyr_kursinfos -->';
             echo '</section><!-- /.wisyr_kursinfos -->';
+
+
+            // Foerderungen und Beratung Section
+
+            // Foerdermoeglichkeiten
+            echo '<section id="wisy_foerderstellen_section" class="active">';
+            echo '<label for="wisy_foerderstellen"><h1>F&ouml;rderm&ouml;glichkeiten <img src="/files/sh/img/arrow-sh.svg" class="accordion-image" id="foerderstellen_image" style="float: right; margin-top: 10px;"></h1></label>';
+            echo '<input type="checkbox" name="accordion" id="wisy_foerderstellen" onchange="updateAccordion(\'wisy_foerderstellen_section\', \'wisy_foerderstellen\', \'foerderstellen_image\');" checked>';
+            echo '<div class="wisy_foerderstellen_content wisy_foerber_con">';
+            echo '<p>Weiterbildung ist f&ouml;rderbar. Hier findest Du eine Auswahl interessanter F&ouml;rderm&ouml;glichkeiten.</p>';
+            echo '<div class="wisy_foerderungstellen__content">';
+            echo $this->foerderungen();
+            echo '</div></div>';
+            echo '</section>';
+
+
+            // Beratungsstellen
+            echo '<section id="wisy_beratungsstellen_section" class="active">';
+            echo '<label for="wisy_beratungsstellen"><h1>Beratungsstellen <img src="/files/sh/img/arrow-sh.svg" class="accordion-image" id="beratungsstellen_image" style="float: right; margin-top: 10px;"></h1></label>';
+            echo '<input type="checkbox" name="accordion" id="wisy_beratungsstellen" onchange="updateAccordion(\'wisy_beratungsstellen_section\', \'wisy_beratungsstellen\', \'beratungsstellen_image\');" checked>';
+            echo '<div class="wisy_beratungsstellen_content wisy_foerber_con">';
+            echo '<p>Du kannst Dich beraten lassen. Hier findest Du interessante Beratungsangebote.</p>';
+            echo '<div class="wisy_beratungsstellen__content">';
+            echo $this->beratungsstellen();
+            echo '</div></div>';
+            echo '</section>';
 
         } // freigeschaltet
 

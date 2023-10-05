@@ -383,8 +383,8 @@ class WISY_KI_ESCO_CLASS {
      * @return array [{"label":"title1","value":"url1"},{"label":"title2","value":"url2"}]
      */
     function search_wisy($term, $limit = 5) {
-        $tagsuggestor =& createWisyObject('WISY_TAGSUGGESTOR_CLASS', $this->framework);
-        $tags = $tagsuggestor->suggestTags(utf8_decode($term), array("max" => $limit, 'q_tag_type_not'=>array(1,65536,4,8,32768,16,32,64,128,512,1024,2048,4096,8192,16384,65, 256)));
+        $tagsuggestor =& createWisyObject('WISY_KI_TAGSUGGESTOR_CLASS', $this->framework);
+        $tags = $tagsuggestor->suggestTags(utf8_decode($term), array("max" => $limit, 'q_tag_type_not'=>array(1,65536,4,8,32768,16,32,64,128,512,1024,2048,4096,8192,16384,65,256), 'q_tag_eigenschaften_not'=>array(524288)));
 
         $search_results = array();
 
