@@ -1,5 +1,4 @@
 <?php
-require_once('wisy-intellisearch-class.inc.php');
 require_once($_SERVER['DOCUMENT_ROOT'] . '/core51/wisy-ki-json-response.inc.php');
 require_once($_SERVER['DOCUMENT_ROOT'] . '/core51/wisy-ki-python-class.inc.php');
 
@@ -458,7 +457,7 @@ class WISY_KI_SCOUT_SEARCH_CLASS extends WISY_SEARCH_CLASS {
 					FROM kurse k
 					INNER JOIN x_kurse_tags ks ON k.id = ks.kurs_id
 					INNER JOIN x_tags s ON ks.tag_id = s.tag_id
-					INNER JOIN themen t ON k.thema = t.id
+					LEFT JOIN themen t ON k.thema = t.id
 					WHERE k.id = {$course['id']}
 					AND s.tag_eigenschaften IN (-1, 0, 524288, 1048576)
 					AND s.tag_type = 0
