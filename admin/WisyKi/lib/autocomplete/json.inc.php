@@ -1,16 +1,23 @@
 <?php
+require_once('../core51/wisy-ki-esco-class.inc.php');
+
 
 
 class AUTOCOMPLETE_JSON_CLASS
 {
 	private $debug = false;
 	private $term = "";
+	private $esco_params;
 	private $man_request = false;
-
+	private $escoAPI;
+	private $keywordtypes;
+	
 	function __construct()
 	{
 		$this->json  = new G_JSON_CLASS;
-
+		$this->escoAPI = new WISY_KI_ESCO_CLASS;
+		global $wisyki_keywordtypes;
+        $this->keywordtypes = $wisyki_keywordtypes;
 		//if( substr($_SERVER['HTTP_HOST'], -6)=='.local' ) { $this->debug = true; }
 	}
 
@@ -208,7 +215,7 @@ class AUTOCOMPLETE_JSON_CLASS
 			$value = $this->term;
 			$nest = array();
 			$label = isohtmlspecialchars($value) . '<span class="achref">&nbsp;&#8599;&nbsp;</span>';
-			$suggestions[] = array('label' => $label, 'value' => $value, 'id' => $id, 'nest' => $nest, 'actype' => '524288');
+			$suggestions[] = array('label' => $label, 'value' => $value, 'id' => $id, 'nest' => $nest, 'actype' => $this->keywordtypes['ESCO-Kompetenz']);
 			// $label = isohtmlspecialchars($value);
 			// $suggestions[] = array('label' => $label, 'value' => $value);
 		}
@@ -259,97 +266,122 @@ class AUTOCOMPLETE_JSON_CLASS
 		header('Content-type: application/json');
 		$this->man_request = ($_REQUEST['term'] == 0) ? true : false;
 		// some settings
-		$this->db		= new DB_Admin;
-		$this->limit	= 8;
-
-		// get query entered by the user
-		$temp = explode('.', $_REQUEST['acdata']);
 
 		$this->term = isset($_REQUEST['term']) ? trim(utf8_decode($_REQUEST['term'])) : '';
 
 		if ($this->term == '') {
 			$this->_die('nothing entered.');
 		}
+		// get query entered by the user
+		$temp = explode('.', $_REQUEST['acdata']);
+		$suggestions = array();
+		$results = [];
+
+		//------------------------------------- All other AJAX-search
+		{
+			$this->db		= new DB_Admin;
+			$this->limit	= 8;
 
 
 
-		$acdata_table		= isset($temp[0]) ? $temp[0] : null;
-		$acdata_field		= isset($temp[1]) ? $temp[1] : null;
 
-		if (isset($acdata_field) && $acdata_field == 'seeselect') {
-			if (!$this->man_request) {
-				if (isset($_REQUEST['select']))
-					$select_fields = explode('.', $_REQUEST['select']);
-			}
-			if ($select_fields[0] == '' || $select_fields[0] == 'ANY' || $select_fields[0] == 'DUMMY' || $select_fields[0] == 'OPTIONS' || $select_fields[0] == 'job') {
-				$this->_die('cannot handle ' . $select_fields[0]);
-			} else if (isset($select_fields) && sizeof($select_fields) == 2 || isset($select_fields) && sizeof($select_fields) == 3) {
-				// search in secondary / attribute tables, max. 2 iterations needed
-				$this->_find_table_def((isset($acdata_table) ? $acdata_table : null), $select_fields[0], $temp_table_def, $temp_row_index);
-				$temp_table_def2 = $temp_table_def->rows[$temp_row_index]->addparam;
-				if (sizeof($select_fields) == 3) {
-					$this->_find_table_def($temp_table_def2->name, $select_fields[1], $temp_table_def, $temp_row_index);
-					$temp_table_def2 = $temp_table_def->rows[$temp_row_index]->addparam;
+
+			$acdata_table		= isset($temp[0]) ? $temp[0] : null;
+			$acdata_field		= isset($temp[1]) ? $temp[1] : null;
+
+			if (isset($acdata_field) && $acdata_field == 'seeselect') {
+				if (!$this->man_request) {
+					if (isset($_REQUEST['select']))
+						$select_fields = explode('.', $_REQUEST['select']);
 				}
-				$suggest_table = $temp_table_def2->name;
-				$suggest_field = $select_fields[sizeof($select_fields) - 1];
+				if ($select_fields[0] == '' || $select_fields[0] == 'ANY' || $select_fields[0] == 'DUMMY' || $select_fields[0] == 'OPTIONS' || $select_fields[0] == 'job') {
+					$this->_die('cannot handle ' . $select_fields[0]);
+				} else if (isset($select_fields) && sizeof($select_fields) == 2 || isset($select_fields) && sizeof($select_fields) == 3) {
+					// search in secondary / attribute tables, max. 2 iterations needed
+					$this->_find_table_def((isset($acdata_table) ? $acdata_table : null), $select_fields[0], $temp_table_def, $temp_row_index);
+					$temp_table_def2 = $temp_table_def->rows[$temp_row_index]->addparam;
+					if (sizeof($select_fields) == 3) {
+						$this->_find_table_def($temp_table_def2->name, $select_fields[1], $temp_table_def, $temp_row_index);
+						$temp_table_def2 = $temp_table_def->rows[$temp_row_index]->addparam;
+					}
+					$suggest_table = $temp_table_def2->name;
+					$suggest_field = $select_fields[sizeof($select_fields) - 1];
+				} else {
+					$suggest_table		= isset($acdata_table) ? $acdata_table : null;
+					$suggest_field		= isset($select_fields[0]) ? $select_fields[0] : null;
+				}
+			} else if (isset($acdata_field) && $acdata_field == 'user_created' || isset($acdata_field) && $acdata_field == 'user_modified')   // needed in edit.php
+			{
+				$suggest_table		= 'user';
+				$suggest_field		= 'name';
+			} else if (isset($acdata_field) && $acdata_field == 'user_grp')   // needed in edit.php
+			{
+				$suggest_table		= 'user_grp';
+				$suggest_field		= 'name';
 			} else {
 				$suggest_table		= isset($acdata_table) ? $acdata_table : null;
-				$suggest_field		= isset($select_fields[0]) ? $select_fields[0] : null;
+				$suggest_field		= isset($acdata_field) ? $acdata_field : null;
 			}
-		} else if (isset($acdata_field) && $acdata_field == 'user_created' || isset($acdata_field) && $acdata_field == 'user_modified')   // needed in edit.php
-		{
-			$suggest_table		= 'user';
-			$suggest_field		= 'name';
-		} else if (isset($acdata_field) && $acdata_field == 'user_grp')   // needed in edit.php
-		{
-			$suggest_table		= 'user_grp';
-			$suggest_field		= 'name';
-		} else {
-			$suggest_table		= isset($acdata_table) ? $acdata_table : null;
-			$suggest_field		= isset($acdata_field) ? $acdata_field : null;
+
+			// convert attribute tables to normal field lookups 
+			$referencable_only = false;
+			$this->_find_table_def($suggest_table, $suggest_field, $temp_table_def, $temp_row_index);
+			$flags = isset($temp_table_def->rows[$temp_row_index]->flags) ? $temp_table_def->rows[$temp_row_index]->flags : null;
+			$suggest_row_type = $flags & TABLE_ROW;
+			if ($suggest_row_type == TABLE_SECONDARY || $suggest_row_type == TABLE_SATTR || $suggest_row_type == TABLE_MATTR) {
+				$referencable_only = true;
+				$suggest_table = $temp_table_def->rows[$temp_row_index]->addparam->name;
+				if ($suggest_table == "stichwoerter")
+					if (isset($temp_table_def->rows[$temp_row_index]->addparam->rows[0]->addparam))
+						$suggest_types = $temp_table_def->rows[$temp_row_index]->addparam->rows[0]->addparam;
+				$this->_find_first_summary_field($suggest_table, $suggest_field, $suggest_row_type);
+			} else if (isset($suggest_field) && $suggest_field == 'createdby' || isset($suggest_field) && $suggest_field == 'modifiedby') // needed in index.php
+			{
+				$suggest_table = 'user';
+				$this->_find_first_summary_field($suggest_table, $suggest_field, $suggest_row_type);
+			} else if (isset($suggest_field) && $suggest_field == 'group') // needed in index.php
+			{
+				$suggest_table = 'user_grp';
+				$this->_find_first_summary_field($suggest_table, $suggest_field, $suggest_row_type);
+			}
+
+			// now, lookup for suggestions 
+
+			switch ($suggest_row_type) {
+				case TABLE_TEXT:
+				case TABLE_INT:
+					if (isset($temp[1]) && str_starts_with($temp[1], "vorschlaege")) {
+						//-------------------------------------- AJAX-search for ESCO-competenzes
+						$sheme = explode(",", "member-skills,skills-hierarchy,sachstichwort_red");
+
+
+						$results = $this->escoAPI->autocomplete($this->term, null, $sheme, 10, false, null);
+						$i = 0;
+						foreach ($results as $r1) {
+							$suggestions[$i]['label'] = '<span onclick="escoselectskill(\'' . utf8_decode($r1['uri']) . '\', \'' . utf8_decode($r1['label']) . '\');">&nbsp;&#8599;&nbsp;' . utf8_decode($r1['label']) . '</span>';
+							$suggestions[$i]['value'] = "";
+							// $suggestions[$i]['id'] = "990501";
+							// $suggestions[$i]['actype'] = "524288";
+							$i++;
+						}
+						// $suggestions[]['label'] = '<span onclick="escoselectskill(\'' . '' . '\', \'' . 'Bolognese' . '\');">&nbsp;&#8599;&nbsp;' . 'Bolognese' . '</span>';
+						// $suggestions[]['value'] = "";
+
+						break;
+					} else {
+						$suggestions = $this->_handle_TABLE_TEXT($suggest_table, $suggest_field, $referencable_only, (isset($suggest_types)) ? $suggest_types : null);
+						break;
+					}
+				case TABLE_ENUM:
+				case TABLE_BITFIELD:
+					$suggestions = $this->_handle_TABLE_ENUM($suggest_table, $suggest_field);
+					break;
+
+				default:
+					$this->_die("type of $suggest_table.$suggest_field (row_type=$suggest_row_type) not supported");
+					break;
+			}
 		}
-
-		// convert attribute tables to normal field lookups 
-		$referencable_only = false;
-		$this->_find_table_def($suggest_table, $suggest_field, $temp_table_def, $temp_row_index);
-		$flags = isset($temp_table_def->rows[$temp_row_index]->flags) ? $temp_table_def->rows[$temp_row_index]->flags : null;
-		$suggest_row_type = $flags & TABLE_ROW;
-		if ($suggest_row_type == TABLE_SECONDARY || $suggest_row_type == TABLE_SATTR || $suggest_row_type == TABLE_MATTR) {
-			$referencable_only = true;
-			$suggest_table = $temp_table_def->rows[$temp_row_index]->addparam->name;
-			if ($suggest_table == "stichwoerter")
-				if (isset($temp_table_def->rows[$temp_row_index]->addparam->rows[0]->addparam))
-					$suggest_types = $temp_table_def->rows[$temp_row_index]->addparam->rows[0]->addparam;
-			$this->_find_first_summary_field($suggest_table, $suggest_field, $suggest_row_type);
-		} else if (isset($suggest_field) && $suggest_field == 'createdby' || isset($suggest_field) && $suggest_field == 'modifiedby') // needed in index.php
-		{
-			$suggest_table = 'user';
-			$this->_find_first_summary_field($suggest_table, $suggest_field, $suggest_row_type);
-		} else if (isset($suggest_field) && $suggest_field == 'group') // needed in index.php
-		{
-			$suggest_table = 'user_grp';
-			$this->_find_first_summary_field($suggest_table, $suggest_field, $suggest_row_type);
-		}
-
-		// now, lookup for suggestions 
-		$suggestions = array();
-		switch ($suggest_row_type) {
-			case TABLE_TEXT:
-			case TABLE_INT:
-				$suggestions = $this->_handle_TABLE_TEXT($suggest_table, $suggest_field, $referencable_only, (isset($suggest_types)) ? $suggest_types : null);
-				break;
-
-			case TABLE_ENUM:
-			case TABLE_BITFIELD:
-				$suggestions = $this->_handle_TABLE_ENUM($suggest_table, $suggest_field);
-				break;
-
-			default:
-				$this->_die("type of $suggest_table.$suggest_field (row_type=$suggest_row_type) not supported");
-				break;
-		}
-
 		// show "nothing found" on debug
 		if (isset($this->debug) && $this->debug && sizeof((array) $suggestions) == 0) {
 			$this->_die("no suggestions found for $suggest_table.$suggest_field (row_type=$suggest_row_type)");

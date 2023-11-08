@@ -124,12 +124,8 @@ class EDIT_RENDERER_CLASS
 			require_once('WisyKi/config/codes.inc.php');
 		} else
 			die('Verzeichnis unerwartet.');
-		global $codes_stichwort_eigenschaften;
-		$tp = explode("###", $codes_stichwort_eigenschaften);
-		for ($c1 = 1; $c1 < sizeof((array) $tp); $c1 += 2) {
-			if ($tp[$c1] == "ESCO-Kompetenz")
-				$this->esco_type = $tp[$c1 - 1];
-		}
+		global $wisyki_keywordtypes;
+		$this->esco_type = $wisyki_keywordtypes['ESCO-Kompetenz'];
 		$this->ob = new AUTOCOMPLETE_JSON_CLASS;
 	}
 
@@ -406,7 +402,7 @@ class EDIT_RENDERER_CLASS
 		$selected_level = 0;
 		$selected_category = 0;
 		$selected_speech = 0;
-		$selected_abschluss = 0;
+		// $selected_abschluss = 0;
 		$selected_permentry = 0;
 		$selected_foerderungsart = array();
 		$selected_kompetenz = array();
@@ -421,9 +417,10 @@ class EDIT_RENDERER_CLASS
 				$selected_category = $control->dbval;
 			} else if ($control->name == 'f_speech') {
 				$selected_speech = $control->dbval;
-			} else if ($control->name == 'f_abschluss') {
-				$selected_abschluss = $control->dbval;
-			} else if ($control->name == 'f_lernform') {
+			} 
+			// else if ($control->name == 'f_abschluss') {
+			// 	$selected_abschluss = $control->dbval;			} 
+			else if ($control->name == 'f_lernform') {
 				$selected_lernform = explode(",", $control->dbval);
 			} else if ($control->name == 'f_foerderungsart') {
 				$selected_foerderungsart = explode(",", $control->dbval);
@@ -450,9 +447,9 @@ class EDIT_RENDERER_CLASS
 		if (($key = array_search($selected_speech, $stichworte)) !== false) {
 			unset($stichworte[$key]);
 		}
-		if (($key = array_search($selected_abschluss, $stichworte)) !== false) {
-			unset($stichworte[$key]);
-		}
+		// if (($key = array_search($selected_abschluss, $stichworte)) !== false) {
+		// 	unset($stichworte[$key]);
+		// }
 		if (($key = array_search($selected_permentry, $stichworte)) !== false) {
 			unset($stichworte[$key]);
 		}
@@ -630,8 +627,8 @@ class EDIT_RENDERER_CLASS
 					echo '<input class="esco" style="background-color: #FFE190; border-style: none" type="submit"  name="submit_esco" value="ESCO-Kompetenzvorschlaege">&nbsp&nbsp</input>';
 					echo '</span>';
 					//echo '<div onclick="rem_esco_proposual(index.php?table=escocategories&rtypes=ESCO&orderby=kategorie ASC);" > ESCO-Suche nach Kompetenzen </div>';
-					echo '<span class="e_hint" title="Ermoeglicht die manuelle Suche nach Kompetenzen.">';
-					echo '<a onclick="rem_esco_proposual(this); return;"  href="#index.php?table=escocategories&rtypes=ESCO&escolevel=1&orderby=kategorie ASC"> ESCO-Suche nach Kompetenzen </a>';
+					echo '<span class="e_hint" title="ESCO-Kompetenzsuche mit Hilfe der ESCO-Hierarchie">';
+					echo '<a onclick="rem_esco_proposual(this); return;"  href="#index.php?table=escocategories&rtypes=ESCO&escolevel=1&orderby=kategorie ASC">Hierarchiesuche nach ESCO-Kompetenzen   </a>';
 					echo '</span>';
 					echo '<span class="e_hint" title="Alle angezeigten Kompetenzvorschlaege werden als Kompetenz uebernommen.">';
 					echo '<input class="esco"   style="background-color: #FFE190; border-style: none"  type="submit" name="submit_vorschlaege" value="Vorschlaege uebernehmen">&nbsp&nbsp</input>';
@@ -641,6 +638,9 @@ class EDIT_RENDERER_CLASS
 					echo '</span>';
 					echo '<span class="e_hint" title="Alle angezeigten Kompetenzvorschlaege werden geloescht.">';
 					echo '<input class="esco" style="background-color: #FFE190; border-style: none"  type="submit" name="submit_discard" value="Vorschlaege ablehnen">&nbsp&nbsp</input>';
+					echo '</span>';
+					echo '<span class="e_hint" title="Dieser Vorgang kann laenger als 30 Sekunden dauern und wird nach 60 Sekunden abgebrochen.">';
+					echo '<input class="esco" style="background-color: #FFE190; border-style: none" type="submit"  name="submit_ki_esco" value="KI-ESCO-Kompetenzvorschlaege">&nbsp&nbsp</input>';
 					echo '</span>';
 					echo '</td>';
 					echo '</tr>';
@@ -758,7 +758,7 @@ class EDIT_RENDERER_CLASS
 			$index++;
 		}
 		$nothingtodo = false;
-		$maxpos = -1;
+		$usedpos = array();
 		if (sizeof((array) $kurseStichwort) > 0) { //Some keywords for this course registered
 			for ($c1 = 0; $c1 < sizeof((array) $kurseStichwort); $c1++) {
 				foreach ($kurseStichwort[$c1] as $pos => $val) {
@@ -766,8 +766,8 @@ class EDIT_RENDERER_CLASS
 						$nothingtodo = true;
 						break;
 					} else {
-						if ($pos == 'structure_pos' && $maxpos < intval($val)) {
-							$maxpos = intval($val);
+						if ($pos == 'structure_pos') {
+							$usedpos[] = intval($val);
 						}
 					}
 				}
@@ -776,11 +776,22 @@ class EDIT_RENDERER_CLASS
 			}
 		}
 		if (!$nothingtodo) {
+			$foundpos = 0;
+			if (sort($usedpos)) {
+				for ($c1 = 0; $c1 < sizeof((array) $usedpos); $c1++) {
+					if ($foundpos + 1 < $usedpos[$c1]) {
+
+						break;
+					} else
+						$foundpos++;
+				}
+			}
+
 			if ($table == "kurse_stichwort") {
-				$sql = "INSERT INTO kurse_stichwort (primary_id, attr_id, structure_pos) VALUES (" . $id . ", " . $keyid . ", " . $maxpos + 1 . ")";
+				$sql = "INSERT INTO kurse_stichwort (primary_id, attr_id, structure_pos) VALUES (" . $id . ", " . $keyid . ", " . $foundpos + 1 . ")";
 				$db->query($sql);
 			} else {
-				$sql = "INSERT INTO kurse_kompetenz (primary_id, attr_id, attr_url, suggestion, structure_pos) VALUES (" . $id . ", " . $keyid . ", '" . $url . "', 1, "  . $maxpos + 1 . ")";
+				$sql = "INSERT INTO kurse_kompetenz (primary_id, attr_id, attr_url, suggestion, structure_pos) VALUES (" . $id . ", " . $keyid . ", '" . $url . "', 1, "  . $foundpos + 1 . ")";
 				$db->query($sql);
 			}
 		}
@@ -789,48 +800,26 @@ class EDIT_RENDERER_CLASS
 
 	private function reorg_keywords($db)
 	{
-		$courseKeywordRef = array();
+
 		$courseKeywordComp = array();
-		$escokeywords = array();
-		$maxpos = -1;
-		$db->query("SELECT attr_id, structure_pos FROM kurse_stichwort");
-		while ($db->next_record()) {
-			$courseKeywordRef[] = $db->Record['attr_id'];
-			$pos = $db->Record['structure_pos'];
-			if ($maxpos < $pos)
-				$maxpos = $pos;
-		}
+
+
 		$db->query("SELECT attr_id FROM kurse_kompetenz");
 		while ($db->next_record()) {
 			$courseKeywordComp[] = $db->Record['attr_id'];
 		}
-		if (isset($courseKeywordRef[0]) != "") {
+
+		if (isset($courseKeywordComp[0])) {
 			$db->query("SELECT id FROM stichwoerter WHERE stichwoerter.eigenschaften=" . $this->esco_type);
 			while ($db->next_record()) {
-				$escokeywords[] = $db->Record['id'];
-			}
-			if (isset($escokeywords[0]) != "") {
-				foreach ($escokeywords as $keyw) {
-					if (!in_array($keyw, $courseKeywordComp)) {
-						$db->query("DELETE FROM stichwoerter WHERE id=" . $keyw);
-						$db->query("DELETE FROM kurse_stichwort WHERE attr_id=" . $keyw);
-						//	$db->query("DELETE FROM kurse_kompetenz WHERE attr_id=" . $keyw);
-					}
-				}
-			}
-			if (isset($courseKeywordComp[0]) != "") {
-				foreach ($courseKeywordComp as $com) {
-					if (!in_array($com, $escokeywords))
-						$db->query("DELETE FROM kurse_kompetenz WHERE attr_id=" . $com);
+				$escokeyid = $db->Record['id'];
+				if (!in_array($escokeyid, $courseKeywordComp)) {
+					$db->query("DELETE FROM kurse_stichwort WHERE attr_id=" . $escokeyid);
+					$db->query("DELETE FROM stichwoerter WHERE id=" . $escokeyid);
 				}
 			}
 
-			// foreach($courseKeywordComp as $ref){
-			// 	if (!in_array($ref, $courseKeywordRef)){
-			// 		$maxpos++;
-			// 		$db->query("INSERT INTO kurse_stichwort (primary_id, attr_id, structure_pos) VALUES (" . $id . ", " . $ref . ", " . $maxpos . ")");
-			// 	}
-			//}
+
 		}
 	}
 
@@ -853,6 +842,8 @@ class EDIT_RENDERER_CLASS
 		$db = isset($_REQUEST['db']) ? $_REQUEST['db'] :  null;
 		$table = isset($_REQUEST['table']) ? $_REQUEST['table'] : null;
 		$id = isset($_REQUEST['id']) ? intval($_REQUEST['id']) : -1;
+		$uri = isset($_REQUEST['uri']) ? $_REQUEST['uri'] : null;
+		$title = isset($_REQUEST['title']) ? $_REQUEST['title'] : null;
 
 
 		$this->data = new EDIT_DATA_CLASS(
@@ -875,14 +866,15 @@ class EDIT_RENDERER_CLASS
 		if (isset($_REQUEST['subseq'])) {
 			// ... subsequent call, not canceled (this is done without posting data)
 			if (
-				isset($_REQUEST['submit_apply']) || isset($_REQUEST['submit_ok']) || isset($_REQUEST['submit_esco']) || isset($_REQUEST['submit_vorschlaege']) || isset($_REQUEST['submit_discard']) || isset($_REQUEST['inputescoskill'])
+				isset($_REQUEST['submit_apply']) || isset($_REQUEST['submit_ok']) || isset($_REQUEST['submit_esco']) || isset($_REQUEST['submit_vorschlaege'])
+				|| isset($_REQUEST['submit_ki_esco']) || isset($_REQUEST['submit_discard']) || isset($_REQUEST['inputescoskill'])
 				|| isset($_REQUEST['submit_preselected'])
 			) {
 				//ESCO-Vorschlaege ermitteln
-				if (isset($_REQUEST['submit_esco']) || isset($_REQUEST['inputescoskill'])) {
+				if (isset($_REQUEST['submit_esco']) || isset($_REQUEST['inputescoskill']) || isset($_REQUEST['submit_ki_esco'])) {
 					$db = new DB_Admin();
 					$res = array();
-					if (isset($_REQUEST['submit_esco'])) {
+					if (isset($_REQUEST['submit_esco']) || isset($_REQUEST['submit_ki_esco'])) {
 						$table = "stichwoerter";
 						$load_from_post_ok = $this->data->load_from_post();
 						$this->add_errors_n_warnings_from_data_(); // show errors from load_from_post()
@@ -892,10 +884,15 @@ class EDIT_RENDERER_CLASS
 
 
 						$comp = new WISY_KI_COMPETENCE_CLASS();
-
-						$res = $comp->WisyKi_competence_search($this->data->controls, $id);
+                        $use_llm = isset($_REQUEST['submit_ki_esco']);
+						$res = $comp->WisyKi_competence_search($this->data->controls, $id, $use_llm);
 						if ($res == false)
 							$site->msgAdd("\n" . "Die KI lieferte kein Ergebnis. Eventuell liefert ein erneuter Aufruf Ergebnisse.", 'e');
+					} else if (isset($uri)) {  //AJAX-Search of 
+						$r['title'] = $title;
+						$r['uri'] = $uri;
+						$res[] = $r;
+						$id = $_SESSION['kursid'];
 					} else {
 						$sql = "SELECT kategorie, url FROM $table WHERE id=" . $id;
 						$db->query($sql);
@@ -1017,7 +1014,7 @@ class EDIT_RENDERER_CLASS
 								$db1->query($sqlattr2);
 							}
 						}
-						$this->reorg_keywords($db1);
+						//$this->reorg_keywords($db1);
 						header('Location: \admin\edit.php?table=kurse&id=' . $id);
 
 						exit;
@@ -1032,7 +1029,7 @@ class EDIT_RENDERER_CLASS
 						$db2->query("DELETE FROM kurse_kompetenz WHERE primary_id = $id AND attr_id=" . $attr_id . " AND suggestion=1");
 						$db2->query("DELETE FROM kurse_stichwort WHERE primary_id = $id AND attr_id=" . $attr_id);
 					}
-					$this->reorg_keywords($db1);
+					//$this->reorg_keywords($db1);
 					header('Location: \admin\edit.php?table=kurse&id=' . $id);
 
 					exit;

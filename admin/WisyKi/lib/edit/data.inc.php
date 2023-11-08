@@ -561,8 +561,8 @@ class EDIT_DATA_CLASS
 		$speechids = $this->get_speech_ids();
 		$selected_speech = array();
 
-		$abschlussids = $this->get_ids("abschluss");
-		$selected_abschluss = array();
+		// $abschlussids = $this->get_ids("abschluss");
+		// $selected_abschluss = array();
 
 		$lernformids = $this->get_ids("lernform");
 		$selected_lernform = array();
@@ -708,35 +708,36 @@ class EDIT_DATA_CLASS
 								$control->dbval = $category;
 								$this->correct_control_if_exist("", $generalkeywords, $selected_category);
 							}
-						} else 	if ($row->name == 'abschluss') {
-							$abschluss = 0;
+						} 
+						// else 	if ($row->name == 'abschluss') {
+						// 	$abschluss = 0;
 
-							$index_of_stichwort = null;
-							for ($rx = 0; $rx < sizeof((array) $this->table_def->rows); $rx++) {
-								$rowx = $this->table_def->rows[$rx];
-								if ($rowx->name == 'stichwort') {
-									$index_of_stichwort = $rx;
-									break;
-								}
-							}
+						// 	$index_of_stichwort = null;
+						// 	for ($rx = 0; $rx < sizeof((array) $this->table_def->rows); $rx++) {
+						// 		$rowx = $this->table_def->rows[$rx];
+						// 		if ($rowx->name == 'stichwort') {
+						// 			$index_of_stichwort = $rx;
+						// 			break;
+						// 		}
+						// 	}
 
-							$stichworte = $this->get_value_from_db_($this->db1, $this->table_def, $index_of_stichwort);
+						// 	$stichworte = $this->get_value_from_db_($this->db1, $this->table_def, $index_of_stichwort);
 
-							if (!empty($stichworte)) {
+						// 	if (!empty($stichworte)) {
 
-								$stichworte = explode(',', $stichworte);
+						// 		$stichworte = explode(',', $stichworte);
 
-								foreach ($stichworte as $stichwort) {
-									if (in_array($stichwort, $abschlussids)) {
-										$selected_abschluss[] = $stichwort;
-										$abschluss = $stichwort;
-										break;
-									}
-								}
-							}
-							$control->dbval = $abschluss;
-							$this->correct_control_if_exist("", $generalkeywords, $selected_abschluss);
-						} else 	if ($row->name == 'speech') {
+						// 		foreach ($stichworte as $stichwort) {
+						// 			if (in_array($stichwort, $abschlussids)) {
+						// 				$selected_abschluss[] = $stichwort;
+						// 				$abschluss = $stichwort;
+						// 				break;
+						// 			}
+						// 		}
+						// 	}
+						// 	$control->dbval = $abschluss;
+						// 	$this->correct_control_if_exist("", $generalkeywords, $selected_abschluss);}
+						 else 	if ($row->name == 'speech') {
 							$speech = 0;
 
 							$index_of_stichwort = null;

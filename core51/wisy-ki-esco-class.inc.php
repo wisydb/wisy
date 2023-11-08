@@ -382,10 +382,16 @@ class WISY_KI_ESCO_CLASS {
      * @param int $limit
      * @return array [{"label":"title1","value":"url1"},{"label":"title2","value":"url2"}]
      */
-    function search_wisy($term, $limit = 5) {
-        $tagsuggestor =& createWisyObject('WISY_KI_TAGSUGGESTOR_CLASS', $this->framework);
-        $tags = $tagsuggestor->suggestTags(utf8_decode($term), array("max" => $limit, 'q_tag_type_not'=>array(1,65536,4,8,32768,16,32,64,128,512,1024,2048,4096,8192,16384,65,256), 'q_tag_eigenschaften_not'=>array(524288)));
-
+    function search_wisy($term, $limit = 5, $sheme = "")
+    {
+        $tags = array();
+        if ($sheme == "sachstichwort_red") {
+            require_once($_SERVER['DOCUMENT_ROOT'] . '/admin/WisyKi/lib/search/wisy_search.inc.php');
+            $tags = suggestTags(utf8_decode($term), array("max" => $limit, 'q_tag_type_not' => array(1, 65536, 4, 8, 32768, 16, 32, 64, 128, 512, 1024, 2048, 4096, 8192, 16384, 65, 256)));
+        } else {
+            $tagsuggestor = &createWisyObject('WISY_TAGSUGGESTOR_CLASS', $this->framework);
+            $tags = $tagsuggestor->suggestTags(utf8_decode($term), array("max" => $limit, 'q_tag_type_not' => array(1, 65536, 4, 8, 32768, 16, 32, 64, 128, 512, 1024, 2048, 4096, 8192, 16384, 65, 256)));
+        }
         $search_results = array();
 
         foreach ($tags as $tag) {
@@ -449,15 +455,19 @@ class WISY_KI_ESCO_CLASS {
         if (isset($schemes) && !empty($schemes)) {
             $minlimit = round($limit / count($schemes), 0, PHP_ROUND_HALF_UP);
             $counter = 0;
+            $res = 0;
             foreach (array_reverse($schemes) as $scheme) {
                 $counter++;
-                $schemelimit = $counter * $minlimit - count($results);
+                    $schemelimit = $counter * $minlimit - $res;
                 if ($scheme == 'extended-skills-hierarchy') {
                     $results = array_merge($results, $this->search_skills_hierarchy($term, $schemelimit));
-                } else if ($scheme == 'sachstichwort') {
-                    $sachstichworte = $this->search_wisy($term, $schemelimit);
+                } else if ($scheme == 'sachstichwort' || $scheme == 'sachstichwort_red') {
+                    //additional scheme to mark search from Redaktionsmaske (Karl Weber)
+               $sachstichworte = $this->search_wisy($term, $schemelimit, $scheme);
+                   $res = count($sachstichworte);
                 } else {
                     $results = array_merge($results, $this->search_api($term, $type, $scheme, $schemelimit, $filterconcepts));
+                    $res = count($results);
                 }
             }
         } else {
@@ -482,6 +492,8 @@ class WISY_KI_ESCO_CLASS {
                     }
                 }
                 if (!$duplicate) {
+                    
+                    $stichwort['uri'] = "";
                     $results[] = $stichwort;
                 }
             }
@@ -494,7 +506,7 @@ class WISY_KI_ESCO_CLASS {
         if ($onlyrelevant) {
             $results = $this->filter_is_relevant($results);
         }
-
+        if ($schemes[2] != 'sachstichwort_red')
         usort($results, function ($a, $b) use ($term) {
             return $this->sort_term_first($a, $b, $term);
         });

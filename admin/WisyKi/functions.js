@@ -453,6 +453,12 @@ function popfit(w)
 	popfitted = 1;
 }
 
+function escoselectskill($uri, $title)
+{
+	var href = "edit.php?table=escoskills&subseq&inputescoskill&uri=" + $uri + "&title=" + $title;
+        window.open(href,"window.opener.name");
+}
+
 function escopopupclose($id)
 {
 	if( window.opener && !window.opener.closed )

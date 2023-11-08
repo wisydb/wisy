@@ -9,6 +9,7 @@ class WISY_KI_COMPETENCE_CLASS
 	public $minRel = 0.90;
 	public $firstnum = 10;
 	private $api_endpoint;
+	private $api_llm_endpoint;
 
 	function __construct($db = null)
 	{
@@ -32,11 +33,17 @@ class WISY_KI_COMPETENCE_CLASS
 		if (isset($GLOBALS['MaxPop'])) {
 			$this->firstnum = $GLOBALS['MaxPop'];
 		}
-		
-        if (!defined('WISYKI_API')) {
-            throw new Exception('WISYKI_API not set in admin/config/config.inc.php');
-        }
+
+		if (!defined('WISYKI_API')) {
+			throw new Exception('WISYKI_API not set in admin/config/config.inc.php');
+		}
+
+		if (!defined('WISYKI_LLM_API')) {
+			throw new Exception('WISYKI_API for learning KI not set in admin/config/config.inc.php');
+		}
+
 		$this->api_endpoint = WISYKI_API;
+		$this->api_llm_endpoint = WISYKI_LLM_API;
 	}
 	function correctsql($sql, $level, $selectedid = NULL)
 	{
@@ -162,7 +169,7 @@ class WISY_KI_COMPETENCE_CLASS
 		return $ret;
 	}
 	//Find competences in KI
-	function WisyKi_competence_search($controls, $id)
+	function WisyKi_competence_search($controls, $id, $use_llm = false)
 	{
 		$hier_url = array();
 		foreach ($controls as $param) {
@@ -213,24 +220,40 @@ class WISY_KI_COMPETENCE_CLASS
 				);
 			}
 		}
-
-		$url = $this->api_endpoint . "/chatsearch";
+		if ($use_llm)
+			$url = $this->api_llm_endpoint . "/chatsearch";
+		else
+			$url = $this->api_endpoint . "/chatsearch";
 		$curl_session = curl_init($url);
-		$search_params = array(
-			// 'searchterms' => $kw,
-			'doc' => utf8_encode($titel) . " " . utf8_encode($lernziele) . " " . utf8_encode(implode(" ", $keywords))  .  " " . utf8_encode($zielgruppe) . " " . utf8_encode($descr),
-			'top_k' => 20,
-			'strict' => 2,
-			'skills' => $skills,
+		if ($use_llm) {
+			$search_params = array(
+				// 'searchterms' => $kw,
+				'doc' => utf8_encode($titel) . " " . utf8_encode($lernziele) . " " . utf8_encode(implode(" ", $keywords))  .  " " . utf8_encode($zielgruppe) . " " . utf8_encode($descr),
+				'skills' => $skills,
+				'top_k' => 20,
+				'strict' => 2,
+				'use_llm' => true,
+	//			'llm_validation' => true,
+				'filterconcepts' => $hier_url,
+				'skillfit_validation' => true
+			);			
+		} else {
+			$search_params = array(
+				// 'searchterms' => $kw,
+				'doc' => utf8_encode($titel) . " " . utf8_encode($lernziele) . " " . utf8_encode(implode(" ", $keywords))  .  " " . utf8_encode($zielgruppe) . " " . utf8_encode($descr),
+				'top_k' => 20,
+				'strict' => 2,
+				'skills' => $skills,
 
-			//'doc' => utf8_encode($descr),
-			// 'exclude_irrelevant' => true,
-			// 'extract_keywords' => true,
-			// 'schemes' => "http://data.europa.eu/esco/concept-scheme/member-skills",
-			'filterconcepts' => $hier_url,
-			'openai_api_key' => OPENAI_API_KEY,
-			// 'min_relevancy' => $this->minRel
-		);
+				//'doc' => utf8_encode($descr),
+				// 'exclude_irrelevant' => true,
+				// 'extract_keywords' => true,
+				// 'schemes' => "http://data.europa.eu/esco/concept-scheme/member-skills",
+				'filterconcepts' => $hier_url,
+				'openai_api_key' => OPENAI_API_KEY,
+				// 'min_relevancy' => $this->minRel
+			);
+		}
 		$json = json_encode($search_params);
 
 		curl_setopt($curl_session, CURLOPT_RETURNTRANSFER, true);
@@ -246,8 +269,9 @@ class WISY_KI_COMPETENCE_CLASS
 			return;
 		}
 
-		curl_close($curl_session);
+		
 		$result = curl_exec($curl_session);
+		curl_close($curl_session);
 
 		$result = json_decode($result, true);
 		$res = array();

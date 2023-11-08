@@ -23,7 +23,8 @@ if (@file_exists(dirname(__FILE__) . '/codes.inc.php')) {
 
 define('USE_ROLES', 1);
 
-global $codes_beginnoptionen, $codes_dauer, $codes_stichwort_eigenschaften, $codes_rechtsform, $codes_kurstage, $codes_tagescode;
+global $codes_beginnoptionen, $codes_dauer, $codes_stichwort_eigenschaften, $codes_rechtsform, $codes_kurstage, $codes_tagescode, $wisyki_keywordtypes;
+
 
 //
 // Table Definitions - This Area must be modified for Customisation
@@ -57,16 +58,16 @@ $ratgeber->add_row(TABLE_TEXTAREA | TABLE_NEWSECTION,			'notizen_fix',			'Anmerk
 $ratgeber->add_row(TABLE_TEXTAREA,			                'notizen',			'Journal', '', '', '');
 
 /*** ABSCHLUSS ***/
-$abschluss = new Table_Def_Class(TABLE_SYNCABLE,				'stichwoerter',			'abschluss');
-$abschluss->add_row(
-	TABLE_TEXT | TABLE_SUMMARY | TABLE_LIST | TABLE_MUST,
-	'stichwort',
-	'Stichwort',
-	'',
-	array('16', '1'),  //keywort-Types to be found
-	'',
-	array('ctrl.size' => '10-20-60', 'layout.bg.class' => 'e_bglite', 'layout.descr.class' => 'e_bolder', 'ctrl.class' => 'e_bolder')
-);
+// $abschluss = new Table_Def_Class(TABLE_SYNCABLE,				'stichwoerter',			'abschluss');
+// $abschluss->add_row(
+// 	TABLE_TEXT | TABLE_SUMMARY | TABLE_LIST | TABLE_MUST,
+// 	'stichwort',
+// 	'Stichwort',
+// 	'',
+// 	array('16', '1'),  //keywort-Types to be found
+// 	'',
+// 	array('ctrl.size' => '10-20-60', 'layout.bg.class' => 'e_bglite', 'layout.descr.class' => 'e_bolder', 'ctrl.class' => 'e_bolder')
+// );
 
 
 /***Kompetenz ***/
@@ -76,7 +77,7 @@ $kompetenz->add_row(
 	'stichwort',
 	'Stichwort',
 	'',
-	array('524288', '1048576'),  //keywort-Types, and Ids to be found
+	array($wisyki_keywordtypes['ESCO-Kompetenz'], $wisyki_keywordtypes['ESCO-Beruf']),  //keywort-Types, and Ids to be found
 	'',
 	array('ctrl.size' => '10-20-60', 'layout.bg.class' => 'e_bglite', 'layout.descr.class' => 'e_bolder', 'ctrl.class' => 'e_bolder')
 );
@@ -618,7 +619,7 @@ $kurse->add_row(
 		'layout.input.hide' => 1
 	)
 );  //'value.replace'=>array( array('###'), array(',') )
-$kurse->add_row(TABLE_MATTR_BR | TABLE_SATTR | TABLE_TRACKDEFAULTS | TABLE_DB_IGNORE | TABLE_UNIQUE,				'abschluss',			'Abschluss', 0, $abschluss, '');
+//$kurse->add_row(TABLE_MATTR_BR | TABLE_SATTR | TABLE_TRACKDEFAULTS | TABLE_DB_IGNORE | TABLE_UNIQUE,				'abschluss',			'Abschluss', 0, $abschluss, '');
 $kurse->add_row(TABLE_MATTR  |  TABLE_TRACKDEFAULTS,				'lernform',			'Lernform', 0, $lernform, '');
 $kurse->add_row(TABLE_MATTR  |  TABLE_TRACKDEFAULTS,				'foerderung',			'F&oumlrderungsart', 0, $foerderungsart, '');
 $kurse->add_row(TABLE_FLAG | TABLE_DB_IGNORE,							'permentry',	'Einstieg bis Kursende m&oumlglich', '', $permentry, '',  array('layout.join' => 0));
