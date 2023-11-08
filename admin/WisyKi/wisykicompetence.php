@@ -39,7 +39,7 @@ class WISY_KI_COMPETENCE_CLASS
 		}
 
 		if (!defined('WISYKI_LLM_API')) {
-			throw new Exception('WISYKI_API for learning KI not set in admin/config/config.inc.php');
+			throw new Exception('WISYKI_LLM_API for learning AI not set in admin/config/config.inc.php');
 		}
 
 		$this->api_endpoint = WISYKI_API;
