@@ -285,7 +285,7 @@ class Table_Def_Class
 		for( $r = 0; $r < sizeof((array) $this->rows); $r++ )
 		{
 			$row_type = $this->rows[$r]->flags & TABLE_ROW;
-			if( $row_type == TABLE_MATTR )
+			if( $row_type == TABLE_MATTR &&  $this->rows[$r]->name != 'vorschlaege')
 			{
 				$db->query("DELETE FROM " . $this->name . '_' . $this->rows[$r]->name . " WHERE primary_id=$id");
 			}

@@ -579,6 +579,7 @@ foreach ($levels as $level) {
 $kurse->add_row(TABLE_ENUM | TABLE_DB_IGNORE,						'speech',	        'Sprachniveau', 0, $speech_selct_values, '', array('showIfSetting' => 'hideifnospeech', 'layout.join' => 0));
 $kurse->add_row(TABLE_MATTR  |  TABLE_TRACKDEFAULTS,				'kompetenz',			'Kompetenzen', 0, $kompetenz, '', array('layout.join' => 0) );
 $kurse->add_row(TABLE_MATTR  |  TABLE_TRACKDEFAULTS  |  TABLE_DB_IGNORE,      					'vorschlaege',			'Kompetenzvorschl&aumlge ', 0,$kompetenz  , '', array( 'layout.join' => 0));
+//$kurse->add_row(TABLE_MATTR | TABLE_TRACKDEFAULTS  |  TABLE_DB_IGNORE,      					'vorschlaege',			'Kompetenzvorschl&aumlge ', 0,$kompetenz  , '', array( 'layout.join' => 0));
 $kurse->add_row(TABLE_TEXT | TABLE_DB_IGNORE, 					'ki_bot', 		'KI-Bot-Level', '', '', '',		array('layout.join' => 1));
 $kurse->add_row(TABLE_TEXT, 									'num_prop', 		'Anzahl Kompetenzvorschl&aumlge', '', '', '',		array('layout.join' => 1));
 $kurse->add_row(TABLE_TEXT, 									'rel_prop', 		'Minimale Relevanz der Kompetenzvorschl&aumlge', '', '', '',		array('layout.join' => 1));
