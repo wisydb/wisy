@@ -823,6 +823,8 @@ class EDIT_DATA_CLASS
 							$control->dbval = $stichworte;
 						} else {
 							$control->dbval = $this->get_value_from_db_($this->db1, $this->table_def, $r);
+							if ($row->name == "ki_bot" && $control->dbval == "" && isset($GLOBALS['KiBot']))
+							$control->dbval = $GLOBALS['KiBot'];
 							if ($row->name == "num_prop" && $control->dbval == "" && isset($GLOBALS['MaxPop']))
 								$control->dbval = $GLOBALS['MaxPop'];
 							if ($row->name == "rel_prop" && $control->dbval == "" && isset($GLOBALS['MinRel']))
