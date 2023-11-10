@@ -194,10 +194,13 @@ if ($db->next_record()) {
 if (strval($wisyPortalEinstellungen['wisyki'] != '')) {
 	$GLOBALS['WisyKi'] = true;
 }
+if (strval($wisyPortalEinstellungen['kibot'] != '')) {
+	$GLOBALS['KiBot'] = $wisyPortalEinstellungen['kibot'];
+}
 if (strval($wisyPortalEinstellungen['minrel'] != '')) {
 	$GLOBALS['MinRel'] = $wisyPortalEinstellungen['minrel'];
 	if (strval($wisyPortalEinstellungen['maxpop'] != '')) {
-		$GLOBALS['MaxPop'] = $wisyPortalEinstellungen['MaxPop'];
+		$GLOBALS['MaxPop'] = $wisyPortalEinstellungen['maxpop'];
 	}
 	/***************************************************************
 Collect all needable keyword-types

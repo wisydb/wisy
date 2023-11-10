@@ -8,6 +8,7 @@ class WISY_KI_COMPETENCE_CLASS
 	public $curl_session;
 	public $minRel = 0.90;
 	public $firstnum = 10;
+	public $kibot = 2;
 	private $api_endpoint;
 	private $api_llm_endpoint;
 
@@ -27,6 +28,9 @@ class WISY_KI_COMPETENCE_CLASS
 		// )";
 
 		// $this->db->query($sql);
+		if (isset($GLOBALS['KiBot'])) {
+			$this->kibot = $GLOBALS['KiBot'];
+		}
 		if (isset($GLOBALS['MinRel'])) {
 			$this->minRel = $GLOBALS['MinRel'];
 		}
@@ -187,6 +191,8 @@ class WISY_KI_COMPETENCE_CLASS
 			// $vorraussetzungen = $param->dbval;
 			if ($param->name == "f_zielgruppe")
 				$zielgruppe = $param->dbval;
+			if ($param->name == "f_ki_bot" && $param->dbval != "")
+				$this->kibot = intval($param->dbval);
 			if ($param->name == "f_num_prop" && $param->dbval != "")
 				$this->firstnum = intval($param->dbval);
 			if ($param->name == "f_rel_prop"  && $param->dbval != "")
@@ -231,7 +237,7 @@ class WISY_KI_COMPETENCE_CLASS
 				'doc' => utf8_encode($titel) . " " . utf8_encode($lernziele) . " " . utf8_encode(implode(" ", $keywords))  .  " " . utf8_encode($zielgruppe) . " " . utf8_encode($descr),
 				'skills' => $skills,
 				'top_k' => 20,
-				'strict' => 2,
+				'strict' => $this->kibot,
 				'use_llm' => true,
 	//			'llm_validation' => true,
 				'filterconcepts' => $hier_url,
@@ -242,7 +248,7 @@ class WISY_KI_COMPETENCE_CLASS
 				// 'searchterms' => $kw,
 				'doc' => utf8_encode($titel) . " " . utf8_encode($lernziele) . " " . utf8_encode(implode(" ", $keywords))  .  " " . utf8_encode($zielgruppe) . " " . utf8_encode($descr),
 				'top_k' => 20,
-				'strict' => 2,
+				'strict' => $this->kibot,
 				'skills' => $skills,
 
 				//'doc' => utf8_encode($descr),

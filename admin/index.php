@@ -1104,7 +1104,10 @@ if ($select_numrows) {
 				}
 			}
 		}
-
+//direct hierarchy to competence
+// $site->skin->cellStart();
+// echo 'hier bin ich!!!!';
+// $site->skin->cellEnd();
 		// summary column
 		if ($columnsHash[$hi++]) {
 			$site->skin->cellStart();
