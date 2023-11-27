@@ -27,7 +27,9 @@ internal parameters for subsequent calls:
 
 =============================================================================*/
 
-
+/*******************************************************************************
+ Find out the portal to use, load some basic settings
+ *******************************************************************************/
 
 /*=============================================================================
 Functions
@@ -47,15 +49,12 @@ function select_WisyKi()
 	$db->query($sql);
 	if ($db->next_record()) {
 		$wisyPortalEinstellungen = explodeSettings($db->fs('einstellungen'));
-		
-	}
-	else{
+	} else {
 		error404();
 	}
 	if (strval($wisyPortalEinstellungen['wisyki'] != '')) {
 		$GLOBALS['WisyKi'] = true;
 	}
-	
 }
 
 function createColumnsHash($table, $prefix = '')
@@ -152,7 +151,7 @@ function createColumnsHash($table, $prefix = '')
 	return $columnsCount;
 }
 
-function renderTableHeadCell($curr_field, $descr, $def_desc = 0, $sum_field = 0)
+function renderTableHeadCell($curr_field, $descr, $def_desc = 0, $sum_field = 0, $id = -1)
 {
 
 	global $site;
@@ -162,6 +161,8 @@ function renderTableHeadCell($curr_field, $descr, $def_desc = 0, $sum_field = 0)
 	global $orderby;
 	global $baseurl;
 	global $Table_Shortnames;
+
+
 
 	if (!isset($tableHeadCellsRendered))
 		$tableHeadCellsRendered = 0;
@@ -190,27 +191,34 @@ function renderTableHeadCell($curr_field, $descr, $def_desc = 0, $sum_field = 0)
 	// get arrowImage'n'action
 	$img = '';
 	$action = '';
+	if ($_REQUEST['table'] == "escocategories") {
+		$escolevel = 1;
+		if (isset($_REQUEST['escolevel']))
+			$escolevel = $_REQUEST['escolevel'];
+	} else
+		$escolevel = -1;
 	if ($curr_field) {
 		$action = $baseurl;
+		$esco_level = ($escolevel != -1) ? ('&escolevel=' . $escolevel) : '';
+		$esco_level .= ($id != -1) ? ('&id=' . $id) : '';
 		if ($curr_field == $orderby_field) {
 			if ($orderby_sort == 'DESC') {
 				$img = 'sortdesc';
-				$action .= '&orderby=' . $curr_field;
+				$action .= '&orderby=' . $curr_field . $esco_level;
 			} else {
 				$img = 'sortasc';
-				$action .= '&orderby=' . $curr_field . '+DESC';
+				$action .= '&orderby=' . $curr_field . '+DESC' . $esco_level;
 			}
 			$title = htmlconstant('_OVERVIEW_SORTTOGGLE');
 		} else {
 			if ($def_desc) {
-				$action .= '&orderby=' . $curr_field . '+DESC';
+				$action .= '&orderby=' . $curr_field . '+DESC' .  $esco_level;
 			} else {
-				$action .= '&orderby=' . $curr_field;
+				$action .= '&orderby=' . $curr_field  .  $esco_level;
 			}
 			$title = htmlconstant('_OVERVIEW_SORT');
 		}
 	}
-
 	// render action'n'description
 	if ($action) {
 		echo '<a href="' . isohtmlentities(strval($action)) . "\" title=\"$title\">";
@@ -229,7 +237,29 @@ function renderTableHeadCell($curr_field, $descr, $def_desc = 0, $sum_field = 0)
 		}
 		echo '</a>';
 	}
-
+	//display hierarchy-level and Name of Headline of selected Hierarchy-Level
+	if ($escolevel != -1 && $curr_field != 'id') {
+		echo '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ESCO-Hierarchie-Level:&nbsp;' . $escolevel - 1;
+		$dbtitle = new DB_Admin;
+		$dbtitle->query("SELECT kategorie FROM escocategories WHERE id=" . $id);
+		if ($dbtitle->next_record())
+			echo '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Gewaehlte Hierarchiestufe:&nbsp;<b>' . $dbtitle->f('kategorie') . '</b>';
+		if (isset($_SESSION['hierarchy_id']) && $_SESSION['hierarchy_id'] != -1) {
+			$previous_level = $escolevel - 1;
+			$previous_hierarchy_id = $_SESSION['hierarchy_id_old'];
+			if ($previous_level > 1) {
+				echo '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href=' . isohtmlentities(strval("index.php?table=escocategories&escolevel=$previous_level&id=$previous_hierarchy_id&orderby=kategorie%20ASC"))
+					. ' class="clicktr" title="Vorherige Hierarchiestufe oeffnen">';
+				echo '<img src="skins/default/img/arrowleft_sm.png" width="38" height="19" border="0" alt="" />';
+				echo ' </a>';
+			} else {
+				echo '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href=' . isohtmlentities(strval("index.php?table=escocategories&rtypes=ESCO&escolevel=$previous_level&orderby=kategorie%20ASC"))
+					. ' class="clicktr" title="Vorherige Hierarchiestufe oeffnen">';
+				echo '<img src="skins/default/img/arrowleft_sm.png" width="38" height="19" border="0" alt="" />';
+				echo ' </a>';
+			}
+		}
+	}
 	if ($sum_field) {
 		$dbsum = new DB_Admin;
 		$dbsum->query("SELECT SUM($curr_field) AS alltogether FROM {$tableDef->name};");
@@ -241,7 +271,8 @@ function renderTableHeadCell($curr_field, $descr, $def_desc = 0, $sum_field = 0)
 	if ($settingsOut) {
 		echo '&nbsp;</td><td align="right" nowrap="nowrap">';
 		$href = "index_listattr.php?table={$tableDef->name}&amp;scope=columns";
-		echo "<a href=\"$href\" target=\"dbsearch_opt\" onclick=\"return popup(this,260,500);\" title=\"" . htmlconstant('_OVERVIEW_EDITCOLUMNS___') . "\">|||</a>";
+		if ($escolevel == -1)
+			echo "<a href=\"$href\" target=\"dbsearch_opt\" onclick=\"return popup(this,260,500);\" title=\"" . htmlconstant('_OVERVIEW_EDITCOLUMNS___') . "\">|||</a>";
 		echo '</td></tr></table>';
 	}
 
@@ -266,7 +297,7 @@ function getSortField($tableDef)
 	return 'id'; // nothing else found
 }
 
-function renderTableHead(&$hi, $table, $prefix = '')
+function renderTableHead(&$hi, $table, $prefix = '', $id = -1)
 {
 	global $columnsHash;
 	global $site;
@@ -281,7 +312,7 @@ function renderTableHead(&$hi, $table, $prefix = '')
 
 		// ID / BIN / VIEW column	
 		if ($columnsHash[$hi++]) {
-			renderTableHeadCell('id', htmlconstant('_ID'), 1);
+			renderTableHeadCell('id', htmlconstant('_ID'), 1, 0, $id);
 		}
 	}
 
@@ -328,7 +359,8 @@ function renderTableHead(&$hi, $table, $prefix = '')
 					$curr_field,
 					$tableDef->rows[$r]->descr,
 					($rowtype == TABLE_DATE || $rowtype == TABLE_DATETIME) ? 1 : 0,
-					($rowtype == TABLE_INT && ($rowflags & TABLE_SUM)) ? 1 : 0
+					($rowtype == TABLE_INT && ($rowflags & TABLE_SUM)) ? 1 : 0,
+					$id
 				);
 			}
 		}
@@ -474,6 +506,10 @@ require_lang('lang/dbsearch');
 require_lang('lang/overview');
 
 
+$table = isset($_REQUEST['table']) ? $_REQUEST['table'] : null;
+
+
+
 // get table and other paramters
 $table = isset($_REQUEST['table']) ? $_REQUEST['table'] : null;
 if (!$table) // may be unset after a call to index.php after a login with the session id already set
@@ -498,6 +534,20 @@ if ($debug) {
 }
 
 $allurl = "$baseurl&searchreset=1&searchoffset=0&orderby=date_modified+DESC";
+
+
+//Save hierarchie-ids set in popup Windows
+if (isset($_REQUEST['table']) && $_REQUEST['table'] == "escocategories") {
+	if (isset($_REQUEST['id'])) {
+		if (isset($_SESSION['hierarchy_id'])) {
+			$_SESSION['hierarchy_id_old'] = $_SESSION['hierarchy_id'];
+		}
+		$_SESSION['hierarchy_id'] = $_REQUEST['id'];
+	} else {
+		$_SESSION['hierarchy_id'] = -1;
+		$_SESSION['hierarchy_id_old'] = -1;
+	}
+}
 
 // connect to database
 $db	= new DB_Admin;
@@ -537,8 +587,12 @@ if (!isset($_REQUEST['rows'])) {
 	regSet("$settingsPrefix.$table.rows", $rows, 10);
 }
 
-if( $rows < 1 ) { $rows = 1; }
-if( $rows > 5000 ) { $rows = 5000; }
+if ($rows < 1) {
+	$rows = 1;
+}
+if ($rows > 5000) {
+	$rows = 5000;
+}
 
 // order
 if (!isset($_REQUEST['orderby'])) {
@@ -883,7 +937,10 @@ if ($select_numrows) {
 	$site->skin->tableStart();
 	$site->skin->headStart();
 	$hi = 0;
-	renderTableHead($hi, $tableDef->name);
+	$hir_id = -1;
+	if (isset($_REQUEST['id']))
+		$hir_id = $_REQUEST['id'];
+	renderTableHead($hi, $tableDef->name, '', $hir_id);
 	$site->skin->headEnd();
 
 	// prepage view and action URLs
@@ -900,7 +957,9 @@ if ($select_numrows) {
 	$checkimgsize = GetImageSize("{$site->skin->imgFolder}/check0.gif");
 	$noaccessimgsize = GetImageSize("{$site->skin->imgFolder}/noaccess.gif");
 	$show_bin = regGet('toolbar.bin', 1) ? 1 : 0;
-
+	if ($table == "escocategories" || $table == "escoskills") {
+		$show_bin = 0;
+	}
 	if (isset($_REQUEST['selectobject'])) {
 		$tr_a_attr = ' class="clicktr" title="Ausw&auml;hlen" ';
 	} else {
@@ -931,7 +990,7 @@ if ($select_numrows) {
 		} else if ($table == "escoskills") {
 			//$actionUri = 'edit.php?table=escoskills&subseq&inputescoskill&id=$id onclick="window.close; return;"';
 			// $tr_a_attr = 'target="_blank" rel="noopener noreferrer" onclick="return popdown(this);"' ;
-			$actionUri = "javascript:escopopupclose($id);";
+			$actionUri = "javascript:escopopupclose($id, 'escoskills');";
 		} else {
 			$actionUri = "edit.php?table=$table&id=$id";
 		}
@@ -983,11 +1042,13 @@ if ($select_numrows) {
 						.	'</a>';
 				}
 			}
-
-			echo 	'<a href="' . isohtmlentities(strval($actionUri)) . '"' . $tr_a_attr . '>'
-				.		$id
-				.	'</a>';
-
+			if ($table == "escocategories" || $table == "escoskills") {
+				echo $id;
+			} else {
+				echo 	'<a href="' . isohtmlentities(strval($actionUri)) . '"' . $tr_a_attr . '>'
+					.		$id
+					.	'</a>';
+			}
 			if ($show_bin) {
 				echo ' ';
 				echo bin_render($tableDef->name, $id);
@@ -1039,53 +1100,49 @@ if ($select_numrows) {
 								}
 							}
 						}
-						
+
 						// go through all secondary rows and render 
 						$hi = $hiBak;
-						for( $sr = 0; $sr < sizeof((array) $sTableDef->rows); $sr++ )
-						{
+						for ($sr = 0; $sr < sizeof((array) $sTableDef->rows); $sr++) {
 							$rowflags	= $sTableDef->rows[$sr]->flags;
-							$rowtype	= $rowflags&TABLE_ROW;
-							
-							if( $columnsHash[$hi++] )
-							{
-							    $site->skin->cellStart();
-							    if( canRead() )
-							    {
-							        $valuesOut = 0;
-							        
-							        if( isset($secondaryHash[$sTableDef->rows[$sr]->name]) && is_array($secondaryHash[$sTableDef->rows[$sr]->name]) )
-							        {
-							            reset($secondaryHash[$sTableDef->rows[$sr]->name]);
-							            
-							            foreach(array_keys($secondaryHash[$sTableDef->rows[$sr]->name]) as $value) {
-							                
-							                $value = strval($value);
-							                
-							                // !
-							                $storedValue = '';
-							                
-							                if( regGet('index.showempty', 1) && ($value == '' || $value == '&nbsp;') ) {
-							                    $storedValue = $value;
-							                    $value = '<span class="keineAngabe">k.A.</span>';
-							                }
-							                
-							                if( $value != '' && $value != '&nbsp;' ) {
-							                    echo $valuesOut? ', ' : '';
-							                    echo $value;
-							                    $valuesOut++;
-							                }
-							                
-							                if( regGet('index.showempty', 1) && $value == 'k.A.')
-							                    $value = $storedValue;
-							            }
-							        }
-							        
-							        if( $valuesOut == 0 ) {
-							            echo '&nbsp;';
-							        }
-							    }
-							    $site->skin->cellEnd();
+							$rowtype	= $rowflags & TABLE_ROW;
+
+							if ($columnsHash[$hi++]) {
+								$site->skin->cellStart();
+								if (canRead()) {
+									$valuesOut = 0;
+
+									if (isset($secondaryHash[$sTableDef->rows[$sr]->name]) && is_array($secondaryHash[$sTableDef->rows[$sr]->name])) {
+										reset($secondaryHash[$sTableDef->rows[$sr]->name]);
+
+										foreach (array_keys($secondaryHash[$sTableDef->rows[$sr]->name]) as $value) {
+
+											$value = strval($value);
+
+											// !
+											$storedValue = '';
+
+											if (regGet('index.showempty', 1) && ($value == '' || $value == '&nbsp;')) {
+												$storedValue = $value;
+												$value = '<span class="keineAngabe">k.A.</span>';
+											}
+
+											if ($value != '' && $value != '&nbsp;') {
+												echo $valuesOut ? ', ' : '';
+												echo $value;
+												$valuesOut++;
+											}
+
+											if (regGet('index.showempty', 1) && $value == 'k.A.')
+												$value = $storedValue;
+										}
+									}
+
+									if ($valuesOut == 0) {
+										echo '&nbsp;';
+									}
+								}
+								$site->skin->cellEnd();
 							}
 							$site->skin->cellEnd();
 						}
@@ -1098,16 +1155,32 @@ if ($select_numrows) {
 				if ($columnsHash[$hi++]) {
 					$site->skin->cellStart();
 					if (canRead()) {
-						echo getHtmlContent($tableDef, $r, $db);
+						if ($table == "escocategories" || $table == "escoskills") {
+							//direct hierarchy to competence
+							// $site->skin->cellStart();
+							// echo '<a href="javascript:escopopupclose(' . $id . ', ' . $table . ');" class="clicktr" title="Bearbeiten">' . $id;
+							echo getHtmlContent($tableDef, $r, $db);
+							// $site->skin->cellEnd();
+							if ($table == "escocategories") {
+								$site->skin->cellStart();
+								echo '<a href=' . isohtmlentities(strval($actionUri)) . ' class="clicktr" title="Diese Hierarchiestufe oeffnen">';
+								echo '<img src="skins/default/img/arrowright_sm.png" width="38" height="19" border="0" alt="" />';
+								echo ' </a>';
+								$site->skin->cellEnd();
+							}
+							$site->skin->cellStart();
+							echo '<a href="javascript:escopopupclose(' . $id . ', \'' . $table . '\');" class="clicktr" title="Kompetenzvorschlag waehlen">';
+							echo '<img src="skins/default/img/greenhook_sm.png" width="20" height="19" border="0" alt="" />';
+							echo ' </a>';
+							$site->skin->cellEnd();
+						} else
+							echo getHtmlContent($tableDef, $r, $db);
 					}
 					$site->skin->cellEnd();
 				}
 			}
 		}
-//direct hierarchy to competence
-// $site->skin->cellStart();
-// echo 'hier bin ich!!!!';
-// $site->skin->cellEnd();
+
 		// summary column
 		if ($columnsHash[$hi++]) {
 			$site->skin->cellStart();
@@ -1205,24 +1278,22 @@ if ($select_numrows) {
 	if (!isset($_REQUEST['selectobject'])) $site->skin->fixedFooterStart();
 	$site->skin->submenuStart();
 
-		$site->skin->submenuBreak();
-			
-			echo htmlconstant('_OVERVIEW_ROWS') . ' ' . rows_per_page_sel("$baseurl&searchoffset=0&rows=", $rows);
-			
-			echo " &nbsp; <a href='#' rel='noopener noreferrer' onclick='exportTableToCSV( document, \"table.tb > thead tr\", \"table.tb > tbody tr\" )' id='csvExportTable'><img src='/admin/lib/exp/CSV.png' style='height:20px;' alt='Exportiere Tabelle dieser Ansicht als CSV-Datei'></a>";
-			
-			echo " &nbsp; <a href='#' rel='noopener noreferrer' onclick='exportTableToCSV( document, false, \"table tr\", \"/admin/print.php?table=kurse&id=&prevview=list&printArea=selected&view=list&pagebreak=0&repeathead=1&ok=Drucken\" )' id='csvExportTable'><img src='/admin/lib/exp/CSV_plus.png' style='height:20px;' alt='Exportiere Tabelle aller Reiter als CSV-Datei'></a>";
-			
-			if( !isset($_REQUEST['selectobject']) ) {
-			    echo " &nbsp; <a href=\"log.php?table=$table\" target=\"_blank\" rel=\"noopener noreferrer\">" . htmlconstant('_LOG') . '</a>';
-			}
-			
-	    $site->skin->submenuEnd(true);
-		
-	if( !isset($_REQUEST['selectobject']) ) $site->skin->fixedFooterEnd();
-}
-else
-{
+	$site->skin->submenuBreak();
+
+	echo htmlconstant('_OVERVIEW_ROWS') . ' ' . rows_per_page_sel("$baseurl&searchoffset=0&rows=", $rows);
+
+	echo " &nbsp; <a href='#' rel='noopener noreferrer' onclick='exportTableToCSV( document, \"table.tb > thead tr\", \"table.tb > tbody tr\" )' id='csvExportTable'><img src='/admin/lib/exp/CSV.png' style='height:20px;' alt='Exportiere Tabelle dieser Ansicht als CSV-Datei'></a>";
+
+	echo " &nbsp; <a href='#' rel='noopener noreferrer' onclick='exportTableToCSV( document, false, \"table tr\", \"/admin/print.php?table=kurse&id=&prevview=list&printArea=selected&view=list&pagebreak=0&repeathead=1&ok=Drucken\" )' id='csvExportTable'><img src='/admin/lib/exp/CSV_plus.png' style='height:20px;' alt='Exportiere Tabelle aller Reiter als CSV-Datei'></a>";
+
+	if (!isset($_REQUEST['selectobject'])) {
+		echo " &nbsp; <a href=\"log.php?table=$table\" target=\"_blank\" rel=\"noopener noreferrer\">" . htmlconstant('_LOG') . '</a>';
+	}
+
+	$site->skin->submenuEnd(true);
+
+	if (!isset($_REQUEST['selectobject'])) $site->skin->fixedFooterEnd();
+} else {
 	// cancel button to show all
 	$site->skin->buttonsStart();
 	$hasError = isset($hasError) ? $hasError : false;

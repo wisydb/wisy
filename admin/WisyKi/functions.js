@@ -459,14 +459,14 @@ function escoselectskill($uri, $title)
         window.open(href,"window.opener.name");
 }
 
-function escopopupclose($id)
+function escopopupclose($id, $table)
 {
 	if( window.opener && !window.opener.closed )
 	{
 		
         window.close();
 
-        var href = "edit.php?table=escoskills&subseq&inputescoskill&id=" + $id;
+        var href = "edit.php?table=" + $table + "&subseq&inputescoskill&id=" + $id;
         window.open(href,"window.opener.name");
 	}
 	else

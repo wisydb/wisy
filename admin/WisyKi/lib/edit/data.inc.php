@@ -573,6 +573,11 @@ class EDIT_DATA_CLASS
 		$permentryids = $this->get_ids("permentry");
 		$selected_permentry = array();
 
+		$validationids = $this->get_ids("validation");
+		$selected_validation = array();
+
+
+
 		//$kompetenzids = $this->get_ids("kompetenz");
 		$selected_kompetenz = array();
 
@@ -784,6 +789,7 @@ class EDIT_DATA_CLASS
 									break;
 								}
 							}
+				
 
 							$stichworte = $this->get_value_from_db_($this->db1, $this->table_def, $index_of_stichwort);
 
@@ -804,10 +810,38 @@ class EDIT_DATA_CLASS
 							else
 								$control->dbval = 0;
 							$this->correct_control_if_exist("", $generalkeywords, $permentryids, $selected_permentry);
-							// } else if ($selected_permentry && $row->name == 'stichwort') {
-							// 	$stichworte = $this->get_value_from_db_($this->db1, $this->table_def, $r);
-							// 	$stichworte = str_replace($selected_permentry, '', $stichworte);
-							// 	$control->dbval = $stichworte;
+						} else 	if ($row->name == 'validation') {
+							$validation = 0;
+
+							$index_of_stichwort = null;
+							for ($rx = 0; $rx < sizeof((array) $this->table_def->rows); $rx++) {
+								$rowx = $this->table_def->rows[$rx];
+								if ($rowx->name == 'stichwort') {
+									$index_of_stichwort = $rx;
+									break;
+								}
+							}
+				
+
+							$stichworte = $this->get_value_from_db_($this->db1, $this->table_def, $index_of_stichwort);
+
+							if (!empty($stichworte)) {
+
+								$stichworte = explode(',', $stichworte);
+
+								foreach ($stichworte as $stichwort) {
+									if (in_array($stichwort, $validationids)) {
+										$selected_validation[] = $stichwort;
+										$validation = $stichwort;
+										break;
+									}
+								}
+							}
+							if ($validation != 0)
+								$control->dbval = 1;
+							else
+								$control->dbval = 0;
+							$this->correct_control_if_exist("", $generalkeywords, $validationids, $selected_validation);
 						} else 	if ($row->name == 'kompetenz') {
 							//$kompetenz_keywords = $this->get_value_from_db_($this->db1, $this->table_def, $r, "kompetenz");
 							$this->handle_special_competence($control, $selected_kompetenz, "kompetenz", $category);
@@ -1169,7 +1203,7 @@ class EDIT_DATA_CLASS
 						}
 					}
 					if ($row->name == 'permentry') {
-
+						$keywordid = array();
 						$keywordid[] = substr($row->addparam->rows[0]->addparam[0], 2);
 						if (!isset($_REQUEST["f_{$row->name}"]) || $_REQUEST["f_{$row->name}"] == 0) {
 							$this->correct_control_if_exist("f_stichwort", $_REQUEST["f_stichwort"], $keywordid);
@@ -1179,6 +1213,19 @@ class EDIT_DATA_CLASS
 							$_REQUEST["f_stichwort"] = $keywordid[0];
 						} else {
 							$_REQUEST["f_stichwort"] .= "," . $keywordid[0];
+						}
+					}
+					if ($row->name == 'validation') {
+						$keywordidval = array();
+						$keywordidval[] = substr($row->addparam->rows[0]->addparam[0], 2);
+						if (!isset($_REQUEST["f_{$row->name}"]) || $_REQUEST["f_{$row->name}"] == 0) {
+							$this->correct_control_if_exist("f_stichwort", $_REQUEST["f_stichwort"], $keywordidval);
+							break;
+						}
+						if (empty($_REQUEST["f_stichwort"])) {
+							$_REQUEST["f_stichwort"] = $keywordidval[0];
+						} else {
+							$_REQUEST["f_stichwort"] .= "," . $keywordidval[0];
 						}
 					}
 					if ($row->name == 'kompetenz') {

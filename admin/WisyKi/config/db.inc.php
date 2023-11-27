@@ -94,6 +94,19 @@ $permentry->add_row(
 	array('ctrl.size' => '10-20-60', 'layout.bg.class' => 'e_bglite', 'layout.descr.class' => 'e_bolder', 'ctrl.class' => 'e_bolder')
 );
 
+
+//*** Validiert ** */
+$validated = new Table_Def_Class(TABLE_SYNCABLE,				'stichwoerter',			'validation');
+$validated->add_row(
+	TABLE_TEXT | TABLE_SUMMARY | TABLE_LIST | TABLE_MUST,
+	'stichwort',
+	'Stichwort',
+	'',
+	array('Id1214601'),  //keywort-Types to be found	
+	'',
+	array('ctrl.size' => '10-20-60', 'layout.bg.class' => 'e_bglite', 'layout.descr.class' => 'e_bolder', 'ctrl.class' => 'e_bolder')
+);
+
 /***Foerderungsart ***/
 $foerderungsart = new Table_Def_Class(TABLE_SYNCABLE,				'stichwoerter',			'foerderungsart');
 $foerderungsart->add_row(
@@ -699,6 +712,7 @@ if ($use_neweditor) {
 
 $kurse->add_row(TABLE_TEXTAREA | TABLE_NEWSECTION,			'notizen_fix',			'Anmerkungen', '', '', '',  array('layout.section' => 1));
 $kurse->add_row(TABLE_TEXTAREA,				'notizen',			'Journal', '', '', '');
+$kurse->add_row(TABLE_FLAG | TABLE_DB_IGNORE,							'validation',	'Validiert', '', $validated, '',  array('layout.join' => 0));
 $kurse->set_trigger('config/trigger_kurse.inc.php');
 
 

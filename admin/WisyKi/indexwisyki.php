@@ -450,7 +450,7 @@ if ($select_numrows) {
 		} else if ($table == "escoskills") {
 			//$actionUri = 'edit.php?table=escoskills&subseq&inputescoskill&id=$id onclick="window.close; return;"';
 			// $tr_a_attr = 'target="_blank" rel="noopener noreferrer" onclick="return popdown(this);"' ;
-			$actionUri = "javascript:escopopupclose($id);";
+			$actionUri = "javascript:escopopupclose($id, 'escoskills');";
 		} else {
 			$actionUri = "edit.php?table=$table&id=$id";
 		}

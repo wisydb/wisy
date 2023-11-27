@@ -506,7 +506,7 @@ class WISY_KI_ESCO_CLASS {
         if ($onlyrelevant) {
             $results = $this->filter_is_relevant($results);
         }
-        if ($schemes[2] != 'sachstichwort_red')
+        if ($schemes[0] != 'member-skills')
         usort($results, function ($a, $b) use ($term) {
             return $this->sort_term_first($a, $b, $term);
         });

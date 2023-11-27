@@ -223,6 +223,7 @@ class WISY_KI_COMPETENCE_CLASS
 				$skills[] = array(
 					"title" => utf8_encode($this->db->Record['stichwort']),
 					"uri" => $this->db->Record['attr_url'],
+					"valid" => true
 				);
 			}
 		}

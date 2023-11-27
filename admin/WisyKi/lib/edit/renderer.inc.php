@@ -156,7 +156,7 @@ class EDIT_RENDERER_CLASS
 		$can_prev_next = ($this->data->db_name == '' && $this->data->id != -1) ? true : false;
 
 		$prev_url = '';
-		$can_prev = ($can_prev_next && $this->no_paging != 'prev'); 
+		$can_prev = ($can_prev_next && $this->no_paging != 'prev');
 		if ($can_prev) {
 			if (($prev_id = $paging_ob->search_id($this->data->table_name, $this->data->id, 'prev')) != 0) {
 				$prev_url = "<a href=\"edit.php?table={$this->data->table_name}&amp;id={$prev_id}\">";
@@ -167,7 +167,7 @@ class EDIT_RENDERER_CLASS
 		$site->menuItem('mprev', htmlconstant('_PREVIOUS'), $prev_url);
 
 		$next_url = '';
-		$can_next = ($can_prev_next && $this->no_paging != 'next'); 
+		$can_next = ($can_prev_next && $this->no_paging != 'next');
 		if ($can_next) {
 			if (($next_id = $paging_ob->search_id($this->data->table_name, $this->data->id, 'next')) != 0) {
 				$next_url = "<a href=\"edit.php?table={$this->data->table_name}&amp;id={$next_id}\">";
@@ -404,6 +404,7 @@ class EDIT_RENDERER_CLASS
 		$selected_speech = 0;
 		// $selected_abschluss = 0;
 		$selected_permentry = 0;
+		$selected_validation = 0;
 		$selected_foerderungsart = array();
 		$selected_kompetenz = array();
 		$selected_vorschlaege = array();
@@ -417,7 +418,7 @@ class EDIT_RENDERER_CLASS
 				$selected_category = $control->dbval;
 			} else if ($control->name == 'f_speech') {
 				$selected_speech = $control->dbval;
-			} 
+			}
 			// else if ($control->name == 'f_abschluss') {
 			// 	$selected_abschluss = $control->dbval;			} 
 			else if ($control->name == 'f_lernform') {
@@ -430,6 +431,12 @@ class EDIT_RENDERER_CLASS
 					$selected_permentry = substr($test, 2);
 				else
 					$selected_permentry = $test;
+			} else if ($control->name == 'f_validation') {
+				$test = $control->row_def->addparam->rows[0]->addparam[0];
+				if (str_starts_with($test, "Id"))
+					$selected_validation = substr($test, 2);
+				else
+					$selected_validation = $test;
 			} else if ($control->name == 'f_kompetenz') {
 				$selected_kompetenz	= explode(",", $control->dbval);
 			} else if ($control->name == 'f_vorschlaege') {
@@ -451,6 +458,9 @@ class EDIT_RENDERER_CLASS
 		// 	unset($stichworte[$key]);
 		// }
 		if (($key = array_search($selected_permentry, $stichworte)) !== false) {
+			unset($stichworte[$key]);
+		}
+		if (($key = array_search($selected_validation, $stichworte)) !== false) {
 			unset($stichworte[$key]);
 		}
 		if (isset($selected_lernform[0]))
@@ -747,6 +757,7 @@ class EDIT_RENDERER_CLASS
 
 	private function create_ref($table, $id, $keyid, $db, $url = null)
 	{
+		$ret = false;
 		$sql = 'SELECT primary_id, attr_id, structure_pos FROM ' . $table . ' WHERE ' . $table . '.primary_id = "' . $id . '"';
 		$kurseStichwort = array();
 		$db->query($sql);
@@ -790,11 +801,14 @@ class EDIT_RENDERER_CLASS
 			if ($table == "kurse_stichwort") {
 				$sql = "INSERT INTO kurse_stichwort (primary_id, attr_id, structure_pos) VALUES (" . $id . ", " . $keyid . ", " . $foundpos + 1 . ")";
 				$db->query($sql);
+				$ret = true;
 			} else {
 				$sql = "INSERT INTO kurse_kompetenz (primary_id, attr_id, attr_url, suggestion, structure_pos) VALUES (" . $id . ", " . $keyid . ", '" . $url . "', 1, "  . $foundpos + 1 . ")";
 				$db->query($sql);
+				$ret = true;
 			}
 		}
+		return $ret;
 	}
 
 
@@ -818,8 +832,6 @@ class EDIT_RENDERER_CLASS
 					$db->query("DELETE FROM stichwoerter WHERE id=" . $escokeyid);
 				}
 			}
-
-
 		}
 	}
 
@@ -884,7 +896,7 @@ class EDIT_RENDERER_CLASS
 
 
 						$comp = new WISY_KI_COMPETENCE_CLASS();
-                        $use_llm = isset($_REQUEST['submit_ki_esco']);
+						$use_llm = isset($_REQUEST['submit_ki_esco']);
 						$res = $comp->WisyKi_competence_search($this->data->controls, $id, $use_llm);
 						if ($res == false)
 							$site->msgAdd("\n" . "Die KI lieferte kein Ergebnis. Eventuell liefert ein erneuter Aufruf Ergebnisse.", 'e');
@@ -918,13 +930,14 @@ class EDIT_RENDERER_CLASS
 						$newComp->controls[$eigenschaftenIndex] = new CONTROL_ENUM_CLASS("f_eigenschaften", $dummy, null);
 						$newComp->controls[$eigenschaftenIndex]->dbval = $this->esco_type;
 
+						$newfound = false;
 						foreach ($res as $r) {
 
 							$newComp->id = -1;
 							if (!isset($res[1]))
 								$newComp->controls[0]->dbval = isohtmlspecialchars($r['title']);
 							else
-							    $newComp->controls[0]->dbval = isohtmlspecialchars(utf8_decode($r['title']));
+								$newComp->controls[0]->dbval = isohtmlspecialchars(utf8_decode($r['title']));
 							//already defined?
 							$sql = 'SELECT id FROM stichwoerter WHERE stichwoerter.stichwort = "' . $newComp->controls[$stichwortIndex]->dbval . '" AND stichwoerter.eigenschaften="' . $newComp->controls[$eigenschaftenIndex]->dbval . '"';
 							$db->query($sql);
@@ -936,9 +949,12 @@ class EDIT_RENDERER_CLASS
 							}
 							$sql = 'UPDATE stichwoerter SET esco_url="' . $r['uri'] . '" WHERE id="' . $keyid . '"';
 							$db->query($sql);
-							$this->create_ref("kurse_stichwort", $id, $keyid, $db);
-							$this->create_ref("kurse_kompetenz", $id, $keyid, $db, $r['uri']);
+
+							$newfound = $this->create_ref("kurse_stichwort", $id, $keyid, $db);
+							$newfound = $this->create_ref("kurse_kompetenz", $id, $keyid, $db, $r['uri']);
 						}
+						if (!$newfound)
+							$site->msgAdd("\n" . "Die KI lieferte kein neuen Ergebnisse. Eventuell liefert ein erneuter Aufruf Ergebnisse.", 'e');
 					}
 					header('Location: \admin\edit.php?table=kurse&id=' . $id);
 					exit;
@@ -1142,8 +1158,9 @@ class EDIT_RENDERER_CLASS
 				$GLOBALS['kategory']['table'] = $table;
 				$GLOBALS['kategory']['id'] = (isset($_REQUEST['id'])) ? $_REQUEST['id'] : null;
 				$GLOBALS['kategory']['kat'] = (isset($_REQUEST['kat'])) ? $_REQUEST['kat'] : null;
-				if (isset($_REQUEST['id']))
+				if (isset($_REQUEST['id'])) {
 					$_SESSION['kursid'] = $_REQUEST['id'];
+				}
 			}
 		}
 		//Params in case of Kategory has changed

@@ -352,7 +352,7 @@ class AUTOCOMPLETE_JSON_CLASS
 				case TABLE_INT:
 					if (isset($temp[1]) && str_starts_with($temp[1], "vorschlaege")) {
 						//-------------------------------------- AJAX-search for ESCO-competenzes
-						$sheme = explode(",", "member-skills,skills-hierarchy,sachstichwort_red");
+						$sheme = explode(",", "member-skills,skills-hierarchy");
 
 
 						$results = $this->escoAPI->autocomplete($this->term, null, $sheme, 10, false, null);
