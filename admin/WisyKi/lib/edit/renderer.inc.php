@@ -915,7 +915,7 @@ class EDIT_RENDERER_CLASS
 						}
 						$id = $_SESSION['kursid'];
 					}
-					if (is_array($res)) {               //create keywords
+					if (is_array($res) && isset($res[0])) {               //create keywords
 						$newComp = new EDIT_DATA_CLASS(
 							null,
 							"stichwoerter",
