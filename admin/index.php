@@ -191,7 +191,7 @@ function renderTableHeadCell($curr_field, $descr, $def_desc = 0, $sum_field = 0,
 	// get arrowImage'n'action
 	$img = '';
 	$action = '';
-	if ($_REQUEST['table'] == "escocategories") {
+	if (isset($_REQUEST['table']) && $_REQUEST['table'] == "escocategories") {
 		$escolevel = 1;
 		if (isset($_REQUEST['escolevel']))
 			$escolevel = $_REQUEST['escolevel'];
