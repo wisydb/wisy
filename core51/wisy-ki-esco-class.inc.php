@@ -508,7 +508,7 @@ class WISY_KI_ESCO_CLASS {
         }
         
         // Skip sorting if "sachstichwort_red" in schemes
-        if (in_array('sachstichwort_red', $schemes)) {
+        if (is_array($schemes) and in_array('sachstichwort_red', $schemes)) {
             return $results;
         }
         
