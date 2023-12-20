@@ -1,6 +1,6 @@
 <?php
 require_once('../core51/wisy-ki-esco-class.inc.php');
-
+require_once('functions.inc.php'); // this will also make the file uncacheable, maybe we should implement a little cache of a few seconds?
 
 
 class AUTOCOMPLETE_JSON_CLASS
@@ -12,6 +12,7 @@ class AUTOCOMPLETE_JSON_CLASS
 	private $escoAPI;
 	private $keywordtypes;
 	
+
 	function __construct()
 	{
 		$this->json  = new G_JSON_CLASS;
@@ -19,8 +20,9 @@ class AUTOCOMPLETE_JSON_CLASS
 		global $wisyki_keywordtypes;
         $this->keywordtypes = $wisyki_keywordtypes;
 		//if( substr($_SERVER['HTTP_HOST'], -6)=='.local' ) { $this->debug = true; }
+	
 	}
-
+	
 	// main class: tools
 	// ------------------------------------------------------------------------
 
@@ -356,6 +358,7 @@ class AUTOCOMPLETE_JSON_CLASS
 
 
 						$results = $this->escoAPI->autocomplete($this->term, null, $sheme, 10, false, null);
+						$results = blacklist_filter($results);
 						$i = 0;
 						foreach ($results as $r1) {
 							$suggestions[$i]['label'] = '<span onclick="escoselectskill(\'' . utf8_decode($r1['uri']) . '\', \'' . utf8_decode($r1['label']) . '\');">&nbsp;&#8599;&nbsp;' . utf8_decode($r1['label']) . '</span>';

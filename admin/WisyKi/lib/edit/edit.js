@@ -372,11 +372,11 @@ function attr_del_click() {
     return false;
 }
 
-function select_competence(id, kursid, pres_des){
+function select_competence(id, kursid, pres_des, comp){
 	if (pres_des)
-	    href = "edit.php?table=kurse&id=" + kursid + "&preselect=" + id;
+	    href = "edit.php?table=kurse&id=" + kursid + "&preselect=" + id + "&comp=" + comp;
 	else
-		href = "edit.php?table=kurse&id=" + kursid + "&deselect=" + id;
+		href = "edit.php?table=kurse&id=" + kursid + "&deselect=" + id + "&comp=" + comp;
     window.open(href, "_self");
     
 }
@@ -416,7 +416,20 @@ function attr_input_dblclick_1() {
     input_ob.val("");
 }
 
+/******************************************************************************
+BlackList Handling
+******************************************************************************/
+function Inquiry_lock() {
+	
+ // let parar = par.href.split("#");
+//  popup_width = parseInt($('body').width() * 0.9);
+//    if (popup_width < 640) popup_width = 640; // use a simelar width so that all columns will fit
+//    rcv_id_param = attr_ob;
+   //  popup(0, 500,640',parar[1],'selectobjecttarget');
+   let wind = window.open(0,"_blank","width=200,height=300");
+   wind.alert(par);
 
+}
 
 function rem_esco_proposual(par)
 { 
@@ -426,6 +439,7 @@ function rem_esco_proposual(par)
   //  rcv_id_param = attr_ob;
     popup(0, popup_width, 500, parar[1], 'selectobjecttarget');
 }
+
 
 function attr_input_dblclick_2(attr_ob, id) {
     var input_ob = attr_ob.find('input[type=text]');

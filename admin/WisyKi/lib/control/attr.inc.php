@@ -137,7 +137,7 @@ class CONTROL_ATTR_CLASS extends CONTROL_BASE_CLASS
 	 **************************************************************************/
 	private function identify_preselected($db, $primary_id, $attr_id)
 	{
-		$sql = 'SELECT attr_id FROM kurse_kompetenz WHERE primary_id="' . $primary_id . '" AND attr_id="' . $attr_id . '" AND suggestion="1" AND preselected="1"';
+		$sql = 'SELECT attr_id FROM kurse_kompetenz WHERE primary_id="' . $primary_id . '" AND attr_id="' . $attr_id . '" AND preselected="1"';
 		$db->query($sql);
 		if ($db->next_record()) {
 			return true;
@@ -145,6 +145,9 @@ class CONTROL_ATTR_CLASS extends CONTROL_BASE_CLASS
 			return false;
 		}
 	}
+
+	
+
 	//attributes for keywords with restrictions to special types
 	function specialcase_keywords()
 	{
@@ -156,7 +159,7 @@ class CONTROL_ATTR_CLASS extends CONTROL_BASE_CLASS
 		return $html;
 	}
 	// create the user input controls - the data from here is normally forwarded to set_dbval_from_user_input() after submit
-	public function render_html($addparam)
+	public function render_html($addparam, $comp = false)
 	{
 		$dba = $addparam['dba'];
 
@@ -201,15 +204,23 @@ class CONTROL_ATTR_CLASS extends CONTROL_BASE_CLASS
 			$competence_select = '';
 			if (isset($actypes[$ids[$i]]) && $actypes[$ids[$i]]) {
 
-				if ($name == "f_vorschlaege" && isset($addparam['esco_type']) && $addparam['esco_type'] == $actypes[$ids[$i]]) {
+				if (($name == "f_vorschlaege" || $name == "f_kompetenz")  && isset($addparam['esco_type']) && $addparam['esco_type'] == $actypes[$ids[$i]]) {
 					$presel =  $this->identify_preselected($dba, $addparam['id'], $ids[$i]);
 					if (!$presel) {
-						$actype_class = ' v_attractype' . $actypes[$ids[$i]];
-						$competence_select = ' onclick="select_competence(' . $ids[$i] . ' , ' . $addparam['id'] . ',1);return;"';
-					}
-					else {
+						if ($name == "f_vorschlaege") {
+							$actype_class = ' v_attractype' . $actypes[$ids[$i]];
+							$competence_select = ' onclick="select_competence(' . $ids[$i] . ' , ' . $addparam['id'] . ',1,false);return;"';
+						} else {
+							$actype_class = ' e_attractype' . $actypes[$ids[$i]];
+							$competence_select = ' onclick="select_competence(' . $ids[$i] . ' , ' . $addparam['id'] . ',1,true);return;"';
+						}
+					} else {
 						$actype_class = ' s_attractype' . $actypes[$ids[$i]];
-						$competence_select = ' onclick="select_competence(' . $ids[$i] . ' , ' . $addparam['id'] . ',0);return;"';
+						if ($name == "f_vorschlaege") {
+							$competence_select = ' onclick="select_competence(' . $ids[$i] . ' , ' . $addparam['id'] . ',0,false);return;"';
+						} else {
+							$competence_select = ' onclick="select_competence(' . $ids[$i] . ' , ' . $addparam['id'] . ',0,true);return;"';
+						}
 					}
 				} else
 					$actype_class = ' e_attractype' . $actypes[$ids[$i]];
@@ -219,8 +230,8 @@ class CONTROL_ATTR_CLASS extends CONTROL_BASE_CLASS
 			;
 			else {
 				$html .=	'<span' . $competence_select . ' class="e_attritem" data-attrid="' . $ids[$i] . '"><span class="e_attrinner' . $actype_class . '">';
-
-
+				// if ($comp == true)
+				// 	$html .=     '<img src="skins/default/img/blackgrid_sm.png" height=10/>';
 				$html .=	(isset($titles[$ids[$i]]) && $titles[$ids[$i]] ? isohtmlspecialchars($titles[$ids[$i]]) : $ids[$i]);
 				$html .=	'<span class="e_attrdel">&nbsp;&times;&nbsp;</span>';
 

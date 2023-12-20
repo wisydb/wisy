@@ -26,7 +26,7 @@ class ADMIN_SITE_CLASS
 		$this->sitePath				= '../';
 		
 		$temp = explode('/', isset($_SERVER['PHP_SELF']) ? $_SERVER['PHP_SELF'] : '');
-		$this->adminDir				= $temp[sizeof($temp)-2]; // contains eg. 'admin' now
+		$this->adminDir				= $temp[1]; // contains eg. 'admin' now
 		
 		$this->menuBinParam			= 'dummy=dummy';
 		$this->menuSettingsUrl		= '';
@@ -55,12 +55,12 @@ class ADMIN_SITE_CLASS
 		if( $folder == 'st' ) { $folder = 'skins/steel'; $writeBack = true; }
 		
 		// check for skin existance
-		if( !$folder || !@file_exists("{$folder}/class.php") )	{ $folder = 'skins/default'; $writeBack = true; }
+		if( !$folder || !@file_exists("{$folder}/class.php") )	{ $folder = $_SERVER['DOCUMENT_ROOT'] . "/admin/skins/default"; $writeBack = true; }
 		if( $writeBack ) { regSet('skin.folder', $folder, 'skins/default'); }
 		
 		// create the skin object
 		require_once("{$folder}/class.php");
-		$skinClassName = strtr($folder, array('config/skins/'=>'', 'skins/'=>'', '-'=>'_'));
+		$skinClassName = strtr($folder, array('C:/xampp/htdocs/admin/skins/'=>'', 'config/skins/'=>'', 'skins/'=>'', '-'=>'_'));
 		$skinClassName = 'SKIN_' . strtoupper($skinClassName) . '_CLASS';
 		$this->skin = new $skinClassName($folder);
 	}

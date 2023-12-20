@@ -126,7 +126,7 @@ class SYNC_TOOLS_CLASS
 		for ($t = 0; $t < sizeof((array) $Table_Def); $t++) {
 
 			$table_name		= $Table_Def[$t]->name;
-			if ($table_name == "escocategories" || $table_name == "escoskills")
+			if ($table_name == "escocategories" || $table_name == "escoskills" || $table_name == "kompetenz_blacklist")
 				continue;
 			$trigger_name	= "{$table_name}_bi_v{$this->trigger_version}_" . $sync_info['inc'] . '_' . $sync_info['offset']; //  naming scheme is <table>_bi_v<version>_<inc>_<offset>
 

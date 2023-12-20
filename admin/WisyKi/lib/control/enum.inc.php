@@ -24,7 +24,7 @@ class CONTROL_ENUM_CLASS extends CONTROL_BASE_CLASS
 		$opt = array();
 		$temp = explode('###', $this->row_def->addparam);
 		$start = 0;
-		if ($temp[0] == '-1')
+		if ($temp[0] == '-1' || !isset($temp[2]))
 			$start = 3;
 		for ($t = $start; $t < sizeof($temp); $t += 2) {
 			if (isset($temp[$t]))
@@ -34,7 +34,10 @@ class CONTROL_ENUM_CLASS extends CONTROL_BASE_CLASS
 		$opt['options'] = $ret;
 		if ($start == 3)
 			$opt['handler1'] = $temp[1];
-		$opt['handler2'] = $temp[2];
+		if (isset( $temp[2]))
+		    $opt['handler2'] = $temp[2];
+		else
+		    $opt['handler2'] = "";
 		return $opt;
 	}
 

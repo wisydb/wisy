@@ -605,7 +605,41 @@ function hint_end()
 /*=============================================================================
 Misc
 =============================================================================*/
+/******************************************************************************
+Blacklist Handling
+******************************************************************************/
+function blacklist_filter($results)
+    {
+        $res = array();
+        $black = array();
+        $db = new DB_Admin();
+        $i = 0;
+        $db->query("SELECT kompetenz_blacklist.url FROM kompetenz_blacklist");
+        while ($db->next_record())
+            $black[] =  $db->Record['url'];
 
+        foreach ($results as $relel) {
+            $found = false;
+            foreach ($black as $blel) {
+                if ($blel == $relel['uri']) {
+                    $found = true;
+                    break;
+                }
+            }
+            if (!$found)
+                $res[] = $relel;
+        }
+        return $res;
+    }
+
+function find_in_blacklist($tofind){
+    $res= false;
+	$db = new DB_Admin();
+	$db->query("SELECT url FROM kompetenz_blacklist WHERE url='" . $tofind . "'");
+	if ($db->next_record())
+	  $res = true;
+	return $res;
+}
 
 
 require_once('date.inc.php');
@@ -787,8 +821,12 @@ function bin_render($table, $id)
 	// render
 	$html = "<script type=\"text/javascript\"><!--\n";
 	
-	    if( isset($_SESSION['g_session_bin']) )
-		  $html .= "binRender('$table',$id,$state" .($g_num_bin_rendered==0? (",'".$_SESSION['g_session_bin']->getName($_SESSION['g_session_bin']->activeBin)."','{$site->skin->imgFolder}',".sizeof((array) $_SESSION['g_session_bin']->getBins()).','.$g_curr_bin_editable) : ""). ");";
+	    if( isset($_SESSION['g_session_bin']) ){
+			$trans = array($_SERVER['DOCUMENT_ROOT'] . "/admin/" => "");
+            $imgfolder = strtr($site->skin->imgFolder, $trans);
+			$html .= "binRender('$table',$id,$state" .($g_num_bin_rendered==0? (",'".$_SESSION['g_session_bin']->getName($_SESSION['g_session_bin']->activeBin)."','{$imgfolder}',".sizeof((array) $_SESSION['g_session_bin']->getBins()).','.$g_curr_bin_editable) : ""). ");";
+		}
+		  
 	    
 	$html .= "/" . "/--></script>";
 	

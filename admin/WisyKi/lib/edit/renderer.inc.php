@@ -114,6 +114,8 @@ class EDIT_RENDERER_CLASS
 	private $table_def;
 	private $esco_type = null;
 	private $no_paging;
+	private $bold_tocompetence = false;
+	private $bold_lock;
 
 
 
@@ -124,6 +126,10 @@ class EDIT_RENDERER_CLASS
 			require_once('WisyKi/config/codes.inc.php');
 		} else
 			die('Verzeichnis unerwartet.');
+		// if (@file_exists('WisyKi/config/index_plugin_blacklist_0.inc.php')) {
+		// 	require_once('WisyKi/config/index_plugin_blacklist_0.inc.php');
+		// } else
+		// 	die('Verzeichnis unerwartet.');
 		global $wisyki_keywordtypes;
 		$this->esco_type = $wisyki_keywordtypes['ESCO-Kompetenz'];
 		$this->ob = new AUTOCOMPLETE_JSON_CLASS;
@@ -490,6 +496,9 @@ class EDIT_RENDERER_CLASS
 
 	private function render_data_()
 	{
+		$id = isset($_REQUEST['id']) ? intval($_REQUEST['id']) : -1;
+
+
 		$bin = '';
 
 		if (isset($this->data->id) && $this->data->id > 0 && regGet('toolbar.bin', 1) && !isset($_GET['getasajax'])) {
@@ -512,6 +521,15 @@ class EDIT_RENDERER_CLASS
 
 
 		$this->data->connect_to_db_();
+		//Decide wich preselect-function should displayed bold (=activ)
+		if ($this->find_other_preselected($this->data->dba, $id, 0)) {
+			$this->bold_lock = true;
+		}
+		if ($this->find_other_preselected($this->data->dba, $id, 1)) {
+			$this->bold_lock = true;
+			$this->bold_tocompetence = true;
+		}
+
 		$this->defhide_id = 1; // note: the ID is only guaranteed to be unique inside the same object! if objects are duplicated, they will have the same IDs!
 		for ($f = 0; $f < sizeof((array) $this->data->controls); $f++) {
 			// don't display row if dependent upon setting and setting is 0
@@ -615,11 +633,21 @@ class EDIT_RENDERER_CLASS
 				}
 
 				if (isset($this->esco_type) && $this->esco_type != null) {
-					echo $control->render_html(array(
-						'dba'	=>	$this->data->dba,
-						'id'	=>	$this->data->id,	// may be -1, 0 or invalid otherwise
-						'esco_type' => $this->esco_type
-					));
+					if ($control->name == 'f_kompetenz' || $control->name == 'f_vorschlaege') { //Mit Blacklist
+						echo $control->render_html(array(
+							'dba'	=>	$this->data->dba,
+							'id'	=>	$this->data->id,	// may be -1, 0 or invalid otherwise
+							'esco_type' => $this->esco_type
+
+						), true);
+					} else {
+						echo $control->render_html(array(
+							'dba'	=>	$this->data->dba,
+							'id'	=>	$this->data->id,	// may be -1, 0 or invalid otherwise
+							'esco_type' => $this->esco_type
+
+						));
+					}
 				} else
 					echo $control->render_html(array(
 						'dba'	=>	$this->data->dba,
@@ -643,14 +671,24 @@ class EDIT_RENDERER_CLASS
 					echo '<span class="e_hint" title="Alle angezeigten Kompetenzvorschlaege werden als Kompetenz uebernommen.">';
 					echo '<input class="esco"   style="background-color: #FFE190; border-style: none"  type="submit" name="submit_vorschlaege" value="Vorschlaege uebernehmen">&nbsp&nbsp</input>';
 					echo '</span>';
-					echo '<span class="e_hint" title="Nur die vorausgewaehlten Kompetenzvorschlaege werden als Kompetenz uebernommen.">';
-					echo '<input class="esco"  style="background-color: #FFE190; border-style: none"  type="submit" name="submit_preselected" value="Vorausgewaehlte Vorschlaege uebernehmen">&nbsp&nbsp</input>';
-					echo '</span>';
 					echo '<span class="e_hint" title="Alle angezeigten Kompetenzvorschlaege werden geloescht.">';
 					echo '<input class="esco" style="background-color: #FFE190; border-style: none"  type="submit" name="submit_discard" value="Vorschlaege ablehnen">&nbsp&nbsp</input>';
 					echo '</span>';
 					echo '<span class="e_hint" title="Dieser Vorgang kann laenger als 30 Sekunden dauern und wird nach 60 Sekunden abgebrochen.">';
 					echo '<input class="esco" style="background-color: #FFE190; border-style: none" type="submit"  name="submit_ki_esco" value="KI-ESCO-Kompetenzvorschlaege">&nbsp&nbsp</input>';
+					echo '</span>';
+					echo '<span class="e_hint" title="Nur die vorausgewaehlten Kompetenzvorschlaege werden als Kompetenz uebernommen.">';
+					$boldout = ($this->bold_tocompetence) ? '; font-weight: bold' : '';
+					echo '<input class="esco"  style="background-color: #FFE190; border-style: none' . $boldout . '"  type="submit" name="submit_preselected" value="Vorausgewaehlte Vorschlaege uebernehmen">&nbsp&nbsp</input>';
+					echo '</span>';
+					$boldout = ($this->bold_lock) ? '; font-weight: bold' : '';
+					echo '<span class="e_hint" title="Die vorausgewaehlten Kompetenzvorschlaege und Kompetenzen werden in die Blacklist aufgenommen.">';
+					echo '<a href=/admin/WisyKi/module.php?module=index_plugin_blacklist_0&table=kompetenz_blacklist&id=' . $id . ' style="background-color: #FFE190; border-style: none'
+						. $boldout . '" target="index_plugin_blacklist_0"  onclick="return popup(this, 750, 550);">&nbsp&nbspVorausgewaehlte sperren&nbsp&nbsp;</a>';
+					echo '</span>';
+					echo '<span class="e_hint" title="Durch Anklicken wird die Liste der gesperrten Kompetenzen geöffnet.">';
+					// echo '&nbsp&nbsp&nbsp&nbsp<input class="esco" style="background-color: #FFE190; border-style: none" type="image"  name="submit_ki_blacklist" src="skins/default/img/blackgrid_sm.png" height=19>&nbsp&nbsp</input>';
+					echo '<a onclick="rem_esco_proposual(this); return;"  href="#index.php?table=kompetenz_blacklist&orderby=title ASC">&nbsp&nbspBlacklist oeffnen</a>';
 					echo '</span>';
 					echo '</td>';
 					echo '</tr>';
@@ -815,24 +853,12 @@ class EDIT_RENDERER_CLASS
 	private function reorg_keywords($db)
 	{
 
-		$courseKeywordComp = array();
+		$sql = "DELETE FROM kurse_stichwort WHERE attr_id NOT IN (SELECT stichwoerter.id FROM stichwoerter LEFT JOIN kurse_kompetenz ON stichwoerter.id = kurse_kompetenz.attr_id  WHERE kurse_kompetenz.attr_id IS NOT NULL AND stichwoerter.eigenschaften=" . $this->esco_type . ") ";
+		$sql .= "AND attr_id IN (SELECT stichwoerter.id FROM stichwoerter WHERE stichwoerter.eigenschaften=" . $this->esco_type . ") ";
+		$db->query($sql);
 
-
-		$db->query("SELECT attr_id FROM kurse_kompetenz");
-		while ($db->next_record()) {
-			$courseKeywordComp[] = $db->Record['attr_id'];
-		}
-
-		if (isset($courseKeywordComp[0])) {
-			$db->query("SELECT id FROM stichwoerter WHERE stichwoerter.eigenschaften=" . $this->esco_type);
-			while ($db->next_record()) {
-				$escokeyid = $db->Record['id'];
-				if (!in_array($escokeyid, $courseKeywordComp)) {
-					$db->query("DELETE FROM kurse_stichwort WHERE attr_id=" . $escokeyid);
-					$db->query("DELETE FROM stichwoerter WHERE id=" . $escokeyid);
-				}
-			}
-		}
+		//Delete records from stichwoerter that do not have a counterpart in kurse_kompetenz
+		$db->query("DELETE FROM stichwoerter WHERE stichwoerter.id NOT IN (SELECT stichwoerter.id FROM stichwoerter LEFT JOIN kurse_kompetenz ON stichwoerter.id = kurse_kompetenz.attr_id WHERE kurse_kompetenz.attr_id IS NOT NULL AND  stichwoerter.eigenschaften=" . $this->esco_type . ") AND stichwoerter.eigenschaften=" . $this->esco_type);
 	}
 
 	private function find_table_index($name, $table_def)
@@ -844,12 +870,24 @@ class EDIT_RENDERER_CLASS
 		}
 	}
 
+	//Are there other preselected competences in this section
+	private function find_other_preselected($db, $id, $suggestion)
+	{
+		$sql = 'SELECT attr_id FROM kurse_kompetenz WHERE primary_id="' . $id . '" AND suggestion="' . $suggestion . '" AND preselected="1"';
+		$db->query($sql);
+		if ($db->next_record()) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
 	public function handle_request()
 	{
 		require_lang('lang/edit');
-
 		// MAIN LOGIC: see what to do ...
 		/////////////////////////////////////////////
+
 
 		$db = isset($_REQUEST['db']) ? $_REQUEST['db'] :  null;
 		$table = isset($_REQUEST['table']) ? $_REQUEST['table'] : null;
@@ -880,7 +918,7 @@ class EDIT_RENDERER_CLASS
 			if (
 				isset($_REQUEST['submit_apply']) || isset($_REQUEST['submit_ok']) || isset($_REQUEST['submit_esco']) || isset($_REQUEST['submit_vorschlaege'])
 				|| isset($_REQUEST['submit_ki_esco']) || isset($_REQUEST['submit_discard']) || isset($_REQUEST['inputescoskill'])
-				|| isset($_REQUEST['submit_preselected'])
+				|| isset($_REQUEST['submit_preselected']) || isset($_REQUEST['lock_preselected']) || isset($_REQUEST['lockcompetence'])
 			) {
 				//ESCO-Vorschlaege ermitteln
 				if (isset($_REQUEST['submit_esco']) || isset($_REQUEST['inputescoskill']) || isset($_REQUEST['submit_ki_esco'])) {
@@ -898,6 +936,7 @@ class EDIT_RENDERER_CLASS
 						$comp = new WISY_KI_COMPETENCE_CLASS();
 						$use_llm = isset($_REQUEST['submit_ki_esco']);
 						$res = $comp->WisyKi_competence_search($this->data->controls, $id, $use_llm);
+						$res = blacklist_filter($res);
 						if ($res == false)
 							$site->msgAdd("\n" . "Die KI lieferte kein Ergebnis. Eventuell liefert ein erneuter Aufruf Ergebnisse.", 'e');
 					} else if (isset($uri)) {  //AJAX-Search of 
@@ -1035,6 +1074,26 @@ class EDIT_RENDERER_CLASS
 
 						exit;
 					}
+				} else if (isset($_REQUEST['lock_preselected'])) {
+					// echo 	'<html><head><title>Test</title>';
+					echo '<script src="./WisyKi/lib/edit/edit.js"></script>';
+
+					// echo '</head>';
+					// echo '<body>';
+					echo '<script>';
+					// echo 'window.open()';
+					echo 'rem_esco_proposual(this);return';
+					// echo 'window.close();';
+					echo '</script>';
+					// echo '</head>';
+					// echo '</body></html>';	
+					exit;
+				} else if (isset($_REQUEST['lockcompetence'])) {
+					$db1 = new DB_Admin();
+					$db1->query("DELETE FROM kompetenz_blacklist WHERE id=$id");
+					header('Location: \admin\edit.php?table=kurse&id=' . $_SESSION['kursid']);
+					$site->msgAdd("\n" . "Es wurde eine Kompetenz wieder fuer die Verwendung zugelassen.",'i');
+					exit();
 				} else if (isset($_REQUEST['submit_discard'])) {
 					$db1 = new DB_Admin();
 					$db2 = new DB_Admin();
@@ -1051,7 +1110,7 @@ class EDIT_RENDERER_CLASS
 					exit;
 				} else {
 					$db = new DB_Admin();
-					$this->reorg_keywords($db);
+					//if (isset($table) && $table == "kurse") $this->reorg_keywords($db);
 					$load_from_post_ok = $this->data->load_from_post();
 					$this->add_errors_n_warnings_from_data_(); // show errors from load_from_post()
 
@@ -1093,7 +1152,7 @@ class EDIT_RENDERER_CLASS
 			$preselectid = $_REQUEST['preselect'];
 			$courseid = $_REQUEST['id'];
 			$db = new DB_Admin();
-			$sql = $sql = 'UPDATE kurse_kompetenz SET preselected="1" WHERE primary_id="' . $courseid . '" AND attr_id="' . $preselectid . '" AND suggestion="1"';
+			$sql = $sql = 'UPDATE kurse_kompetenz SET preselected="1" WHERE primary_id="' . $courseid . '" AND attr_id="' . $preselectid . '"';
 			$db->query($sql);
 		} else if (isset($_REQUEST['deselect'])) {
 			$load_from_db = true;
@@ -1101,7 +1160,7 @@ class EDIT_RENDERER_CLASS
 			$deselectid = $_REQUEST['deselect'];
 			$courseid = $_REQUEST['id'];
 			$db = new DB_Admin();
-			$sql = $sql = 'UPDATE kurse_kompetenz SET preselected="0" WHERE primary_id="' . $courseid . '" AND attr_id="' . $deselectid . '" AND suggestion="1"';
+			$sql = $sql = 'UPDATE kurse_kompetenz SET preselected="0" WHERE primary_id="' . $courseid . '" AND attr_id="' . $deselectid . '"';
 			$db->query($sql);
 		} else if (isset($_REQUEST['delete_record']) && $_REQUEST['delete_record']) {
 			// delete the record
@@ -1183,5 +1242,6 @@ class EDIT_RENDERER_CLASS
 		$this->render_data_();
 		$this->render_page_end_();
 		//$this->data->save_to_db();
+
 	}
 }

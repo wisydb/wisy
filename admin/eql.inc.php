@@ -52,20 +52,31 @@ EQL rough overview:
 
 
 global $site;
-if( !is_object($site) ) 
-{	
-	
-	$site = new ADMIN_SITE_CLASS(); 
-	if( file_exists('admin/eql.inc.php') ) {
+if (!is_object($site)) {
+
+	$site = new ADMIN_SITE_CLASS();
+	if (file_exists('admin/eql.inc.php')) {
 		// create dummy site for call eg. from /core20
-		$site->sitePath=''; $site->adminDir='admin';
-	}
-	else if( file_exists('../../admin/eql.inc.php') ) {
+		$site->sitePath = '';
+		$site->adminDir = 'admin';
+	} else if (file_exists('../../admin/eql.inc.php')) {
 		// create dummy site for call eg. from /api/v1
-		$site->sitePath='../../'; $site->adminDir='admin';
+		$site->sitePath = '../../';
+		$site->adminDir = 'admin';
+	}
+} else {
+	if (file_exists('admin/eql.inc.php')) {
+		// create dummy site for call eg. from /core20
+		$site->sitePath = '';
+	} else if (file_exists('../admin/eql.inc.php')) {
+		// create dummy site for call eg. from /api/v1
+		$site->sitePath = '../';
+	} else if (file_exists('../../admin/eql.inc.php')) {
+		// create dummy site for call eg. from /api/v1
+		$site->sitePath = '../../';
+		$site->adminDir = 'admin';
 	}
 }
-
 require_once("{$site->sitePath}{$site->adminDir}/table_def.inc.php");
 if (isset($GLOBALS['WisyKi']))
 	require_once('WisyKi/config/db.inc.php');
@@ -77,8 +88,8 @@ else
 //
 global $g_eql_prefer_joins;
 $g_eql_prefer_joins = 1;
-if( isset($_GET['eqltoggle']) ) 
-	$g_eql_prefer_joins = $g_eql_prefer_joins? 0 : 1;
+if (isset($_GET['eqltoggle']))
+	$g_eql_prefer_joins = $g_eql_prefer_joins ? 0 : 1;
 
 
 //
@@ -129,24 +140,23 @@ function g_eql_normalize_func_name($funcName, $pluralS = 1)
 	$funcName = str_replace('_', '', $funcName);
 
 	// ...remove some trailing stuff
-	if( $funcName != 'id' && $funcName != 'herkunftsid' && substr($funcName, -2) == 'id' ) { // 12:49 13.03.2013: special handling for "herkunftsid" as this would normalize to "herkunft" which is also a valid field
-		$funcName = substr($funcName, 0, strlen($funcName)-2);
-	}
-	else if( $funcName!='ids' && substr($funcName, -3) == 'ids' ) {
-		$funcName = substr($funcName, 0, strlen($funcName)-3);
+	if ($funcName != 'id' && $funcName != 'herkunftsid' && substr($funcName, -2) == 'id') { // 12:49 13.03.2013: special handling for "herkunftsid" as this would normalize to "herkunft" which is also a valid field
+		$funcName = substr($funcName, 0, strlen($funcName) - 2);
+	} else if ($funcName != 'ids' && substr($funcName, -3) == 'ids') {
+		$funcName = substr($funcName, 0, strlen($funcName) - 3);
 	}
 
-	if( substr($funcName, -1) == '_' ) {
-		$funcName = substr($funcName, 0, strlen($funcName)-1);
+	if (substr($funcName, -1) == '_') {
+		$funcName = substr($funcName, 0, strlen($funcName) - 1);
 	}
 
 	// ...add a plural 's'
-	if( $pluralS ) {
-		if( substr($funcName, -1) != 's' ) {
+	if ($pluralS) {
+		if (substr($funcName, -1) != 's') {
 			$funcName .= 's'; // add plural 's'
 		}
 
-		if( $funcName == 'themas' ) {
+		if ($funcName == 'themas') {
 			$funcName = 'themens';
 		}
 	}
@@ -159,78 +169,82 @@ function g_eql_normalize_func_name($funcName, $pluralS = 1)
 
 function g_eql_normalize_words($words_, $unique = 0, $keepNumbers = 0, $keepWildcards = 0)
 {
-    // convert void characters to spaces
-    $tr = 					"��@^_=&�`.:,;/!'~+-#|<>()[]\{}\$%�\"\\\n\r\t";
-    if(!$keepNumbers)$tr  .="0123456789";
-    if(!$keepWildcards)$tr.="?*";
-    $words = strtr( strval($words_),	$tr, "                                                                ");
-    
-    // remove multiple spaces
-    while( !(strpos($words, '  ')===false) ) {
-        $words = str_replace('  ', ' ', $words);
-    }
-    
-    // lower string
-    $words = trim(strtolower($words));
-    
-    // return words in an array
-    if( $words != '' ) {
-        $words = explode(' ', $words);
-    }
-    else {
-        $words = array(); // no real words found
-    }
-    
-    // create unique values?
-    if( $unique ) {
-        $temp = array_flip($words);
-        $words = array();
-        reset($temp);
-        foreach(array_keys($temp) as $word) {
-            $words[] = $word;
-        }
-    }
-    
-    // done
-    return $words;
+	// convert void characters to spaces
+	$tr = 					"��@^_=&�`.:,;/!'~+-#|<>()[]\{}\$%�\"\\\n\r\t";
+	if (!$keepNumbers) $tr  .= "0123456789";
+	if (!$keepWildcards) $tr .= "?*";
+	$words = strtr(strval($words_),	$tr, "                                                                ");
+
+	// remove multiple spaces
+	while (!(strpos($words, '  ') === false)) {
+		$words = str_replace('  ', ' ', $words);
+	}
+
+	// lower string
+	$words = trim(strtolower($words));
+
+	// return words in an array
+	if ($words != '') {
+		$words = explode(' ', $words);
+	} else {
+		$words = array(); // no real words found
+	}
+
+	// create unique values?
+	if ($unique) {
+		$temp = array_flip($words);
+		$words = array();
+		reset($temp);
+		foreach (array_keys($temp) as $word) {
+			$words[] = $word;
+		}
+	}
+
+	// done
+	return $words;
 }
 
 
 
 function g_eql_normalize_natsort_callback($matches)
 {
-    // add leading zeros to a number to allow a 'natural' ordering
-    if( strlen($matches[0]) < 10 ) {
-        return str_pad($matches[0], 10, '0', STR_PAD_LEFT);
-    }
-    else {
-        return $matches[0];
-    }
+	// add leading zeros to a number to allow a 'natural' ordering
+	if (strlen($matches[0]) < 10) {
+		return str_pad($matches[0], 10, '0', STR_PAD_LEFT);
+	} else {
+		return $matches[0];
+	}
 }
 function g_eql_normalize_natsort($str)
 {
-    // lower string
-    $str = strtolower($str);
-    
-    // convert accented characters
-    $str = strtr($str,	'��������������������������',
-        'aaaaaaceeeeiiiinooooouuuyy');
-    
-    // convert german umlaute
-    $str = strtr($str,	array('�'=>'ae', '�'=>'oe', '�'=>'ue', '�'=>'ss'));
-    
-    // convert numbers to a 'natural' sorting order
-    $str = preg_replace_callback('/[0-9]+/', 'g_eql_normalize_natsort_callback', $str); // make sure abc3 -> abc4 -> abc321 and not: abc3 -> abc321 -> abc4
-    
-    // strip special characters
-    $str = strtr($str,	'\'\\!�"�$%&/(){}[]=?+*~#,;.:-_<>|@�����  ',
-        '                                        ');
-    
-    // remove spaces
-    $str = str_replace(' ', '', $str);
-    
-    // done
-    return $str;
+	// lower string
+	$str = strtolower($str);
+
+	// convert accented characters
+	$str = strtr(
+		$str,
+		'��������������������������',
+		'aaaaaaceeeeiiiinooooouuuyy'
+	);
+
+	// convert german umlaute
+	$str = strtr($str,	array('�' => 'ae', '�' => 'oe', '�' => 'ue', '�' => 'ss'));
+
+	// convert numbers to a 'natural' sorting order
+	$str = preg_replace_callback('/[0-9]+/', 'g_eql_normalize_natsort_callback', $str); // make sure abc3 -> abc4 -> abc321 and not: abc3 -> abc321 -> abc4
+
+	// strip special characters
+	$str = strtr(
+		$str,
+		'\'\\!�"�$%&/(){}[]=?+*~#,;.:-_<>|@�����  ',
+		'                                        '
+	);
+
+	// remove spaces
+	$str = str_replace(' ', '', $str);
+
+	// done
+	return $str;
 }
 
 
@@ -241,8 +255,8 @@ function g_eql_normalize_natsort($str)
 function g_eql_array2string($tables, $sep = ' ')
 {
 	$ret = '';
-	for( $i = 0; $i < sizeof((array) $tables); $i++ ) {
-		$ret .= ($i? $sep : '') . $tables[$i];
+	for ($i = 0; $i < sizeof((array) $tables); $i++) {
+		$ret .= ($i ? $sep : '') . $tables[$i];
 	}
 	return $ret;
 }
@@ -250,7 +264,7 @@ function g_eql_array2string($tables, $sep = ' ')
 
 function g_eql_getmicrotime()
 {
-	list($usec, $sec) = explode(" ",microtime());
+	list($usec, $sec) = explode(" ", microtime());
 	return ((float)$usec + (float)$sec);
 }
 
@@ -264,41 +278,39 @@ function g_rel2absdate($reldate, &$absdate1, &$absdate2, &$unit)
 
 	// past or future?
 	$timedir = -1;
-	if( isset($reldate[0]) && $reldate[0] == '+' ) { $reldate = trim(substr($reldate, 1)); $timedir = 1; }
-	if( isset($reldate[0]) && $reldate[0] == '-' ) { $reldate = trim(substr($reldate, 1)); }
+	if (isset($reldate[0]) && $reldate[0] == '+') {
+		$reldate = trim(substr($reldate, 1));
+		$timedir = 1;
+	}
+	if (isset($reldate[0]) && $reldate[0] == '-') {
+		$reldate = trim(substr($reldate, 1));
+	}
 
 	// get the value
 	$value = intval($reldate) * $timedir;
 
 	// get the unit
-	if( substr($reldate, -1) == 'h' || substr($reldate, -1) == 's' )
-	{
+	if (substr($reldate, -1) == 'h' || substr($reldate, -1) == 's') {
 		$unit		= 'h';
 		$seconds	= $value * 3600; /*no. of seconds in an hour*/
-		$absdate1	= ftime("%Y-%m-%d %H:00:00", time()+$seconds);
-		$absdate2	= ftime("%Y-%m-%d %H:59:59", time()+$seconds);
-	}
-	else if( substr($reldate, -1) == 'd' || substr($reldate, -1) == 't' )
-	{
+		$absdate1	= ftime("%Y-%m-%d %H:00:00", time() + $seconds);
+		$absdate2	= ftime("%Y-%m-%d %H:59:59", time() + $seconds);
+	} else if (substr($reldate, -1) == 'd' || substr($reldate, -1) == 't') {
 		$unit		= 'd';
 		$seconds	= $value * 86400; /*no. of seconds in a day*/
-		$absdate1	= ftime("%Y-%m-%d 00:00:00", time()+$seconds);
-		$absdate2	= ftime("%Y-%m-%d 23:59:59", time()+$seconds);
-	}
-	else if( substr($reldate, -1) == 'y' || substr($reldate, -1) == 'j' )
-	{
+		$absdate1	= ftime("%Y-%m-%d 00:00:00", time() + $seconds);
+		$absdate2	= ftime("%Y-%m-%d 23:59:59", time() + $seconds);
+	} else if (substr($reldate, -1) == 'y' || substr($reldate, -1) == 'j') {
 		$unit		= 'y';
 		$seconds	= $value * 31622400; /*no. of seconds in a year*/
-		$absdate1	= ftime("%Y-01-01 00:00:00", time()+$seconds);
-		$absdate2	= ftime("%Y-12-31 23:59:59", time()+$seconds);
-	}
-	else
-	{
+		$absdate1	= ftime("%Y-01-01 00:00:00", time() + $seconds);
+		$absdate2	= ftime("%Y-12-31 23:59:59", time() + $seconds);
+	} else {
 		$unit		= 'm';
 		$seconds	= $value * 2678400; /* no. of seconds in a month*/
 		$temp		= time() + $seconds;
 		$absdate1	= ftime("%Y-%m-01 00:00:00", $temp);
-		$absdate2	= ftime("%Y-%m-" .days_in_month(ftime('%m', $temp), ftime('%Y', $temp)). " 23:59:59", $temp);
+		$absdate2	= ftime("%Y-%m-" . days_in_month(ftime('%m', $temp), ftime('%Y', $temp)) . " 23:59:59", $temp);
 	}
 
 	// get the timestamp
@@ -312,25 +324,22 @@ function g_addJoin(&$joins, $joinedTable, $joinedField, $primaryField)
 	global $g_joinHash;
 
 	// does the join exist? if so, re-use it.
-	for( $i = 1; $i <= sizeof((array) $joins); $i++ ) {
-	    if( isset($joins[$i-1]) && $joins[$i-1] == "LEFT JOIN $joinedTable AS j$i ON j$i.$joinedField=$primaryField" ) {
+	for ($i = 1; $i <= sizeof((array) $joins); $i++) {
+		if (isset($joins[$i - 1]) && $joins[$i - 1] == "LEFT JOIN $joinedTable AS j$i ON j$i.$joinedField=$primaryField") {
 			return "j$i";
 		}
-		if( isset($joins[$i-1]) && $joins[$i-1] == "LEFT JOIN $joinedTable ON $joinedTable.$joinedField=$primaryField" ) {
+		if (isset($joins[$i - 1]) && $joins[$i - 1] == "LEFT JOIN $joinedTable ON $joinedTable.$joinedField=$primaryField") {
 			return $joinedTable;
 		}
 	}
 
 	// add a new join
-	if( isset($g_joinHash[$joinedTable]) && $g_joinHash[$joinedTable] )
-	{
-		$g_joinHash[$joinedTable] = $g_joinHash[$joinedTable]=='self'? 'self' : 'alias';
-		$i = sizeof((array) $joins)+1;
+	if (isset($g_joinHash[$joinedTable]) && $g_joinHash[$joinedTable]) {
+		$g_joinHash[$joinedTable] = $g_joinHash[$joinedTable] == 'self' ? 'self' : 'alias';
+		$i = sizeof((array) $joins) + 1;
 		$joins[] = "LEFT JOIN $joinedTable AS j$i ON j$i.$joinedField=$primaryField";
 		return "j$i";
-	}
-	else
-	{
+	} else {
 		$g_joinHash[$joinedTable] = 'direct';
 		$joins[] = "LEFT JOIN $joinedTable ON $joinedTable.$joinedField=$primaryField";
 		return $joinedTable;
@@ -340,18 +349,13 @@ function g_addJoin(&$joins, $joinedTable, $joinedField, $primaryField)
 
 function g_addRelation(&$joins, $joinedTable, $joinedField, $primaryTable, $relation)
 {
-	if( $relation == TABLE_SECONDARY )
-	{
+	if ($relation == TABLE_SECONDARY) {
 		$alias = g_addJoin($joins, "{$primaryTable}_{$joinedField}", 'primary_id', "$primaryTable.id");
 		return g_addJoin($joins, $joinedTable, 'id', "$alias.secondary_id");
-	}
-	else if( $relation == TABLE_MATTR )
-	{
+	} else if ($relation == TABLE_MATTR) {
 		$alias = g_addJoin($joins, "{$primaryTable}_{$joinedField}", 'primary_id', "$primaryTable.id");
 		return g_addJoin($joins, $joinedTable, 'id', "$alias.attr_id");
-	}
-	else if( $relation == TABLE_SATTR )
-	{
+	} else if ($relation == TABLE_SATTR) {
 		return g_addJoin($joins, $joinedTable, 'id', "$primaryTable.{$joinedField}");
 	}
 }
@@ -360,22 +364,22 @@ function g_debug_out($headline, $text, $color, $leaveOpen = 0)
 {
 	global $debug;
 
-	if( isset($debug) && ($debug == '1' || $debug == 'eql') ) {
-		$colors = array('blue'=>'#C0FFFF', 'yellow'=>'#FFFFC0', 'green'=>'#C0FFC0', 'red'=>'#FF4040');
-		echo '&nbsp;<br /><table width="100%" border="1" cellpadding="3" cellspacing="0" bgcolor="' .$colors[$color]. '"><tr><td';
-		 if($leaveOpen) echo " colspan=\"$leaveOpen\"";
+	if (isset($debug) && ($debug == '1' || $debug == 'eql')) {
+		$colors = array('blue' => '#C0FFFF', 'yellow' => '#FFFFC0', 'green' => '#C0FFC0', 'red' => '#FF4040');
+		echo '&nbsp;<br /><table width="100%" border="1" cellpadding="3" cellspacing="0" bgcolor="' . $colors[$color] . '"><tr><td';
+		if ($leaveOpen) echo " colspan=\"$leaveOpen\"";
 		echo '>';
 
-			echo '<b>eql.inc.php: ' . $headline . '</b>';
+		echo '<b>eql.inc.php: ' . $headline . '</b>';
 
 		echo '</td></tr><tr><td';
-		 if($leaveOpen) echo " colspan=\"$leaveOpen\"";
+		if ($leaveOpen) echo " colspan=\"$leaveOpen\"";
 		echo '>';
 
-			echo $text;
+		echo $text;
 
 		echo '</td></tr>';
-		if( !$leaveOpen ) {
+		if (!$leaveOpen) {
 			echo '</table>';
 		}
 	}
@@ -383,7 +387,7 @@ function g_debug_out($headline, $text, $color, $leaveOpen = 0)
 
 function g_debug_sql_out($headline, $text, $color, $leaveOpen = 0)
 {
-    $text = isohtmlentities( strval( $text ) );
+	$text = isohtmlentities(strval($text));
 	$text = str_replace(" LEFT JOIN ", " <br />LEFT JOIN ", $text);
 	$text = str_replace(" WHERE ", " <br />WHERE ", $text);
 	$text = str_replace(" GROUP BY ", " <br />GROUP BY ", $text);
@@ -419,89 +423,74 @@ class EQL_PARSER_CLASS
 	function __construct(&$symbols, &$s, $consumeOp = 1, $lastFunc = '')
 	{
 		// get function...
-	    if( $symbols[$s][0] == '"' /* " indicates a function */ )
-		{
+		if ($symbols[$s][0] == '"' /* " indicates a function */) {
 			$this->func1 = substr($symbols[$s], 1);
 			$lastFunc = $this->func1;
 			$s++;
 		}
 
 		// get left part...
-		if( $symbols[$s] == '(' )
-		{
+		if ($symbols[$s] == '(') {
 			$s++;
 			$this->expr1 = new EQL_PARSER_CLASS($symbols, $s, 1 /* consume operator */, $lastFunc);
-			if( isset( $this->expr1->lastError ) && $this->expr1->lastError ) {
+			if (isset($this->expr1->lastError) && $this->expr1->lastError) {
 				$this->lastError = $this->expr1->lastError;
 				return; // error
 			}
 
-			if( $symbols[$s] == ')' ) {
+			if ($symbols[$s] == ')') {
 				$s++;
 			}
-		}
-		else if( $symbols[$s][0] == '"' /* " indicates a function */ )
-		{
+		} else if ($symbols[$s][0] == '"' /* " indicates a function */) {
 			$this->expr1 = new EQL_PARSER_CLASS($symbols, $s, 0 /* don't consume operator */, $lastFunc);
-			if( isset( $this->expr1->lastError ) && $this->expr1->lastError ) {
+			if (isset($this->expr1->lastError) && $this->expr1->lastError) {
 				$this->lastError = $this->expr1->lastError;
 				return; // error
 			}
-		}
-		else if( $symbols[$s][0] == '$' /* $ indicates an ident */ )
-		{
+		} else if ($symbols[$s][0] == '$' /* $ indicates an ident */) {
 			$this->ident1 = substr($symbols[$s], 1);
 			$s++;
-		}
-		else
-		{
-			if( $lastFunc == 'help' ) {
+		} else {
+			if ($lastFunc == 'help') {
 				$this->ident1 = '1';
 				// let the error print later
-			}
-			else if( $lastFunc ) {
+			} else if ($lastFunc) {
 				$this->lastError = htmlconstant('_MOD_DBSEARCH_ERRFUNCARGEXP', strtolower($lastFunc) . '()');
 				return; // error
-			}
-			else {
+			} else {
 				$this->lastError = htmlconstant('_MOD_DBSEARCH_ERRIDENTIFIEREXP');
 				return; // error
 			}
-
 		}
 
 		// get operator (if any)...
-		if( !$consumeOp ) {
+		if (!$consumeOp) {
 			return;
 		}
 
-		if( isset( $symbols[$s] ) && ( $symbols[$s] == 'and' || $symbols[$s] == 'or' ) )
-		{
+		if (isset($symbols[$s]) && ($symbols[$s] == 'and' || $symbols[$s] == 'or')) {
 			$this->op = $symbols[$s];
 			$s++;
-		}
-		else if( isset( $symbols[$s] ) && ( $symbols[$s] == '(' || $symbols[$s][0] == '"' || $symbols[$s][0] == '$' ) )
-		{
+		} else if (isset($symbols[$s]) && ($symbols[$s] == '(' || $symbols[$s][0] == '"' || $symbols[$s][0] == '$')) {
 			$this->op = 'and';
 		}
 
 		// if we have any operator, get right part...
-		if( isset( $this->op ) && $this->op )
-		{
+		if (isset($this->op) && $this->op) {
 			$this->expr2 = new EQL_PARSER_CLASS($symbols, $s, 1 /* consume operator */, $lastFunc);
-			if( isset( $this->expr2->lastError ) && $this->expr2->lastError ) {
+			if (isset($this->expr2->lastError) && $this->expr2->lastError) {
 				$this->lastError = $this->expr2->lastError;
 				return; // error
 			}
 		}
 
 		// optimize
-		if( isset( $this->expr1 ) && $this->expr1 && ( !isset( $this->func1 ) || !$this->func1 ) && ( !isset( $this->expr2 ) || !$this->expr2 ) ) {
-		    $this->func1	= isset( $this->expr1->func1 ) ? $this->expr1->func1 : null;
-		    $this->ident1	= isset( $this->expr1->ident1 ) ? $this->expr1->ident1 : null;
-		    $this->op		= isset( $this->expr1->op ) ? $this->expr1->op : null;
-		    $this->expr2	= isset( $this->expr1->expr2 ) ? $this->expr1->expr2 : null;
-		    $this->expr1	= isset( $this->expr1->expr1 ) ? $this->expr1->expr1 : null; // copy expr1 at last
+		if (isset($this->expr1) && $this->expr1 && (!isset($this->func1) || !$this->func1) && (!isset($this->expr2) || !$this->expr2)) {
+			$this->func1	= isset($this->expr1->func1) ? $this->expr1->func1 : null;
+			$this->ident1	= isset($this->expr1->ident1) ? $this->expr1->ident1 : null;
+			$this->op		= isset($this->expr1->op) ? $this->expr1->op : null;
+			$this->expr2	= isset($this->expr1->expr2) ? $this->expr1->expr2 : null;
+			$this->expr1	= isset($this->expr1->expr1) ? $this->expr1->expr1 : null; // copy expr1 at last
 		}
 	}
 
@@ -516,8 +505,8 @@ class EQL_PARSER_CLASS
 	{
 		global $transentities;
 
-		if( !is_array($transentities) ) {
-			$transentities = array_flip(get_html_translation_table(HTML_ENTITIES, ENT_COMPAT|ENT_HTML401, 'ISO-8859-1'));
+		if (!is_array($transentities)) {
+			$transentities = array_flip(get_html_translation_table(HTML_ENTITIES, ENT_COMPAT | ENT_HTML401, 'ISO-8859-1'));
 		}
 
 		return strtr($str, $transentities);
@@ -540,27 +529,24 @@ class EQL_PARSER_CLASS
 
 		// build test array
 		$testArray = array();
-		for( $try = 0; $try <= 2; $try++ )
-		{
-			for( $i = 0; $i < sizeof((array) $strArray); $i += 2 )
-			{
-				$testArray[$i/2] = $strArray[$i+1];
-				if( $try < 2 ) {
-					$testArray[$i/2] = strtolower(trim($testArray[$i/2]));
-					if( $try < 1 ) {
-						$testArray[$i/2] = str_replace(' ', '', strtr($testArray[$i/2], $ignoreChars, $ignoreCharsSubst));
+		for ($try = 0; $try <= 2; $try++) {
+			for ($i = 0; $i < sizeof((array) $strArray); $i += 2) {
+				$testArray[$i / 2] = $strArray[$i + 1];
+				if ($try < 2) {
+					$testArray[$i / 2] = strtolower(trim($testArray[$i / 2]));
+					if ($try < 1) {
+						$testArray[$i / 2] = str_replace(' ', '', strtr($testArray[$i / 2], $ignoreChars, $ignoreCharsSubst));
 					}
 				}
 			}
 
 			$temp = array_unique($testArray);
-			if( sizeof($temp) == sizeof($testArray) )
-			{
+			if (sizeof($temp) == sizeof($testArray)) {
 				// we can use this test array, make the same conversion for the string
 				$test = $str;
-				if( $try < 2 ) {
+				if ($try < 2) {
 					$test = strtolower(trim($str));
-					if( $try < 1 ) {
+					if ($try < 1) {
 						$test = str_replace(' ', '', strtr($test, $ignoreChars, $ignoreCharsSubst));
 					}
 				}
@@ -569,10 +555,8 @@ class EQL_PARSER_CLASS
 
 				// search for the value
 				$valuesFound = 0;
-				for( $i = 0; $i < sizeof((array) $strArray); $i += 2 )
-				{
-					if( strcmp($test, $testArray[$i/2]) == 0 )
-					{
+				for ($i = 0; $i < sizeof((array) $strArray); $i += 2) {
+					if (strcmp($test, $testArray[$i / 2]) == 0) {
 						$state = 'ok';
 						return $strArray[$i];
 					}
@@ -597,15 +581,11 @@ class EQL_PARSER_CLASS
 	//
 	function getArrayIdsCond($field, &$ids)
 	{
-		if( sizeof((array) $ids) == 0 ) {
+		if (sizeof((array) $ids) == 0) {
 			return '(0)';
-		}
-		else if( sizeof((array) $ids) == 1 )
-		{
+		} else if (sizeof((array) $ids) == 1) {
 			return "$field={$ids[0]}";
-		}
-		else
-		{
+		} else {
 			return "$field IN(" . implode(', ', $ids) . ')';
 		}
 	}
@@ -621,7 +601,7 @@ class EQL_PARSER_CLASS
 	{
 		$allowedFunc = 'id()';
 		$tableDef = Table_Find_Def($tableDefName, 0 /* no access check */);
-		for( $r = 0; $r < sizeof((array) $tableDef->rows); $r++ ) {
+		for ($r = 0; $r < sizeof((array) $tableDef->rows); $r++) {
 			$allowedFunc .= ', ' . g_eql_normalize_func_name($tableDef->rows[$r]->name, 0) . '()';
 		}
 
@@ -638,10 +618,9 @@ class EQL_PARSER_CLASS
 	{
 		$tableDef = Table_Find_Def($tableDefName, 0 /* no access check  */);
 		$field = g_eql_normalize_func_name($field);
-		for( $r = 0; $r < sizeof((array) $tableDef->rows); $r++ )
-		{
+		for ($r = 0; $r < sizeof((array) $tableDef->rows); $r++) {
 			$row_name = g_eql_normalize_func_name($tableDef->rows[$r]->name);
-			if( $row_name == $field ) {
+			if ($row_name == $field) {
 				return $tableDef->rows[$r];
 			}
 		}
@@ -664,7 +643,7 @@ class EQL_PARSER_CLASS
 
 		// ...build subselect select statement
 		$currSelect = "SELECT ";
-		if( sizeof((array) $joins) ) {
+		if (sizeof((array) $joins)) {
 			$currSelect .= "DISTINCT ";
 		}
 		$currSelect .= "$table.$idField FROM $table " . g_eql_array2string($joins) . " WHERE $cond";
@@ -672,19 +651,19 @@ class EQL_PARSER_CLASS
 		// ...collect all IDs
 		$ids = array();
 
-		if( $debug ) {
+		if ($debug) {
 			$msneeded = g_eql_getmicrotime();
 		}
 
-				$g_eql_db->query($currSelect);
-				while( $g_eql_db->next_record() ) {
-					$currId = $g_eql_db->f($idField);
-					$ids[] = $currId;
-				}
+		$g_eql_db->query($currSelect);
+		while ($g_eql_db->next_record()) {
+			$currId = $g_eql_db->f($idField);
+			$ids[] = $currId;
+		}
 
-		if( $debug ) {
+		if ($debug) {
 			$msneeded = g_eql_getmicrotime() - $msneeded;
-			g_debug_sql_out('EQL_PARSER_CLASS->select2ids():', $currSelect . ' => ' . (sizeof((array) $ids)? implode(', ', $ids) : 'EMPTY ROWS') . ' (' . $msneeded . ' seconds needed)', 'yellow');
+			g_debug_sql_out('EQL_PARSER_CLASS->select2ids():', $currSelect . ' => ' . (sizeof((array) $ids) ? implode(', ', $ids) : 'EMPTY ROWS') . ' (' . $msneeded . ' seconds needed)', 'yellow');
 		}
 
 		return $ids;
@@ -694,26 +673,20 @@ class EQL_PARSER_CLASS
 	{
 		$rowType = $rowType & TABLE_ROW; // force masked row type
 
-		if( sizeof((array) $ids) == 0 )
-		{
+		if (sizeof((array) $ids) == 0) {
 			// nothing found, add brackets around '0' to avoid a 'false' result
 			return "(0)";
 		}
 
-		if( $rowType == TABLE_SATTR )
-		{
+		if ($rowType == TABLE_SATTR) {
 			return $this->getArrayIdsCond("{$tableDefName}.{$rowName}", $ids);
-		}
-		else if( $completeResolve )
-		{
-			$cond1 = $this->getArrayIdsCond("{$tableDefName}_{$rowName}." .($rowType==TABLE_MATTR? 'attr':'secondary'). "_id", $ids);
+		} else if ($completeResolve) {
+			$cond1 = $this->getArrayIdsCond("{$tableDefName}_{$rowName}." . ($rowType == TABLE_MATTR ? 'attr' : 'secondary') . "_id", $ids);
 			$ids = $this->select2ids("{$tableDefName}_{$rowName}", array(), $cond1, 'primary_id');
 			return $this->getArrayIdsCond("$tableDefName.id", $ids);
-		}
-		else
-		{
+		} else {
 			$alias = g_addJoin($retJoins, "{$tableDefName}_{$rowName}", 'primary_id', "$tableDefName.id");
-			return $this->getArrayIdsCond("$alias." .($rowType==TABLE_MATTR? 'attr':'secondary'). "_id", $ids);
+			return $this->getArrayIdsCond("$alias." . ($rowType == TABLE_MATTR ? 'attr' : 'secondary') . "_id", $ids);
 		}
 	}
 
@@ -725,39 +698,32 @@ class EQL_PARSER_CLASS
 	//
 	function selectString($tableDefName, $field, $ident, $modifiers, $addparam = 0)
 	{
-		if( $modifiers & EQL_OP_BITS )
-		{
-			$this->lastError = htmlconstant('_MOD_DBSEARCH_INVALIDSTRINGOP', g_eql_normalize_func_name($tableDefName, 0).".$field()");
+		if ($modifiers & EQL_OP_BITS) {
+			$this->lastError = htmlconstant('_MOD_DBSEARCH_INVALIDSTRINGOP', g_eql_normalize_func_name($tableDefName, 0) . ".$field()");
 			return 0;
 		}
 
 		$ident = addslashes($ident);
-		if( $ident=='*' )
-		{
+		if ($ident == '*') {
 			return '(1)';
-		}
-		else if( strpos($ident, '*') === false && strpos($ident, '?') === false )
-		{
-			if( $addparam ) {
+		} else if (strpos($ident, '*') === false && strpos($ident, '?') === false) {
+			if ($addparam) {
 				$rules = explode('###', $addparam);
-				if( $ident != '' && sizeof($rules)>=2 ) {
+				if ($ident != '' && sizeof($rules) >= 2) {
 					// perform given regular expressions on input
-					for( $i = 3; $i < sizeof($rules); $i += 2 ) {
-						$ident = preg_replace($rules[$i], $rules[$i+1], $ident);
+					for ($i = 3; $i < sizeof($rules); $i += 2) {
+						$ident = preg_replace($rules[$i], $rules[$i + 1], $ident);
 					}
 				}
 			}
-			
+
 			return "$tableDefName.$field='$ident'";
-		}
-		else
-		{
-		    $ident = strtr($ident, '\?', '\\'.chr(186) );	// save explicite search of '?' triple # b/c one might search for #
-		    $ident = strtr($ident, '*?', '%_');		// no idea what this is for exactly, no real regex - but we need to get around that for explicit search of '?'
-		    $ident = strtr($ident, '\\'.chr(186), '\\?');	// search for actual '?' == escaped '?'
-		    
+		} else {
+			$ident = strtr($ident, '\?', '\\' . chr(186));	// save explicite search of '?' triple # b/c one might search for #
+			$ident = strtr($ident, '*?', '%_');		// no idea what this is for exactly, no real regex - but we need to get around that for explicit search of '?'
+			$ident = strtr($ident, '\\' . chr(186), '\\?');	// search for actual '?' == escaped '?'
+
 			return "$tableDefName.$field LIKE '$ident'";
-			
 		}
 	}
 
@@ -770,26 +736,32 @@ class EQL_PARSER_CLASS
 	function selectInt($tableDefName, $field, $ident, $modifiers)
 	{
 		// check for invalid modifiers
-		if( $modifiers & (EQL_NEAR|EQL_LAZY|EQL_FUZZY)
-		 || isset($ident[0]) && $ident[0] == '*'
-		 || substr($ident, -1) == '*' )
-		{
-			$this->lastError = htmlconstant('_MOD_DBSEARCH_INVALIDINTOP', g_eql_normalize_func_name($tableDefName, 0).".$field()");
+		if (
+			$modifiers & (EQL_NEAR | EQL_LAZY | EQL_FUZZY)
+			|| isset($ident[0]) && $ident[0] == '*'
+			|| substr($ident, -1) == '*'
+		) {
+			$this->lastError = htmlconstant('_MOD_DBSEARCH_INVALIDINTOP', g_eql_normalize_func_name($tableDefName, 0) . ".$field()");
 			return 0;
 		}
 
 		// check for range
-		if( strpos($ident, '-')>=1  ) {
+		if (strpos($ident, '-') >= 1) {
 			list($mn, $mx) = explode('-', $ident);
 			return '(' . $this->selectInt($tableDefName, $field, $mn, EQL_GREATEREQUAL) . ' AND ' . $this->selectInt($tableDefName, $field, $mx, EQL_LESSEQUAL) . ')';
 		}
 
 		// select int
 		$op = '=';
-			 if( $modifiers & EQL_LESS )		{ $op = '<';	}
-		else if( $modifiers & EQL_LESSEQUAL )	{ $op = '<=';	}
-		else if( $modifiers & EQL_GREATER )		{ $op = '>';	}
-		else if( $modifiers & EQL_GREATEREQUAL ){ $op = '>=';	}
+		if ($modifiers & EQL_LESS) {
+			$op = '<';
+		} else if ($modifiers & EQL_LESSEQUAL) {
+			$op = '<=';
+		} else if ($modifiers & EQL_GREATER) {
+			$op = '>';
+		} else if ($modifiers & EQL_GREATEREQUAL) {
+			$op = '>=';
+		}
 
 		return "$tableDefName.$field$op" . intval($ident);
 	}
@@ -804,10 +776,9 @@ class EQL_PARSER_CLASS
 	function selectFlag($tableDefName, $field, $ident, $modifiers)
 	{
 		$ident = strtolower($ident);
-		if( $ident=='no' || $ident=='off' || $ident=='false' || $ident=='0' ) {
+		if ($ident == 'no' || $ident == 'off' || $ident == 'false' || $ident == '0') {
 			return "$tableDefName.$field=0";
-		}
-		else {
+		} else {
 			return "$tableDefName.$field!=0";
 		}
 	}
@@ -840,42 +811,40 @@ class EQL_PARSER_CLASS
 		require_once("{$site->sitePath}{$site->adminDir}/date.inc.php");
 
 		// search for non-set date?
-		if( $ident == '0' || $ident == '' ) {
+		if ($ident == '0' || $ident == '') {
 			return "$tableDefName.$field='0000-00-00 00:00:00'";
 		}
 
 		// search for some special dates?
 		$test = trim(strtolower($ident));
-		if( $test=='today' || $test==strtolower(htmlconstant('_TODAY')) ) {
-			$modifiers |= EQL_TIMEWINDOW; $ident = '0d';
-		}
-		else if( $test == 'yesterday' || $test==strtolower(htmlconstant('_YESTERDAY')) ) {
-			$modifiers |= EQL_TIMEWINDOW; $ident = '1d-1d';
-		}
-		else if( $test == 'tomorrow' || $test==strtolower(htmlconstant('_TOMORROW')) ) {
-			$modifiers |= EQL_TIMEWINDOW; $ident = '+1d-+1d';
+		if ($test == 'today' || $test == strtolower(htmlconstant('_TODAY'))) {
+			$modifiers |= EQL_TIMEWINDOW;
+			$ident = '0d';
+		} else if ($test == 'yesterday' || $test == strtolower(htmlconstant('_YESTERDAY'))) {
+			$modifiers |= EQL_TIMEWINDOW;
+			$ident = '1d-1d';
+		} else if ($test == 'tomorrow' || $test == strtolower(htmlconstant('_TOMORROW'))) {
+			$modifiers |= EQL_TIMEWINDOW;
+			$ident = '+1d-+1d';
 		}
 
-		if( $modifiers & EQL_TIMEWINDOW )
-		{
+		if ($modifiers & EQL_TIMEWINDOW) {
 			// search for a time-window
 			$ident = trim($ident);
 
 			$p = strpos(substr($ident, 1), '-');
-			if( $p ) {
-				$i1 = g_rel2absdate(substr($ident, 0, $p+1), $i1a, $i1b, $unit);
-				$i2 = g_rel2absdate(substr($ident, $p+2), $i2a, $i2b, $unit);
-			}
-			else {
+			if ($p) {
+				$i1 = g_rel2absdate(substr($ident, 0, $p + 1), $i1a, $i1b, $unit);
+				$i2 = g_rel2absdate(substr($ident, $p + 2), $i2a, $i2b, $unit);
+			} else {
 				$i1 = g_rel2absdate($ident, $i1a, $i1b, $unit);
 				$i2 = g_rel2absdate("0$unit", $i2a, $i2b, $unit);
 			}
 
-			if( $i1 > $i2 ) {
+			if ($i1 > $i2) {
 				$dates[0] = $i2a;
 				$dates[1] = $i1b;
-			}
-			else {
+			} else {
 				$dates[0] = $i1a;
 				$dates[1] = $i2b;
 			}
@@ -883,37 +852,26 @@ class EQL_PARSER_CLASS
 			g_debug_out("EQL_PARSER_CLASS->selectDate(timewindow($ident)):", "exact time 1: $i1, slice 1: $i1a - $i1b<br />exact time 2: $i2, slice 2: $i2a - $i2b<br />slice calculated: <i>{$dates[0]} - {$dates[1]}</i>", 'yellow');
 
 			$modifiers &= ~EQL_TIMEWINDOW;
-		}
-		else
-		{
+		} else {
 			// get date (span) from ident
 			$dates = sql_date_from_human($ident, 'dateoptspan');
-			if( sizeof((array) $dates) == 0 ) {
+			if (sizeof((array) $dates) == 0) {
 				return '(0)'; // error
 			}
 
 			$dates[0] = substr($dates[0], 0, 10) . ' 00:00:00';
-			$dates[1] = substr(sizeof($dates)==2? $dates[1] : $dates[0], 0, 10) . ' 23:59:59';
+			$dates[1] = substr(sizeof($dates) == 2 ? $dates[1] : $dates[0], 0, 10) . ' 23:59:59';
 		}
 
-		if( $modifiers & EQL_LESS )
-		{
+		if ($modifiers & EQL_LESS) {
 			return "$tableDefName.$field<'{$dates[0]}'";
-		}
-		else if( $modifiers & EQL_LESSEQUAL )
-		{
+		} else if ($modifiers & EQL_LESSEQUAL) {
 			return "$tableDefName.$field<='{$dates[1]}'";
-		}
-		else if( $modifiers & EQL_GREATER )
-		{
+		} else if ($modifiers & EQL_GREATER) {
 			return "$tableDefName.$field>'{$dates[1]}'";
-		}
-		else if( $modifiers & EQL_GREATEREQUAL )
-		{
+		} else if ($modifiers & EQL_GREATEREQUAL) {
 			return "$tableDefName.$field>='{$dates[0]}'";
-		}
-		else
-		{
+		} else {
 			return "($tableDefName.$field>='{$dates[0]}' AND $tableDefName.$field<='{$dates[1]}')";
 		}
 	}
@@ -930,7 +888,7 @@ class EQL_PARSER_CLASS
 		global $g_eql_db;
 
 		// recursion check
-		if( $recursionDepth > 2 ) {
+		if ($recursionDepth > 2) {
 			return 0;
 		}
 
@@ -939,40 +897,34 @@ class EQL_PARSER_CLASS
 
 		// check all fields
 		$ret = '';
-		for( $r = 0; $r < sizeof((array) $tableDef->rows); $r++ )
-		{
+		for ($r = 0; $r < sizeof((array) $tableDef->rows); $r++) {
 			$rowflags	= $tableDef->rows[$r]->flags;
 			$rowtype	= $rowflags & TABLE_ROW;
 			$rowname	= $tableDef->rows[$r]->name;
 
-			if( $rowtype == TABLE_DATE || $rowtype == TABLE_DATETIME )
-			{
-				$ret .= $ret? ' OR ' : '';
+			if ($rowtype == TABLE_DATE || $rowtype == TABLE_DATETIME) {
+				$ret .= $ret ? ' OR ' : '';
 				$ret .= $this->selectDate($tableDefName, $rowname, $ident, $modifiers);
-			}
-			else if( $rowtype == TABLE_SECONDARY )
-			{
+			} else if ($rowtype == TABLE_SECONDARY) {
 				$tempTable = $tableDef->rows[$r]->addparam->name;
 				$tempJoins = array();
 				$tempCond = $this->selectAnyDate($tempJoins, $tempTable, $ident, $modifiers, $recursionDepth + 1);
-				if( $tempCond )
-				{
+				if ($tempCond) {
 					global $g_joinHash;
 					global $g_eql_prefer_joins;
-					if( $g_eql_prefer_joins
-					 && $g_joinHash[$tableDefName]  == 'self' // on root level?
-					 && $g_joinHash[$tempTable] != 'alias' )
-					{
+					if (
+						$g_eql_prefer_joins
+						&& $g_joinHash[$tableDefName]  == 'self' // on root level?
+						&& $g_joinHash[$tempTable] != 'alias'
+					) {
 						// this variation works, but is slower
 						g_addRelation($retJoins, $tempTable, $rowname, $tableDefName, TABLE_SECONDARY);
-						$ret .= $ret? ' OR ' : '';
+						$ret .= $ret ? ' OR ' : '';
 						$ret .= "($tempCond)";
-					}
-					else
-					{
+					} else {
 						$tempIds = $this->select2ids($tempTable, $tempJoins, $tempCond);
-						if( sizeof((array) $tempIds) ) {
-							$ret .= $ret? ' OR ' : '';
+						if (sizeof((array) $tempIds)) {
+							$ret .= $ret ? ' OR ' : '';
 							$ret .= $this->ids2primaryselect($tempIds, $retJoins, $tableDefName, $rowname, $rowtype);
 						}
 					}
@@ -980,11 +932,13 @@ class EQL_PARSER_CLASS
 			}
 		}
 
-		if( $ret == '' ) {
-			$this->lastError = htmlconstant('_MOD_DBSEARCH_ERRUNKNOWNFUNCTION',
+		if ($ret == '') {
+			$this->lastError = htmlconstant(
+				'_MOD_DBSEARCH_ERRUNKNOWNFUNCTION',
 				'date()/timewindow()',
 				g_eql_normalize_func_name($tableDefName, 0) . '()',
-				$this->getReadableAllowedFunc($tableDefName));
+				$this->getReadableAllowedFunc($tableDefName)
+			);
 		}
 
 		return $ret;
@@ -1003,67 +957,56 @@ class EQL_PARSER_CLASS
 		$rowinfo = $this->getRowInfo($tableDefName, $field);
 
 		$ident = trim($ident);
-		if( $ident == '' )
-		{
+		if ($ident == '') {
 			$intIdent = 0;
-		}
-		else if( strval(intval($ident)) == strval($ident) )
-		{
+		} else if (strval(intval($ident)) == strval($ident)) {
 			$intIdent = intval($ident);
-		}
-		else
-		{
+		} else {
 			global $site;
-			if( $rowinfo )
-			{
+			if ($rowinfo) {
 				// remove entities from all values
 				$values = explode('###', $rowinfo->addparam);
-				for( $v = 0; $v < sizeof($values); $v+=2 ) {
-					$values[$v+1] = $this->htmldeentities(htmlconstant(trim($values[$v+1])));
+				for ($v = 0; $v < sizeof($values); $v += 2) {
+					$values[$v + 1] = $this->htmldeentities(htmlconstant(trim($values[$v + 1])));
 				}
 
 				// find ident
 				$intIdent = intval($this->smartStrCompareFind($ident, $values, $state));
-				if( $state != 'ok' )
-				{
+				if ($state != 'ok') {
 					$allowedValues .= '0';
-					for( $v = 0; $v < sizeof($values); $v+=2 ) {
-						if ($values[$v+1] != '' ) { $allowedValues .= ", {$values[$v+1]}"; }
+					for ($v = 0; $v < sizeof($values); $v += 2) {
+						if ($values[$v + 1] != '') {
+							$allowedValues .= ", {$values[$v + 1]}";
+						}
 					}
 
-					$this->lastError = htmlconstant('_MOD_DBSEARCH_ERRUNKNOWNVALUE',
+					$this->lastError = htmlconstant(
+						'_MOD_DBSEARCH_ERRUNKNOWNVALUE',
 						$ident,
 						g_eql_normalize_func_name($tableDefName, 0) . ".{$field}()",
-						isohtmlentities( strval( $allowedValues ) ) );
+						isohtmlentities(strval($allowedValues))
+					);
 					return 0; // error
 				}
 			}
 		}
 
-		if( $intIdent === 'unset' )
-		{
+		if ($intIdent === 'unset') {
 			return '(0)'; // nothing found, add brackets around '0' to avoid a 'false' result
-		}
-		else
-		{
-		    $rowInfoFlags = isset( $rowinfo->flags ) ? $rowinfo->flags : null;
-			if( ($rowInfoFlags & TABLE_ROW) == TABLE_BITFIELD )
-			{
-				if( $modifiers & EQL_OP_BITS )
-				{
-					$this->lastError = htmlconstant('_MOD_DBSEARCH_INVALIDBITFIELDOP', g_eql_normalize_func_name($tableDefName, 0).".$field()");
+		} else {
+			$rowInfoFlags = isset($rowinfo->flags) ? $rowinfo->flags : null;
+			if (($rowInfoFlags & TABLE_ROW) == TABLE_BITFIELD) {
+				if ($modifiers & EQL_OP_BITS) {
+					$this->lastError = htmlconstant('_MOD_DBSEARCH_INVALIDBITFIELDOP', g_eql_normalize_func_name($tableDefName, 0) . ".$field()");
 					return 0;
 				}
 
-				if( $intIdent == 0 ) {
+				if ($intIdent == 0) {
 					return "{$tableDefName}.{$field}=0";
-				}
-				else {
+				} else {
 					return "{$tableDefName}.{$field}&" . $intIdent;
 				}
-			}
-			else
-			{
+			} else {
 				return $this->selectInt($tableDefName, $field, $intIdent, $modifiers);
 			}
 		}
@@ -1078,7 +1021,7 @@ class EQL_PARSER_CLASS
 	//
 	function selectBlob($tableDefName, $field, $ident, $modifiers)
 	{
-		return	$this->selectString($tableDefName, $field, $ident==''? '' : ($ident.';*'), $modifiers);
+		return	$this->selectString($tableDefName, $field, $ident == '' ? '' : ($ident . ';*'), $modifiers);
 	}
 
 
@@ -1087,9 +1030,13 @@ class EQL_PARSER_CLASS
 	// EQL_PARSER_CLASS->selectFulltext()
 	// ----------------------------------
 	//
-	function selectFulltextSingleWord(&$retJoins, $tableDefName, $words /*plus variations*/,
-									  $modifiers, $recursionDepth = 0)
-	{
+	function selectFulltextSingleWord(
+		&$retJoins,
+		$tableDefName,
+		$words /*plus variations*/,
+		$modifiers,
+		$recursionDepth = 0
+	) {
 		global $g_eql_db;
 		global $g_ft_min_word_len;
 		global $g_ft_boolean_syntax;
@@ -1097,7 +1044,7 @@ class EQL_PARSER_CLASS
 		//
 		// recursion check
 		//
-		if( $recursionDepth > 2 ) {
+		if ($recursionDepth > 2) {
 			return 0;
 		}
 
@@ -1107,11 +1054,10 @@ class EQL_PARSER_CLASS
 		$fulltext_fields = '';
 		$index = $g_eql_db->index_info($tableDefName);
 		reset($index);
-		foreach($index as $index_name => $index_info)
-		{
-		    if( isset( $index_info['fulltext'] ) && $index_info['fulltext']  ) {
-				for( $i = 0; $i < sizeof((array) $index_info['fields']); $i++ ) {
-					$fulltext_fields .= $fulltext_fields? ', ' : '';
+		foreach ($index as $index_name => $index_info) {
+			if (isset($index_info['fulltext']) && $index_info['fulltext']) {
+				for ($i = 0; $i < sizeof((array) $index_info['fields']); $i++) {
+					$fulltext_fields .= $fulltext_fields ? ', ' : '';
 					$fulltext_fields .= "$tableDefName." . $index_info['fields'][$i];
 				}
 				break;
@@ -1124,21 +1070,19 @@ class EQL_PARSER_CLASS
 		$like_fields = '';
 		$tableDef = Table_Find_Def($tableDefName, 0 /* no access check */);
 		$like_count = 0;
-		for( $r = 0; $r < sizeof((array) $tableDef->rows); $r++ )
-		{
-		    $rowflags	= isset( $tableDef->rows[$r]->flags ) ? $tableDef->rows[$r]->flags : null;
+		for ($r = 0; $r < sizeof((array) $tableDef->rows); $r++) {
+			$rowflags	= isset($tableDef->rows[$r]->flags) ? $tableDef->rows[$r]->flags : null;
 			$rowtype	= $rowflags & TABLE_ROW;
-			$rowname	= isset( $tableDef->rows[$r]->name ) ? $tableDef->rows[$r]->name : null;
+			$rowname	= isset($tableDef->rows[$r]->name) ? $tableDef->rows[$r]->name : null;
 
-			if( $rowtype == TABLE_TEXT || $rowtype == TABLE_TEXTAREA )
-			{
-				$like_fields .= $like_fields? ' OR ' : '';
+			if ($rowtype == TABLE_TEXT || $rowtype == TABLE_TEXTAREA) {
+				$like_fields .= $like_fields ? ' OR ' : '';
 				$like_fields .= "$tableDefName.$rowname %s";
 				$like_count++;
 			}
 		}
 
-		if( $like_count > 1 ) {
+		if ($like_count > 1) {
 			$like_fields = "($like_fields)";
 		}
 
@@ -1147,74 +1091,71 @@ class EQL_PARSER_CLASS
 		//
 		$ret = '';
 		$retCount = 0;
-		if( $like_fields )
-		{
-			if( $fulltext_fields
-			 && (strpos($words[0], '*')===false || strpos($words[0], '*')==(strlen($words[0])-1))
-			 && strpos($words[0], '?')===false )
-			{
-				if( strlen(str_replace('*', '', $words[0])) >= $g_ft_min_word_len )
-				{
+		if ($like_fields) {
+			if (
+				$fulltext_fields
+				&& (strpos($words[0], '*') === false || strpos($words[0], '*') == (strlen($words[0]) - 1))
+				&& strpos($words[0], '?') === false
+			) {
+				if (strlen(str_replace('*', '', $words[0])) >= $g_ft_min_word_len) {
 					// query using fulltext index
 					$temp = '';
 					$tempBool = '';
-					for( $v = 0; $v < sizeof((array) $words); $v++ )
-					{
-						$temp .= $temp? ' ' : '';
+					for ($v = 0; $v < sizeof((array) $words); $v++) {
+						$temp .= $temp ? ' ' : '';
 
-						if( $modifiers&EQL_PHRASE
-						 && strpos($words[$v], ' ')
-						 && strpos($g_ft_boolean_syntax, '"') )
-						{
+						if (
+							$modifiers & EQL_PHRASE
+							&& strpos($words[$v], ' ')
+							&& strpos($g_ft_boolean_syntax, '"')
+						) {
 							$temp .= '"' . addslashes($words[$v]) . '"';
 							$tempBool = ' IN BOOLEAN MODE';
-						}
-						else if( substr($words[$v], -1) == '*'
-							  && strpos($g_ft_boolean_syntax, '*') )
-						{
+						} else if (
+							substr($words[$v], -1) == '*'
+							&& strpos($g_ft_boolean_syntax, '*')
+						) {
 							$temp .= addslashes($words[$v]);
 							$tempBool = ' IN BOOLEAN MODE';
-						}
-						else
-						{
+						} else {
 							$temp .= addslashes($words[$v]);
 						}
 					}
 
 					$ret .= "MATCH($fulltext_fields) AGAINST ('$temp'$tempBool)";
 				}
-			}
-			else
-			{
+			} else {
 				// query using fallback
 				$temp = '';
-				for( $v = 0; $v < sizeof($words); $v++ )
-				{
+				for ($v = 0; $v < sizeof($words); $v++) {
 					$word = addslashes($words[$v]);
 
-					if( !($modifiers & EQL_INUSERFUNC)
-					 && $word[0]!='*'
-					 && substr($word, -1)!='*' ) {
+					if (
+						!($modifiers & EQL_INUSERFUNC)
+						&& $word[0] != '*'
+						&& substr($word, -1) != '*'
+					) {
 						$word = "*{$word}*";
 					}
 
-					if( strpos($word, '*')===false && strpos($word, '?')===false ) {
+					if (strpos($word, '*') === false && strpos($word, '?') === false) {
 						$word = "='$word'";
-					}
-					else {
-					    
-					    $word = strtr($word, '\?', '\\'.chr(186));	// save explicite search of '?'.
-					    $word = strtr($word, '*?', '%_');	// no idea what this is for exactly, no real regex - but we need to get around that for explicit search of '?'
-					    $word = strtr($word, '\\'.chr(186), '\\?');	// search for actual '?' == escaped '?'
-					    
+					} else {
+
+						$word = strtr($word, '\?', '\\' . chr(186));	// save explicite search of '?'.
+						$word = strtr($word, '*?', '%_');	// no idea what this is for exactly, no real regex - but we need to get around that for explicit search of '?'
+						$word = strtr($word, '\\' . chr(186), '\\?');	// search for actual '?' == escaped '?'
+
 						$word = "LIKE '$word'";
 					}
 
-					$temp .= $temp? ' OR ' : '';
+					$temp .= $temp ? ' OR ' : '';
 					$temp .= str_replace('%s', $word, $like_fields);
 				}
 
-				if( sizeof((array) $words) > 1 ) { $temp = "($temp)"; }
+				if (sizeof((array) $words) > 1) {
+					$temp = "($temp)";
+				}
 				$ret .= $temp;
 			}
 
@@ -1224,35 +1165,32 @@ class EQL_PARSER_CLASS
 		//
 		// search for secondary tables
 		//
-		for( $r = 0; $r < sizeof((array) $tableDef->rows); $r++ )
-		{
+		for ($r = 0; $r < sizeof((array) $tableDef->rows); $r++) {
 			$rowflags	= $tableDef->rows[$r]->flags;
 			$rowtype	= $rowflags & TABLE_ROW;
 			$rowname	= $tableDef->rows[$r]->name;
 
-			if( $rowtype == TABLE_SECONDARY || $rowname == 'localize_id' )
-			{
+			if ($rowtype == TABLE_SECONDARY || $rowname == 'localize_id') {
 				$tempTable = $tableDef->rows[$r]->addparam->name;
 				$tempJoins = array();
 				$tempCond = $this->selectFulltextSingleWord($tempJoins, $tempTable, $words, $modifiers, $recursionDepth + 1);
-				if( $tempCond ) {
+				if ($tempCond) {
 					global $g_joinHash;
 					global $g_eql_prefer_joins;
-					if( $g_eql_prefer_joins
-					    && isset($tableDefName) && isset($g_joinHash[$tableDefName]) && $g_joinHash[$tableDefName]  == 'self' // on root level?
-					    && (!isset($tableDefName1) || !isset($g_joinHash[$tableDefName1]) || $g_joinHash[$tableDefName1] != 'alias') )
-					{
+					if (
+						$g_eql_prefer_joins
+						&& isset($tableDefName) && isset($g_joinHash[$tableDefName]) && $g_joinHash[$tableDefName]  == 'self' // on root level?
+						&& (!isset($tableDefName1) || !isset($g_joinHash[$tableDefName1]) || $g_joinHash[$tableDefName1] != 'alias')
+					) {
 						// this variation works, but is slower
 						g_addRelation($retJoins, $tempTable, $rowname, $tableDefName, TABLE_SECONDARY);
-						$ret .= $ret? ' OR ' : '';
+						$ret .= $ret ? ' OR ' : '';
 						$ret .= $tempCond;
 						$retCount++;
-					}
-					else
-					{
+					} else {
 						$tempIds = $this->select2ids($tempTable, $tempJoins, $tempCond);
-						if( sizeof((array) $tempIds) ) {
-							$ret .= $ret? ' OR ' : '';
+						if (sizeof((array) $tempIds)) {
+							$ret .= $ret ? ' OR ' : '';
 							$ret .= $this->ids2primaryselect($tempIds, $retJoins, $tableDefName, $rowname, $rowtype);
 							$retCount++;
 						}
@@ -1261,11 +1199,11 @@ class EQL_PARSER_CLASS
 			}
 		}
 
-		if( $retCount > 1 ) {
+		if ($retCount > 1) {
 			$ret = "($ret)";
 		}
 
-		return $ret? $ret : 0;
+		return $ret ? $ret : 0;
 	}
 	function selectFulltext(&$retJoins, $tableDefName, $ident, $modifiers)
 	{
@@ -1278,53 +1216,47 @@ class EQL_PARSER_CLASS
 		//
 		global $g_ft_min_word_len;
 		global $g_ft_boolean_syntax;
-		if( !$g_ft_min_word_len )
-		{
+		if (!$g_ft_min_word_len) {
 			$g_eql_db->query("SHOW VARIABLES LIKE 'ft_min_word_len'");
-			$g_ft_min_word_len = $g_eql_db->next_record()? intval($g_eql_db->f('Value')) : 4;
+			$g_ft_min_word_len = $g_eql_db->next_record() ? intval($g_eql_db->f('Value')) : 4;
 
 			$g_eql_db->query("SHOW VARIABLES LIKE 'ft_boolean_syntax'");
-			$g_ft_boolean_syntax = ' ' . ($g_eql_db->next_record()? $g_eql_db->f('Value') : '');
+			$g_ft_boolean_syntax = ' ' . ($g_eql_db->next_record() ? $g_eql_db->f('Value') : '');
 		}
 
 
 		//
 		// get the words
 		//
-		if( $modifiers&EQL_PHRASE )
-		{
+		if ($modifiers & EQL_PHRASE) {
 			$words = array(array($ident));
-		}
-		else
-		{
-			if( $modifiers&EQL_FUZZY ) {
+		} else {
+			if ($modifiers & EQL_FUZZY) {
 				$use_fuzzy = $g_eql_db->table_exists('user_fuzzy');
-			}
-			else {
+			} else {
 				$use_fuzzy = 0;
 			}
 
 			$words = array();
 			$temp = g_eql_normalize_words($ident, 1 /*unique*/, 1 /*keepNumbers*/, 1 /*keepWildcards*/);
-			if( sizeof((array) $temp) == 0 ) $temp = array($ident);
-			for( $i = 0; $i < sizeof((array) $temp); $i++ )
-			{
+			if (sizeof((array) $temp) == 0) $temp = array($ident);
+			for ($i = 0; $i < sizeof((array) $temp); $i++) {
 				$words[$i][0] = $temp[$i];
-				if( $use_fuzzy
-				 && strpos($temp[$i], '*')===false
-				 && strpos($temp[$i], '?')===false
-				 && strlen($temp[$i])>=$g_ft_min_word_len )
-				{
-					$g_eql_db->query("SELECT word FROM user_fuzzy WHERE soundex='".soundex($temp[$i])."' OR metaphone='".metaphone($temp[$i])."'");
-					while( $g_eql_db->next_record() )
-					{
+				if (
+					$use_fuzzy
+					&& strpos($temp[$i], '*') === false
+					&& strpos($temp[$i], '?') === false
+					&& strlen($temp[$i]) >= $g_ft_min_word_len
+				) {
+					$g_eql_db->query("SELECT word FROM user_fuzzy WHERE soundex='" . soundex($temp[$i]) . "' OR metaphone='" . metaphone($temp[$i]) . "'");
+					while ($g_eql_db->next_record()) {
 						$similarword = $g_eql_db->f('word');
-						if( $similarword != $temp[$i] ) {
+						if ($similarword != $temp[$i]) {
 							similar_text($similarword, $temp[$i], $percent);
 							$percent = intval($percent);
-							if( $percent >= $g_ft_fuzzymin ) {
+							if ($percent >= $g_ft_fuzzymin) {
 								$words[$i][] = $similarword;
-								$g_fuzzyInfo[$temp[$i]][str_pad($percent, 3, '0', STR_PAD_LEFT).$similarword] = array($similarword, $percent, 1);
+								$g_fuzzyInfo[$temp[$i]][str_pad($percent, 3, '0', STR_PAD_LEFT) . $similarword] = array($similarword, $percent, 1);
 							}
 						}
 					}
@@ -1338,25 +1270,22 @@ class EQL_PARSER_CLASS
 		//
 		$ret = '';
 		$retCount = 0;
-		for( $w = 0; $w < sizeof((array) $words); $w++ )
-		{
+		for ($w = 0; $w < sizeof((array) $words); $w++) {
 			$temp = $this->selectFulltextSingleWord($retJoins, $tableDefName, $words[$w], $modifiers);
-			if( $temp ) {
-				if( $ret ) {
-					$ret .= $modifiers&EQL_ONEOF? ' OR ' : ' AND ';
+			if ($temp) {
+				if ($ret) {
+					$ret .= $modifiers & EQL_ONEOF ? ' OR ' : ' AND ';
 				}
 				$ret .= $temp;
 				$retCount++;
 			}
 		}
 
-		if( $retCount > 1 ) {
+		if ($retCount > 1) {
 			return "($ret)";
-		}
-		else if( !$ret ) {
+		} else if (!$ret) {
 			return '(0)';
-		}
-		else {
+		} else {
 			return $ret;
 		}
 	}
@@ -1370,14 +1299,13 @@ class EQL_PARSER_CLASS
 	{
 		// find job list to use
 		$joblist = '@'; // init by error
-		if( $ident == '1' ) {
-		    $joblist = isset($_SESSION['g_session_bin']) ? $_SESSION['g_session_bin']->activeBin : null;
-		}
-		else {
+		if ($ident == '1') {
+			$joblist = isset($_SESSION['g_session_bin']) ? $_SESSION['g_session_bin']->activeBin : null;
+		} else {
 			$soll = strtolower($ident);
 			$bins = isset($_SESSION['g_session_bin']) ? $_SESSION['g_session_bin']->getBins() : null;
-			for( $i = 0; $i < sizeof((array) $bins); $i++ ) {
-				if( strtolower($bins[$i]) == $soll ) {
+			for ($i = 0; $i < sizeof((array) $bins); $i++) {
+				if (strtolower($bins[$i]) == $soll) {
 					$joblist = $bins[$i];
 					break;
 				}
@@ -1386,15 +1314,15 @@ class EQL_PARSER_CLASS
 
 		// anything in jobist?
 		$joblist = isset($_SESSION['g_session_bin']) ? $_SESSION['g_session_bin']->getRecords($tableDefName, $joblist) : null;
-		if( sizeof((array) $joblist) == 0 ) {
+		if (sizeof((array) $joblist) == 0) {
 			return '(0)'; // nothing found
 		}
 
 		// get return statement
 		$ret = '';
 		reset($joblist);
-		foreach($joblist as $id => $state) {
-			$ret .= $ret? ', ' : "$tableDefName.id IN (";
+		foreach ($joblist as $id => $state) {
+			$ret .= $ret ? ', ' : "$tableDefName.id IN (";
 			$ret .= $id;
 		}
 		$ret .= ')';
@@ -1410,79 +1338,61 @@ class EQL_PARSER_CLASS
 	//
 	function selectSingleIdent(&$retJoins, $tableDefName, $ident, $modifiers, $func)
 	{
-		if( $func == 'date' || ($func=='' && $modifiers&EQL_TIMEWINDOW) )
-		{
+		if ($func == 'date' || ($func == '' && $modifiers & EQL_TIMEWINDOW)) {
 			// select any date
 			return $this->selectAnyDate($retJoins, $tableDefName, $ident, $modifiers);
-		}
-		else if( $func == 'id'
-		 || ($func == '' && strval(intval($ident)) === strval($ident)) )
-		{
+		} else if (
+			$func == 'id'
+			|| ($func == '' && strval(intval($ident)) === strval($ident))
+		) {
 			// select ID
 			return $this->selectInt($tableDefName, 'id', $ident, $modifiers);
-		}
-		else if( $func == 'job' )
-		{
+		} else if ($func == 'job') {
 			// select a job list
 			return $this->selectJob($tableDefName, $ident, $modifiers);
-		}
-		else if( $func == 'rights' )
-		{
+		} else if ($func == 'rights') {
 			// select rights
 			return $this->selectInt($tableDefName, 'user_access', $ident, $modifiers);
-		}
-		else if( $func == 'group' )
-		{
+		} else if ($func == 'group') {
 			// select group
-			if( strval(intval($ident)) == strval($ident) ) {
+			if (strval(intval($ident)) == strval($ident)) {
 				$tempIds = array($ident);
-			}
-			else {
+			} else {
 				$tempSql = $this->selectSingleIdent($tempJoins, 'user_grp', $ident, $modifiers, 'shortname');
 				$tempIds = $this->select2ids('user_grp', $tempJoins, $tempSql);
-				if( !sizeof((array) $tempIds) ) {
+				if (!sizeof((array) $tempIds)) {
 					$tempSql = $this->selectSingleIdent($tempJoins, 'user_grp', $ident, $modifiers, 'name');
 					$tempIds = $this->select2ids('user_grp', $tempJoins, $tempSql);
 				}
 			}
 
 			return $this->ids2primaryselect($tempIds, $retJoins, $tableDefName, 'user_grp', TABLE_SATTR);
-		}
-		else if( $func == 'createdby' || $func == 'modifiedby' )
-		{
+		} else if ($func == 'createdby' || $func == 'modifiedby') {
 			// select creator/modificator
-			if( strval(intval($ident)) == strval($ident) ) {
+			if (strval(intval($ident)) == strval($ident)) {
 				$tempIds = array($ident);
-			}
-			else {
+			} else {
 				$tempSql = $this->selectSingleIdent($tempJoins, 'user', $ident, $modifiers, 'loginname');
 				$tempIds = $this->select2ids('user', $tempJoins, $tempSql);
-				if( !sizeof((array) $tempIds) ) {
+				if (!sizeof((array) $tempIds)) {
 					$tempSql = $this->selectSingleIdent($tempJoins, 'user', $ident, $modifiers, 'name');
 					$tempIds = $this->select2ids('user', $tempJoins, $tempSql);
 				}
 			}
-			return $this->ids2primaryselect($tempIds, $retJoins, $tableDefName, $func=='createdby'? 'user_created' : 'user_modified', TABLE_SATTR);
-		}
-		else if( $func == 'created' || $func == 'modified' )
-		{
+			return $this->ids2primaryselect($tempIds, $retJoins, $tableDefName, $func == 'createdby' ? 'user_created' : 'user_modified', TABLE_SATTR);
+		} else if ($func == 'created' || $func == 'modified') {
 			// select creation/modification date
-			return $this->selectDate($tableDefName, $func=='created'? 'date_created' : 'date_modified', $ident, $modifiers);
-		}
-		else if( $func == '' )
-		{
+			return $this->selectDate($tableDefName, $func == 'created' ? 'date_created' : 'date_modified', $ident, $modifiers);
+		} else if ($func == '') {
 			// select fulltext
 			return $this->selectFulltext($retJoins, $tableDefName, $ident, $modifiers);
-		}
-		else
-		{
+		} else {
 			// select other row
 			$row = $this->getRowInfo($tableDefName, $func);
-			if( $row ) {
-			    $rowFlags = is_object($row) && isset( $row->flags ) ? $row->flags : null;
-			    
-			    switch( $rowFlags & TABLE_ROW )
-				{
+			if ($row) {
+				$rowFlags = is_object($row) && isset($row->flags) ? $row->flags : null;
+
+				switch ($rowFlags & TABLE_ROW) {
 					case TABLE_TEXT:
 					case TABLE_TEXTAREA:
 						return $this->selectString($tableDefName, $row->name, $ident, $modifiers, $row->addparam);
@@ -1509,10 +1419,12 @@ class EQL_PARSER_CLASS
 			}
 
 			// error
-			$this->lastError = htmlconstant('_MOD_DBSEARCH_ERRUNKNOWNFUNCTION',
-				strtolower($func).'()',
+			$this->lastError = htmlconstant(
+				'_MOD_DBSEARCH_ERRUNKNOWNFUNCTION',
+				strtolower($func) . '()',
 				g_eql_normalize_func_name($tableDefName, 0) . '()',
-				$this->getReadableAllowedFunc($tableDefName));
+				$this->getReadableAllowedFunc($tableDefName)
+			);
 			return 0;
 		}
 	}
@@ -1531,7 +1443,7 @@ class EQL_PARSER_CLASS
 		// init on root level
 		// ------------------
 		//
-		if( $modifiers == -1 ) {
+		if ($modifiers == -1) {
 			$modifiers = 0;
 		}
 
@@ -1543,29 +1455,64 @@ class EQL_PARSER_CLASS
 		$modifiers1		= $modifiers;
 		$func1			= $func;
 		$rowType		= 0; // set if needed
-		
+
 		//
 		// LEFT PART: get function modifiers and function stack 
 		// ----------------------------------------------------
 		//
-		switch( $this->func1 )
-		{
-			case 'phrase':		$modifiers1 &= ~EQL_PHRASE_BITS;$modifiers1 |= EQL_PHRASE;				break;
-			case 'near':		$modifiers1 &= ~EQL_PHRASE_BITS;$modifiers1 |= EQL_NEAR;				break;
+		switch ($this->func1) {
+			case 'phrase':
+				$modifiers1 &= ~EQL_PHRASE_BITS;
+				$modifiers1 |= EQL_PHRASE;
+				break;
+			case 'near':
+				$modifiers1 &= ~EQL_PHRASE_BITS;
+				$modifiers1 |= EQL_NEAR;
+				break;
 
-			case 'exact':		$modifiers1 &= ~EQL_FUZZY_BITS;	$modifiers1 |= EQL_EXACT;				break;
-			case 'lazy':		$modifiers1 &= ~EQL_FUZZY_BITS;	$modifiers1 |= EQL_LAZY;				break;
-			case 'fuzzy':		$modifiers1 &= ~EQL_FUZZY_BITS;	$modifiers1 |= EQL_FUZZY;				break;
+			case 'exact':
+				$modifiers1 &= ~EQL_FUZZY_BITS;
+				$modifiers1 |= EQL_EXACT;
+				break;
+			case 'lazy':
+				$modifiers1 &= ~EQL_FUZZY_BITS;
+				$modifiers1 |= EQL_LAZY;
+				break;
+			case 'fuzzy':
+				$modifiers1 &= ~EQL_FUZZY_BITS;
+				$modifiers1 |= EQL_FUZZY;
+				break;
 
-			case 'oneof':		$modifiers1 &= ~EQL_ONEALL_BITS;$modifiers1 |= EQL_ONEOF;				break;
-			case 'allof':		$modifiers1 &= ~EQL_ONEALL_BITS;$modifiers1 |= EQL_ALLOF;				break;
+			case 'oneof':
+				$modifiers1 &= ~EQL_ONEALL_BITS;
+				$modifiers1 |= EQL_ONEOF;
+				break;
+			case 'allof':
+				$modifiers1 &= ~EQL_ONEALL_BITS;
+				$modifiers1 |= EQL_ALLOF;
+				break;
 
-			case 'less':		$modifiers1 &= ~EQL_OP_BITS;	$modifiers1 |= EQL_LESS;				break;
-			case 'lessequal':	$modifiers1 &= ~EQL_OP_BITS;	$modifiers1 |= EQL_LESSEQUAL;			break;
-			case 'greater':		$modifiers1 &= ~EQL_OP_BITS;	$modifiers1 |= EQL_GREATER;				break;
-			case 'greaterequal':$modifiers1 &= ~EQL_OP_BITS;	$modifiers1 |= EQL_GREATEREQUAL;		break;
-			case 'timewindow':									$modifiers1 |= EQL_TIMEWINDOW;			break;
-			case 'text':																				break;
+			case 'less':
+				$modifiers1 &= ~EQL_OP_BITS;
+				$modifiers1 |= EQL_LESS;
+				break;
+			case 'lessequal':
+				$modifiers1 &= ~EQL_OP_BITS;
+				$modifiers1 |= EQL_LESSEQUAL;
+				break;
+			case 'greater':
+				$modifiers1 &= ~EQL_OP_BITS;
+				$modifiers1 |= EQL_GREATER;
+				break;
+			case 'greaterequal':
+				$modifiers1 &= ~EQL_OP_BITS;
+				$modifiers1 |= EQL_GREATEREQUAL;
+				break;
+			case 'timewindow':
+				$modifiers1 |= EQL_TIMEWINDOW;
+				break;
+			case 'text':
+				break;
 
 			case 'not':
 				break; // handled later
@@ -1575,19 +1522,18 @@ class EQL_PARSER_CLASS
 
 			default:
 				$row = $this->getRowInfo($tableDefName, $this->func1);
-				$rowFlags = is_object($row) && isset( $row->flags ) ? $row->flags : null;
+				$rowFlags = is_object($row) && isset($row->flags) ? $row->flags : null;
 				$rowType = $rowFlags & TABLE_ROW;
-				if( $rowType == TABLE_SECONDARY
-				 || $rowType == TABLE_MATTR
-				 || $rowType == TABLE_SATTR )
-				{
+				if (
+					$rowType == TABLE_SECONDARY
+					|| $rowType == TABLE_MATTR
+					|| $rowType == TABLE_SATTR
+				) {
 					$tableDefName1 = $row->addparam->name;
 					$func1 = '';
 					$modifiers1 |= EQL_INUSERFUNC;
-					$addparam['inattr'] = array('xtable'=>$tableDefName, 'xrow'=>$row->name, 'xtype'=>$rowType);
-				}
-				else
-				{
+					$addparam['inattr'] = array('xtable' => $tableDefName, 'xrow' => $row->name, 'xtype' => $rowType);
+				} else {
 					$func1 = $this->func1;
 				}
 				break; // field-function
@@ -1597,14 +1543,14 @@ class EQL_PARSER_CLASS
 		// LEFT PART: init joins...
 		// ------------------------
 		//
-		if( $tableDefName1 == $tableDefName
-		 && $rowType != TABLE_MATTR
-		 && $rowType != TABLE_SATTR )
-		{
-		 	// ...we're in the same table scope, use the same join array and copy it back later
+		if (
+			$tableDefName1 == $tableDefName
+			&& $rowType != TABLE_MATTR
+			&& $rowType != TABLE_SATTR
+		) {
+			// ...we're in the same table scope, use the same join array and copy it back later
 			$joins1 = $retJoins;
-		}
-		else {
+		} else {
 			// ...we're in a different table scope, no chance to use the same joins
 			$joins1 = array();
 		}
@@ -1613,33 +1559,26 @@ class EQL_PARSER_CLASS
 		// LEFT PART: get condition...
 		// ---------------------------
 		//
-		if( isset( $this->expr1 ) && $this->expr1 )
-		{
+		if (isset($this->expr1) && $this->expr1) {
 			// ...from expression (invokes recursion)
 			$cond1 = $this->expr1->buildSqlString($joins1, $tableDefName1, $modifiers1, $func1, $addparam);
-			if( !$cond1 ) {
+			if (!$cond1) {
 				$this->lastError = $this->expr1->lastError;
 				return ''; // error
 			}
-		}
-		else
-		{
+		} else {
 			// ...from identifier
-		    if( ( !isset($this->ident1) || $this->ident1 == '' ) && $modifiers1&EQL_PHRASE && $func1 == '' && isset( $addparam['inattr'] ) && is_array($addparam['inattr'])  )
-			{
-			    $xtable = isset( $addparam['inattr']['xtable'] ) ? $addparam['inattr']['xtable'] : null; 		// special handling for unset attribute tables ...
-			    $xrow   = isset( $addparam['inattr']['xrow'] ) ? $addparam['inattr']['xrow'] : null;
-			    $xtype  = isset( $addparam['inattr']['xtype'] ) ? $addparam['inattr']['xtype'] : null;
-				if( $xtype == TABLE_SATTR ) {
+			if ((!isset($this->ident1) || $this->ident1 == '') && $modifiers1 & EQL_PHRASE && $func1 == '' && isset($addparam['inattr']) && is_array($addparam['inattr'])) {
+				$xtable = isset($addparam['inattr']['xtable']) ? $addparam['inattr']['xtable'] : null; 		// special handling for unset attribute tables ...
+				$xrow   = isset($addparam['inattr']['xrow']) ? $addparam['inattr']['xrow'] : null;
+				$xtype  = isset($addparam['inattr']['xtype']) ? $addparam['inattr']['xtype'] : null;
+				if ($xtype == TABLE_SATTR) {
 					$cond1 = "({$xtable}.{$xrow}=0)";
-				}
-				else if( $xtype == TABLE_MATTR || $xtype == TABLE_SECONDARY ) {
+				} else if ($xtype == TABLE_MATTR || $xtype == TABLE_SECONDARY) {
 					$xsql = "SELECT {$xtable}.id FROM {$xtable} LEFT JOIN {$xtable}_{$xrow} ON {$xtable}.id={$xtable}_{$xrow}.primary_id WHERE {$xtable}_{$xrow}.primary_id IS NULL";
 					$cond1 = "({$xtable}.id IN ($xsql))";
-				}				
-			}
-			else if( !($cond1=$this->selectSingleIdent($joins1, $tableDefName1, $this->ident1, $modifiers1, $func1)) )
-			{
+				}
+			} else if (!($cond1 = $this->selectSingleIdent($joins1, $tableDefName1, $this->ident1, $modifiers1, $func1))) {
 				return ''; // error, last error should be set
 			}
 		}
@@ -1648,36 +1587,35 @@ class EQL_PARSER_CLASS
 		// LEFT PART: handle condition...
 		// ------------------------------
 		//
-		if( $tableDefName1 == $tableDefName
-		 && $rowType != TABLE_MATTR
-		 && $rowType != TABLE_SATTR )
-		{
+		if (
+			$tableDefName1 == $tableDefName
+			&& $rowType != TABLE_MATTR
+			&& $rowType != TABLE_SATTR
+		) {
 			// ...we're in the same table scope, simply copy back the (maybe modified) joins
 			$retJoins = $joins1;
-		}
-		else
-		{
+		} else {
 			// ...we're in a different table scope, convert secondary / attribute tables to primary table...
 			global $g_joinHash;
 			global $g_eql_prefer_joins;
-			
+
 			$tableDefNameHash = isset($g_joinHash[$tableDefName]) ? $g_joinHash[$tableDefName] : null;
-			$tableDefName1Hash = isset( $g_joinHash[$tableDefName1] ) ? $g_joinHash[$tableDefName1] : null;
-			if( $g_eql_prefer_joins
-			 && $tableDefNameHash  == 'self' // on root level?
-			 && $tableDefName1Hash != 'alias'
-			 && !isset($g_joinHash[$tableDefName1]) // EDIT BY ME in 2008: NO joins on AND conditions (this would require one additional join per table, see http://www.silverjuke.net/forum/post.php?p=8423#8423)
-			 && sizeof((array) $joins1)==0 // EDIT 2015: this code does not work eg. with "not(stichwort=7 and stichwort=5480)", the select2ids-code seems to work, hopefully, there are not other disadvantages
-			 && count($retJoins)==0 // EDIT, jm, 2017: to allow search for courses without keywords
-			 && $tableDefName1=="stichwoerter" // EDIT, jm, 2017: to allow search for courses without keywords
-			 && $row->name=="stichwort" // EDIT, jm, 2017: to allow search for courses without keywords
-			 && ($tableDefName=="kurse" || $tableDefName=="anbieter")) // EDIT, jm, 2017: to allow search for courses without keywords
+			$tableDefName1Hash = isset($g_joinHash[$tableDefName1]) ? $g_joinHash[$tableDefName1] : null;
+			if (
+				$g_eql_prefer_joins
+				&& $tableDefNameHash  == 'self' // on root level?
+				&& $tableDefName1Hash != 'alias'
+				&& !isset($g_joinHash[$tableDefName1]) // EDIT BY ME in 2008: NO joins on AND conditions (this would require one additional join per table, see http://www.silverjuke.net/forum/post.php?p=8423#8423)
+				&& sizeof((array) $joins1) == 0 // EDIT 2015: this code does not work eg. with "not(stichwort=7 and stichwort=5480)", the select2ids-code seems to work, hopefully, there are not other disadvantages
+				&& count($retJoins) == 0 // EDIT, jm, 2017: to allow search for courses without keywords
+				&& $tableDefName1 == "stichwoerter" // EDIT, jm, 2017: to allow search for courses without keywords
+				&& $row->name == "stichwort" // EDIT, jm, 2017: to allow search for courses without keywords
+				&& ($tableDefName == "kurse" || $tableDefName == "anbieter")
+			) // EDIT, jm, 2017: to allow search for courses without keywords
 			{
 				// this variation works, but is slower
 				g_addRelation($retJoins, $tableDefName1, $row->name, $tableDefName, $rowType);
-			}
-			else
-			{
+			} else {
 				$ids = $this->select2ids($tableDefName1, $joins1, $cond1);
 				$cond1 = $this->ids2primaryselect($ids, $retJoins, $tableDefName, $row->name, $rowType);
 			}
@@ -1687,7 +1625,7 @@ class EQL_PARSER_CLASS
 		// LEFT PART: not
 		// --------------
 		//
-		if( isset( $this->func1 ) && $this->func1 == 'not' ) {
+		if (isset($this->func1) && $this->func1 == 'not') {
 			$cond1 = "NOT($cond1)";
 		}
 
@@ -1695,7 +1633,7 @@ class EQL_PARSER_CLASS
 		// LEFT PART: if there is no right part, we're done with it!
 		// ---------------------------------------------------------
 		//
-		if( !isset( $this->expr2 ) || !$this->expr2 ) {
+		if (!isset($this->expr2) || !$this->expr2) {
 			return $cond1;
 		}
 
@@ -1704,7 +1642,7 @@ class EQL_PARSER_CLASS
 		// -----------------------------------------
 		//
 		$cond2 = $this->expr2->buildSqlString($retJoins, $tableDefName, $modifiers, $func);
-		if( !$cond2 ) {
+		if (!$cond2) {
 			$this->lastError = $this->expr2->lastError;
 			return ''; // error
 		}
@@ -1713,10 +1651,9 @@ class EQL_PARSER_CLASS
 		// LEFT/RIGHT PART: use wanted operator
 		// ------------------------------------
 		//
-		if( isset( $this->op ) && $this->op == 'or' || $modifiers & EQL_ONEOF ) {
+		if (isset($this->op) && $this->op == 'or' || $modifiers & EQL_ONEOF) {
 			return "($cond1) OR ($cond2)";
-		}
-		else {
+		} else {
 			return "($cond1) AND ($cond2)";
 		}
 	}
@@ -1730,32 +1667,31 @@ class EQL_PARSER_CLASS
 	//
 	function getPCode(&$pcode, $curlyBrackets = 0)
 	{
-		if( $curlyBrackets ) {
+		if ($curlyBrackets) {
 			$pcode .= ' { ';
 		}
 
-		if( isset( $this->func1 ) && $this->func1 ) {
+		if (isset($this->func1) && $this->func1) {
 			$pcode .= $this->func1;
 			$pcode .= ' ( ';
 		}
 
-		if( isset( $this->ident1 ) && $this->ident1 != '' ) {
+		if (isset($this->ident1) && $this->ident1 != '') {
 			$pcode .= " [$this->ident1] ";
-		}
-		else if( isset( $this->expr1 ) && $this->expr1 ) {
-			$this->expr1->getPCode($pcode, $this->func1? 0 : 1);
+		} else if (isset($this->expr1) && $this->expr1) {
+			$this->expr1->getPCode($pcode, $this->func1 ? 0 : 1);
 		}
 
-		if( isset( $this->func1 ) && $this->func1 ) {
+		if (isset($this->func1) && $this->func1) {
 			$pcode .= ' ) ';
 		}
 
-		if( isset( $this->expr2 ) && $this->expr2 ) {
+		if (isset($this->expr2) && $this->expr2) {
 			$pcode .= " $this->op ";
 			$this->expr2->getPCode($pcode, 1);
 		}
 
-		if( $curlyBrackets ) {
+		if ($curlyBrackets) {
 			$pcode .= ' } ';
 		}
 	}
@@ -1798,7 +1734,7 @@ class EQL2SQL_CLASS
 	//
 	function getPCode($eqlExpr)
 	{
-		if( $eqlExpr == '' || $eqlExpr == '*' ) {
+		if ($eqlExpr == '' || $eqlExpr == '*') {
 			return "[*]";
 		}
 
@@ -1827,7 +1763,7 @@ class EQL2SQL_CLASS
 		));
 
 		// match functions: single word identifier modifiers (not / exact) as -word or +word
-		if( $this->usePlusMinusWordQualifiers ) {
+		if ($this->usePlusMinusWordQualifiers) {
 			$eqlExpr = preg_replace('/\s+[\-]([^0-9\s][^\s]*)/', ' "not ( \1 ) ', $eqlExpr);
 			$eqlExpr = preg_replace('/\s+[\+]([^\s]+)/', ' "exact ( \1 ) ', $eqlExpr);
 		}
@@ -1837,15 +1773,19 @@ class EQL2SQL_CLASS
 		$g_ft_fuzzymin = 70;
 		$temp1 = '/fuzzymin\s*=\s*([0-9]{2,3})/i';
 		$temp2 = '/fuzzymin\s*\(\s*([0-9]{2,3})\s*\)/i';
-		if( preg_match($temp1, $eqlExpr, $matches)
-		 || preg_match($temp2, $eqlExpr, $matches) )
-		{
+		if (
+			preg_match($temp1, $eqlExpr, $matches)
+			|| preg_match($temp2, $eqlExpr, $matches)
+		) {
 			$g_ft_fuzzymin = intval($matches[1]);
-			if( $g_ft_fuzzymin < 10  ) $g_ft_fuzzymin = 10;
-			if( $g_ft_fuzzymin > 100 ) $g_ft_fuzzymin = 100;
+			if ($g_ft_fuzzymin < 10) $g_ft_fuzzymin = 10;
+			if ($g_ft_fuzzymin > 100) $g_ft_fuzzymin = 100;
 
-			g_debug_out("EQL2SQL_CLASS->getPCode():",
-				"fuzzymin set to $g_ft_fuzzymin", 'yellow');
+			g_debug_out(
+				"EQL2SQL_CLASS->getPCode():",
+				"fuzzymin set to $g_ft_fuzzymin",
+				'yellow'
+			);
 
 			$eqlExpr = preg_replace($temp1, '', $eqlExpr);
 			$eqlExpr = preg_replace($temp2, '', $eqlExpr);
@@ -1865,10 +1805,8 @@ class EQL2SQL_CLASS
 		$lastIsIdent = 0;
 		$symbols = array();
 		$eqlExpr = explode(' ', $eqlExpr);
-		for( $e = 0; $e < sizeof($eqlExpr); $e++ )
-		{
-			switch( $eqlExpr[$e] )
-			{
+		for ($e = 0; $e < sizeof($eqlExpr); $e++) {
+			switch ($eqlExpr[$e]) {
 				case '':
 					break; // skip empty parts
 
@@ -1882,26 +1820,21 @@ class EQL2SQL_CLASS
 					break;
 
 				default:
-				    if( $eqlExpr[$e][0] == '"' )
-					{
+					if ($eqlExpr[$e][0] == '"') {
 						// '"' indicates a function
 						$symbols[] = $eqlExpr[$e];
 						$lastIsIdent = 0;
-					}
-					else
-					{
+					} else {
 						// '$' indicates the search identifier
-						if( substr($eqlExpr[$e], 0, 11) == 'QUOTEDIDENT' ) {
+						if (substr($eqlExpr[$e], 0, 11) == 'QUOTEDIDENT') {
 							$symbols[] = '"exact';
 							$symbols[] = '"phrase';
 							$symbols[] = '$' . $this->quotedIdent[intval(substr($eqlExpr[$e], 11))];
 							$lastIsIdent = 0;
-						}
-						else {
-							if( $lastIsIdent ) {
-								$symbols[sizeof($symbols)-1] .= ' ' . $eqlExpr[$e];
-							}
-							else {
+						} else {
+							if ($lastIsIdent) {
+								$symbols[sizeof($symbols) - 1] .= ' ' . $eqlExpr[$e];
+							} else {
 								$symbols[] = '$' . $eqlExpr[$e];
 								$lastIsIdent = 1;
 							}
@@ -1916,7 +1849,7 @@ class EQL2SQL_CLASS
 		// create parser, parse symbols
 		$s = 0;
 		$this->parser = new EQL_PARSER_CLASS($symbols, $s);
-		if( isset( $this->parser->lastError ) && $this->parser->lastError ) {
+		if (isset($this->parser->lastError) && $this->parser->lastError) {
 			$this->lastError = $this->parser->lastError;
 			return 0;
 		}
@@ -1940,18 +1873,16 @@ class EQL2SQL_CLASS
 	{
 		$outFields = '';
 		$inFields = explode(',', $inFields);
-		for( $i = 0; $i < sizeof($inFields); $i++ ) {
+		for ($i = 0; $i < sizeof($inFields); $i++) {
 			$currInField = trim($inFields[$i]);
-			if( $currInField )
-			{
-				if( $outFields ) {
+			if ($currInField) {
+				if ($outFields) {
 					$outFields .= ', ';
 				}
 
-				if( strpos($currInField, '.') === false ) {
+				if (strpos($currInField, '.') === false) {
 					$outFields .= "$this->tableDefName.$currInField";
-				}
-				else {
+				} else {
 					$outFields .= $currInField;
 				}
 			}
@@ -1968,10 +1899,9 @@ class EQL2SQL_CLASS
 	function correctOrderField_($table, $field)
 	{
 		global $g_eql_db;
-		if( $g_eql_db->column_exists($table, $field.'_sorted') ) {
-			return $field.'_sorted';
-		}
-		else {
+		if ($g_eql_db->column_exists($table, $field . '_sorted')) {
+			return $field . '_sorted';
+		} else {
 			return $field;
 		}
 	}
@@ -1986,8 +1916,11 @@ class EQL2SQL_CLASS
 	//
 	function eql2sql($eqlExpr, $userFields = 'id', $userCond = '', $userOrderBy = '')
 	{
-		g_debug_out('EQL2SQL_CLASS() and EQL2SQL_CLASS->eql2sql() arguments:',
-		    "tableDefName = &quot;$this->tableDefName&quot;, usePlusMinusWordQualifiers = $this->usePlusMinusWordQualifiers, eqlExpr = &quot;".isohtmlentities( strval( $eqlExpr ) )."&quot;, userFields = &quot;$userFields&quot;, userCond = &quot;".isohtmlentities( strval( $userCond ) )."&quot;, userOrderBy = &quot;$userOrderBy&quot;", 'blue');
+		g_debug_out(
+			'EQL2SQL_CLASS() and EQL2SQL_CLASS->eql2sql() arguments:',
+			"tableDefName = &quot;$this->tableDefName&quot;, usePlusMinusWordQualifiers = $this->usePlusMinusWordQualifiers, eqlExpr = &quot;" . isohtmlentities(strval($eqlExpr)) . "&quot;, userFields = &quot;$userFields&quot;, userCond = &quot;" . isohtmlentities(strval($userCond)) . "&quot;, userOrderBy = &quot;$userOrderBy&quot;",
+			'blue'
+		);
 
 		global $g_fuzzyInfo;
 		$g_fuzzyInfo = array();
@@ -1998,15 +1931,12 @@ class EQL2SQL_CLASS
 		$joins = array();
 		$distinct = 0;
 		$addFields = '';
-		if( $eqlExpr == '' || $eqlExpr == '*' || $eqlExpr == '(*)' )
-		{
+		if ($eqlExpr == '' || $eqlExpr == '*' || $eqlExpr == '(*)') {
 			// no expression given
 			$cond = '';
-		}
-		else
-		{
+		} else {
 			// create parser from expression
-			if( !($pcode=$this->getPCode($eqlExpr)) ) {
+			if (!($pcode = $this->getPCode($eqlExpr))) {
 				g_debug_out(htmlconstant("EQL2SQL_CLASS->getPCode():"), $this->lastError, 'red');
 				return 0;
 			}
@@ -2015,14 +1945,14 @@ class EQL2SQL_CLASS
 
 			// get SQL partly result strings
 			$cond = $this->parser->buildSqlString($joins, $this->tableDefName);
-			if( isset( $this->parser->lastError ) && $this->parser->lastError || !$cond ) {
+			if (isset($this->parser->lastError) && $this->parser->lastError || !$cond) {
 				$this->lastError = $this->parser->lastError;
 				g_debug_out('EQL_PARSER_CLASS->buildSqlString():', $this->lastError, 'red');
 				return 0;
 			}
 
 			// distinct selection? (may be replaced by GROUP BY later)
-			if( sizeof($joins) ) {
+			if (sizeof($joins)) {
 				$distinct = 1;
 			}
 		}
@@ -2033,59 +1963,51 @@ class EQL2SQL_CLASS
 		$orderBy = '';
 		$groupby = '';
 		$fieldsApplied = array();
-		for( $i = 0; $i < sizeof($allOrders); $i++ ) // go through all order statements
+		for ($i = 0; $i < sizeof($allOrders); $i++) // go through all order statements
 		{
 			$currOrder = trim($allOrders[$i]);
-			if( $currOrder )
-			{
+			if ($currOrder) {
 				// get order direction
 				$currOrderDesc = '';
-				if( strtolower(substr($currOrder, -5)) == ' desc' ) {
-					$currOrder = substr($currOrder, 0, strlen($currOrder)-5);
+				if (strtolower(substr($currOrder, -5)) == ' desc') {
+					$currOrder = substr($currOrder, 0, strlen($currOrder) - 5);
 					$currOrderDesc = ' DESC';
-				}
-				else if( strtolower(substr($currOrder, -4)) == ' desc' ) {
-					$currOrder = substr($currOrder, 0, strlen($currOrder)-4);
+				} else if (strtolower(substr($currOrder, -4)) == ' desc') {
+					$currOrder = substr($currOrder, 0, strlen($currOrder) - 4);
 				}
 
-				if( !isset( $fieldsApplied[$currOrder] ) || !$fieldsApplied[$currOrder] )
-				{
+				if (!isset($fieldsApplied[$currOrder]) || !$fieldsApplied[$currOrder]) {
 					$fieldsApplied[$currOrder] = 1;
 					$currOrderApplied = 0;
 					// is the current order statement complex?
 
-					if( strpos($currOrder, '.')===false )
-					{
+					if (strpos($currOrder, '.') === false) {
 						// no
-						$orderBy .= $orderBy? ', ' : '';
+						$orderBy .= $orderBy ? ', ' : '';
 						$orderBy .= "$this->tableDefName." . $this->correctOrderField_($this->tableDefName, $currOrder) . $currOrderDesc;
 						$currOrderApplied = 1;
-					}
-					else
-					{
+					} else {
 						// yes: get table and field
 						$temp = explode('.', $currOrder);
-						if( sizeof($temp) == 2 )
-						{
+						if (sizeof($temp) == 2) {
 							// find the meaning of the linked table
-							for( $r = 0; $r < sizeof($tableDef->rows); $r++ ) {
-								$rowtype = $tableDef->rows[$r]->flags&TABLE_ROW;
-								if( ($rowtype == TABLE_SECONDARY || $rowtype == TABLE_MATTR || $rowtype == TABLE_SATTR)
-								 && $tableDef->rows[$r]->name == $temp[0] )
-								{
+							for ($r = 0; $r < sizeof($tableDef->rows); $r++) {
+								$rowtype = $tableDef->rows[$r]->flags & TABLE_ROW;
+								if (($rowtype == TABLE_SECONDARY || $rowtype == TABLE_MATTR || $rowtype == TABLE_SATTR)
+									&& $tableDef->rows[$r]->name == $temp[0]
+								) {
 									$alias = g_addRelation($joins, $tableDef->rows[$r]->addparam->name, $temp[0], $tableDef->name, $rowtype);
 
-									if( $rowtype == TABLE_SATTR ) {
-										$orderBy .= $orderBy? ', ' : '';
+									if ($rowtype == TABLE_SATTR) {
+										$orderBy .= $orderBy ? ', ' : '';
 										$orderBy .= "{$alias}." . $this->correctOrderField_($tableDef->rows[$r]->addparam->name, $temp[1]) . $currOrderDesc;
-									}
-									else {
-										$addFields .= ', ' . ($currOrderDesc? 'MAX':'MIN') . "({$alias}." .$this->correctOrderField_($tableDef->rows[$r]->addparam->name, $temp[1]). ") AS s$i";
+									} else {
+										$addFields .= ', ' . ($currOrderDesc ? 'MAX' : 'MIN') . "({$alias}." . $this->correctOrderField_($tableDef->rows[$r]->addparam->name, $temp[1]) . ") AS s$i";
 
 										$groupBy = "{$this->tableDefName}.id";
 										$distinct = 0;
 
-										$orderBy .= $orderBy? ', ' : '';
+										$orderBy .= $orderBy ? ', ' : '';
 										$orderBy .= "s{$i}{$currOrderDesc}";
 									}
 
@@ -2096,7 +2018,7 @@ class EQL2SQL_CLASS
 						}
 					}
 
-					if( !$currOrderApplied ) {
+					if (!$currOrderApplied) {
 						g_debug_out('EQL_PARSER_CLASS->eql2sql():', "cannot apply order &quot;$currOrder&quot;", 'red');
 					}
 				}
@@ -2104,66 +2026,63 @@ class EQL2SQL_CLASS
 		}
 
 		// finish SQL result...
-		$retSql = $distinct? 'SELECT DISTINCT ' : 'SELECT ';
+		$retSql = $distinct ? 'SELECT DISTINCT ' : 'SELECT ';
 		$retSql .= $this->addTableToFields_($userFields) . "$addFields FROM $this->tableDefName " . g_eql_array2string($joins);
 
 		// ...add condition
-		if( $userCond )
-		{
+		if ($userCond) {
 			$retSql .= " WHERE ";
 			$userCond = trim($userCond);
-			if( strtoupper(substr($userCond, 0, 2)) == 'OR'
-			 || strtoupper(substr($userCond, 0, 3)) == 'AND' ) {
-				$retSql .= $cond? "($cond) $userCond" : $userCond;
+			if (
+				strtoupper(substr($userCond, 0, 2)) == 'OR'
+				|| strtoupper(substr($userCond, 0, 3)) == 'AND'
+			) {
+				$retSql .= $cond ? "($cond) $userCond" : $userCond;
+			} else {
+				$retSql .= $cond ? "($cond) AND ($userCond)" : $userCond;
 			}
-			else {
-				$retSql .= $cond? "($cond) AND ($userCond)" : $userCond;
-			}
-		}
-		else if( $cond )
-		{
+		} else if ($cond) {
 			$retSql .= " WHERE $cond";
 		}
 
 		// ...add group/order information
-		if( isset($groupBy) && $groupBy ) {
+		if (isset($groupBy) && $groupBy) {
 			$retSql .= " GROUP BY $groupBy";
 		}
 
-		if( isset($orderBy) && $orderBy ) {
+		if (isset($orderBy) && $orderBy) {
 			$retSql .= " ORDER BY $orderBy";
 		}
 
 		// debug
 		global $debug;
-		if( $debug )
-		{
+		if ($debug) {
 			g_debug_sql_out('EQL2SQL_CLASS->eql2sql() will return:', $retSql, 'green', 8);
 
 			global $g_eql_db;
 			$g_eql_db->query("EXPLAIN $retSql");
 			echo '<br><br><br><br><br><br><table><tr>';
-				echo '<td><b>table</b></td><td><b>type</b></td><td><b>possible_keys</b></td><td><b>key</b></td><td><b>key_len</b></td><td><b>ref</b></td><td><b>rows</b></td><td><b>Extra</b></td>';
+			echo '<td><b>table</b></td><td><b>type</b></td><td><b>possible_keys</b></td><td><b>key</b></td><td><b>key_len</b></td><td><b>ref</b></td><td><b>rows</b></td><td><b>Extra</b></td>';
 			echo '</tr>';
-			while( $g_eql_db->next_record() ) {
+			while ($g_eql_db->next_record()) {
 				echo '<tr>';
-					echo '<td valign="top">' .$g_eql_db->f('table'). '&nbsp;</td>';
-					echo '<td valign="top">' .$g_eql_db->f('type'). '&nbsp;</td>';
-					echo '<td valign="top">' .$g_eql_db->f('possible_keys'). '&nbsp;</td>';
-					echo '<td valign="top">' .$g_eql_db->f('key'). '&nbsp;</td>';
-					echo '<td valign="top">' .$g_eql_db->f('key_len'). '&nbsp;</td>';
-					echo '<td valign="top">' .$g_eql_db->f('ref'). '&nbsp;</td>';
-					echo '<td valign="top">' .$g_eql_db->f('rows'). '&nbsp;</td>';
-					echo '<td valign="top">';
-						$extra = $g_eql_db->f('Extra');
-						$extra = str_replace('Using filesort', '<b>Using filesort<b>', $extra);
-						$extra = str_replace('Using temporary', '<b>Using temporary<b>', $extra);
-						echo $extra;
-					echo '&nbsp;</td>';
+				echo '<td valign="top">' . $g_eql_db->f('table') . '&nbsp;</td>';
+				echo '<td valign="top">' . $g_eql_db->f('type') . '&nbsp;</td>';
+				echo '<td valign="top">' . $g_eql_db->f('possible_keys') . '&nbsp;</td>';
+				echo '<td valign="top">' . $g_eql_db->f('key') . '&nbsp;</td>';
+				echo '<td valign="top">' . $g_eql_db->f('key_len') . '&nbsp;</td>';
+				echo '<td valign="top">' . $g_eql_db->f('ref') . '&nbsp;</td>';
+				echo '<td valign="top">' . $g_eql_db->f('rows') . '&nbsp;</td>';
+				echo '<td valign="top">';
+				$extra = $g_eql_db->f('Extra');
+				$extra = str_replace('Using filesort', '<b>Using filesort<b>', $extra);
+				$extra = str_replace('Using temporary', '<b>Using temporary<b>', $extra);
+				echo $extra;
+				echo '&nbsp;</td>';
 				echo '</tr>';
 			}
 			echo '<tr>';
-				echo '<td colspan="8" align="right"><a href="http://dev.mysql.com/doc/refman/5.1/en/explain.html" target="_blank">give me more information about that...</a></td>';
+			echo '<td colspan="8" align="right"><a href="http://dev.mysql.com/doc/refman/5.1/en/explain.html" target="_blank">give me more information about that...</a></td>';
 			echo '</tr>';
 			echo '</table>';
 		}
@@ -2178,25 +2097,24 @@ class EQL2SQL_CLASS
 		// modify query string: add COUNT(*)
 		$select = /*substr($sql, 0, 15)=='SELECT DISTINCT'?*/ 'SELECT COUNT(DISTINCT ' /*: 'SELECT COUNT(DISTINCT '*/;
 		$p = strpos($sql, ' FROM ');
-		if( $p ) {
+		if ($p) {
 			$sql = "{$select}{$this->tableDefName}.id) AS cntall" . substr($sql, $p);
-		}
-		else {
+		} else {
 			return 0;
 		}
 
-		if( preg_match('/^(.*?)((ORDER BY|GROUP BY)[a-zA-Z0-9\.,\s\(\)]*)$/', $sql, $matches) ) {
+		if (preg_match('/^(.*?)((ORDER BY|GROUP BY)[a-zA-Z0-9\.,\s\(\)]*)$/', $sql, $matches)) {
 			$sql = $matches[1];
 		}
 
 		// modify query string: remove ORDER BY
 		$p = $this->strrpos($sql, ' ORDER BY ');
-		if( $p ) {
+		if ($p) {
 			$sql = substr($sql, 0, $p);
 		}
 
 		$p = $this->strrpos($sql, ' GROUP BY ');
-		if( $p ) {
+		if ($p) {
 			$sql = substr($sql, 0, $p);
 		}
 
@@ -2205,13 +2123,12 @@ class EQL2SQL_CLASS
 		$msneeded = g_eql_getmicrotime();
 		$g_eql_db->query($sql);
 		$msneeded = g_eql_getmicrotime() - $msneeded;
-		if( $g_eql_db->next_record() ) {
+		if ($g_eql_db->next_record()) {
 			$cntall = intval($g_eql_db->f('cntall'));
 			//g_debug_sql_out('EQL2SQL_CLASS->sqlCount() will return:', $sql . " => ROW COUNT: $cntall ($msneeded seconds needed)", 'green');
 			g_debug_sql_out('EQL2SQL_CLASS->sqlCount():', "$msneeded seconds needed", 'green');
 			return $cntall;
-		}
-		else {
+		} else {
 			g_debug_out('EQL2SQL_CLASS->sqlCount():', $sql, 'red');
 			return 0;
 		}
@@ -2225,12 +2142,11 @@ class EQL2SQL_CLASS
 	function strrpos($haystack, $needle)
 	{
 		$p1 = false;
-		while( 1 ) {
-			$pnew = strpos($haystack, $needle, $p1===false? 0 : $p1+1);
-			if( $pnew === false ) {
+		while (1) {
+			$pnew = strpos($haystack, $needle, $p1 === false ? 0 : $p1 + 1);
+			if ($pnew === false) {
 				return $p1;
-			}
-			else {
+			} else {
 				$p1 = $pnew;
 			}
 		}
@@ -2242,8 +2158,8 @@ class EQL2SQL_CLASS
 	//
 	function replaceQuotedIdent_($matches)
 	{
-		$this->quotedIdent[] = strtr($matches[0], array('"'=>'', "''"=>'"'));
-		return ' QUOTEDIDENT' . (sizeof($this->quotedIdent)-1) . ' ';
+		$this->quotedIdent[] = strtr($matches[0], array('"' => '', "''" => '"'));
+		return ' QUOTEDIDENT' . (sizeof($this->quotedIdent) - 1) . ' ';
 	}
 
 
@@ -2259,34 +2175,38 @@ class EQL2SQL_CLASS
 	//
 	function replaceFunc_($matches)
 	{
-	    if( (isset($matches[2]) && $matches[2] || isset($matches[3]) && $matches[3]) )
-		{
-		    $funcName = isset( $matches[1] ) ? strtolower($matches[1]) : null;
-			if( $funcName == 'and' || $funcName == 'or' || $funcName == 'xor' ) {
+		if ((isset($matches[2]) && $matches[2] || isset($matches[3]) && $matches[3])) {
+			$funcName = isset($matches[1]) ? strtolower($matches[1]) : null;
+			if ($funcName == 'and' || $funcName == 'or' || $funcName == 'xor') {
 				return $matches[0];
 			}
 
 			$funcName = str_replace('.', ' "', $funcName);
 			$funcName = '"' . $funcName;
 
-			switch( $matches[2] )
-			{
+			switch ($matches[2]) {
 				case '>=':
-				case '=>':	return " $funcName \"greaterequal {$matches[3]} ";
+				case '=>':
+					return " $funcName \"greaterequal {$matches[3]} ";
 
 				case '<=':
-				case '=<':	return " $funcName \"lessequal {$matches[3]} ";
+				case '=<':
+					return " $funcName \"lessequal {$matches[3]} ";
 
 				case '>':
-				case '>>':	return " $funcName \"greater {$matches[3]} ";
+				case '>>':
+					return " $funcName \"greater {$matches[3]} ";
 
 				case '<':
-				case '<<':	return " $funcName \"less {$matches[3]} ";
+				case '<<':
+					return " $funcName \"less {$matches[3]} ";
 
 				case '<>':
-				case '><':	return " $funcName \"not {$matches[3]} ";
+				case '><':
+					return " $funcName \"not {$matches[3]} ";
 
-				default:	return " $funcName {$matches[3]} ";
+				default:
+					return " $funcName {$matches[3]} ";
 			}
 		}
 
@@ -2299,33 +2219,32 @@ class EQL2SQL_CLASS
 
 		// fuzzy info
 		global $g_fuzzyInfo;
-		if( $addFuzzyInfo && sizeof((array) $g_fuzzyInfo) )
-		{
+		if ($addFuzzyInfo && sizeof((array) $g_fuzzyInfo)) {
 			$ret .= '<table cellpadding="0" cellspacing="0" border="0">';
-				ksort($g_fuzzyInfo);
-				reset($g_fuzzyInfo);
-				$c = 0;
-				foreach($g_fuzzyInfo as $word => $info) {
-					$ret .= '<tr>';
-						$ret .= '<td align="right" valign="top" nowrap="nowrap">';
-							$ret .= htmlconstant('_MOD_DBSEARCH_FUZZYINFOFOR');
-							$ret .= ' &quot;' . isohtmlentities( strval( $word ) ) . '&quot;&nbsp;';
-						$ret .= '</td>';
-						$ret .= '<td valign="top">';
-							reset($info);
-							krsort($info);
-							$i = 0;
-							foreach($info as $dummy => $similarWord) {
-								$ret .= $i? ',' : htmlconstant('_MOD_DBSEARCH_FUZZYINFOALT');
-								$ret .= ' &quot;' . isohtmlentities( strval( $similarWord[0] ) ) . '&quot;';
-								$percent = $similarWord[1] . '%';
-								$ret .= ' <i>(' . ($c==0? htmlconstant('_MOD_DBSEARCH_FUZZYINFOPERCENT', $percent) : $percent) . ')</i>';
-								$c++;
-								$i++;
-							}
-						$ret .= '</td>';
-					$ret .= '</tr>';
+			ksort($g_fuzzyInfo);
+			reset($g_fuzzyInfo);
+			$c = 0;
+			foreach ($g_fuzzyInfo as $word => $info) {
+				$ret .= '<tr>';
+				$ret .= '<td align="right" valign="top" nowrap="nowrap">';
+				$ret .= htmlconstant('_MOD_DBSEARCH_FUZZYINFOFOR');
+				$ret .= ' &quot;' . isohtmlentities(strval($word)) . '&quot;&nbsp;';
+				$ret .= '</td>';
+				$ret .= '<td valign="top">';
+				reset($info);
+				krsort($info);
+				$i = 0;
+				foreach ($info as $dummy => $similarWord) {
+					$ret .= $i ? ',' : htmlconstant('_MOD_DBSEARCH_FUZZYINFOALT');
+					$ret .= ' &quot;' . isohtmlentities(strval($similarWord[0])) . '&quot;';
+					$percent = $similarWord[1] . '%';
+					$ret .= ' <i>(' . ($c == 0 ? htmlconstant('_MOD_DBSEARCH_FUZZYINFOPERCENT', $percent) : $percent) . ')</i>';
+					$c++;
+					$i++;
 				}
+				$ret .= '</td>';
+				$ret .= '</tr>';
+			}
 			$ret .= '</table>';
 		}
 

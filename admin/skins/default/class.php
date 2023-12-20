@@ -103,7 +103,12 @@ class SKIN_DEFAULT_CLASS
 
 	function __construct($folder)
 	{
-		$this->imgFolder	= $folder . '/img';
+		$trans = array();
+		if (isset($_REQUEST['module']) && $_REQUEST['module'] == 'index_plugin_blacklist_0')
+			$trans = array($_SERVER['DOCUMENT_ROOT'] . "/admin/" => "../");
+		else
+			$trans = array($_SERVER['DOCUMENT_ROOT'] . "/admin/" => "");
+		$this->imgFolder	= strtr($folder, $trans) . '/img';
 		$this->sectionCount = -1;
 		$this->msgCount		= -1;
 		$this->useTabs		= true;
@@ -267,6 +272,7 @@ class SKIN_DEFAULT_CLASS
 		$type /* [e]rror, [w]arning, [i]information or [s]aved */,
 		$onclose = 'hide msg' /* 'no close', 'hide msg' or 'close window' */
 	) {
+
 		$img	= "{$this->imgFolder}/icon{$type}.gif";
 
 		$size_w	= 32;

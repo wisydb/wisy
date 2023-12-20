@@ -143,6 +143,18 @@ $themen->add_row(
 	array('ctrl.size' => '10-20-60', 'layout.bg.class' => 'e_bglite', 'layout.descr.class' => 'e_bolder', 'ctrl.class' => 'e_bolder')
 );
 
+/**Blacklist */
+$kompetenz_blacklist = new Table_Def_Class(TABLE_SYNCABLE,				'kompetenz_blacklist',			'ESCO-Kompetenzen');
+$kompetenz_blacklist->add_row(
+	TABLE_TEXT | TABLE_SUMMARY | TABLE_LIST | TABLE_MUST,
+	'title',
+	'ESCO',
+	'',
+	array('ESCO'),
+	'',
+	array('ctrl.size' => '10-20-60', 'layout.bg.class' => 'e_bglite', 'layout.descr.class' => 'e_bolder', 'ctrl.class' => 'e_bolder')
+);
+
 /**Suche nach ESCO Kompetenzen */
 $escocategories = new Table_Def_Class(TABLE_SYNCABLE,				'escocategories',			'ESCO');
 $escocategories->add_row(
@@ -822,6 +834,7 @@ $Table_Def[] = $portale;
 $Table_Def[] = $apikeys;
 $Table_Def[] = $escocategories;
 $Table_Def[] = $escoskills;
+$Table_Def[] = $kompetenz_blacklist;
 
 
 

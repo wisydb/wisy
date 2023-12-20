@@ -626,6 +626,8 @@ $columnsHash = array();
 $sqlFields = '';
 $columnsCount = createColumnsHash($tableDef->name);
 $sqlFields = 'id' . $sqlFields;
+if ($table == "escocategories" || $table == "escoskills")
+	$sqlFields = $sqlFields . ", url";
 $comp = NULL;
 
 
@@ -886,7 +888,7 @@ if (isset($_REQUEST['selectobject'])) {
 	$site->menuBinParam		= "table=$tableDef->name";
 	$site->menuHelpScope	= (isset($_REQUEST['object']) ? 'iattrselection' : ($tableDef->name . '.ioverviewrecords'));
 	$site->menuLogoutUrl	= 'index.php?table=' . $table;
-	if ($table == "escocategories" || $table == "escoskills")
+	if ($table == "escocategories" || $table == "escoskills" || $table == "kompetenz_blacklist")
 		$site->menuOut(1);
 	else
 		$site->menuOut();
@@ -957,7 +959,7 @@ if ($select_numrows) {
 	$checkimgsize = GetImageSize("{$site->skin->imgFolder}/check0.gif");
 	$noaccessimgsize = GetImageSize("{$site->skin->imgFolder}/noaccess.gif");
 	$show_bin = regGet('toolbar.bin', 1) ? 1 : 0;
-	if ($table == "escocategories" || $table == "escoskills") {
+	if ($table == "escocategories" || $table == "escoskills" || $table == "kompetenz_blacklist") {
 		$show_bin = 0;
 	}
 	if (isset($_REQUEST['selectobject'])) {
@@ -974,7 +976,10 @@ if ($select_numrows) {
 		$id = $db->f('id');
 
 		// get current access
-		$curr_access = acl_get_access("$table.COMMON", $id);
+		if (!$table == "kompetenz_blacklist")
+			$curr_access = acl_get_access("$table.COMMON", $id);
+		else
+			$curr_access = 14;
 		$curr_access_hint_printed = 0;
 
 		// set stuff needed to move in result from the editor
@@ -988,9 +993,9 @@ if ($select_numrows) {
 		} else if ($table == "escocategories") {
 			$actionUri = "index.php?table=escocategories&escolevel=$level&id=$id&orderby=kategorie%20ASC";
 		} else if ($table == "escoskills") {
-			//$actionUri = 'edit.php?table=escoskills&subseq&inputescoskill&id=$id onclick="window.close; return;"';
-			// $tr_a_attr = 'target="_blank" rel="noopener noreferrer" onclick="return popdown(this);"' ;
 			$actionUri = "javascript:escopopupclose($id, 'escoskills');";
+		} else if ($table == "kompetenz_blacklist") {
+			$actionUri = "javascript:escopopupclose($id, 'kompetenz_blacklist');";
 		} else {
 			$actionUri = "edit.php?table=$table&id=$id";
 		}
@@ -1173,6 +1178,13 @@ if ($select_numrows) {
 							echo '<img src="skins/default/img/greenhook_sm.png" width="20" height="19" border="0" alt="" />';
 							echo ' </a>';
 							$site->skin->cellEnd();
+							$par = array();
+
+							if (find_in_blacklist($db->f('url'))) {
+								$site->skin->cellStart();
+								echo '<img src="skins/default/img/redgrid_sm.png" width="20" height="19" border="0" alt="" />';
+								$site->skin->cellEnd();
+							}
 						} else
 							echo getHtmlContent($tableDef, $r, $db);
 					}

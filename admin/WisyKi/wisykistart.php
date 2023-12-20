@@ -1,7 +1,7 @@
 <?php
 
-require_once("sql_curr.inc.php");
-require_once("config/config.inc.php");
+require_once($_SERVER['DOCUMENT_ROOT'] . "/admin/sql_curr.inc.php");
+require_once($_SERVER['DOCUMENT_ROOT'] . "/admin/config/config.inc.php");
 
 function selectPortalOrFwd301($db)
 {
@@ -205,8 +205,8 @@ if (strval($wisyPortalEinstellungen['minrel'] != '')) {
 	/***************************************************************
 Collect all needable keyword-types
 	 *************************************************************** */
-	if (@file_exists('WisyKi/config/codes.inc.php')) {
-		require_once('WisyKi/config/codes.inc.php');
+	if (@file_exists($_SERVER['DOCUMENT_ROOT'] . '/admin/WisyKi/config/codes.inc.php')) {
+		require_once($_SERVER['DOCUMENT_ROOT'] . '/admin/WisyKi/config/codes.inc.php');
 	} else
 		die('Verzeichnis unerwartet.');
 	global $codes_stichwort_eigenschaften;

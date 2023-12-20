@@ -85,6 +85,7 @@ class EDIT_DATA_CLASS
 		$this->is_new		= $id == -1 ? true : false;
 
 		$this->do_access_check 	= $this->db_name == '' ? 1 : 0;
+		$this->do_access_check  = ($this->table_name == "kompetenz_blacklist")? 0 : $this->do_access_check;
 		$this->can_save		   	= $this->db_name == '' ? 1 : 0;
 
 		$this->today			= ftime("%Y-%m-%d %H:%M:%S"); // saving the time makes sure, creation and modification date are the same for new records 
@@ -469,7 +470,7 @@ class EDIT_DATA_CLASS
 	private function get_speech_ids()
 	{
 		$speech = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
-
+        $speechids = array();
 		$db = new DB_Admin();
 		foreach ($speech as $sp) {
 			$sql = 'SELECT id FROM stichwoerter WHERE stichwoerter.stichwort = "' . $sp . '"';
