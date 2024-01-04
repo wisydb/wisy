@@ -7,8 +7,8 @@
  ******************************************************************************/
 
 // necessary for G_BLOB_CLASS / logo output
-require_once('admin/classes.inc.php');
-require_once('admin/config/codes.inc.php');
+require_once('ki_admin/classes.inc.php');
+require_once('ki_admin/config/codes.inc.php');
 
 // Funktionen, die ohne irgendwelche instanzen laufen sollten
 function g_sync_removeSpecialChars($str)
@@ -448,7 +448,7 @@ class WISY_FRAMEWORK_CLASS
 				    $ret .= '<meta property="og:image:width" content="200">'."\n";
 			        $ret .= '<meta property="og:image:height" content="200">'."\n";
 				} else {
-				    $logo_src = $protocol."://".$_SERVER['SERVER_NAME']."/admin/media.php/logo/anbieter/".$anbieter_ID."/".$logo->name;
+				    $logo_src = $protocol."://".$_SERVER['SERVER_NAME']."/ki_admin/media.php/logo/anbieter/".$anbieter_ID."/".$logo->name;
 				    $ret .= '<meta property="og:image" content="'.$this->pUrl($logo_src).'">'."\n";
 			        $ret .= '<meta property="og:image:secure_url" content="'.$this->pUrl($logo_src).'">'."\n";
 				    $ret .= '<meta property="og:image:type" content="'.$logo->mime.'">'."\n";
@@ -504,7 +504,7 @@ class WISY_FRAMEWORK_CLASS
 			     $ret .= '<meta name="twitter:image:width" content="120">'."\n";
 			     $ret .= '<meta name="twitter:image:height" content="90">'."\n";
 		  } else {
-		         $logo_src = $this->purl("https://".$_SERVER['SERVER_NAME']."/admin/media.php/logo/anbieter/".$anbieter_ID."/".$logo->name);
+		         $logo_src = $this->purl("https://".$_SERVER['SERVER_NAME']."/ki_admin/media.php/logo/anbieter/".$anbieter_ID."/".$logo->name);
 		         $url_logosrc = cs8($this->pUrl($logo_src));
 		         $ret .= '<meta name="twitter:image" content="'.$url_logosrc.'">'."\n";
 				 $ret .= '<meta name="twitter:image:width" content="'.$logo->w.'">'."\n";
@@ -970,7 +970,7 @@ class WISY_FRAMEWORK_CLASS
 	    // Stichwoerter laden
 	    $ret = array();
 
-	    require_once('admin/config/codes.inc.php'); // fuer hidden_stichwort_eigenschaften
+	    require_once('ki_admin/config/codes.inc.php'); // fuer hidden_stichwort_eigenschaften
 	    global $hidden_stichwort_eigenschaften;
 
 	    $sql = "SELECT id, stichwort, eigenschaften, zusatzinfo FROM stichwoerter LEFT JOIN {$table}_stichwort ON id=attr_id WHERE primary_id=$id AND (eigenschaften & $hidden_stichwort_eigenschaften)=0 ORDER BY structure_pos;";
@@ -1036,7 +1036,7 @@ class WISY_FRAMEWORK_CLASS
 		$ret = '';
 		global $codes_stichwort_eigenschaften;
 		global $hidden_stichwort_eigenschaften;
-		require_once("admin/config/codes.inc.php");
+		require_once("ki_admin/config/codes.inc.php");
 		$codes_array = explode('###', $codes_stichwort_eigenschaften);
 
 		// go through codes and stichwoerter

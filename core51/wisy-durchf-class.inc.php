@@ -1,6 +1,6 @@
 <?php if( !defined('IN_WISY') ) die('!IN_WISY');
 
-require_once('admin/config/codes.inc.php');
+require_once('ki_admin/config/codes.inc.php');
 
 class WISY_DURCHF_CLASS
 {
@@ -120,7 +120,7 @@ class WISY_DURCHF_CLASS
 		
 		if( !is_array($codes_beginnoptionen_array) ) 
 		{	
-			require_once('admin/config/codes.inc.php');
+			require_once('ki_admin/config/codes.inc.php');
 			global $codes_beginnoptionen;
 			$codes_beginnoptionen_array = array();
 			$temp = explode('###', $codes_beginnoptionen);
@@ -133,7 +133,7 @@ class WISY_DURCHF_CLASS
 			return '';
 		}
 		else if( $codes_beginnoptionen_array[$opt] ) {
-		    return cs8($codes_beginnoptionen_array[$opt]); // UTF-8 encode because the source file (admin/config/codes.inc.php) is still ISO-encoded
+		    return cs8($codes_beginnoptionen_array[$opt]); // UTF-8 encode because the source file (ki_admin/config/codes.inc.php) is still ISO-encoded
 		}
 		else {
 			return '';
@@ -149,7 +149,7 @@ class WISY_DURCHF_CLASS
 		{	
 			global $codes_kurstage;
 			if( !is_string($codes_kurstage) ) {
-				require_once('admin/config/codes.inc.php');
+				require_once('ki_admin/config/codes.inc.php');
 			}
 			
 			$codes_kurstage_array = array();
@@ -186,7 +186,7 @@ class WISY_DURCHF_CLASS
 		global $codes_dauer_array;
 		if( !is_array($codes_dauer_array) ) 
 		{	
-			require_once('admin/config/codes.inc.php');
+			require_once('ki_admin/config/codes.inc.php');
 			global $codes_dauer;
 			$codes_dauer_array = array();
 			$temp = explode('###', $codes_dauer);
@@ -233,7 +233,7 @@ class WISY_DURCHF_CLASS
 		else {
 			$ret = 'k. A.';
 		}
-		return cs8($ret); // UTF-8 encode because the source file (admin/config/codes.inc.php) is still ISO-encoded
+		return cs8($ret); // UTF-8 encode because the source file (ki_admin/config/codes.inc.php) is still ISO-encoded
 	}
 
 	function formatPreis($preis, $sonderpreis, $sonderpreistage, $beginn, $preishinweise_str, $html = 1, $addParam = 0)

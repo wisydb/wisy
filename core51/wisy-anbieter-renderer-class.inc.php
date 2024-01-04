@@ -2,8 +2,8 @@
 
 
 
-require_once('admin/wiki2html8.inc.php');
-require_once('admin/classes.inc.php');
+require_once('ki_admin/wiki2html8.inc.php');
+require_once('ki_admin/classes.inc.php');
 
 
 
@@ -243,7 +243,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 			{
 				$vc['Logo'] = "\n" . '<div class="wisyr_anbieter_logo">';
 				$this->fit_to_rect($logo_w, $logo_h, 128, 64, $logo_w, $logo_h);
-				$vc['Logo'] .= "<span itemprop=\"logo\"><img src=\"{$wisyPortal}admin/media.php/logo/anbieter/$anbieterId/".urlencode($logo_name)."\" style=\"width: ".$logo_w."px; height: ".$logo_h."px;\" alt=\"Anbieter Logo\" title=\"\" id=\"anbieterlogo\"/></span>";
+				$vc['Logo'] .= "<span itemprop=\"logo\"><img src=\"{$wisyPortal}ki_admin/media.php/logo/anbieter/$anbieterId/".urlencode($logo_name)."\" style=\"width: ".$logo_w."px; height: ".$logo_h."px;\" alt=\"Anbieter Logo\" title=\"\" id=\"anbieterlogo\"/></span>";
 				$vc['Logo'] .= '<div id="logo_bildrechte" style="color: #aaa; font-size:.8em;">'.$logo_rights.'</div>';
 				$vc['Logo'] .= '</div>';
 			}
@@ -264,7 +264,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		/* Rechtsform */
 		if( $rechtsform > 0 )
 		{
-			require_once('admin/config/codes.inc.php'); // needed for $codes_rechtsform
+			require_once('ki_admin/config/codes.inc.php'); // needed for $codes_rechtsform
 			$codes_array = explode('###', $GLOBALS['codes_rechtsform']);
 			for( $c = 0; $c < sizeof($codes_array); $c += 2 ) {
 				if( $codes_array[$c] == $rechtsform ) {
@@ -654,7 +654,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		    echo "\n" . '<div class="wisyr_anbieter_logo">';
 		    if(!$logo_position) {
 		        $this->fit_to_rect($logo_w, $logo_h, 128, 64, $logo_w, $logo_h);
-		        echo "<div class=\"logo\"><img src=\"{$wisyPortal}admin/media.php/logo/anbieter/$anbieter_id/".urlencode($logo_name)."\" style=\"width: ".$logo_w."px; height: ".$logo_h."px;\" alt=\"Anbieter Logo\" title=\"\" id=\"anbieterlogo\"/></div>";
+		        echo "<div class=\"logo\"><img src=\"{$wisyPortal}ki_admin/media.php/logo/anbieter/$anbieter_id/".urlencode($logo_name)."\" style=\"width: ".$logo_w."px; height: ".$logo_h."px;\" alt=\"Anbieter Logo\" title=\"\" id=\"anbieterlogo\"/></div>";
 		        echo '<div id="logo_bildrechte" style="color: #aaa; font-size:.8em;">'.$logo_rights.'</div>';
 		    }
 		    echo '</div>';
@@ -668,7 +668,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		echo '<h1>&Uuml;ber den Anbieter</h1>';
 		
 		if($logo_position) {
-		    echo "<img src=\"{$wisyPortal}admin/media.php/logo/anbieter/$anbieter_id/".urlencode($logo_name)."\" alt=\"Anbieter Logo: {$anbieter_suchname}\" title=\"{$anbieter_suchname}\" id=\"logo_big\">";
+		    echo "<img src=\"{$wisyPortal}ki_admin/media.php/logo/anbieter/$anbieter_id/".urlencode($logo_name)."\" alt=\"Anbieter Logo: {$anbieter_suchname}\" title=\"{$anbieter_suchname}\" id=\"logo_big\">";
 		    echo '<div id="logo_bildrechte_big">'.$logo_rights.'</div>';
 		}
 
@@ -695,7 +695,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		$freq = $this->tagsuggestorObj->getTagFreq(array($this->tag_suchname_id)); if( $freq <= 0 ) $freq = '';
 		$searchlink = $this->framework->getUrl('search');
 		
-		require_once('admin/config/codes.inc.php');
+		require_once('ki_admin/config/codes.inc.php');
 		$tag_pseudoOffer = $this->framework->iniRead('angebote_einrichtungsort', TAG_EINRICHTUNGSORT);
 		
 		// ok?

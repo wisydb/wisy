@@ -1,7 +1,7 @@
 <?php
 
-require_once($_SERVER['DOCUMENT_ROOT'] . "/admin/sql_curr.inc.php");
-require_once($_SERVER['DOCUMENT_ROOT'] . "/admin/config/config.inc.php");
+require_once($_SERVER['DOCUMENT_ROOT'] . "/ki_admin/sql_curr.inc.php");
+require_once($_SERVER['DOCUMENT_ROOT'] . "/ki_admin/config/config.inc.php");
 
 /**
  * Class WISY_KI_PYTHON_CLASS
@@ -36,7 +36,7 @@ class WISY_KI_PYTHON_CLASS {
     function __construct() {
         $this->pythonlib = dirname(__FILE__) . '/wisyki/python/';
         if (!defined('WISYKI_API')) {
-            throw new Exception('WISYKI_API not set in admin/config/config.inc.php');
+            throw new Exception('WISYKI_API not set in ki_admin/config/config.inc.php');
         }
         $this->api_endpoint = WISYKI_API;
     }

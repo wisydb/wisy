@@ -155,7 +155,7 @@ function main()
 {
 	// for backward compatibility (PHP < 5.4.0) automatic stripslashes() if get_magic_quotes_gpc is enabled
     if( function_exists('get_magic_quotes_gpc') && @get_magic_quotes_gpc() ) { // @ PHP7.4 
-		require_once('admin/lib/g/stripslashes.inc.php');
+		require_once('ki_admin/lib/g/stripslashes.inc.php');
 		G_STRIPSLASHES_CLASS::stripAll(); 
 	}
 	

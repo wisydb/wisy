@@ -1,6 +1,6 @@
 <?php if( !defined('IN_WISY') ) die('!IN_WISY');
 
-require_once('admin/config/codes.inc.php');
+require_once('ki_admin/config/codes.inc.php');
 
 class WISY_SEARCH_RENDERER_CLASS
 {
@@ -280,7 +280,7 @@ class WISY_SEARCH_RENDERER_CLASS
 	                $count_replacements2 = array();
 	                $count_replacements3 = array();
 	                
-	                foreach($ignoreWords_DE AS $ignoreWord) { // ignore hard coded list of (admin/config/codes.inc.php) filler words
+	                foreach($ignoreWords_DE AS $ignoreWord) { // ignore hard coded list of (ki_admin/config/codes.inc.php) filler words
 	                    $replacement = ' ';
 	                    $subject = $record['fulltext_query'];
 	                    $limit = -1; // no limit

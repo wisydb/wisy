@@ -179,7 +179,7 @@ class TAGTABLE_CLASS
 	
 	function lookupOrInsert($tag_name, $tag_type, $tag_help = 0, $tag_descr = '', $tag_eigenschaften = '-1')
 	{
-	    require_once("admin/lib/soundex/x3m_soundex_ger.php");
+	    require_once("ki_admin/lib/soundex/x3m_soundex_ger.php");
 	    
 		// lookup a tag and return its ID; if unexistant, the tag is inserted
 		$tag_name = trim($tag_name);
@@ -555,11 +555,11 @@ class WISY_SYNC_RENDERER_CLASS
 	    register_shutdown_function([$this, 'shutDownFunction']);
 	    
 		// include EQL
-		require_once('admin/classes.inc.php');
-		require_once("admin/lang.inc.php");								
-		require_once("admin/eql.inc.php");
-		require_once("admin/config/codes.inc.php");
-		require_once('admin/config/trigger_kurse.inc.php');
+		require_once('ki_admin/classes.inc.php');
+		require_once("ki_admin/lang.inc.php");								
+		require_once("ki_admin/eql.inc.php");
+		require_once("ki_admin/config/codes.inc.php");
+		require_once('ki_admin/config/trigger_kurse.inc.php');
 	
 		$db = new DB_Admin;
 		
@@ -803,7 +803,7 @@ class WISY_SYNC_RENDERER_CLASS
 	                    $kurs_id 		= intval($db4->fs('id'));							if( ($kurs4_cnt % 100 ) == 0 ) { echo "\n"."[".date("d.m.Y")." - ".date("H:i:s")."] "." ... $kurs4_cnt ff ...\n"; $this->statetable->updateUpdateStick(); }
 	                    
 	                    $kurs_titel = $db4->fs('titel');
-	                    update_titel_sorted($kurs_id, $kurs_titel); // in admin/config/trigger_kurse.inc.php
+	                    update_titel_sorted($kurs_id, $kurs_titel); // in ki_admin/config/trigger_kurse.inc.php
 	                }
 	                
 	                $this->log("Done: ".$kurs4_cnt." Kurse in Vorbereitung.");
@@ -838,7 +838,7 @@ class WISY_SYNC_RENDERER_CLASS
 	                        if(DEBUG) { echo "\n"."[".date("d.m.Y")." - ".date("H:i:s")."] "." - Kurs-ID:".$kurs_id; flush(); }
 	                        
 	                        $kurs_titel = $db->fs('titel');
-	                        update_titel_sorted($kurs_id, $kurs_titel); // in admin/config/trigger_kurse.inc.php
+	                        update_titel_sorted($kurs_id, $kurs_titel); // in ki_admin/config/trigger_kurse.inc.php
 	                        $anbieter_id	= intval($db->fs('anbieter'));						if( $anbieter_id <= 0 ) { $this->log("ERROR: kein Anbieter angegeben fuer Kurs ID $kurs_id."); }
 	                        $freigeschaltet	= intval($db->fs('freigeschaltet'));
 	                        
@@ -1599,7 +1599,7 @@ class WISY_SYNC_RENDERER_CLASS
 	                                            
 	                                            $ist_domain = isset($_SERVER['HTTP_HOST']) ? strtolower($_SERVER['HTTP_HOST']) : '';
 	                                            
-	                                            $stats_file = 'admin/stats/'.( substr($ist_domain, 0, 7) != 'sandbox' ? '' : substr($ist_domain, 0, strpos($ist_domain, '.'))."_" ).'statistiken_'.$portalId.'.csv'; // 'files/logs/stats/statistiken_'.$portalId.'.csv';
+	                                            $stats_file = 'ki_admin/stats/'.( substr($ist_domain, 0, 7) != 'sandbox' ? '' : substr($ist_domain, 0, strpos($ist_domain, '.'))."_" ).'statistiken_'.$portalId.'.csv'; // 'files/logs/stats/statistiken_'.$portalId.'.csv';
 	                                            if(file_exists($stats_file))
 	                                                $fp = fopen(	$stats_file, 'a'); // Open for writing only; place the file pointer at the end of the file.
 	                                                else {
@@ -1820,7 +1820,7 @@ class WISY_SYNC_RENDERER_CLASS
 	
 	// public static for call in adress filter test skript
 	// Todo: get rid of redundancies
-	// Todo: move values to admin/config/...
+	// Todo: move values to ki_admin/config/...
 	public static function clean_address($address, $manualtest = false) {
 	    
 	    

@@ -381,7 +381,7 @@ class WISY_TAGSUGGESTOR_CLASS
 					}
 				}
 				
-				require_once("admin/lib/soundex/x3m_soundex_ger.php");
+				require_once("ki_admin/lib/soundex/x3m_soundex_ger.php");
 
 				// if there are only very few results, try an additional soundex search = has equal word value
 				if( sizeof((array) $ret) < $min && $use_soundex )

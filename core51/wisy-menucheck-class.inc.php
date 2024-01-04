@@ -23,7 +23,7 @@ Zusaetzliche Parameter:
 
  */
 
-require_once('admin/config/codes.inc.php');
+require_once('ki_admin/config/codes.inc.php');
 
 loadWisyClass('WISY_SYNC_RENDERER_CLASS');
 loadWisyClass('WISY_MENU_CLASS');

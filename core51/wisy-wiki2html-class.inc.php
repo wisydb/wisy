@@ -2,7 +2,7 @@
 
 
 
-require_once("admin/wiki2html8.inc.php");
+require_once("ki_admin/wiki2html8.inc.php");
 
 
 

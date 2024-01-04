@@ -12,7 +12,7 @@ class WISY_EDIT_FORGOTPW_CLASS
 	function __construct(&$framework, $param)
 	{
 		// constructor
-		require_once('admin/genpassword.inc.php');
+		require_once('ki_admin/genpassword.inc.php');
 		
 		$this->framework	=& $framework;
 		$this->dbCache		=& createWisyObject('WISY_CACHE_CLASS', $this->framework, array('table'=>'x_cache_confirm', 'itemLifetimeSeconds'=>24*60*60));

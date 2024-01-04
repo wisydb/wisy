@@ -12,15 +12,15 @@ class WISY_EDIT_RENDERER_CLASS
 	
 	function __construct(&$framework)
 	{
-		require_once('admin/config/codes.inc.php'); // needed for $codes_beginnoptionen, $codes_kurstage etc.
-		require_once('admin/lang.inc.php');			
-		require_once('admin/table_def.inc.php');	// needed for db.inc.php
-		require_once('admin/config/db.inc.php');	// needed for LOG_WRITER_CLASS
-		require_once('admin/date.inc.php');
-		require_once('admin/eql.inc.php');
-		require_once('admin/classes.inc.php');
-		require_once('admin/config/trigger_kurse.inc.php');
-		require_once('admin/config/trigger_durchfuehrung.inc.php');
+		require_once('ki_admin/config/codes.inc.php'); // needed for $codes_beginnoptionen, $codes_kurstage etc.
+		require_once('ki_admin/lang.inc.php');			
+		require_once('ki_admin/table_def.inc.php');	// needed for db.inc.php
+		require_once('ki_admin/config/db.inc.php');	// needed for LOG_WRITER_CLASS
+		require_once('ki_admin/date.inc.php');
+		require_once('ki_admin/eql.inc.php');
+		require_once('ki_admin/classes.inc.php');
+		require_once('ki_admin/config/trigger_kurse.inc.php');
+		require_once('ki_admin/config/trigger_durchfuehrung.inc.php');
 
 		// constructor
 		$this->framework	=& $framework;
@@ -592,7 +592,7 @@ class WISY_EDIT_RENDERER_CLASS
 				    $dbPw = $db->fcs8('password');
 					if( crypt($temp[1], $dbPw) == $dbPw )
 					{
-						require_once('admin/acl.inc.php');
+						require_once('ki_admin/acl.inc.php');
 						if( acl_check_access('kurse.COMMON', -1, ACL_EDIT, $db->fcs8('id')) )
 						{
 						    $db->query("SELECT id FROM anbieter WHERE suchname='".addslashes($anbieterSuchname_utf8dec)."' AND freigeschaltet = 1");

@@ -68,13 +68,13 @@ class WISY_KI_SYNC_RENDERER_CLASS {
 
 	function __construct(&$framework, $param) {
 		// include EQL
-		// require_once('admin/classes.inc.php');
-		require_once("admin/lang.inc.php");
-		require_once("admin/eql.inc.php");
-		require_once("admin/config/codes.inc.php");
+		// require_once('ki_admin/classes.inc.php');
+		require_once("ki_admin/lang.inc.php");
+		require_once("ki_admin/eql.inc.php");
+		require_once("ki_admin/config/codes.inc.php");
 		require_once("core51/wisy-sync-renderer-class.inc.php");
 		require_once("core51/wisy-ki-python-class.inc.php");
-		require_once("admin/config/trigger_kurse.inc.php");
+		require_once("ki_admin/config/trigger_kurse.inc.php");
 
 		$this->framework = &$framework;
 		$this->statetable = new WISY_SYNC_STATETABLE_CLASS($this->framework);

@@ -9,7 +9,7 @@ class WISY_KURS_ANALYZER_CLASS
     {
         // constructor
         $this->framework =& $framework;
-        require_once('admin/config/codes.inc.php'); // fuer hidden_stichwort_eigenschaften
+        require_once('ki_admin/config/codes.inc.php'); // fuer hidden_stichwort_eigenschaften
     }
     
     public function hasKeyword(&$db, $table, $kursId, $tagId)

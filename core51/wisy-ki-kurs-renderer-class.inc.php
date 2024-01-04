@@ -1,6 +1,6 @@
 <?php if (!defined('IN_WISY')) die('!IN_WISY');
 
-require_once('admin/config/codes.inc.php');
+require_once('ki_admin/config/codes.inc.php');
 
 class WISY_KI_KURS_RENDERER_CLASS
 {
