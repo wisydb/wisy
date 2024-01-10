@@ -1,0 +1,71 @@
+<?php
+
+// dieses Skript untersucht
+
+require('../sql_curr.inc.php');
+require('config.inc.php');
+header('Cache-Control: no-cache, must-revalidate');
+header('Pragma: no-cache');
+set_time_limit(0);
+
+$db1 = new DB_Admin;
+$db2 = new DB_Admin;
+
+function duplicate_df($src_id)
+{
+	$db3 = new DB_Admin;
+	$db3->query("SELECT * FROM durchfuehrung WHERE id=$src_id;");
+	if( $db3->next_record() ) {
+		$sql_fields = '';
+		$sql_values = '';
+		$record = $db3->Record;
+		foreach( $record as $field=>$value ) {
+			if( $field != 'id' ) {
+				$sql_fields .= ($sql_fields==''? '' : ', ') . $field;
+				$sql_values .= ($sql_values==''? '' : ', ') . $db3->quote($value);
+			}
+		}
+		$sql = "INSERT INTO durchfuehrung ($sql_fields) VALUES ($sql_values)";
+		$db3->query($sql);
+		return $db3->insert_id();
+	}
+	else {
+		return 0;
+	}
+	
+	
+}
+
+
+$df_cnt = 0;
+$db1->query("SELECT id FROM durchfuehrung WHERE date_modified>='2013-01-01';");
+while( $db1->next_record() )
+{
+	$df_id = $db1->fs('id');
+	$db2->query("SELECT COUNT(*) AS cnt FROM kurse_durchfuehrung WHERE secondary_id=$df_id");
+	$db2->next_record();
+	$ref_cnt = $db2->fs('cnt');
+	if( $ref_cnt > 1 ) {
+		$kurs_ids = array();
+		$db2->query("SELECT primary_id FROM kurse_durchfuehrung WHERE secondary_id=$df_id");
+		while( $db2->next_record() ) {
+			$kurs_ids[] = $db2->f('primary_id');
+		}
+
+		echo "Durchfuehrung $df_id hat $ref_cnt Referenzen, die Kurse " . implode(', ', $kurs_ids). " :-(<br />";
+		flush();
+		
+		// fehler korrigieren ...
+		for( $i = 1; $i < sizeof((array) $kurs_ids); $i++ ) {
+			$kurs_id = $kurs_ids[$i];
+			echo "- korrigiere Kurs $kurs_id<br />";
+			$neue_df_id = duplicate_df($df_id);
+			if( $neue_df_id ) {
+				$db2->query("UPDATE kurse_durchfuehrung SET secondary_id=$neue_df_id WHERE primary_id=$kurs_id AND secondary_id=$df_id;");
+			}
+		}
+	}
+	$df_cnt++;
+}
+
+echo "$df_cnt Durchfuehrungen ueberprueft.<br />";

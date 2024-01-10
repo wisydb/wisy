@@ -1,0 +1,473 @@
+/* Google fonts and icons */
+@import url('https://fonts.googleapis.com/css2?family=Kanit&family=Inter:wght@200;400;600&display=swap');
+
+*, html {
+    margin: 0;
+}
+
+body {
+    font-family: sans-serif;
+}
+
+h1 {
+    font-size: 1.5em;
+    margin-bottom: 1em;
+}
+
+h2 {
+    font-size: 1em;
+    margin-bottom: .5em;
+}
+main {
+    margin: 1em;
+}
+
+.manual-classification {
+    margin: 0 1rem;
+}
+
+.manual-classification > *:not(canvas) {
+    margin: 0 auto;
+    max-width: 500px;
+    padding: 1rem 0;
+}
+
+canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: -1;
+}
+
+.manual-classification > header {
+    margin-top: 1rem;
+}
+
+.manual-classification > header h1 {
+    margin: 0;
+}
+
+.manual-classification_selection .course-info {
+    background-color: #C0DCF7;
+    border-radius: 5px;
+    padding: 1rem;
+    margin: 1rem 0rem;
+}
+
+main.manual-classification_review {
+    background-color: #C0DCF7;
+    border-radius: 5px;
+    padding: 1rem;
+    
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 0.3rem;
+}
+
+.manual-classification_review .actions {
+    margin-top: 2rem;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 0.3rem;
+}
+
+
+.manual-classification_review .actions .btn {
+    flex-grow: 1;
+}
+
+.chosen-level {
+    font-weight: bold;
+}
+
+.course-info label {
+    font-size: 0.8em;
+    font-style: italic;
+}
+
+.course-info > * {
+    display: block;
+}
+
+.course-info label:not(:first-child) {
+    margin-top: .5rem;
+}
+
+.manual-classification_selection form section {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.3rem;
+}
+
+.manual-classification_selection .form-input {
+    flex-direction: column;
+}
+
+.manual-classification_selection .form-input label {
+    margin-bottom: 0.3rem;
+}
+
+.manual-classification_selection .form-action {
+    margin: 1rem 0;
+    flex-direction: row;
+}
+
+.manual-classification_selection .form-action .btn {
+    width: 100%;
+}
+
+progress[value] {
+    /* Reset the default appearance */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+
+    border: none;
+
+    width: 100%;
+    height: 20px;
+}
+progress[value]::-moz-progress-bar { 
+    background-image:
+    -moz-linear-gradient(
+        135deg, 
+        transparent 33%, 
+        rgba(0, 0, 0, 0.1) 33%, 
+        rgba(0, 0, 0, 0.1) 66%, 
+        transparent 66% 
+    ),
+    -moz-linear-gradient(
+        top, 
+        rgba(255, 255, 255, 0.25), 
+        rgba(0, 0, 0, 0.25)
+    ),
+    -moz-linear-gradient(
+        left, 
+        #09c, 
+        #f44
+    );
+
+    border-radius: 2px; 
+    background-size: 35px 20px, 100% 100%, 100% 100%; 
+}
+
+progress[value]::-webkit-progress-bar {
+    background-color: #eee;
+    border-radius: 2px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25) inset;
+}
+
+progress[value]::-webkit-progress-value {
+    background-image:
+        -webkit-linear-gradient(-45deg, 
+                                transparent 33%, rgba(0, 0, 0, .1) 33%, 
+                                rgba(0,0, 0, .1) 66%, transparent 66%),
+        -webkit-linear-gradient(top, 
+                                rgba(255, 255, 255, .25), 
+                                rgba(0, 0, 0, .25)),
+        -webkit-linear-gradient(left, #09c, #f44);
+
+    border-radius: 2px; 
+    background-size: 35px 20px, 100% 100%, 100% 100%;
+}
+
+progress[value]::-webkit-progress-value::before {
+    content: '80%';
+    position: absolute;
+    right: 0;
+    top: -125%;
+}
+
+details {
+    background-color: #ffffff5e;
+    padding: 0.5em;
+    border-radius: 5px;
+}
+
+.btn {
+    border-radius: 5px;
+    border: 0px;
+    text-align: center;
+    text-decoration: none;
+    font-size: 0.9rem;
+    padding: 0.5rem;
+    cursor: pointer;
+    color: rgb(53, 53, 53);
+    background-color: #dfdfdf;
+}
+
+.btn:hover, .btn:active {
+    background-color: #eeeeee;
+}
+
+.form-input select {
+    border-radius: 5px;
+    border: 0px;
+    text-align: center;
+    text-decoration: none;
+    font-size: 0.8rem;
+    padding: 0.5rem;
+    cursor: pointer;
+    color: rgb(31, 31, 31);
+    background-color: #dfdfdf;
+}
+
+.form-input select:hover {
+    background-color: #eeeeee;
+}
+
+.btn-primary {
+    color: white;
+    font-weight: bolder;
+    background-color: #0083C4;
+}
+
+.btn-primary:hover, .btn-primary:active {
+    background-color: #0075af;
+}
+
+.btn-secondary {
+    color: white;
+    font-weight: bold;
+    background-color: #c2c2c2;
+}
+
+.btn-secondary:hover, .btn-secondary:active {
+    background-color: #b4b4b4;
+}
+
+.help {
+    flex-direction: column;
+}
+
+.help-actions .btn {
+    flex-grow: 1;
+}
+
+.help label {
+    display: block;
+}
+
+.esco-autocomplete {
+    margin-bottom: 1em;
+}
+
+ul {
+    /* list-style: none; */
+    padding-inline-start: 1em;
+}
+
+li {
+    margin: 0.2em;
+}
+
+.tabs {
+    margin-bottom: 1em;
+}
+
+/* Style the tab */
+.tabmenu {
+    overflow: hidden;
+    border: 1px solid #ccc;
+    background-color: #f1f1f1;
+}
+
+/* Style the buttons that are used to open the tab content */
+.tabmenu button {
+    background-color: inherit;
+    float: left;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 14px 16px;
+    transition: 0.3s;
+}
+
+/* Change background color of buttons on hover */
+.tabmenu button:hover {
+    background-color: #ddd;
+}
+
+/* Create an active/current tablink class */
+.tabmenu button.active {
+    background-color: #ccc;
+}
+
+/* Style the tab content */
+.tabcontent {
+    display: none;
+    padding: 6px 12px;
+    border: 1px solid #ccc;
+    border-top: none;
+    min-height: 320px;
+}
+
+.tabcontent.active {
+    display: block;
+}
+
+output {
+    display: block;
+}
+
+output label {
+    font-weight: bold;
+}
+output a {
+    margin: 0em .2em;
+    text-decoration: none;
+}
+
+.skill-suggestions .skill-cloud{ 
+    padding-inline-start: 0; 
+    display: flex; 
+    flex-direction: row; 
+    flex-wrap: wrap; 
+    gap: 0.2em; 
+} 
+ 
+.skill-suggestions .skill-cloud li { 
+    margin: 0; 
+    list-style: none; 
+} 
+ 
+.skill-suggestions .skill-cloud a { 
+    font-size: 0.7em; 
+    display: block; 
+} 
+
+.skill-suggestions .skill-cloud-searchterm {
+    white-space: initial;
+}
+
+.selected-skill {
+    background-color: greenyellow;
+}
+ 
+a { 
+    text-decoration: none; 
+} 
+ 
+a[href^="https://"]::after, a[href^="http://"]::after {
+    content: "";
+    background: url(../files/External.svg) center right no-repeat;
+    background-size: 12px;
+    padding-right: 12px;
+    background-position: 0px 0px;
+}
+
+button.suggest {
+    margin: 0 .5em;
+}
+
+.autocomplete-box {
+    font-size: 1.2em;
+    position: relative;
+    background: whitesmoke;
+    margin: 0.5em 0;
+}
+
+.autocomplete-box__input {
+    padding-right: 10px;
+    height: 3em;
+    display: flex;
+    flex-direction: row;
+    flex-grow: 1;
+    align-items: center;
+    padding: 0 .5em;
+    border: 2px solid #003064;
+}
+
+.autocomplete-box input {
+    height: 100%;
+    width: 100%;
+    outline: none;
+    border: none;
+    font-size: 1em;
+    margin: 0;
+    text-overflow: ellipsis;
+    background: inherit;
+}
+
+
+.skill-suggestions .autocomplete-box output {
+    width: 100%;
+    position: absolute;
+    margin-top: -2px;
+    border: 2px solid #003064;
+    border-top: none;
+    background: whitesmoke;
+    z-index: 10;
+}
+
+.autocomplete-box output ul {
+    list-style-type: none;
+    padding-bottom: .5em;
+    padding-inline: 0;
+    max-height: 40vh;
+    overflow: auto;
+}
+
+.autocomplete-box output button {
+    position: relative;
+    width: 100%;
+    padding: .2em;
+    padding-left: 1.5em;
+    overflow: hidden;
+    text-align: left;
+    font-size: 1em;
+    text-overflow: ellipsis;
+    /* background-color: #00306407; */
+}
+
+.autocomplete-box output li:not(:last-of-type)::after {
+    content: '';
+    /* transform: translateY(-0.25em); */
+    display: block;
+    width: 96%;
+    margin: 0em 1em;
+    margin-left: 2%;
+    border-top: 1px dotted #00306475;
+}
+
+.autocomplete-box output button:not(:disabled):hover {
+    background-color: #0030641e;
+}
+
+.autocomplete-box output button:disabled {
+    cursor: unset;
+}
+
+.clear-input::before {
+    content: '';
+    margin-right: 0.3em;
+    border-left: 1px solid #555;
+}
+
+
+.autocomplete-box button {
+    cursor: pointer;
+    border: none;
+    background-color: transparent;
+    font-family: inherit;
+}
+
+.autocomplete-box button:disabled {
+    cursor: unset;
+}
+
+.selectable-skills {
+    list-style-type: none;
+    padding-inline: 0;
+    margin: 1em;
+}
+
+.selectable-skills li {
+    margin-bottom: .8em;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 1em;
+}

@@ -1,0 +1,25 @@
+<?php
+
+
+
+require('../sql_curr.inc.php');
+require('config.inc.php');
+header('Cache-Control: no-cache, must-revalidate');
+header('Pragma: no-cache');
+set_time_limit(0);
+$sql = new DB_Admin;
+$sql2 = new DB_Admin;
+
+echo "# korrigiere verweise...\n";
+
+
+$sql->query("SELECT id, verweis FROM anbieter WHERE verweis!=0");
+while( $sql->next_record() ) {
+	$id = $sql->f('id'); 
+	$verweis = $sql->f('verweis'); 
+	echo  "$id -&gt; $verweis <br />\n";
+	$sql2->query("INSERT INTO anbieter_verweis (primary_id, attr_id, structure_pos) VALUES ($id, $verweis, 1)");
+}
+
+
+?>

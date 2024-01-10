@@ -1,0 +1,28 @@
+<?php
+
+require('../sql_curr.inc.php');
+require('config.inc.php');
+require('../lib/classes/g_blob.inc.php');
+header('Cache-Control: no-cache, must-revalidate');
+header('Pragma: no-cache');
+set_time_limit(0);
+
+$ob = new G_BLOB_CLASS;
+$db1 = new DB_Admin;
+$db2 = new DB_Admin;
+
+$db1->query("SELECT id, logo_name, logo_mime, logo_bytes, logo_w, logo_h, logo_blob FROM anbieter WHERE logo_name='' ORDER BY id;");
+while( $db1->next_record() )
+{
+	$id			= $db1->fs('id');
+	$ob->name	= $db1->fs('logo_name')? $db1->fs('logo_name') : 'noname';
+	$ob->mime	= $db1->fs('logo_mime');
+	$ob->bytes	= $db1->fs('logo_bytes');
+	$ob->w		= $db1->fs('logo_w');
+	$ob->h		= $db1->fs('logo_h');
+	$ob->blob	= $db1->f('logo_blob'); // NO strip-slashes!
+	
+	$db2->query("UPDATE anbieter SET logo=".$db2->quote($ob->encode_as_str())." WHERE id=$id;");
+	
+	echo " $id ...<br /> \n";
+}

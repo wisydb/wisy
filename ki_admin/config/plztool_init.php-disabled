@@ -1,0 +1,269 @@
+<?php
+/*******************************************************************************
+Fill Table "plztool" (used by PLZTOOL_CLASS)
+********************************************************************************
+
+For initialisation of the tables "plztool" and "plztool2", this script may be
+modified to fit your needs.
+
+Table "plztool" is used for querying PLZ/stadtteil by Street/Ort and
+table "plztool2" is used for querying PLZ/Ort by entering the first characters
+of PLZ/Ort.
+
+For using this script, you have to rename it from plz_init.php-disalbled to 
+plz_init.php - do not forget to re-rename it after usage!
+
+@author Bjoern Petersen
+
+*******************************************************************************/
+
+
+
+class PLZTOOL_INIT_CLASS
+{
+	function __construct()
+	{
+		$this->db = new DB_Admin();
+		$this->plztoolObj = new PLZTOOL_CLASS();
+	}
+	
+	/***************************************************************************
+	SGV (Strassengebietsverzeichnis), currently we have the data for Hamburg only
+	***************************************************************************/
+	
+	function add_to_sgv($strasse, $plz, $ort, $stadtteil)
+	{
+		// ein paar korrekturen fuer den Stadtteil
+		if( substr($stadtteil, 0, 5)=='Hamb.' ) {
+			$stadtteil = substr($stadtteil, 5);
+		}
+
+		if( substr($stadtteil, 0, strlen($ort)) == $ort ) {
+			$stadtteil = substr($stadtteil, strlen($ort));
+		}
+
+		if( substr($stadtteil, 0, 1)=='-' ) {
+			$stadtteil = substr($stadtteil, 1);
+		}
+
+
+		// hash berechnung
+		$strasse_norm = $this->plztoolObj->plz_normalize($strasse);
+		$ort_norm = $this->plztoolObj->plz_normalize($ort);
+		if( $strasse_norm == '' || $ort_norm == '' ) echo "FEHLER: Strasse und/oder Ort nicht angegeben fuer add_to_sgv($strasse, $plz, $ort, $stadtteil)<br />";
+	
+		$hash = "$ort_norm/$strasse_norm";
+		if( !isset( $this->g_plzinfo[ $hash ] ) || !is_array( $this->g_plzinfo[ $hash ] ) )
+		{
+			$this->g_plzinfo[ $hash ] = array(
+					'ort_norm'		=>	$ort_norm
+				,	'strasse_norm'	=>	$strasse_norm
+				,	'plz'			=>	$plz
+				,	'stadtteil'		=>	$stadtteil
+			);
+		}
+		else
+		{
+			$hashPLZ = isset( $this->g_plzinfo[$hash]['plz'] ) ? $this->g_plzinfo[$hash]['plz'] : '';
+			if( $hashPLZ != $plz )
+			{
+				$this->g_plzinfo[$hash]['plz'] = '';
+				$this->g_plzinfo_mehrdeutigkeiten['plz'] ++;
+				//echo "WARNUNG: PLZ mehrdeutig fuer add_to_sgv($strasse, $plz, $ort, $stadtteil)<br />";
+			}
+
+			$hashStadtteil = isset( $this->g_plzinfo[$hash]['stadtteil'] ) ? $this->g_plzinfo[$hash]['stadtteil'] : '';
+			if( $hashStadtteil != $stadtteil )
+			{
+				$this->g_plzinfo[$hash]['stadtteil'] = '';
+				$this->g_plzinfo_mehrdeutigkeiten['stadtteil'] ++;
+				//echo "WARNUNG: Stadtteil mehrdeutig fuer add_to_sgv($strasse, $plz, $ort, $stadtteil)<br />";
+			}
+		}
+	}
+	
+	function empty_sgv()
+	{
+		echo 'empty_sgv() ...<br />';
+		
+		// drop old table
+		$sql = "DROP TABLE IF EXISTS plztool;";
+		$this->db->query($sql);
+		
+		// create new table
+		$sql = "CREATE TABLE plztool(
+			  id int(11) NOT NULL auto_increment,
+			  strasse_norm varchar(255) collate latin1_general_ci NOT NULL,
+			  ort_norm varchar(255) collate latin1_general_ci NOT NULL,
+			  plz varchar(255) collate latin1_general_ci NOT NULL,
+			  stadtteil varchar(255) collate latin1_general_ci NOT NULL,
+			  PRIMARY KEY  (id),
+			  KEY strasse_norm (strasse_norm)
+			) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci AUTO_INCREMENT=1;";
+		$this->db->query($sql);		
+	}
+	
+	function init_sgv()
+	{
+		echo 'init_plz_sgv() ...<br />';
+		
+		// source configuration
+		$filename = '../../files/plz/sgv_2012_12.csv'; 
+	
+		// check for existance
+		if( !file_exists($filename) ) die("ERROR: $filename not found.");
+
+		// read data from source
+		$this->g_plzinfo = array();
+		$this->g_plzinfo_mehrdeutigkeiten['plz'] = 0;
+		$this->g_plzinfo_mehrdeutigkeiten['stadtteil'] = 0;
+		
+		echo "Lese Hamburg Plz aus $filename ...<br />\n";
+		flush();
+		$fh = fopen($filename, 'r');
+		if( $fh ) 
+		{
+			while (!feof ($fh))
+			{
+				$buffer = trim(fgets($fh, 256));
+				if( $buffer )
+				{
+					$buffer = explode(';', $buffer);
+					$strasse   = trim($buffer[3]);
+					$plz	   = intval($buffer[9]); if( $plz <= 0 ) $plz = '';
+					$ort	   = 'Hamburg';
+					$stadtteil = trim($buffer[6]);
+					$this->add_to_sgv($strasse, $plz, $ort, $stadtteil);
+				}
+			}
+		
+			fclose($fh);
+			echo sizeof((array) $this->g_plzinfo) . " Strassen, davon<br />";
+			echo $this->g_plzinfo_mehrdeutigkeiten['plz'] . " Strassen, deren Postleitzahl nicht eindeutig zugewiesen werden kann<br />";
+			echo $this->g_plzinfo_mehrdeutigkeiten['stadtteil'] . " Strassen, deren Stadtteil nicht eindeutig zugewiesen werden kann<br />";
+			// print_r($g_plzinfo);
+		}
+		else 
+		{
+			echo "FEHLER: Kann $filename nicht oeffnen.\n";
+		}
+	
+		// daten in tabelle einfügen
+		reset($this->g_plzinfo);
+		foreach($this->g_plzinfo as $hash => $v) 
+		{
+			$ort_norm = addslashes($v['ort_norm']);
+			$strasse_norm = addslashes($v['strasse_norm']);
+			$plz = addslashes($v['plz']);
+			$stadtteil = addslashes($v['stadtteil']);
+			$sql = "INSERT INTO plztool (ort_norm, strasse_norm, plz, stadtteil) VALUES('$ort_norm', '$strasse_norm', '$plz', '$stadtteil')";
+			$this->db->query($sql);
+		}
+		echo 'Daten in Datenbank geschrieben.<br />';
+	}
+	
+	/***************************************************************************
+	German PLZ
+	***************************************************************************/
+	function empty_plz()
+	{
+		echo 'empty_plz() ...<br />';
+		
+		// drop old table
+		$sql = "DROP TABLE IF EXISTS plztool2;";
+		$this->db->query($sql);
+		
+		// create new table
+		$sql = "CREATE TABLE plztool2(
+			  id int(11) NOT NULL auto_increment,
+			  plz varchar(255) collate latin1_general_ci NOT NULL,
+			  ort varchar(255) collate latin1_general_ci NOT NULL,
+			  PRIMARY KEY  (id),
+			  KEY plz (plz),
+			  KEY ort (ort)			  
+		) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci AUTO_INCREMENT=1;";
+		$this->db->query($sql);		
+	}	
+		
+	function init_plz()
+	{
+		echo 'init_plz() ...<br />';
+		
+		// source configuration
+		$filename = '../../files/plz/PLZ.tab'; 		
+		
+		echo "Lese Deutschland PLZ aus $filename ...<br />\n";
+		flush();
+		$line = 0;
+		$fh = fopen($filename, 'r');
+		$plz_added = array();
+		if( $fh ) 
+		{
+			while (!feof ($fh))
+			{
+				$buffer = trim(fgets($fh, 256)); $line ++;
+				$buffer = explode("\t", $buffer);
+				$plz	   = trim(strval($buffer[1]));
+				$ort	   = trim(utf8_decode($buffer[4]));
+				if( isset( $plz_added[$plz.$ort] ) && $plz_added[$plz.$ort] ) {
+					echo "WARNUNG: PLZ $plz ist nicht eindeutig!<br />";
+				}
+				else if( $buffer && intval($plz) > 0 && $ort != '' && $line > 1 /*first line contains column names*/ )
+				{
+					$this->db->query("INSERT INTO plztool2 (plz,ort) VALUES (".$this->db->quote($plz).",".$this->db->quote($ort).")");
+					$plz_added[$plz.$ort] = $ort;
+				}
+			}
+		
+			fclose($fh);
+			echo sizeof((array) $plz_added) . " Postleitzahlen hinzugefuegt<br />";
+		}
+		else 
+		{
+			echo "FEHLER: Kann $filename nicht oeffnen.\n";
+		}
+				
+		
+	}
+};
+
+
+
+
+
+
+/*******************************************************************************
+Global Part
+*******************************************************************************/
+
+require_once('../sql_curr.inc.php');
+require_once('config.inc.php');
+require_once('../classes.inc.php');
+
+if( isset($_GET['initplz']) )
+{
+	echo 'Initializing...<br />';
+	$plzInitObj = new PLZTOOL_INIT_CLASS;
+	
+	//$plzInitObj->empty_sgv();
+	//$plzInitObj->init_sgv();
+	
+	$plzInitObj->empty_plz();
+	$plzInitObj->init_plz();
+	
+	echo 'Init done.<br />';
+}
+else if( isset($_GET['qsgv']) )
+{
+	echo 'Searching for a street in Hamburg, returning PLZ/Ort...<br />';
+	$plztoolObj = new PLZTOOL_CLASS();
+	$ret = $plztoolObj->search_plzstadtteil_by_strort($_GET['qstr'], 'Hamburg');
+	print_r($ret);
+}
+else
+{
+	echo 'Add parameter initplz, qsgv or q to use this script.<br />';
+}
+
+
+

@@ -1,0 +1,74 @@
+<?php
+
+
+// dieser schnelle Hack erhoeht - OHNE NACHFRAGE - die Kredite aller ausgewaehlten Anbieter um 1000.
+
+
+$add_credits = 1000;
+$add_credits_in_portal = 680;
+
+
+
+require('functions.inc.php');
+require('eql.inc.php');
+
+
+if( !isset($_SESSION['g_session_index_sql']['anbieter']) )
+{
+	echo "Keine Anbieter ausgew&auml;hlt?";
+	exit();
+}
+
+
+
+function getCredits($portalId, $anbieterId)
+{
+	global $db2;
+	$db2->query("SELECT lparam FROM anbieter_promote_log WHERE anbieter_id=$anbieterId AND portal_id=$portalId AND event_type=2001;");
+	$db2->next_record();
+	$credits = intval($db2->f('lparam'));
+	return $credits;
+}
+
+function setCredits($portalId, $anbieterId, $credits)
+{
+	global $db2;
+	$todayHour     = ftime("%Y-%m-%d %H:%M:%S");
+	$db2->query("UPDATE anbieter_promote_log SET lparam=$credits, date_modified='$todayHour' WHERE anbieter_id=$anbieterId AND portal_id=$portalId AND event_type=2001;");
+	if( $db2->affected_rows() == 0 )
+	{
+		$db2->query("INSERT INTO anbieter_promote_log (date_created, date_modified, anbieter_id, portal_id, kurs_id, event_type, lparam) VALUES ('$todayHour', '$todayHour', $anbieterId, $portalId, 0, 2001, $credits)");
+	}
+}
+
+
+
+
+
+
+$eql2sql = new EQL2SQL_CLASS('anbieter');
+$eql = $_SESSION['g_session_index_eql']['anbieter']==''? '*' : $_SESSION['g_session_index_eql']['anbieter'];
+
+$sql = $eql2sql->eql2sql($eql, 'id', acl_get_sql(ACL_READ, 0, 1, 'anbieter'), 'id');
+
+
+$cnt = 0;
+$db = new DB_Admin;
+$db2 = new DB_Admin;
+$db->query($sql);
+while( $db->next_record() )
+{
+	
+	$anbieterId = $db->f('id');
+	$credits = getCredits($add_credits_in_portal, $anbieterId) + $add_credits;
+	setCredits($add_credits_in_portal, $anbieterId, $credits);
+	echo "new credits for $anbieterId: $credits<br />";
+	
+	// progress
+	$cnt++;
+}
+
+echo "<br />Der Kredit von $cnt Anbietern im Portal $add_credits_in_portal wurde um $add_credits erh&ouml;ht.";
+
+
+?>

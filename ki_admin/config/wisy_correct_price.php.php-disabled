@@ -1,0 +1,167 @@
+<?php
+
+
+
+require('../sql_curr.inc.php');
+require('config.inc.php');
+header('Cache-Control: no-cache, must-revalidate');
+header('Pragma: no-cache');
+set_time_limit(0);
+$sql = new DB_Admin;
+$sql2 = new DB_Admin;
+
+
+function dbdate2sqldate($d)
+{
+	if( $d == '11111111' ) {
+		$d = '';
+	}
+	
+	if( $d ) 
+	{
+		$day = substr($d, 6, 2);
+		$month = substr($d, 4, 2);
+		$year = substr($d, 0, 4);
+		
+		return "$year-$month-$day 00:00:00";
+	}
+	else 
+	{
+		return "0000-00-00 00:00:00";
+	}
+}
+
+$dos2ansi = array
+(
+		chr(132) => chr(228)	// ae
+	,	chr(148) => chr(246)	// oe
+	,	chr(129) => chr(252)	// ue
+	,	chr(142) => chr(196)	// AE
+	,	chr(153) => chr(214)	// OE
+	,	chr(154) => chr(220)	// UE
+	,	chr(225) => chr(223)	// sz
+);
+
+function full_trim($text) // removes multiple spaces leading / trailing spaces
+{
+	global $dos2ansi;
+	
+	while( strpos($text, '  ') ) {
+		$text = str_replace('  ', ' ', $text);
+	}
+
+	return strtr(trim($text), $dos2ansi);
+}
+
+
+
+echo "# korrigiere preise...\n";
+
+$durchfuehrung_num = 0;
+$db = dbase_open('../../../webwisy_data/wisy.dbf', 0);
+$db_num_records = dbase_numrecords($db);
+$collusions = 0;
+for( $r = 0; $r < $db_num_records; $r++ )
+{
+	// get record
+	$rec = dbase_get_record_with_names($db, $r);
+	if( $rec && !$rec['deleted'] )
+	{
+		$titel = full_trim($rec['KURS_TH_1']);
+		$KURS_TH_2 = full_trim($rec['KURS_TH_2']);
+		if( $KURS_TH_2 ) {
+			if( substr($titel, -1) == '-' ) { 
+				$titel = substr($titel, 0, strlen($titel)-1); 
+			}
+			else {
+				$titel .= ' ';
+			}
+			$titel .= $KURS_TH_2;
+		}
+	
+		if( substr($titel, -4) == ', BU' ) { $titel = substr($titel, 0, strlen($titel)-4); }
+		if( substr($titel, -3) == ',BU'  ) { $titel = substr($titel, 0, strlen($titel)-3); }
+		if( substr($titel, -3) == ' BU'  ) { $titel = substr($titel, 0, strlen($titel)-3); }
+
+		$nr			= full_trim($rec["VER_KUR_NR"]);
+		$strasse	= full_trim($rec["ADR_STR"]);
+		$beginn		= dbdate2sqldate(full_trim($rec["BEGINN_DAT"]));
+
+		$update = '';
+	
+		// get fields
+		$stunden = intval(full_trim($rec["GES_STD"]));
+		if( $stunden < 0 ) {
+			$stunden = 0;
+		}
+
+		$preis = intval(full_trim($rec["DM_GES"]));
+		$sonderpreis = intval(full_trim($rec["SONDERPR"]));
+		$sonderpreistage = 0;
+		if( $sonderpreis <= 0 ) {
+			$sonderpreis = -1;
+		}
+		else {
+			$sonderpreistage = intval(full_trim($rec["SONDERPRD"]));
+			if( $sonderpreistage <= 0 ) {
+				$sonderpreis = -1;
+			}
+		}
+	
+		$teilnehmer = intval(full_trim($rec["TEILNE_ANZ"]));;
+	
+		// build update string
+		$update = '';
+		
+		if( $stunden > 127 )		{	$update .= $update? ', ' : ''; $update .= "stunden=$stunden";					}
+		if( $preis > 127 )			{	$update .= $update? ', ' : ''; $update .= "preis=$preis";						}
+		if( $sonderpreis > 127 )	{	$update .= $update? ', ' : ''; $update .= "sonderpreis=$sonderpreis";			}
+		if( $sonderpreistage > 127 ){	$update .= $update? ', ' : ''; $update .= "sonderpreistage=$sonderpreistage";	}
+		if( $teilnehmer > 127 )		{	$update .= $update? ', ' : ''; $update .= "teilnehmer=$teilnehmer";				}
+		
+		if( $update ) 
+		{
+			$ids = '';
+			$sql->query("SELECT id FROM kurse WHERE titel='" .addslashes($titel). "'");
+			while($sql->next_record()) {
+				$sql2->query("SELECT secondary_id FROM kurse_durchfuehrung WHERE primary_id=".$sql->f('id'));
+				if( $sql2->next_record() ) {
+					$ids .= $ids? ',' : '';
+					$ids .= $sql2->f('secondary_id');
+				}
+			}
+			
+		
+			$cond = "nr='$nr' AND strasse='" .addslashes($strasse). "' AND beginn='$beginn'";
+			if( $ids ) {
+				$cond .= " AND id IN($ids)";
+			}
+
+			$count = 0;
+			$sql->query("SELECT COUNT(*) FROM durchfuehrung WHERE $cond");
+			if( $sql->next_record() ) {
+				$count = intval($sql->f('COUNT(*)'));
+			}
+
+			if( $count == 1 ) {
+				$sql->query("SELECT id FROM durchfuehrung WHERE $cond");
+				$sql->next_record();
+				echo "UPDATE durchfuehrung SET $update WHERE id=" . $sql->f('id') . ";\n";
+			}
+			else if( $count == 0 ) {
+				echo "# Keinen Kurs gefunden fuer $cond\n";
+				$missing++;
+			}
+			else {
+				echo "# Mehr als einen Kurs gefunden fuer $cond\n";
+				$collusions += $count;
+			}
+		}
+	}
+}
+dbase_close($db);
+
+echo "# $collusions Kollisionen\n";
+echo "# $missing Kurse konnten nicht zugeordnet werden\n";
+
+?>

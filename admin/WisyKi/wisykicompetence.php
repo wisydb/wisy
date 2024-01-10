@@ -189,8 +189,8 @@ class WISY_KI_COMPETENCE_CLASS
 				$lernziele = $param->dbval;
 			// if ($param->name == "f_vorraussetzungen")
 			// $vorraussetzungen = $param->dbval;
-			if ($param->name == "f_zielgruppe")
-				$zielgruppe = $param->dbval;
+			// if ($param->name == "f_zielgruppe")
+			// 	$zielgruppe = $param->dbval;
 			if ($param->name == "f_ki_bot" && $param->dbval != "")
 				$this->kibot = intval($param->dbval);
 			if ($param->name == "f_num_prop" && $param->dbval != "")

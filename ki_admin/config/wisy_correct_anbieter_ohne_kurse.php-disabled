@@ -1,0 +1,88 @@
+<?php
+
+
+
+$GRUPPEN_PREFIX = 'HA ';	// nur Anbietern dieser Gruppen werden Dummy-Kurse hinzugefügt
+
+
+require('../sql_curr.inc.php');
+require('config.inc.php');
+header('Cache-Control: no-cache, must-revalidate');
+header('Pragma: no-cache');
+header('Content-type: text/plain');
+set_time_limit(0);
+$db = new DB_Admin;
+$db2 = new DB_Admin;
+
+
+
+
+$today = ftime("%Y-%m-%d %H:%M:%S");
+$datum = ftime("%d.%m.%Y");
+$adkid = '[' . ftime("ADK%y%m%d") . ']';
+
+echo "# fuege Anbietern ohne Angebote ein Dummy-Angebot hinzu (im Journal mit $adkid markiert) ...\n";
+$cnt = 0;
+$db->query("SELECT * FROM anbieter ORDER BY id;");
+while( $db->next_record() ) 
+{
+	$anbieter_id	= $db->fs('id');
+	$suchname		= $db->fs('suchname');
+	$strasse		= $db->fs('strasse');
+	$plz			= $db->fs('plz');
+	$ort			= $db->fs('ort');
+	$stadtteil		= $db->fs('stadtteil');
+	$land			= $db->fs('land');
+	$firmenportraet	= $db->fs('firmenportraet');
+	$user_created	= $db->fs('user_created');
+	$user_modified	= $db->fs('user_created'); // sic: user_modified ist der ersteller, nicht der, der den Datensatz zufällig das letzte mal speicherte
+	$user_grp		= $db->fs('user_grp');
+	$user_access	= $db->fs('user_access');
+	
+	$db2->query("SELECT id FROM kurse WHERE anbieter=".$anbieter_id);
+	if( !$db2->next_record() ) 
+	{
+		// dieser Anbieter hat keine Kurse - überprüfe, ob der Gruppenname mit "HA" beginnt
+		$db2->query("SELECT name FROM user_grp WHERE id=$user_grp;");
+		$db2->next_record();
+		$grp_name = $db2->fs('name');
+		if( substr($grp_name, 0, strlen($GRUPPEN_PREFIX)) != $GRUPPEN_PREFIX ) {
+			echo "# SKIP: Anbieter ohne Angebote: ID ".$anbieter_id." - ".$suchname." - aber der Gruppenname beginnt nicht mit \"$GRUPPEN_PREFIX\", kein Dummy-Angebot hinzugefuegt\n";
+			continue;
+		}
+	
+	
+		// Dummy-Datensätze erzeugen:
+		echo "# OK: Anbieter ohne Angebote: ID ".$anbieter_id." - ".$suchname." - fuege Dummy-Angebot hinzu\n";
+		$cnt++;
+		
+		// erzeuge Dummy-Durchfuehrung
+		$db2->query("INSERT INTO durchfuehrung
+			(tagescode,strasse,plz,ort,stadtteil,land,
+			 date_created,date_modified,user_created,user_modified,user_grp,user_access)
+			VALUES
+			(0,".$db2->quote($strasse).",".$db2->quote($plz).",".$db2->quote($ort).",".$db2->quote($stadtteil).",".$db2->quote($land).",
+			".$db2->quote($today).",".$db2->quote($today).",$user_created,$user_modified,$user_grp,$user_access)
+		;");
+		$df_id = $db2->insert_id();
+		
+		// erzeuge Dummy-Kurs
+		$notizen = "$datum Angebot automatisch angelegt als Dummy-Angebot fuer Anbieter ID $anbieter_id - $suchname $adkid (bp)";
+		$db2->query("INSERT INTO kurse
+			(freigeschaltet,titel,beschreibung,anbieter,notizen,
+			 date_created,date_modified,user_created,user_modified,user_grp,user_access)
+			VALUES
+			(4,".$db2->quote($suchname).",".$db2->quote($firmenportraet).",$anbieter_id,".$db2->quote($notizen).",
+			".$db2->quote($today).",".$db2->quote($today).",$user_created,$user_modified,$user_grp,$user_access)
+		;");
+		$kurs_id = $db2->insert_id();
+		
+		$db2->query("INSERT INTO kurse_durchfuehrung (primary_id,secondary_id) VALUES ($kurs_id,$df_id)");
+
+	}
+
+}
+echo "# fuer $cnt Anbieter wurden Dummy-Angebote angelegt\n";
+
+
+?>

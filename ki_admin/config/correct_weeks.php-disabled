@@ -1,0 +1,25 @@
+<?php
+
+// creating weeks-values-sourceode for $codes_dauer
+
+for( $weeks = 1; $weeks <= 52; $weeks++ )
+{
+	$days = $weeks * 7;
+	
+	$cave = '';
+	if( $days % 30 == 0 ) {
+		$months = $days / 30;
+		$cave = " // CAVE: $weeks weeks = $months months, subtracting 1";
+		$days --;
+	}
+	else if( $days % 182 == 0 ) {
+		$semester = $days / 182;
+		$cave = " // CAVE: $weeks weeks = $semester semester, subtracting 1";
+		$days --;
+	}	
+	echo ".'$days###$weeks Wochen###'$cave";
+	
+
+	
+	echo '<br />';
+}
