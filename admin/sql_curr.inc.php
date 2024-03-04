@@ -336,6 +336,147 @@ class DB_Sql
 	        return 1; // prev record
 	    }
 	}
+
+	/**
+	 * Executes a SQL query with prepared statements and returns the result.
+	 *
+	 * @param string $query The SQL query to execute.
+	 * @param array $params An array of parameters to bind to the query.
+	 * @param string $types A string of types for the parameters. The string must contain one letter for each parameter. The possible types are "i" for integer, "d" for double, "s" for string, and "b" for blob.
+	 * @param bool $convertToIso Whether to convert the results to ISO-8859-1 encoding. Default is false.
+	 * @return array|true The fetched results as an associative array.
+	 * @throws Exception Throws an exception if there is a database connection error or a query error.
+	 */
+	public function execute(string $query, array $params, string $types=null, bool $convertToIso=false): array|bool {
+		// Establish a connection if one doesn't exist.
+		if (!isset($this->Link_ID) || !$this->Link_ID ) {
+			$this->Link_ID = $this->lazy_connect();
+			
+			if (!$this->Link_ID) {
+				error_log('Unable to establish a MySQL connection');
+				throw new Exception('Database connection error');
+			}
+		}
+
+		// Prepare the statement.
+		$stmt = mysqli_prepare($this->Link_ID, $query);
+		if (!$stmt) {
+			error_log('Failed to prepare the statement: ' . mysqli_error($this->Link_ID));
+			throw new Exception('Database query error');
+		}
+
+		// Infer the types of the parameters if not provided.
+		$types = $types ?? $this->inferTypes($params);
+
+		// Convert the parameters to ISO-8859-1 if requested.
+		if ($convertToIso) {
+			$params = array_map(function($param) {
+				return is_string($param) ? mb_convert_encoding($param, 'ISO-8859-1', 'UTF-8') : $param;
+			}, $params);
+		}
+
+		// Bind the parameters to the statement.
+		if (!$stmt->bind_param($types, ...$params)) {
+			error_log('Failed to bind parameters: ' . $stmt->error);
+			throw new Exception('Database query error');
+		}
+
+		// Execute the statement.
+		if (!$stmt->execute()) {
+			error_log('Failed to execute the statement: ' . $stmt->error);
+			throw new Exception('Database query error');
+		}
+
+		// Fetch the results.
+		return $this->fetchResults($stmt);
+	}
+
+	/**
+	 * Infers the types of the elements in the given array and returns a string representation of the types.
+	 *
+	 * @param array $params The array containing the elements to infer the types from.
+	 * @return string The string representation of the inferred types.
+	 */
+	protected function inferTypes(array $params): string {
+		$types = "";
+		foreach ($params as $param) {
+			if (is_int($param)) {
+				$types .= "i";
+			} elseif (is_float($param)) {
+				$types .= "d";
+			} else {
+				$types .= "s";
+			}
+		}
+		return $types;
+	}
+
+
+	/**
+	 * Fetches the results from a MySQLi prepared statement.
+	 *
+	 * @param mysqli_stmt $stmt The prepared statement object.
+	 * @return array|true The fetched rows as an associative array, or true for INSERT, DELETE, and UPDATE queries.
+	 * @throws Exception If there is an error in the database query or failed to fetch the rows.
+	 */
+	protected function fetchResults(mysqli_stmt $stmt): array|bool {
+		$result = $stmt->get_result();
+		if ($result === false) {
+			if ($stmt->errno) {
+				error_log('Error in MySQL query: ' . $stmt->error);
+				throw new Exception('Database query error');
+			} else {
+				// For INSERT, DELETE, UPDATE, return true on success
+				return true;
+			}
+		}
+
+		// For SELECT, SHOW, DESCRIBE or EXPLAIN fetch the rows.
+		$rows = $result->fetch_all(MYSQLI_ASSOC);
+		if ($stmt->error) {
+			error_log('Failed to fetch the rows: ' . $stmt->error);
+			throw new Exception('Failed to fetch the rows: ' . $stmt->error);
+		}
+		$this->ResultAffectedRows = $stmt->affected_rows;
+		$this->ResultInsertId = $stmt->insert_id;
+		$this->ResultNumRows = $result->num_rows;
+		$this->Result = $rows;
+		return $rows;
+	}
+
+	/**
+	 * Creates an IN clause for SQL queries.
+	 *
+	 * @param array $values The values to be used in the IN clause.
+	 * @return array An array containing the placeholders and the values.
+	 */
+	public function createInClause(array $values): array {
+		$placeholderCount = count($values);
+		$placeholders = str_repeat('?,', $placeholderCount - 1) . '?';
+		return array($placeholders, $values);
+	}
+
+	/**
+	 * Escapes a string for use in a MySQL query.
+	 *
+	 * @param string $str The string to be escaped.
+	 * @return string The escaped string.
+	 * @throws Exception If there is no valid MySQL connection or if an error occurs during escaping.
+	 */
+	public function escape($str): string
+	{
+		if (!isset($this->Link_ID) || !$this->Link_ID ) {
+			$this->Link_ID = $this->lazy_connect(); // Establish a connection if one doesn't exist
+			if (!$this->Link_ID) {
+				throw new Exception('Unable to establish a MySQL connection');
+			}
+		}
+		try {
+			return mysqli_real_escape_string($this->Link_ID, $str);
+		} catch (Exception $e) {
+			throw new Exception('Error in MySQL escape: ' . $e->getMessage());
+		}
+	}
 	
 	function quote($str)
 	{
@@ -352,9 +493,15 @@ class DB_Sql
 										                                    // stripslashes() is no longer needed, mysql_fetch_assoc() does _not_ add slashes (and has never done before)
 	}
 	
-	function f8($Name)
+	/**
+	 * Returns the value of a specific field from the current record converted to UTF-8 encoding.
+	 *
+	 * @param string $Name The name of the field.
+	 * @return string|null The value of the field, converted to UTF-8 encoding, or null if the field is not set.
+	 */
+	public function f8($Name): ?string
 	{
-	    return ( isset( $this->Record[$Name] ) ? utf8_encode($this->Record[$Name]) : null );;	// UTF-8 encode because the DB is still ISO-encoded. Used in core50
+		return (isset($this->Record[$Name]) ? mb_convert_encoding($this->Record[$Name], 'UTF-8', 'ISO-8859-1') : null); // utf8_encode is depracted since PHP 8.2
 	}
 	
 	function fcs8($Name)
