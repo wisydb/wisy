@@ -341,13 +341,14 @@ class DB_Sql
 	 * Executes a SQL query with prepared statements and returns the result.
 	 *
 	 * @param string $query The SQL query to execute.
-	 * @param array $params An array of parameters to bind to the query.
-	 * @param string $types A string of types for the parameters. The string must contain one letter for each parameter. The possible types are "i" for integer, "d" for double, "s" for string, and "b" for blob.
-	 * @param bool $convertToIso Whether to convert the results to ISO-8859-1 encoding. Default is false.
+	 * @param array|null $params An array of parameters to bind to the query.
+	 * @param string|null $types A string of types for the parameters. The string must contain one letter for each parameter. The possible types are "i" for integer, "d" for double, "s" for string, and "b" for blob.
+	 * @param string|null $from_encoding The character encoding of the parameters.
+	 * @param string|null $to_encoding The character encoding to convert the parameters to.
 	 * @return array|true The fetched results as an associative array.
 	 * @throws Exception Throws an exception if there is a database connection error or a query error.
 	 */
-	public function execute(string $query, array $params, string $types=null, bool $convertToIso=false): array|bool {
+	public function execute(string $query, array $params = null, string $types=null, string $from_encoding = null, string $to_encoding = null): array|bool {
 		// Establish a connection if one doesn't exist.
 		if (!isset($this->Link_ID) || !$this->Link_ID ) {
 			$this->Link_ID = $this->lazy_connect();
@@ -365,20 +366,22 @@ class DB_Sql
 			throw new Exception('Database query error');
 		}
 
-		// Infer the types of the parameters if not provided.
-		$types = $types ?? $this->inferTypes($params);
+		if (!empty($params)) {
+			// Infer the types of the parameters if not provided.
+			$types = $types ?? $this->inferTypes($params);
 
-		// Convert the parameters to ISO-8859-1 if requested.
-		if ($convertToIso) {
-			$params = array_map(function($param) {
-				return is_string($param) ? mb_convert_encoding($param, 'ISO-8859-1', 'UTF-8') : $param;
-			}, $params);
-		}
+			// Convert the parameters to the specified encoding.
+			if ($from_encoding && $to_encoding) {
+				$params = array_map(function($param) use ($from_encoding, $to_encoding){
+					return is_string($param) ? mb_convert_encoding($param, $to_encoding, $from_encoding) : $param;
+				}, $params);
+			}
 
-		// Bind the parameters to the statement.
-		if (!$stmt->bind_param($types, ...$params)) {
-			error_log('Failed to bind parameters: ' . $stmt->error);
-			throw new Exception('Database query error');
+			// Bind the parameters to the statement.
+			if (!$stmt->bind_param($types, ...$params)) {
+				error_log('Failed to bind parameters: ' . $stmt->error);
+				throw new Exception('Database query error');
+			}
 		}
 
 		// Execute the statement.
@@ -388,7 +391,7 @@ class DB_Sql
 		}
 
 		// Fetch the results.
-		return $this->fetchResults($stmt);
+		return $this->fetchResults($stmt, $to_encoding, $from_encoding);
 	}
 
 	/**
@@ -411,15 +414,16 @@ class DB_Sql
 		return $types;
 	}
 
-
 	/**
 	 * Fetches the results from a MySQLi prepared statement.
 	 *
 	 * @param mysqli_stmt $stmt The prepared statement object.
+	 * @param string|null $from_encoding The encoding of the results to convert from.
+	 * @param string|null $to_encoding The encoding of the results to convert to.
 	 * @return array|true The fetched rows as an associative array, or true for INSERT, DELETE, and UPDATE queries.
 	 * @throws Exception If there is an error in the database query or failed to fetch the rows.
 	 */
-	protected function fetchResults(mysqli_stmt $stmt): array|bool {
+	protected function fetchResults(mysqli_stmt $stmt, string $from_encoding = null, string $to_encoding = null): array|bool {
 		$result = $stmt->get_result();
 		if ($result === false) {
 			if ($stmt->errno) {
@@ -440,6 +444,17 @@ class DB_Sql
 		$this->ResultAffectedRows = $stmt->affected_rows;
 		$this->ResultInsertId = $stmt->insert_id;
 		$this->ResultNumRows = $result->num_rows;
+		$this->ResultI 				= 0;
+
+		// Convert the results to the requested encoding.
+		if ($from_encoding && $to_encoding) {
+			$rows = array_map(function($row) use ($from_encoding, $to_encoding) {
+				return array_map(function($value) use ($from_encoding, $to_encoding) {
+					return is_string($value) ? mb_convert_encoding($value, $to_encoding, $from_encoding) : $value;
+				}, $row);
+			}, $rows);
+		}
+
 		$this->Result = $rows;
 		return $rows;
 	}
@@ -448,12 +463,11 @@ class DB_Sql
 	 * Creates an IN clause for SQL queries.
 	 *
 	 * @param array $values The values to be used in the IN clause.
-	 * @return array An array containing the placeholders and the values.
+	 * @return array A tupel containing the IN clause and the values.
 	 */
 	public function createInClause(array $values): array {
-		$placeholderCount = count($values);
-		$placeholders = str_repeat('?,', $placeholderCount - 1) . '?';
-		return array($placeholders, $values);
+		$placeholders = implode(',', array_fill(0, count($values), '?'));
+		return array("IN ($placeholders)", $values);
 	}
 
 	/**
