@@ -176,6 +176,8 @@ class MULTIEDIT_PLUGIN_CLASS
 					$options .= "field__user_access__settext###Rechte: setze auf 'Parameter2'###";
 					
 					$options .= "nop2######";
+					$options .= "duplikat_kurse###Kurse duplizieren + Anbieter aus 'Parameter2' verwenden###";
+					$options .= "nop2######";
 					$options .= "add_journal###Journaleintrag hinzuf&uuml;gen###";
 					$options .= "nop2######";
 					$options .= "del_sel###{$this->allIdsCount} {$this->tableDescr} L&Ouml;SCHEN###";
@@ -184,7 +186,25 @@ class MULTIEDIT_PLUGIN_CLASS
 					$sel = isset( $_REQUEST['action'] ) ? $_REQUEST['action'] : 'nop';
 					if( $sel == 'nop2' ) $sel = 'nop';
 					
-					form_control_enum('action', $sel, $options);
+					// Text clues for Multiedit options
+					// Array key = name of multiedit option (see above)
+					$clue['duplikat_kurse'] = "<br>Ein manueller Journaleintrag wird an das neue UND an das Original-Angebot vergeben.<br>";
+					$clue['duplikat_kurse'] .= "Das neue, duplizierte Angebote erh&auml;lt aber auch einen automatischen Journal-Eintrag.<br>";
+					$clue['duplikat_kurse'] .= "Erstelldatum und &Auml;nderungsdatum wird bei den neuen, duplizierten Angeboten auf jetzt gesetzt.<br>";
+					$clue['duplikat_kurse'] .= "Am Ende des Vorgangs muss die Anzahl der duplizierten Angebote erscheinen.<br>";
+					$clue['duplikat_kurse'] .= "Vorsicht beim Arbeiten zwei Reitern: Multiedit bezieht sich immer auf die letzte Suchanfrage (egal welcher Reiter gerade geklickt ist).<br><br>";
+					
+					$onchangeJS = '';
+					
+					foreach( $clue AS $key => $text ) {
+					    $onchangeJS .= " if( $(this).val() == '".$key."' ) { ";
+					    $onchangeJS .= "$('table.sm:last-child').before('<div class=hinweis style=\\'padding: 5px; background-color: #ededed\\'>Hinweis:";
+					    $onchangeJS .= $text;
+					    $onchangeJS .= "</div>'); } else { if( $('.hinweis').length ) { $('.hinweis').remove(); } } ";
+					}
+					
+					form_control_enum('action', $sel, $options, 0, '', $onchangeJS);
+					
 				$site->skin->controlEnd();
 				
 				$site->skin->controlStart();
@@ -456,7 +476,12 @@ class MULTIEDIT_PLUGIN_CLASS
 				}
 				
 				$all_changes = 0;
-				$sql = "SELECT id, $field FROM {$localTableName} WHERE id IN($allIdsStr) AND $field LIKE '%".addslashes($param1)."%';";
+				
+				if( $param1 != '' )
+				    $sql = "SELECT id, $field FROM {$localTableName} WHERE id IN($allIdsStr) AND $field LIKE '%".addslashes($param1)."%';";
+				else
+				    $sql = "SELECT id, $field FROM {$localTableName} WHERE id IN($allIdsStr);";
+				    
 				$db->query($sql);
 				while( $db->next_record() )
 				{
@@ -475,7 +500,8 @@ class MULTIEDIT_PLUGIN_CLASS
 					}
 					if( $changes > 0 )
 					{
-						$db2->query("UPDATE {$localTableName} SET $field='".addslashes($content)."' WHERE id=$id;");
+					    $sql2 = "UPDATE {$localTableName} SET $field='".addslashes($content)."' WHERE id=$id;";
+					    $db2->query($sql2);
 						$all_changes += $changes;
 					}
 				}
@@ -666,6 +692,181 @@ class MULTIEDIT_PLUGIN_CLASS
 			}
 			$add_msg .= "Insgesamt " . sizeof($allIdsArr) . " Datens&auml;tze gel&ouml;scht. ";
 		}
+		else if( $action == 'duplikat_kurse' ) {
+		    
+		    // duplicate kurse along with stichwoerter and durchfuehrungen
+		    // set automated journal entry (in addition to manual entry) for old and duplicated new kurse
+		    // set date_changed and date_created to: today
+		    
+		    // if new anbieter id was not set as parameter 2 exit.
+		    if( !isset($param2) || !$param2 ) {
+		        $this->renderDefaultPage('Abgebrochen. Sie m&uuml;ssen eine neue Anbieter-ID als Parameter 2 eingeben.');
+		        exit();
+		    }
+		    
+		    // Create a new database connection (to be safe)
+		    $db2 = new DB_Admin;
+		    $db3 = new DB_Admin;
+		    $db4 = new DB_Admin;
+		    
+		    $db2->query( "SELECT id FROM anbieter WHERE id = " . intval($param2) );
+		    
+		    if( !$db2->next_record() ) {
+		        $this->renderDefaultPage('Die in Parameter 2 definierte Anbieter-ID existiert nicht!');
+		        exit();
+		    }
+		    
+		    // Set new provider from the second parameter
+		    $neuer_anbieter   = $param2;
+		    $columns          = array();
+		    $dupl_angebote    = array();
+		    $dupl_durchf      = array();
+		    
+		    
+		    // Query the database for all column names and data types of the current table
+		    $db2->query( "SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'kurse' AND table_schema = '{$db2->Database}' ORDER BY ordinal_position" );
+		    
+		    // Loop through the database results and store each column's data type and name
+		    while( $db2->next_record() )
+		    {
+		        $columns[] = array( 'type' => $db2->fs('data_type'), 'name' => $db2->fs( 'column_name' ) );
+		    }
+		    
+		    // Query the database to select all records from the current table by IDs
+		    $from = "FROM kurse WHERE id IN($allIdsStr)";
+		    $db->query("SELECT *, (SELECT count(*) $from) AS cnt $from;");
+		    
+		    $cnt_kurse = 0;
+		    
+		    // Loop through each record in the result
+		    while( $db->next_record() )
+		    {
+		        $cnt_kurse++;
+		        
+		        $kID_old = $db->f('id');
+		        $aID_old = $db->f('anbieter');
+		        $total_kurse = $db->f('cnt');
+		        
+		        if( $aID_old == intval($param2) ){
+		            $this->renderDefaultPage('Abgebrochen. Sie d&uuml;rfen als neue Anbieter-ID in Parameter 2 nicht die bisherige Anbieter-ID eingeben.');
+		            exit();
+		        }
+		        
+		        // Initialize variables for SQL SET clause and a counter
+		        $set = "";
+		        $cnt = 0;
+		        
+		        // Iterate over each column
+		        foreach( $columns AS $col ) {
+		            $cnt++;
+		            
+		            // Skip the 'id' column for insertion into new kurs, because auto increment
+		            if( $col['name'] == 'id' ) {
+		                continue;
+		            }
+		            else
+		                $set .= $col['name'] . " = ";
+		                
+		                // Check the data type and prepare the SQL SET clause accordingly
+		                if( $col['type'] == 'bigint' || $col['type'] == 'int' || $col['type'] == 'mediumint' || $col['type'] == 'float' || $col['type'] == 'decimal' ) {
+		                    
+		                    if( $col['name'] == 'anbieter' )
+		                        $set .= $param2;   // Use the new anbieter as set in Multiedit Param 2
+		                    else if( $col['name'] == 'user_created' || $col['name'] == 'user_modified' )
+		                        $set .= (isset($_SESSION['g_session_userid']) ? intval($_SESSION['g_session_userid']) : null);
+		                    else if( $col['type'] == 'int' && intval($db->f($col['name'])) == 0 )
+		                        $set .= intval($db->f($col['name'])); // Set thema/freigeschaltet to 0 if empty b/c NULL not always a valid value
+		                    else
+		                        $set .= ($db->f( $col['name'] ) ? $db->f( $col['name'] ) : 'NULL'); // Use the value from the database or NULL
+		                                                
+		                } else {
+		                    
+		                    // Set journal entry
+		                    if( $col['name'] == 'notizen' )
+		                        $set .= "'" . $journal_entry . "\n". date('d.m.y') . ": Duplikat von " . $kID_old . " via Multiedit\n". $db->fs( $col['name'] ) . "'";
+		                    else if( $col['name'] == 'date_created' || $col['name'] == 'date_modified' )
+		                        $set .= "'" . date('Y-m-d H:i:s') . "'"; // date_created + date_modified = today
+		                    else
+		                        $set .= "'" . str_replace("'", "\'", $db->fs( $col['name'] ) ) . "'"; // Standard
+		                }
+		                
+		                // Append comma for all columns except the last
+		                if( $cnt < count($columns) )
+		                    $set .= ", ";
+		        }
+		        
+		        $sql = "INSERT INTO kurse SET " . $set;
+		        $db2->query( $sql );
+		        
+		        $kID_new = $db2->insert_id();
+		        
+		        if( $kID_new ) {
+		            
+		            // duplicate stichwoerter
+		            
+		            // only look up table entries need to be "duplicated" not stichwoerter
+		            $cnt_sw = 0;
+		            $from = "FROM kurse_stichwort WHERE primary_id = " . $kID_old;
+		            $db3->query( "SELECT *, (SELECT count(*) $from) AS cnt $from");
+		            
+		            // loop over all sw of this kurs
+		            while( $db3->next_record() ) {
+		                
+		                $cnt_sw++;
+		                
+		                // insert new look up table entry with same sw but new kurse id
+		                $sql = "INSERT INTO kurse_stichwort SET primary_id = " . $kID_new . ", attr_id = " . $db3->f('attr_id') . ", structure_pos = " . $db3->f('structure_pos');
+		                $db4->query( $sql );
+		                
+		            }
+		            
+		            // query the database for all column names and data types durchfuehrung table
+		            $db4->query( "SELECT column_name, data_type FROM information_schema.columns "
+		                . "WHERE table_name = 'durchfuehrung' AND table_schema = '{$db2->Database}' ORDER BY ordinal_position" );
+		            
+		            $columns_df = array();
+		            // Loop through the database results and store each column's data type and name
+		            while( $db4->next_record() )
+		            {
+		                $columns_df[] = $db4->fs( 'column_name' );
+		            }
+		            
+		            // unset id element from columns b/c that is auto increment
+		            foreach ($columns_df as $key => $value) {
+		                if ($value == "id") {
+		                    unset($columns_df[$key]);
+		                }
+		            }
+		            
+		            // duplicate durchfuehrungen and update look up table
+		            
+		            $cnt_df = 0;
+		            $from = "FROM kurse_durchfuehrung WHERE primary_id = " . $kID_old;
+		            $sql = "SELECT *, (SELECT count(*) $from) AS cnt $from";
+		            $db3->query( $sql );
+		            
+		            while( $db3->next_record() ) {
+		                $colStr_df = implode(', ', $columns_df);
+		                $structure_pos = $db3->f('structure_pos');
+		                
+		                $sql = "INSERT INTO durchfuehrung (".$colStr_df.") SELECT ".$colStr_df." FROM durchfuehrung WHERE id = " . $db3->f('secondary_id');
+		                $db4->query( $sql );
+		                $dfID_new = $db4->insert_id();
+		                
+		                if( $dfID_new )
+		                    // echo "-> Neue DF : " . $dfID_new . "<br>";
+		                    $sql = "INSERT INTO kurse_durchfuehrung SET primary_id = " . $kID_new . ", secondary_id = " . $dfID_new . ", structure_pos = " . $structure_pos;
+		                    $db4->query( $sql );
+		            }
+		            
+		        } // end: new kurs
+		        
+		    } // end: while kurse
+		    
+		    
+		    $add_msg .= $total_kurse . ' Angebote dupliziert. <br>';
+		    
+		} // end: duplikat_kurse
 		else if( $action == 'del_old_durchf' )
 		{
 			// alte durchfuehrungen loeschen
@@ -729,21 +930,27 @@ class MULTIEDIT_PLUGIN_CLASS
 			exit();
 		}
 
-		// write journal
+		// write journal + date_modified (only if not already set above)
 		$journal_sql = '';
 		if( $journal_entry != '' )
 		{
 			$journal_sql = ", notizen=CONCAT('".addslashes($journal_entry)."\n',notizen)";
 			$add_msg .= 'Journaleintrag: '.$journal_entry.' ';
 		}
-
-		$sql = "UPDATE {$this->tableName}
-				   SET date_modified='" . ftime("%Y-%m-%d %H:%M:%S")."'
-					 , user_modified=" . (isset($_SESSION['g_session_userid']) ? intval($_SESSION['g_session_userid']) : null)."
-					   $journal_sql
-				   WHERE id IN ($allIdsStr);
-			   ";
-		$db->query($sql);
+		
+		if( $action == 'duplikat_kurse' && (!isset($journal_entry) || strlen($journal_entry) == 0 ) )
+		    ; // journal + dates already set
+		else {
+		  // Default
+		  $sql = "UPDATE {$this->tableName}
+				  SET date_modified='" . ftime("%Y-%m-%d %H:%M:%S")."'
+					, user_modified=" . (isset($_SESSION['g_session_userid']) ? intval($_SESSION['g_session_userid']) : null)."
+					  $journal_sql
+				  WHERE id IN ($allIdsStr);
+	      ";
+		        
+		  $db->query($sql);  
+		}
 
 		$add_msg . " Die Aktion wurde f&uuml;r {$this->allIdsCount} $this->tableDescr durchgef&uuml;hrt.";
 		

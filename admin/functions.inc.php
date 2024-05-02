@@ -379,7 +379,7 @@ function form_control_text(	$name, $value, $width = 0, $maxlength = 0,
 		if( $width <= 0 ) $width = 40;
 
 		$maxlength = intval($maxlength);
-		if( $maxlength <= 0 ) $maxlength = 250;
+		if ($maxlength <= 0) $maxlength = 500;
 		
 		echo '<input type="text" size="' .$width. '" maxlength="' .$maxlength. '" name="' .$name. '" value="' . isohtmlentities( strval( $value ) ) . '"';
 		
