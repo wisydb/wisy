@@ -425,6 +425,11 @@ class DB_Sql
 	 */
 	protected function fetchResults(mysqli_stmt $stmt, string $from_encoding = null, string $to_encoding = null): array|bool {
 		$result = $stmt->get_result();
+	
+		$this->ResultAffectedRows = $stmt->affected_rows;
+		$this->ResultInsertId = $stmt->insert_id;
+		$this->ResultI = 0;
+
 		if ($result === false) {
 			if ($stmt->errno) {
 				error_log('Error in MySQL query: ' . $stmt->error);
@@ -435,16 +440,14 @@ class DB_Sql
 			}
 		}
 
+		$this->ResultNumRows = $result->num_rows;
+
 		// For SELECT, SHOW, DESCRIBE or EXPLAIN fetch the rows.
 		$rows = $result->fetch_all(MYSQLI_ASSOC);
 		if ($stmt->error) {
 			error_log('Failed to fetch the rows: ' . $stmt->error);
 			throw new Exception('Failed to fetch the rows: ' . $stmt->error);
 		}
-		$this->ResultAffectedRows = $stmt->affected_rows;
-		$this->ResultInsertId = $stmt->insert_id;
-		$this->ResultNumRows = $result->num_rows;
-		$this->ResultI 				= 0;
 
 		// Convert the results to the requested encoding.
 		if ($from_encoding && $to_encoding) {
