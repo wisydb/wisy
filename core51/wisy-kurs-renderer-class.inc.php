@@ -372,39 +372,40 @@ class WISY_KURS_RENDERER_CLASS
 			    }
 			    else
 			    {
-			        $filtersw = array_map("trim", explode(",", $this->framework->iniRead('sw_cloud.filtertyp', "32, 2048, 8192")));
+			        $filtersw_typ = array_map("trim", explode(",", $this->framework->iniRead('sw_cloud.filtertyp', "32, 2048, 8192, 524288, 524289, 1048576")));
+			        $filtersw_ids = array_map("trim", explode(",", $this->framework->iniRead('sw_cloud.filterids', "866951, 866981, 866971, 866961, 867021, 867011, 867001"))); // Berufliche Bildung Niveaus + Kurskategorie ...
+			        
 			        $distinct_tags = array();
 			        $tags = $this->framework->loadStichwoerter($db, 'kurse', $kursId);
-			        $tag_cloud = '<div id="sw_cloud" class="noprint"><h3>'.$this->framework->iniRead('sw_cloud.bezeichnung_kurs', 'Suchbegriffe').'</h3> ';
+			        $tag_cloud = '<div id="sw_cloud" class="noprint"><h3>' . $this->framework->iniRead('sw_cloud.bezeichnung_kurs', 'Suchbegriffe') . '</h3> ';
 			        //$tag_cloud .= '<h4>Suchbegriffe</h4>';
 			        
-			        for($i = 0; $i < count($tags); $i++)
-			        {
+			        for ($i = 0; $i < count($tags); $i++) {
 			            $tag = $tags[$i];
 			            
-			            if($this->framework->iniRead('sw_cloud.kurs_gewichten', 0)) {
+			            if ($this->framework->iniRead('sw_cloud.kurs_gewichten', 0)) {
 			                $tag_freq = $this->framework->getTagFreq($db, $tag['stichwort']);
-			                $weight = (floor($tag_freq/50) > 15) ? 15 : floor($tag_freq/50);
+			                $weight = (floor($tag_freq / 50) > 15) ? 15 : floor($tag_freq / 50);
 			            }
 			            
-			            if($tag['eigenschaften'] != $filtersw && $tag_freq > 0); {
-			                if($this->framework->iniRead('sw_cloud.kurs_stichwoerter', 1)) {
-			                    $tag_stichwort = cs8($tag['stichwort']);
-			                    $tag_cloud .= '<span class="sw_raw typ_'.$tag['eigenschaften'].'" data-weight="'.$weight.'"><a href="/search?q='.urlencode(str_replace(',', '', $tag_stichwort)).'">'.$tag_stichwort.'</a></span>, ';
-			                }
+			            
+			            if( !in_array($tag['eigenschaften'], $filtersw_typ) && !in_array($tag['id'], $filtersw_ids) && (!$gewichten || $gewichten && $tag_freq > 0) )
+			            {
 			                
-			                if($this->framework->iniRead('sw_cloud.kurs_synonyme', 0))
-			                    $tag_cloud .= $this->framework->writeDerivedTags($this->framework->loadDerivedTags($db, $tag['id'], $distinct_tags, "Synonyme"), $filtersw, "Synonym", cs8($tag['stichwort']));
+			                if ($this->framework->iniRead('sw_cloud.kurs_stichwoerter', 1)) {
+			                    $tag_stichwort = cs8($tag['stichwort']);
+			                    $tag_cloud .= '<span class="sw_raw typ_' . $tag['eigenschaften'] . '" data-weight="' . $weight . '"><a href="/search?q=' . urlencode($tag_stichwort) . '">' . $tag_stichwort . '</a></span>, ';
+			                }
+			                if ($this->framework->iniRead('sw_cloud.kurs_synonyme', 0))
+			                    $tag_cloud .= $this->framework->writeDerivedTags($this->framework->loadDerivedTags($db, $tag['id'], $distinct_tags, "Synonyme"), $filtersw_typ, $filtersw_ids, "Synonym", cs8($tag['stichwort']));
 			                    
-			                if($this->framework->iniRead('sw_cloud.kurs_oberbegriffe', 1))
-			                    $tag_cloud .= $this->framework->writeDerivedTags($this->framework->loadDerivedTags($db, $tag['id'], $distinct_tags, "Oberbegriffe"), $filtersw, "Oberbegriff", cs8($tag['stichwort']));
+			                if ($this->framework->iniRead('sw_cloud.kurs_oberbegriffe', 1))
+			                    $tag_cloud .= $this->framework->writeDerivedTags($this->framework->loadDerivedTags($db, $tag['id'], $distinct_tags, "Oberbegriffe"), $filtersw_typ, $filtersw_ids, "Oberbegriff", cs8($tag['stichwort']));
 			                        
-			                if($this->framework->iniRead('sw_cloud.kurs_unterbegriffe', 0))
-			                    $tag_cloud .= $this->framework->writeDerivedTags($this->framework->loadDerivedTags($db, $tag['id'], $distinct_tags, "Unterbegriffe"), $filtersw, "Unterbegriff", cs8($tag['stichwort']));
+			                if ($this->framework->iniRead('sw_cloud.kurs_unterbegriffe', 0))
+			                    $tag_cloud .= $this->framework->writeDerivedTags($this->framework->loadDerivedTags($db, $tag['id'], $distinct_tags, "Unterbegriffe"), $filtersw_typ, $filtersw_ids, "Unterbegriff", cs8($tag['stichwort']));
 			            }
-			            
 			        } // end: for
-			        
 			        $tag_cloud = trim($tag_cloud, ", ");
 			        $tag_cloud .= '</div>';
 			        

@@ -1007,13 +1007,14 @@ class WISY_FRAMEWORK_CLASS
 	            return $ret;
 	}
 	
-	function writeDerivedTags($derivedStichwoerter, $filtersw, $typ_name, $originalsw) {
+	function writeDerivedTags($derivedStichwoerter, $filtersw_typ, $filtersw_ids, $typ_name, $originalsw) {
+	    
 	    $ret = '';
 	    for($i = 0; $i < count($derivedStichwoerter); $i++)
 	    {
-	        
 	        $derivedStichwort = $derivedStichwoerter[$i];
-	        if(!in_array($derivedStichwort['eigenschaften'], $filtersw)) {
+	        
+	        if( !in_array($derivedStichwort['eigenschaften'], $filtersw_typ) && !in_array($derivedStichwort['id'], $filtersw_ids) ) {
 	            $derivedStichwort8 = cs8($derivedStichwort['stichwort']);
 	            $ret .= '<span class="typ_'.$derivedStichwort['eigenschaften'].'  orginal_'.$originalsw.' '.strtolower($typ_name).'_raw"><a href="/search?q='.urlencode(str_replace(',', '', $derivedStichwort8)).($this->qtrigger ? '&qtrigger='.$this->qtrigger : '').($this->force ? '&force='.$this->force : '').'">'.$derivedStichwort8.'</a></span>, ';
 	        }

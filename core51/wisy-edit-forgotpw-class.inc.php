@@ -91,8 +91,9 @@ Freundliche Grüße";
 						$logwriter->addData('email', $f_email);
 						if( $this->sendMail($f_email, $f_subject, $f_mailbody) )
 						{
-						    $msg= 'Wir haben an die bei uns hinterlegte E-Mail-Adresse <b>erfolgreich</b> ein neues Passwort gesandt.
-								   Bitte &uuml;berpr&uuml;fen Sie nun Ihren E-Mail-Account ('.htmlspecialchars($f_email_shortened).') und folgen Sie den dort angegebenen Anweisungen.';
+						    $msg= 'Wir haben an die bei uns hinterlegte E-Mail-Adresse ein neues Passwort gesandt.
+								   Bitte &uuml;berpr&uuml;fen Sie nun Ihren E-Mail-Account ('.htmlspecialchars($f_email_shortened).') und folgen Sie den dort angegebenen Anweisungen.
+                                   Sollte die E-Mail nicht angekommen sein, kann sich diesw auch wenige Minuten verz&ouml;gern bzw. &uuml;berpr&uuml;fen Sie ggf. auch Ihren Spam-Ordner.';
 						}
 						else
 						{
@@ -124,14 +125,41 @@ Freundliche Grüße";
 		}
 		else if( $_REQUEST['c'] )
 		{
-			// confirmation link clicked
-			// ================================================================
-			
+		    // After clicking the link in the email: 
+		    // Display an HTML button for manual password reset confirmation.
+		    // Otherwise, spam and virus filtering functions of the mail server or client might automatically trigger the reset link, consuming the reset.
+		    $req_c = trim($_REQUEST['c']);
+		    
+		    // make sure, reset token is valid
+		    if( !ctype_alnum($req_c) || strlen($req_c) !== 20) {
+		        $msg = 'Ihr Link scheint einen Fehler aufzuweisen, bitte pr&uuml;fen Sie, ob Sie versehentlich ein Leerzeichen oder anderes Zeichen mit-kopiert haben und ob Ihr Wiederherstellungscode 20 Zeichen umfasst.';
+		    }
+		    else {
+		        // Button calls this page with confirmation (GET-)attribute set
+		        $msg = '<button id="pwd_generate" type="button" autofocus="autofocus" onclick="window.location.href=\'/edit?action=forgotpw&c_confirmed='.$req_c.'\'">Neues Passwort generieren!</button>';
+		    }
+		    
+		    $showForm = false;
+		    
+		} else if ( $_REQUEST['c_confirmed'] ) {
+		    
+		    // Confirm button was clicked: 
+		    // Actually reset password...
+		    
+		    $req_c = trim($_REQUEST['c_confirmed']);
+		    
+		    // make sure, reset token is valid
+		    if( !ctype_alnum($req_c) || strlen($req_c) !== 20) {
+		        $msg = 'Ihr Link scheint einen Fehler aufzuweisen, bitte pr&uuml;fen Sie, ob Sie versehentlich ein Leerzeichen oder anderes Zeichen mit-kopiert haben und ob Ihr Wiederherstellungscode 20 Zeichen umfasst.';
+		        // halt not necessary, it simply won't work
+		    }
+		    
 		    global $salt;
+		    
 		    
 			$db	= new DB_Admin;
 			$this->dbCache->deleteOldEntries(); // otherwise they are only deleted if an expired entry is tried to be read - this is normally never ...
-			$anbieterId = intval($this->dbCache->lookup('forgotpw.'.$_REQUEST['c']));
+			$anbieterId = intval($this->dbCache->lookup('forgotpw.'.$req_c));
 			$db->query("SELECT id, suchname, notizen FROM anbieter WHERE id=$anbieterId AND pflege_pweinst&1;");
 			if( $db->next_record() )
 			{
@@ -141,7 +169,7 @@ Freundliche Grüße";
 				
 				$db->query("UPDATE anbieter SET pflege_passwort=".$db->quote(crypt($newpassword, $salt)).", notizen=".$db->quote($notizen)." WHERE id=$anbieterId;");
 				
-				$this->dbCache->insert('forgotpw.'.$_REQUEST['c'], 0);
+				$this->dbCache->insert('forgotpw.'.$req_c, 0);
 				
 				$msg = "Ihr <b>neues Passwort</b> f&uuml;r den Login als Anbieter <i>".htmlspecialchars($anbieterSuchname)."</i> lautet:<br /><br />
 					<b style=\"font-size: 14pt;\">$newpassword</b><br /><br />Bitte merken sie sich das Passwort jetzt oder notieren Sie es an einem sicheren Platz.

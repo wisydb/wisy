@@ -1253,18 +1253,18 @@ class WISY_SEARCH_RENDERER_CLASS
 		                        $weight = (floor($tag_freq/50) > 15) ? 15 : floor($tag_freq/50);
 		                    }
 		                    
-		                    if($tag['eigenschaften'] != $filtersw && $tag_freq > 0); {
+		                    if( !in_array($tag['eigenschaften'], $filtersw_typ) && !in_array($tag['id'], $filtersw_ids) && (!$gewichten || $gewichten && $tag_freq > 0) ) {
 		                        if($this->framework->iniRead('sw_cloud.suche_stichwoerter', 1))
 		                            $tag_cloud .= '<span class="sw_raw typ_'.$tag['eigenschaften'].'" data-weight="'.$weight.'"><a href="/search?q='.urlencode( cs8($tag['stichwort']) ).( $this->framework->qtrigger ? '&qtrigger='.$this->framework->qtrigger : '').( $this->framework->force ? '&force='.$this->framework->force : '').'">'.cs8($tag['stichwort']).'</a></span>, ';
 		                            
 		                        if($this->framework->iniRead('sw_cloud.suche_synonyme', 0))
-		                            $tag_cloud .= $this->framework->writeDerivedTags($this->framework->loadDerivedTags($db, $tag['id'], $distinct_tags, "Synonyme"), $filtersw, "Synonym", cs8($tag['stichwort']));
+		                            $tag_cloud .= $this->framework->writeDerivedTags($this->framework->loadDerivedTags($db, $tag['id'], $distinct_tags, "Synonyme"), $filtersw, $filtersw_ids, "Synonym", cs8($tag['stichwort']));
 		                                
 		                        if($this->framework->iniRead('sw_cloud.suche_oberbegriffe', 0))
-		                            $tag_cloud .= $this->framework->writeDerivedTags($this->framework->loadDerivedTags($db, $tag['id'], $distinct_tags, "Oberbegriffe"), $filtersw, "Oberbegriff", cs8($tag['stichwort']));
+		                            $tag_cloud .= $this->framework->writeDerivedTags($this->framework->loadDerivedTags($db, $tag['id'], $distinct_tags, "Oberbegriffe"), $filtersw, $filtersw_ids, "Oberbegriff", cs8($tag['stichwort']));
 		                                    
 		                        if($this->framework->iniRead('sw_cloud.suche_unterbegriffe', 0))
-		                            $tag_cloud .= $this->framework->writeDerivedTags($this->framework->loadDerivedTags($db, $tag['id'], $distinct_tags, "Unterbegriffe"), $filtersw, "Unterbegriff", cs8($tag['stichwort']));
+		                            $tag_cloud .= $this->framework->writeDerivedTags($this->framework->loadDerivedTags($db, $tag['id'], $distinct_tags, "Unterbegriffe"), $filtersw, $filtersw_ids, "Unterbegriff", cs8($tag['stichwort']));
 		                    }
 		                    
 		                    array_push($tag_done, $tag['id']);
