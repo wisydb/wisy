@@ -373,7 +373,7 @@ class WISY_KURS_RENDERER_CLASS
 			    else
 			    {
 			        $filtersw_typ = array_map("trim", explode(",", $this->framework->iniRead('sw_cloud.filtertyp', "32, 2048, 8192, 524288, 524289, 1048576")));
-			        $filtersw_ids = array_map("trim", explode(",", $this->framework->iniRead('sw_cloud.filterids', "866951, 866981, 866971, 866961, 867021, 867011, 867001"))); // Berufliche Bildung Niveaus + Kurskategorie ...
+			        $filtersw_ids = array_map("trim", explode(",", $this->framework->iniRead('sw_cloud.filterids', "866951, 866981, 866971, 866961, 867021, 867011, 867001"))); // Berufliche Bildung - Niveaus & Kurskategorien
 			        
 			        $distinct_tags = array();
 			        $tags = $this->framework->loadStichwoerter($db, 'kurse', $kursId);

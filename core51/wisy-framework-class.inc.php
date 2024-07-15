@@ -1019,6 +1019,7 @@ class WISY_FRAMEWORK_CLASS
 	            $ret .= '<span class="typ_'.$derivedStichwort['eigenschaften'].'  orginal_'.$originalsw.' '.strtolower($typ_name).'_raw"><a href="/search?q='.urlencode(str_replace(',', '', $derivedStichwort8)).($this->qtrigger ? '&qtrigger='.$this->qtrigger : '').($this->force ? '&force='.$this->force : '').'">'.$derivedStichwort8.'</a></span>, ';
 	        }
 	    }
+	    
 	    return $ret;
 	}
 	

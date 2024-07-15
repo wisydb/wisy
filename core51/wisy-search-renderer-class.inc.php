@@ -1232,7 +1232,9 @@ class WISY_SEARCH_RENDERER_CLASS
 		    }
 		    elseif( isset($tags_heap) && $tags_heap )
 		    {
-		        $filtersw = array_map("trim", explode(",", $this->framework->iniRead('sw_cloud.filtertyp', "32, 2048, 8192")));
+		        $filtersw_typ = array_map("trim", explode(",", $this->framework->iniRead('sw_cloud.filtertyp', "32, 2048, 8192, 524288, 524289, 1048576")));
+		        $filtersw_ids = array_map("trim", explode(",", $this->framework->iniRead('sw_cloud.filterids', "866951, 866981, 866971, 866961, 867021, 867011, 867001"))); // Berufliche Bildung - Niveaus & Kurskategorien
+		        
 		        $distinct_tags = array();
 		        $tag_cloud = '<div id="sw_cloud"><h3>'.$this->framework->iniRead('sw_cloud.bezeichnung_suche', 'Suchbegriffe').'</h3> ';
 		        //$tag_cloud .= '<h4>Suchbegriffe</h4>';
