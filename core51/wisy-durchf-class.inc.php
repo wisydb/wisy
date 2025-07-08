@@ -288,6 +288,7 @@ class WISY_DURCHF_CLASS
 		            || $stichwort['id'] == $controlTags['Integrationskurs spezielle Kursarten']
 		            || $stichwort['id'] == $controlTags['Integrationskurs Intensivkurs']
 		            || $stichwort['id'] == $controlTags['Integrationskurs mit Alphabetisierung']
+		            || $stichwort['id'] == $controlTags['Integrationskurs fuer gering Literalisierte']
 		            || $stichwort['id'] == $controlTags['Integrationskurs fuer Zweitschriftlernende']
 		            || $stichwort['id'] == $controlTags['Orientierungskurs']
 		            || $stichwort['id'] == $controlTags['Integrationskurs fuer Frauen']

@@ -93,7 +93,7 @@ Freundliche Grüße";
 						{
 						    $msg= 'Wir haben an die bei uns hinterlegte E-Mail-Adresse ein neues Passwort gesandt.
 								   Bitte &uuml;berpr&uuml;fen Sie nun Ihren E-Mail-Account ('.htmlspecialchars($f_email_shortened).') und folgen Sie den dort angegebenen Anweisungen.
-                                   Sollte die E-Mail nicht angekommen sein, kann sich diesw auch wenige Minuten verz&ouml;gern bzw. &uuml;berpr&uuml;fen Sie ggf. auch Ihren Spam-Ordner.';
+                                   Sollte die E-Mail nicht angekommen sein, kann sich dies auch wenige Minuten verz&ouml;gern bzw. &uuml;berpr&uuml;fen Sie ggf. auch Ihren Spam-Ordner.';
 						}
 						else
 						{
