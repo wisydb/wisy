@@ -54,6 +54,7 @@ $controlTags = array(
     'Integrationskurs fuer Eltern' => 7091, // 2022, vorher Synonym
     'Integrationskurs fuer junge Erwachsene' => 7092, // 2022, vorher Synonym
     'Integrationskurs mit Alphabetisierung' => 20371,
+    'Integrationskurs fuer gering Literalisierte' => 2066851,
     'DeuFoeV' => 831461,
     'Integrationskurs fuer Zweitschriftlernende' => 846831,
     'Preis komplex' => 849451,
@@ -158,7 +159,8 @@ $codes_stichwort_eigenschaften =
     .'8192###Schlagwort nicht verwenden###'	// 8192 war mal "Hierarchie", "Schlagwort nicht verwenden" war mal bit 32 -- in beiden Fällen: wozu soll das sein? (bp)
     .'16384###Anbieterstichwort###'	   // sollte mal exklusiv die Kurse infizieren, wenn bei einem Anbieter verwendet, aktuell (12/2014) nicht verwendet, alle nicht-versteckten Stichwoerter infizieren die Kurse, wenn einem Anbieter zugeordnet
     .'524288###ESCO-Kompetenz###'
-    .'1048576###ESCO-Tätigkeit';
+    .'524289###ESCO-Synonym###'
+    .'1048576###ESCO-Beruf';
     // ACHTUNG: Werte ab 0x10000 werden in tag_type anders verwendet!
     // 131072 versteckte Anbieter-Namensverweisung
     // 262144 = neue Namensverweisung, damit von SW-Synonym (64) unterscheidbar
@@ -265,7 +267,7 @@ $codes_dauer =
 	.'990###33 Monate###'
 	.'1020###34 Monate###'
 	.'1050###35 Monate###'
-	.'1080###36 Monate###'
+	.'1094###36 Monate###'
 	.'1170###39 Monate###'
 	.'1260###42 Monate###'
 	.'1440###48 Monate###'

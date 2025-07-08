@@ -12,3 +12,7 @@
 Header set Cache-Control "max-age=2592000, public"
 </FilesMatch>
 </IfModule>
+
+AddDefaultCharset ISO-8859-1
+AddCharset ISO-8859-1 .html
+AddCharset ISO-8859-1 .php

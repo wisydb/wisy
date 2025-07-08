@@ -22,7 +22,7 @@ function genpassword()
 {
     $seed = (double)microtime()*1000000;
     srand( (int) $seed ); 
-	$length = rand(6, 9);
+	$length = rand(10, 12);
     $vowels = array("a", "e", "i", "o", "u"); 
     $cons = array("b", "c", "d", "g", "h", "j", "k", "l", "m", "n", "p", "r", "s", "t", "v", "w", "tr", 
     "cr", "br", "fr", "th", "dr", "ch", "ph", "wr", "st", "sp", "sw", "pr", "sl", "cl"); 
