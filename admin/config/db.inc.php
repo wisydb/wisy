@@ -47,6 +47,7 @@ if( !$use_neweditor ) {
 	$ratgeber->add_row(TABLE_ENUM,								'freigeschaltet',	'ABC-Index', 2, '2###Nein###1###Ja');
 }
 $ratgeber->add_row(TABLE_TEXTAREA|TABLE_WIKI|TABLE_NEWSECTION,'erklaerung',		'Erklärung', '', '', '', array('ctrl.rows'=>20));
+$ratgeber->add_row(TABLE_TEXTAREA,							'versionshinweise',		'&ouml;ff. Versionshinweise', '', '', '', array('ctrl.rows'=>5) );
 $ratgeber->add_row(TABLE_TEXT,								'wikipedia',		'Stichw. Wikipedia', '', '', '', array('ctrl.size'=>'10-20-60'));
 $ratgeber->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,			'notizen_fix',			'Anmerkungen', '', '', '',  array('layout.section'=>1));
 $ratgeber->add_row(TABLE_TEXTAREA,			                'notizen',			'Journal', '', '', '');
@@ -228,12 +229,12 @@ $durchfuehrung = new Table_Def_Class(TABLE_SYNCABLE,		'durchfuehrung',	'Durchfüh
 $durchfuehrung->add_row(TABLE_TEXT|TABLE_LIST|TABLE_SUMMARY,'nr',				'Durchführungs-Nr.', '', '', '', array('ctrl.size'=>'10-40'));
 if( $use_neweditor )
 {
-	$durchfuehrung->add_row(TABLE_TEXT|TABLE_NEWSECTION,		'bg_nummer',	'Maßnahmen-Nr.','','', 'Durchführungs-IDs',	array('layout.defhide'=>2, 'layout.join'=>1, 'ctrl.size'=>'10-40', 'layout.defhide.tooltip'=>'weitere Verwaltungsnummern'));
-	$durchfuehrung->add_row(TABLE_TEXT, 						'bu_dnummer', 	'BU-Durchführungsnr.', '', '', '', 			array('layout.defhide'=>2, 'layout.join'=>1, 'ctrl.size'=>'10-40'));
+	// $durchfuehrung->add_row(TABLE_TEXT|TABLE_NEWSECTION,		'bg_nummer',	'Maßnahmen-Nr.','','', 'Durchführungs-IDs',	array('layout.defhide'=>2, 'layout.join'=>1, 'ctrl.size'=>'10-40', 'layout.defhide.tooltip'=>'weitere Verwaltungsnummern'));
+	// $durchfuehrung->add_row(TABLE_TEXT, 						'bu_dnummer', 	'BU-Durchführungsnr.', '', '', '', 			array('layout.defhide'=>2, 'layout.join'=>1, 'ctrl.size'=>'10-40'));
 	$durchfuehrung->add_row(TABLE_TEXT, 						'wisy_dnr', 	'Wisy-Durchführungsnr.', '', '', '',		array('layout.defhide'=>2, 'layout.join'=>1, 'ctrl.size'=>'10-40'));
-	$durchfuehrung->add_row(TABLE_TEXT, 						'fu_dnr', 		'FU-Durchführungsnr.', '', '', '',			array('layout.defhide'=>2, 'layout.join'=>1, 'ctrl.size'=>'10-40'));
-	$durchfuehrung->add_row(TABLE_TEXT, 						'foerder_dnr', 	'Förder-Durchführungsnr.', '', '', '',		array('layout.defhide'=>2, 'layout.join'=>1, 'ctrl.size'=>'10-40'));
-	$durchfuehrung->add_row(TABLE_TEXT, 						'azwv_dnr', 	'AZAV-Durchführungsnr.', '', '', '',		array('layout.defhide'=>2, 'layout.join'=>1, 'ctrl.size'=>'10-40'));
+	// $durchfuehrung->add_row(TABLE_TEXT, 						'fu_dnr', 		'FU-Durchführungsnr.', '', '', '',			array('layout.defhide'=>2, 'layout.join'=>1, 'ctrl.size'=>'10-40'));
+	// $durchfuehrung->add_row(TABLE_TEXT, 						'foerder_dnr', 	'Förder-Durchführungsnr.', '', '', '',		array('layout.defhide'=>2, 'layout.join'=>1, 'ctrl.size'=>'10-40'));
+	// $durchfuehrung->add_row(TABLE_TEXT, 						'azwv_dnr', 	'AZAV-Durchführungsnr.', '', '', '',		array('layout.defhide'=>2, 'layout.join'=>1, 'ctrl.size'=>'10-40'));
 }
 $durchfuehrung->add_row(TABLE_INT|TABLE_EMPTYONNULL,		'stunden',			'Stunden ', 0, '0###9999', '', array('layout.join'=>1, 'layout.descr.class'=>'e_bold'));
 $durchfuehrung->add_row(TABLE_INT|TABLE_EMPTYONNULL,		'teilnehmer',		'max. Teilnehmende', 0, '0###999', '', array('layout.join'=>1));
@@ -383,17 +384,19 @@ if($use_neweditor) {
 
 $kurse->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,			'notizen_fix',			'Anmerkungen', '', '', '',  array('layout.section'=>1));
 $kurse->add_row(TABLE_TEXTAREA,				'notizen',			'Journal', '', '', '');
+
+$kurse->set_DBFieldsUponCreation( array( 'freigeschaltet' => -1 ) ); // eigentlich 1 per DB, aber da Status erst spaeter per Update gesetzt wird hier explizit.
 $kurse->set_trigger('config/trigger_kurse.inc.php');
 
 
 /*** FEEDBACK ***/
-$feedback = new Table_Def_Class(0,											'feedback',			'Feedback');
+$feedback = new Table_Def_Class(TABLE_SYNCABLE,											'feedback',			'Feedback'); // 
 $feedback->add_row(TABLE_TEXT|TABLE_LIST|TABLE_MUST|TABLE_READONLY,			'ip',				'Feedback von');
 $feedback->add_row(TABLE_TEXT|TABLE_SUMMARY|TABLE_LIST|TABLE_MUST|TABLE_READONLY|TABLE_URL,
 																			'url',				'Bewertete URL', '', '', '', array('ctrl.size'=>'10-80'));
 $feedback->add_row(TABLE_ENUM|TABLE_LIST|TABLE_READONLY,					'rating',			'Wertung', 0, '0###nicht hilfreich###1###hilfreich');
 $feedback->add_row(TABLE_TEXTAREA|TABLE_LIST|TABLE_READONLY,				'descr',			'Kommentar');
-$feedback->add_row(TABLE_TEXT|TABLE_LIST|TABLE_READONLY,					'name',			'Name');
+$feedback->add_row(TABLE_TEXT|TABLE_LIST|TABLE_READONLY,					'name',				'Name', '', '', '', array('ctrl.size'=>'1-300'));
 $feedback->add_row(TABLE_TEXT|TABLE_LIST|TABLE_READONLY,					'email',			'Email', '', '', '', array('ctrl.size'=>'1-300'));
 $feedback->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION, 						'notizen', 			'Journal', '', '', '', array('layout.section'=>1));
 

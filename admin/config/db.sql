@@ -434,6 +434,7 @@ CREATE TABLE `glossar` (
   `begriff` varchar(200) NOT NULL DEFAULT '',
   `begriff_sorted` varchar(200) NOT NULL DEFAULT '',
   `erklaerung` longtext NOT NULL,
+  `versionshinweise` text NOT NULL,
   `notizen` longtext NOT NULL,
   `notizen_fix` longtext NOT NULL,
   `wikipedia` varchar(200) NOT NULL DEFAULT '',
