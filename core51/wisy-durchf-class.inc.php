@@ -590,6 +590,7 @@ class WISY_DURCHF_CLASS
 		        || $this->stichw_in_array($addParam['stichwoerter'], $controlTags['Integrationskurs spezielle Kursarten'] )
 		        || $this->stichw_in_array($addParam['stichwoerter'], $controlTags['Integrationskurs Intensivkurs'] )
 		        || $this->stichw_in_array($addParam['stichwoerter'], $controlTags['Integrationskurs mit Alphabetisierung'] )
+		        || $this->stichw_in_array($addParam['stichwoerter'], $controlTags['Integrationskurs fuer gering Literalisierte'] )
 		        || $this->stichw_in_array($addParam['stichwoerter'], $controlTags['Integrationskurs fuer Zweitschriftlernende'] )
 		        || $this->stichw_in_array($addParam['stichwoerter'], $controlTags['Integrationskurs fuer Frauen'] )
 		        || $this->stichw_in_array($addParam['stichwoerter'], $controlTags['Integrationskurs fuer Eltern'] )

@@ -605,6 +605,30 @@ CREATE TABLE `kurse_verweis` (
 
 -- --------------------------------------------------------
 
+--
+-- Tabellenstruktur fuer Tabelle `maintenance`
+-- Erlaubt routinemaessige SQL-Aufrufe zu verwalten im Red.System->Etc. 
+-- und per sync-renderer autom. aufrufen zu lassen.
+--
+
+CREATE TABLE `maintenance` (
+  `id` int(11) NOT NULL,
+  `sync_src` int(11) NOT NULL DEFAULT 2,
+  `user_created` int(11) NOT NULL,
+  `user_modified` int(11) NOT NULL,
+  `user_grp` int(11) NOT NULL,
+  `user_access` int(11) NOT NULL,
+  `date_created` datetime NOT NULL,
+  `date_modified` datetime NOT NULL,
+  `type` varchar(20) NOT NULL DEFAULT 'MYSQL',
+  `last_executed` datetime NOT NULL,
+  `explanation` text NOT NULL,
+  `query` text NOT NULL,
+  `result` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+
+-- --------------------------------------------------------
+
 -- Nachfolgende Tabellen werden nur verwendet, wenn man
 -- den OpenThesaurus von openthesaurus.de importiert.
 -- Wenn diese Tabellen nicht existieren, wird das entsprechende
@@ -620,6 +644,21 @@ CREATE TABLE `kurse_verweis` (
 --  `category_name` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
 --  `is_disabled` bit(1) DEFAULT NULL
 -- ) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Indizes fuer die Tabelle `maintenance`
+--
+ALTER TABLE `maintenance`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- AUTO_INCREMENT fuer Tabelle `maintenance`
+--
+ALTER TABLE `maintenance`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+COMMIT;
 
 -- --------------------------------------------------------
 

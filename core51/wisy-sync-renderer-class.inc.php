@@ -973,31 +973,33 @@ class WISY_SYNC_RENDERER_CLASS
 	                            }
 	                            
 	                            // stadtteil / ort zum sortieren aufbereiten
-	                            if( $ort_sortonly == '' && $ort != '' )
-	                            {
-	                                $ort_sortonly = "$ort $stadtteil";
-	                                $ort_sortonly = g_eql_normalize_natsort($ort_sortonly);
-	                                $db_orte = new DB_Admin;
-	                                if(stripos($ort, "Fernunterricht") !== FALSE || stripos($stadtteil, "Fernunterricht") !== FALSE || stripos($strasse, "Fernunterricht") !== FALSE
-	                                    || stripos($ort, "Fernstudium") !== FALSE || stripos($stadtteil, "Fernstudium") !== FALSE || stripos($strasse, "Fernstudium") !== FALSE) {
-	                                        $sql = "INSERT INTO	x_kurse_orte SET kurs_id=$kurs_id, ort='".$ort."', ort_sortonly='zzz_fernstudium (".$df_id.")'"; // ort=... obsolete?
-	                                    } else {
-	                                        $sql = "INSERT INTO	x_kurse_orte SET kurs_id=$kurs_id, ort='".$ort."', ort_sortonly='".$ort_sortonly." (".$df_id.")'"; // ort=... obsolete?
-	                                    }
-	                                    $db_orte->query($sql);
-	                            } elseif( $ort_sortonly != '' && $ort != '' ) {
-	                                $ort_sortonly_secondary_tmp = g_eql_normalize_natsort("$ort $stadtteil");
-	                                if($ort_sortonly != $ort_sortonly_secondary_tmp && @strpos($ort_sortonly_secondary, $ort_sortonly_secondary_tmp) === FALSE) {
-	                                    $ort_sortonly_secondary .= ",".$ort_sortonly_secondary_tmp; // obsolete
-	                                    if(stripos($ort, "Fernunterricht") !== FALSE || stripos($stadtteil, "Fernunterricht") !== FALSE || stripos($strasse, "Fernunterricht") !== FALSE
-	                                        || stripos($ort, "Fernstudium") !== FALSE || stripos($stadtteil, "Fernstudium") !== FALSE || stripos($strasse, "Fernstudium") !== FALSE) {
-	                                            $sql = "INSERT INTO	x_kurse_orte SET kurs_id=$kurs_id, ort='".$ort."', ort_sortonly='zzz_fernstudium (".$df_id.")#'"; // ort=... obsolete
-	                                        } else {
-	                                            $sql = "INSERT INTO	x_kurse_orte SET kurs_id=$kurs_id, ort='".$ort."', ort_sortonly='".$ort_sortonly_secondary_tmp." (".$df_id.")#'"; // ort=... obsolete
-	                                        }
-	                                        $db_orte->query($sql);
-	                                }
-	                            }
+	                            /* Ausgesetzt, um DB-Platz zu schonen, bis autom. Bereinigung ergänzt!
+	                             if( $ort_sortonly == '' && $ort != '' )
+	                             {
+	                             $ort_sortonly = "$ort $stadtteil";
+	                             $ort_sortonly = g_eql_normalize_natsort($ort_sortonly);
+	                             $db_orte = new DB_Admin;
+	                             if(stripos($ort, "Fernunterricht") !== FALSE || stripos($stadtteil, "Fernunterricht") !== FALSE || stripos($strasse, "Fernunterricht") !== FALSE
+	                             || stripos($ort, "Fernstudium") !== FALSE || stripos($stadtteil, "Fernstudium") !== FALSE || stripos($strasse, "Fernstudium") !== FALSE) {
+	                             $sql = "INSERT INTO	x_kurse_orte SET kurs_id=$kurs_id, ort='".$ort."', ort_sortonly='zzz_fernstudium (".$df_id.")'"; // ort=... obsolete?
+	                             } else {
+	                             $sql = "INSERT INTO	x_kurse_orte SET kurs_id=$kurs_id, ort='".$ort."', ort_sortonly='".$ort_sortonly." (".$df_id.")'"; // ort=... obsolete?
+	                             }
+	                             $db_orte->query($sql);
+	                             } elseif( $ort_sortonly != '' && $ort != '' ) {
+	                             $ort_sortonly_secondary_tmp = g_eql_normalize_natsort("$ort $stadtteil");
+	                             if($ort_sortonly != $ort_sortonly_secondary_tmp && @strpos($ort_sortonly_secondary, $ort_sortonly_secondary_tmp) === FALSE) {
+	                             $ort_sortonly_secondary .= ",".$ort_sortonly_secondary_tmp; // obsolete
+	                             if(stripos($ort, "Fernunterricht") !== FALSE || stripos($stadtteil, "Fernunterricht") !== FALSE || stripos($strasse, "Fernunterricht") !== FALSE
+	                             || stripos($ort, "Fernstudium") !== FALSE || stripos($stadtteil, "Fernstudium") !== FALSE || stripos($strasse, "Fernstudium") !== FALSE) {
+	                             $sql = "INSERT INTO	x_kurse_orte SET kurs_id=$kurs_id, ort='".$ort."', ort_sortonly='zzz_fernstudium (".$df_id.")#'"; // ort=... obsolete
+	                             } else {
+	                             $sql = "INSERT INTO	x_kurse_orte SET kurs_id=$kurs_id, ort='".$ort."', ort_sortonly='".$ort_sortonly_secondary_tmp." (".$df_id.")#'"; // ort=... obsolete
+	                             }
+	                             $db_orte->query($sql);
+	                             }
+	                             }
+	                             */
 	                            // $db_orte->free();
 	                            // $db_orte->close();
 	                            
@@ -1064,17 +1066,21 @@ class WISY_SYNC_RENDERER_CLASS
 	                                                                    
 	                                                                    if($adress_check["changed"]) {
 	                                                                        echo "=> Geocoding changed";
-	                                                                        $addrArr = explode(",", $adress_check['address']);
-	                                                                        if( count($addrArr) == 2 ) {
-	                                                                            $db2->Record['strasse'] = isset($addrArr[0]) ? $addrArr[0] : '';
-	                                                                            $db2->Record['ort']     = isset($addrArr[1]) ? $addrArr[1] : '';
-	                                                                        } elseif( count($addrArr) == 3 ) {
-	                                                                            $db2->Record['strasse'] = isset($addrArr[1]) ? $addrArr[1] : '';
-	                                                                            $db2->Record['ort']     = isset($addrArr[2]) ? $addrArr[2] : '';
-	                                                                        }
+	                                                                        if( isset($adress_check['address']) && strlen($adress_check['address']) > 0 )
+	                                                                            $addrArr = explode(",", $adress_check['address']);
+	                                                                            else
+	                                                                                $addrArr = array();
+	                                                                                
+	                                                                                if( count($addrArr) == 2 ) {
+	                                                                                    $db2->Record['strasse'] = isset($addrArr[0]) ? $addrArr[0] : '';
+	                                                                                    $db2->Record['ort']     = isset($addrArr[1]) ? $addrArr[1] : '';
+	                                                                                } elseif( count($addrArr) == 3 ) {
+	                                                                                    $db2->Record['strasse'] = isset($addrArr[1]) ? $addrArr[1] : '';
+	                                                                                    $db2->Record['ort']     = isset($addrArr[2]) ? $addrArr[2] : '';
+	                                                                                }
 	                                                                    }
 	                                                                    
-	                                                                    $this->log("geocode from LIVE: ".$adress_str."\n");
+	                                                                    $this->log("geocode from LIVE: ".$db2->Record['strasse']."\n");
 	                                                                    usleep(100000); // 0,5s delay between ext. calls
 	                                                                    
 	                                                                    $temp = $geocoder->geocode2($db2->Record, true);
@@ -1760,6 +1766,40 @@ class WISY_SYNC_RENDERER_CLASS
 	  */  
 	} 
 	
+	function doMaintenance() {
+	    
+	    // Call all maintenance queries defined in the CMS
+	    $db = new DB_ADMIN;        // outer loop
+	    $db2 = new DB_ADMIN;       // inner loop
+	    
+	    $db->query("SELECT id, type, last_executed, explanation, query, result FROM maintenance");
+	    while( $db->next_record() )
+	    {
+	        $query_id = $db->f('id');
+	        
+	        if( $query_id < 1 )
+	            continue;
+	            
+	            $timestamp_executed = date('Y-m-d H:i:s');
+	            $subqueries = array_map('trim', explode(';', $db->fs('query')));
+	            $type = $db->fs('type');
+	            
+	            if(strtolower($type) == 'mysql') {
+	                foreach($subqueries AS $subquery) {
+	                    
+	                    if( trim($subquery) == '' )
+	                        continue;
+	                        
+	                        $db2->query( $subquery );
+	                        
+	                        $db2->query( "UPDATE maintenance SET result='".$timestamp_executed.") Zeilen betroffen: ".$db2->affected_rows()."\n' WHERE id = ".$query_id );
+	                }
+	            }
+	            
+	            $db2->query("UPDATE maintenance SET last_executed='".$timestamp_executed."' WHERE id = ".$query_id);
+	    }
+	}
+	
 	function doGeoMapping() {
 	    // Bezirke: Berlin, Hamburg, ...?
 	    // to be moved
@@ -2195,6 +2235,9 @@ class WISY_SYNC_RENDERER_CLASS
 					}
 
 					$this->log(sprintf('done. max. memory: %1.1f MB, time: %1.0f minutes', memory_get_peak_usage(true)/1048576, (microtime(true)-$overall_time)/60));
+					
+		// Call all maintenance queries defined in the CMS
+		$this->doMaintenance();
 					
 		// release exclusive access
 		$this->statetable->releaseUpdatestick();
