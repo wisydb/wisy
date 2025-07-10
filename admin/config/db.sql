@@ -236,11 +236,17 @@ CREATE TABLE `apikeys` (
   `user_access` int(11) NOT NULL DEFAULT 0,
   `date_created` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `date_modified` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `name` varchar(250) COLLATE latin1_general_ci NOT NULL,
-  `apikey` varchar(250) COLLATE latin1_general_ci NOT NULL,
+  `name` varchar(250) NOT NULL,
+  `apikey` varchar(250) NOT NULL,
+  `filter_apiurl` text NOT NULL,
+  `filter_tabelle_felder` text NOT NULL,
+  `filter_anbieter_stichwoerter` text NOT NULL,
+  `filter_kurse_stichwoerter` text NOT NULL,
+  `filter_tabelle_felder_werte` text NOT NULL,
   `flags` int(11) NOT NULL,
-  `notizen` longtext COLLATE latin1_general_ci NOT NULL
+  `notizen` longtext NOT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci;
+
 
 --
 -- Trigger `apikeys`

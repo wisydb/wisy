@@ -451,16 +451,28 @@ $anbieter_billing->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,			'notizen',				'Jou
 $apikeys = new Table_Def_Class(0,								'apikeys',			'API-Keys');
 $apikeys->add_row(TABLE_TEXT|TABLE_LIST|TABLE_MUST,				'name',				'Name', '', '', '', array('ctrl.size'=>'10-80', 'layout.bg.class'=>'e_bglite', 'layout.descr.class'=>'e_bolder', 'ctrl.class'=>'e_bolder'));
 $apikeys->add_row(TABLE_TEXT|TABLE_LIST|TABLE_UNIQUE,			'apikey',			'persönlicher API-Key', 'wird automatisch erzeugt', '', '', array('ctrl.size'=>'25-80'));
-$apikeys->add_row(TABLE_BITFIELD|TABLE_LIST,					'flags',			'Optionen', 1+2, '1###Freigeschaltet###2###Verschl&uuml;sselte Verbindung###4###Schreibzugriff erlauben###8###Journal Lesezugriff', '', array('ctrl.checkboxes'=>1));
-$apikeys->add_row(TABLE_MATTR,			                        'usergrp',  		'Zugriffsbeschränkung', 0, 'user_grp', '', array('layout.after'=>'<br>Wenn hier Gruppen eingetragen werden, können neue Datensätze nur mit diesen Gruppen erstellt werden und bestehende können nur bearbeitet/gelöscht werden, wenn sie einer der Gruppen angehören.'));
+$apikeys->add_row(TABLE_TEXT|TABLE_LIST|TABLE_UNIQUE,			'filter_apiurl',	'URL muss enthalten', '', '', '', array('layout.after'=>'<br>Beispiel: /api/v1/', 'ctrl.size'=>'25-80'));
+$apikeys->add_row(TABLE_BITFIELD|TABLE_LIST,					'flags',			'Optionen', 1+2, '1###Freigeschaltet###2###Verschl&uuml;sselte Verbindung###4###Schreibzugriff erlauben (Achtung: Beim Schreiben greifen nur Benutzergruppen-Beschränkungen - kein Ausgabefilter, keine Ausgabe-Bedingungen)###8###Journal Lesezugriff<br><br>', '', array('ctrl.checkboxes'=>1));
+$apikeys->add_row(TABLE_TEXTAREA, 				                'filter_tabelle_felder_werte', 		'<span style="text-decoration:underline">Ausgabe-Bedingung:</span><br>Liste von <b>SQL-WHERE -Bedingungen</b> je Tabelle und Feld', '', '', '', array('layout.after'=>'<br>Wird eine Bedingung für "durchfuehrung" formuliert, und wird diese nicht erfüllt, wird auch der zugehörige Kurs nicht angezeigt. Alle anderen Tabellen (stichwoerter, anbieter):<br><span style="text-decoration:underline">Syntax-Beispiele (Trenner = Semikolon; Die Felder müssen in der gleichen Tabelle sein!)</span>:<br>kurse.freigeschaltet IN (1,4); anbieter.gruendungsjahr = 1980; glossar.begriff = "Lehramt"; portale.domains LIKE "%example.com%"; durchfuehrung.preis > 100;<br>user.loginname = "testuser"; stichwoerter.user_modified = 200; themen.user_created = 100; themen.kuerzel = "14.1." OR themen.kuerzel = "14.2."; stichwoerter.stichwort LIKE "%Prüfung%"; user_grp.shortname = "Abgelaufen"; kurse.user_access = 508;<br><br>'));
+$apikeys->add_row(TABLE_TEXTAREA, 				                'filter_kurse_stichwoerter', 		'<span style="text-decoration:underline">Ausgabe-Bedingung:</span><br>Liste&nbsp;zwingend&nbsp;notwendiger<br><b>Kurs-</b>Stichwort-IDs', '', '', '', array('layout.after'=>'<br>Syntax:&nbsp;<i>&lt;id&gt;<b>,&nbsp;</b>&lt;id&gt;<b>,&nbsp;</b>&lt;id&gt;<b>,&nbsp;</b>[...]</i><br>Beispiel: 5367, 21811, 21861, 802691<br><br>'));
+$apikeys->add_row(TABLE_TEXTAREA, 				                'filter_anbieter_stichwoerter', 	'<span style="text-decoration:underline">Ausgabe-Bedingung:</span><br>Liste&nbsp;zwingend&nbsp;notwendiger<br><b>Anbieter-</b>Stichwort-IDs', '', '', '', array('layout.after'=>'<br>Syntax:&nbsp;<i>&lt;id&gt;<b>,&nbsp;</b>&lt;id&gt;<b>,&nbsp;</b>&lt;id&gt;<b>,&nbsp;</b>[...]</i><br>Beispiel: 838101, 12345<br><br>')); // Liste zwingender Kurse-SW-IDs (Komma&nbsp;getrennt)
+$apikeys->add_row(TABLE_TEXTAREA, 				                'filter_tabelle_felder', 			'<span style="text-decoration:underline">Ausgabe-Filter:</span><br>Liste nicht auszugebender Tabellen und Felder', '', '', '', array('layout.after'=>'<br>Syntax:&nbsp;<i>tabelle[.feld]<b>,&nbsp;</b>tabelle[.feld]<b>,&nbsp;</b>tabelle[.feld]<b>,&nbsp;</b>[...]</i><br>Beispiele: kurse.vollstaendigkeit, kurse.res_nummer, kurse.notizen, kurse.notizen_fix, anbieter.leitung_name, portale, stichwoerter.user_created<br>Hinweise: Eine ganze Tabelle auszuschließen sorgt dafür, dass diese nicht durchsucht werden kann und keine Detailseite dieser Tabelle angezeigt werden kann.<br>Natürlich werden bei Kurs-/Anbieter-Details trotzdem noch die Referenzen auf jene Tabellen agezeigt, z.B. die Kurseigenschaft "user_created" trotz Ausschließen der Tabelle "user". Wenn man auch das nicht will, muss man "kurse.user_created" konkret ausschließen.<br><br>'));
+$apikeys->add_row(TABLE_MATTR,			                        'usergrp',  		'Zugriffsbeschränkung', 0, 'user_grp', '', array('layout.after'=>'<br>Wenn hier Gruppen eingetragen werden, können neue Datensätze nur mit diesen Gruppen erstellt werden und bestehende können nur bearbeitet/gelöscht werden, wenn sie einer der Gruppen angehören.<br><br>'));
 $apikeys->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION, 				'notizen', 			'Journal', '', '', '', array('layout.section'=>1));
-$apikeys->set_trigger('config/trigger_apikeys.inc.php'); 
+$apikeys->set_trigger('config/trigger_apikeys.inc.php');
 
-
+/*** MAINTENANCE ***/
+$maintenance = new Table_Def_Class(TABLE_SYNCABLE,     'maintenance',		'Maintenance-Aufrufe');
+$maintenance->add_row(TABLE_TEXT,                      'type',				'Typ', 'z.B.: MYSQL');
+$maintenance->add_row(TABLE_TEXT | TABLE_READONLY,     'last_executed',		'Letzter Aufruf');
+$maintenance->add_row(TABLE_TEXTAREA,                  'explanation',		'Beschreibung');
+$maintenance->add_row(TABLE_TEXTAREA,                  'query',				'Aufruf');
+$maintenance->add_row(TABLE_TEXTAREA | TABLE_READONLY, 'result',			'Ergebnis');
 
 
 $Table_Def[] = $tickets;
 $Table_Def[] = $feedback;
+$Table_Def[] = $maintenance;
 $Table_Def[] = $kurse; // the order may be changed and is only important for layout reasons
 $Table_Def[] = $durchfuehrung;
 $Table_Def[] = $anbieter;
