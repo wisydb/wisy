@@ -11,8 +11,8 @@ if( !isset($_SESSION['g_session_index_sql']['anbieter']) )
 	exit();
 }
 
-$to = "";           // contact email address
-$batch_limit = 249; // max. emails to be sent per batch
+// config
+$to = "<interne_mailadresse>";
 $trenner = ";";
 
 
@@ -21,6 +21,8 @@ $eql2sql = new EQL2SQL_CLASS('anbieter');
 $eql = !isset($_SESSION['g_session_index_eql']['anbieter']) || $_SESSION['g_session_index_eql']['anbieter'] == '' ? '*' : $_SESSION['g_session_index_eql']['anbieter'];
 
 $sql = $eql2sql->eql2sql($eql, 'anspr_email', acl_get_sql(ACL_READ, 0, 1, 'anbieter'), 'id');
+
+$batch_limit = 249; // max. no of E-Mails that may be sent via (providers') mail server 
 
 $allBatches = array();
 $allEmails = array();
