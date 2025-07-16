@@ -47,6 +47,14 @@ if( $db->next_record() )
 	$to = $db->fs('email');
 }
 
+// sanitize
+$bcc = str_replace(';', ',', $bcc);   // sometimes more than one email in email field separated by semicolon
+$bcc = str_replace(', ', ',', $bcc);  // mixed spaces, reduce to no space
+$bcc = str_replace(',', ', ', $bcc);  // add space after comma
+
+// using semicolon as separator for some email clients
+$bcc_semi = str_replace( ', ', '; ', $bcc);
+
 
 // render page
 
@@ -59,10 +67,13 @@ $site->pageStart(array('popfit'=>1));
 	$site->skin->submenuEnd();
 	
 	$site->skin->workspaceStart();
-
-		echo "Um Ihr Email-Programm zu starten und an alle<br />ausgew&auml;hlten Anbieter eine Email zu senden, klicken Sie bitte ";
-		echo '<a href="mailto:' .$to. '?bcc=' .$bcc /*urlencode is not understood by outlook*/. '"><b>hier</b></a>.<br /><br />';
-		echo "(Einige Versionen von Outlook unterst&uuml;tzen nicht die &uuml;bergabe beliebig vieler Email-Adressen; sollte Outlook nicht starten, versuchen Sie eine Auswahl mit weniger Anbietern)";
+	
+	echo "Um Ihr Email-Programm zu starten und an alle<br />ausgew&auml;hlten Anbieter eine Email zu senden, klicken Sie bitte:<br><br>";
+	echo "Mit <b>Semikolon</b> als Trenner:<br>";
+	echo '<a href="mailto:' . $to . '?bcc=' . $bcc_semi . '"><b>hier</b></a>.<br><br>'; // urlencode is not understood by outlook
+	echo "Mit <b>Komma</b> als Trenner:<br>";
+	echo '<a href="mailto:' . $to . '?bcc=' . $bcc . '"><b>hier</b></a>.<br><br>'; // urlencode is not understood by outlook
+	echo "(Einige Versionen von Outlook unterst&uuml;tzen nicht die &uuml;bergabe beliebig vieler Email-Adressen; sollte Outlook nicht starten, versuchen Sie eine Auswahl mit weniger Anbietern)";
 	
 	$site->skin->workspaceEnd();
 	
