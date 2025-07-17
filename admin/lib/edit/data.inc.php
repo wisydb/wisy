@@ -605,13 +605,21 @@ class EDIT_DATA_CLASS
 	
 	private function create_record_($table_def)
 	{
-		$def_grp	= intval(acl_get_default_grp());	// we create the record using the default values for the user;
-		$def_access = acl_get_default_access();			// they may be changed later
-
-		$sql = "INSERT INTO $table_def->name (date_created, date_modified, user_created, user_modified, user_grp, user_access) 
-											  VALUES (".$this->db1->quote($this->date_created).", ".$this->db1->quote($this->date_modified).", $this->user_modified, $this->user_modified, $def_grp, $def_access)";
-		$this->db1->query($sql);	
-		return $this->db1->insert_id();
+	    $def_grp	= intval(acl_get_default_grp());	// we create the record using the default values for the user;
+	    $def_access = acl_get_default_access();			// they may be changed later
+	    
+	    $def_fieldStr = '';
+	    $def_valStr = '';
+	    foreach( $table_def->get_DBFieldsUponCreation() AS $field => $value ) {
+	        $def_fieldStr = ', ' . $field;
+	        $def_valStr   = ', ' . $value;
+	    }
+	    
+	    $sql = "INSERT INTO $table_def->name (date_created, date_modified, user_created, user_modified, user_grp, user_access". (strlen($def_fieldStr) ? $def_fieldStr : '').")
+											  VALUES (".$this->db1->quote($this->date_created).", ".$this->db1->quote($this->date_modified).", $this->user_modified, $this->user_modified, $def_grp, $def_access".(strlen($def_valStr) ? $def_valStr : '').")";
+	    
+	    $this->db1->query($sql);
+	    return $this->db1->insert_id();
 	}
 	
 	private function save_record_($table_def, $id, $field_index, $secondary_field_name)

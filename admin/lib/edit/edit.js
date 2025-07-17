@@ -1,4 +1,4 @@
-
+/* הצü */
 
 var ARROW_DOWN  = '&#x25bc;'; // from http://www.fileformat.info/info/unicode/block/geometric_shapes/utf8test.htm
 var ARROW_UP	= '&#x25b2;';

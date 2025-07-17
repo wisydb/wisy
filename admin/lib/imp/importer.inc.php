@@ -135,28 +135,36 @@ class IMP_IMPORTER_CLASS
 	
 	private function _import_record($table, $id)
 	{
-		$mysqlDb  = $this->mysqlDb;
-		$sqliteDb = $this->mixfile->sqliteDb2;
-
-		// function imports a single record to the MySQL database
-		$table_def = Table_Find_Def($table, 0);
-		if( !is_object($table_def) ) { return false; }
-		
-		// read the basic record from SQLite
-		$sqliteDb->query("SELECT * FROM $table WHERE id=$id");
-		if( !$sqliteDb->next_record() ) { $this->_log("Kann $table.$id nicht aus Mix-Datei lesen.", $table, $id); return false; }
-		$date_created  = $sqliteDb->fs('date_created');
-		$date_modified = $sqliteDb->fs('date_modified');
-		$this->_get_fine_user($sqliteDb->fs('user_created'), $sqliteDb->fs('user_modified'), $sqliteDb->fs('user_grp'), $sqliteDb->fs('user_access'),
-				$user_created, $user_modified, $user_grp, $user_access);
-		$sync_src = intval($sqliteDb->fs('sync_src'));
-		
-		// make sure, the record exists is MySQL
-		$mysqlDb->query("SELECT id FROM $table WHERE id=$id;");
-		if( !$mysqlDb->next_record() ) {
-			$sql = "INSERT INTO $table (id, user_created, date_created) VALUES ($id, $user_created, '$date_created');";
-			$mysqlDb->query($sql);
-		}
+	    
+	    $mysqlDb  = $this->mysqlDb;
+	    $sqliteDb = $this->mixfile->sqliteDb2;
+	    
+	    // function imports a single record to the MySQL database
+	    $table_def = Table_Find_Def($table, 0);
+	    if( !is_object($table_def) ) { return false; }
+	    
+	    // read the basic record from SQLite
+	    $sqliteDb->query("SELECT * FROM $table WHERE id=$id");
+	    if( !$sqliteDb->next_record() ) { $this->_log("Kann $table.$id nicht aus Mix-Datei lesen.", $table, $id); return false; }
+	    $date_created  = $sqliteDb->fs('date_created');
+	    $date_modified = $sqliteDb->fs('date_modified');
+	    $this->_get_fine_user($sqliteDb->fs('user_created'), $sqliteDb->fs('user_modified'), $sqliteDb->fs('user_grp'), $sqliteDb->fs('user_access'),
+	        $user_created, $user_modified, $user_grp, $user_access);
+	    $sync_src = intval($sqliteDb->fs('sync_src'));
+	    
+	    $def_fieldStr = '';
+	    $def_valStr = '';
+	    foreach( $table_def->get_DBFieldsUponCreation() AS $field => $value ) {
+	        $def_fieldStr = ', ' . $field;
+	        $def_valStr   = ', ' . $value;
+	    }
+	    
+	    // make sure, the record exists is MySQL
+	    $mysqlDb->query("SELECT id FROM $table WHERE id=$id;");
+	    if( !$mysqlDb->next_record() ) {
+	        $sql = "INSERT INTO $table (id, user_created, date_created". (strlen($def_fieldStr) ? $def_fieldStr : '').") VALUES ($id, $user_created, '$date_created'".(strlen($def_valStr) ? $def_valStr : '').");";
+	        $mysqlDb->query($sql);
+	    }
 		
 		// update the basics values
 		$sql = "UPDATE $table SET sync_src=$sync_src, user_modified=$user_modified, user_grp=$user_grp, user_access=$user_access, date_modified='$date_modified'";
@@ -270,180 +278,277 @@ class IMP_IMPORTER_CLASS
 	
 	function import_do($mix_fullpath, $option_overwrite, $option_delete, $option_further_options_str = '')
 	{
-		$imported_ids						= array();
-		$todel_ids 							= array();
-		$deleted_ids						= array();
-		
-		$this->mix_fullpath					= $mix_fullpath;
-		$this->option_overwrite				= $option_overwrite;
-		$this->option_delete				= $option_delete;
-		$this->option_further_options_str	= $option_further_options_str;
-		$this->protect 						= array();
-	
-		$sync_tools 		= new SYNC_TOOLS_CLASS;
-		$system_sync_src	= $sync_tools->get_sync_src();
-	
-		// parse the "further options"
-		$cnt = preg_match_all("/([\w\.]+)\s*=\s*(\w+)\s*;*/", $option_further_options_str, $matches);
-		for( $m = 0; $m < $cnt; $m++ )
-		{
-			$option = $matches[1][$m]; $temp = explode('.', $option); $table = $temp[0]; $field = $temp[1];
-			$value  = $matches[2][$m];
-			$table_def = Table_Find_Def($table, 0);
-			
-			if( $value == 'protect' ) 
-			{
-				if( $system_sync_src == 0 )  { $this->_log_full('"protect" kann nur zusammen mit einer eigenen Datenbankkennung verwendet werden.'); return false; }
-				if( !is_object($table_def) ) { $this->_log_full("$table - ungueltige Tabellenangabe."); return false; }
-				$linked_table = '';
-				for( $r = 0; $r < sizeof((array) $table_def->rows); $r++ ) {
-				    if( isset($table_def->rows[$r]->name) && $table_def->rows[$r]->name == $field ) {
-						$linked_table = $table_def->rows[$r]->addparam->name;
-						break;
-					}
-				}
-				if( $linked_table=='' ) { $this->_log_full("$field - Feld nicht gefunden oder es ist kein Attributfeld mit Mehrfachauswahl."); return false; }
-				
-				$sql = "SELECT id FROM $linked_table WHERE sync_src=$system_sync_src;";
-				$this->mysqlDb->query($sql);
-				while( $this->mysqlDb->next_record() ) {
-					$this->protect[ $table ][ $field ][ $this->mysqlDb->f('id') ] = 1;
-				}
-			}
-			else
-			{
-				$this->_log_full('"' . $option_further_options_str . '" enthaelt ungueltige Angaben.');
-				return false;
-			}
-		}
-	
-		// open the mixfile
-		$this->mixfile = new IMP_MIXFILE_CLASS;
-		if( !$this->mixfile->open($mix_fullpath) ) {
-			$this->_log_full("Kann $mix_fullpath nicht oeffnen - ".$this->mixfile->error_str);
-			return false;
-		}
-		$this->mixfile->create_db_object_to_use();
-		
-		// INSERT / UPDATE - go through all records
-		$totalCnt = 0;
-		$tables = $this->mixfile->get_tables();
-		for( $t = 0; $t < sizeof((array) $tables); $t++ )
-		{
-			$table   = $tables[$t];
-			$records = $this->mixfile->get_records($table, GET_UPDATES|GET_DELETE);
-			reset($records);
-			foreach($records as $id => $currRecord)
-			{	
-				// import / delete this record?
-				$import   = false;
-				$deleteit = false;
-				if( !isset($currRecord['src_date_modified']) )
-				{
-					// delete?
-					if( $option_delete == IMP_DELETE_DELETED ) 
-						$deleteit = true;
-				}
-				else if( isset($currRecord['dest_date_modified']) )
-				{
-					// import?
-					if( $currRecord['dest_date_modified'] == $currRecord['src_date_modified'] ) {
-						;
-					}
-					else if( $currRecord['dest_date_modified'] > $currRecord['src_date_modified'] ) {
-						if( $option_overwrite == IMP_OVERWRITE_ALWAYS ) {
-							$import = true;
-						}
-					}
-					else {
-						if( $option_overwrite != IMP_OVERWRITE_NEVER ) {
-							$import = true;
-						}
-					}
-				}
-				else 
-				{
-					$import = true;
-				}
-				
-				if( $import || $deleteit ) {
-				    if( ( !isset($imported_ids[$table]) || sizeof((array) $imported_ids[$table])==0 ) && ( !isset($todel_ids[$table]) || sizeof((array) $todel_ids[$table])==0 ) ) {
-						$this->_log_full('Import gestarted.', $table);
-					}
-				}
-				
-				// do the import
-				if( $import )
-				{
-					$this->_import_record($table, $id);
-					$imported_ids[ $table ][] = $id;
-				}
-				else if( $deleteit )
-				{
-					$todel_ids[ $table ][$id] = 1; // delete itself is delayed to allow easy reference checking
-				}
-				
-				// progress info
-				$totalCnt++;
-				if( $totalCnt % 10 == 0 )
-					$this->_progress("$totalCnt Datensaetze bearbeitet ...");				
-			}
-		}
-		
-		if( sizeof((array) $imported_ids)==0 && sizeof((array) $todel_ids)==0 ) {
-			$this->_log_full('Import gestarted, keine zu importierenden oder zu loeschenden Datensaetze gefunden.');
-		}
+	    
+	    $imported_ids						= array();
+	    $todel_ids 							= array();
+	    $deleted_ids						= array();
+	    $mixfile_options					= array();
+	    
+	    $this->mix_fullpath					= $mix_fullpath;
+	    $this->option_overwrite				= $option_overwrite;
+	    $this->option_delete				= $option_delete;
+	    $this->option_further_options_str	= $option_further_options_str;
+	    $this->protect 						= array();
+	    
+	    $sync_tools 		= new SYNC_TOOLS_CLASS;
+	    $system_sync_src	= $sync_tools->get_sync_src();
+	    $optionset          = 0;
+	    
+	    // parse the "further options"
+	    $cnt = preg_match_all("/([\w\.]+)\s*=\s*([\w,:]+)\s*;*/", $option_further_options_str, $matches);
+	    for( $m = 0; $m < $cnt; $m++ )
+	    {
+	        $option = $matches[1][$m]; $temp = explode('.', $option); $table = $temp[0]; $field = $temp[1];
+	        $value  = $matches[2][$m];
+	        $table_def = Table_Find_Def($table, 0);
+	        
+	        if( stripos($value, 'protect_field_value') === 0 )
+	        {
+	            if( $system_sync_src == 0 )  { $this->_log_full('"protect_field_value" kann nur zusammen mit einer eigenen Datenbankkennung verwendet werden.'); return false; }
+	            if( !is_object($table_def) ) { $this->_log_full("$table - ungueltige Tabellenangabe."); return false; }
+	            
+	            echo "<br><b>Option: protect_field_value ist gesetzt: ".$value."</b><br>";
+	            
+	            $linked_table = '';
+	            for( $r = 0; $r < sizeof((array) $table_def->rows); $r++ ) {
+	                if( isset($table_def->rows[$r]->name) && $table_def->rows[$r]->name == $field ) {
+	                    $linked_table = $table_def->rows[$r]->addparam->name;
+	                    break;
+	                }
+	            }
+	            if( $linked_table=='' ) { $this->_log_full("$field - Feld nicht gefunden oder es ist kein Attributfeld mit Mehrfachauswahl."); return false; }
+	            
+	            // Generate an ID list of attr table field-value combinations (like tag types "eigenschaften=...") that will not be overwritten
+	            $protected_ids = explode(':', $value);
+	            $fieldvalue = explode(',', $protected_ids[1]);
+	            
+	            if( count($fieldvalue) != 2)
+	                if( $linked_table=='' ) { $this->_log_full("Wert {$value} entspricht nicht dem geforderten Fromat, z.B: kurse.stichwort=protect_field_value:eigenschaften,2048; Nur ein Wert pro Feld. String-Werte ben&ouml;tigen Anf&uuml;hrungszeichen."); return false; }
+	            
+	            $protect_field = $fieldvalue[0];
+	            $protect_value = str_replace('"', '\"', $fieldvalue[1]);
+	            
+	            $sql = "SELECT id FROM $linked_table WHERE $protect_field = $protect_value;";
+ 
+	            $this->mysqlDb->query($sql);
+	            while( $this->mysqlDb->next_record() ) {
+	                $this->protect[ $table ][ $field ][ $this->mysqlDb->f('id') ] = 1;
+	            }
+	            $optionset++;
+	        }
+	        
+	        if( stripos($value, 'protect_ids') === 0 )
+	        {
+	            if( $system_sync_src == 0 )  { $this->_log_full('"protect_ids" kann nur zusammen mit einer eigenen Datenbankkennung verwendet werden.'); return false; }
+	            if( !is_object($table_def) ) { $this->_log_full("$table - ungueltige Tabellenangabe."); return false; }
+	            
+	            echo "<br><b>Option: protect_ids ist gesetzt: ".$value."</b><br>";
+	            
+	            $linked_table = '';
+	            for( $r = 0; $r < sizeof((array) $table_def->rows); $r++ ) {
+	                if( isset($table_def->rows[$r]->name) && $table_def->rows[$r]->name == $field ) {
+	                    $linked_table = $table_def->rows[$r]->addparam->name;
+	                    break;
+	                }
+	            }
+	            if( $linked_table=='' ) { $this->_log_full("$field - Feld nicht gefunden oder es ist kein Attributfeld mit Mehrfachauswahl."); return false; }
+	            
+	            // Generate an ID list of attr table ids (like tag ids) that will not be overwritten
+	            $protected_ids = explode(':', $value);
+	            $sql = "SELECT id FROM $linked_table WHERE id IN (".$protected_ids[1].");";
 
-		// DELETE - go through all records--
-		$totalCnt = 0;
-		reset($todel_ids);
-		foreach($todel_ids as $table => $ids)
-		{
-			$table_def = Table_Find_Def($table, 0 /*no access check*/ );
-			if( is_object($table_def) ) {
-				reset($ids);
-				foreach($ids as $id => $dummy)
-				{
-					// delete the record, if possible
-					$id_ref_cnt = $table_def->num_references($id, $id_references);
-					if( $id_ref_cnt > 0 ) {
-						$this->_log("Datensatz kann nicht geloescht werden, da er noch referenziert wird.", $table, $id);
-					}
-					else {
-						$table_def->destroy_record_dependencies($id);
-						$this->mysqlDb->query("DELETE FROM $table WHERE id=$id");
-						$deleted_ids[$table][] = $id;
-					}
-					
-					// progress info
-					$totalCnt++;
-					if( $totalCnt % 10 == 0 )
-						$this->_progress("$totalCnt Datensaetze geloescht ...");	
-				}
-			}
-		}
-		reset($deleted_ids);
-		foreach($deleted_ids as $table => $ids) {
-			$this->_log('Datensaetze geloescht.', $table, implode(',', $ids));
-		}
-		
-		// FINAL log
-		for( $t = 0; $t < sizeof((array) $tables); $t++ ) {
-			$table = $tables[$t];
-			if( isset($imported_ids) && is_array($imported_ids) && isset($imported_ids[$table]) && sizeof((array) $imported_ids[$table]) 
-			 || isset($todel_ids) && is_array($todel_ids) && isset($todel_ids[$table]) && sizeof((array) $todel_ids[$table]) 
-			  ) {
-			     $this->_log('Import beendet.', $table, (isset($imported_ids[$table]) && sizeof((array) $imported_ids[$table])) ? implode(',', $imported_ids[$table]) : '');
-			}
-		}
-		if( sizeof((array) $imported_ids)==0 && sizeof((array) $todel_ids)==0 ) {
-			$this->_log('Import beendet.');
-		} 
+	            $this->mysqlDb->query($sql);
+	            while( $this->mysqlDb->next_record() ) {
+	                $this->protect[ $table ][ $field ][ $this->mysqlDb->f('id') ] = 1;
+	            }
+	            $optionset++;
+	        }
+	        
+	        // Careful: this protects only tags of the target-sync_src ($system_sync_src) - not all tags!
+	        if( $value == 'protect' )
+	        {
+	            if( $system_sync_src == 0 )  { $this->_log_full('"protect" kann nur zusammen mit einer eigenen Datenbankkennung verwendet werden.'); return false; }
+	            if( !is_object($table_def) ) { $this->_log_full("$table - ungueltige Tabellenangabe."); return false; }
+	            
+	            echo "<br><b>Option: protect ist gesetzt:".$value."</b><br>";
+	            
+	            $linked_table = '';
+	            for( $r = 0; $r < sizeof((array) $table_def->rows); $r++ ) {
+	                if( isset($table_def->rows[$r]->name) && $table_def->rows[$r]->name == $field ) {
+	                    $linked_table = $table_def->rows[$r]->addparam->name;
+	                    break;
+	                }
+	            }
+	            if( $linked_table=='' ) { $this->_log_full("$field - Feld nicht gefunden oder es ist kein Attributfeld mit Mehrfachauswahl."); return false; }
+	            
+	            $sql = "SELECT id FROM $linked_table WHERE sync_src=$system_sync_src;";
 
-		// success
-		$this->mixfile->ini_write('import_end_time', ftime("%Y-%m-%d %H:%M:%S"));
-		$this->mixfile->close();
-
-		return true;
+	            $this->mysqlDb->query($sql);
+	            while( $this->mysqlDb->next_record() ) {
+	                $this->protect[ $table ][ $field ][ $this->mysqlDb->f('id') ] = 1;
+	            }
+	            
+	            $optionset++;
+	        }
+	        
+	        if( $field == "sync_src" ) {
+	            
+	            echo "<br><b>Option: sync_src ist gesetzt:".$value."</b><br>";
+	            
+	            if( !preg_match("/^\d+(,\d+)*$/", $value, $matches) ) {
+	                $this->_log_full("$table - ungueltige syn_src-Spezifikation - erforderlich: einzelnes Integer ([...].sync_src=4;) oder Liste von Integers ([...].sync_src=1,4;).");
+	                return false;
+	            }
+	            
+	            $mixfile_options['sync_src'] = array( 'table' => $table, 'srces' => explode(',', $value) );
+	            
+	            $optionset++;
+	        }
+	        
+	        if( !$optionset )
+	        {
+	            $this->_log_full('"' . $option_further_options_str . '" enthaelt ungueltige Angaben.');
+	            return false;
+	        }
+	    }
+	    
+	    echo "<br>Insgesamt wurden " . $optionset . " Sync-Optionen gesetzt.<br>";
+	    
+	    // open the mixfile
+	    $this->mixfile = new IMP_MIXFILE_CLASS;
+	    if( !$this->mixfile->open($mix_fullpath) ) {
+	        $this->_log_full("Kann $mix_fullpath nicht oeffnen - ".$this->mixfile->error_str);
+	        return false;
+	    }
+	    $this->mixfile->create_db_object_to_use();
+	    
+	    // INSERT / UPDATE - go through all records
+	    $totalCnt = 0;
+	    $tables = $this->mixfile->get_tables();
+	    
+	    for( $t = 0; $t < sizeof((array) $tables); $t++ )
+	    {
+	        $table   = $tables[$t];
+	        $records = $this->mixfile->get_records($table, GET_UPDATES|GET_DELETE, $mixfile_options);
+	        reset($records);
+	        
+	        echo "Anzahl gefundener Datensaetze in '{$tables[$t]}': ".count($records)."\n";
+	        
+	        foreach($records as $id => $currRecord)
+	        {
+	            
+	            // import / delete this record?
+	            $import   = false;
+	            $deleteit = false;
+	            if( !isset($currRecord['src_date_modified']) )
+	            {
+	                // delete?
+	                if( $option_delete == IMP_DELETE_DELETED )
+	                    $deleteit = true;
+	                    
+	            }
+	            else if( isset($currRecord['dest_date_modified']) )
+	            {
+	                // import?
+	                if( $currRecord['dest_date_modified'] == $currRecord['src_date_modified'] ) {
+	                    ;
+	                }
+	                else if( $currRecord['dest_date_modified'] > $currRecord['src_date_modified'] ) {
+	                    if( $option_overwrite == IMP_OVERWRITE_ALWAYS ) {
+	                        $import = true;
+	                    }
+	                }
+	                else {
+	                    if( $option_overwrite != IMP_OVERWRITE_NEVER ) {
+	                        $import = true;
+	                    }
+	                }
+	            }
+	            else
+	            {
+	                $import = true;
+	            }
+	            
+	            if( $import || $deleteit ) {
+	                if( ( !isset($imported_ids[$table])
+	                    || sizeof((array) $imported_ids[$table])==0 ) && ( !isset($todel_ids[$table])
+	                        || count((array) $todel_ids[$table]) == 0 ) ) {
+	                            $this->_log_full('Import gestarted.', $table);
+	                        }
+	            }
+	            
+	            // do the import
+	            if( $import )
+	            {
+	                $this->_import_record($table, $id);
+	                $imported_ids[ $table ][] = $id;
+	            }
+	            else if( $deleteit )
+	            {
+	                $todel_ids[ $table ][$id] = 1; // delete itself is delayed to allow easy reference checking
+	            }
+	            
+	            // progress info
+	            $totalCnt++;
+	            if( $totalCnt % 10 == 0 )
+	                $this->_progress("$totalCnt Datensaetze bearbeitet ...");
+	        }
+	    }
+	    
+	    if( sizeof((array) $imported_ids)==0 && sizeof((array) $todel_ids)==0 ) {
+	        $this->_log_full('Import gestarted, keine zu importierenden oder zu loeschenden Datensaetze gefunden.');
+	    }
+	    
+	    // DELETE - go through all records--
+	    $totalCnt = 0;
+	    reset($todel_ids);
+	    foreach($todel_ids as $table => $ids)
+	    {
+	        $table_def = Table_Find_Def($table, 0 /*no access check*/ );
+	        if( is_object($table_def) ) {
+	            reset($ids);
+	            foreach($ids as $id => $dummy)
+	            {
+	                // delete the record, if possible
+	                $id_ref_cnt = $table_def->num_references($id, $id_references);
+	                if( $id_ref_cnt > 0 ) {
+	                    $this->_log("Datensatz kann nicht geloescht werden, da er noch referenziert wird.", $table, $id);
+	                }
+	                else {
+	                    $table_def->destroy_record_dependencies($id);
+	                    $this->mysqlDb->query("DELETE FROM $table WHERE id=$id");
+	                    $deleted_ids[$table][] = $id;
+	                }
+	                
+	                // progress info
+	                $totalCnt++;
+	                if( $totalCnt % 10 == 0 )
+	                    $this->_progress("$totalCnt Datensaetze geloescht ...");
+	            }
+	        }
+	    }
+	    reset($deleted_ids);
+	    foreach($deleted_ids as $table => $ids) {
+	        $this->_log('Datensaetze geloescht.', $table, implode(',', $ids));
+	    }
+	    
+	    // FINAL log
+	    for( $t = 0; $t < sizeof((array) $tables); $t++ ) {
+	        $table = $tables[$t];
+	        if( isset($imported_ids) && is_array($imported_ids) && isset($imported_ids[$table]) && sizeof((array) $imported_ids[$table])
+	            || isset($todel_ids) && is_array($todel_ids) && isset($todel_ids[$table]) && sizeof((array) $todel_ids[$table])
+	            ) {
+	                $this->_log('Import beendet.', $table, (isset($imported_ids[$table]) && sizeof((array) $imported_ids[$table])) ? implode(',', $imported_ids[$table]) : '');
+	            }
+	    }
+	    if( sizeof((array) $imported_ids)==0 && sizeof((array) $todel_ids)==0 ) {
+	        $this->_log('Import beendet.');
+	    }
+	    
+	    // success
+	    $this->mixfile->ini_write('import_end_time', ftime("%Y-%m-%d %H:%M:%S"));
+	    $this->mixfile->close();
+	    
+	    return true;
 	}
 };
