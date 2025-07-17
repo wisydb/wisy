@@ -1163,6 +1163,28 @@ jQuery(document).ready(function() {
 		}
 
 	}
+	
+	$('.swbaum.tb tbody tr[data-level="1"] .collapse-toggle').click(function (e) {
+      e.stopPropagation(); // Prevent the click event from bubbling to the row
+      var row = $(this).closest('tr');
+      row.toggleClass('collapsed');
+      $(this).toggleClass('collapsed');
+      
+      let level = parseInt(row.data('level'));
+      let next = row.next();
+
+      while (next.length && parseInt(next.data('level')) > level) {
+        if (row.hasClass('collapsed')) {
+          if (parseInt(next.data('level')) === level + 1) {
+            next.show();
+          }
+        } else {
+          next.hide();
+        }
+        next = next.next();
+      }
+    });
+    
 });
 
 /* End: HTML preview */
