@@ -1,11 +1,5 @@
 <?php
 
-/*
-Diese Uebersicht ist ohne Auftrag erstellt und 
-kann ohne weiteres wieder verschwinden, wenn sie nicht mehr benoetigt wird (bp)
-*/
-
-
 require_once('functions.inc.php');
 
 
@@ -107,30 +101,37 @@ class stichwoerter_tree
 	
 	function renderStichwort($id, $stack)
 	{
-		global $site;
-		
-		$astyle = ''; 
-		$sstyle = ' font-style:italic;  '; // font-size: 80%;
-		if( isset($this->flat[$id]['unterbegriffe']) && sizeof((array) $this->flat[$id]['unterbegriffe']) ) { $astyle = ' font-weight: bold; '; }
-		if( sizeof((array) $stack) >= 2 ) { $astyle .= ' font-size: 80%; '; $sstyle .= '  '; }
-		
-		$site->skin->rowStart();
-			$site->skin->cellStart('style="width: 50%; padding-left: '.(sizeof((array) $stack)*20).'px;"');
-				echo $this->renderStichwortLink($id, $astyle);
-			$site->skin->cellEnd();
-			
-			$site->skin->cellStart('style="width: 50%;"');
-    			if( isset($this->flat[$id]['synonyme']) ) {
-    				for( $i = 0; $i < sizeof((array) $this->flat[$id]['synonyme']); $i++ )
-    				{
-    					$synonym_id = $this->flat[$id]['synonyme'][$i];
-    					echo $i? ', ' : '';
-    					echo $this->renderStichwortLink($synonym_id, $sstyle);
-    				}
-    			}
-			$site->skin->cellEnd();
-			
-		$site->skin->rowEnd();
+	    global $site;
+	    
+	    $astyle = '';
+	    $sstyle = ' font-style:italic;  '; // font-size: 80%;
+	    $hatunterbegriffe = ( isset($this->flat[$id]['unterbegriffe']) && sizeof((array) $this->flat[$id]['unterbegriffe']) );
+	    if( $hatunterbegriffe ) { $astyle = ' font-weight: bold; '; }
+	    if( sizeof((array) $stack) >= 2 ) { $astyle .= ' font-size: 80%; '; $sstyle .= '  '; }
+	    
+	    $datalevel = (int) (sizeof((array) $stack)+1);
+	    $site->skin->rowStart('data-level="'.$datalevel.'"');
+	    $site->skin->cellStart('style="width: 50%; padding-left: '.(sizeof((array) $stack)*20).'px; '.($hatunterbegriffe ? 'padding-top: .5em; padding-bottom: .5em;' : '').'"');
+	    
+	    if( $hatunterbegriffe )
+	        echo '<span class="collapse-toggle">&nbsp;</span>';
+	        
+	        echo $this->renderStichwortLink($id, $astyle);
+	        
+	        $site->skin->cellEnd();
+	        
+	        $site->skin->cellStart('style="width: 50%;"');
+	        if( isset($this->flat[$id]['synonyme']) ) {
+	            for( $i = 0; $i < sizeof((array) $this->flat[$id]['synonyme']); $i++ )
+	            {
+	                $synonym_id = $this->flat[$id]['synonyme'][$i];
+	                echo $i? ', ' : '';
+	                echo $this->renderStichwortLink($synonym_id, $sstyle);
+	            }
+	        }
+	        $site->skin->cellEnd();
+	        
+	        $site->skin->rowEnd();
 		
 		if( sizeof((array) $stack) > 25 )
 			{ $this->errors[] = "Zu tiefe Verschachtelung bei ".$this->renderStichwortLink($id); return; }
@@ -162,7 +163,7 @@ class stichwoerter_tree
 		global $site;
 		
 		$site->pageStart(array('popfit'=>1));
-		$site->skin->tableStart();
+		$site->skin->tableStart('swbaum');
 			$site->skin->headStart();
 				$site->skin->cellStart();
 					echo 'Deskriptor';

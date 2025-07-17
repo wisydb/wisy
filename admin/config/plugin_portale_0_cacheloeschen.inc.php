@@ -10,20 +10,20 @@ $db = new DB_Admin;
 $db->query("SELECT kurzname, einstcache FROM portale WHERE id=".$portal_id);
 $db->next_record();
 $kurzname = $db->fs('kurzname');
-		
+
 // render page
 
 $site->pageStart(array('popfit'=>1));
 
-	$site->skin->submenuStart();
-		echo '<h2>&#9776;</h2> <b>Men&uuml;-Cache l&ouml;schen f&uuml;r Portal "'.$kurzname.'"</b>';
-	$site->skin->submenuBreak();
-		echo "&nbsp;";
-	$site->skin->submenuEnd();
-	
-	$site->skin->workspaceStart();
+$site->skin->submenuStart();
+echo '<h2>&#9776;</h2> <b>Men&uuml;-Cache l&ouml;schen f&uuml;r Portal "'.$kurzname.'"</b>';
+$site->skin->submenuBreak();
+echo "&nbsp;";
+$site->skin->submenuEnd();
 
-		
+$site->skin->workspaceStart();
+
+
 ?>
 		<style type="text/css">
 			th, td, tf {
@@ -97,8 +97,16 @@ $site->pageStart(array('popfit'=>1));
 	<?php
 	$site->skin->workspaceEnd();
 	
+	
+	// SUCH-CACHE FUER DIESES PORTAL LOESCHEN:
+	$db = new DB_Admin;
+	$db->query("SELECT COUNT(*) AS cnt FROM x_cache_search WHERE ckey LIKE 'wisysearch.".$portal_id.".%'");
+	$cnt = -1;
+	if($db->next_record())
+	    $cnt = $db->f("cnt");
+	
 	$site->skin->submenuStart();
-		echo '<h2>&#128270;</h2> <b>Such-Cache l&ouml;schen f&uuml;r Portal "'.$kurzname.'"</b>';
+	echo '<h2>&#128270;</h2> <b>Such-Cache l&ouml;schen f&uuml;r Portal "'.$kurzname.'" ('.$cnt.' Cache-Eintr&auml;ge)</b>';
 	$site->skin->submenuBreak();
 		echo "&nbsp;";
 	$site->skin->submenuEnd();
@@ -132,12 +140,62 @@ $site->pageStart(array('popfit'=>1));
 	<?php
 	
 	$site->skin->workspaceEnd();
+		
+	
+    // GEOKODIERUNG-FEHLER LOESCHEN: PORTALUEBERGREIFEND!
+
+	$db = new DB_Admin;
+	$db->query("SELECT COUNT(*) AS cnt FROM `x_cache_latlng_search` WHERE cvalue LIKE '%Error%';");
+	
+	$cnt = -1;
+	if($db->next_record())
+	    $cnt = $db->f("cnt");
+	
+	$site->skin->submenuStart();
+	echo '<h2>&#128270;</h2> <b>Geocoding-Fehler l&ouml;schen &uuml;ber alle Portale dieser Datenbank ('.$cnt.' Fehler)</b>';
+	$site->skin->submenuBreak();
+	echo "&nbsp;";
+	$site->skin->submenuEnd();
+	
+	$site->skin->workspaceStart();
+	?>
+		
+		<form action="<?php echo (isset($_SERVER['PHP_SELF']) ? $_SERVER['PHP_SELF'] : '') ."?module=" . (isset($_GET['module']) ? $_GET['module'] : '') . "&geocache=delete"; ?>" method="POST">
+			<p>T&auml;glich werden Adressen aus Angeboten als auch Standorte, die bei der Umkreissuche eingegeben werden, geokodiert. D.h. die Adressen werden in L&auml;ngen- und Breitengrad &uuml;bersetzt, um Umkreissuchen ausf&uuml;hren zu k&ouml;nnen.</p>
+			<p>Kann eine Adresse nicht geokodiert werden, weil sie falsch oder im falschen Format ist oder noch unbekannt oder der Geokodierung-Server ausgefallen etc. wird f&uuml;r diese Adresse ein Fehler gespeichert.</p>
+			<p>(Vermeintlich) fehlerhafte Adressen werden aus Effizienz- und Limit-Gr&uuml;nden nicht erneut geokodiert.</p>
+			<p>Diese Funktion f&uuml;hrt zu einem "Reset" der "fehlerhaften" Adressen, um diese erneut gekodieren zu k&ouml;nnen - etwa nach einem Ausfall des Geokodierung-Server.</p>
+			<p>Im Anschluss (ggf. Fenster erneut &ouml;ffnen) muss noch der Such-Cache gel&ouml;scht werden!</p>
+			<br><br>
+			<input type="submit" value="Geocoding-Fehler jetzt l&ouml;schen">
+			<br><br><br>
+		</form>
+		
+	<?php
+	
+	// Delete geocoding mistakes - not portal specific!
+	
+	if(isset($_GET['geocache']) && $_GET['geocache'] == "delete") {
+		$db = new DB_Admin;
+		$db->query("DELETE FROM `x_cache_latlng_search` WHERE cvalue LIKE '%Error%';");
+
+		echo "<hr>";
+		
+		echo "<h2 style='color: darkgreen;'>Geocoding-Fehler gel&ouml;scht!</h2>";
+	}
+	
+	?>
+		
+	<?php
+	
+	$site->skin->workspaceEnd();
 	
 	$site->skin->buttonsStart();
 		form_button('cancel', 'Fenster schlie&szlig;en.', 'window.close();return false;');
 	$site->skin->buttonsEnd();
-		
+
 $site->pageEnd();
+
 ?>
 <?php
 function explodeSettings__($in, &$out, $follow_includes)
