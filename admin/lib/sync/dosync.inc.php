@@ -32,6 +32,7 @@ class SYNC_DOSYNC_CLASS extends SYNC_FUNCTIONS_CLASS
 		$starting_time = time();
 		
 		// Job informationen holen 
+		echo "Job $this->jobid ausf&uuml;hren ... wenn am Ende nicht 'Fertig' steht, wurde die Aufgabe unterbrochen! \n\n";
 		$this->_log("Job $this->jobid ausf&uuml;hren ... wenn am Ende nicht 'Fertig' steht, wurde die Aufgabe unterbrochen!");
 		$this->job = new SYNC_JOB_CLASS($this->jobid);
 		if( !isset( $this->job->jobid ) || $this->job->jobid == 0 ) {
@@ -54,7 +55,21 @@ class SYNC_DOSYNC_CLASS extends SYNC_FUNCTIONS_CLASS
 		$mix_fullpath =  $GLOBALS['g_temp_dir'] . '/imp-0-' . 'sync' . time() . 'job'.$this->job->jobid.'.mix';;
 		
 		// MIX-Datei herunterladen
+		echo "Kopiere $requrl_without_key nach $mix_fullpath ..." . "\n\n";
 		$this->_log("Kopiere $requrl_without_key nach $mix_fullpath ...");
+		
+		// make sure Webserver doesn't time b/c of no output
+		$outputBufferingValue = intval(ini_get('output_buffering'));
+		if( $outputBufferingValue > 0 ) {
+		    // Generate a string of $outputBufferingValue spaces (or any other character)
+		    $padding = str_repeat('.', $outputBufferingValue);
+		    
+		    // Output the padding string
+		    echo $padding;
+		    ob_flush();
+		    flush();
+		}
+				
 		if( !$this->_copy_remote_to_local($requrl_incl_key, $mix_fullpath) )
 			return false;
 		
