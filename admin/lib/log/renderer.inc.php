@@ -332,6 +332,14 @@ class LOG_RENDERER_CLASS
 	        die("Aktion nicht zugelassen. Datensatz-ID nicht definiert. Protokolle nur f&uuml;r spezifische Datens&auml;tze abrufbar. ");
 	    }
 	    
+	    if( trim($_REQUEST['table']) == "" ) {
+	     die("Aktion nicht zugelassen. Tabelle ist nicht konkret definiert (wie Kurse). ");
+	    }
+	     
+	    if( trim($_REQUEST['id']) == "" || intval($_REQUEST['id']) < 1 ) {
+	     die("Aktion nicht zugelassen. Datensatz-ID nicht definiert. Protokolle nur f&uuml;r spezifische Datens&auml;tze abrufbar. ");
+	    }
+	    
 		// get table to use for filtering, if any
 		$this->filterTable = '';
 		$this->filterId = 0;
