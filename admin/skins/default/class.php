@@ -321,10 +321,10 @@ class SKIN_DEFAULT_CLASS
 	======================================================================== */
 
 
-	function tableStart()
+	function tableStart( $class = "" )
 	{
-		echo '<table class="tb">';
-		$this->inTableHead = false;
+	    echo '<table class="tb '.$class.'">';
+	    $this->inTableHead = false;
 	}
 	function headStart()
 	{

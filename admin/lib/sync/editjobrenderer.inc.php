@@ -71,6 +71,7 @@ class SYNC_EDITJOBRENDERER_CLASS extends SYNC_FUNCTIONS_CLASS
 					form_control_enum('table', $currJob->table, $this->_get_tables_list());
 				form_control_end();
 				form_control_start('Anfrage an Quellserver');
+				    // form_control_text('query', $currJob->query, 600 /*width*/, 600 /*maxlength*/);
 				    form_control_textarea('query', $currJob->query, 60 /*width*/, 5 /*height*/);
 					echo '<br />z.B. <i>modified(today)</i> oder <i>modified>=__LAST_DATE__</i> - wenn Sie die Anfrage leer lassen, werden alle Datens&auml;tze der Tabelle synchronisiert.';
 					echo '<br />&nbsp;';
@@ -86,10 +87,21 @@ class SYNC_EDITJOBRENDERER_CLASS extends SYNC_FUNCTIONS_CLASS
 					form_control_enum('delete', $currJob->delete, $options);
 				form_control_end();
 				form_control_start(htmlconstant('_IMP_FURTHEROPTIONS'));
-					form_control_text('further_options', $currJob->further_options, 60 /*width*/);
-					echo '<br />z.B. <i>kurse.stichwort=protect; anbieter.stichwort=protect;</i> um das &Uuml;berschreiben eigener Stichw&ouml;rter zu verhindern';
-					echo '<br />&nbsp;';
-					echo '<br />&nbsp;';
+				form_control_text('further_options', $currJob->further_options, 60 /*width*/);
+				echo '<br>z.B. <i>kurse.stichwort=protect; anbieter.stichwort=protect;</i> um das &Uuml;berschreiben eigener Stichw&ouml;rter zu verhindern.<br>'
+				    .'"stichwort" oder jedes andere Feld in Zusammenhang mit "protect", muss dabei eine separate Look-Up-Tabelle referenzieren.<br>'
+				    .'Im Beispiel w&auml;re das also: kurse_stichwort oder anbieter_stichwort.<br><br>'
+				    .'Trenner zwischen Optionen ist ein Semikolon ; und nicht Komma.'
+				    .'<br><br>'
+				    .'Weitere Optionen:<br>'
+				    .'"&lt;tabelle&gt;.sync_src=&lt;Integer-Liste, komma-getrennt&gt;;" zusammen mit: "Datens&auml;tze im Bestand l&ouml;schen: wenn nicht in Mix-Datei vorhanden":<br><br>'
+				    .'Dies l&ouml;scht auch jene Datens&auml;tze im Zielsystem, die im Quellsystem/Mix-Datei nicht mehr vorhanden sind,<br>'
+				    .'deren Syn_Src (=ID-Endung) nicht dem des Quell-Systems/der Mix-Datei entsprechen muss,<br>'
+				    .'sondern, die alle hier aufgez&auml;hlten sync_src sein k&ouml;nnen.<br><br>Beispiel:<br>feedback.sync_src=5 oder auch mehrere: kurse.sync_src=1,4;<br><br>'
+				    .'Das ist v. a. dann notwendig, wenn das Quell-System selber bereits Importe aus anderen WISY-Systemen mit anderen Sync-Src-Einstellungen hat.<br><br>'
+				    .'Neue Datens&auml;tze im Zielsystem, welche eine eigene(!), abweichende Sync-Src (ID-Endung) haben, werden dagegen<br>mit und ohne diese Option nicht gel&ouml;scht; es sei denn so als Option spezifiziert.';
+				    echo '<br>&nbsp;';
+				    echo '<br>&nbsp;';
 				form_control_end();
 
 				form_control_start('Beschreibung der Aufgabe');

@@ -893,3 +893,39 @@ div[data-descr="Durchführung"] + .e_tb * {
 #overlayButton {
  font-size: .9em;
 }
+
+/* SW-Baum - index_plugin_stichwoerter_1 */
+
+.swbaum.tb tbody tr[data-level] {
+  display: none; /* Hide all nested rows by default */
+}
+
+.swbaum.tb tbody tr[data-level="1"] {
+  display: table-row; /* Always show top-level rows */
+}
+
+.swbaum.tb tbody tr.collapsed + tr[data-level="2"] {
+  display: table-row; /* Show nested rows when parent is expanded */
+}
+
+.swbaum.tb tbody tr.collapsed + tr[data-level="3"] {
+  display: table-row; /* Show deeper nested rows when parent is expanded */
+}
+
+.swbaum.tb tbody tr[data-level="1"] .collapse-toggle {
+  cursor: pointer;
+  margin-right: 5px;
+  display: inline-block;
+  width: 12px;
+  text-align: center;
+}
+
+.swbaum.tb tbody tr[data-level="1"] .collapse-toggle::before {
+  content: "\25B6"; /* Right arrow */
+  padding-left: .2em;
+}
+
+.swbaum.tb tbody tr[data-level="1"].collapsed .collapse-toggle::before {
+  content: "\25BC"; /* Down arrow */
+  padding-left: .2em;
+}
