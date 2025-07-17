@@ -148,7 +148,7 @@ class IMP_OPTIONSRENDERER_CLASS extends IMP_FUNCTIONS_CLASS
 			form_control_end();
 			form_control_start(htmlconstant('_IMP_FURTHEROPTIONS'));	
 				form_control_text('further_options', $further_options, 60 /*width*/);
-				echo '<br />z.B. <i>kurse.stichwort=protect; anbieter.stichwort=protect;</i> um das &Uuml;berschreiben eigener Stichw&ouml;rter zu verhindern';
+				echo '<br>z.B. <i>kurse.stichwort=protect; anbieter.stichwort=protect;</i> um das &Uuml;berschreiben eigener Stichw&ouml;rter zu verhindern.';
 			form_control_end();
 			
 			
