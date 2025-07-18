@@ -239,14 +239,16 @@ class REST_API_CLASS
 
 	var $last_warning = '';
 
-	function __construct()
+	function __construct( $Table_Def )
 	{
-		if (!extension_loaded('mbstring')) {
-			if (!dl('mbstring.so')) {
-				die('cannot load mbstring...');
-			}
-		}
-	}
+	    if (!extension_loaded('mbstring')) {
+	        if (!dl('mbstring.so')) {
+	            die('cannot load mbstring...');
+	        }
+	    }
+	    
+	    $this->table_Def = $Table_Def;
+	}	
 	
 	function log($file, $msg)
 	{
@@ -358,6 +360,43 @@ class REST_API_CLASS
 		return $out;
 	}
 	
+	function checkURLallowed($filterApiURL) {
+	    
+	    // Rebuild the current URL from server variables.
+	    // If HTTPS is on, the scheme is 'https', else 'http'.
+	    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+	    
+	    // Combine to form the full URL (including host, path, and query string).
+	    $currentUrl = $scheme . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+	    
+	    // Parse the URL into components
+	    $urlParts = parse_url($currentUrl);
+	    
+	    // Build a string with scheme, host, path, and query only
+	    $checkString = '';
+	    
+	    if (isset($urlParts['scheme'])) {
+	        $checkString .= $urlParts['scheme'] . '://';
+	    }
+	    if (isset($urlParts['host'])) {
+	        $checkString .= $urlParts['host'];
+	    }
+	    if (isset($urlParts['path'])) {
+	        $checkString .= $urlParts['path'];
+	    }
+	    if (isset($urlParts['query'])) {
+	        $checkString .= '?' . $urlParts['query'];
+	    }
+	    
+	    // Check if $filterApiURL is in the relevant portions of the current URL
+	    if (strpos($checkString, $filterApiURL) !== false) {
+	        ; // url allowed, do nothing
+	    } else {
+	        $this->halt(403, 'url/api not allowed (apikey filter)');
+	    }
+	    
+	}
+	
 	function handleRequest()
 	{
 		header("Content-type: application/json");
@@ -369,7 +408,7 @@ class REST_API_CLASS
 		if( strlen($apikey) < 8 ) $this->halt(403, 'apikey too short'); // as we allow manual apikeys, force a minimal length here
 		
 		$db = new DB_Admin;
-		$db->query("SELECT id, flags FROM apikeys WHERE apikey='".addslashes($apikey)."'");
+		$db->query("SELECT id, flags, filter_apiurl FROM apikeys WHERE apikey='".addslashes($apikey)."'");
 		if( !$db->next_record() ) $this->halt(403, 'bad apikey');
 		
 		$apikeyid = intval($db->f('id'));
@@ -386,6 +425,10 @@ class REST_API_CLASS
 		            $this->fields[$table_key]['notizen_fix'] = array('flags'=>REST_STRING,				);
 		    }
 		}
+		
+		// make sure URL ist allowed for this api key
+		$filterApiURL = trim(strval($db->fs('filter_apiurl')));
+		$this->checkURLallowed($filterApiURL);
 		
 		// loads groups the apikey is restricted to
 		$this->apikeygrps = array();
@@ -409,7 +452,7 @@ class REST_API_CLASS
 		$scope = explode('.', $_REQUEST['scope'], 3);
 		
 		if($_GET['scope'] == '' && $method == 'PUT') {
-		    parse_str(file_get_contents("php://input"), $put_vars); // für PUT-Variablen, die nicht als URL-Parameter übergeben werden
+		    parse_str(file_get_contents("php://input"), $put_vars); // fuer PUT-Variablen, die nicht als URL-Parameter uebergeben werden
 		    $scope = explode('.', $put_vars['scope'], 3); // altern. via request headers
 		} elseif($_GET['scope'] == '' && strlen($_SERVER['HTTP_SCOPE']) > 2) {
 		    $scope = explode('.', $_SERVER['HTTP_SCOPE'], 3); // altern. via request headers
@@ -615,9 +658,10 @@ class REST_API_CLASS
 		
 		// TODO: We should preserve the strings themselves!
 		
-		$sql_lower = strtolower($sql);
-		$bad_sql = array('--', ';', '#', '/*', '*/'); // when strings are preserved, '%' should  be added
-		for( $i = sizeof($bad_sql)-1; $i >= 0 ; $i-- )
+	    $sql_lower = strtolower($sql);
+	    $bad_sql = array('/*', '*/'); // when strings are preserved, '%' should  be added -> also '--', ';', '#', <- but needs to be checked if within quotes!!
+	    // ! $bad_sql = array('--', ';', '#', '/*', '*/'); // when strings are preserved, '%' should  be added
+	    for( $i = sizeof($bad_sql)-1; $i >= 0 ; $i-- )
 		{
 			if( strpos($sql_lower, $bad_sql[$i])!==false )
 			{
