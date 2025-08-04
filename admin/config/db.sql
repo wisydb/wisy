@@ -81,7 +81,8 @@ CREATE TABLE `anbieter` (
   `x_cntkurse_status_1` int(11) DEFAULT NULL,
   `x_cntkurse_status_2` int(11) DEFAULT NULL,
   `x_cntkurse_status_3` int(11) DEFAULT NULL,
-  `x_cntkurse_status_4` int(11) DEFAULT NULL
+  `x_cntkurse_status_4` int(11) DEFAULT NULL,
+  `now_zustimmung` int(11) NOT NULL DEFAULT 0
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 --
@@ -516,7 +517,9 @@ CREATE TABLE `kurse` (
   `x_df_lastdeleted` datetime NOT NULL,
   `x_df_lastinserted_origin` varchar(100) NOT NULL,
   `x_df_lastmodified_origin` varchar(100) NOT NULL,
-  `x_df_lastdeleted_origin` varchar(100) NOT NULL
+  `x_df_lastdeleted_origin` varchar(100) NOT NULL,
+  `now_zustimmung` int(11) NOT NULL DEFAULT 0,
+  `now_zustimmung_fix` int(11) NOT NULL DEFAULT 0
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 
 --
@@ -957,6 +960,7 @@ CREATE TABLE `stichwoerter` (
   `stichwort` varchar(200) COLLATE latin1_general_ci NOT NULL DEFAULT '',
   `stichwort_sorted` varchar(200) COLLATE latin1_general_ci NOT NULL DEFAULT '',
   `zusatzinfo` varchar(200) COLLATE latin1_general_ci NOT NULL,
+  `now_bemerkung` VARCHAR(200) NOT NULL,
   `eigenschaften` int(11) NOT NULL DEFAULT 0,
   `thema` int(11) NOT NULL DEFAULT 0,
   `glossar` int(11) NOT NULL DEFAULT 0,
@@ -965,6 +969,8 @@ CREATE TABLE `stichwoerter` (
   `scope_note` longtext COLLATE latin1_general_ci DEFAULT NULL,
   `algorithmus` longtext COLLATE latin1_general_ci DEFAULT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci;
+
+ 
 
 --
 -- Trigger `stichwoerter`

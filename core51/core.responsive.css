@@ -85,7 +85,7 @@ body { padding: 0; margin: 0; }
 	padding: 5px 15px;
 	box-sizing: border-box;
 }
-#wisy_searchbtn { margin-top: 15px; }
+#wisy_searchbtn { margin-top: 15px; cursor: pointer; }
 .wisy_searchhints {
 	position: absolute;
 	bottom: -30px;
