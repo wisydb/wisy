@@ -102,11 +102,11 @@ class WISY_DURCHF_CLASS
 		            $html .= '<img src="'.$img_icon.'" alt="'.$alt.'" title="'.$img_text.'" data-sw_id="'.$id.'"/>';
 		        }
 		        else {
-		            $html .= '<span title="'.$img_text.'" data-sw_id="'.$id.'"/>'.$img_icon.'</span>';
+		            $html .= '<span title="'.$img_text.'" data-sw_id="'.$id.'" >'.$img_icon.'</span>';
 		        }
 		        
 		        if( $details ) {
-		            $html .= ' <span class="wisyr_art_details" data-sw_id="'.$id.'"/>' . $img_text . '</span>';
+		            $html .= ' <span class="wisyr_art_details" data-sw_id="'.$id.'" >' . $img_text . '</span>';
 		        }
 		    }
 		}
@@ -262,7 +262,7 @@ class WISY_DURCHF_CLASS
 				$beginn = mktime(0, 0, 0, $beginn[1], $beginn[2], $beginn[0]) - $sonderpreistage*86400;
 				if( time() >= $beginn ) {
 					if( $html ) {
-						$ret = "<strike>$ret</strike><br /><span class=\"red\">" . $this->formatPreis($sonderpreis, -1, 0, 0, '', $html, 0) . '</span>';
+						$ret = "<strike>$ret</strike><br><span class=\"red\">" . $this->formatPreis($sonderpreis, -1, 0, 0, '', $html, 0) . '</span>';
 					}
 					else {
 						$ret = $this->formatPreis($sonderpreis, -1, 0, 0, '', $html, 0) . " (bisheriger Preis: $ret)";
@@ -359,8 +359,10 @@ class WISY_DURCHF_CLASS
 			
 			$durchfuehrungenIds = array();
 	
-			$db->query("SELECT secondary_id, plz FROM kurse_durchfuehrung, durchfuehrung WHERE primary_id=$kursId AND id=secondary_id $where
-						 ORDER BY beginn='0000-00-00 00:00:00', beginn, beginnoptionen, structure_pos");
+			$sql = "SELECT secondary_id, plz FROM kurse_durchfuehrung, durchfuehrung WHERE primary_id=$kursId AND id=secondary_id $where
+						 ORDER BY beginn='0000-00-00 00:00:00', beginn, beginnoptionen, structure_pos";
+			
+			$db->query($sql);
 			while( $db->next_record() )
 			{
 				if( $this->plzfilterObj->is_valid_plz($db->f('plz')) ) {
@@ -412,7 +414,7 @@ class WISY_DURCHF_CLASS
             
             // this ORDER BY puts durchfuehrungen with beginn = '0000-00-00 00:00:00' at the end(!) and sorts everything else by beginn ASC.
             // using -beginn DESC doesn't work b/c '0000-00-00 00:00:00' seems not to be treated as empty
-            $db->query( "SELECT id, nr, dauer, bemerkungen, preis, teilnehmer, kurstage, sonderpreis, sonderpreistage, plz, strasse, rollstuhlgerecht, "
+            $db->query( "SELECT id, nr, dauer, bemerkungen, url, preis, teilnehmer, kurstage, sonderpreis, sonderpreistage, plz, strasse, rollstuhlgerecht, "
                 . "land, stadtteil, preishinweise, beginn, beginnoptionen, ende, ort, tagescode, stunden, zeit_von, zeit_bis, bg_nummer, bg_nummer_count "
                 . "FROM durchfuehrung "
                 . "WHERE id IN (".implode(",", $durchfuehrungIds).") ORDER BY  beginn = '0000-00-00 00:00:00', beginn "
@@ -420,7 +422,7 @@ class WISY_DURCHF_CLASS
             
         } elseif(!is_array($durchfuehrungId)) {
             
-            $db->query( "SELECT id, nr, dauer, bemerkungen, preis, teilnehmer, kurstage, sonderpreis, sonderpreistage, plz, strasse, rollstuhlgerecht, "
+            $db->query( "SELECT id, nr, dauer, bemerkungen, url, preis, teilnehmer, kurstage, sonderpreis, sonderpreistage, plz, strasse, rollstuhlgerecht, "
                 . "land, stadtteil, preishinweise, beginn, beginnoptionen, ende, ort, tagescode, stunden, zeit_von, zeit_bis, bg_nummer, bg_nummer_count "
                 . "FROM durchfuehrung "
                 . "WHERE id=$durchfuehrungId"
@@ -505,7 +507,7 @@ class WISY_DURCHF_CLASS
 		    if( $details && $this->framework->iniRead('details.kurstage', 1)==1 ) {
 		        $temp = $this->formatKurstage(intval($record['kurstage']));
 		        if( $temp ) {
-		            $cell .= "<div class=\"wisyr_art_kurstage\">".$temp." </div>";
+		            $cell .= "<div class=\"wisyr_art_kurstage\">$temp</div>";
 		        }
 		    }
 		    
@@ -754,15 +756,15 @@ class WISY_DURCHF_CLASS
 			    }
 			    
 			    if( $ort && !$nonvenue ) {
-			        $cell .= $cell? '<br />' : '';
+			        $cell .= $cell? '<br>' : '';
 			        $cell .= '<a title="Adresse in Google Maps ansehen" href="' . $map_URL . '" target="_blank" rel="noopener noreferrer">' . "$plz $ort" . '</a>';
 			    } elseif ( $ort ) {
-			        $cell .= $cell? '<br />' : '';
+			        $cell .= $cell? '<br>' : '';
 			        $cell .= "$plz $ort";
 			    }
 			    
 			    if( $land ) {
-					$cell .= $cell? '<br />' : '';
+					$cell .= $cell? '<br>' : '';
 					$cell .= '<i>' . $land . '</i>';
 				}
 				
@@ -811,6 +813,11 @@ class WISY_DURCHF_CLASS
 		        
 		        if( isset($record['rollstuhlgerecht']) && $record['rollstuhlgerecht'] )
 		            echo '<small class="rollstuhlgerecht">Dieser Ort ist&nbsp;rollstuhlgerecht.<br>Details bitte beim Anbieter erfragen.</small><br>';
+		        
+		        if( isset($record['url']) && strlen($record['url']) > 0 && $this->framework->iniRead('durchf.url.anzeigen', false ) ) {
+		            $urltext = $this->framework->iniRead('durchf.url.linktext', 'Zur Anmeldung...');
+		            echo "<a href='".$record['url']."' target='_blank' title='".$urltext." (Link zu externer Seite des Anbieters)' class='dfurl' >".$urltext."</a>";
+		        }
 		        
 		        echo ' </td>' . "\n";
 		    } 

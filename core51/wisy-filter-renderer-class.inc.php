@@ -7,6 +7,8 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 	var $framework;
     var $tokens;
     var $max_preis = '999999';
+    var $filtermenu;
+    var $canonicalURL;
 
 	function __construct(&$framework)
 	{
@@ -30,9 +32,11 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 		}
 		else
 		{
-			echo $this->framework->getPrologue(array('title'=>'Filtern', 'canonical'=>$this->framework->getUrl('filter'), 'bodyClass'=>'wisyp_search_filter'));
-			$this->renderForm();
-			echo $this->framework->getEpilogue();
+		    $protocol = $this->framework->iniRead('portal.https', '') ? "https" : "http";
+		    $canonical = parse_url( $this->framework->getUrl('filter') , PHP_URL_PATH);
+		    echo $this->framework->getPrologue(array('title'=>'Filtern', 'canonical' => $protocol."://".$_SERVER['SERVER_NAME'].$canonical, 'bodyClass'=>'wisyp_search_filter'));
+		    $this->renderForm();
+		    echo $this->framework->getEpilogue();
 		}
 	}
 	
@@ -96,7 +100,8 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 			
 			// Anfrage anhand der Liste der $records['id']s die alle Durchführungs-Tags findet um enthaltene Tageszeit, Förderungen, Zielgruppe, Zertifikate, Unterrichtsart zu finden.
 			$renderformData['records_taglist'] = array();
-    		$this->db->query("SELECT DISTINCT t.tag_name as tagname FROM x_kurse_tags k LEFT JOIN x_tags t ON k.tag_id=t.tag_id WHERE k.kurs_id IN($kursids)");
+			$sql = "SELECT DISTINCT t.tag_name as tagname FROM x_kurse_tags k LEFT JOIN x_tags t ON k.tag_id=t.tag_id WHERE k.kurs_id IN($kursids)";
+			$this->db->query($sql);
     		while( $this->db->next_record() )
     		{
     		    $renderformData['records_taglist'][] = $this->db->fcs8('tagname');
@@ -249,7 +254,7 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 		return $renderformData;
 	}
 	
-	function renderForm($q = null, $records = null, $hlevel=1, $number_of_results_string='')
+	function renderForm($q = null, $records = null, $hlevel=1, $number_of_results_string='', $output=true)
 	{
 	    
 	    echo '<div id="wisyr_filterform" class="wisyr_filterform">';
@@ -257,6 +262,9 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 	    echo '<form action="search" method="get" name="filterform" role="search" aria-label="Suchauftrag anpassen">';
 	    echo '<input type="hidden" name="qs" value="' . $this->framework->QS . '" />';
 	    echo '<input type="hidden" name="qf" value="' . $this->framework->QF . '" />';
+	    
+	    if( strlen($this->framework->searchinputmask) )
+	        echo '<input type="hidden" name="inputmask" value="'.$this->framework->searchinputmask.'">';
 	    
 	    // Workaround for "Volltext", TODO: optimize
 	    // Workaround for "Zeige", TODO: optimize
@@ -277,6 +285,8 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 	    
 	    $filtermenu = new WISY_FILTERMENU_CLASS($this->framework, $renderformData);
 	    echo $filtermenu->getHtml();
+	    
+	    $this->canonicalURL = $filtermenu->getCanonicalURL($filterStructure);
 	    
 	    // output "number of results" string if set and order selector
 	    $renderformData['order'] = $this->framework->order;
@@ -335,6 +345,10 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 	    
 	    echo '</form>';
 	    echo '</div>';
+	}
+	
+	function getCanonicalURL() {
+	    return $this->canonicalURL;
 	}
 };
 
@@ -604,6 +618,25 @@ class WISY_FILTERMENU_ITEM
                         
                         break;
                         
+                    case 'selectmenu_multi':
+                                                
+                        $ret .= '<select name="filter_' . $fieldname . '[]" class="" size=4 multiple>';
+                        foreach($filtervalues as $value => $label) {
+                            
+                            $processed_value = $this->getProcessedValue($function, $value, $label);
+                            $checked = $this->getCheckedValue($function, $value, $label, $processed_value, $fieldvalue, $fieldname);
+                            $disabled = $this->getDisabledValue($function, $value, $label, $processed_value, $fieldvalue, $fieldname);
+                            
+                            $ret .= '<option value="' . $processed_value . '"';
+                            if($checked) $ret .= ' selected="selected"';
+                            if($disabled && $processed_value != '') $ret .= ' disabled="disabled"';
+                            $ret .= '>' . $label . '</option>';
+                        }
+                        $ret .= '</select>';
+                        
+                        break;
+                        
+
                     case 'checkbuttons':
                         
                         // combine all values already checked in String $this->checked_values_combStr, comma separated => checkbox!
@@ -660,6 +693,56 @@ class WISY_FILTERMENU_ITEM
                         }
                         
                         break;
+                        
+                        /* case 'checkboxes':
+                        
+                        // combine all values already checked in String $this->checked_values_combStr, comma separated => checkbox!
+                        foreach((array) $filtervalues as $value => $label) {
+                        if($value === '') continue;
+                        
+                        $processed_value = $this->getProcessedValue($function, $value, $label);
+                        $checked = $this->getCheckedValue($function, $value, $label, $processed_value, $fieldvalue, $fieldname);
+                        
+                        if($checked && !$returnFields)
+                        $this->checked_values_combStr[$fieldname] .= $processed_value.",";
+                        }
+                        
+                        foreach((array) $filtervalues as $value => $label) {  // array must be cast(!), bc. values with '.' reduces no. of elements
+                        // Don't show empty value ("Alle") button:
+                        if($value === '') continue;
+                        
+                        $processed_value = $this->getProcessedValue($function, $value, $label);
+                        $checked = $this->getCheckedValue($function, $value, $label, $processed_value, $fieldvalue, $fieldname);
+                        
+                        // echo "<script>console.log('Function: ".$function.", Value: ".$value.", Label: ".$label.", Processed Value: ".$processed_value.", Fieldvalue: ".$this->framework->mysql_escape_mimic(print_r($this->renderformData, true)).", Fieldname: ".$fieldname."');</script>";
+                        // echo "<script>console.log('checked: ".$checked."');</script>";
+                        
+                        $disabled = $this->getDisabledValue($function, $value, $label, $processed_value, $fieldvalue, $fieldname);
+                        
+                        $ret .= '<span class="wisyr_checkboxeswrapper">';
+                        
+                        // save all checked values other than the current boxes input to be added to current box input value
+                        $other_values = trim(str_replace($processed_value.',', '', $this->checked_values_combStr[$fieldname]), ',');
+                        
+                        
+                        $for = 'filter_' . $fieldname . '_' . $this->framework->cleanClassname($value, true);
+                        $ret .= '	<input type="checkbox" name="filter_' . $fieldname . '[]" id="'.$for.'" value="' . $processed_value . '" ';
+                        
+                        if(strlen($autofilltarget)) {
+                        $ret .= ' data-autofilltarget="#filter_' . $autofilltarget . '" data-autofillvalue="' . $processed_value . '"';
+                        }
+                        
+                        if($checked) $ret .= ' checked="checked"';
+                        if($disabled) $ret .= ' disabled="disabled"';
+                        
+                        $ret .= ' />';
+                        
+                        $ret .= '	<label for="'.$for.'" onclick="$(\'#'.$for.'\').attr(\'value\', $(\'#'.$for.'\').attr(\'value\')+\''. (strlen($other_values) ? ','.$other_values : '') .'\' );">' . $label . '</label>';
+                        // $ret .= '	<label for="filter_' . $fieldname . '_' . $this->framework->cleanClassname($value, true) . '">' . $label . '</label>';
+                        $ret .= '</span>';
+                        }
+                        
+                        break; */
                 }
             }
         } else if(isset($data['sections']) && count((array) $data['sections'])) {
@@ -918,6 +1001,7 @@ class WISY_FILTERMENU_CLASS
 	var $framework;
 	var $prefix;
 	var $root;
+	var $filterStructure;
 
 	function __construct($framework, $renderformData, $param=array())
 	{
@@ -960,7 +1044,7 @@ class WISY_FILTERMENU_CLASS
 	                
 	                // merge values that where separated falsely for containing '.'
 	                if( ($optionskey = array_search ("options", $elements)) !== FALSE) {
-	                    for($k = 0; $k < count((array) $elements); $k++) {
+	                    for($k = 0; $k < count((array) $elements); $k++) { // ? (array)
 	                        if($k > ($optionskey+1)) {
 	                            $elements[($optionskey+1)] .= '.'.$elements[$k]; // merge elements (values) after option, bc. = one value separated by original '.'
 	                            $elements[$k] = ""; // don't unset while in loop
@@ -1004,6 +1088,120 @@ class WISY_FILTERMENU_CLASS
 	    
 	    ksort($filterStructure);
 	    return $filterStructure;
+	}
+	
+	
+	function getCanonicalURL( $filterStructure ) {
+	    
+	    $searchparams_max = [];
+	    
+	    foreach ($filterStructure as $filter) {
+	        $searchparams_max = array_merge($searchparams_max, $this->extractFilterKeys($filter));
+	    }
+	    
+	    // special filter, not necessarily set
+	    $searchparams_max[] = 'order';
+	    
+	    // exclude values, that should not be parameters for canonical URL without reason
+	    $exclude = ['datum', 'anbieter', 'dauer', 'km'];
+	    $searchparams_max = array_diff($searchparams_max, $exclude);
+	    
+	    $searchparams_max = array_unique($searchparams_max);
+	    
+	    $newparams = array();
+	    foreach( $searchparams_max AS $sparams ) {
+	        if( isset($_GET['filter_'.$sparams]) ) {
+	            $newparams[$sparams] = $_GET['filter_'.$sparams];
+	        }
+	    }
+	    
+	    $queryComponents = array();
+	    
+	    $allowedPattern = "a-zA-Z0-9 ,+*()!?";
+	    if( isset($_GET['q']) ) {
+	        $q = preg_replace('/[^' . $allowedPattern . ']/', '', $_GET['q']);
+	        $queryComponents[-1] = 'q=' . urlencode($q);
+	    }
+	    if( isset($_GET['qs']) ) {
+	        $qs = preg_replace('/[^' . $allowedPattern . ']/', '', $_GET['qs']);
+	        $queryComponents[-1] = 'qs=' . urlencode($qs);
+	    }
+	    if( isset($_GET['qf']) ) {
+	        $qf = preg_replace('/[^' . $allowedPattern . ']/', '', $_GET['qf']);
+	        $queryComponents[-2] = 'qf=' . urlencode($qf);
+	    }
+	    
+	    $allowedPattern = "a-zA-Z0-9 ,+*()!%?";
+	    foreach ($newparams as $key => $value) {
+	        if (is_array($value)) {
+	            foreach ($value as $val) {
+	                $val = preg_replace('/[^' . $allowedPattern . ']/', '', $val);
+	                $queryComponents[] = 'filter_' . $key . '[]=' . urlencode($val);
+	            }
+	        } else {
+	            $value = preg_replace('/[^' . $allowedPattern . ']/', '', $value);
+	            $queryComponents[] = 'filter_' . $key . '=' . urlencode($value);
+	        }
+	    }
+	    
+	    if( isset($_GET['order']) ) {
+	        $allowedPattern = "a-z";
+	        $order = preg_replace('/[^' . $allowedPattern . ']/', '', $_GET['order']);
+	        $queryComponents[] = 'order=' . urlencode($order);
+	    }
+	    if( isset($_GET['offset']) )
+	        $queryComponents[] = 'offset='.intval($_GET['offset']);
+	        
+	        // Join the query components to form the final query string
+	        $query = implode('&', $queryComponents);
+	        $baseURL = 'https://example.com/search?';
+	        $protocol = $this->framework->iniRead('portal.https', '') ? "https" : "http";
+	        
+	        // only this domain, seo.canonical.domain etc. doesn't apply
+	        $url = $protocol."://".$_SERVER['SERVER_NAME']. '/search?' . $query;
+	        
+	        
+	        return $url;
+	}
+	
+	function extractFilterKeys($filter) {
+	    $keys = [];
+	    
+	    if (is_array($filter)) {
+	        if (isset($filter['legendkey'])) {
+	            $keys[] = $filter['legendkey'];
+	        }
+	        
+	        if (isset($filter['sections']) && is_array($filter['sections'])) {
+	            foreach ($filter['sections'] as $section) {
+	                $keys = array_merge($keys, $this->extractSectionKeys($section));
+	            }
+	        }
+	    }
+	    
+	    return $keys;
+	}
+	
+	function extractSectionKeys($section) {
+	    $keys = [];
+	    
+	    if (is_array($section)) {
+	        if (isset($section['legendkey'])) {
+	            $keys[] = $section['legendkey'];
+	        }
+	        
+	        if (isset($section['input']) && is_array($section['input'])) {
+	            foreach ($section['input'] as $i) {
+	                if( isset($i['name']) )
+	                    $keys[] = $i['name'];
+	                    else if (isset($i['value'])) {
+	                        $keys[] = $i['value'];
+	                    }
+	            }
+	        }
+	    }
+	    
+	    return $keys;
 	}
 	
 	function getHtml()

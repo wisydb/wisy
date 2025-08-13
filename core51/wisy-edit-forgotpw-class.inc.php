@@ -296,7 +296,7 @@ Freundliche Grüße";
 	        $mail->FromName = $PHPMailer_FromName; // $_SERVER['HTTP_HOST'];
 	        $mail->addAddress($to);
 	        $mail->Subject = utf8_decode($subject); // im Code
-	        $mail->Body    = $text;
+	        $mail->Body    = utf8_decode($text);
 	        return $mail->send();
 	        
 	    } elseif( $UsePHPMailer ) {
