@@ -95,7 +95,8 @@ class WISY_AUTOSUGGEST_RENDERER_CLASS
 				else
 				{
 
-				    $tags = $tagsuggestor->suggestTags($querystring, array('max'=>10, 'q_tag_type_not'=>array(0,32,128,256,2048,4096,131072,262144)));
+				    // ESCO: 524288,524289,1048576
+				    $tags = $tagsuggestor->suggestTags($querystring, array('max'=>10, 'q_tag_type_not'=>array(0,32,128,256,2048,4096,131072,262144,524288,524289,1048576)));
 				    
 				    if($this->framework->iniRead('search.ajax.combine_angebote_anbieter', false)) {
 				        $tag_type_anbieter = $this->framework->iniRead('autosuggest_sw_typ_anbieter', array(2, 131328, 256, 262144));
