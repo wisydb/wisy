@@ -555,9 +555,10 @@ class WISY_ANBIETER_RENDERER_CLASS
 	public function render()
 	{
 	    $anbieter_id = intval( $this->framework->getParam('id') );
-		
-		if(trim($this->framework->iniRead('disable.anbieter', false)))
-		    $this->framework->error404();
+	    $no404  = intval( $this->framework->iniRead('no404.anbieter', false) );
+	    
+	    if( trim($this->framework->iniRead('disable.anbieter', false)) && !$no404 )
+	        $this->framework->error404();
 
 		$db = new DB_Admin();
 
@@ -620,14 +621,40 @@ class WISY_ANBIETER_RENDERER_CLASS
 		}
 		
 		// #socialmedia
+		$protocol = $this->framework->iniRead('portal.https', '') ? "https" : "http";
+		$canonical = parse_url( $this->framework->getUrl('a', array('id'=>$anbieter_id)) , PHP_URL_PATH);
+		$canonicalURL = $protocol."://".$_SERVER['SERVER_NAME'].$canonical;
+		
+		// Use foreign domain if set to avoid double content for Crawlers
+		$portalid_setting = intval($this->framework->iniRead('seo.canonical.portalid', ''));
+		$protocol_setting = trim($this->framework->iniRead('seo.canonical.protocol', ''));
+		$canocicalDomain_setting = trim($this->framework->iniRead('seo.canonical.domain', ''));
+		
+		if( $protocol_setting != '' && $canocicalDomain_setting != '') {
+		    $db2 = new DB_Admin();
+		    $sql2 = " SELECT anbieter FROM kurse
+                      WHERE kurse.anbieter = ".$anbieter_id."
+                      AND kurse.id IN (
+		                  SELECT x_kurse_tags.kurs_id FROM x_tags, x_kurse_tags
+                          WHERE x_tags.tag_name = '.portal".$portalid_setting."'
+                          AND x_kurse_tags.tag_id = x_tags.tag_id
+		              ) LIMIT 1";
+		    	    
+		    $db2->query($sql2);
+		    
+		    if( $db2->next_record() ) {
+		        $canonicalURL = $protocol_setting."://".$canocicalDomain_setting.$canonical;
+		    }
+		}
+		
 		echo $this->framework->getPrologue(array(
-		    'id'        =>  $anbieter_id, 
-		    'title'		=>	$anbieter_suchname,
-		    'ort'		=>	$anbieter_ort,
-		    'beschreibung' => $anbieter_portraet,
-		    'anbieter_id' => $anbieter_id,
-		    'canonical'	=>	$this->framework->getUrl('a', array('id'=>$anbieter_id)),
-		    'bodyClass'	=>	$bodyClass,
+		    'id'          =>  $anbieter_id, 
+		    'title'       =>	$anbieter_suchname,
+		    'ort'         =>	$anbieter_ort,
+		    'beschreibung'    => $anbieter_portraet,
+		    'anbieter_id'     => $anbieter_id,
+		    'canonical'   => $canonicalURL,
+		    'bodyClass'   =>	$bodyClass,
 		));
 		
 		echo $this->framework->getSearchField();

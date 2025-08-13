@@ -279,7 +279,7 @@ function clickAutocompleteHelp(tag_help, tag_name_encoded)
 
 function clickAutocompleteMore(tag_name_encoded)
 {
-	location.href = 'search?ie=UTF-8&show=tags&q=' + tag_name_encoded; // ie=UTF-8& is necessary b/c q-value being urlencoded in UTF-8
+	location.href = 'search?show=tags&q=' + tag_name_encoded; // ie=UTF-8&
 }
 
 function htmlspecialchars(text)
@@ -1007,6 +1007,9 @@ function describeFeedback()
 
 function sendFeedback(rating)
 {
+	if(rating != 0 && rating != 1)
+		return false;
+		
 	var feedbackThxTxt = '';
 	if( typeof window.feedbackThx != "undefined" )
 		feedbackThxTxt = window.feedbackThx;

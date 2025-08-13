@@ -198,6 +198,9 @@ wisy_searcharea
   margin-top: 1.4em;
 }
 
+/* .wisy_suggestions h3 {
+ margin-top: 1.4em;  
+} */
 
 /*******************************************************************************
 wisy_paginate etc.
@@ -760,7 +763,7 @@ ul.dropdown li {
   float: left;
   line-height: 1.3em;
   vertical-align: middle;
-  zoom: 1; /* IE10 */
+  /* zoom: 1; */
 }
 
 ul.dropdown li.hover,
@@ -940,6 +943,60 @@ th .fav_hint_in_th {
   white-space: normal; /* nowrap would bring the icon block to the next line*/
 }
 
+/*******************************************************************************
+Datenschutz
+*******************************************************************************/
+#cookie-banner {
+ padding: 10px;
+ background-color: white;
+ opacity: 1;
+ position: absolute;
+ z-index: 99999;
+}
+
+
+/*******************************************************************************
+SEO
+*******************************************************************************/
+
+#sw_cloud {
+	margin-top: 35px;
+	padding: 5px;
+	background-color: #ddd;
+	border: 1px solid #eee;
+}
+
+#sw_cloud h4 {
+    width: 7.4em;
+    padding: 0.3em;
+    padding-left: 0.3em;
+    margin-top: -1.5em;
+    margin-left: 5px;
+    background-color: #ddd;
+    border-top: 1px solid #eee;
+    padding-left: 0.6em;
+    color: #888;
+    display: none;
+}
+
+
+/*******************************************************************************
+Error pages, 404 etc.
+*******************************************************************************/
+.wisyp_error .portal_index {
+	margin-top: 2em;
+	background-color: #bffcbf;
+	border: 2px solid white;
+	padding: 1em;
+}
+
+.wisyp_error .portal_index h4 {
+	margin-top: 0;
+}
+
+.wisyp_error .portal_index a {
+	color: darkblue;
+}
 
 /*******************************************************************************
 Popup window
@@ -1003,63 +1060,6 @@ Popup window
 }
 
 
-/*******************************************************************************
-Datenschutz
-*******************************************************************************/
-#cookie-banner {
- padding: 10px;
- background-color: white;
- opacity: 1;
- position: absolute;
- z-index: 99999;
-}
-
-/*******************************************************************************
-SEO
-*******************************************************************************/
-
-#sw_cloud {
-	margin-top: 35px;
-	padding: 5px;
-	background-color: #ddd;
-	border: 1px solid #eee;
-}
-
-#sw_cloud h4 {
-    width: 7.4em;
-    padding: 0.3em;
-    padding-left: 0.3em;
-    margin-top: -1.5em;
-    margin-left: 5px;
-    background-color: #ddd;
-    border-top: 1px solid #eee;
-    padding-left: 0.6em;
-    color: #888;
-    display: none;
-}
-
-/*******************************************************************************
-Error pages, 404 etc.
-*******************************************************************************/
-.wisyp_error .portal_index {
-	margin-top: 2em;
-	background-color: #bffcbf;
-	border: 2px solid white;
-	padding: 1em;
-}
-
-.wisyp_error .portal_index h4 {
-	margin-top: 0;
-}
-
-.wisyp_error .portal_index a {
-	color: darkblue;
-}
-
-.strike {
-  text-decoration: line-through;
-  text-decoration-color: darkred;
-}
 
 /*******************************************************************************
 print 

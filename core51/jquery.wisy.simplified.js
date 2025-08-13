@@ -208,7 +208,17 @@ function fav_click(jsObj, id)
 		fav_update_bar();
 		
 		if( $.cookie('fav_init_hint') != 1 ) {
-			alert('Ihr Favorit wurde auf diesem Computer gespeichert. Um ihre Merkliste anzuzeigen, klicken Sie auf "Merkliste" oben rechts.');
+			var msg = '';
+			
+			if( !$('#nav-link').is(':visible') && window.merkliste_desktop.length )
+				msg = window.merkliste_desktop;
+			else if( $('#nav-link').is(':visible') && window.merkliste_mobil.length )
+				msg = window.merkliste_mobil;
+			else
+				msg = 'Ihr Favorit wurde auf diesem Computer gespeichert. Um Ihre Merkliste anzuzeigen, klicken Sie auf "Merkliste" oben.';
+				
+			alert( msg );
+			
 			setCookieSafely('fav_init_hint', 1, { path: "/", sameSite: "Strict", expires: 7 }); 
 		}
 	}
@@ -1424,6 +1434,12 @@ function initFilters() {
 						var oldQVal = $('#wisy_searchinput_q').val();
 						$('#wisy_searchinput_q').val(oldQVal.replace(oldVal, ''));
 						$el.val('');
+						
+						$el.data('storeval', '');
+						window.inputmask = '';
+						$el.removeAttr('data-mask');
+						$('input[name=inputmask]').remove();
+						
 						$wrapper.children('.clear_btn').remove();
 						$el.focus();
 					});
@@ -1484,7 +1500,7 @@ function initFilters() {
 	}
  
  /* strike tags in filters that are double tags (compared to tags already part of search) */
- /* strike_doubleTag_filter();  activate? */
+ strike_doubleTag_filter();
 }
 
 function initFiltersMobile() {
@@ -1604,8 +1620,13 @@ $().ready(function()
 	    /* robot: console.log(event); */
 	   } else {
 	       event.preventDefault();
+
+			// set trigger as human interaction (for fulltext search etc.)
+	   		// and source as input search field (for statistics)
 	       $(this).before("<input type=hidden id=qsrc name=qsrc value=s>");
 	       $(this).before("<input type=hidden id=qtrigger name=qtrigger value=h>");
+
+		   restoreinput(); // remove inputmask, value => original search
 	       $(this).closest("form").submit();
 	   }
 	  });
@@ -1766,7 +1787,7 @@ var oe = unescape("%F6");
 var ss = unescape("%DF");
 
 /*****************************************************************************
- * info text popup
+ * info text popup // input value replacement
  *****************************************************************************/
 
  $(window).load(function () {
@@ -1791,6 +1812,26 @@ var ss = unescape("%DF");
    if(jQuery(".laden").length)
     jQuery(".laden").remove();
    
+  /* Anbieter-Listen: ueberfluessige Sortierungselemente entfernen:
+   * .wisyq_zeigeanbieter .parent()
+   */
+      
+ 	// input value replacement from $_GET['inputmask']
+
+	window.inputmask = $('#wisy_searchinput').data('mask');
+	 
+	if( window.inputmask.length ) { 
+		maskinput( inputmask );
+		
+		$('#wisy_searchinput').focus(function(){ 
+			restoreinput();
+		});
+		
+		$('#wisy_searchinput').blur(function(){ 
+			maskinput();
+		}); 
+	}
+	
  });
  
 /***********************************************
@@ -1798,7 +1839,8 @@ var ss = unescape("%DF");
  ***********************************************/
 function dw_getWindowDims() {
     var doc = document, w = window;
-    var docEl = (doc.compatMode && doc.compatMode === 'CSS1Compat') ? doc.documentElement : doc.body;
+    var docEl = (doc.compatMode && doc.compatMode === 'CSS1Compat')?
+            doc.documentElement: doc.body;
     
     var width = docEl.clientWidth;
     var height = docEl.clientHeight;
@@ -1858,4 +1900,18 @@ function finalizeSubmit() {
 
     }
 
+}
+
+
+function maskinput() {
+	$('#wisy_searchinput').data('storeval', $('#wisy_searchinput').val() ); 
+	$('#wisy_searchinput').val( window.inputmask );
+	$('#wisy_searchinput').addClass('masked');
+}
+
+function restoreinput() {
+	if( typeof($('#wisy_searchinput').data('storeval')) != 'undefined' && $('#wisy_searchinput').data('storeval').length ) {
+		$('#wisy_searchinput').val( $('#wisy_searchinput').data('storeval') ); 
+		$('#wisy_searchinput').removeClass('masked');
+	}
 }

@@ -517,7 +517,9 @@ class WISY_ADVANCED_RENDERER_CLASS
 		}
 		else
 		{
-			echo $this->framework->getPrologue(array('title'=>'Erweiterte Suche', 'canonical'=>$this->framework->getUrl('advanced'), 'bodyClass'=>'wisyp_search'));
+		    $protocol = $this->framework->iniRead('portal.https', '') ? "https" : "http";
+		    $canonical = parse_url( $this->framework->getUrl('advanced') , PHP_URL_PATH);
+		    echo $this->framework->getPrologue(array('title'=>'Erweiterte Suche', 'canonical' => $protocol."://".$_SERVER['SERVER_NAME'].$canonical, 'bodyClass'=>'wisyp_search'));
 			$this->renderForm();
 			echo $this->framework->getEpilogue();
 		}
