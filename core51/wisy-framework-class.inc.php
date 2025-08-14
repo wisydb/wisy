@@ -727,13 +727,161 @@ class WISY_FRAMEWORK_CLASS
 			    'q'		=>	$this->simplified ? $this->Q : $this->getParam('q', ''), // ok?
 			));
 	}
+	
+	function genCntLinkThemenSW( $z_val, $wisyPortalId, $what = 'zaehlerDF' ) {
+	    
+	    $z_val     = array_map('trim', explode(",", $z_val));
+	    
+	    $queryODER = '';
+	    $queryUND  = '';
+	    $ret       = '';
+	    
+	    $themenSQL   = '';
+	    $swSQL       = '';
+	    
+	    foreach( $z_val AS $themaSW ) {
+	        $themaSW = trim($themaSW, ',');
+	        
+	        if( strpos($themaSW, '.') )
+	            $themenSQL .= "'".$themaSW."',";
+	            else if( is_numeric($themaSW) )
+	                $swSQL     .= $themaSW.',';
+	    }
+	    
+	    $themenSQL = trim($themenSQL, ',');
+	    if( $themenSQL != '' ) {
+	        
+	        if( $what == 'links') {
+	            $sql = "SELECT GROUP_CONCAT(DISTINCT x_tags.tag_name SEPARATOR ',') AS tag_names
+            	         FROM x_kurse
+            	         LEFT JOIN x_kurse_tags j0 ON x_kurse.kurs_id=j0.kurs_id
+            	         LEFT JOIN x_kurse_tags j1 ON x_kurse.kurs_id=j1.kurs_id
+            	         LEFT JOIN x_tags ON j0.tag_id = x_tags.tag_id
+            	         WHERE j0.tag_id IN (
+            	         SELECT tag_id
+            	         FROM x_tags
+            	         WHERE x_tags.tag_name COLLATE latin1_general_ci IN (
+            	         SELECT REPLACE(thema, ',', '') COLLATE latin1_general_ci AS tag_name
+            	         FROM themen
+            	         WHERE themen.kuerzel IN ({$themenSQL})
+            	         )
+            	         )
+            	         AND j1.tag_id = (SELECT tag_id FROM x_tags WHERE x_tags.tag_name = '.portal{$wisyPortalId}')
+            	         AND (x_kurse.beginn>='".date('Y-m-d')."');
+            	         "; // x_kurse.beginn>='".date('Y-m-d')." erfasst auch dauerhafte!
+	            
+	            $db = new DB_Admin;
+	            $db->query( $sql );
+	            
+	            if( $db->next_record() ) {
+	                $queryODER    = str_replace(',', ' ODER ', $db->fs( 'tag_names' ));
+	            }
+	            $ret =  array( "und" => $queryUND, "ODER" => $queryODER );
+	        }
+	        else if( $what == 'zaehlerDF') {
+	            // 3 queries with temporary tables not working b/c only one query per $db->query possible
+	            // COUNT(DISTINCT x_kurse.kurs_id) AS cntThemen
+	            
+	            // 1.) SELECT all themen names from themen that are in the portal settings
+	            // 2.) SELECT all search cache tag ids that have a tag name (without commma) like the themen just selected
+	            // 3.) SELECT all (x_)kurs ids that are in the search cache that are mapped to tag ids (i.e. themen) just selected
+	            // 4.) AND that are in the search cache of THIS portal (id)
+	            // 5.) AND that begin today or in the future (in search cache DAUERHAFT AND "Beginnt ..." options are also in the future)
+	            $sql = "SELECT GROUP_CONCAT(DISTINCT x_kurse.kurs_id SEPARATOR ',') AS kursIDs
+        	           FROM x_kurse
+                       LEFT JOIN x_kurse_tags j0 ON x_kurse.kurs_id=j0.kurs_id
+        		       LEFT JOIN x_kurse_tags j1 ON x_kurse.kurs_id=j1.kurs_id
+        		       WHERE j0.tag_id IN (
+                	       SELECT tag_id
+                		   FROM x_tags
+                		   WHERE x_tags.tag_name COLLATE latin1_general_ci IN (
+                		      SELECT REPLACE(thema, ',', '') COLLATE latin1_general_ci AS tag_name
+                		      FROM themen
+                		      WHERE themen.kuerzel IN ({$themenSQL})
+                		   )
+                	   )
+                	   AND j1.tag_id = (SELECT tag_id FROM x_tags WHERE x_tags.tag_name = '.portal{$wisyPortalId}')
+                	   AND (x_kurse.beginn>='".date('Y-m-d')."');";
+	            
+	            $db = new DB_Admin;
+	            $db->query( $sql );
+	            
+	            
+	            
+	            $kursIDs = '';
+	            $dfCnt = '';
+	            
+	            if( $db->next_record() ) {
+	                $kursIDs = $db->f( 'kursIDs' );
+	            }
+	            
+	            
+	            if( $kursIDs != '') {
+	                $sql = "SELECT COUNT(durchfuehrung.id) AS dfCnt
+                           FROM kurse, kurse_durchfuehrung, durchfuehrung, x_kurse WHERE x_kurse.kurs_id IN ({$kursIDs})
+                           AND kurse.id = x_kurse.kurs_id
+                           AND kurse.id = kurse_durchfuehrung.primary_id
+                           AND kurse_durchfuehrung.secondary_id = durchfuehrung.id
+                           AND (durchfuehrung.beginn>='".date('Y-m-d')."' OR durchfuehrung.beginnoptionen IN(1,2,4,8,16,32,64) ); ";
+	                
+	                $db->query( $sql );
+	                
+	                
+	                if( $db->next_record() ) {
+	                    $dfCnt = $db->f( 'dfCnt' );
+	                }
+	                
+	            }
+	            
+	            $ret = $dfCnt;
+	            
+	        }
+	    } // end: $themenSQL != ''
+	    
+	    return $ret; // + Cache loeschen
+	}
 
 	function replacePlaceholders_Callback($matches)
 	{
-		global $wisyPortalName;
-		global $wisyPortalKurzname;
+	    global $wisyPortalName, $wisyPortalKurzname, $wisyPortalId, $wisyPortalEinstellungen;
+	    reset($wisyPortalEinstellungen);
+	    
+	    $placeholder = $matches[0];
+	    
+	    // Check the number of DF in courses of Thema defined in portal setting zaehlerDF.<no>
+	    // OR search, don't count courses double if course has 2 or more matching themas
+	    $allPrefix = 'zaehlerDF.';
+	    $allPrefixLen = strlen($allPrefix);
+	    foreach($wisyPortalEinstellungen as $key => $value)
+	    {
+	        if( substr($key, 0, $allPrefixLen)==$allPrefix )
+	        {
+	            $z = explode("|", $value);    // portal settings explode by |
+	            $z_name   = trim($z[0]);      // placeholder name
+	            $z_val    = trim($z[1]);      // Themen-Kuerzel (SW-Kuerzel)
+	            
+	            if($placeholder == $z_name) {
+	                
+	                $cache_key = $key.'.'.md5( $key );
+	                $cache_val = $this->cacheRead( $cache_key );
+	                
+	                if( !isset($_GET['dfanz']) && $cache_val ) {
+	                    // from cache
+	                    return $cache_val;
+	                }
+	                else {
+	                    // count new numbers live:
+	                    $ret = $this->genCntLinkThemenSW( $z_val, $wisyPortalId, 'zaehlerDF');
+	                    $this->cacheWrite( $cache_key , $ret);
+	                    return $ret;
+	                }
+	                
+	            } // end $placeholder == $z_name
+	            
+	        } // only fitting setting prefix
+	        
+	    } // end: all portal settings
 
-		$placeholder = $matches[0];
 		if( $placeholder == '__NAME__' )
 		{
 		    return cs8($wisyPortalName);
@@ -801,7 +949,9 @@ class WISY_FRAMEWORK_CLASS
 					$mailbody = str_replace('__HOST__', $_SERVER['HTTP_HOST'], $mailbody);
 					$mailfav = 'mailto:?subject='.rawurlencode($mailsubject).'&body='.rawurlencode($mailbody);
 				}
-				return '<span id="favlistlink" data-favlink="' . htmlspecialchars($mailfav) . '"></span>';
+				$this->favlinkcnt = isset($this->favlinkcnt) ? ($this->favlinks+1) : 0;
+				
+				return '<span id="favlistlink'.($this->favlinkcnt > 0 ? $this->favlinkcnt : "").'" data-favlink="' . htmlspecialchars($mailfav) . '" ></span>';
 			}
 			else {
 				return '';
@@ -819,7 +969,7 @@ class WISY_FRAMEWORK_CLASS
 
 	function replacePlaceholders($snippet)
 	{
-		return preg_replace_callback('/__[A-Z0-9_]+?__/', array($this, 'replacePlaceholders_Callback'), $snippet);
+	    return preg_replace_callback('/__[A-Za-z0-9_]+?__/', array($this, 'replacePlaceholders_Callback'), $snippet);
 	}	
 	
 	function cleanClassname($input, $allowNumbers=false)
@@ -846,7 +996,7 @@ class WISY_FRAMEWORK_CLASS
 			ini_set('session.use_cookies', 1);
 			session_name($this->editCookieName);
 			session_start();
-			if( intval($_SESSION['loggedInAnbieterId']) )
+			if( isset($_SESSION['loggedInAnbieterId']) && intval($_SESSION['loggedInAnbieterId']) )
 			{
 				$this->editSessionStarted = true;
 			}
@@ -1044,8 +1194,12 @@ class WISY_FRAMEWORK_CLASS
 		for( $c = 0; $c < sizeof($codes_array); $c += 2 ) 
 		{
 			if( $codes_array[$c] == 0 )
-				continue; // sachstichwoerter nicht darstellen - aenderung vom 30.03.2010 (bp)
+				continue; // sachstichwoerter nicht darstellen
 			
+			if( $codes_array[$c] == 524288 || $codes_array[$c] == 524289 || $codes_array[$c] == 1048576 || $codes_array[$c] == 2097152)
+			    continue; // ESCO-Kompetenzen nicht darstellen
+			
+				
 			if( $codes_array[$c] & $hidden_stichwort_eigenschaften )
 				continue; // explizit verborgene Stichworttypen nicht darstellen
 				
@@ -1399,7 +1553,7 @@ class WISY_FRAMEWORK_CLASS
 			    return false;
 			
 			$title = $wisyPortalKurzname . ' - ' . ($q==''? 'aktuelle Kurse' : $q);
-			$ret .= '<link rel="alternate" type="application/rss+xml" title="'.htmlspecialchars($title).'" href="' .$this->getRSSFile(). '" />' . "\n";
+			$ret .= '<link rel="alternate" type="application/rss+xml" title="'.htmlspecialchars($title).'" href="' .$this->getRSSFile(). '" >' . "\n";
 		}
 		
 		return $ret;
@@ -1480,6 +1634,15 @@ class WISY_FRAMEWORK_CLASS
 	    return $ret;
 	}
 
+	function getHeadHTML() {
+	    if( ($headContent=$this->iniRead('head.html', '')) != '')
+	    {
+	        $ret = trim($headContent);
+	    }
+	    
+	    return $ret;
+	}
+	
 	function getCSSTags()
 	{
 		// get CSS tags
@@ -1658,6 +1821,9 @@ class WISY_FRAMEWORK_CLASS
 	    
 	    // various global parameters
 	    $ret .= "<script>\n";
+	    
+	    $ret .= "window.merkliste_desktop = '" . $this->iniRead('merkliste.desktop.text', '') . "'; ";
+	    $ret .= "window.merkliste_mobil   = '" . $this->iniRead('merkliste.mobil.text', '') . "'; ";
 	    
 	    if($this->iniRead('ajax.infoi', '') == 1)
 	        $ret .= "window.ajax_infoi = 1;";
@@ -1936,6 +2102,16 @@ class WISY_FRAMEWORK_CLASS
 	{
 	    // optionally, for SEO, we support canonical urls here
 	    $ret = '';
+	    
+	    
+	    // no foreign domain via portal setting, b/c homepage always unique to domain
+	    if( $this->getPageType() == 'startseite' ) {
+	        $protocol = $this->iniRead('portal.https', '') ? "https" : "http";
+	        
+	        $canonical = "/";
+	        $canocicalUrl = $protocol."://".$_SERVER['SERVER_NAME'].$canonical;
+	    }
+	    
 	    if( $canocicalUrl )
 	    {
 	        $ret .= '<link rel="canonical" href="' . $canocicalUrl . '" >' . "\n";
@@ -2100,13 +2276,15 @@ class WISY_FRAMEWORK_CLASS
 		// $this->getRSSTags() .
 		$bodyStart = str_replace('__HEADTAGS__',
 		    $this->getTitleTags(  $param['title'], ( isset($param['ort']) ? $param['ort'] : '' ), ( isset($param['anbieter_name']) ? $param['anbieter_name'] : '' ) )
+		    . '<meta charset="utf-8">'."\n"
 		    . $this->getFaviconTags() . $this->getCSSTags()
 		    . $this->getCanonicalTag( (isset($param['canonical']) ? $param['canonical'] : '' ) )
 		    . $this->getMobileAlternateTag( (isset($param['canonical']) ? $param['canonical'] : '' ) )
 		    . $this->getJSHeadTags()
 		    . $this->getMetaDescription( (isset($param['title']) ? $param['title'] : '') , (isset($param['beschreibung']) ? $param['beschreibung'] : '') )
 		    . $this->getHreflangTags()
-		    . $this->getSocialMediaTags( (isset($param['title']) ? $param['title'] : '') , (isset($param['ort']) ? $param['ort'] : '') , ( isset($param['anbieter_name']) ? $param['anbieter_name'] : '' ) , ( isset($param['anbieter_id']) ? $param['anbieter_id'] : '' ) , ( isset($param['beschreibung']) ? $param['beschreibung'] : '' ) , ( isset($param['canonical']) ? $param['canonical'] : '' ) ),
+		    . $this->getSocialMediaTags( (isset($param['title']) ? $param['title'] : '') , (isset($param['ort']) ? $param['ort'] : '') , ( isset($param['anbieter_name']) ? $param['anbieter_name'] : '' ) , ( isset($param['anbieter_id']) ? $param['anbieter_id'] : '' ) , ( isset($param['beschreibung']) ? $param['beschreibung'] : '' ) , ( isset($param['canonical']) ? $param['canonical'] : '' ) )
+		    . $this->getHeadHTML(),
 		    $bodyStart
 		    );
 		
@@ -2333,6 +2511,7 @@ class WISY_FRAMEWORK_CLASS
 				$q .= 'Zeige:Anbieter';
 			}
 
+			
 		// if the query is not empty, add a comma and a space		
 		$q = trim($q);
 		if( $q != '' )
@@ -2404,6 +2583,12 @@ class WISY_FRAMEWORK_CLASS
 		    $hint = $this->iniRead('searcharea.anbieter.hint', $searchinput_placeholder);
 		}
 		
+		$this->searchinputmask = '';
+		
+		if (isset($_GET['inputmask']) && preg_match("/^[A-Za-z0-9, &ÄÖÜäöüß]+$/", utf8_encode($_GET['inputmask']))) {
+		    $this->searchinputmask = $_GET['inputmask']; // oder cookie
+		}
+		
 		echo "\n" . '<div id="wisy_searcharea" class="activefilters_cnt'.(is_object($this->filterer) ? $this->filterer->getActiveFiltersCount() : 0).'">' . "\n";
 		echo '<div class="inner">' . "\n";
 		echo '<form action="search" method="get" '.$searchAction.'>' . "\n" . $target; // #richtext
@@ -2425,6 +2610,9 @@ class WISY_FRAMEWORK_CLASS
 		        
 		        if( stripos( ($this->QF??''), 'fav:') === FALSE) // don't submit q=fav: additionally as qf=fav: b/c will override following manual search
 		            echo '<input type="hidden" id="wisy_searchinput_qf" name="qf" value="' . addslashes( ($this->QF??'') ) . '" />' . "\n"; // str_replace(array('"', "'"), '', addslashes( - addslashes not for anti-xss per se but rendering success for problematic chars - str_replace not necessary but better rendering if addslashes applied twice somehow
+		            
+		        if( strlen($this->searchinputmask) )
+		            echo '<input type="hidden" name="inputmask" value="'.$this->searchinputmask.'">';
 		            
 		        // if(isset( $this->qtrigger )
 		        //    echo '<input type="hidden" id="qtrigger" name="qtrigger" value="' .  $this->qtrigger  . '" />' . "\n";
@@ -2637,6 +2825,9 @@ class WISY_FRAMEWORK_CLASS
 					return createWisyObject('WISY_SEARCH_RENDERER_CLASS', $this);
 				}
 
+			case 'rest':
+			    return createWisyObject('WISY_REST_RENDERER_CLASS', $this);
+			    
 			// search
 			case 'search':
 				return createWisyObject('WISY_SEARCH_RENDERER_CLASS', $this);
@@ -2755,13 +2946,28 @@ class WISY_FRAMEWORK_CLASS
 
 			case 'paypalok':	 //  paypal does not forward any url-parameters, so we need a "real" file as kursportal.info/paypalok
 			case 'paypalcancel': //   - " -
-				return 'edit?action=kt';
+				return false; // 'edit?action=kt';
 
 			case 'paypalipn':
-				return createWisyObject('WISY_BILLING_RENDERER_CLASS', $this);
+				return false; // createWisyObject('WISY_BILLING_RENDERER_CLASS', $this);
 				
+			case 'listcache':
+			    if( isset($_GET['key']) && $_GET['key'] == trim($this->iniRead('cache.key', false)) && strlen($_GET['key']) > 8 ) {
+			        echo 'Cache-Inhalt:<br><br>';
+			        $cache =& createWisyObject('WISY_CACHE_CLASS', $this, array('table'=>'x_cache_search', 'itemLifetimeSeconds'=>60*60*24) );
+			        $cacheEntries = $cache->loadCache();
+			        // echo "<pre>";
+			        // print_r($cacheEntries); // This will print all cache entries in a readable format
+			        // echo "</pre>";
+			        
+			    } else {
+			        echo 'Falscher Schl&uuml;ssel.';
+			    }
+			    
+			    die("Done.");
+			    
 			case 'surveyresult':
-			     $insert_surveyresult = 'INSERT IGNORE INTO tickets SET '
+			     /* $insert_surveyresult = 'INSERT IGNORE INTO tickets SET '
 			         .'msgid="'.md5(microtime()).'", '
 			         .'date_created="'.date("Y-m-d H:i:s").'", '
 			         .'date_modified="'.date("Y-m-d H:i:s").'", '
@@ -2793,8 +2999,10 @@ class WISY_FRAMEWORK_CLASS
 			                                                                                                                     
                      $db = new DB_Admin;
                      $db->query($insert_surveyresult);
-                     $db->close();
-                     exit(0);
+                     $db->close(); 
+                     exit(0); */
+			    
+                     return false;
 			
 			case 'orte':
 			case 'themen':
@@ -2976,4 +3184,20 @@ class WISY_FRAMEWORK_CLASS
 	    return implode("\n", $gArr);
 	}
 	
+	function lockAnbieterLogin( $aID ) {
+	    
+	    $db = new DB_Admin;
+	    $blockanbieterSWArr = explode( ',', $this->iniRead('useredit.blockanbieterSW', -1) );
+	    $blockanbieterSWArr = array_map('intval', $blockanbieterSWArr);
+	    
+	    $db->query( "SELECT anbieter.id, attr_id FROM anbieter, anbieter_stichwort WHERE anbieter.id = anbieter_stichwort.primary_id AND anbieter.id = ".intval($aID) );
+	    
+	    while( $db->next_record() ) {
+	        
+	        if( in_array( $db->f('attr_id'), $blockanbieterSWArr) )
+	            return true;
+	    }
+	    
+	    return false;
+	}
 };

@@ -923,14 +923,31 @@ class REST_API_CLASS
 Global Part
 ============================================================================ */
 
-// connect to db
-require('../../admin/table_def.inc.php');
-require('../../admin/config/db.inc.php');
-require('../../admin/sql_curr.inc.php');
-require('../../admin/config/config.inc.php');
-require_once('../../admin/config/trigger_durchfuehrung.inc.php');
+/**
+ * Check if files available in parent folder(s) and require_once if exists
+ * Allows for REST api to reside in different sub-folder-configuration
+ *
+ * @param string $relativePath relative path to target file (ohne ../ davor).
+ * @param int $maxLevels max. levels above this folder to search for files.
+ */
+function require_if_exists_levels($relativePath, $maxLevels = 2) {
+    for ($level = $maxLevels; $level >= 0; $level--) {
+        $prefix = str_repeat('../', $level);
+        $fullPath = __DIR__ . '/' . $prefix . $relativePath;
+        if (file_exists($fullPath)) {
+            require_once $fullPath;
+            return true; // Found and successful inclusion
+        }
+    }
+    return false; // not found: assume relative to current folder
+}
+
+require_if_exists_levels('admin/table_def.inc.php');
+require_if_exists_levels('admin/config/db.inc.php');
+require_if_exists_levels('admin/sql_curr.inc.php');
+require_if_exists_levels('admin/config/config.inc.php');
+require_if_exists_levels('admin/config/trigger_durchfuehrung.inc.php');
 
 // do the REST :-)
 $obj = new REST_API_CLASS( $Table_Def );
 $obj->handleRequest();
-
