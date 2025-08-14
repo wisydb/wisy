@@ -48,12 +48,15 @@ class WISY_GLOSSAR_RENDERER_CLASS
         $glossarshowall = $this->framework->iniRead('glossarshowall', '');
         $glossarshowgrps = array_map("trim", explode(",", $this->framework->iniRead('glossarshowgrps', '')));
         $glossarshowids = array_map("trim", explode(",", $this->framework->iniRead('glossarshowids', '')));
-        $glossar = $this->getGlossareintrag($glossar_id);
+        $no404  = intval( $this->framework->iniRead('no404.glossar', false) );
+        $glossar = $this->getGlossareintrag($glossar_id, $no404);
         
         // 404 wenn Usergruppe Portal != Usergruppe Glossar und Gloasser nicht an einem Stichwort und Portalparameter glossarshowall != 1
         if (trim($this->framework->iniRead('disable.glossar', false))
             || ($glossarshowall != 1 && $glossar['user_grp'] != $wisyPortalUserGrp && !in_array($glossar_id, $glossarshowids) && !in_array($glossar['user_grp'], $glossarshowgrps) && $this->getGlossarArt($glossar_id) == 0) ) {
-                $this->framework->error404();
+                
+                if( !$no404 )
+                    $this->framework->error404();
         }
         // Wenn es keine Erklaerung, aber eine Wikipedia-Seite gibt -> Weiterleitung auf die entspr. Wikipedia-Seite
         if( $glossar['erklaerung'] == '' && $glossar['wikipedia'] != '' )
@@ -64,11 +67,32 @@ class WISY_GLOSSAR_RENDERER_CLASS
         
         // prologue
         headerDoCache();
+        
+        $protocol       = $this->framework->iniRead('portal.https', '') ? "https" : "http";
+        $canonical      = parse_url( $this->framework->getUrl('g', array('id'=>$glossar_id)) , PHP_URL_PATH);
+        $canonicalURL   = $protocol."://".$_SERVER['SERVER_NAME'].$canonical;
+        
+        // Use foreign domain if set to avoid double content for Crawlers
+        $portalid_setting = intval($this->framework->iniRead('seo.canonical.portalid', ''));
+        $protocol_setting = trim($this->framework->iniRead('seo.canonical.protocol', ''));
+        $canocicalDomain_setting = trim($this->framework->iniRead('seo.canonical.domain', ''));
+        
+        if( $protocol_setting != '' && $canocicalDomain_setting != '') {
+            $db2 = new DB_Admin();
+            $sql2 = "SELECT user_grp FROM portale WHERE id = ".$portalid_setting;
+            $db2->query($sql2);
+            
+            if( $db2->next_record() ) {
+                if( $db2->f('user_grp') == $glossar['user_grp'] )
+                    $canonicalURL = $protocol_setting."://".$canocicalDomain_setting.$canonical;
+            }
+        }
+        
         echo $this->framework->getPrologue(array(
             'id'               => $glossar_id,
             'title'            =>        $glossar['begriff'],
             'beschreibung'     => $glossar['erklaerung'],        // #socialmedia, #richtext
-            'canonical'        =>        $this->framework->getUrl('g', array('id'=>$glossar_id)),
+            'canonical'        =>        $canonicalURL,
             'bodyClass'        =>        'wisyp_glossar',
         ), $glossar_id);
         
@@ -81,11 +105,13 @@ class WISY_GLOSSAR_RENDERER_CLASS
         // $this->db->close(); // closes db connection too early - eventhough query should be done
     }
     
-    function getGlossareintrag($glossar_id) {
-        // SELECT um user_grp erweitert (wegen 404-Prüfung)
+    function getGlossareintrag($glossar_id, $no404 = false) {
+        // SELECT um user_grp erweitert (wegen 404-Pruefung)
         $this->db->query("SELECT begriff, erklaerung, wikipedia, date_created, date_modified, user_grp FROM glossar WHERE status=1 AND id=".$glossar_id);
-        if( !$this->db->next_record() )
+        
+        if( !$this->db->next_record() && !$no404 ) {
             $this->framework->error404();
+        }
             
             $glossareintrag = array('begriff' => $this->db->fcs8('begriff'),
                 'erklaerung' => $this->db->fcs8('erklaerung'),
