@@ -8,6 +8,7 @@ class WISY_KURS_RENDERER_CLASS
     var $unsecureOnly = false;
     var $h_before_coursefilter = 27; // we want to ignore GMT time zone + daylight saving time complications + usually not in Google index yet
     var $h_before_dontshowteditorforeign_k = 27; // we want to ignore GMT time zone + daylight saving time complications + usually not in Google index yet
+    var $no404 = false; // only for temporary use. Makes moving domains in google search console possible
     
     function __construct(&$framework)
 	{
@@ -22,10 +23,11 @@ class WISY_KURS_RENDERER_CLASS
 		global $wisyPortalId;
 
 		$kursId = intval( $this->framework->getParam('id') );
+		$no404  = intval( $this->framework->iniRead('no404.kurse', false) );
 
 		// query DB
 		$db = new DB_Admin();
-		$db->query("SELECT k.freigeschaltet, k.titel, k.org_titel, k.beschreibung, k.anbieter, k.date_created, k.date_modified, k.bu_nummer, k.fu_knr, k.azwv_knr,
+		$db->query("SELECT k.freigeschaltet, k.titel, k.org_titel, k.beschreibung, k.lernziele, k.anbieter, k.date_created, k.date_modified, k.bu_nummer, k.fu_knr, k.azwv_knr,
                            a.pflege_pweinst, a.suchname, a.strasse, a.plz, a.ort, a.stadtteil, a.land, a.anspr_name, a.postname, a.adresszusatz, a.anspr_zeit, a.anspr_tel, a.anspr_fax, a.anspr_email, a.typ
 						  FROM kurse k
 						  LEFT JOIN anbieter a ON a.id=k.anbieter
@@ -35,20 +37,22 @@ class WISY_KURS_RENDERER_CLASS
 		    if( isset($_GET['debug']) && $_GET['debug'] == "nodisplay" )
 		        echo "<b>Seite wird nicht angezeigt, da der Kurs nicht existiert oder nicht freigeschaltet ist.</b>";
 		        
-		    $this->framework->error404();
+		        if( !$no404 )
+		            $this->framework->error404();
 		}
 		
 		$title 				= $db->fs('titel');
 		$originaltitel		= $db->fs('org_titel');;
 		$freigeschaltet 	= intval($db->fs('freigeschaltet'));
 		$beschreibung		= $db->fs('beschreibung');
+		$lernziele          = $db->fcs8('lernziele');
 		$anbieterId			= intval($db->f('anbieter'));
 		$date_created		= $db->f('date_created');
 		$date_modified		= $db->f('date_modified');
 		$bu_nummer 			= $db->fs('bu_nummer');
 		$pflege_pweinst		= intval($db->fs('pflege_pweinst'));
 		    
-		$this->filter_foreign_k($db, $wisyPortalId, $kursId, $date_created);
+		$this->filter_foreign_k($db, $wisyPortalId, $kursId, $date_created, $no404);
 		    
 		$anbieter_name = $db->fs('suchname');
 		$anbieterdetails['suchname']      = $anbieter_name;
@@ -115,7 +119,8 @@ class WISY_KURS_RENDERER_CLASS
 		    if( isset($_GET['debug']) && $_GET['debug'] == "nodisplay" )
 		        echo "<b>Seite wird nicht angezeigt, da Freischaltstatus dieses Angebots laut Portaleinstellung 'seo.set404_kurs_freigeschaltet' einen 404-Fehler produzieren soll und Besucher/in nicht in Onlinepflege eingeloggt.</b>";
 		        
-		        $this->framework->error404();
+		    if( !$no404 )
+		      $this->framework->error404();
 		}
 		
 		// page start
@@ -140,6 +145,28 @@ class WISY_KURS_RENDERER_CLASS
 		} elseif($displayAbschluss && $abschlussLabel) {
 		    $bodyClass .= ' wisyp_kurs_abschluss';
 		}
+
+		$protocol = $this->framework->iniRead('portal.https', '') ? "https" : "http";
+		$canonical = parse_url( $this->framework->getUrl('k', array('id'=>$kursId)) , PHP_URL_PATH);
+		$canonicalURL = $protocol."://".$_SERVER['SERVER_NAME'].$canonical;
+		
+		// Use foreign domain if set to avoid double content for Crawlers
+		$portalid_setting = intval($this->framework->iniRead('seo.canonical.portalid', ''));
+		$protocol_setting = trim($this->framework->iniRead('seo.canonical.protocol', ''));
+		$canocicalDomain_setting = trim($this->framework->iniRead('seo.canonical.domain', ''));
+		
+		if( $protocol_setting != '' && $canocicalDomain_setting != '') {
+		    $db2 = new DB_Admin();
+		    $db2->query(" SELECT x_kurse_tags.kurs_id, x_tags.tag_name
+                          FROM x_tags, x_kurse_tags
+                          WHERE x_tags.tag_name = '.portal".$portalid_setting."'
+                          AND x_kurse_tags.tag_id = x_tags.tag_id
+                          AND x_kurse_tags.kurs_id = ".$kursId);
+		    
+		    if( $db2->next_record() ) {
+		        $canonicalURL = $protocol_setting."://".$canocicalDomain_setting.$canonical;
+		    }
+		}
 		
 		echo $this->framework->getPrologue(
 		    array('id'=>$kursId,
@@ -148,7 +175,7 @@ class WISY_KURS_RENDERER_CLASS
 		        'anbieter_name'=>$anbieter_name,
 		        'anbieter_id'=>$anbieterId,
 		        'beschreibung'=>$beschreibung,
-		        'canonical'=>$this->framework->getUrl('k', array('id'=>$kursId)),
+		        'canonical'=> $canonicalURL,
 		        'bodyClass'=>$bodyClass
 		    ));
 		
@@ -163,11 +190,10 @@ class WISY_KURS_RENDERER_CLASS
 			// headline + flush() (loading the rest may take some seconds)
 			$h1class = '';
 
-			if( !$this->framework->getParam('deleted', false) ) {
-    			echo '<p class="noprint">' 
-    			.	 	'<a class="wisyr_zurueck" href="javascript:history.back();">&laquo; Zur&uuml;ck</a>'
-    			.	 '</p>';
-			}
+			if( !$this->framework->getParam('deleted', false) )
+			    echo '<p class="noprint">'
+			        .	 	'<a class="wisyr_zurueck" href="javascript:history.back();">&laquo; Zur&uuml;ck</a>'
+			        .'</p>';
 			
 			flush();
 			
@@ -232,6 +258,14 @@ class WISY_KURS_RENDERER_CLASS
 			if( $beschreibung != '' ) {
 			 $wiki2html =& createWisyObject('WISY_WIKI2HTML_CLASS', $this->framework);
 			 echo $wiki2html->run($this->framework->encode_windows_chars($beschreibung));
+			}
+			
+			// Kurs-Inhalt
+			if (!empty($lernziele)) {
+			    echo '<h1 class="lernziele">Lernziele</h1>';
+			    
+			    $wiki2html =& createWisyObject('WISY_WIKI2HTML_CLASS', $this->framework);
+			    echo $wiki2html->run($this->framework->encode_windows_chars($lernziele));
 			}
 			
 		    // Tabellarische Infos ...
@@ -369,9 +403,7 @@ class WISY_KURS_RENDERER_CLASS
 			    if( ($temp=$this->dbCache->lookup($cacheKey))!='' )
 			    {
 			        $tag_cloud = $temp." <!-- tag cloud from cache -->";
-			    }
-			    else
-			    {
+			    } else {
 			        $filtersw_typ = array_map("trim", explode(",", $this->framework->iniRead('sw_cloud.filtertyp', "32, 2048, 8192, 524288, 524289, 1048576")));
 			        $filtersw_ids = array_map("trim", explode(",", $this->framework->iniRead('sw_cloud.filterids', "866951, 866981, 866971, 866961, 867021, 867011, 867001"))); // Berufliche Bildung - Niveaus & Kurskategorien
 			        
@@ -382,8 +414,9 @@ class WISY_KURS_RENDERER_CLASS
 			        
 			        for ($i = 0; $i < count($tags); $i++) {
 			            $tag = $tags[$i];
+			            $gewichten = $this->framework->iniRead('sw_cloud.kurs_gewichten', 0);
 			            
-			            if ($this->framework->iniRead('sw_cloud.kurs_gewichten', 0)) {
+			            if( $gewichten ) {
 			                $tag_freq = $this->framework->getTagFreq($db, $tag['stichwort']);
 			                $weight = (floor($tag_freq / 50) > 15) ? 15 : floor($tag_freq / 50);
 			            }
@@ -436,7 +469,9 @@ class WISY_KURS_RENDERER_CLASS
 				echo '<div class="wisyr_kurs_edit">';
 					if( $this->framework->iniRead('useredit') )
 					{
-						if( $pflege_pweinst&1 )
+					    $locklogin = $this->framework->lockAnbieterLogin( $anbieterId );
+					    
+					    if( $pflege_pweinst&1 && !$locklogin )
 						{
 							$loggedInAnbieterId = $this->framework->getEditAnbieterId();
 							if( $loggedInAnbieterId==$anbieterId ) {
@@ -475,16 +510,17 @@ class WISY_KURS_RENDERER_CLASS
 		// --------------------------------------------------------------------
 	
 	
-	} // freigeschaltet
+		} // freigeschaltet
+			
+			echo "\n</div><!-- /#wisy_resultarea -->";
+			
+			// ! $db->close();
+			
+			echo $this->framework->getEpilogue();
+			
+	} // end: render()
 	
-		echo "\n</div><!-- /#wisy_resultarea -->";
-		
-		// ! $db->close();
-		
-		echo $this->framework->getEpilogue();
-	}
-	
-	function filter_foreign_k(&$db, $wisyPortalId, $kursId, $date_created) {
+	function filter_foreign_k(&$db, $wisyPortalId, $kursId, $date_created, $no404 = false) {
 	    
 	    $outputReason = isset($_GET['debug']) && $_GET['debug'] == "nodisplay";
 	    
@@ -510,9 +546,9 @@ class WISY_KURS_RENDERER_CLASS
 	    // ok to display publicly
 	    if( $outputReason ) {
 	        if($anzahlKurse == 1)
-	         echo "<br>Seite portaleigen!<br>";
+	            echo "Dieses Angebot ist portal-eigen.<br>";
 	        else
-	         echo "Dieses Angebot ist nicht portal-eigen => weitere Kriterien pr&uuml;fen....<br>";
+	            echo "Dieses Angebot ist nicht portal-eigen => weitere Kriterien pr&uuml;fen....<br>";
 	    }
 	        
 	    if($anzahlKurse == 1)
@@ -565,7 +601,8 @@ class WISY_KURS_RENDERER_CLASS
 	        if( $outputReason )
 	            echo "<b>Seite wird nicht angzeigt, da fremde Angebote nicht anzuzeigen sind und diese/r Besucher/in nicht in das Redaktionssystem oder die Onlinepflege eingeloggt ist.</b><br>";
 	            
-	        $this->framework->error404("Fehler 404 - Seite <i>in diesem Portal</i> nicht gefunden", "<ul><li><a href='/edit?action=ek&id=0'>Zur Seite wechseln: \"Onlinepflege-Login f&uuml;r Anbieter\" ...</a></li></ul>");
+	        if( !$no404 )
+	            $this->framework->error404("Fehler 404 - Seite <i>in diesem Portal</i> nicht gefunden", "<ul><li><a href='/edit?action=ek&id=0'>Zur Seite wechseln: \"Onlinepflege-Login f&uuml;r Anbieter\" ...</a></li></ul>");
 	    }
 	    elseif( $outputReason && $this->framework->is_editor_active($db, $this->h_before_dontshowteditorforeign_k) )
 	       echo "<b>Seite wird nur angezeigt, da aktuell im Redaktionssystem eingeloggt.</b>";

@@ -490,7 +490,7 @@ class WISY_SEARCH_CLASS
 	               $checkedWord = $this->isWord( $parts[ $j ] );
 	               $parts[ $j ] = stripos($parts[ $j-1 ], 'volltext') === FALSE && $checkedWord ? ",volltext:" . $checkedWord : ''; // if preceding token no volltext => token 2 = volltext, else if: both tokens != tag => search only first word as volltext and discard second
 	               $changedQueryString = true;
-	           } else {
+	           } else { 
                    $checkedWord = $this->isWord( $parts[ $j ] );
     	           if( $checkedWord ) {                           // careful: returns true if openth-Thesaurus is missing in DB!
     	                                                          // 2nd word is non-tag but word - odd
@@ -1033,7 +1033,7 @@ class WISY_SEARCH_CLASS
 				        echo "<br>Gesuchter Ort:<br><b>".(mb_detect_encoding($value, 'UTF-8', true) ? utf8_decode($value): $value)."</b><br><br>"
 				            ."Umlaut-Codierung Deutsch (ISO-8859-1)?:<br><b>".(mb_detect_encoding($value, 'ISO-8859-1', true) ? 'ja' : 'nein')."</b><br><br>"
 				            ."Umlaut-Codierung Deutsch (UTF-8)?:<br><b>".(mb_detect_encoding($value, 'UTF-8', true) ? 'ja' : 'nein')."</b><br><br>"
-				            .(is_array($gi) ? "Error:<br><b>".$gi['error']."</b>,<br><br>Anfrage an Geodkodierungsdienst war:<br><b>".$gi['url']."</b>" : '');
+				            .(is_array($gi) ? ($gi['error'] ? "Error:<br><b>".$gi['error']."</b>," : '') . "<br><br>Anfrage an Geodkodierungsdienst war:<br><b>".$gi['url']."</b><br><br>" : '');
 				    }
 				    
 				    if( !is_array($this->error) )
@@ -1268,21 +1268,24 @@ class WISY_SEARCH_CLASS
 				$cacheKey = "wisysearch.$wisyPortalId.$this->queryString.count";
 				if( $this->rawCanCache && ($temp=$this->dbCache->lookup($cacheKey))!='' )
 				{
-					$ret = unserialize($temp);
-					if( $ret === false )
-					{
-						if( isset($_COOKIE['debug']) ) {
-							echo "<p style=\"background-color: yellow;\">getKurseCount(): bad counts for key <i>$cacheKey</i>, recreating  ...</p>";
-						}
-					}
-					else
-					{
-						$do_recreate = false;
-						if( isset($_COOKIE['debug']) ) {
-							echo "<p style=\"background-color: yellow;\">getKurseCount(): counts for key <i>$cacheKey</i> loaded from cache ...</p>";
-						}
-					}
+				    $ret = unserialize($temp);
+				    if( $ret === false )
+				    {
+				        if( isset($_COOKIE['debug']) ) {
+				            $cacheType = is_object($this->framework) ? trim($this->framework->iniRead('cache.type', 'db')) : 'file';
+				            echo "<p style=\"background-color: yellow;\">getKurseCount(): bad counts for key <i>$cacheKey</i>, recreating using cache type: $cacheType ...</p>";
+				        }
+				    }
+				    else
+				    {
+				        $do_recreate = false;
+				        if( isset($_COOKIE['debug']) ) {
+				            $cacheType = is_object($this->framework) ? trim($this->framework->iniRead('cache.type', 'db')) : 'file';
+				            echo "<p style=\"background-color: yellow;\">getKurseCount(): counts for key <i>$cacheKey</i> loaded from cache using cache type: $cacheType ...</p>";
+				        }
+				    }
 				}
+				
 							
 				if( $do_recreate )
 				{

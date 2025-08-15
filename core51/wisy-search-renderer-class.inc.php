@@ -12,6 +12,7 @@ class WISY_SEARCH_RENDERER_CLASS
 	var $beschreibung_relevance = -1;
 	var $changedquery = '';
 	var $classes_changedquery = '';
+	var $canonicalURL = '';
 	
 	function __construct(&$framework)
 	{
@@ -960,6 +961,7 @@ class WISY_SEARCH_RENDERER_CLASS
 	        $info['volltext_select'] = $searcher->getFulltextSelect();
 	        
 	        $sqlCount = $searcher->getKurseCount();
+	        $this->paginated = ($sqlCount > $this->rows);
 	        
 	        // echo "<!-- changed: ".$info['changed_query'].", sugg:".print_r($info['suggestions'], true)." -->";
 	        // there should not be a fulltext - suggestion if already fulltext-searched
@@ -1350,6 +1352,7 @@ class WISY_SEARCH_RENDERER_CLASS
 	    $db2 = new DB_Admin();
 	    
 	    $sqlCount = $searcher->getAnbieterCount();
+	    $this->paginated = ($sqlCount > $this->rows);
 	    
 	    if( $sqlCount )
 	    {
@@ -1394,6 +1397,13 @@ class WISY_SEARCH_RENDERER_CLASS
 	                    
 	                    $filterRenderer =& createWisyObject('WISY_FILTER_RENDERER_CLASS', $this->framework);
 	                    $filterRenderer->renderForm($queryString, $searcher->getKurseRecords(0, 0, $orderBy), $hlevel, $number_of_results_string);
+	                    
+	                    // experimental:
+	                    // careful: no canonical url may be better than wrong canonical url
+	                    // canonical urls for filtered pages need to look at search terms, filter settings, order etc.
+	                    // $this->canonicalURL = $filterRenderer->getCanonicalURL();
+	                    // echo [...]
+	                    
 	            } else {
 	                // Show number of results
 	                echo $number_of_results_string;
@@ -1455,9 +1465,9 @@ class WISY_SEARCH_RENDERER_CLASS
 				echo '<td class="wisyr_strasse" data-title="Stra&szlig;e">';
 				echo htmlspecialchars( cs8($record['strasse']) );
 				echo ' </td>';
-				echo '<td class="wisyr_plz" data-title="PLZ">';
-				echo htmlspecialchars( cs8($record['plz']) );
-				echo ' </td>';
+				/* echo '<td class="wisyr_plz" data-title="PLZ">';
+				 echo htmlspecialchars( cs8($record['plz']) );
+				 echo ' </td>'; */
 				echo '<td class="wisyr_ort" data-title="Ort">';
 				$exclude_ort = trim($this->framework->iniRead('search.hide.ort', ''));
 				$ort = cs8($record['ort']);
@@ -1512,6 +1522,16 @@ class WISY_SEARCH_RENDERER_CLASS
 	
 	function render_emptysearchresult_message($info = false, $error = false, $hlevel=1, $foundCoursesCnt = 0, $queryString = "") {
 	    
+	    
+	    // empty favourites ("Merkzettel") list
+	    if( $queryString == "Fav:" ) {
+	        echo "<div id='empty_favlist'>";
+	        // echo "Ihre Merkliste enth&auml;lt keine Elemente!<br><br>Bitte benutzen Sie das <span class='symbol'>&#9733;</span>-Symbol in Suchergebnissen (neben Titeln von Angeboten).";
+	        echo "Leider befinden sich noch keine Kurse auf Ihrer Merkliste.<br><br>Klicken Sie auf das Sternchen neben dem Kurstitel, um Ihre Merkliste zu f&uuml;llen.";
+	        echo "</div>";
+	        
+	        return;
+	    }
 	    
 	    $this->changedquery = $info['changed_query'];
 	    $this->classes_changedquery = (($info['changed_query']) ? "changed_query" : "").' '.($info['changed_cnt'] ? 'has_changedresults' : 'no_changedresults');
@@ -1736,7 +1756,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		}
 		if($redirect && $this->framework->getParam('r', 0) != 1)
 		{
-		    header('Location: search?q=' . urlencode($queryString) . '&qs=' . urlencode(htmlspecialchars($this->framework->QS)) . '&qf=' . urlencode(htmlspecialchars($this->framework->QF)) . '&r=1'. (isset($_GET['qtrigger']) ? '&qtrigger='.$_GET['qtrigger'] : '') . (isset($_GET['force']) ? '&force='.$_GET['force'] : ''));
+		    header('Location: search?q=' . urlencode($queryString) . '&qs=' . urlencode(htmlspecialchars($this->framework->QS)) . '&qf=' . urlencode(htmlspecialchars($this->framework->QF)) . '&r=1'. ( $this->framework->qtrigger ? '&qtrigger='.$this->framework->qtrigger : '') . ( $this->framework->force ? '&force='.$this->framework->force : ''));
 		    exit();
 		}
 		
@@ -1752,12 +1772,24 @@ class WISY_SEARCH_RENDERER_CLASS
 		}
 		else
 		{
-			echo $this->framework->getPrologue(array(
-												'title'		=>	$title,
-												'bodyClass'	=>	'wisyp_search',
-											));
-			echo $this->framework->getSearchField();
-			flush();
+		    $canonicalURL = '';
+		    
+		    if( DEBUG ) {
+		        
+		        // $filterRenderer =& createWisyObject('WISY_FILTER_RENDERER_CLASS', $this->framework);
+		        // $filterRenderer->renderForm($queryString, null, 1, '', false); // output = false
+		        // $canonicalURL = $filterRenderer->getCanonicalURL();
+		        // echo("<div class='debug'>".$canonicalURL."</div>");
+		        ;
+		        
+		    }
+		    echo $this->framework->getPrologue(array(
+		        'title'		=>	$title,
+		        'bodyClass'	=>	'wisyp_search',
+		        // 'canonical' =>  '', // #
+		    ));
+		    echo $this->framework->getSearchField();
+		    flush();
 		}
 
 		// result out
@@ -1816,7 +1848,7 @@ class WISY_SEARCH_RENDERER_CLASS
 		}
 		$q_qs = $this->framework->getParam('q').",".$this->framework->getParam('qs');
 		$q_str = str_replace("Seite", "<br>Seite", $this->framework->getTitleString($q_qs));
-		$print_title = strtoupper($q_str). (isset($sort) ?? $sort) . '<br><span class="url">' . $_SERVER["SERVER_NAME"] . '</span>';
+		$print_title = strtoupper($q_str). ($sort ? $sort : "") . '<br><span class="url">' . $_SERVER["SERVER_NAME"] . '</span>';
 		// htmlentities not necessary for print or anti-xss but good for further rendering of page if search contains problematic chars
 		echo "\n".'<div class="printonly search_title" style="display: none;">'.htmlentities(strip_tags(strval($print_title))).'</div>'."\n";
 		
@@ -1916,6 +1948,11 @@ class WISY_SEARCH_RENDERER_CLASS
 					echo '</div> <!-- Ende: Kurse in Vorbereitung -->';
 				}
 		
+			$contentarea_bottom = $this->framework->iniRead('contentarea_bottom', '');
+			if( strlen($contentarea_bottom) )
+			    echo "<div class='".($this->paginated ? 'paginated' : 'non-paginated')."'>" . $contentarea_bottom . "</div>";
+				    
+				    
 			echo '</div>';
 		}
 		

@@ -127,7 +127,7 @@ class G_GEOCODE
                 if( is_numeric($lat) && is_numeric($lng) && $lat > 0 && $lng > 0 ) {
                     
                     // Geo-Koordinaten ermittelt =>  Lat: " . $lat ." // Lng: " . $lng );
-                    return array( 'lat' => $lat, 'lng' => $lng );
+                    return array( 'lat' => $lat, 'lng' => $lng, 'url'=>$url );
                     
                 } else {
                     // sollte nicht sein
