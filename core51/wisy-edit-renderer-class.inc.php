@@ -24,28 +24,29 @@ class WISY_EDIT_RENDERER_CLASS
 
 		// constructor
 		$this->framework	=& $framework;
+		$this->promoter 	=& createWisyObject('WISY_PROMOTE_CLASS', $this->framework);
 		$this->tools		=& createWisyObject('WISY_EDIT_TOOLS_CLASS', $this->framework);
-		$this->glossar         =& createWisyObject('WISY_GLOSSAR_RENDERER_CLASS', $this->framework);
+		
 		
 		
 		// find out the "backward" location (where to go to if "OK" or "Cancel" is hit
 		$this->bwd	= isset($_REQUEST['bwd']) ? $_REQUEST['bwd'] : '';
 		if( $this->bwd == '' )
 		{
-		    $this->bwd = 'search';
-		    if( isset($_SERVER['HTTP_REFERER']) && $_SERVER['HTTP_REFERER'] != '' )
-		    {
-		        $this->bwd = $_SERVER['HTTP_REFERER'];
-		    }
-		    else if( isset($_REQUEST['action']) && $_REQUEST['action'] == 'ek' )
-		    {
-		        if( isset($_REQUEST['id']) )
-		            $this->bwd = 'k' . intval($_REQUEST['id']);
-		    }
-		    else if( isset($_REQUEST['action']) && $_REQUEST['action'] == 'ea' )
-		    {
-		        $this->bwd = isset($_SESSION['loggedInAnbieterId']) ? 'a' . intval($_SESSION['loggedInAnbieterId']) : '';
-		    }
+			$this->bwd = 'search';
+			if( isset($_SERVER['HTTP_REFERER']) && $_SERVER['HTTP_REFERER'] != '' )
+			{
+				$this->bwd = $_SERVER['HTTP_REFERER'];
+			}
+			else if( isset($_REQUEST['action']) && $_REQUEST['action'] == 'ek' )
+			{
+			    if( isset($_REQUEST['id']) )
+				    $this->bwd = 'k' . intval($_REQUEST['id']);
+			}
+			else if( isset($_REQUEST['action']) && $_REQUEST['action'] == 'ea' )
+			{
+			    $this->bwd = isset($_SESSION['loggedInAnbieterId']) ? 'a' . intval($_SESSION['loggedInAnbieterId']) : '';
+			}
 		}
 		
 		
@@ -61,8 +62,10 @@ class WISY_EDIT_RENDERER_CLASS
 		{
 			$this->_anbieter_ini_settings = array();
 			$db = new DB_Admin;
+			
 			if( isset($_SESSION['loggedInAnbieterId']) )
-			    $db->query("SELECT settings x FROM anbieter WHERE id=".intval($_SESSION['loggedInAnbieterId']));
+			 $db->query("SELECT settings x FROM anbieter WHERE id=".intval($_SESSION['loggedInAnbieterId']));
+			
 			if( $db->next_record() )
 			{
 			    $this->_anbieter_ini_settings = explodeSettings($db->fcs8('x'));
@@ -96,8 +99,10 @@ class WISY_EDIT_RENDERER_CLASS
 			}
 			
 			$db = new DB_Admin;
+			
 			if( isset($_SESSION['loggedInAnbieterId']) )
-			    $db->query("UPDATE anbieter SET settings='" .addslashes($data). "' WHERE id=".intval($_SESSION['loggedInAnbieterId']));
+			 $db->query("UPDATE anbieter SET settings='" .addslashes($data). "' WHERE id=".intval($_SESSION['loggedInAnbieterId']));
+			
 			// $db->close();
 		}
 	}
@@ -109,32 +114,50 @@ class WISY_EDIT_RENDERER_CLASS
 	}
 	protected function getAdminAnbieterUserId20()
 	{
-	    return 20;
+		return 20;
 	}
 	protected function getAdminAnbieterUserId19()
 	{
-	    return 19;
-	}
-	
+		return 19;
+	}	
+
 	protected function getAnbieterPwEinst()
 	{
-	    if( !isset($this->cachePwEinst) )
-	    {
-	        $this->cachePwEinst = 0;
-	        $anbieter_id = $_SESSION['loggedInAnbieterId'] ? intval($_SESSION['loggedInAnbieterId']) : null;
-	        if( $anbieter_id )
-	        {
-	            $db = new DB_Admin;
-	            $db->query("SELECT pflege_pweinst FROM anbieter WHERE id=$anbieter_id;");
-	            if( $db->next_record() )
-	            {
-	                $this->cachePwEinst = $db->fcs8('pflege_pweinst');
-	            }
-	            // $db->close();
-	        }
-	    }
-	    
-	    return $this->cachePwEinst;
+		if( !isset($this->cachePwEinst) )
+		{
+			$this->cachePwEinst = 0;
+			$anbieter_id = $_SESSION['loggedInAnbieterId'] ? intval($_SESSION['loggedInAnbieterId']) : null;
+			if( $anbieter_id )
+			{
+				$db = new DB_Admin;
+				$db->query("SELECT pflege_pweinst FROM anbieter WHERE id=$anbieter_id;");
+				if( $db->next_record() )
+				{
+				    $this->cachePwEinst = $db->fcs8('pflege_pweinst');
+				}
+				// $db->close();
+			} 
+		}
+
+		return $this->cachePwEinst;
+	}
+
+	protected function canPromote()
+	{
+		if( !isset($this->cacheCanPromote) )
+		{
+			$this->cacheCanPromote = false;
+			if( $this->framework->iniRead('useredit.promote', 0) != 0 )
+			{
+				$pw_einst = $this->getAnbieterPwEinst();
+				if( ($pw_einst&1) && ($pw_einst&2) )
+				{
+					$this->cacheCanPromote = true;
+				}
+			}
+		}
+		
+		return $this->cacheCanPromote;
 	}
 	
 	protected function canEditBagatelleOnly()
@@ -212,29 +235,6 @@ class WISY_EDIT_RENDERER_CLASS
 		if( $mm<10 ) $mm = "0$mm";
 		return "$hh:$mm"; // success
 	}
-	
-	function saveStichwortArray($kursId, $newStichwoerter, $eigenschaften)
-	{
-	    $db = new DB_Admin;
-	    // alle Foederungen loeschen
-	    $db->query("DELETE FROM kurse_stichwort WHERE primary_id = $kursId AND attr_id IN ( SELECT id FROM stichwoerter WHERE eigenschaften = '$eigenschaften' );");
-	    foreach($newStichwoerter as $newStichwort) {
-	        $db->query("SELECT MAX(structure_pos) AS sp FROM kurse_stichwort WHERE primary_id=$kursId;");
-	        $db->next_record();
-	        $structurePos = intval($db->fcs8('sp'))+1;
-	        $db->query("INSERT INTO kurse_stichwort (primary_id, attr_id, structure_pos) VALUES($kursId, $newStichwort, $structurePos);");
-	    }
-	}
-	
-	function getEditHelpText($feld, $gid)
-	{
-	    $glosarid = $this->framework->iniRead('onlinepflege.hinweis.'.$feld, '');
-	    if ($glosarid) {
-	        $gid = $glosarid;
-	    }
-	    $glossar = $this->glossar->getGlossareintrag($gid);
-	    return  $glossar['erklaerung'];
-	}
 
 	function saveStichwort($kursId, $oldStichwId, $newStichwId)
 	{
@@ -270,88 +270,43 @@ class WISY_EDIT_RENDERER_CLASS
 	
 	function moeglicheAbschluesseUndFoerderungen(&$retAbschluesse, &$retFoerderungen)
 	{
-	    $db = new DB_Admin;
-	    $sql_foerderungen = "";
-	    if ($this->framework->iniRead('useredit.foerderungen', '')) {
-	        $useredit_foerderungen = $this->framework->iniRead('useredit.foerderungen', '');
-	        $useredit_foerderungenArray = explode(",", $useredit_foerderungen);
-	        if (is_array($useredit_foerderungenArray)) {
-	            $sql_foerderungen .= " AND id IN (".implode(",", $useredit_foerderungenArray).")" ;
-	        }
-	    }
-	    $db->query("SELECT id, eigenschaften, stichwort FROM stichwoerter WHERE 1 ".$sql_foerderungen." ORDER BY stichwort_sorted;");
-	    while( $db->next_record() )
-	    {
-	        $id = intval($db->fcs8('id'));
-	        $eigenschaften = intval($db->fcs8('eigenschaften'));
-	        $stichwort = $db->fcs8('stichwort');
-	        if( $eigenschaften & 1 )
-	        {
-	            $retAbschluesse .= ($retAbschluesse?'###' : '') . $id . '###' . (PHP7 ? $stichwort : utf8_decode($stichwort));
-	        }
-	        else if( $eigenschaften & 2 )
-	        {
-	            $retFoerderungen .= ($retFoerderungen?'###' : '') . $id . '###' . (PHP7 ? $stichwort : utf8_decode($stichwort));
-	        }
-	    }
-	    
-	}
-	
-	function moeglicheUnterrichtsarten(&$retUnterrichtsarten)
-	{
-	    $db = new DB_Admin;
-	    $sql_unterrichtsarten = "";
-	    if ($this->framework->iniRead('useredit.unterrichtsarten', '')) {
-	        $useredit_unterrichtsarten = $this->framework->iniRead('useredit.unterrichtsarten', '');
-	        $useredit_unterrichtsartenArray = explode(",", $useredit_unterrichtsarten);
-	        if (is_array($useredit_unterrichtsartenArray)) {
-	            $sql_unterrichtsarten .= " AND id IN (".implode(",", $useredit_unterrichtsartenArray).")" ;
-	        }
-	    }
-	    
-	    $db->query('SELECT id, eigenschaften, stichwort FROM stichwoerter WHERE eigenschaften = 32768 '.$sql_unterrichtsarten.' ORDER BY stichwort_sorted;');
-	    
-	    while( $db->next_record() )
-	    {
-	        $id = intval( $db->fcs8('id') );
-	        $eigenschaften = intval( $db->fcs8('eigenschaften') );
-	        $stichwort = $db->fcs8('stichwort');
-	        $retUnterrichtsarten .= ( $retUnterrichtsarten ? '###' : '') . $id . '###' . ( PHP7 ? $stichwort : utf8_decode($stichwort) );
-	    }
-	}
-	
-	
-	function getStichwort($kursId, $StichwId)
-	{
-	    $db = new DB_Admin;
-	    $db->query("SELECT id, eigenschaften, stichwort FROM stichwoerter WHERE id = $StichwId ;");
-	    $db->next_record();
-	    $stichwort = $db->fcs8('stichwort');
-	    $db->query("SELECT COUNT(primary_id)  AS anz FROM kurse_stichwort WHERE primary_id=$kursId AND attr_id = $StichwId;");
-	    $db->next_record();
-	    $anz = $db->fcs8('anz');
-	    $checked = " ";
-	    $text = '<input type="hidden" name="useredit_allstichwoerter[]" value="'.$StichwId.'"/>';
-	    if ($anz > 0) {
-	        $text .= '<tr><td>'.$stichwort.':</td><td><input type="checkbox" name="useredit_stichwoerter[]" value="'.$StichwId.'" CHECKED/><input type="hidden" name="useredit_stichwoerterold[]" value="'.$StichwId.'"/></td></tr>';
-	    } else {
-	        $text .= '<tr><td>'.$stichwort.':</td><td><input type="checkbox" name="useredit_stichwoerter[]" value="'.$StichwId.'" /></td></tr>';
-	    }
-	    return $text;
-	    
-	}
-	
-	
-	function testStichwort($kursId, $StichwId)
-	{
-	    $db = new DB_Admin;
-	    $db->query("SELECT id, eigenschaften, stichwort FROM stichwoerter WHERE id = $StichwId ;");
-	    $db->next_record();
-	    $stichwort = $db->fcs8('stichwort');
-	    $db->query("SELECT COUNT(primary_id)  AS anz FROM kurse_stichwort WHERE primary_id=$kursId AND attr_id = $StichwId;");
-	    $db->next_record();
-	    $anz = $db->fcs8('anz');
-	    return $anz;
+		// aktuell vom anbieter verwendete Stichwoerter suchen
+		$alleStichw = '';
+		$anbieter_id = isset($_SESSION['loggedInAnbieterId']) ? intval($_SESSION['loggedInAnbieterId']) : null;
+		$db = new DB_Admin;
+		$db->query("SELECT DISTINCT attr_id FROM kurse_stichwort LEFT JOIN kurse ON id=primary_id WHERE anbieter=$anbieter_id;");
+		while($db->next_record() ) {
+		    $alleStichw .= ($alleStichw==''? '' : ', ') .  $db->fcs8('attr_id'); 
+		}
+		
+		// kuerzlich geloeschte stichworte hinzufuegen (falls z.B. der letzte Kurse mit einem best. Abschluss geloescht wurde - dieser Abschluss darf dann dennoch wieder vergeben werden)
+		if( isset($_SESSION['stockStichw']) && is_array($_SESSION['stockStichw']) ) {
+			reset($_SESSION['stockStichw']); 
+			foreach(array_keys($_SESSION['stockStichw']) as $id) {
+				$alleStichw .= ($alleStichw==''? '' : ', ') .  $id; 
+			}
+		}
+		
+		// liste moeglicher abschluesse/foerderungen erzeigen
+		if( $alleStichw!='' )
+		{
+			$db->query("SELECT id, eigenschaften, stichwort FROM stichwoerter WHERE id IN($alleStichw) ORDER BY stichwort_sorted;");
+			while( $db->next_record() )
+			{
+			    $id = intval($db->fcs8('id'));
+			    $eigenschaften = intval($db->fcs8('eigenschaften'));
+			    $stichwort = $db->fcs8('stichwort');
+			    if( $eigenschaften & 1 )
+			    {
+			        $retAbschluesse .= ($retAbschluesse?'###' : '') . $id . '###' . (PHP7 ? $stichwort : utf8_decode($stichwort));
+			    }
+			    else if( $eigenschaften & 2 )
+			    {
+			        $retFoerderungen .= ($retFoerderungen?'###' : '') . $id . '###' . (PHP7 ? $stichwort : utf8_decode($stichwort));
+			    }
+			}
+		}
+		// $db->close();
 	}
 	
 	function controlHidden($name, $value)
@@ -359,25 +314,16 @@ class WISY_EDIT_RENDERER_CLASS
 	    echo "<input type=\"hidden\" name=\"$name\" value=\"" . htmlentities(strval($value)) . "\" />";
 	}
 	
-	function controlText($name, $value, $size = 8, $maxlen = 255, $tooltip = '', $valuehint = '', $pattern = '', $placeholder = '', $required = 0)
+	function controlText($name, $value, $size = 8, $maxlen = 255, $tooltip = '', $valuehint = '')
 	{
-	    $em = intval($size*.6 + .5);
-	    echo "<input style=\"width: {$em}em\" type=\"text\" name=\"$name\" value=\"" . htmlentities(cs8($value)) . "\" size=\"$size\" maxlength=\"$maxlen\" title=\"{$tooltip}\"";
-	    if ($pattern) {
-	        echo " pattern=\"$pattern\" ";
-	    }
-	    if ($placeholder) {
-	        echo " placeholder=\"$placeholder\" ";
-	    }
-	    if ($required == 1) {
-	        echo " required ";
-	    }
-	    #if( $valuehint) {
-	    #       echo " onfocus=\"if(this.value=='$valuehint'){this.value='';this.className='normal';}return true;\"";
-	    #       echo " onblur=\"if(this.value==''){this.value='$valuehint';this.className='wisy_hinted';}return true;\"";
-	    #       echo ($value==''||$value==$valuehint)? ' class="wisy_hinted"' : ' class="normal"';
-	    #}
-	    echo " />";
+		$em = intval($size*.6 + .5);
+		echo "<input style=\"width: {$em}em\" type=\"text\" name=\"$name\" value=\"" . htmlentities(strval($value!=''? cs8($value) : $valuehint)) . "\" size=\"$size\" maxlength=\"$maxlen\" title=\"{$tooltip}\"";
+		if( $valuehint ) {
+			echo " onfocus=\"if(this.value=='$valuehint'){this.value='';this.className='normal';}return true;\"";
+			echo " onblur=\"if(this.value==''){this.value='$valuehint';this.className='wisy_hinted';}return true;\"";
+			echo ($value==''||$value==$valuehint)? ' class="wisy_hinted"' : ' class="normal"';
+		}
+		echo " />";
 	}
 
 	function controlSelect($name, $value, $values)
@@ -394,67 +340,44 @@ class WISY_EDIT_RENDERER_CLASS
 			}
 		echo '</select>';
 	}
-	
-	function controlMultiSelect($name, $value, $values)
-	{
-	    global $edit_tagid_blacklist;
-	    
-	    $values = explode('###', $values);
-	    echo "<select name=\"".$name."[]\" size=\"8\" multiple>";
-	    
-	    for( $v = 0; $v < sizeof($values); $v+=2 ) {
-	        
-	        if( in_array($values[$v], $edit_tagid_blacklist) ) // global black list of tag ids not to be displayed in selections
-	            continue;
-	            
-	            echo '<option value="' .$values[$v]. '"';
-	            if (is_array($value)) {
-	                if(in_array($values[$v],$value) ) {
-	                    echo ' selected="selected"';
-	                }
-	            }
-	            echo '>' .htmlspecialchars(cs8($values[$v+1])).'</option>';
-	    }
-	    echo '</select>';
-	}
 
 	function getToolbar()
 	{
-	    $ret = '';
-	    
-	    $ret .= '<div class="wisy_edittoolbar">';
-	    
-	    // name / logout link
-	    $name = isset($_SESSION['loggedInAnbieterSuchname']) ? $_SESSION['loggedInAnbieterSuchname'] : '';
-	    $loggedInAnbieterId = isset($_SESSION['loggedInAnbieterId']) ? $_SESSION['loggedInAnbieterId'] : null;
-	    $maxlen = 30;
-	    if(strlen($name) > $maxlen ) $name = trim(substr($name, 0, $maxlen-5)) . '..';
-	    $ret .= '<div style="float: right;">eingeloggt als: '
-	        .   '<a href="' .$this->framework->getUrl('a', array('id'=>$loggedInAnbieterId, 'q'=>$this->framework->getParam('q'))). '?editstart='.date("Y-m-d-h-i-s").'">' . isohtmlspecialchars($name) . '</a>';
-	        
-	        $loggedInAnbieterPflegemail = isset($_SESSION['loggedInAnbieterPflegemail']) && strlen($_SESSION['loggedInAnbieterPflegemail']) > 3;
-	        if( $loggedInAnbieterPflegemail ) {
-	            $ret .= ' | <a href="#" onclick=\'resetPassword('.$loggedInAnbieterId.', "'.substr($loggedInAnbieterPflegemail, 0, 3).'...'
-	                .substr($loggedInAnbieterPflegemail, strlen($loggedInAnbieterPflegemail)-6).'"); return false;\'>Neues Passwort anfordern!</a>';
-	        }
-	        else {
-	            if( isset($_SESSION['_login_as']) && $_SESSION['_login_as'])
-	                $ret .= ' <span class="pw_resetinfo">(Redaktionslogin)</span>';
-	            else
-	                $ret .= ' | <span class="pw_resetinfo">(F&uuml;r Passwort&auml;nderungen: Pflege-Email hinterlegen oder Portal-Betreiber schreiben.)</span>';
-	        }
-	        
-	        $ret .= ' | <a href="'.$this->framework->getUrl('edit', array('action'=>'logout')) . '">Logout</a>'
-	              . '</div>';
-	            
-	            
-	        $ret .= 'f&uuml;r Anbieter: ';
+		$ret = '';
+		
+		$ret .= '<div class="wisy_edittoolbar">';
+		
+			// name / logout link
+		    $name = isset($_SESSION['loggedInAnbieterSuchname']) ? $_SESSION['loggedInAnbieterSuchname'] : '';
+		    $loggedInAnbieterId = isset($_SESSION['loggedInAnbieterId']) ? $_SESSION['loggedInAnbieterId'] : null;
+			$maxlen = 30;
+			if(strlen($name) > $maxlen ) $name = trim(substr($name, 0, $maxlen-5)) . '..';
+			$ret .= '<div style="float: right;">eingeloggt als: '
+			     .   '<a href="' .$this->framework->getUrl('a', array('id'=>$loggedInAnbieterId, 'q'=>$this->framework->getParam('q'))). '?editstart='.date("Y-m-d-h-i-s").'">' . isohtmlspecialchars($name) . '</a>';
+			
+			$loggedInAnbieterPflegemail = isset($_SESSION['loggedInAnbieterPflegemail']) && strlen($_SESSION['loggedInAnbieterPflegemail']) > 3;
+			if( $loggedInAnbieterPflegemail ) {
+			    $ret .= ' | <a href="#" onclick=\'resetPassword('.$loggedInAnbieterId.', "'.substr($loggedInAnbieterPflegemail, 0, 3).'...'
+			        .substr($loggedInAnbieterPflegemail, strlen($loggedInAnbieterPflegemail)-6).'"); return false;\'>Neues Passwort anfordern!</a>';
+			}
+			else {
+			 if( isset($_SESSION['_login_as']) && $_SESSION['_login_as'])
+			     $ret .= ' <span class="pw_resetinfo">(Redaktionslogin)</span>';
+			 else
+			     $ret .= ' | <span class="pw_resetinfo">(F&uuml;r Passwort&auml;nderungen: Pflege-Email hinterlegen oder Portal-Betreiber schreiben.)</span>';
+			}
+			            
+			$ret .= ' | <a href="'.$this->framework->getUrl('edit', array('action'=>'logout')) . '">Logout</a>'
+			     .	'</div>';
+			                
+		
+			$ret .= 'f&uuml;r Anbieter: ';
 
-	        // link "meine kurse"
-	        $q = (isset($_SESSION['loggedInAnbieterTag']) ? $_SESSION['loggedInAnbieterTag'] : '') . ', Datum:Alles';
-	        $ret .=  '<a href="' . $this->framework->getUrl('search', array('q'=>$q)) . '">Alle Kurse</a>';
-	        
-	        // link "kurs bearbeiten"
+			// link "meine kurse"		
+			$q = (isset($_SESSION['loggedInAnbieterTag']) ? $_SESSION['loggedInAnbieterTag'] : '') . ', Datum:Alles';
+			$ret .=  '<a href="' . $this->framework->getUrl('search', array('q'=>$q)) . '">Alle Kurse</a>';
+			
+			// link "kurs bearbeiten"
 			global $wisyRequestedFile;
 			if( $wisyRequestedFile[0] == 'k' && ($kursId=intval(substr($wisyRequestedFile, 1))) > 0 )
 			{
@@ -483,21 +406,27 @@ class WISY_EDIT_RENDERER_CLASS
 			 $ret .=  ' | <a href="/a'.$_SESSION['loggedInAnbieterId'].'">Zum Profil</a>'; */
 			
 			$ret .= ' | <a href="edit?action=ea">Ihr Profil bearbeiten</a> ';
+			
+			// link "konto"
+			if( $this->canPromote() )
+			{
+				$ret .=  ' | <a href="edit?action=kt">Konto</a>';
+			}
 
 			// link "hilfe"
 			$ret .=  ' | <a href="' .$this->framework->getHelpUrl($this->framework->iniRead('useredit.help', '3371')). '" target="_blank" rel="noopener noreferrer">Hilfe</a> ';
 			
 			$ret .=  '</div>';
 
-			if( isset($_COOKIE['editmsg']) && $_COOKIE['editmsg'] != '' )
-			{
-			    $ret .= "<p class=\"wisy_topnote\">" .  $_COOKIE['editmsg'] . "</p>";
-			    $ret .= '<script>document.cookie = "editmsg=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";</script>'; // makes sense?
-			}
-			
-			return $ret;
+	    if( isset($_COOKIE['editmsg']) && $_COOKIE['editmsg'] != '' )
+		{
+		    $ret .= "<p class=\"wisy_topnote\">" .  $_COOKIE['editmsg'] . "</p>";
+		    $ret .= '<script>document.cookie = "editmsg=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";</script>'; // makes sense?
+		}
+		
+		return $ret;
 	}
-	
+
 	protected function isEditable($kursId) /* returns 'yes', 'no' or 'loginneeded' */
 	{
 		if( $kursId == 0 ) 
@@ -539,25 +468,34 @@ class WISY_EDIT_RENDERER_CLASS
 
 	protected function renderLoginScreen()
 	{
-	    // see what to do
-	    $db					= new DB_Admin;
-	    $fwd				= 'search';
-	    $anbieterSuchname	= '';
-	    $loginError			= '';
 	    
-	    if( isset($_REQUEST['action']) && $_REQUEST['action'] == 'loginSubseq' && isset($_REQUEST['cancel']) )
-	    {
-	        header('Location: ' . $this->bwd);
-	        exit();
-	    }
-	    else if( isset($_REQUEST['action']) && $_REQUEST['action'] == 'loginSubseq' )
-	    {
-	        // "OK" wurde angeklickt - loginversuch starten
-	        $fwd 				= isset($_REQUEST['fwd']) ? strval( $_REQUEST['fwd'] ) : '';
-	        $anbieterSuchname	= isset($_REQUEST['as']) ? strval( $_REQUEST['as'] ) : '';
-	        $anbieterSuchname_utf8dec = (PHP7 ? $anbieterSuchname : utf8_decode($anbieterSuchname));
-	        
-	        $logwriter = new LOG_WRITER_CLASS;
+		// see what to do
+		$db					= new DB_Admin;
+		$fwd				= 'search';
+		$anbieterSuchname	= '';
+		$loginError			= '';
+		
+
+		// Deactivate for Maintenance on <example.com>:
+		// if( stripos($_SERVER['HTTP_HOST'], 'example.com') !== FALSE && !isset($_COOKIE['debug']) ) {
+		    /* die( '<div style="color: black; font-size: 1.3em; padding: 0.5em; background-color: yellow;">' 
+		        .'Aktueller Hinweis:<br>Die Bearbeitungsmaske f&uuml;r Angebote- und Anbieterdaten steht auf Grund eines kurzfristigen Updates bis ca. ... '
+		        .'nicht zur Verf&uuml;gung.<br>Wir bitten um Verst&auml;ndnis.</div>' ); */
+		// }
+		
+		if( isset($_REQUEST['action']) && $_REQUEST['action'] == 'loginSubseq' && isset($_REQUEST['cancel']) )
+		{
+			header('Location: ' . $this->bwd);
+			exit();
+		}
+		else if( isset($_REQUEST['action']) && $_REQUEST['action'] == 'loginSubseq' )
+		{
+		    // "OK" wurde angeklickt - loginversuch starten
+		    $fwd 				= isset($_REQUEST['fwd']) ? strval( $_REQUEST['fwd'] ) : '';
+		    $anbieterSuchname	= isset($_REQUEST['as']) ? strval( $_REQUEST['as'] ) : '';
+		    $anbieterSuchname_utf8dec = (PHP7 ? $anbieterSuchname : utf8_decode($anbieterSuchname));
+		    
+		    $logwriter = new LOG_WRITER_CLASS;
 		    $logwriter->addData('ip', $_SERVER['REMOTE_ADDR']);
 		    $logwriter->addData('browser', $_SERVER['HTTP_USER_AGENT']);
 		    $logwriter->addData('portal', $GLOBALS['wisyPortalId']);
@@ -648,6 +586,17 @@ class WISY_EDIT_RENDERER_CLASS
 			}
 			else
 			{
+			    $locklogin = $this->framework->lockAnbieterLogin( intval($anbieterID) );
+			    if( $locklogin ) {
+			        echo '<script>alert("Dieses Angebot wurde von einem anderen Portal eingeblendet. Bitte editieren Sie Ihr Angebot im Hauptportal.");</script>';
+			        
+			        $secureLogin = "a".intval($loggedInAnbieterId);
+			        $redirect = '//' . $_SERVER['HTTP_HOST'] . '/' . $secureLogin;
+			        header("Location: $redirect");
+			        
+			        exit();
+			    }
+			    
 				$this->framework->startEditSession();
 				$_SESSION['loggedInAnbieterId'] = $loggedInAnbieterId;
 				$_SESSION['loggedInAnbieterPflegemail'] = $loggedInAnbieterPflegemail;
@@ -670,39 +619,55 @@ class WISY_EDIT_RENDERER_CLASS
 		}
 		else 
 		{
-		    // erster Aufruf der Seite - initialisieren
+			// erster Aufruf der Seite - initialisieren
 		    if( isset($_REQUEST['action']) && $_REQUEST['action'] == 'ek' )
-		    {
-		        $sql = "SELECT suchname FROM anbieter LEFT JOIN kurse ON kurse.anbieter=anbieter.id WHERE kurse.id=".intval($_REQUEST['id'])." AND anbieter.freigeschaltet = 1";
-		        $db->query($sql);
-		        if( $db->next_record() )
-		        {
-		            $anbieterSuchname = $db->fcs8('suchname');
-		            $anbieterSuchname_utf8dec = (PHP7 ? $anbieterSuchname : utf8_decode($anbieterSuchname));
-		        }
-		        if( isset($_REQUEST['id']) )
-		            $fwd = "edit?action=ek&id=".intval($_REQUEST['id']);
-		            $secureLogin = $fwd;
-		    }
-		    else
-		    {
-		        if( isset($_REQUEST['fwd']) ) {
-		            $fwd = $_REQUEST['fwd'];
-		        }
-		        $anbieterSuchname = isset($_REQUEST['as']) ? $_REQUEST['as'] : '';
-		        $anbieterSuchname_utf8dec = (PHP7 ? $anbieterSuchname : utf8_decode($anbieterSuchname));
-		        $secureLogin = "edit?action=login&as=".urlencode($anbieterSuchname);
-		    }
-		    
-		    // first, see if we have to redirect to a secure login screen
-		    if( $this->framework->iniRead('useredit.secure', 1)==1
-		        && substr($_SERVER['HTTP_HOST'], -6)!='.local'
-		        && $_SERVER['HTTPS']!='on' )
-		    {
-		        $redirect = 'https://' . $_SERVER['HTTP_HOST'] . '/' . $secureLogin;
-		        header("Location: $redirect");
-		        exit();
-		    }
+			{
+			    $anbieterID = -1;
+			    
+				$sql = "SELECT anbieter.id, anbieter.suchname FROM anbieter LEFT JOIN kurse ON kurse.anbieter=anbieter.id WHERE kurse.id=".intval($_REQUEST['id'])." AND anbieter.freigeschaltet = 1";
+				$db->query($sql);
+				if( $db->next_record() )
+				{
+				    $anbieterID = $db->fcs8('id');
+				    $anbieterSuchname = $db->fcs8('suchname');
+				    $anbieterSuchname_utf8dec = (PHP7 ? $anbieterSuchname : utf8_decode($anbieterSuchname));
+				}
+				if( isset($_REQUEST['id']) )
+				    $fwd = "edit?action=ek&id=".intval($_REQUEST['id']);
+				
+				$secureLogin = $fwd;
+				    
+				$locklogin = $this->framework->lockAnbieterLogin( intval($anbieterID) );
+				if( $locklogin ) {
+				    echo '<script>alert("Dieses Angebot wurde von einem anderen Portal eingeblendet. Bitte editieren Sie Ihr Angebot im Hauptportal.");</script>';
+				    
+				    $secureLogin = "k".intval($_REQUEST['id']);
+				    $redirect = '//' . $_SERVER['HTTP_HOST'] . '/' . $secureLogin;
+				    header("Location: $redirect");
+				    
+				    exit();
+				}
+				
+			}
+			else
+			{
+				if( isset($_REQUEST['fwd']) ) {
+					$fwd = $_REQUEST['fwd'];
+				}
+				$anbieterSuchname = isset($_REQUEST['as']) ? $_REQUEST['as'] : '';
+				$anbieterSuchname_utf8dec = (PHP7 ? $anbieterSuchname : utf8_decode($anbieterSuchname));
+				$secureLogin = "edit?action=login&as=".urlencode($anbieterSuchname);
+			}
+			
+			// first, see if we have to redirect to a secure login screen
+			if( $this->framework->iniRead('useredit.secure', 1)==1 
+			 && substr($_SERVER['HTTP_HOST'], -6)!='.local'
+			 && $_SERVER['HTTPS']!='on' )
+			{
+				$redirect = 'https://' . $_SERVER['HTTP_HOST'] . '/' . $secureLogin;
+				header("Location: $redirect");
+				exit();
+			}
 		}
 		
 		// render login form
@@ -729,7 +694,9 @@ class WISY_EDIT_RENDERER_CLASS
 			{
 				echo '<p>Bitte geben Sie Ihre <b>Login-Daten</b> ein:</p>';
 			}
-	
+
+
+			
 			if( $showLoginForm )
 			{
 				echo '<form action="edit" method="post">';
@@ -780,14 +747,14 @@ class WISY_EDIT_RENDERER_CLASS
 	function renderLogoutScreen()
 	{
 	    $loggedInAnbieterId = isset($_SESSION['loggedInAnbieterId']) ? $_SESSION['loggedInAnbieterId'] : null;
-	    $logwriter = new LOG_WRITER_CLASS;
-	    $logwriter->log('anbieter', $loggedInAnbieterId, $this->getAdminAnbieterUserId20(), 'logout');
-	    
-	    session_destroy();
-	    setcookie($this->framework->editCookieName, '', 0, '/'); // remove cookie
-	    
-	    $redirect = "a".$loggedInAnbieterId;
-	    header('Location: '.$redirect);
+		$logwriter = new LOG_WRITER_CLASS;
+		$logwriter->log('anbieter', $loggedInAnbieterId, $this->getAdminAnbieterUserId20(), 'logout');
+	
+		session_destroy();
+		setcookie($this->framework->editCookieName, '', 0, '/'); // remove cookie
+
+		$redirect = "a".$loggedInAnbieterId;
+		header('Location: '.$redirect);
 	}
 	
 
@@ -801,10 +768,17 @@ class WISY_EDIT_RENDERER_CLASS
 	{
 		echo $this->framework->getPrologue(array('title'=>'Ihr Konto', 'bodyClass'=>'wisyp_edit'));
 		// echo $this->framework->getSearchField();
+
+		if( !$this->canPromote() )
+		{
+		    echo '<p class="wisy_topnote">Das Bewerben von Angeboten ist f&uuml;r dieses Portal und/oder diesen Anbieterzugang gesperrt. Bitte wenden Sie sich an den Systemadministrator, der Ihnen den Zugang zu diesem Bereich gew&auml;hrt hat.</p>';
+			echo $this->framework->getEpilogue();
+			exit();
+		}
 	
 		$loggedInAnbieterId = isset($_SESSION['loggedInAnbieterId']) ? $_SESSION['loggedInAnbieterId'] : null;
 		
-		$credits = 0;
+		$credits = $this->promoter->getCredits( $loggedInAnbieterId );
 		echo "\n\n<h1>Kontostand: $credits Einblendungen</h1>\n";
 		
 		echo "<p>";
@@ -817,12 +791,12 @@ class WISY_EDIT_RENDERER_CLASS
 		echo "</p>";
 		
 		echo "\n\n<h1>Einblendungen kaufen</h1>\n";
-		
+
 		$this->billingRenderer->renderButton( $loggedInAnbieterId );
 		
 		echo "\n\n<h1>Beworbene Kurse</h1>\n";
 		
-		// WENN es kredite gibt, den Status der Tabelle anbieter_promote auf "aktiv" setzen, damit wieder Kurse geschaltet werden koennen
+		// WENN es kredite gibt, den Status der Tabelle anbieter_promote auf "aktiv" setzen, damit wieder Kurse geschaltet werden können
 		$this->promoter->setAllPromotionsActive( $loggedInAnbieterId , $credits > 0? 1 : 0);
 		
 		
@@ -945,18 +919,16 @@ class WISY_EDIT_RENDERER_CLASS
 		
 		// foerderung/abschlussart aus den stichwoertern extrahieren
 		$kurs['abschluss']  = 0;
-		$kurs['foerderung'] =  array();
-		$kurs['unterrichtsart'] =  array();
-		$db->query("SELECT s.id, s.eigenschaften FROM stichwoerter s LEFT JOIN kurse_stichwort ks ON s.id=ks.attr_id WHERE ks.primary_id=$kursId AND s.eigenschaften ORDER BY ks.structure_pos;");
+		$kurs['foerderung'] = 0;
+		$db->query("SELECT s.id, s.eigenschaften FROM stichwoerter s LEFT JOIN kurse_stichwort ks ON s.id=ks.attr_id WHERE ks.primary_id=$kursId AND s.eigenschaften&3 ORDER BY ks.structure_pos;");
 		while( $db->next_record() )
 		{
 		    $eigenschaften = intval($db->fcs8('eigenschaften'));
 		    $id = intval($db->fcs8('id'));
-		    if( $eigenschaften&1 && $kurs['abschluss'] == 0 )  $kurs['abschluss'] = $id;
-		    if( $eigenschaften&2)  array_push($kurs['foerderung'], $id);
-		    if( $eigenschaften == 32768)  array_push($kurs['unterrichtsart'], $id);
+			if( $eigenschaften&1 && $kurs['abschluss'] == 0 )  $kurs['abschluss'] = $id;
+			if( $eigenschaften&2 && $kurs['foerderung'] == 0 )  $kurs['foerderung'] = $id;
 		}
-		
+
 		// kreditinformationen laden
 		global $wisyPortalId;
 		$db->query("SELECT * FROM anbieter_promote WHERE kurs_id=$kursId AND portal_id=$wisyPortalId");
@@ -989,26 +961,21 @@ class WISY_EDIT_RENDERER_CLASS
 		// 		$kurs['durchf'][0]['preis']			(und 'sonderpreis', 'sonderpreistage', 'preishinweise')
 		// 		$kurs['durchf'][0]['strasse']		(und 'plz', 'ort', 'stadtteil', 'bemerkungen')
 		
-	    $kurs = $this->loadKursFromDb($kursId);
-	    if( sizeof((array) $kurs['error']) )
-	        return $kurs;
-	        
-	    $kurs['useredit_stichwoerter'] = $_POST['useredit_stichwoerter'];
-	    $kurs['useredit_allstichwoerter'] = $_POST['useredit_allstichwoerter'];
-	    $kurs['useredit_stichwoerterold'] = $_POST['useredit_stichwoerterold'];
-	        
-	    $kurs['titel']                = $_POST['titel'];
-	    $kurs['beschreibung']         = $_POST['beschreibung'];
-	    $kurs['bu_nummer']            = $_POST['bu_nummer'];
-	    $kurs['fu_knr']               = $_POST['fu_knr'];
-	    $kurs['azwv_knr']             = $_POST['azwv_knr'];
-	    $kurs['abschluss']            = intval($_POST['abschluss']);
-	    $kurs['foerderung']           = $_POST['foerderung'];
-	    $kurs['unterrichtsart']        = $_POST['unterrichtsart'];
-	    $kurs['msgtooperator']        = $_POST['msgtooperator'];
-	    $kurs['durchf'] = array();
-	    for( $i = 0; $i < sizeof((array) $_POST['nr']); $i ++ )
-	    {
+		$kurs = $this->loadKursFromDb($kursId);
+		if( sizeof((array) $kurs['error']) )
+			return $kurs;
+		
+		$kurs['titel'] 			= $_POST['titel'];
+		$kurs['beschreibung'] 	= $_POST['beschreibung'];
+		$kurs['bu_nummer']    	= $_POST['bu_nummer'];
+		$kurs['fu_knr']       	= $_POST['fu_knr'];
+		$kurs['azwv_knr']     	= $_POST['azwv_knr'];
+		$kurs['abschluss']		= intval($_POST['abschluss']);
+		$kurs['foerderung']		= intval($_POST['foerderung']);
+		$kurs['msgtooperator']	= $_POST['msgtooperator'];
+		$kurs['durchf'] = array();
+		for( $i = 0; $i < sizeof((array) $_POST['nr']); $i ++ )
+		{	
 			// id, if any (may be 0 for copied areas)
 			$kurs['durchf'][$i]['id'] = intval($_POST['durchfid'][$i]);
 			
@@ -1038,8 +1005,6 @@ class WISY_EDIT_RENDERER_CLASS
 			$kurs['durchf'][$i]['beginnoptionen'] 	= intval( $_POST['beginnoptionen'][$i]	);
 			$kurs['durchf'][$i]['dauer'] 			= intval( $_POST['dauer'][$i]	);
 			$kurs['durchf'][$i]['tagescode'] 		= intval( $_POST['tagescode'][$i]	);
-			
-			$kurs['durchf'][$i]['rollstuhlgerecht']                 = intval( $_POST['rollstuhlgerecht'][$i]  );
 			
 			// stunden
 			$kurs['durchf'][$i]['stunden'] 			= $this->checkEmptyOnNull($_POST['stunden'][$i], $kurs['error'], "Fehler: Ung&uuml;ltiger Wert f&uuml;r die Unterrichtsstunden; wenn Sie die Anzahl der Unterrichtsstunden nicht wissen, lassen Sie dieses Feld leer.");
@@ -1171,9 +1136,10 @@ class WISY_EDIT_RENDERER_CLASS
 		foreach( $kurs['durchf'] as $durchf )
 		{
 			$durchf_urls = $this->tools->getUrls($durchf['preishinweise']);
-			if( sizeof($durchf_urls) ) {
+			/* URLs in Preishinweisen noch erlaubt... => kein Fehler aktuell:
+			 * if( sizeof($durchf_urls) ) {
 				$kurs['error'][] = 'Fehler: Im Feld <i>Preishinweise</i> sind keine URLs erlaubt.';
-			}
+			} */
 			if( strlen($durchf['preishinweise']) > $maxlen_preishinweise ) {
 				$kurs['error'][] = 'Fehler: Im Feld <i>Preishinweise</i> sind max. '.$maxlen_preishinweise.' Zeichen erlaubt. Eingegebene Zeichen: '.strlen($durchf['preishinweise']);
 			}
@@ -1260,11 +1226,7 @@ class WISY_EDIT_RENDERER_CLASS
 		if( !$oldData['rights_editTitel'] ) 	{ $newData['titel'] = $oldData['titel']; }
 		if( !$oldData['rights_editAbschluss'] )	{ $newData['abschluss'] = $oldData['abschluss']; $newData['msgtooperator'] = $oldData['msgtooperator']; }
 		
-		$allowed_kfields = array('error', 'info', 'durchf', 'msgtooperator', 'unterrichtsart', 'useredit_stichwoerter', 'useredit_allstichwoerter', 'useredit_stichwoerterold');
-		
-		// if( !$this->framework->iniRead('useredit.unterrichtsartenspeichern', '') ) // suggestions are not "changes"
-		//    array_push($allowed_kfields, 'unterrichtsart'); // needs array compare
-		
+		$allowed_kfields = array('error', 'info', 'durchf', 'msgtooperator');
 		$allowed_dfields = array('id', 'nr', 'stunden', 'teilnehmer', 'preis', 'preishinweise', 'sonderpreis', 'sonderpreistage', 'beginn', 'ende',
 		    'beginnoptionen', 'zeit_von', 'zeit_bis', 'kurstage', 'tagescode', 'stadtteil', 'strasse', 'dauer');
 		
@@ -1327,25 +1289,20 @@ class WISY_EDIT_RENDERER_CLASS
 		// Feld $kurs['error'] erweitern; alle anderen Felder werden nur gelesen
 		
 		// UTF8-Decoding
-	    $newData['titel']                         =  (PHP7 ? $newData['titel'] : utf8_decode($newData['titel']));
-	    $newData['org_titel']                = (PHP7 ? $newData['org_titel'] : utf8_decode($newData['org_titel']));
-	    $newData['bu_nummer']                = (PHP7 ? $newData['bu_nummer'] : utf8_decode($newData['bu_nummer']));
-	    $newData['azwv_knr']                = (PHP7 ? $newData['azwv_knr'] : utf8_decode($newData['azwv_knr']));
-	    $newData['foerderung']                = (PHP7 ? $newData['foerderung'] : utf8_decode($newData['foerderung']));
-	    $newData['unterrichtsart']                = (PHP7 ? $newData['unterrichtsart'] : utf8_decode($newData['unterrichtsart']));
-	    $newData['fu_knr']                        = (PHP7 ? $newData['fu_knr'] : utf8_decode($newData['fu_knr']));
-	    $newData['promote_mode']        = (PHP7 ? $newData['promote_mode'] : utf8_decode($newData['promote_mode']));
-	    $newData['promote_param']        = (PHP7 ? $newData['promote_param'] : utf8_decode($newData['promote_param']));
-	    $newData['promote_active']        = (PHP7 ? $newData['promote_active'] : utf8_decode($newData['promote_active']));
-	    $newData['abschluss']                = (PHP7 ? $newData['abschluss'] : utf8_decode($newData['abschluss']));
-	    $newData['msgtooperator']        = (PHP7 ? $newData['msgtooperator'] : utf8_decode($newData['msgtooperator']));
-	    $newData['beschreibung']        = (PHP7 ? $newData['beschreibung'] : utf8_decode($newData['beschreibung']));
-	    $newData['useredit_stichwoerter']        = (PHP7 ? $newData['useredit_stichwoerter'] : utf8_decode($newData['useredit_stichwoerter']));
-	    $newData['useredit_allstichwoerter']        = (PHP7 ? $newData['useredit_allstichwoerter'] : utf8_decode($newData['useredit_allstichwoerter']));
-	    $newData['useredit_stichwoerterold']        = (PHP7 ? $newData['useredit_stichwoerterold'] : utf8_decode($newData['useredit_stichwoerterold']));
+	    $newData['titel'] 			= (PHP7 ? $newData['titel'] : utf8_decode($newData['titel']));
+	    $newData['org_titel']		= (PHP7 ? $newData['org_titel'] : utf8_decode($newData['org_titel']));
+	    $newData['bu_nummer']		= (PHP7 ? $newData['bu_nummer'] : utf8_decode($newData['bu_nummer']));
+	    $newData['azwv_knr']		= (PHP7 ? $newData['azwv_knr'] : utf8_decode($newData['azwv_knr']));
+	    $newData['foerderung']		= (PHP7 ? $newData['foerderung'] : utf8_decode($newData['foerderung']));
+	    $newData['fu_knr']			= (PHP7 ? $newData['fu_knr'] : utf8_decode($newData['fu_knr']));
+	    $newData['promote_mode']	= (PHP7 ? $newData['promote_mode'] : utf8_decode($newData['promote_mode']));
+	    $newData['promote_param']	= (PHP7 ? $newData['promote_param'] : utf8_decode($newData['promote_param']));
+	    $newData['promote_active']	= (PHP7 ? $newData['promote_active'] : utf8_decode($newData['promote_active']));
+	    $newData['abschluss']		= (PHP7 ? $newData['abschluss'] : utf8_decode($newData['abschluss']));
+	    $newData['msgtooperator']	= (PHP7 ? $newData['msgtooperator'] : utf8_decode($newData['msgtooperator']));
+	    $newData['beschreibung']	= (PHP7 ? $newData['beschreibung'] : utf8_decode($newData['beschreibung']));
 	    
-	    global $controlTags;
-	    $db             = new DB_Admin;
+	    $db			= new DB_Admin;
 	    $user		= $this->getAdminAnbieterUserId20();
 	    $today		= ftime("%Y-%m-%d %H:%M:%S");
 	    $kursId		= $newData['id'];
@@ -1390,7 +1347,6 @@ class WISY_EDIT_RENDERER_CLASS
 		    }
 		}
 
-		
 		$loggedInAnbieterId = isset($_SESSION['loggedInAnbieterId']) ? $_SESSION['loggedInAnbieterId'] : null;
 		
 		// CREATE A NEW RECORD?
@@ -1408,8 +1364,6 @@ class WISY_EDIT_RENDERER_CLASS
 		    $newData['id'] = $kursId;
 		}
 		
-		// fuer Stichwort rollstuhlgerecht erst $rollstuhlgerecht = 0
-		$rollstuhlgerecht = 0;
 		// DURCHFÜHRUNGS-Änderungen ablegen
 		for( $d = 0; $d < sizeof((array) $newData['durchf']); $d++ )
 		{
@@ -1444,7 +1398,7 @@ class WISY_EDIT_RENDERER_CLASS
 
 				$db->query("INSERT INTO durchfuehrung (user_created, date_created, user_modified, date_modified, user_grp, user_access) VALUES ($user, '$today', $user, '$today', $user_grp, $user_access)");
 				$newDurchf['id'] = $db->insert_id();
-				$oldDurchf['id'] = $newDurchf['id']; 		// damit diese unten nicht aktualisiert werden muss ...
+				$oldDurchf['id'] = $newDurchf['id']; 		        // damit diese unten nicht aktualisiert werden muss ...
 				$newData['durchf'][$d]['id'] = $newDurchf['id'];	// damit die neue ID beim caller ankommt
 				
 				$db->query("SELECT MAX(structure_pos) AS temp FROM kurse_durchfuehrung WHERE primary_id=$kursId");
@@ -1460,13 +1414,11 @@ class WISY_EDIT_RENDERER_CLASS
 				trigger_durchfuehrung($triggerParam);
 			}
 			
-			// check for changes
+			// änderungen überprüfen
 			$sqlExpr = '';
 			reset( $newDurchf );
 			foreach($newDurchf as $name => $value)
 			{
-			    // falls eine DF rollstuhlgerecht -> $rollstuhlgerecht = 1
-			    if ($name == "rollstuhlgerecht" && $value == "1") { $rollstuhlgerecht = 1; }
 			    $value = (PHP7 ? $value : utf8_decode($value));
 				if( strval($value) != strval($oldDurchf[$name]) || !isset($oldDurchf[$name]) )
 				{
@@ -1505,16 +1457,6 @@ class WISY_EDIT_RENDERER_CLASS
 			}
 		}
 		
-		$rollstuhlgerecht_stichwort = $this->testStichwort($kursId, $controlTags['rollstuhlgerecht']);
-		// wenn eine DF rollstuhlgerecht und Stichwort nicht gesetzt - dann Stichwort schreiben
-		if ($rollstuhlgerecht == 1 && $rollstuhlgerecht_stichwort == 0) {
-		    $this->saveStichwort($kursId, 0, $controlTags['rollstuhlgerecht']);
-		}
-		// wenn keine DF rollstuhlgerecht und Stichwort gesetzt - dann Stichwort loeschen
-		if ($rollstuhlgerecht != 1 && $rollstuhlgerecht_stichwort > 0) {
-		    $this->saveStichwort($kursId, $controlTags['rollstuhlgerecht'], 0);
-		}
-		
 		// ÜBERSCHÜSSIGE durchführungen löschen
 		$delCnt = 0;
 		for( $d2 = 0; $d2 < sizeof((array) $oldData['durchf']); $d2++ )
@@ -1538,23 +1480,50 @@ class WISY_EDIT_RENDERER_CLASS
 			// protocol
 			$protocol = true;
 		}
+		
+		// PROMOTION speichern
+		if( $this->canPromote() )
+		{
+			if( $oldData['promote_active'] != $newData['promote_active']
+			 || $oldData['promote_mode']   != $newData['promote_mode']
+			 || $oldData['promote_param']  != $newData['promote_param'] )
+			{
+				// insert record, if it does not exist
+				global $wisyPortalId;
+				$db->query("SELECT * FROM anbieter_promote WHERE kurs_id=$kursId AND portal_id=$wisyPortalId;");
+				if( !$db->next_record() )
+				{
+				    $db->query("INSERT INTO anbieter_promote (kurs_id, portal_id, anbieter_id) VALUES ($kursId, $wisyPortalId, ".$loggedInAnbieterId.");");
+				}
+				
+				// update data
+				if( $newData['promote_mode'] == '' )
+				{
+					$db->query("DELETE FROM anbieter_promote WHERE kurs_id=$kursId AND portal_id=$wisyPortalId;");
+				}
+				else
+				{
+					$db->query("UPDATE anbieter_promote SET promote_active=".intval($newData['promote_active']).", promote_mode='".addslashes($newData['promote_mode'])."', promote_param='".addslashes($newData['promote_param'])."' WHERE kurs_id=$kursId AND portal_id=$wisyPortalId;");
+				}
+				
+				$actions .=  ' PROMOTION-UPDATE '; // ACHTUNG: dies erzeugt ein Update des KURS-Datensatzes, das auch notwendig ist,  damit der neue active-status übernommen wird (der cache wird geleert)
+			}
+		}
 
 		// KURS-Änderungen ablegen
 		if( !$oldData['rights_editTitel'] ) 	{ $newData['titel'] = $oldData['titel']; }
 		if( !$oldData['rights_editAbschluss'] )	{ $newData['abschluss'] = $oldData['abschluss']; $newData['msgtooperator'] = $oldData['msgtooperator']; }
 		
 		if( $actions != ''
-		    || $oldData['titel']               != $newData['titel']
-		    || $oldData['beschreibung']        != $newData['beschreibung']
-		    || $oldData['bu_nummer']           != $newData['bu_nummer']
-		    || $oldData['fu_knr']              != $newData['fu_knr']
-		    || $oldData['azwv_knr']            != $newData['azwv_knr']
-		    || $oldData['abschluss']           != $newData['abschluss']
-		    || $oldData['foerderung']          != $newData['foerderung']
-		    || $oldData['unterrichtsart']       != $newData['unterrichtsart']
-		    || $oldData['msgtooperator']       != $newData['msgtooperator']
-		    || $newData['useredit_stichwoerter']       != $newData['useredit_stichwoerterold']
-		    )
+		 || $oldData['titel'] 			!= $newData['titel']
+		 || $oldData['beschreibung'] 	!= $newData['beschreibung']
+		 || $oldData['bu_nummer']      	!= $newData['bu_nummer'] 
+		 || $oldData['fu_knr']      	!= $newData['fu_knr']
+		 || $oldData['azwv_knr']    	!= $newData['azwv_knr'] 
+		 || $oldData['abschluss'] 		!= $newData['abschluss']
+		 || $oldData['foerderung'] 		!= $newData['foerderung']
+		 || $oldData['msgtooperator'] 	!= $newData['msgtooperator']
+		 )
 		{
 			// protocol
 			if( $oldData['beschreibung'] != $newData['beschreibung'] )
@@ -1589,33 +1558,9 @@ class WISY_EDIT_RENDERER_CLASS
 			$db->query($sql);
 
 			// update stichwoerter
-			$this->saveStichwortArray($kursId, $newData['foerderung'], 2);
-			$unterrichtsartenspeichern = $this->framework->iniRead('useredit.unterrichtsartenspeichern', '');
-			if ($unterrichtsartenspeichern == 1) {
-			    $this->saveStichwortArray($kursId, $newData['unterrichtsart'], 32768);
-			    $unterrichtsartsql = implode('###', $newData['unterrichtsart']);
-			    $sql = "UPDATE kurse SET msgtooperator_unterrichtsart ='', date_modified='{$today}' WHERE id=$kursId;";
-			    $db->query($sql);
-			} else {
-			    // update record
-			    $unterrichtsartsql = implode('###', $newData['unterrichtsart']);
-			    $sql = "UPDATE kurse SET msgtooperator_unterrichtsart ='".$unterrichtsartsql."', date_modified='{$today}' WHERE id=$kursId;";
-			    $db->query($sql);
-			}
-			
-			
-			####$this->saveStichwort($kursId, $oldData['foerderung'], $newData['foerderung']);
+			$this->saveStichwort($kursId, $oldData['foerderung'], $newData['foerderung']);
 			$this->saveStichwort($kursId, $oldData['abschluss'], $newData['abschluss']);
-			
-			foreach($newData['useredit_allstichwoerter'] as $allStichwort) {
-			    if ( in_array($allStichwort, $newData['useredit_stichwoerter']) && !in_array($allStichwort, $newData['useredit_stichwoerterold']) )  {
-			        $this->saveStichwort($kursId, 0, $allStichwort);
-			    }
-			    if (!in_array($allStichwort, $newData['useredit_stichwoerter']) && in_array($allStichwort, $newData['useredit_stichwoerterold']) )  {
-			        $this->saveStichwort($kursId, $allStichwort, 0);
-			    }
-			}
-			
+
 			// trigger - dies berechnet u.a. die neue Vollstaendigkeit
 			update_kurs_state($kursId, array('from_cms'=>0, 'set_plz_stadtteil'=>2, 'write'=>1));
 			
@@ -1662,7 +1607,7 @@ class WISY_EDIT_RENDERER_CLASS
 	    $ret .= '<a href="" onclick="add_chars($(this), \'\\\'\\\'\', \'\\\'\\\'\'); return false;" style="font-style:italic; letter-spacing: 1px;" title="Markieren Sie den kursiv darzustellenden Text und klicken Sie dann diese Schaltfl&auml;che" >\'\'Kursiv\'\'</a> &nbsp; ';
 	    if( $addKursUrl )
 	    {
-	        $ret .= '<a href="" onclick="add_chars($(this), \'[[http://verweis.com | Kurs-URL\', \']]\'); return false;" style="letter-spacing: 1px;" title="">[[Verweis]]</a> &nbsp; ';
+	        $ret .= '<a href="" onclick="add_chars($(this), \'[[http://verweis.com | Kurs-URL\', \']]\'); return false;" style="letter-spacing: 1px;" title="Markieren Sie den Text, den Sie als Verweis verwenden m&ouml;chten, und klicken Sie dann diese Schaltfl&auml;che">[[Verweis]]</a> &nbsp; ';
 	    }
 	    $ret .= '</small><br />';
 		return $ret;
@@ -1692,24 +1637,12 @@ class WISY_EDIT_RENDERER_CLASS
 	
 	function renderEditKurs($kursId__ /* may be "0" for "new kurs" */)
 	{
-	    global $controlTags;
-	    
 	    $loggedInAnbieterId = isset($_SESSION['loggedInAnbieterId']) ? $_SESSION['loggedInAnbieterId'] : null;
 	    
-	    // check rights, check, if the kursId belongs to the anbieter logged in
-	    $db = new DB_Admin;
-	    $topnotes = array();
-	    $useredit_stichwoerter = $this->framework->iniRead('useredit.stichwoerter', '');
-	    if ($useredit_stichwoerter) {
-	        $useredit_stichwoerterArray = explode(",", $useredit_stichwoerter);
-	    } else {
-	        $useredit_stichwoerterArray  = array();
-	    }
-	    if (is_int ($controlTags['Mit Kinderbetreuung'])) {
-	        array_push($useredit_stichwoerterArray, $controlTags['Mit Kinderbetreuung']);
-	    }
-	    
-	    $showForm = true;
+		// check rights, check, if the kursId belongs to the anbieter logged in
+		$db = new DB_Admin;
+		$topnotes = array();
+		$showForm = true;
 		switch( $this->isEditable($kursId__) )
 		{
 			case 'loginneeded':	$this->renderLoginScreen(); return;
@@ -1771,7 +1704,6 @@ class WISY_EDIT_RENDERER_CLASS
 			$kurs['bu_nummer']		= cs8($kurs['bu_nummer']);
 			$kurs['azwv_knr']		= cs8($kurs['azwv_knr']);
 			$kurs['foerderung']		= cs8($kurs['foerderung']);
-			$kurs['unterrichtsart']  = cs8($kurs['unterrichtsart']);
 			$kurs['fu_knr']			= cs8($kurs['fu_knr']);
 			$kurs['promote_mode']	= cs8($kurs['promote_mode']);
 			$kurs['promote_param']	= cs8($kurs['promote_param']);
@@ -1829,117 +1761,146 @@ class WISY_EDIT_RENDERER_CLASS
 		}
 		
 		echo '<form action="edit" method="post" name="kurs">' . "\n";
-		echo '<input type="hidden" name="action" value="ek" /> ' . "\n";
-		echo '<input type="hidden" name="subseq" value="1" /> ' . "\n";
-		echo '<input type="hidden" name="id" value="'.$kurs['id'].'" /> ' . "\n";
-		echo '<input type="hidden" name="bwd" value="'.htmlspecialchars($this->bwd).'" /> ' . "\n";
+			echo '<input type="hidden" name="action" value="ek" /> ' . "\n";
+			echo '<input type="hidden" name="subseq" value="1" /> ' . "\n";
+			echo '<input type="hidden" name="id" value="'.$kurs['id'].'" /> ' . "\n";
+			echo '<input type="hidden" name="bwd" value="'.htmlspecialchars($this->bwd).'" /> ' . "\n";
 		
-		if( $showForm )
-		{
-		    $hintcss  = ""; // " display: inline; ";
-		    
-		    if($_COOKIE['hints'] == 2) { $hintcss  = " display: none; "; }
-		    echo '<br />';
-		    echo '<table cellspacing="2" cellpadding="0" width="100%">';
-		    echo '<tr>';
-		    echo '<td colspan="2"><strong>Bearbeitungshinweise: </strong>';
-		    echo '<a class="edit_hint_a edit_hint_disable" onClick="document.cookie = \'hints=1\'; $(\'.edithinweis\').css(\'display\',\'inline\'); $(\'.edit_hint_a, .edit_hint_b\').removeClass(\'edit_hint_enable\').removeClass(\'edit_hint_disable\'); $(this).removeClass(\'edit_hint_disable\').addClass(\'edit_hint_disable\');">einblenden</a> / ';
-		    echo '<a class="edit_hint_b" onClick="document.cookie=\'hints=2\'; $(\'.edithinweis\').css(\'display\',\'none\'); $(\'.edit_hint_a, .edit_hint_b\').removeClass(\'edit_hint_enable\').removeClass(\'edit_hint_disable\'); $(this).removeClass(\'edit_hint_disable\').addClass(\'edit_hint_disable\');">ausblenden</a> </span><br><br></td>';
-		    echo '</tr>';
-		    
-		    // TITEL
-		    echo '<tr>';
-		    echo '<td width="10%" valign="top"><strong>Kurstitel:</strong></td>';
-		    echo '<td width="90%" valign="top">';
-		    if( $kurs['rights_editTitel'] )
-		    {
-		        $this->controlText('titel', (PHP7 ? $kurs['titel'] : utf8_decode($kurs['titel'])), 64, 500, '', '', '.{3,500}', '', 0);
-		        echo '<br />';
-		    }
-		    else
-		    {
-		        echo '<strong>' .  htmlspecialchars($kurs['titel']) . '</strong>';
-		        $this->controlHidden('titel', $kurs['titel']);
-		    }
-		    
-		    // Optionen einblenden ...
-		    $this->moeglicheAbschluesseUndFoerderungen($abschlussOptionen, $foerderungsOptionen);
-		    $this->moeglicheUnterrichtsarten($unterrichtsartOptionen);
-		    
-		    $styleFoerderung = '';
-		    if( $kurs['bu_nummer']=='' && $kurs['azwv_knr']=='' && is_countable($kurs['foerderung'])==0  && is_countable($kurs['unterrichtsart'])==0 )
-		    #if( $kurs['bu_nummer']=='' && $kurs['azwv_knr']=='' )
-		    {
-		        echo "<span class=\"editFoerderungLink\"> <a href=\"#\" onclick=\"editShowHide($(this), '.editFoerderungDiv', '.editFoerderungLink'); return false;\" title=\"F&ouml;rderungsm&ouml;glichkeiten hinzuf&uuml;gen\"><small>+F&ouml;rderung</small></a></span>";
-		        $styleFoerderung = ' style="display: none;" ';
-		    }
-		    
-		    /* only via import:
-		     * $styleFernunterricht = '';
-		     if( $kurs['fu_knr']=='' )
-		     {
-		     echo "<span class=\"editFernunterrichtLink\"> <a href=\"#\" onclick=\"editShowHide($(this), '.editFernunterrichtDiv', '.editFernunterrichtLink'); return false;\" title=\"Kursnummer f&uuml;r Fernunterricht hinzuf&uuml;gen\"><small>+Fernunterricht</small></a></span>";
-		     $styleFernunterricht = ' style="display: none;" ';
-		     } */
+			if( $showForm )
+			{
+				echo '<br />';
+				echo '<table cellspacing="2" cellpadding="0" width="100%">';
+				
+					// TITEL 
+					echo '<tr>';
+						echo '<td width="10%" valign="top"><strong>Kurstitel:</strong></td>';
+						echo '<td width="90%" valign="top">';
+							if( $kurs['rights_editTitel'] )
+							{
+							    $this->controlText('titel', (PHP7 ? $kurs['titel'] : utf8_decode($kurs['titel'])), 64, 200, '', '');
+							    echo '<br />';
+							}
+							else
+							{
+								echo '<strong>' .  htmlspecialchars($kurs['titel']) . '</strong>';
+								$this->controlHidden('titel', $kurs['titel']);
+							}
 
-		        // originaltitel
-		    if( $kurs['org_titel'] != '' && $kurs['org_titel'] != $kurs['titel'] )
-		    {
-		        echo '<br /><small style="color: #AAA;">Originaltitel: '.htmlspecialchars($kurs['org_titel']).'</small>';
-		    }
-		    
-		    echo '<br />&nbsp;';
-		    
-		    // ... Foerderung
-		    echo "<div class=\"editFoerderungDiv\" $styleFoerderung>";
-		    echo '<table cellpadding="0" cellspacing="2" border="0">';
-		    echo '<tr><td>Bildungsurlaubs-Nr.:</td><td><input type="text" name="bu_nummer" value="'.htmlspecialchars($kurs['bu_nummer']).'" /> <small class="edithinweis" style="'.$hintcss.'" >'.$this->getEditHelpText('bu_nummer',$controlTags['Glossar:bu_nummer']).'</small></td></tr>';
-		    echo '<tr><td>AZAV-Zertifikatsnr.:</td><td><input type="text" name="azwv_knr" value="'.htmlspecialchars($kurs['azwv_knr']).'" />  <small class="edithinweis" style="'.$hintcss.'" >'.$this->getEditHelpText('azwv_knr',$controlTags['Glossar:azwv_knr']).'</small></td></tr>';
-		    if( $foerderungsOptionen != '' )
-		    {
-		        echo '<tr><td>sonstige F&ouml;rderung:</td><td>';
-		        $this->controlMultiSelect('foerderung', $kurs['foerderung'], $foerderungsOptionen);
-		        echo '<small class="edithinweis" style="'.$hintcss.'" >'.$this->getEditHelpText('foerderung',$controlTags['Glossar:foerderung']).'</small>';
-		        echo '</td></tr>';
-		    }
-		    if( $unterrichtsartOptionen != '' )
-		    {
-		        $hint_Unterrichtsart = "";
-		        $unterrichtsartenspeichern = $this->framework->iniRead('useredit.unterrichtsartenspeichern', '');
-		        if ($unterrichtsartenspeichern != 1) {
-		            $hint_Unterrichtsart = $this->getEditHelpText('unterrichtsart',$controlTags['Glossar:unterrichtsart']);
-		        } else {
-		            $hint_Unterrichtsart = $this->getEditHelpText('Unterrichtsart_speichern',$controlTags['Glossar:unterrichtsart_speichern']);
-		        }
-		        echo '<tr><td>Unterrichtsart:</td><td>';
-		        $this->controlMultiSelect('unterrichtsart', $kurs['unterrichtsart'], $unterrichtsartOptionen);
-		        echo '<small class="edithinweis" style="'.$hintcss.'" >'.$hint_Unterrichtsart.'</small>';
-		        echo '</td></tr>';
-		    }
-		    echo '</table>';
-		    echo '&nbsp;';
-		    echo '</div>';
-		    
-		    
-		    echo "<div class=\"editStichworterDiv\">";
-		    echo '<table cellpadding="0" cellspacing="2" border="0">';
-		    echo '<tr><td><b>Stichw&ouml;rter</b></td><td> <small class="edithinweis" style="'.$hintcss.'" >'.$this->getEditHelpText('stichwort',$controlTags['Glossar:stichwoerter']).'</small></td></tr>';
-		    foreach ($useredit_stichwoerterArray as $useredit_stichwort) {
-		        echo $this->getStichwort($kurs['id'], $useredit_stichwort);
-		    }
-		    echo '</table>';
-		    echo '&nbsp;';
-		    echo '</div>';
-		    
-		    
-		    /* only via import:
-		     * // ... Fernunterricht
+							// Optionen einblenden ...
+							$this->moeglicheAbschluesseUndFoerderungen($abschlussOptionen, $foerderungsOptionen);
+							
+							$styleFoerderung = '';
+							if( $kurs['bu_nummer']=='' && $kurs['azwv_knr']=='' && $kurs['foerderung']==0 )
+							{
+							    echo "<span class=\"editFoerderungLink\"> <a href=\"#\" onclick=\"editShowHide($(this), '.editFoerderungDiv', '.editFoerderungLink'); return false;\" title=\"F&ouml;rderungsm&ouml;glichkeiten hinzuf&uuml;gen\"><small>+F&ouml;rderung</small></a></span>";
+							    $styleFoerderung = ' style="display: none;" ';
+							}
+
+							/* only via import:
+							 * $styleFernunterricht = '';
+							if( $kurs['fu_knr']=='' )
+							{
+							    echo "<span class=\"editFernunterrichtLink\"> <a href=\"#\" onclick=\"editShowHide($(this), '.editFernunterrichtDiv', '.editFernunterrichtLink'); return false;\" title=\"Kursnummer f&uuml;r Fernunterricht hinzuf&uuml;gen\"><small>+Fernunterricht</small></a></span>";
+							    $styleFernunterricht = ' style="display: none;" ';
+							} */
+
+							$styleBewerben = '';
+							if( $this->canPromote() )
+							{
+								if( $kurs['promote_mode'] == '' )
+								{
+									echo "<span class=\"editBewerbenLink\"> <a href=\"#\" onclick=\"editShowHide($(this), '.editBewerbenDiv', '.editBewerbenLink'); return false;\" title=\"Diesen Kurs bewerben\"><small>+Kurs bewerben</small></a></span>";
+									$styleBewerben = ' style="display: none;" ';
+								}
+							}
+
+							// originaltitel
+							if( $kurs['org_titel'] != '' && $kurs['org_titel'] != $kurs['titel'] )
+							{
+								echo '<br /><small style="color: #AAA;">Originaltitel: '.htmlspecialchars($kurs['org_titel']).'</small>';
+							}
+							
+							echo '<br />&nbsp;';
+
+							// ... Foerderung
+							echo "<div class=\"editFoerderungDiv\" $styleFoerderung>";
+								echo '<table cellpadding="0" cellspacing="2" border="0">';
+									echo '<tr><td>Bildungsurlaubs-Nr.:</td><td><input type="text" name="bu_nummer" value="'.htmlspecialchars($kurs['bu_nummer']).'" /> <small>(N&ouml;tig zur Anzeige als Bildungsurlaub/Freistellung)</small></td></tr>';
+									echo '<tr><td>AZAV-Zertifikatsnr.:</td><td><input type="text" name="azwv_knr" value="'.htmlspecialchars($kurs['azwv_knr']).'" />  <small>(N&ouml;tig zur Suche nach Bildungs- oder Aktivierungsgutschein )</small></td></tr>';
+									if( $foerderungsOptionen != '' )
+									{
+									    echo '<tr><td>sonstige F&ouml;rderung:</td><td>';
+									    $this->controlSelect('foerderung', $kurs['foerderung'], '0######'.$foerderungsOptionen);
+									    echo '</td></tr>';
+									}
+								echo '</table>';
+								echo '&nbsp;';
+							echo '</div>';
+
+							/* only via import:
+							 * // ... Fernunterricht
 							echo "<div class=\"editFernunterrichtDiv\" $styleFernunterricht>";
 								echo '<table cellpadding="0" cellspacing="2" border="0">';
 									echo '<tr><td>ZFU-Fernunterrichts-Nr.:</td><td><input type="text" name="fu_knr" value="'.htmlspecialchars($kurs['fu_knr']).'" /> <small>(N&ouml;tig zur Anzeige als Fernunterricht)</small></td></tr>';
 								echo '</table>';
 								echo '&nbsp;';
 							echo '</div>'; */
+	
+							// ... Kurs bewerben?							
+							if( $this->canPromote() )
+							{
+								
+								echo "<div class=\"editBewerbenDiv\" $styleBewerben>";
+								
+									$radio = $kurs['promote_mode']=='times'? ' checked="checked" ' : '';
+									$param = $kurs['promote_mode']=='times'? $kurs['promote_param'] : '1000';
+									echo '<input type="radio" name="promote_mode" id="pl1" value="times" '.$radio.' /> <label for="pl1">Kurs kostenpflichtig bewerben mit max.</label> <input type="text" size="6" name="promote_param_times" value="'.$param.'" /> Einblendungen (Bruttopreis '.str_replace('.', ',', $this->billingRenderer->allPrices[0][1]).' &euro; f&uuml;r '.$this->billingRenderer->allPrices[0][0].' Einblendungen) ';
+									echo '<a href="' .$this->framework->getHelpUrl(3367). '" class="wisy_help" target="_blank" title="Hilfe" rel="noopener noreferrer">i</a>';
+									echo '<br />';
+									
+									$radio = $kurs['promote_mode']=='date'? ' checked="checked" ' : '';
+									$param = $kurs['promote_mode']=='date'? sql_date_to_human($kurs['promote_param'], 'dateopt editable') : ftime("%d.%m.%Y", time()+(7*24*60*60));
+									echo '<input type="radio" name="promote_mode" id="pl2" value="date" '.$radio.' /> <label for="pl2">Kurs kostenpflichtig bewerben bis zum</label> <input type="text" size="10" name="promote_param_date" value="'.$param.'" /> (Anzahl Einblendungen variabel)';
+									echo '<br />';
+									
+									$radio = $kurs['promote_mode']==''? ' checked="checked" ' : '';
+									echo '<input type="radio" name="promote_mode" id="pl3" value="" '.$radio.' /> <label for="pl3">Kurs nicht bewerben oder laufende Werbung unterbrechen</label>';
+									
+									if( $kurs['promote_mode'] != '' &&  $kurs['promote_active'] == 0 )
+									{
+										echo '<br />';
+										echo '<br />';
+										echo '<span style="color: #C00000">Die Bewerbung ist momentan inaktiv</span> - <a href="'.$this->framework->getUrl('edit', array('action'=>'kt')).'">Details ...</a>';
+									}
+	
+											// TODEL: Promote AGB
+									$agb_reading_required = $this->framework->iniRead('useredit.promote.agb', 3370);
+									if( $agb_reading_required )
+									{
+										global $wisyPortalId;
+										$db->query("SELECT kurs_id FROM anbieter_promote WHERE anbieter_id=".$loggedInAnbieterId. " AND portal_id=$wisyPortalId;");
+										if( $db->next_record() )
+										{
+											$agb_reading_required = 0; // es existiert bereits mind. ein beworbener Kurse; eine erneute bestätigung ist daher nicht erforderlich
+										}
+									}
+									
+									if( $agb_reading_required )
+									{
+										echo '<br />';
+										echo '<br />';
+										echo '<input type="checkbox" name="promote_agb_read" value="1" /> ';
+										echo 'Ich habe die <a href="'.$this->framework->getHelpUrl($agb_reading_required).'" target="_blank" rel="noopener noreferrer">AGB zum Bewerben von Kursen</a> gelesen und akzeptiere diese';
+									}
+									else
+									{
+										echo '<input type="hidden" name="promote_agb_read" value="1" />';
+									}
+											// /TODEL: Promote AGB
+
+									echo '<br />&nbsp;';
+								echo '</div>';
+							} // /canPromote
 							
 						echo '</td>';
 					echo '</tr>';
@@ -1961,233 +1922,214 @@ class WISY_EDIT_RENDERER_CLASS
 					    {
 					        echo '<label title="Stichwort- oder Abschlussvorschl&auml;ge">';
 					    }
-					    $this->controlText('msgtooperator', $kurs['msgtooperator'], 40, 200, '', '', '', '', 0);
-					    echo '</label> &nbsp; <a href="' .$this->framework->getHelpUrl(4100). '" class="wisy_help_hint" target="_blank" rel="noopener noreferrer" title="Hilfe">mehr erfahren</a> <br />&nbsp;';
+					    $this->controlText('msgtooperator', $kurs['msgtooperator'], 40, 200, '', '');
+					    echo '</label> &nbsp; <a href="' .$this->framework->getHelpUrl(4100). '" class="wisy_help" target="_blank" rel="noopener noreferrer" title="Hilfe">i</a> <br />&nbsp;';
 					    echo '</td>';
 					    echo '</tr>';
 					}
 					
 					// KURSBESCHREIBUNG
 					echo '<tr>';
-					echo '<td valign="top" nowrap="nowrap"><strong>Kursbeschreibung:</strong>&nbsp;</td>';
-					echo '<td>';
-					echo '<div style="border-top: 2px solid black; border-left: 2px solid black; padding-top: 6px;  padding-left: 6px; margin-bottom: 1.4em; width: 99%;">';
-					echo $this->renderEditorToolbar(false);
-					echo '<textarea name="beschreibung" rows="14" style="border: 0; width: 99%; border-top: 1px solid #ddd;">' . htmlspecialchars($kurs['beschreibung']) . '</textarea>';
-					echo '</div>';
-					echo '</td>';
+						echo '<td valign="top" nowrap="nowrap"><strong>Kursbeschreibung:</strong>&nbsp;</td>';
+						echo '<td>';
+							echo '<div style="border-top: 2px solid black; border-left: 2px solid black; padding-top: 6px;  padding-left: 6px; margin-bottom: 1.4em; width: 99%;">';
+								echo $this->renderEditorToolbar(false);
+								echo '<textarea name="beschreibung" rows="14" style="border: 0; width: 99%; border-top: 1px solid #ddd;">' . htmlspecialchars($kurs['beschreibung']) . '</textarea>';
+							echo '</div>';
+						echo '</td>';
 					echo '</tr>';
 					
 					// DURCHFUEHRUNGEN
 					for( $d = 0; $d < sizeof((array) $kurs['durchf']); $d++ )
 					{
-					    $durchf = $kurs['durchf'][$d];
-					    echo '<tr class="editDurchfRow">';
-					    echo '<td valign="top"><strong>Durchf&uuml;hrung:</strong><br />';
-					    echo '<small>';
-					    echo '<input type="hidden" name="durchfid[]" value="'.$durchf['id'].'" class="hiddenId" />';
-					    echo '<a href="#" onclick="editDurchfKopieren($(this)); return false;" title="Eine Kopie dieser Durchf&uuml;hrung zur weiteren Bearbeitung anlegen">+kopieren</a> ';
-					    echo '<a href="#" onclick="editDurchfLoeschen($(this)); return false;" title="Diese Durchf&uuml;hrung l&ouml;schen">-l&ouml;schen</a> ';
-					    echo '</small>';
-					    echo '</td>';
-					    echo '<td>';
-					    echo '<div style="border-top: 2px solid black; border-left: 2px solid black; padding: .5em; margin-bottom: 1.4em; width: 99%;">';
-					    
-					    echo '<table cellspacing="6" cellpadding="0">';
-					    echo '<tr>';
-					    echo '<td colspan="2" ><p class="edithinweis" style="'.$hintcss.'" >';
-					    echo '<strong>Hinweise</strong>:<br><small>';
-					    echo $this->getEditHelpText('durchfuehrung',$controlTags['Glossar:Durchfuehrungen']);
-					    echo '<br>'.$this->framework->getGrpSetting($db, $kurs['id'], 'useredit.durchfuehrunghinweise');
-					    echo '</small></p></td>';
-					    echo '</tr>';
-					    // DURCHFUEHRUNGS-NR
-					    echo '<tr>';
-					    echo '<td valign="top" nowrap="nowrap">Durchf&uuml;hrungs-Nr.:&nbsp;&nbsp;&nbsp;</td>';
-					    echo '<td>';
-					    $this->controlText('nr[]', (PHP7 ? $durchf['nr'] : utf8_decode($durchf['nr'])), 24, 64, '', 'k. A.', '', 'k. A.', 0);
-					    echo '</td>';
-					    echo '</tr>';
-					    
-					    // TERMIN
-					    echo '<tr>';
-					    echo '<td valign="top">Termin:</td>';
-					    echo '<td>';
-					    $temp = sql_date_to_human($durchf['beginn'], 'dateopt editable');
-					    $this->controlText('beginn[]', $temp, 10, 10, '', '', '^[0-9]{2}[.][0-9]{2}[.][0-9]{4}$', 'tt.mm.jjjj', 0);
-					    echo ' bis ';
-					    $temp = sql_date_to_human($durchf['ende'], 'dateopt editable');
-					    $this->controlText('ende[]', $temp, 10, 10, '', '', '[0-9]{2}[.][0-9]{2}[.][0-9]{4}', 'tt.mm.jjjj', 0);
-					    echo ' ';
-					    
-					    echo ' &nbsp;&nbsp; ';
-					    echo '<label title="">';
-					    global $codes_kurstage;
-					    $bits = explode('###', $codes_kurstage);
-					    for( $i = 0; $i < sizeof($bits); $i+=2 )
-					    {
-					        // normally, we would use the normal <input type="checkbox" /> - however this does
-					        // not work with our array'ed durchf‚àö¬∫hrungen as a checkbox value is not appended to an array it it is not checked ...
-					        echo '<span>'; // needed to get the both items on one level
-					        $value = $durchf['kurstage']&intval($bits[$i])? 1 : 0;
-					        echo "<input type=\"hidden\" name=\"kurstage$i"."[]\" value=\"$value\" />";
-					        echo '<span onclick="editWeekdays($(this));" class="'.($value?'wisy_editweekdayssel':'wisy_editweekdaysnorm').'">' . trim(str_replace('.', '', $bits[$i+1])) . '</span>';
-					        echo '</span>';
-					        
-					    }
-					    echo '</label>';
-					    
-					    echo ' &nbsp;&nbsp; ';
-					    $this->controlText('zeit_von[]', $durchf['zeit_von'], 5, 5, '', '', '[0-9]{2}[:][0-9]{2}', 'hh:mm', 0);
-					    echo '-';
-					    $this->controlText('zeit_bis[]', $durchf['zeit_bis'], 5, 5, '', '', '[0-9]{2}[:][0-9]{2}', 'hh:mm', 0);
-					    echo ' Uhr';
-					    
-					    $do_expand = false;
-					    if( $durchf['beginnoptionen'] ) { $do_expand = true; }
-					    if( berechne_dauer($durchf['beginn'], $durchf['ende'])==0 && $durchf['dauer']!=0 ) { $do_expand = true; }
-					    if( berechne_tagescode($durchf['zeit_von'], $durchf['zeit_bis'], $durchf['kurstage'])==0 && $durchf['tagescode']!=0 ) { $do_expand = true; }
-					    
-					    $titleBeginnoptionen = 'Hiermit k&ouml;nnen Sie f&uuml;r diese Durchf&uuml;hrung eine Terminoption festlegen, etwa wenn die Durchf&uuml;hrung regelm&auml;&szlig;ig stattfindet';
-					    $styleBeginnoptionen = '';
-					    if( !$do_expand )
-					    {
-					        echo "<span class=\"editBeginnoptionenLink\"> <a href=\"#\" onclick=\"editShowHide($(this), '.editBeginnoptionenDiv', '.editBeginnoptionenLink'); return false;\" title=\"$titleBeginnoptionen\"><small>+Optionen</small></a></span>";
-					        $styleBeginnoptionen = ' style="display:none;" ';
-					    }
-					    
-					    echo "<div class=\"editBeginnoptionenDiv\" $styleBeginnoptionen>";
-					    echo '<label>';
-					    echo "Terminoptionen: ";
-					    $this->controlSelect('beginnoptionen[]', $durchf['beginnoptionen'], $GLOBALS['codes_beginnoptionen']);
-					    echo ' <small class="edithinweis" style="'.$hintcss.'" >'.$this->getEditHelpText('beginnoptionen',$controlTags['Glossar:beginnoptionen']).'</small>';
-					    
-					    echo "<br />Dauer: ";
-					    $this->controlSelect('dauer[]', $durchf['dauer'], $GLOBALS['codes_dauer']);
-					    echo ' <small class="edithinweis" style="'.$hintcss.'" >'.$this->getEditHelpText('dauer',$controlTags['Glossar:dauer']).'</small>';
-					    
-					    echo "<br />Tagescode: ";
-					    $this->controlSelect('tagescode[]', $durchf['tagescode'], $GLOBALS['codes_tagescode']);
-					    echo ' <small class="edithinweis" style="'.$hintcss.'" >'.$this->getEditHelpText('tagescode',$controlTags['Glossar:tagescode']).'</small>';
-					    echo '</label>';
-					    echo '</div>';
-					    echo '</td>';
-					    echo '</tr>';
-					    echo '<tr>';
-					    echo '<td valign="top">Stunden:</td>';
-					    echo '<td>';
-					    $temp = $durchf['stunden'] == 0? '' : $durchf['stunden'];
-					    $this->controlText('stunden[]', $temp, 4, 4, 'Geben Sie hier - soweit bekannt - die Gesamtzahl der Unterrichtsstunden ein', 'k. A.', '[0-9]{1,4}', '', 0);
-					    echo ' Unterrichtsstunden mit max. ';
-					    $temp = $durchf['teilnehmer'] == 0? '' : $durchf['teilnehmer'];
-					    $this->controlText('teilnehmer[]', $temp, 3, 3, 'Geben Sie hier - soweit bekannt - die maximale Anzahl von Teilnehmenden ein, die insgesamt diese Durchf&uuml;hrung belegen werden', 'k. A.', '[0-9]{1,3}', '', 0);
-					    echo ' Teilnehmenden';
-					    echo '</td>';
-					    echo '</tr>';
-					    echo '<tr>';
-					    echo '<td valign="top">Gesamtpreis inkl. MwSt:</td>';
-					    echo '<td>';
-					    
-					    $temp = $durchf['preis'] == -1? '' : $durchf['preis'];
-					    $this->controlText('preis[]', $temp, 5, 5, 'Geben Sie hier - soweit bekannt - den Gesamtpreis inkl. MwSt dieser Durchf&uuml;hrung in Euro ohne Nachkommastellen ein; geben Sie eine Null f&uuml;r &quot;kostenlos&quot; ein', 'k. A.', '[0-9]{1,5}', '', 0);
-					    echo '&nbsp;EUR';
-					    
-					    if( $durchf['sonderpreistage'] == 0        )
-					    { $durchf['sonderpreistage'] = ''; }
-					    if( $durchf['sonderpreis'] == -1 || $durchf['sonderpreistage'] == ''        )
-					    { $durchf['sonderpreis'] = ''; }
-					    
-					    $styleSonderpreis = '';
-					    if( !$durchf['sonderpreis'] )
-					    {
-					        echo "<span class=\"editSonderpreisLink\"> <a href=\"#\" onclick=\"editShowHide($(this), '.editSonderpreisDiv', '.editSonderpreisLink'); return false;\" title=\"Sonderpreis f&uuml;r diese Durchf&uuml;hrung hinzuf&uuml;gen\"><small>+Sonderpreis</small></a></span>";
-					        $styleSonderpreis = ' style="display:none;" ';
-					    }
-					    
-					    $stylePreishinweise = '';
-					    if( !$durchf['preishinweise'] )
-					    {
-					        echo "<span class=\"editPreishinweiseLink\"> <a href=\"#\" onclick=\"editShowHide($(this), '.editPreishinweiseDiv', '.editPreishinweiseLink'); return false;\" title=\"Preishinweise hinzuf&uuml;gen\"><small>+Preishinweise</small></a></span>";
-					        $stylePreishinweise = ' style="display:none;" ';
-					    }
-					    
-					    echo "<div class=\"editSonderpreisDiv\" $styleSonderpreis>";
-					    echo 'ab ';
-					    $this->controlText('sonderpreistage[]', $durchf['sonderpreistage'], 3, 3, 'Anzahl der Tage vor Beginntermin, wo der nachstehende Sonderpreis gelten soll', 'k. A.', '[0-9]{1,3}', '', 0);
-					    echo ' Tagen vor Beginn dieser Durchf&uuml;hrung gilt ein erm&auml;&szlig;gter Sonderpreis von&nbsp;';
-					    $this->controlText('sonderpreis[]', $durchf['sonderpreis'], 5, 5, 'Sonderpreis dieser Durchf&uuml;hrung in Euro ohne Nachkommastellen', 'k. A.', '[0-9]{1,5}', '', 0);
-					    echo '&nbsp;EUR';
-					    echo "</div>";
-					    
-					    echo "<div class=\"editPreishinweiseDiv\" $stylePreishinweise>";
-					    echo 'Preishinweise: ';
-					    $this->controlText('preishinweise[]', (PHP7 ? $durchf['preishinweise'] : utf8_decode($durchf['preishinweise'])), 50, 200, 'Geben Sie hier eventuelle sonstige Anmerkungen zum Preis ein', '', '', 0); // utf8_decode shouln't be necessary
-					    echo "</div>";
-					    
-					    echo '</td>';
-					    echo '</tr>';
-					    echo '<tr>';
-					    echo '<td valign="top">Veranstaltungsort:</td>';
-					    echo '<td>';
-					    $this->controlText('strasse[]', (PHP7 ? $durchf['strasse'] : utf8_decode($durchf['strasse'])), 25, 100, 'Geben Sie hier - soweit bekannt und eindeutig - die Strasse und die Hausnummer des Veranstaltungsortes ein', 'Strasse und Hausnr.', '', '', 0); // utf8_decode shouln't be necessary
-					    
-					    echo ' &nbsp; ';
-					    
-					    $this->controlText('plz[]', $durchf['plz'], 5, 16, 'Geben Sie hier - soweit bekannt und eindeutig - die Postleitzahl des Veranstaltungsortes ein', 'PLZ', '', '', 0);
-					    echo ' ';
-					    $this->controlText('ort[]', (PHP7 ? $durchf['ort'] : utf8_decode($durchf['ort'])), 12, 60, 'Geben Sie hier - soweit bekannt und eindeutig - den Ort bzw. die Stadt, in der die Veranstaltung stattfindet ein', 'Ort', '', '', 0); // utf8_decode shouln't be necessary
-					    
-					    $this->controlHidden('stadtteil[]', $durchf['stadtteil']);
-					    $this->controlHidden('stadtteil_for[]', $durchf['strasse'].','.$durchf['plz'].','.$durchf['ort']);
-					    
-					    
-					    echo '</td>';
-					    echo '</tr>';
-					    
-					    echo '<tr>';
-					    echo '<td valign="top">rollstuhlgerecht:</td>';
-					    echo '<td>';
-					    if ( $durchf['rollstuhlgerecht'] ) {
-					        echo '<input type="checkbox" name="rollstuhlgerecht[]" value="1" checked>';
-					    } else {
-					        echo '<input type="checkbox" name="rollstuhlgerecht[]" value="1" >';
-					    }
-					    echo '</td>';
-					    echo '</tr>';
-					    
-					    echo '<tr>';
-					    echo '<td valign="top">Kurs-URL/Bemerkungen:</td>';
-					    echo '<td>';
-					    
-					    $style = '';
-					    if( !$durchf['bemerkungen'] )
-					    {
-					        echo "<span class=\"editAdvOrtLink\"> <a href=\"#\" onclick=\"editShowHide($(this), '.editAdvOrtDiv', '.editAdvOrtLink'); return false;\" title=\"URL und/oder Bemerkungen zur Durchf&uuml;hrung hinzuf&uuml;gen\"><small>+Hinzuf&uuml;gen</small></a></span>";
-					        $style = ' style="display:none;" ';
-					    }
-					    
-					    echo "<div class=\"editAdvOrtDiv\" $style>";
-					    echo $this->renderEditorToolbar(true);
-					    echo "<textarea name=\"bemerkungen[]\" title=\"Geben Sie hier die Kurs-URL oder sonstige Hinweise ein zur Durchf&uuml;hrung ein\" cols=\"40\" rows=\"3\" style=\"width: 90%; border: 1px solid #ddd;\" />" . htmlentities($durchf['bemerkungen']) . '</textarea>';
-					    echo '<div>';
-					    
-					    echo '</td>';
-					    echo '</tr>';
-					    echo '</table>';
-					    echo '</div>';
-					    echo '</td>';
-					    echo '</tr>';
+						$durchf = $kurs['durchf'][$d];
+						echo '<tr class="editDurchfRow">';
+    						echo '<td valign="top"><strong>Durchf&uuml;hrung:</strong><br />';
+        						echo '<small>';
+        						  echo '<input type="hidden" name="durchfid[]" value="'.$durchf['id'].'" class="hiddenId" />';
+        						      echo '<a href="#" onclick="editDurchfKopieren($(this)); return false;" title="Eine Kopie dieser Durchf&uuml;hrung zur weiteren Bearbeitung anlegen">+kopieren</a> ';
+        						      echo '<a href="#" onclick="editDurchfLoeschen($(this)); return false;" title="Diese Durchf&uuml;hrung l&ouml;schen">-l&ouml;schen</a> ';
+        						echo '</small>';
+    						echo '</td>';
+							echo '<td>';
+								echo '<div style="border-top: 2px solid black; border-left: 2px solid black; padding: .5em; margin-bottom: 1.4em; width: 99%;">';
+									
+									echo '<table cellspacing="6" cellpadding="0">';
+									
+										// DURCHFUEHRUNGS-NR
+    									echo '<tr>';
+        									echo '<td valign="top" nowrap="nowrap">Durchf&uuml;hrungs-Nr.:&nbsp;&nbsp;&nbsp;</td>';
+        									echo '<td>';
+        									   $this->controlText('nr[]', (PHP7 ? $durchf['nr'] : utf8_decode($durchf['nr'])), 24, 64, 'Geben Sie hier eine f&uuml;r Sie eindeutige numerische oder alphanumerische Kennung dieser Durchf&uuml;hrung ein', 'k. A.');
+        									echo '</td>';
+    									echo '</tr>';
+										
+										// TERMIN
+										echo '<tr>';
+											echo '<td valign="top">Termin:</td>';
+											echo '<td>';
+												$temp = sql_date_to_human($durchf['beginn'], 'dateopt editable');
+												$this->controlText('beginn[]', $temp, 10, 10, 'Geben Sie hier - soweit bekannt - das Beginndatum dieser Durchf&uuml;hrungein', 'tt.mm.jjjj');
+												echo ' bis ';
+												$temp = sql_date_to_human($durchf['ende'], 'dateopt editable');
+												$this->controlText('ende[]', $temp, 10, 10, 'Geben Sie hier - soweit bekannt - das Datum des letzten Termins dieser Durch&uuml;hrung ein', 'tt.mm.jjjj');
+												echo ' ';
+												
+												echo ' &nbsp;&nbsp; ';
+												echo '<label title="W&auml;hlen Sie hier - sofern bekannt und eindeutig - die Wochentage aus, an denen die Durchf&uuml;hrung stattfindet">';
+													global $codes_kurstage;
+													$bits = explode('###', $codes_kurstage);
+													for( $i = 0; $i < sizeof($bits); $i+=2 ) 
+													{
+														// normally, we would use the normal <input type="checkbox" /> - however this does
+														// not work with our array'ed durchführungen as a checkbox value is not appended to an array it it is not checked ...
+														echo '<span>'; // needed to get the both items on one level
+															$value = $durchf['kurstage']&intval($bits[$i])? 1 : 0;
+															echo "<input type=\"hidden\" name=\"kurstage$i"."[]\" value=\"$value\" />";
+															echo '<span onclick="editWeekdays($(this));" class="'.($value?'wisy_editweekdayssel':'wisy_editweekdaysnorm').'">' . trim(str_replace('.', '', $bits[$i+1])) . '</span>';
+														echo '</span>';
+														
+													}
+												echo '</label>';
+
+												echo ' &nbsp;&nbsp; ';
+												$this->controlText('zeit_von[]', $durchf['zeit_von'], 5, 5, 'Geben Sie hier - soweit bekannt und eindeutig - die Uhrzeit ein, wann die Durchf&uuml;hrung beginnt', 'hh:mm');
+												echo '-';
+												$this->controlText('zeit_bis[]', $durchf['zeit_bis'], 5, 5, 'Geben Sie hier - soweit bekannt und eindeutig - die Uhrzeit ein, wann die Durchf&uuml;hrung endet', 'hh:mm');
+												echo ' Uhr';
+
+												$do_expand = false;
+												if( $durchf['beginnoptionen'] ) { $do_expand = true; }
+												if( berechne_dauer($durchf['beginn'], $durchf['ende'])==0 && $durchf['dauer']!=0 ) { $do_expand = true; }
+												if( berechne_tagescode($durchf['zeit_von'], $durchf['zeit_bis'], $durchf['kurstage'])==0 && $durchf['tagescode']!=0 ) { $do_expand = true; }
+												
+												$titleBeginnoptionen = 'Hiermit k&ouml;nnen Sie f&uuml;r diese Durchf&uuml;hrung eine Terminoption festlegen, etwa wenn die Durchf&uuml;hrung regelm&auml;&szlig;ig stattfindet';
+												$styleBeginnoptionen = '';
+												if( !$do_expand )
+												{
+													echo "<span class=\"editBeginnoptionenLink\"> <a href=\"#\" onclick=\"editShowHide($(this), '.editBeginnoptionenDiv', '.editBeginnoptionenLink'); return false;\" title=\"$titleBeginnoptionen\"><small>+Optionen</small></a></span>";
+													$styleBeginnoptionen = ' style="display:none;" ';
+												}
+												
+												echo "<div class=\"editBeginnoptionenDiv\" $styleBeginnoptionen>";
+												echo '<label title="'.$titleBeginnoptionen.'">';
+        												echo "Terminoptionen: ";
+        												$this->controlSelect('beginnoptionen[]', $durchf['beginnoptionen'], $GLOBALS['codes_beginnoptionen']);
+												
+        												echo "<br />Dauer: ";
+        												$this->controlSelect('dauer[]', $durchf['dauer'], $GLOBALS['codes_dauer']);
+        												echo '<small> (wird, wenn m&ouml;glich, aus Beginn-/Endedatum automatisch berechnet)</small>';
+												
+        												echo "<br />Tagescode: ";
+        												$this->controlSelect('tagescode[]', $durchf['tagescode'], $GLOBALS['codes_tagescode']);
+        												echo '<small>  (wird, wenn m&ouml;glich, aus Wochentag/Uhrzeit automatisch berechnet)</small>';
+												echo '</label>';
+											echo '</div>';
+											echo '</td>';
+										echo '</tr>';
+										echo '<tr>';
+											echo '<td valign="top">Stunden:</td>';
+											echo '<td>';
+												$temp = $durchf['stunden'] == 0? '' : $durchf['stunden'];
+												$this->controlText('stunden[]', $temp, 4, 6, 'Geben Sie hier - soweit bekannt - die Gesamtzahl der Unterrichtsstunden ein', 'k. A.');
+												echo ' Unterrichtsstunden mit max. ';
+												$temp = $durchf['teilnehmer'] == 0? '' : $durchf['teilnehmer'];
+												$this->controlText('teilnehmer[]', $temp, 3, 6, 'Geben Sie hier - soweit bekannt - die maximale Anzahl von Teilnehmenden ein, die insgesamt diese Durchf&uuml;hrung belegen werden', 'k. A.');
+												echo ' Teilnehmende';
+											echo '</td>';
+										echo '</tr>';
+										echo '<tr>';
+											echo '<td valign="top">Gesamtpreis inkl. MwSt:</td>';
+											echo '<td>';
+											
+												$temp = $durchf['preis'] == -1? '' : $durchf['preis'];
+												$this->controlText('preis[]', $temp, 5, 6, 'Geben Sie hier - soweit bekannt - den Gesamtpreis inkl. MwSt dieser Durchf&uuml;hrung in Euro ohne Nachkommastellen ein; geben Sie eine Null f&uuml;r &quot;kostenlos&quot; ein', 'k. A.');
+												echo '&nbsp;EUR';
+												
+												if( $durchf['sonderpreistage'] == 0	) 
+													{ $durchf['sonderpreistage'] = ''; }
+												if( $durchf['sonderpreis'] == -1 || $durchf['sonderpreistage'] == ''	) 
+													{ $durchf['sonderpreis'] = ''; }
+												
+												$styleSonderpreis = '';
+												if( !$durchf['sonderpreis'] )
+												{
+												    echo "<span class=\"editSonderpreisLink\"> <a href=\"#\" onclick=\"editShowHide($(this), '.editSonderpreisDiv', '.editSonderpreisLink'); return false;\" title=\"Sonderpreis f&uuml;r diese Durchf&uuml;hrung hinzuf&uuml;gen\"><small>+Sonderpreis</small></a></span>";
+												    $styleSonderpreis = ' style="display:none;" ';
+												}
+												
+												$stylePreishinweise = '';
+												if( !$durchf['preishinweise'] )
+												{
+												    echo "<span class=\"editPreishinweiseLink\"> <a href=\"#\" onclick=\"editShowHide($(this), '.editPreishinweiseDiv', '.editPreishinweiseLink'); return false;\" title=\"Preishinweise hinzuf&uuml;gen\"><small>+Preishinweise</small></a></span>";
+												    $stylePreishinweise = ' style="display:none;" ';
+												}
+												
+												echo "<div class=\"editSonderpreisDiv\" $styleSonderpreis>";
+													echo 'ab ';
+													$this->controlText('sonderpreistage[]', $durchf['sonderpreistage'], 3, 4, 'Anzahl der Tage vor Beginntermin, wo der nachstehende Sonderpreis gelten soll', 'k. A.');
+													echo ' Tagen vor Beginn dieser Durchf&uuml;hrung gilt ein erm&auml;&szlig;gter Sonderpreis von&nbsp;';
+													$this->controlText('sonderpreis[]', $durchf['sonderpreis'], 5, 5, 'Sonderpreis dieser Durchf&uuml;hrung in Euro ohne Nachkommastellen', 'k. A.');
+													echo '&nbsp;EUR';
+												echo "</div>";
+												
+												echo "<div class=\"editPreishinweiseDiv\" $stylePreishinweise>";
+												    echo 'Preishinweise: ';
+												    $this->controlText('preishinweise[]', (PHP7 ? $durchf['preishinweise'] : utf8_decode($durchf['preishinweise'])), 50, 200, 'Geben Sie hier eventuelle sonstige Anmerkungen zum Preis ein'); // utf8_decode shouln't be necessary
+												echo "</div>";
+								
+											echo '</td>';
+										echo '</tr>';
+										echo '<tr>';
+											echo '<td valign="top">Veranstaltungsort:</td>';
+											echo '<td>';
+											    $this->controlText('strasse[]', (PHP7 ? $durchf['strasse'] : utf8_decode($durchf['strasse'])), 25, 100, 'Geben Sie hier - soweit bekannt und eindeutig - die Strasse und die Hausnummer des Veranstaltungsortes ein', 'Strasse und Hausnr.'); // utf8_decode shouln't be necessary
+											
+											    echo ' &nbsp; ';
+								
+											    $this->controlText('plz[]', $durchf['plz'], 5, 16, 'Geben Sie hier - soweit bekannt und eindeutig - die Postleitzahl des Veranstaltungsortes ein', 'PLZ');
+											    echo ' ';
+											    $this->controlText('ort[]', (PHP7 ? $durchf['ort'] : utf8_decode($durchf['ort'])), 12, 60, 'Geben Sie hier - soweit bekannt und eindeutig - den Ort bzw. die Stadt, in der die Veranstaltung stattfindet ein', 'Ort'); // utf8_decode shouln't be necessary											    
+												
+												$this->controlHidden('stadtteil[]', $durchf['stadtteil']);
+												$this->controlHidden('stadtteil_for[]', $durchf['strasse'].','.$durchf['plz'].','.$durchf['ort']);
+
+
+											echo '</td>';
+										echo '</tr>';
+										echo '<tr>';
+											echo '<td valign="top">Kurs-URL/Bemerkungen:</td>';
+											echo '<td>';
+											
+											$style = '';
+											if( !$durchf['bemerkungen'] )
+											{
+											    echo "<span class=\"editAdvOrtLink\"> <a href=\"#\" onclick=\"editShowHide($(this), '.editAdvOrtDiv', '.editAdvOrtLink'); return false;\" title=\"URL und/oder Bemerkungen zur Durchf&uuml;hrung hinzuf&uuml;gen\"><small>+Hinzuf&uuml;gen</small></a></span>";
+											    $style = ' style="display:none;" ';
+											}
+											
+											echo "<div class=\"editAdvOrtDiv\" $style>";
+											     echo $this->renderEditorToolbar(true);
+											     echo "<textarea name=\"bemerkungen[]\" title=\"Geben Sie hier die Kurs-URL oder sonstige Hinweise ein zur Durchf&uuml;hrung ein\" cols=\"40\" rows=\"3\" style=\"width: 90%; border: 1px solid #ddd;\" />" . htmlentities(strval($durchf['bemerkungen'])) . '</textarea>';
+											echo '<div>';
+											
+											echo '</td>';
+										echo '</tr>';
+									echo '</table>';
+								echo '</div>';
+							echo '</td>';
+						echo '</tr>';
 					}
-					
-					echo '</table>';
-					
-		}
+
+				echo '</table>';
+
+			}
 		
-		echo '<p>' . "\n";
-		if( $showForm )
-		{
-		    echo '<input type="submit" value="OK - Kurs speichern" title="Alle &Auml;nderungen &uuml;bernehmen und Kurs speichern" style="font-weight: bold;" /> ' . "\n";
-		}
+			echo '<p>' . "\n";
+    			if( $showForm )
+    			{
+    			    echo '<input type="submit" value="OK - Kurs speichern" title="Alle &Auml;nderungen &uuml;bernehmen und Kurs speichern" style="font-weight: bold;" /> ' . "\n";
+    			}
     			
     			echo '<input type="submit" name="cancel" value="Abbruch" title="&Auml;nderungen verwerfen und Kurs nicht speichern" />' . "\n";
 			echo '</p>' . "\n";
@@ -2372,6 +2314,7 @@ class WISY_EDIT_RENDERER_CLASS
 	
 	function renderEditAnbieter()
 	{
+	    $loggedInAnbieterId = isset($_SESSION['loggedInAnbieterId']) ? $_SESSION['loggedInAnbieterId'] : null;
 	    $anbieterId = intval($_SESSION['loggedInAnbieterId']);
 	    $topnotes   = array();
 	    $showForm   = true;
@@ -2467,19 +2410,19 @@ class WISY_EDIT_RENDERER_CLASS
 	        echo '<td width="10%">Gr&uuml;ndungsjahr:</td>';
 	        echo '<td width="90%">';
 	        $ausgabe_jahr = $anbieter['gruendungsjahr']<=0? '' : $anbieter['gruendungsjahr'];
-	        $this->controlText('gruendungsjahr', $ausgabe_jahr, 6, 4, '', '', '^[0-9]{4}$', '', 0);
+	        $this->controlText('gruendungsjahr', $ausgabe_jahr, 6, 4, '', '');
 	        echo '</td>';
 	        echo '</tr>';
 	        echo '<tr>';
 	        echo '<td width="10%" nowrap="nowrap">Name des Leiters:</td>';
 	        echo '<td width="90%">';
-	        $this->controlText('leitung_name', $anbieter['leitung_name'], 50, 200, '', '', '', '', 0);
+	        $this->controlText('leitung_name', $anbieter['leitung_name'], 50, 200, '', '');
 	        echo '</td>';
 	        echo '</tr>';
 	        echo '<tr>';
 	        echo '<td width="10%">Homepage:</td>';
 	        echo '<td width="90%">';
-	        $this->controlText('homepage', $anbieter['homepage'], 64, 200, '', '', '.*\..*', '', 0); // https?://.+
+	        $this->controlText('homepage', $anbieter['homepage'], 64, 200, '', '');
 	        echo '</td>';
 	        echo '</tr>';
 	        
@@ -2487,13 +2430,13 @@ class WISY_EDIT_RENDERER_CLASS
 	        echo '<tr>';
 	        echo '<td width="10%">Adresse:</td>';
 	        echo '<td width="90%">';
-	        $this->controlText('strasse', $anbieter['strasse'], 25, 100, 'Geben Sie hier - soweit bekannt und eindeutig - die Strasse und die Hausnummer ein', 'Strasse und Hausnr.', '', '', 0);
+	        $this->controlText('strasse', $anbieter['strasse'], 25, 100, 'Geben Sie hier - soweit bekannt und eindeutig - die Strasse und die Hausnummer ein', 'Strasse und Hausnr.');
 	        
 	        echo ' &nbsp; ';
 	        
-	        $this->controlText('plz', $anbieter['plz'], 5, 16, 'Geben Sie hier - soweit bekannt und eindeutig - die Postleitzahl ein', 'PLZ', '', '', 0);
+	        $this->controlText('plz', $anbieter['plz'], 5, 16, 'Geben Sie hier - soweit bekannt und eindeutig - die Postleitzahl ein', 'PLZ');
 	        echo ' ';
-	        $this->controlText('ort', $anbieter['ort'], 12, 60, 'Geben Sie hier - soweit bekannt und eindeutig - den Ort bzw. die Stadt ein', 'Ort', '', '', 0);
+	        $this->controlText('ort', $anbieter['ort'], 12, 60, 'Geben Sie hier - soweit bekannt und eindeutig - den Ort bzw. die Stadt ein', 'Ort');
 	        
 	        $this->controlHidden('stadtteil', cs8($anbieter['stadtteil']));
 	        
@@ -2508,31 +2451,31 @@ class WISY_EDIT_RENDERER_CLASS
 	        echo '<tr>';
 	        echo '<td width="10%" nowrap="nowrap">Name:</td>';
 	        echo '<td width="90%">';
-	        $this->controlText('anspr_name', $anbieter['anspr_name'], 50, 50, '', '', '', '', 0);
+	        $this->controlText('anspr_name', $anbieter['anspr_name'], 50, 50, '', '');
 	        echo '</td>';
 	        echo '</tr>';
 	        echo '<tr>';
 	        echo '<td width="10%">Sprechzeiten:</td>';
 	        echo '<td width="90%">';
-	        $this->controlText('anspr_zeit', $anbieter['anspr_zeit'], 64, 200, '', '', '', '', 0);
+	        $this->controlText('anspr_zeit', $anbieter['anspr_zeit'], 64, 200, '', '');
 	        echo '</td>';
 	        echo '</tr>';
 	        echo '<tr>';
 	        echo '<td width="10%">Telefon:</td>';
 	        echo '<td width="90%">';
-	        $this->controlText('anspr_tel', $anbieter['anspr_tel'], 32, 200, '', '', '', '', 0);
+	        $this->controlText('anspr_tel', $anbieter['anspr_tel'], 32, 200, '', '');
 	        echo '</td>';
 	        echo '</tr>';
 	        echo '<tr>';
 	        echo '<td width="10%">Telefax:</td>';
 	        echo '<td width="90%">';
-	        $this->controlText('anspr_fax', $anbieter['anspr_fax'], 32, 200, '', '', '', '', 0);
+	        $this->controlText('anspr_fax', $anbieter['anspr_fax'], 32, 200, '', '');
 	        echo '</td>';
 	        echo '</tr>';
 	        echo '<tr>';
 	        echo '<td width="10%">E-Mail:</td>';
 	        echo '<td width="90%">';
-	        $this->controlText('anspr_email', $anbieter['anspr_email'], 50, 200, '', '', '[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$', '', 0);
+	        $this->controlText('anspr_email', $anbieter['anspr_email'], 50, 200, '', '');
 	        echo '</td>';
 	        echo '</tr>';
 	        
@@ -2543,25 +2486,25 @@ class WISY_EDIT_RENDERER_CLASS
 	        echo '<tr>';
 	        echo '<td width="10%" nowrap="nowrap">Name:</td>';
 	        echo '<td width="90%">';
-	        $this->controlText('pflege_name', $anbieter['pflege_name'], 50, 50, '', '', '', '', 0);
+	        $this->controlText('pflege_name', $anbieter['pflege_name'], 50, 50, '', '');
 	        echo '</td>';
 	        echo '</tr>';
 	        echo '<tr>';
 	        echo '<td width="10%">Telefon:</td>';
 	        echo '<td width="90%">';
-	        $this->controlText('pflege_tel', $anbieter['pflege_tel'], 32, 200, '', '', '', '', 0);
+	        $this->controlText('pflege_tel', $anbieter['pflege_tel'], 32, 200, '', '');
 	        echo '</td>';
 	        echo '</tr>';
 	        echo '<tr>';
 	        echo '<td width="10%">Telefax:</td>';
 	        echo '<td width="90%">';
-	        $this->controlText('pflege_fax', $anbieter['pflege_fax'], 32, 200, '', '', '', '', 0);
+	        $this->controlText('pflege_fax', $anbieter['pflege_fax'], 32, 200, '', '');
 	        echo '</td>';
 	        echo '</tr>';
 	        echo '<tr>';
 	        echo '<td width="10%">E-Mail:</td>';
 	        echo '<td width="90%">';
-	        $this->controlText('pflege_email', $anbieter['pflege_email'], 50, 200, '', '', '', '', 0);
+	        $this->controlText('pflege_email', $anbieter['pflege_email'], 50, 200, '', '');
 	        echo '</td>';
 	        echo '</tr>';
 	        
@@ -2646,47 +2589,47 @@ class WISY_EDIT_RENDERER_CLASS
 	protected function _agb_reading_required()
 	{
 	    if( isset($_SESSION['_agb_ok_for_this_session']) && $_SESSION['_agb_ok_for_this_session'] )
-	        return false; // AGB were okay at the beginning of the session, keep this state to avoid annoying AGB popups during editing
-	        
+			return false; // AGB were okay at the beginning of the session, keep this state to avoid annoying AGB popups during editing
+
 	    $soll_hash = $this->_agb_get_hash().$this->_dataprotection_get_hash();
-	    if( $soll_hash == '' )
-	       return false; // no AGB reading required
-	            
-	    if( $this->_anbieter_ini_read('useredit.agb.accepted_hash', '') == $soll_hash )
-	       return false; // AGB already read
-	                
-	    $loggedInAnbieterId = isset($_SESSION['loggedInAnbieterId']) ? $_SESSION['loggedInAnbieterId'] : null;
-	                
-	    if( isset($_REQUEST['agb_not_accepted']) )
-	    {
-	       header('Location: '.$this->framework->getUrl('edit', array('action'=>'logout')));
-	       exit();
-	    }
-	    else if( isset($_REQUEST['agb_accepted'])
-	               && $soll_hash == $_REQUEST['agb_hash'] )
-	    {
-            if( !isset($_SESSION['_login_as']) || !$_SESSION['_login_as'] ) {
-	           $this->_anbieter_ini_settings['useredit.agb.accepted_hash'] = $soll_hash;
-	           $this->_anbieter_ini_write();
-	           $logwriter = new LOG_WRITER_CLASS;
-	           $logwriter->log('anbieter', intval($loggedInAnbieterId), $this->getAdminAnbieterUserId20(), 'agbaccepted');
-	                        
-	           $db = new DB_Admin;
-	           $today = ftime("%d.%m.%y");
-	           $db->query("UPDATE anbieter SET notizen = CONCAT('$today: AGB akzeptiert\n', notizen) WHERE id=".intval($loggedInAnbieterId));
-	           // $db->close();
-	        }
-	                    
-	        $_SESSION['_agb_ok_for_this_session'] = true;
-	                    
-	        if( isset($_REQUEST['fwd']) )
-	           header("Location: ".$_REQUEST['fwd']);
-	                        
-	        // $db->close();
-	        exit();
-	    }
-	                
-	    return true; // AGB reading required!
+		if( $soll_hash == '' )
+			return false; // no AGB reading required
+		
+		if( $this->_anbieter_ini_read('useredit.agb.accepted_hash', '') == $soll_hash )
+			return false; // AGB already read
+
+        $loggedInAnbieterId = isset($_SESSION['loggedInAnbieterId']) ? $_SESSION['loggedInAnbieterId'] : null;
+			
+		if( isset($_REQUEST['agb_not_accepted']) ) 
+		{
+			header('Location: '.$this->framework->getUrl('edit', array('action'=>'logout')));
+			exit();
+		}
+		else if( isset($_REQUEST['agb_accepted']) 
+			  && $soll_hash == $_REQUEST['agb_hash'] ) 
+		{
+		    if( !isset($_SESSION['_login_as']) || !$_SESSION['_login_as'] ) {
+				$this->_anbieter_ini_settings['useredit.agb.accepted_hash'] = $soll_hash;
+				$this->_anbieter_ini_write();
+				$logwriter = new LOG_WRITER_CLASS;
+				$logwriter->log('anbieter', intval($loggedInAnbieterId), $this->getAdminAnbieterUserId20(), 'agbaccepted');
+				
+				$db = new DB_Admin;
+				$today = ftime("%d.%m.%y");
+				$db->query("UPDATE anbieter SET notizen = CONCAT('$today: AGB akzeptiert\n', notizen) WHERE id=".intval($loggedInAnbieterId));
+				// $db->close();
+			}
+			
+			$_SESSION['_agb_ok_for_this_session'] = true;
+			
+			if( isset($_REQUEST['fwd']) )
+			 header("Location: ".$_REQUEST['fwd']);
+			
+			// $db->close();
+			exit();
+		}
+			
+		return true; // AGB reading required!
 	}
 	
 	protected function _render_agb_screen()
@@ -2730,10 +2673,10 @@ class WISY_EDIT_RENDERER_CLASS
 			$fwd = 'search';
 			if( isset($_REQUEST['action']) && $_REQUEST['action'] == 'ek' ) {
 			    if( isset($_REQUEST['id']) )
-			        $fwd = "edit?action=ek&id=".intval($_REQUEST['id']);
+				    $fwd = "edit?action=ek&id=".intval($_REQUEST['id']);
 			}
 			else if( isset($_REQUEST['fwd']) ) {
-			    $fwd = $_REQUEST['fwd'];
+				$fwd = $_REQUEST['fwd'];
 			}
 			
 			echo '<br><br><form action="edit" method="post">';
@@ -2792,18 +2735,18 @@ class WISY_EDIT_RENDERER_CLASS
 					$this->renderLoginScreen();
 					break;
 
-				 case 'ek':
+				case 'ek':
 				    $id = isset($_REQUEST['id']) ? $_REQUEST['id'] : 0;
 				    $this->renderEditKurs(intval($id) /*may be "0" for "new kurs"*/ );
-				    break;
+					break;
 					
 				case 'ea':
 				    $this->renderEditAnbieter(); // always edit the "logged in" anbieter
 				    break;
 
-				/* case 'kt':
+				case 'kt':
 					$this->renderEditKonto();
-					break; */
+					break;
 		
 				default:
 					$this->framework->error404();
