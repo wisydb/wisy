@@ -315,9 +315,9 @@ class ATTR2TAG_CLASS
 			$curr_tag_help = 0;
 			$curr_tag_descr = '';
 			if( $this->table == 'stichwoerter' )
-			{
-			    
-			    $curr_tag_type = intval($this->db->f('eigenschaften')) & (1+2+4+8+16+1024+32768+65536) /*flags, s.o.*/;
+			{ 
+			    // 524288 - ESCO-Kompetenz, 1048576 - ESCO-Tätigkeit
+			    $curr_tag_type = intval($this->db->f('eigenschaften')) & (1+2+4+8+16+1024+32768+65536+524288+1048576) /*flags, s.o.*/;
 			    $curr_tag_help = intval($this->db->f('glossar'));
 			    $curr_tag_descr = $this->db->fs('zusatzinfo');
 			}
@@ -716,7 +716,7 @@ class WISY_SYNC_RENDERER_CLASS
 		// write all synonyms
 		$db->query("DELETE FROM x_tags WHERE tag_type & 64;"); // Synonym
 		$db->query("DELETE FROM x_tags WHERE tag_type & 262144;"); // Anbieter-Namensverweisung
-		$db->query("DELETE FROM x_tags WHERE tag_type = 65;"); // Versteckte Anbieter-Namensverweisung // "=" weil & 131072 (65) sonst auch Beratungsstellen (131328) l√∂scht
+		$db->query("DELETE FROM x_tags WHERE tag_type = 65;"); // Versteckte Anbieter-Namensverweisung // "=" weil sonst Beratungsstelle (Typ: 131328 wg. 256 + 2(Beratungsstelle)<<16) gelöscht wird! Komischerweise = 131072 nicht 8589934592 (= 256 + 131072<<16)
 		for( $i = 0; $i < sizeof((array) $insertValues); $i++ ) {
 		  $this->tagtable->lookupOrInsert($insertValues[$i][0], $insertValues[$i][1]);
 		}
@@ -2162,6 +2162,8 @@ class WISY_SYNC_RENDERER_CLASS
 		$overall_time = microtime(true);
 		headerDoCache(0);
 		header("Content-type: text/plain");
+		
+		echo "<pre>\n"; // useful if called by browser
 
 		$host = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '';
 		
@@ -2241,5 +2243,7 @@ class WISY_SYNC_RENDERER_CLASS
 					
 		// release exclusive access
 		$this->statetable->releaseUpdatestick();
+		
+		echo "\n<pre>"; 
 	}
 };
