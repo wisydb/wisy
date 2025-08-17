@@ -32,7 +32,7 @@ class SYNC_DOSYNC_CLASS extends SYNC_FUNCTIONS_CLASS
 		$starting_time = time();
 		
 		// Job informationen holen 
-		echo "Job $this->jobid ausf&uuml;hren ... wenn am Ende nicht 'Fertig' steht, wurde die Aufgabe unterbrochen! \n\n";
+		echo "Job $this->jobid ausf&uuml;hren ... wenn am Ende nicht 'Fertig' steht, wurde die Aufgabe unterbrochen!\n\n";    // " . $forceid . " ?
 		$this->_log("Job $this->jobid ausf&uuml;hren ... wenn am Ende nicht 'Fertig' steht, wurde die Aufgabe unterbrochen!");
 		$this->job = new SYNC_JOB_CLASS($this->jobid);
 		if( !isset( $this->job->jobid ) || $this->job->jobid == 0 ) {
@@ -56,7 +56,6 @@ class SYNC_DOSYNC_CLASS extends SYNC_FUNCTIONS_CLASS
 		
 		// MIX-Datei herunterladen
 		echo "Kopiere $requrl_without_key nach $mix_fullpath ..." . "\n\n";
-		$this->_log("Kopiere $requrl_without_key nach $mix_fullpath ...");
 		
 		// make sure Webserver doesn't time b/c of no output
 		$outputBufferingValue = intval(ini_get('output_buffering'));
@@ -69,7 +68,8 @@ class SYNC_DOSYNC_CLASS extends SYNC_FUNCTIONS_CLASS
 		    ob_flush();
 		    flush();
 		}
-				
+		
+		$this->_log("Kopiere $requrl_without_key nach $mix_fullpath ...");
 		if( !$this->_copy_remote_to_local($requrl_incl_key, $mix_fullpath) )
 			return false;
 		
@@ -82,7 +82,7 @@ class SYNC_DOSYNC_CLASS extends SYNC_FUNCTIONS_CLASS
 		
 		if( !$importer->import_do($mix_fullpath, $this->job->overwrite, $this->job->delete, $this->job->further_options) )
 		{
-			$this->_log('Importfehler, s. Protokoll f�r weitere Details.');
+			$this->_log('Importfehler, s. Protokoll fuer weitere Details.');
 			return false;
 		}
 		

@@ -491,7 +491,8 @@ class MULTIEDIT_PLUGIN_CLASS
 					if( $param1=='' )
 					{
 						if( $content != $param2 )
-							$changes ++;
+							$changes++;
+						
 						$content = $param2;
 					}
 					else

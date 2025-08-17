@@ -82,9 +82,11 @@ class WISY_TREE_RENDERER_CLASS
 	function render()
 	{
 		// prologue
+	    $protocol = $this->framework->iniRead('portal.https', '') ? "https" : "http";
+	    $canonical = parse_url( $this->framework->getUrl('tree') , PHP_URL_PATH);
 		echo $this->framework->getPrologue(array(
 			'title'=>'Themen', 
-			'canonical'=>$this->framework->getUrl('tree'),
+		    'canonical'=> $protocol."://".$_SERVER['SERVER_NAME'].$canonical,
 			'bodyClass'=>'wisyp_search'
 		));
 		echo $this->framework->getSearchField();

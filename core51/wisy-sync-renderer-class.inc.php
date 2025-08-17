@@ -1736,7 +1736,6 @@ class WISY_SYNC_RENDERER_CLASS
 	    
 	    echo "Update Anbieter Kurse Counter" . "\n";
 	    
-	    /*
 	    $db    = new DB_ADMIN;
 	    $db1   = new DB_ADMIN;
 	    
@@ -1763,7 +1762,7 @@ class WISY_SYNC_RENDERER_CLASS
 	        
 	        $db1->query( $sql );
 	    }
-	  */  
+  
 	} 
 	
 	function doMaintenance() {

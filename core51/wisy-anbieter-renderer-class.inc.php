@@ -570,7 +570,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 
 		// load anbieter
 		$db->query("SELECT * FROM anbieter WHERE id=$anbieter_id");
-		if( !$db->next_record() || $db->fcs8('freigeschaltet')!=1 ) {
+		if( ( !$db->next_record() || $db->fcs8('freigeschaltet')!=1 ) && !$no404 ) {
 		    $this->framework->error404(); // record does not exist/is not active, report a normal 404 error, not a "Soft 404", see  http://goo.gl/IKMnm -- fuer nicht-freigeschaltete Datensaetze, s. [here]
 		}
 		$din_nr			= htmlentities(strval(cs8($db->fs('din_nr'))));
@@ -596,8 +596,8 @@ class WISY_ANBIETER_RENDERER_CLASS
 		
 		// check for existance, get title, #socialmedia
 		$db->query("SELECT suchname, ort, firmenportraet, freigeschaltet FROM anbieter WHERE id=$anbieter_id");
-		if( !$db->next_record() || in_array($db->f('freigeschaltet'), $freigeschaltet404) ) {
-		    $this->framework->error404(); // record does not exist, reporta normal 404 error, not a "Soft 404", see  http://goo.gl/IKMnm -- für nicht-freigeschaltete Datensätze, s. [here]
+		if( (!$db->next_record() || in_array($db->f('freigeschaltet'), $freigeschaltet404)) ) {
+		    $this->framework->error404(); // record does not exist, report a normal 404 error, not a "Soft 404"
 		}
 		$anbieter_suchname = cs8($db->fs('suchname'), "UTF-8");
 		

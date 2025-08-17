@@ -1097,13 +1097,14 @@ class WISY_SEARCH_RENDERER_CLASS
 	            /* $aggregateOffer = ($richtext) ? 'itemprop="offers" itemscope itemtype="http://schema.org/AggregateOffer"': '';
 	             echo '<div '.$aggregateOffer.'>'; */
 	            
-	            // render table start
-	            echo "\n".'<table class="wisy_list wisyr_kursliste">' . "\n";
-	            
+            
 	            if( isset($_GET['debug']) && $_GET['debug'] == 'Ortsinfo') {
 	                // not form Cache?
 	                echo '<div class="venue_info">Adresse (Umkreis-Mittelpunkt) wurde verstanden als:<br><span style="font-size: 0.8em; font-weight: bold;">'.$searcher->getFoundVenue().'<br><br></span></div>';
 	            }
+	            
+	            // render table start
+	            echo "\n".'<table class="wisy_list wisyr_kursliste cnt'.$sqlCount.' '.($this->paginated ? 'paginated' : 'non-paginated').'">' . "\n";
 	            
 	            // render column titles
 	            echo '  <thead><tr>' . "\n";
@@ -1209,7 +1210,7 @@ class WISY_SEARCH_RENDERER_CLASS
 	            
 	            if( !$this->emptymsg_output && ( sizeof((array) $info['suggestions']) == 0 ) )
 	            {
-	                $this->render_emptysearchresult_message($info, false, $hlevel, $queryString);
+	                $this->render_emptysearchresult_message($info, false, $hlevel, 0, $queryString);
 	                $this->emptymsg_output = true;
 	            }
 	            
@@ -1712,6 +1713,8 @@ class WISY_SEARCH_RENDERER_CLASS
 	
 	function render()
 	{
+	    // ob_start();
+	    
 	    if(trim($this->framework->iniRead('disable.suche', false)))
 	        $this->framework->error404();
 	    
@@ -1973,5 +1976,14 @@ class WISY_SEARCH_RENDERER_CLASS
 		{
 		    echo $this->framework->getEpilogue( ($customJS??'') );
 		}
+		
+		// Capture the output and store it in a variable
+		// $outbuffer = ob_get_clean();
+		
+		// // if( $this->canonicalURL != '' )
+		// //  $outbuffer = str_replace('rel="canonical" href="#"', 'rel="canonical" href="'.$this->canonicalURL.'"', $outbuffer);
+		
+		// echo $outbuffer;
+		
 	}
 };

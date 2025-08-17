@@ -1207,6 +1207,12 @@ class WISY_FRAMEWORK_CLASS
 			
 			for( $s = 0; $s < sizeof((array) $tags); $s++ )
 			{
+			    
+			    // Hide "Kurskategorie Berufliche Bildung" and "Kurskategorie Sprache" and "Kurskategorie Andere" from the list.
+			    if ($tags[$s]['stichwort'] == "Kurskategorie Berufliche Bildung" OR $tags[$s]['stichwort'] == "Kurskategorie Sprache" OR $tags[$s]['stichwort'] == "Kurskategorie Andere") {
+			        continue;
+			    }
+			    
 				$glossarLink = '';
 				$glossarId = $this->glossarDb($db, 'stichwoerter', $tags[$s]['id']);
 				if( $glossarId ) {
@@ -1651,7 +1657,7 @@ class WISY_FRAMEWORK_CLASS
 		$css = $this->getCSSFiles();
 		for( $i = 0; $i < sizeof((array) $css); $i++ )
 		{	
-			$ret .= '<link rel="stylesheet" type="text/css" href="'.$css[$i].'" />' . "\n";
+			$ret .= '<link rel="stylesheet" type="text/css" href="'.$css[$i].'" >' . "\n";
 		}
 		
 		return $ret;
@@ -2605,7 +2611,7 @@ class WISY_FRAMEWORK_CLASS
 		        
 		        $qs = $this->getParam('suchfeld_leer') == 1 ? '' : $this->QS;
 		        
-		        echo '<input '.$queryinput.' type="text" id="wisy_searchinput" class="' . $autocomplete_class . '" name="qs" value="' .$qs. '" placeholder="' . $searchinput_placeholder . '" data-onemptyvalue="' . $this->iniRead('search.emptyvalue', '') . '"/>' . "\n";
+		        echo '<input '.$queryinput.' type="text" id="wisy_searchinput" class="' . $autocomplete_class . '" name="qs" value="' .$qs. '" placeholder="' . $searchinput_placeholder . '" data-onemptyvalue="' . $this->iniRead('search.emptyvalue', '') . '" data-mask="'.$this->searchinputmask.'" >' . "\n";
 		        echo '<input type="hidden" id="wisy_searchinput_q" name="q" value="' . addslashes( ($this->Q??'') ) . '" />' . "\n"; // str_replace(array('"', "'"), '', addslashes( - addslashes not for anti-xss per se but rendering success for problematic chars - str_replace not necessary but better rendering if addslashes applied twice somehow
 		        
 		        if( stripos( ($this->QF??''), 'fav:') === FALSE) // don't submit q=fav: additionally as qf=fav: b/c will override following manual search

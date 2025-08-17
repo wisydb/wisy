@@ -652,6 +652,7 @@ class WISY_SEARCH_CLASS
 		// pass 1: collect some values
 		$this->last_lat = 0;
 		$this->last_lng = 0;
+		// $has_typ = false; // search by tag type
 		$has_bei = false;
 		$max_km = 500;
 		$default_km = $this->framework->iniRead('radiussearch.defaultkm', -100);
@@ -662,6 +663,10 @@ class WISY_SEARCH_CLASS
 		        
 		        switch( $this->tokens['cond'][$i]['field'] )
 			{
+			    /* !case 'typ':
+			     $has_typ = true;
+			     break; */
+			    
 				case 'bei':
 					$has_bei = true;
 					break;

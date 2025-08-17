@@ -586,7 +586,8 @@ class WISY_KURS_RENDERER_CLASS
             if( $outputReason )
                 echo "<b>Portaleinstellung 'disable.kurse' unterbindet generell die Anzeige von Angeboten, so auch dieses Angebots.</b><br>";
                 
-            $this->framework->error404("Fehler 404 - Seite <i>in diesem Portal</i> nicht gefunden", "<ul><li><a href='/edit?action=ek&id=0'>Zur Seite wechseln: \"Onlinepflege-Login f&uuml;r Anbieter\" ...</a></li></ul>");
+            if( !$no404 )
+                $this->framework->error404("Fehler 404 - Seite <i>in diesem Portal</i> nicht gefunden", "<ul><li><a href='/edit?action=ek&id=0'>Zur Seite wechseln: \"Onlinepflege-Login f&uuml;r Anbieter\" ...</a></li></ul>");
          }
 	    
 	    // show why this page is visible or not visible in this portal

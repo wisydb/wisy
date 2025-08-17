@@ -73,9 +73,9 @@ class SYNC_EDITJOBRENDERER_CLASS extends SYNC_FUNCTIONS_CLASS
 				form_control_start('Anfrage an Quellserver');
 				    // form_control_text('query', $currJob->query, 600 /*width*/, 600 /*maxlength*/);
 				    form_control_textarea('query', $currJob->query, 60 /*width*/, 5 /*height*/);
-					echo '<br />z.B. <i>modified(today)</i> oder <i>modified>=__LAST_DATE__</i> - wenn Sie die Anfrage leer lassen, werden alle Datens&auml;tze der Tabelle synchronisiert.';
-					echo '<br />&nbsp;';
-					echo '<br />&nbsp;';
+					echo '<br>z.B. <i>modified(today)</i> oder <i>modified>=__LAST_DATE__</i> - wenn Sie die Anfrage leer lassen, werden alle Datens&auml;tze der Tabelle synchronisiert.';
+					echo '<br>&nbsp;';
+					echo '<br>&nbsp;';
 				form_control_end();
 
 				form_control_start(htmlconstant('_IMP_OVERWRITE'));
@@ -106,7 +106,7 @@ class SYNC_EDITJOBRENDERER_CLASS extends SYNC_FUNCTIONS_CLASS
 
 				form_control_start('Beschreibung der Aufgabe');
 					form_control_textarea('descr', $currJob->descr, 60 /*width*/, 3 /*height*/);
-					echo '<br /><i>Auftragsziel, Verantwortlicher, Stand etc.</i><br />&nbsp;';
+					echo '<br><i>Auftragsziel, Verantwortlicher, Stand etc.</i><br>&nbsp;';
 				form_control_end();
 
 			$site->skin->dialogEnd();
