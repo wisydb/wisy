@@ -925,6 +925,7 @@ class WISY_FILTER_CLASS
 	        foreach(explode($this->framework->filterValueSeparator, $token['value']) as $value) {
 	            
 	            $value = trim( strval($value) );
+	            $value = str_ireplace('&amp;', '&', $value);       // (nicht XSS-relevant)
 	            $token['field'] = trim( strval( $token['field']) );
 	            
 	            if($value !== '' && $token['field'] != 'tag') {
@@ -1055,7 +1056,7 @@ class WISY_FILTER_CLASS
 			$this->db->query($sql);
 			while( $this->db->next_record() )
 			    $ret['records'][] = cs8($this->db->Record['thema']);
-			$this->db->free();
+			// $this->db->free();
 	
 		}
 		
@@ -1113,7 +1114,7 @@ class WISY_FILTER_CLASS
 			$this->db->query($sql);
 			while( $this->db->next_record() )
 			    $ret['records'][] = cs8($this->db->Record['suchname']);
-			$this->db->free();
+			//$this->db->free();
 	
 		}
 		

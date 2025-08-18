@@ -577,6 +577,63 @@ CREATE TRIGGER `kurse_bi_v9_10_2` BEFORE INSERT ON `kurse` FOR EACH ROW BEGIN
 								  END
 $$
 DELIMITER ;
+
+-- --------------------------------------------------------
+
+--
+-- Tabellenstruktur für Tabelle `kurse_duplikate`
+--
+
+CREATE TABLE `kurse_duplikate` (
+  `id` int(11) NOT NULL,
+  `sync_src` int(11) NOT NULL DEFAULT 1,
+  `user_created` int(11) NOT NULL,
+  `user_modified` int(11) NOT NULL,
+  `user_grp` int(11) NOT NULL,
+  `user_access` int(11) NOT NULL,
+  `date_created` datetime NOT NULL,
+  `date_modified` datetime NOT NULL,
+  `kurse_id1` int(11) DEFAULT NULL,
+  `kurse_titel1` varchar(500) NOT NULL,
+  `anbieter_name1` varchar(500) NOT NULL,
+  `kurse_erschliessung1` text NOT NULL,
+  `kurse_beschreibung1` text NOT NULL,
+  `kurse_id2` int(11) DEFAULT NULL,
+  `kurse_titel2` varchar(500) NOT NULL,
+  `anbieter_name2` varchar(500) NOT NULL,
+  `kurse_erschliessung2` text NOT NULL,
+  `kurse_beschreibung2` text NOT NULL,
+  `duplikat_grund` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `aehnlichkeit_score` int(11) DEFAULT NULL,
+  `duplikat` int(11) NOT NULL,
+  `anbieter_gleich` int(11) NOT NULL
+) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_german1_ci;
+
+
+--
+-- Trigger `kurse_duplikate`
+--
+DELIMITER $$
+CREATE TRIGGER `kurse_duplikate_bi_v9_10_1` BEFORE INSERT ON `kurse_duplikate` FOR EACH ROW BEGIN
+									SET auto_increment_increment = 10;
+									SET auto_increment_offset = 1;
+								  END
+$$
+DELIMITER ;
+
+--
+-- Indizes für die Tabelle `kurse_duplikate`
+--
+ALTER TABLE `kurse_duplikate`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- AUTO_INCREMENT für Tabelle `kurse_duplikate`
+--
+ALTER TABLE `kurse_duplikate`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+COMMIT;
+
 -- --------------------------------------------------------
 
 --

@@ -88,7 +88,7 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
     		    
     		    $renderformData['records_dauer'][] = $this->db->fcs8('dauer');
     		}
-			$this->db->free();
+			// $this->db->free();
     		$renderformData['records_plz'] = array_unique($renderformData['records_plz']);
     		$renderformData['records_ort'] = array_unique($renderformData['records_ort']);
 			$renderformData['records_dauer'] = array_unique($renderformData['records_dauer']);
@@ -106,7 +106,7 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
     		{
     		    $renderformData['records_taglist'][] = $this->db->fcs8('tagname');
 			}
-			$this->db->free();
+			// $this->db->free();
         }
 		
 		// TODO db: analoger zu filter-klasse aufbauen und nicht manuell zb. hier den q-tag ausgeben:
@@ -138,7 +138,7 @@ class WISY_FILTER_RENDERER_CLASS extends WISY_ADVANCED_RENDERER_CLASS
 		$renderformData['fv_bezirk'] = '';
 		$renderformData['fv_volltext'] = '';
 		
-		// if(!is_array($this->framework->tokensQF))
+		// if(!is_array($this->framework->tokensQF)) // allows for portal without filters
 		//	return false;
 		
 		foreach($this->framework->tokensQF as $token) {

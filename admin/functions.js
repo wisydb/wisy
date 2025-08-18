@@ -137,18 +137,30 @@ Things to do on load
 
 function init_tb_table()
 {
-	$('table.tb > tbody > tr a').click(function() {
-		setClickConsumed(); // avoid rowclicks (clicktr) is a normal hyperlink is clicked
-	});
-	$('table.tb > tbody > tr').click(function() {
-		var jqObj = $(this).find('a.clicktr');
-		if( !isClickConsumed() && jqObj.length == 1 ) {
-			window.location = jqObj.attr('href');
-			return false;
-		}
-		
-	});
+    // Normal link click: click marked as "consumed"
+    $('table.tb > tbody > tr a').click(function() {
+        setClickConsumed();
+    });
+
+    // Clicking a row: Only go to details view, if no button and no link is clicked
+    $('table.tb > tbody > tr').click(function(e) {
+	
+        // if target is action-button: don't go to detail view (= go to target of button action)
+        if ($(e.target).closest('button, .btn-diff, .btn-arrow-left, .btn-arrow-right').length > 0) {
+            return;
+        }
+        // if target is link: don't go to detail view (= go to target/href of link)
+        if ($(e.target).closest('a').length > 0) {
+            return;
+        }
+        var jqObj = $(this).find('a.clicktr');
+        if (!isClickConsumed() && jqObj.length == 1) {
+            window.location = jqObj.attr('href');
+            return false;
+        }
+    });
 }
+
 
 
 var documentLoaded = 0;
@@ -1194,3 +1206,337 @@ var ae = unescape("%E4");
 var ue = unescape("%FC");
 var oe = unescape("%F6");
 var ss = unescape("%DF");
+
+
+// -------------------------
+// Kurs-Duplikate-Ansichten:
+// -------------------------
+
+// verwendet: JSDIFF
+// https://github.com/kpdecker/jsdiff - BSD 3 - Lizenz:
+// https://github.com/kpdecker/jsdiff/blob/master/LICENSE
+// Der Lizenztext selbst muss als Datei LICENSE im jsdiff-Repository enthalten sein. Gemäß BSD-3 reicht es aus, 
+// irgendwo (z.B. im Impressum, in einem Lizenzverzeichnis oder via Kommentar im Header) darauf hinzuweisen, dass jsdiff unter der BSD-3 License verwendet wird.
+// Es sind keine Pflicht-Lizenzen oder Modalitäten wie GPL erforderlich - BSD-3 erlaubt die Integration in's CMS inklusive Modifikation und kommerzieller Verteilung.
+
+// globaler Window-Scope zum später fokussieren, wenn bereits offen und minimiert:
+var diffWindow = null;
+
+$(function() {
+
+    // =====================
+    // Tabellen-Ansicht-Code
+    // =====================
+    var params = new URLSearchParams(window.location.search);
+    if (params.get('table') === 'kurse_duplikate' && $('.tb').length) {
+
+        var $table = $('.tb');
+
+        function getIndices() {
+            var ths = $table.find('thead tr th');
+            return {
+                kursId1: ths.filter(':contains("Kurs-ID 1")').index(),
+                kursId2: ths.filter(':contains("Kurs-ID 2")').index(),
+                titel1: ths.filter(':contains("Titel 1")').index(),
+                titel2: ths.filter(':contains("Titel 2")').index(),
+                anbieter1: ths.filter(':contains("Anbieter 1")').index(),
+                anbieter2: ths.filter(':contains("Anbieter 2")').index(),
+                beschreibung1: ths.filter(':contains("Beschreibung 1")').index(),
+                beschreibung2: ths.filter(':contains("Beschreibung 2")').index(),
+                duplikat: ths.filter(':contains("Ist Duplikat")').index(),
+                selberAnbieter: ths.filter(':contains("Selber Anbieter")').index()
+            };
+        }
+
+        function toGermanEntities(str) {
+            return str
+                .replace(/ä/g, '&auml;')
+                .replace(/ö/g, '&ouml;')
+                .replace(/ü/g, '&uuml;')
+                .replace(/Ä/g, '&Auml;')
+                .replace(/Ö/g, '&Ouml;')
+                .replace(/Ü/g, '&Uuml;')
+                .replace(/ß/g, '&szlig;');
+        }
+
+        // "Erschliessung uebertragen" einfuegen
+        var idx = getIndices();
+        var $anbieter1TH = $table.find('thead tr th').eq(idx.anbieter1);
+        $('<th>' + toGermanEntities('Erschließung übertragen') + '</th>').insertAfter($anbieter1TH);
+
+        $table.find('tbody tr').each(function() {
+            var idx = getIndices();
+            var $tds = $(this).find('td');
+            var kursId1 = $tds.eq(idx.kursId1).text().trim().replace(/\D/g, '');
+            var kursId2 = $tds.eq(idx.kursId2).text().trim().replace(/\D/g, '');
+
+            var arrowLeft = '<button class="btn-arrow-left" title="' + toGermanEntities('Nach links übertragen') + '" style="background:transparent;border:none;cursor:pointer;" ' +
+                'data-source="'+kursId2+'" data-target="'+kursId1+'">' +
+                '<svg width="18" height="18" viewBox="0 0 18 18"><path d="M12 3L6 9L12 15" stroke="#18a058" stroke-width="2" fill="none" stroke-linecap="round"/></svg>' +
+                '</button>';
+            var arrowRight = '<button class="btn-arrow-right" title="' + toGermanEntities('Nach rechts übertragen') + '" style="background:transparent;border:none;cursor:pointer;" ' +
+                'data-source="'+kursId1+'" data-target="'+kursId2+'">' +
+                '<svg width="18" height="18" viewBox="0 0 18 18"><path d="M6 3L12 9L6 15" stroke="#18a058" stroke-width="2" fill="none" stroke-linecap="round"/></svg>' +
+                '</button>';
+            var arrows = '<div style="display:flex;gap:4px;justify-content:center;align-items:center;">'+arrowLeft+arrowRight+'</div>';
+
+            $tds.eq(idx.anbieter1).after('<td>'+arrows+'</td>');
+        });
+
+        // Diff-Button nach "Beschreibung 2" (mit Lupe)
+        // $table.find('thead tr').each(function() {
+        //    if ($(this).find('th.diffth').length === 0) {
+        //       $('<th class="diffth">Vergleich</th>').insertAfter($(this).find('th').eq(getIndices().beschreibung2));
+        //    }
+        // });
+        // $table.find('tbody tr').each(function() {
+        //     var $tds = $(this).find('td');
+        //     if ($(this).find('td.difftd').length === 0) {
+        //         $('<td class="difftd"><button type="button" class="btn-diff" title="Text vergleichen" style="background:transparent;border:none;cursor:pointer;padding:4px;">' +
+        //             '<svg width="20" height="20" viewBox="0 0 20 20" style="vertical-align:middle"><circle cx="9" cy="9" r="7" stroke="#18a058" stroke-width="2" fill="none"/><line x1="14" y1="14" x2="19" y2="19" stroke="#18a058" stroke-width="2" stroke-linecap="round"/></svg>' +
+        //             '</button></td>').insertAfter($tds.eq(getIndices().beschreibung2));
+        //     }
+        // });
+
+        // Spalten-Inhalte formatieren...
+        $table.find('tbody tr').each(function() {
+            var idx = getIndices();
+            var $tds = $(this).find('td');
+
+            var kursId1 = $tds.eq(idx.kursId1).text().trim().replace(/\D/g, '');
+            $tds.eq(idx.kursId1).html(
+                $('<a>', {
+                    href: '/admin/edit.php?table=kurse&id=' + kursId1,
+                    text: kursId1,
+                    target: '_blank',
+                    title: toGermanEntities('In Editor oeffnen...')
+                })
+            );
+            var kursId2 = $tds.eq(idx.kursId2).text().trim().replace(/\D/g, '');
+            $tds.eq(idx.kursId2).html(
+                $('<a>', {
+                    href: '/admin/edit.php?table=kurse&id=' + kursId2,
+                    text: kursId2,
+                    target: '_blank',
+                    title: toGermanEntities('In Editor oeffnen...')
+                })
+            );
+
+            var titel1 = $tds.eq(idx.titel1).text().trim().replace(/^"+|"+$/g, '');
+            $tds.eq(idx.titel1).html('<em>&quot;' + $('<div>').text(titel1).html() + '&quot;</em>');
+            var titel2 = $tds.eq(idx.titel2).text().trim().replace(/^"+|"+$/g, '');
+            $tds.eq(idx.titel2).html('<em>&quot;' + $('<div>').text(titel2).html() + '&quot;</em>');
+            var anbieter1 = $tds.eq(idx.anbieter1).text().trim();
+            $tds.eq(idx.anbieter1).html('<b>' + $('<div>').text(anbieter1).html() + '</b>');
+            var anbieter2 = $tds.eq(idx.anbieter2).text().trim();
+            $tds.eq(idx.anbieter2).html('<b>' + $('<div>').text(anbieter2).html() + '</b>');
+            var $duplikatTD = $tds.eq(idx.duplikat);
+            var origVal = $duplikatTD.text().trim();
+            if (origVal === "Ja" || origVal === "\u2713") { // \u2713 = grünes ok Häkchen
+                $duplikatTD.html('<span title="Ja" style="color:#18a058;font-size:1.3em;vertical-align:middle;">&#10003;</span>');
+            } else if (origVal === "Nein" || origVal === "\u2717") {
+                $duplikatTD.html('<span title="Nein" style="color:#b80000;font-size:1.3em;vertical-align:middle;">&#10007;</span>');
+            }
+            var $selberAnbieterTD = $tds.eq(idx.selberAnbieter);
+            var origVal2 = $selberAnbieterTD.text().trim();
+            if (origVal2 === "Ja" || origVal2 === "\u2713") { // \u2713 = rotes x
+                $selberAnbieterTD.html('<span title="Ja" style="color:#18a058;font-size:1.3em;vertical-align:middle;">&#10003;</span>');
+            } else if (origVal2 === "Nein" || origVal2 === "\u2717") {
+                $selberAnbieterTD.html('<span title="Nein" style="color:#b80000;font-size:1.3em;vertical-align:middle;">&#10007;</span>');
+            }
+        });
+
+        // Ajax fuer Pfeile / Erschliessungsuebertragung
+        $table.on('click', '.btn-arrow-left, .btn-arrow-right', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            var source = $(this).data('source');
+            var target = $(this).data('target');
+            var $btn = $(this);
+            $btn.prop('disabled', true);
+
+            $.ajax({
+                url: '/admin/tagtransfer.php',
+                method: 'GET',
+                data: { source: source, target: target },
+                success: function(response) {
+                    $btn.prop('disabled', false);
+                    $btn.attr('title', toGermanEntities("Übertragung erfolgreich!"));
+                    $btn.closest('td').append('<span style="color:#18a058;margin-left:6px;" title="Erfolgreich!">&#10003;</span>');
+                    setTimeout(function() {
+                        $btn.siblings('span[title="Erfolgreich!"]').fadeOut(700, function() { $(this).remove(); });
+                    }, 1500);
+                },
+                error: function() {
+                    $btn.prop('disabled', false);
+                    $btn.attr('title', toGermanEntities("Fehler beim Übertragen"));
+                    $btn.closest('td').append('<span style="color:#b80000;margin-left:6px;" title="Fehler!">&#9888;</span>');
+                    setTimeout(function() {
+                        $btn.siblings('span[title="Fehler!"]').fadeOut(1500, function() { $(this).remove(); });
+                    }, 2000);
+                }
+            });
+        });
+
+        // Diff-Library fuer Tabellenansicht
+        var diffLoadedTable = false;
+        function loadDiffJsTable(callback) {
+            if (diffLoadedTable) { callback(); return; }
+            $.getScript('/admin/lib/diff/diff.min.js', function() {
+                diffLoadedTable = true;
+                callback();
+            }).fail(function() {
+                alert('Diff-Bibliothek konnte nicht geladen werden.');
+            });
+        }
+
+        $table.on('click', '.btn-diff', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            var $row = $(this).closest('tr');
+            var idx = getIndices();
+            var beschreibung1 = $row.find('td').eq(idx.beschreibung1).text().trim();
+            var beschreibung2 = $row.find('td').eq(idx.beschreibung2).text().trim();
+
+            loadDiffJsTable(function() {
+                if (typeof window.Diff === "undefined" || typeof window.Diff.diffWords !== "function") {
+                    alert("Diff-Bibliothek konnte nicht korrekt geladen werden.");
+                    return;
+                }
+                var diff = window.Diff.diffWords(beschreibung1, beschreibung2);
+                var html = diff.map(function(part){
+                    var color = part.added ? '#d4ffd4' : part.removed ? '#ffe3e3' : 'transparent';
+                    var tag = part.added ? 'ins' : part.removed ? 'del' : 'span';
+                    return `<${tag} style="background:${color};">${$('<div>').text(part.value).html()}</${tag}>`;
+                }).join('');
+               	if (!diffWindow || diffWindow.closed) {
+				    diffWindow = window.open("", "Diff", "width=900,height=700");
+				} else {
+				    diffWindow.focus();
+				}
+                diffWindow.document.write(
+                    "<!DOCTYPE html><html><head><title>Textvergleich</title><meta charset='utf-8'>" +
+                    "<style>body{font-family:sans-serif;font-size:1.1em;margin:24px;} ins{background:#d4ffd4;text-decoration:none;} del{background:#ffe3e3;text-decoration:none;} pre{white-space:pre-wrap;word-break:break-word;}</style></head><body>" +
+                    "<h2>Vergleich Beschreibung 1 &amp; 2</h2>" +
+                    "<pre>" + html + "</pre>" +
+                    "</body></html>"
+                );
+                diffWindow.document.close();
+            });
+        });
+    }
+
+
+    // ===========================
+    // Detailansicht (Edit-Form)
+    // ===========================
+    if (/\/admin\/edit\.php$/.test(window.location.pathname) && /table=kurse_duplikate/.test(window.location.search)) {
+        var $form = $('form[name="edit"]');
+        if ($form.length === 0) return;
+		// if ($('#btn-beschreibungsdiff').length) return; // kann nicht vorhanden sein beim Neuladen der Seite
+
+        // Kurs-IDs verlinken
+        function linkifyKursId(inputName) {
+            var $input = $form.find('input[name="'+inputName+'"]');
+            if ($input.length && $input.val().match(/^\d+$/)) {
+                var kursId = $input.val();
+                var $link = $('<a>', {
+                    href: '/admin/edit.php?table=kurse&id=' + kursId,
+                    text: kursId,
+                    target: '_blank',
+                    title: 'In Editor oeffnen...'
+                });
+                // Ersetze Input durch Link (Input vorher verstecken für Formular, falls noetig)
+                $input.hide().after($link);
+            }
+        }
+        linkifyKursId('f_kurse_id1');
+        linkifyKursId('f_kurse_id2');
+
+        // Titel kursiv + Anfuehrungszeichen
+        function stylizeTitel(inputName) {
+            var $input = $form.find('input[name="'+inputName+'"]');
+            if ($input.length) {
+                var val = $input.val() || '';
+                var html = '<em>&quot;' + $('<div>').text(val).html() + '&quot;</em>';
+                $input.hide().after(html);
+            }
+        }
+        stylizeTitel('f_kurse_titel1');
+        stylizeTitel('f_kurse_titel2');
+
+        // Anbieter fett
+        function stylizeAnbieter(inputName) {
+            var $input = $form.find('input[name="'+inputName+'"]');
+            if ($input.length) {
+                var val = $input.val() || '';
+                var html = '<b>' + $('<div>').text(val).html() + '</b>';
+                $input.hide().after(html);
+            }
+        }
+        stylizeAnbieter('f_anbieter_name1');
+        stylizeAnbieter('f_anbieter_name2');
+
+        // Button erzeugen
+        var $btn = $('<button type="button" id="btn-beschreibungsdiff" title="Beschreibung vergleichen" style="background:transparent;border:none;cursor:pointer;padding:2px 10px 2px 0;vertical-align:middle;">'
+            + '<svg width="22" height="22" viewBox="0 0 22 22" style="vertical-align:middle">'
+            + '<circle cx="10" cy="10" r="8" stroke="#18a058" stroke-width="2" fill="none"/>'
+            + '<line x1="16" y1="16" x2="21" y2="21" stroke="#18a058" stroke-width="2" stroke-linecap="round"/></svg> '
+            + 'Vergleich Beschreibung 1&nbsp;/&nbsp;2'
+            + '</button>');
+
+        // Zeile fuer Button vor der Zeile mit Beschreibung 1 einfügen
+        var $beschreibung1 = $form.find('textarea[name="f_kurse_beschreibung1"]');
+        if ($beschreibung1.length) {
+            var $beschreibungTr = $beschreibung1.closest('tr');
+            var $tr = $('<tr><td></td><td colspan="2" style="padding-top: 2em; text-align:left;padding-bottom:2px;"> </td></tr>');
+            $tr.find('td:last-child').append($btn);
+            $beschreibungTr.before($tr);
+        }
+
+        // Diff-Library für Detailansicht
+        var diffLoadedDetail = false;
+        function loadDiffJsDetail(callback) {
+            if (diffLoadedDetail) { callback(); return; }
+            $.getScript('/admin/lib/diff/diff.min.js', function() {
+                diffLoadedDetail = true;
+                callback();
+            }).fail(function() {
+                alert('Diff-Bibliothek konnte nicht geladen werden.');
+            });
+        }
+
+        // Klick-Handler
+        $btn.on('click', function(e) {
+            e.preventDefault();
+            var text1 = $form.find('textarea[name="f_kurse_beschreibung1"]').val() || '';
+            var text2 = $form.find('textarea[name="f_kurse_beschreibung2"]').val() || '';
+            loadDiffJsDetail(function() {
+                if (typeof window.Diff === "undefined" || typeof window.Diff.diffWords !== "function") {
+                                                console.log('4'); // <--- TEST
+                    alert("Diff-Bibliothek konnte nicht korrekt geladen werden.");
+                    return;
+                }
+                var diff = window.Diff.diffWords(text1, text2);
+                var html = diff.map(function(part){
+                    var color = part.added ? '#d4ffd4' : part.removed ? '#ffe3e3' : 'transparent';
+                    var tag = part.added ? 'ins' : part.removed ? 'del' : 'span';
+                    return `<${tag} style="background:${color};">${$('<div>').text(part.value).html()}</${tag}>`;
+                }).join('');
+                var win = window.open("", "Diff", "width=900,height=700");
+                win.document.write(
+                    "<!DOCTYPE html><html><head><title>Textvergleich Beschreibung</title><meta charset='utf-8'>" +
+                    "<style>body{font-family:sans-serif;font-size:1.1em;margin:24px;} ins{background:#d4ffd4;text-decoration:none;} del{background:#ffe3e3;text-decoration:none;} pre{white-space:pre-wrap;word-break:break-word;}</style></head><body>" +
+                    "<h2>Vergleich Beschreibung 1 &amp; 2</h2>" +
+                    "<pre>" + html + "</pre>" +
+                    "</body></html>"
+                );
+                win.document.close();
+            });
+        });
+    }
+});
+
+// ------------------------------
+// Ende: Kurs-Duplikate-Ansichten
+// ------------------------------

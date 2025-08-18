@@ -111,10 +111,12 @@ class CONTROL_TEXT_CLASS extends CONTROL_BASE_CLASS
 
 		// render
 		$value = isohtmlspecialchars($this->dbval);
+		$value_display = ''; // contains edited/replaced optimized string only for display not for saving in DB
 		
 		if( isset( $this->row_def->prop['value.replace'] ) 
 		 && is_array($this->row_def->prop['value.replace']) ) {
-		    $value = str_replace($this->row_def->prop['value.replace'][0], $this->row_def->prop['value.replace'][1], $value);
+		     $value_display = str_replace($this->row_def->prop['value.replace'][0], $this->row_def->prop['value.replace'][1], $value);
+		     // $value_displayAttr = ' data-valuedisplay="'.$value_display.'" ';
 		}
 		
 		if( isset( $this->row_def->prop['value.table_key'] )
@@ -148,8 +150,15 @@ class CONTROL_TEXT_CLASS extends CONTROL_BASE_CLASS
 		        $value = implode("; ", $value_strheap);
 		}
 		
-		$html .= ( isset( $label ) && $label ? '<label for="#' . strval( $this->name ) . '" class="'.$this->row_def->prop['layout.descr.class'].'">'.$label.'</label>' : '')
-		.'<input id="' . strval( $this->name ) . '" name="' . $this->name . '" type="'.( isset( $this->row_def->prop['layout.input.hide'] ) && $this->row_def->prop['layout.input.hide'] ? 'hidden' : 'text' ).'" value="'.$value.'"' . $this->tooltip_attr() . $this->readonly_attr();
+		$html .= ( isset( $label ) && $label ? '<label for="#' . strval( $this->name ) . '" class="'.$this->row_def->prop['layout.descr.class'].'">'.$label.'</label>' : '');
+		
+		if( strlen($value_display) ) {
+		    $replaceClass  = 'replacedValue' . ' ';
+		    $replaceClass .= $this->row_def->prop['value.replaceClass'] ?? '';
+		    $html .= '<span class="' . $replaceClass . '">' . $value_display . '</span>';
+		}
+		
+		$html .= '<input id="' . strval( $this->name ) . '" name="' . $this->name . '" type="'.( $this->row_def->prop['layout.input.hide'] || strlen($value_display) ? 'hidden' : 'text' ).'" value="'.$value.'"' . $this->tooltip_attr() . $this->readonly_attr();
 		
 		if( isset( $this->row_def->prop['ctrl.placeholder'] ) && ($placeholder=strval($this->row_def->prop['ctrl.placeholder'])) != '' ) {
 		    if( $placeholder == '1' ) $placeholder = trim($this->row_def->descr);

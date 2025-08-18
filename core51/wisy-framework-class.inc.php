@@ -386,7 +386,7 @@ class WISY_FRAMEWORK_CLASS
 		$this->getAnbieterLogoCache[$cacheKey] = $this->anbieterlogos[$anbieterId];
 					
 		return $this->getAnbieterLogoCache[$cacheKey];
-		$db->close();
+		// $db->close();
     }
 	
 	function pUrl($url) {

@@ -67,7 +67,7 @@ class WISY_LANDINGPAGE_RENDERER_CLASS
 				while( $this->db->next_record() ) {
 					$ortsname = $this->db->fcs8('ort');
 				}
-				$this->db->free();
+				// $this->db->free();
 			}
 		}
 		
@@ -114,7 +114,7 @@ class WISY_LANDINGPAGE_RENDERER_CLASS
 		while( $this->db->next_record() ) {
 			$this->renderOrt($this->db->fcs8('ort'), $this->db->fcs8('stadtteil'));
 		}
-		$this->db->free();
+		// $this->db->free();
 		echo '</ul></section>';	
 	}
 	
@@ -255,7 +255,7 @@ class WISY_LANDINGPAGE_RENDERER_CLASS
 				while( $this->db->next_record() ) {
 					$thema = $this->db->fcs8('stichwort');
 				}
-				$this->db->free();
+				// $this->db->free();
 			}
 			
 			if($ortsname != '') {
@@ -266,7 +266,7 @@ class WISY_LANDINGPAGE_RENDERER_CLASS
 				while( $this->db->next_record() ) {
 					$ortsname = $this->db->fcs8('ort');
 				}
-				$this->db->free();
+				// $this->db->free();
 			}
 		}
 		if($thema != '' && $ortsname != '') {
@@ -331,7 +331,7 @@ class WISY_LANDINGPAGE_RENDERER_CLASS
 		}
 		echo '</ul>';
 		echo '</section>';
-		$this->db->free();	
+		// $this->db->free();	
 	}
 	
 	/*
@@ -405,7 +405,7 @@ class WISY_LANDINGPAGE_RENDERER_CLASS
 					$abschluss = $this->db->fcs8('stichwort');
 					$glossar = $this->db->fcs8('glossar');
 				}
-				$this->db->free();
+				// $this->db->free();
 			}
 		}
 		
@@ -478,7 +478,7 @@ class WISY_LANDINGPAGE_RENDERER_CLASS
 		}
 		echo '</ul>';
 		echo '</section>';
-		$this->db->free();
+		// $this->db->free();
 	}
 	
 	/*
@@ -545,7 +545,7 @@ class WISY_LANDINGPAGE_RENDERER_CLASS
 			
 			$sitemap .= $this->addUrl($url, time(), 'weekly');
 		}
-		$this->db->free();
+		// $this->db->free();
 		
 		// Abschluesse
 		$sitemap .= "<!-- Abschluesse -->\n";
@@ -560,7 +560,7 @@ class WISY_LANDINGPAGE_RENDERER_CLASS
 			$url = 'abschluesse/' . urlencode($this->db->fcs8('stichwort_sorted')) . '/';
 			$sitemap .= $this->addUrl($url, time(), 'weekly');
 		}
-		$this->db->free();
+		// $this->db->free();
 		
 		// Themen
 		if(trim($this->framework->iniRead('seo.themen.stichworte')) != '')
@@ -592,7 +592,7 @@ class WISY_LANDINGPAGE_RENDERER_CLASS
 					if(trim($stadtteil) != '') $url .= urlencode($stadtteil) . '/';
 					$sitemap .= $this->addUrl($url, time(), 'weekly');
 				}
-				$this->db->free();
+				// $this->db->free();
 			}
 		}
 
@@ -646,7 +646,7 @@ class WISY_LANDINGPAGE_RENDERER_CLASS
 		if( $this->db->next_record() ) {
 			$portal_tag_id = $this->db->fcs8('tag_id');
 		}
-		$this->db->free();
+		// $this->db->free();
 		return $portal_tag_id;
 	}
 	

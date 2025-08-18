@@ -63,7 +63,7 @@ class WISY_KURS_ANALYZER_CLASS
         {
             $ret[] = $db->Record;
         }
-        $db->free();
+        // $db->free();
         
         return $ret;
     }
@@ -88,7 +88,7 @@ class WISY_KURS_ANALYZER_CLASS
             {
                 $ret[] = $db->Record;
             }
-            $db->free();
+            // $db->free();
             
             return $ret;
     }
@@ -107,7 +107,7 @@ class WISY_KURS_ANALYZER_CLASS
             {
                 $ret[] = $db->Record;
             }
-            $db->free();
+            // $db->free();
             
             return $ret;
     }

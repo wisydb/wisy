@@ -429,6 +429,9 @@ class G_BIN_CLASS
 		$this->activeBin		= 'default';
 		$this->bins				= array();
 		$this->bins['default']	= array();
+		
+		if(!isset($this->userId) || $this->userId < 1)
+		    $this->userId = $_SESSION['g_session_userid'];
 	}
 
 	// save all bins
