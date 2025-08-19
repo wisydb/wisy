@@ -754,14 +754,22 @@ class REST_API_CLASS
 		}
 		$ret .= '}';
 		 	
- 		if( (count($filterKurseByTags) == 0 && count($filterAnbieterByTags) == 0)
-			|| ($table != 'kurse' && $table != 'anbieter') 
-			|| $table == 'kurse' && count($filterKurseByTags) && $this->tagFilterMatch === true 
-			|| $table == 'anbieter' && count($filterAnbieterByTags) && $this->tagFilterMatch === true 
-		  )
-			return $ret;
-		else
-			return false;
+		// default: output query result
+		$pass = true;
+		
+		// kurse query AND kurse filter set AND not matching: don't output
+		if ($table == 'kurse' && count($filterKurseByTags) > 0 && !$this->tagFilterMatch) {
+		    
+		    $pass = false;
+		    
+		}// anbieter query AND anbieter filter set AND not matching: don't output
+		elseif ($table == 'anbieter' && count($filterAnbieterByTags) > 0 && !$this->tagFilterMatch) {
+		    
+		    $pass = false;
+		    
+		}
+		
+		return $pass ? $ret : false;
 	}
 
 	/* ========================================================================
@@ -840,7 +848,11 @@ class REST_API_CLASS
 
 		// add WHERE condition according to api key table.field = value settings
 		// $query must be at the end b/c $query may contain Limit .. or Order By which must be at the end.
-		$query = $this->getFieldConstraintQuery( $table, $filterFieldsByVal ) . (strlen($query) ? " AND " . $query : "");
+		// only use AND for constraints if $a is also present and not empty
+		$query = $this->joinWhereConditions(
+		    $this->getFieldConstraintQuery($table, $filterFieldsByVal),
+		    $query
+		    );
 			
 		$sql = "SELECT $distinct $table.id FROM $table $joins WHERE $query;";
 		$db = new DB_Admin;
@@ -864,6 +876,12 @@ class REST_API_CLASS
 		return $ret;
 	}
 
+	// only use AND if $a is also present and not empty
+	function joinWhereConditions($a, $b) {
+	    if ($a && $b) return "$a AND $b";
+	    return $a ?: $b;
+	}
+	
 	function getFieldConstraintQuery( $table, $filterFieldsByVal ) {
 		
 		$query = '';
