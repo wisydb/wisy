@@ -1547,7 +1547,7 @@ class WISY_SEARCH_CLASS
 			}
 			
 			// create complete SQL query
-			$sql =  "SELECT id, date_created, date_modified, suchname, strasse, plz, bezirk, ort, homepage, firmenportraet, anspr_email, anspr_tel, typ FROM anbieter WHERE anbieter.id IN($this->anbieterIds)";
+			$sql =  "SELECT id, user_grp, typ, date_created, date_modified, suchname, strasse, plz, bezirk, ort, stadtteil, homepage, firmenportraet, anspr_email, anspr_tel, freigeschaltet FROM anbieter WHERE anbieter.id IN($this->anbieterIds)";
 			$sql .= " ORDER BY $orderBy, anbieter.id ";
 			if($rows != 0) $sql .= " LIMIT $offset, $rows ";
 

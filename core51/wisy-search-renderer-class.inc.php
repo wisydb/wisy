@@ -1480,6 +1480,8 @@ class WISY_SEARCH_RENDERER_CLASS
 				echo strlen($ort) && strlen($stadtteil) ? ' - ' : '';
 				
 				echo strlen($stadtteil) ? $stadtteil : '';
+				
+				
 					echo ' </td>';
 					echo '<td class="wisyr_homepage" data-title="Homepage">';
 						$link = $record['homepage'];

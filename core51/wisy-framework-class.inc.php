@@ -95,6 +95,9 @@ class WISY_FRAMEWORK_CLASS
 	
 	function __construct($baseObject, $addParam)
 	{
+	    
+	    define('DEBUG', false);
+	    
 	    // ini_set("default_charset", "UTF-8");
 	    
 		// constructor
