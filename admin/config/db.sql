@@ -1542,12 +1542,6 @@ CREATE TABLE `x_tags_syn` (
 -- Indizes der exportierten Tabellen
 --
 
---
--- Indizes fuer die Tabelle `x_searchqueries`
---
-
-ALTER TABLE `x_searchqueries`
-  ADD PRIMARY KEY (`ukey`);
 
 --
 -- Indizes fuer die Tabelle `anbieter`
