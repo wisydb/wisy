@@ -498,6 +498,7 @@ CREATE TABLE `kurse` (
   `freigeschaltet` int(11) NOT NULL DEFAULT 1,
   `anbieter` int(11) NOT NULL DEFAULT 0,
   `beschreibung` longtext NOT NULL,
+  `lernziele` text NOT NULL,
   `thema` int(11) NOT NULL DEFAULT 0,
   `notizen` longtext NOT NULL,
   `notizen_fix` longtext DEFAULT NULL,
@@ -1184,7 +1185,7 @@ DELIMITER ;
 
 -- --------------------------------------------------------
 
-INSERT INTO user (loginname, access) VALUES('root', '*.*:rwnd;');
+INSERT INTO user (id, loginname, access) VALUES(1, 'root', '*.*:rwnd;');
 
 -- --------------------------------------------------------
 

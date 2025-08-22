@@ -12,6 +12,15 @@ Portals Main Entry Point
 
 *******************************************************************************/
 
+// allow console / shell script invocation for purposes like search index generation
+$sapi_type = php_sapi_name();
+if ( strpos($sapi_type, 'cli') !== FALSE) {
+    $cli_config = __DIR__.'/.cli_config.inc.php';
+    
+    if( file_exists($cli_config) )
+        require_once( $cli_config );
+}
+
 header('Referrer-Policy: origin-when-cross-origin');
 header('X-Powered-By: Software');
 

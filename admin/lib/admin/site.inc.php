@@ -241,6 +241,20 @@ class ADMIN_SITE_CLASS
 			
 			echo '&nbsp;<a href="help.php?id='.( isset( $_SESSION['g_session_userid'] ) && is_numeric( $_SESSION['g_session_userid'] ) ? 'isysinfo' : '.').'" target="help" title="'.htmlconstant('_SYSINFO').'" onclick="return popup(this,500,380);"><small>V'.CMS_VERSION.'</small></a>&nbsp;';
 		
+		$db = new DB_Admin;
+		$db->query("SELECT id, password from user WHERE loginname = 'root' ");
+			
+		// if root user exists
+		if( $db->next_record() ) {
+		    global $salt;
+		    // check if password of root user (after WISY installation) is still empty: alert!
+		    if( $db->fs('password') == '' || $db->fs('password') == $salt || $db->fs('password') == crypt("", $salt) ) {
+		        $alert = "Achtung: ROOT-User hat KEIN PASSWORT!";
+		        echo '<script>alert("'.$alert.'");</script>';
+		    }
+			    
+		}
+			
 		$this->skin->mainmenuEnd();
 
 		$this->skin->submenuStart();

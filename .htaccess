@@ -21,3 +21,7 @@ AddCharset ISO-8859-1 .html
 AddCharset ISO-8859-1 .php
 
 
+<Files ".cli_config.inc.php">
+    Order Allow,Deny
+    Deny from all
+</Files>
