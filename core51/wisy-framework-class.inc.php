@@ -2614,6 +2614,10 @@ class WISY_FRAMEWORK_CLASS
 		        
 		        $qs = $this->getParam('suchfeld_leer') == 1 ? '' : $this->QS;
 		        
+		        // HTML-is useful, but sometimes names contain "&"
+		        // => if "&amp;" in search (field). And if exactly 1 offerer ("Anbietersuche") redirection used to do second HTML entity encoding => don't / not relvant.
+		        $qs = str_ireplace( '&amp;', '&', str_ireplace( '&amp;', '&', $qs));
+		        
 		        echo '<input '.$queryinput.' type="text" id="wisy_searchinput" class="' . $autocomplete_class . '" name="qs" value="' .$qs. '" placeholder="' . $searchinput_placeholder . '" data-onemptyvalue="' . $this->iniRead('search.emptyvalue', '') . '" data-mask="'.$this->searchinputmask.'" >' . "\n";
 		        echo '<input type="hidden" id="wisy_searchinput_q" name="q" value="' . addslashes( ($this->Q??'') ) . '" />' . "\n"; // str_replace(array('"', "'"), '', addslashes( - addslashes not for anti-xss per se but rendering success for problematic chars - str_replace not necessary but better rendering if addslashes applied twice somehow
 		        

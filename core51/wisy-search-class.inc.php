@@ -494,7 +494,7 @@ class WISY_SEARCH_CLASS
                    $checkedWord = $this->isWord( $parts[ $j ] );
     	           if( $checkedWord ) {                           // careful: returns true if openth-Thesaurus is missing in DB!
     	                                                          // 2nd word is non-tag but word - odd
-    	               $parts[ $j ] = ",volltext:" . $checkedWord;
+    	               $parts[ $j ] = ",volltext:" . $parts[ $j ];
     	               $changedQueryString = true;
     	           } else {                                        // not a word
                         if( $cntSearchSections > 1 ) {
