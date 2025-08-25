@@ -1879,15 +1879,16 @@ class WISY_SEARCH_RENDERER_CLASS
 				}
 				else if( $searcher->ok() )
 				{
-					$info = $searcher->getInfo();
-					if( $info['show'] == 'kurse' )
-					{
-						$this->renderKursliste($searcher, $queryString, $offset);
-					}
-					else
-					{
-						$this->renderAnbieterliste($searcher, $queryString, $offset);
-					}
+				    // Only show anbieter search, if set explicitly, default: kurse
+				    $info = $searcher->getInfo();
+				    if( $info['show'] == 'anbieter' )
+				    {
+				        $this->renderAnbieterliste($searcher, $queryString, $offset);
+				    }
+				    else
+				    {
+				        $this->renderKursliste($searcher, $queryString, $offset);
+				    }
 				}
 				else
 				{

@@ -2806,6 +2806,8 @@ class WISY_FRAMEWORK_CLASS
 		{
 			// homepage
 			// (in WISY 5.0 gibt es keine Datei "index.php", diese wird vom Framework aber als Synonym fuer "Homepage" verwendet)
+		    // Default "/" (homepage) creates WISY_SEARCH_RENDERER_CLASS if portalsetting "homepage" is not set
+		    // And the default WISY_SEARCH_RENDERER_CLASS creates course search output. So "/" or "/?start" ... creates homepage HTML + course search
 			case 'index.php':
 				for( $i = 1; $i <= 9; $i++ ) 
 				{

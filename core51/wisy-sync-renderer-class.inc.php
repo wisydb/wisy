@@ -3,7 +3,9 @@
 
 date_default_timezone_set('Europe/Berlin');
 
-define('DEBUG', false);
+// maybe defined (e.g. in framework)
+if( !defined('DEBUG') )
+    define('DEBUG', false);
 
 /*****************************************************************************
  * WISY_SYNC_RENDERER_CLASS
@@ -536,11 +538,11 @@ class KURS2PORTALTAG_CLASS
 	
 	function getPortalTagsCounts($portal_tag_id)
 	{
-		return array(
-		    'anz_anbieter'	=>	sizeof((array) $this->portal_tags_anz_anbieter[ $portal_tag_id ]),
-			'anz_kurse'		=>	intval($this->portal_tags_anz_kurse   [ $portal_tag_id ]),
-			'anz_durchf'	=>	intval($this->portal_tags_anz_durchf  [ $portal_tag_id ]),
-		);
+	    return array(
+	        'anz_anbieter'	=>	isset($this->portal_tags_anz_anbieter[ $portal_tag_id ]) ? sizeof((array) $this->portal_tags_anz_anbieter[ $portal_tag_id ]) : -1,
+	        'anz_kurse'		=>	isset($this->portal_tags_anz_kurse   [ $portal_tag_id ]) ? intval($this->portal_tags_anz_kurse   [ $portal_tag_id ]) : -1,
+	        'anz_durchf'	=>	isset($this->portal_tags_anz_durchf  [ $portal_tag_id ]) ? intval($this->portal_tags_anz_durchf  [ $portal_tag_id ]) : -1,
+	    );
 	}
 }
 
@@ -1033,11 +1035,11 @@ class WISY_SYNC_RENDERER_CLASS
 	                                    
 	                                    // $this->log("==>".print_r($temp, true)."\n");
 	                                    
-	                                    if( !isset($temp['error']) || !$temp['error'] ) {
+	                                    if( !isset($temp['error']) || $temp['error'] == false ) {
 	                                        $d_latlng[ intval($temp['lat']*1000000).','.intval($temp['lng']*1000000) ] = 1;
 	                                        $geocoded_addresses++;
 	                                        
-	                                        echo "Error: " . trim($db2->Record['strasse']).", ".trim($db2->Record['ort']) . "\n";
+	                                        echo "Geokodiert: " . trim($db2->Record['strasse']).", ".trim($db2->Record['ort']) . "\n";
 	                                        
 	                                    } else { // not in cache yet
 	                                        
@@ -1046,9 +1048,9 @@ class WISY_SYNC_RENDERER_CLASS
 	                                        echo "Live: " . htmlentities(trim($db2->Record['strasse']).", ".trim($db2->Record['ort'])) . "\n";
 	                                        
 	                                        // try to live geocode
-	                                        if(!isset($geocoded_addresses_live[$done_key]) // only once per address
-	                                            && ($this->framework->iniRead('nominatim.alternate.geocoder', '') == 1 && strlen($this->framework->iniRead('nominatim.url', '')) > 3) // and other than openstreetmap.org
-	                                            ) {
+	                                        // not relevant any more: && ($this->framework->iniRead('nominatim.alternate.geocoder', '') == 1 && strlen($this->framework->iniRead('nominatim.url', '')) > 3
+	                                        if(!isset($geocoded_addresses_live[$done_key])) // only once per address
+	                                        {
 	                                                // !
 	                                                // || strpos($ort, "hansdorf") !== FALSE
 	                                                if( $geocoded_addresses_ext < $live_geocode_max && ($is_geocode_day) ) {
@@ -1507,7 +1509,7 @@ class WISY_SYNC_RENDERER_CLASS
 	                                    //{
 	                                    // calculate the stats for the portal
 	                                        $portalTagId = isset($values['portal_tag']) ? $values['portal_tag'] : -1 ;
-	                                        if( $portalTagId && sizeof((array) $result[$portalTagId]) )
+	                                        if( $portalTagId && isset($result[$portalTagId]) && sizeof((array) $result[$portalTagId]) )
 	                                        {
 	                                            $portalIdFor = $portalId;
 	                                        }
@@ -1834,24 +1836,26 @@ class WISY_SYNC_RENDERER_CLASS
 	// global clean up queries, e.g for legal reasons
 	function doDBCleanup() {
 	    $db = new DB_ADMIN;
+	    
+	    // potentially contains $db_sql-Array
 	    $file_db_sql_skripte = "db_sql_skripte.inc.php";
 	    
 	    if( is_file($file_db_sql_skripte) )
-	       require_once($file_db_sql_skripte);
-	    
-	    if( !$db_sql || !is_array($db_sql) ) {
-	        echo "Keine zusätzlichen DB-Skripte gefunden. (".$file_db_sql_skripte.")"."\n";
+	        require_once($file_db_sql_skripte);
+	        
+	    if( !isset($db_sql) || !is_array($db_sql) ) {
+	        echo "Keine zusätzlichen DB-Skripte gefunden. (".$file_db_sql_skripte.")"."\n\n";
 	        return false;
 	    }
-	    
-	    foreach($db_sql AS $query) {
 	        
+	    foreach($db_sql AS $query) {
+	            
 	        echo "Ausführen von:\n".$query."\n";
 	        $this->log("Clean up: Ausführen von:\n".$query."\n");
 	        $db->query($query);
 	        echo "\n";
 	    }
-	    
+	        
 	    // $db->close();
 	    echo "Zusätzliche DB-Skripte ausgeführt."."\n\n";
 	    return true;
@@ -2162,7 +2166,7 @@ class WISY_SYNC_RENDERER_CLASS
 		headerDoCache(0);
 		header("Content-type: text/plain");
 		
-		echo "<pre>\n"; // useful if called by browser
+		echo "<pre>\n\n"; // useful if called by browser
 
 		$host = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '';
 		
@@ -2242,7 +2246,6 @@ class WISY_SYNC_RENDERER_CLASS
 					
 		// release exclusive access
 		$this->statetable->releaseUpdatestick();
-		
-		echo "\n<pre>"; 
+		 
 	}
 };

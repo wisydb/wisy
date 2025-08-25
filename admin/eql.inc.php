@@ -1,5 +1,7 @@
 <?php
 
+// THIS FILE ISO-8859!!
+
 /*=============================================================================
 EQL (Else Query Language) to SQL (Structured Query Language) plus other tools
 ===============================================================================
@@ -424,18 +426,18 @@ class EQL_PARSER_CLASS
 		}
 
 		// get left part...
-		if( $symbols[$s] == '(' )
+		if( isset( $symbols[$s]) && $symbols[$s] == '(' )
 		{
-			$s++;
-			$this->expr1 = new EQL_PARSER_CLASS($symbols, $s, 1 /* consume operator */, $lastFunc);
-			if( isset( $this->expr1->lastError ) && $this->expr1->lastError ) {
-				$this->lastError = $this->expr1->lastError;
-				return; // error
-			}
-
-			if( $symbols[$s] == ')' ) {
-				$s++;
-			}
+		    $s++;
+		    $this->expr1 = new EQL_PARSER_CLASS($symbols, $s, 1 /* consume operator */, $lastFunc);
+		    if( isset( $this->expr1->lastError ) && $this->expr1->lastError ) {
+		        $this->lastError = $this->expr1->lastError;
+		        return; // error
+		    }
+		    
+		    if( isset( $symbols[$s]) && $symbols[$s] == ')' ) {
+		        $s++;
+		    }
 		}
 		else if( $symbols[$s][0] == '"' /* " indicates a function */ )
 		{
@@ -543,10 +545,14 @@ class EQL_PARSER_CLASS
 			{
 				$testArray[$i/2] = $strArray[$i+1];
 				if( $try < 2 ) {
-					$testArray[$i/2] = strtolower(trim($testArray[$i/2]));
-					if( $try < 1 ) {
-						$testArray[$i/2] = str_replace(' ', '', strtr($testArray[$i/2], $ignoreChars, $ignoreCharsSubst));
-					}
+
+				    if(isset($testArray[$i/2])) {
+				        $testArray[$i/2] = strtolower(trim($testArray[$i/2]));
+				        
+				        if( $try < 1 ) {
+				            $testArray[$i/2] = str_replace(' ', '', strtr($testArray[$i/2], $ignoreChars, $ignoreCharsSubst));
+				        }
+				    }
 				}
 			}
 
@@ -1016,7 +1022,10 @@ class EQL_PARSER_CLASS
 				// remove entities from all values
 				$values = explode('###', $rowinfo->addparam);
 				for( $v = 0; $v < sizeof($values); $v+=2 ) {
-					$values[$v+1] = $this->htmldeentities(htmlconstant(trim($values[$v+1])));
+				    if( isset($values[$v+1]) )
+				        $values[$v+1] = $this->htmldeentities(htmlconstant(trim($values[$v+1])));
+				    else
+				        $values[$v+1] = null;
 				}
 
 				// find ident
