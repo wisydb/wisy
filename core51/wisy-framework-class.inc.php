@@ -2740,8 +2740,10 @@ class WISY_FRAMEWORK_CLASS
 		if(!is_object($result))
 			return false;
 
-		if($_SERVER['REQUEST_URI'] == "/") {
-			return 'startseite';
+		global $wisyRequestedFile;
+			
+		if(trim($wisyRequestedFile, '/') == "index.php") {
+		    return 'startseite';
 		}
 		
 		// Dieser sollte beim Ueberschreiben von Kernfunktionen immer gleich sein:
