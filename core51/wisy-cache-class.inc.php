@@ -180,11 +180,23 @@ class Memcached_Cache implements CacheInterface {
 
 class File_Cache implements CacheInterface {
     
-    // Implementation for File-based caching
-    // Approach: Create one cache file in system temp directory that holds a serialized array and the cache keys (ckey)
-    // are the array keys in the array that is being serialized
+    // File-based caching with one file per cache entry.
+    //
+    // The previous implementation kept all entries in a single serialized
+    // array file. That suffered from a lost-update race: every insert did
+    // read-modify-write on the whole file, so concurrent PHP processes would
+    // overwrite each other's additions. It also rewrote the entire file on
+    // every insert, which does not scale.
+    //
+    // Now each entry lives in its own "<sha256(key)>.cache" file inside the
+    // cache directory. The key is hashed because raw cache keys may contain
+    // characters that are unsafe or too long for filenames (URLs, search
+    // queries, etc.); sha256 yields fixed-length, safe, effectively
+    // collision-free filenames. Writes go through a temp file + rename, so
+    // readers never observe a partially written entry. Expiry uses the
+    // file's mtime; deleteOldEntries / cleanup just unlink the matching files.
     private $framework;
-    private $cacheFile;
+    private $cacheDir;
     private $itemLifetimeSeconds;
     private $storeBlobs;
     
@@ -192,72 +204,105 @@ class File_Cache implements CacheInterface {
         $this->framework            = &$framework;
         $this->itemLifetimeSeconds  = isset($param['itemLifetimeSeconds']) ? intval($param['itemLifetimeSeconds']) : null;
         $this->storeBlobs           = isset($param['storeBlobs']) && $param['storeBlobs'] ? true : false;
-        $this->cacheFile            = __DIR__."/../../filecache/".$_SERVER['SERVER_NAME']; // sys_get_temp_dir() . '/cache_file'; // You can specify a different path
+        $this->cacheDir             = __DIR__."/../../filecache/".$_SERVER['SERVER_NAME'];
+        
+        // Portal setting "cache.file.path": absolute or relative path to the
+        // cache directory. Each cache entry becomes its own ".cache" file
+        // inside this directory. Relative paths are resolved against the
+        // project root (two levels above this file).
+        $projectRoot = __DIR__ . '/../..';
+        $configured  = is_object($framework) ? trim($framework->iniRead('cache.file.path', '')) : '';
+        
+        if ($configured !== '') {
+            $isAbsolute = $configured[0] === '/'
+                || $configured[0] === DIRECTORY_SEPARATOR
+                || (strlen($configured) > 1 && $configured[1] === ':');
+                $this->cacheDir = $isAbsolute ? $configured : $projectRoot . '/' . $configured;
+        }
+        
+        // Backwards compatibility: The previous implementation wrote a single cache *file* at this
+        // path. Remove it just in case so the path can be reused as a directory; its
+        // contents were just regenerable cache entries.
+        if (is_file($this->cacheDir)) {
+            @unlink($this->cacheDir);
+        }
+        // Create cache directory if not exists
+        if (!is_dir($this->cacheDir)) {
+            @mkdir($this->cacheDir, 0777, true);
+        }
+        
     }
     
     function createKey($ckey) {
-        $len = strlen($ckey);
-        if ($len > 255) {
-            return substr($ckey, 0, 111) . md5(substr($ckey, 111, $len-111-112)) . substr($ckey, -112);
-        } else {
-            return $ckey;
-        }
+        return hash('sha256', $ckey);
+    }
+    
+    private function entryPath($ckey) {
+        return $this->cacheDir . '/' . $ckey . '.cache';
     }
     
     function lookup($ckey) {
         $ckey = $this->createKey($ckey);
-        $cache = $this->loadCache();
+        $path = $this->entryPath($ckey);
         
-        if (isset($cache[$ckey])) {
-            $item = $cache[$ckey];
-            if ($this->itemLifetimeSeconds > 0 && $item['cdateinserted'] < (time() - $this->itemLifetimeSeconds)) {
-                unset($cache[$ckey]);
-                $this->saveCache($cache);
-                return "";
-            }
-            return $item['cvalue'];
+        if (!is_file($path)) {
+            return "";
         }
         
-        return "";
+        if ($this->itemLifetimeSeconds > 0) {
+            $mtime = @filemtime($path);
+            if ($mtime !== false && $mtime < time() - $this->itemLifetimeSeconds) {
+                @unlink($path);
+                return "";
+            }
+        }
+        
+        $data = @file_get_contents($path);
+        return $data === false ? "" : $data;
     }
     
     function insert($ckey, $cvalue) {
         $ckey = $this->createKey($ckey);
-        $cdateinserted = date("Y-m-d H:i:s");
-        $cache = $this->loadCache();
+        $path = $this->entryPath($ckey);
         
-        $cache[$ckey] = [
-            'cvalue' => $cvalue,
-            'cdateinserted' => strtotime($cdateinserted)
-        ];
-        
-        $this->saveCache($cache);
+        // Write to a per-process unique temp file then atomically rename, so
+        // concurrent readers never see a partially written entry and parallel
+        // writers do not corrupt each other's temp files.
+        $tmp = $path . '.' . getmypid() . '.' . uniqid('', true) . '.tmp';
+        if (@file_put_contents($tmp, $cvalue, LOCK_EX) === false) {
+            return;
+        }
+        if (!@rename($tmp, $path)) {
+            @unlink($tmp);
+        }
     }
     
     function cleanup() {
-        file_put_contents($this->cacheFile, serialize([]));
+        $files = @glob($this->cacheDir . '/*.cache');
+        if ($files === false) {
+            return;
+        }
+        foreach ($files as $f) {
+            @unlink($f);
+        }
     }
     
     function deleteOldEntries() {
+        if ($this->itemLifetimeSeconds <= 0) {
+            return;
+        }
         $deleteIfOlder = time() - $this->itemLifetimeSeconds;
-        $cache = $this->loadCache();
-        foreach ($cache as $key => $item) {
-            if ($item['cdateinserted'] < $deleteIfOlder) {
-                unset($cache[$key]);
+        $files = @glob($this->cacheDir . '/*.cache');
+        if ($files === false) {
+            return;
+        }
+        
+        foreach ($files as $f) {
+            $mtime = @filemtime($f);
+            if ($mtime !== false && $mtime < $deleteIfOlder) {
+                @unlink($f);
             }
         }
-        $this->saveCache($cache);
-    }
-    
-    private function loadCache() {
-        if (file_exists($this->cacheFile)) {
-            return unserialize(file_get_contents($this->cacheFile));
-        }
-        return [];
-    }
-    
-    private function saveCache($cache) {
-        file_put_contents($this->cacheFile, serialize($cache));
     }
 }
 

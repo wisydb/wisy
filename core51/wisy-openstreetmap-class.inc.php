@@ -93,7 +93,7 @@ class G_GEOCODE
                 $params .= ','  . urlencode( $q_arr['country'] );
                 
             }
-            else if( $q_arr['free']!='' ) {
+            else if( isset($q_arr['free']) && $q_arr['free']!='' ) {
                 $place_search = urlencode( cs8($q_arr['free']) );
                 if( $this->nominatim_explicit_city && stripos($place_search, $this->nominatim_explicit_city) === FALSE && stripos($place_search, ",") === FALSE )
                     $params .= $place_search . ",+" . $this->nominatim_explicit_city;
@@ -104,7 +104,7 @@ class G_GEOCODE
                 return array('error'=>'err_geocode_param', 'url'=>'none');
             }
             
-            if( $q_arr['free']=='' && $this->nominatim_explicit_city && stripos($params, $this->nominatim_explicit_city) === FALSE && stripos($param, ",") === FALSE ) {
+            if( (!isset($q_arr['free']) || $q_arr['free'] == '') && $this->nominatim_explicit_city && stripos($params, $this->nominatim_explicit_city) === FALSE && stripos($param, ",") === FALSE ) {
                 $params = $params . ",+" . $this->nominatim_explicit_city;
             }
             

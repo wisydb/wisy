@@ -536,12 +536,43 @@ class WISY_DURCHF_CLASS
 		    echo $cell . ' </td>' . "\n";
 		}
 		
+		// dauer
 		if (($spalten & 4) > 0)
 		{
-			// dauer
-			echo '    <td class="wisyr_dauer" data-title="Dauer">';
-				echo $this->formatDauer($record['dauer'], $record['stunden'], '%1 <span class="wisyr_dauer_detail">(%2)</span>');
-			echo ' </td>' . "\n";
+		    $dauer = '';
+		    
+		    // For distance learning (Fernunterricht), the duration is specified in the remarks in months (durchfuehrung.bemerkungen).
+		    // A script also converts this into WISY days as duration + fixed duration after import.
+		    // However displaying it in months is always preferable (instead of "1 year, 2 months, 23 days", etc.).
+		    // Therefore, do not apply formatDatum function to DF duration in *this* case, output bemerkungen instead
+		    
+		    // check if DF is part auf distance learning course
+		    $is_fernunterricht = false;
+		    foreach($addParam['stichwoerter'] AS $stichwoerter) {
+		        if($stichwoerter['id'] == 7721)
+		            $is_fernunterricht = true;
+		    }
+		    
+		    if($is_fernunterricht) {
+		        $bemerkungen = trim($record['bemerkungen']);
+		        
+		        // Regular expression: Only an Int and the word "Monate" (with optional spaces in between) should appear in the remarks.
+		        // If, in the future or past, more information is added to the remarks (bemerkungen) field: the duration will simply be displayed using default "formatDuration" function.
+		        if (preg_match('/^\s*\d+\s*Monate\s*$/i', $bemerkungen))
+		            $dauer = str_replace(' ', '&nbsp;', $bemerkungen);
+		    }
+		    
+		    // Default or distance learning course with more remarks than duration in "bemerkungen" field
+		    // Format duration ustin "formatDauer" function => 325 days => 11 months, .. days etc.
+		    if( $dauer == '' )
+		        $dauer = $this->formatDauer($record['dauer'], $record['stunden'], '%1 <span class="wisyr_dauer_detail">(%2)</span>');
+		        
+		        
+		        echo '    <td class="wisyr_dauer" data-title="Dauer">';
+		        
+		        echo $dauer;
+		        
+		        echo ' </td>' . "\n";
 		}
 		
 		if (($spalten & 8) > 0)

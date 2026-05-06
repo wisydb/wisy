@@ -2664,7 +2664,7 @@ class WISY_EDIT_RENDERER_CLASS
 			
 			if($dataprotection_glossar_entry > 0 && $erklaerung_dataprotection) {
 			    echo '<hr><hr>';
-			    echo '<h1>' . htmlspecialchars($begriff_dataprotection) . '</h1><br><br>';
+			    echo '<h1>' . htmlspecialchars(utf8_decode($begriff_dataprotection)) . '</h1><br><br>';
 			    $wiki2html =& createWisyObject('WISY_WIKI2HTML_CLASS', $this->framework);
 			    $wiki2html->forceBlankTarget = true;
 			    echo $wiki2html->run($erklaerung_dataprotection);
@@ -2682,8 +2682,8 @@ class WISY_EDIT_RENDERER_CLASS
 			echo '<br><br><form action="edit" method="post">';
     			echo '<input type="hidden" name="fwd" value="'.htmlspecialchars($fwd).'" />';
     			echo '<input type="hidden" name="agb_hash" value="'.htmlspecialchars($this->_agb_get_hash()).htmlspecialchars($this->_dataprotection_get_hash()).'" />';
-    			echo 'Ich habe die AGB '.($erklaerung_dataprotection ? 'und die Datenschutzerkl&auml;rung ' : '').'gelesen:<br>';
-    			echo '<input type="submit" name="agb_accepted" value="OK - Ich stimme den AGB'.($erklaerung_dataprotection ? 'und der Datenschutzerkl&auml;rung ZU' : '').'" style="font-weight: bold; font-size: 1em;"/>';
+    			echo 'Ich habe die AGB '.($erklaerung_dataprotection ? 'und die Datenschutzerkl&auml;rung ' : '').'gelesen:<br><br>';
+    			echo '<input type="submit" name="agb_accepted" value="OK - Ich stimme den AGB'.($erklaerung_dataprotection ? ' und der Datenschutzerkl&auml;rung ZU' : '').'" style="font-weight: bold; font-size: 1em;"/>';
     			echo ' &nbsp; &nbsp; ';
     			echo '<input type="submit" name="agb_not_accepted" value="Abbruch - Ich stimme einigen Bedingungen NICHT ZU"  style="font-weight: bold; font-size: 1em;"/>';
 			echo '</form><br><br>';

@@ -1732,6 +1732,14 @@ class WISY_SEARCH_RENDERER_CLASS
 		// We need original chars for searches. Check Filter-class constructTokens function for details. Also: https://www.php.net/manual/de/function.htmlspecialchars.php
 		$queryString = isset($queryString) && strlen($queryString) ? str_replace(array("&amp;", "&quot;", "&#039;", "&apos;", "&lt;", "&gt;"), array("&", '"', "'", "'", "<", ">"), $queryString) : '';
 		
+		// Merkliste (favourites): content is derived from browser "fav" cookie,
+		// => force fresh response on every request unlike other searches
+		if( stripos($queryString, 'Fav:') !== false ) {
+		    header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0, private');
+		    header('Pragma: no-cache');
+		    header('Expires: Thu, 19 Nov 1981 08:52:00 GMT');
+		}
+		
 		$redirect = false;
 	
 		if( $this->framework->iniRead('searcharea.radiussearch', 0) )
