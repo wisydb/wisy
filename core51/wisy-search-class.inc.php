@@ -1599,8 +1599,9 @@ class WISY_SEARCH_CLASS
 			while( strpos($value, '  ')!==false )
 				$value = str_replace('  ', ' ', $value);
 			
-			// find out the field to search the value in (defaults to "tag:")
-			if( ($p=strpos($value, ':'))!==false )
+			// A ":" only counts as a field separator if the part before it is a known filter
+			// identifier. Otherwise (e.g. provider name "ex:ample") the ":" is part of the search value.
+			if( ($p=strpos($value, ':'))!==false && $this->framework->isSearchFilterField(substr($value, 0, $p)) )
 			{
 				$field = strtolower(trim(substr($value, 0, $p)));
 				$value = trim(substr($value, $p+1));
@@ -1614,6 +1615,15 @@ class WISY_SEARCH_CLASS
 			else if( $value != '' )
 			{
 				$field = 'tag';
+				// A ":" that is not a field separator belongs to the search value (e.g. provider name "ex:ample").
+				// As with a manually entered "re academy" search, it is normalized to a space.
+				if( strpos($value, ':')!==false )
+				{
+				    $value = str_replace(':', ' ', $value);
+				    while( strpos($value, '  ')!==false )
+				        $value = str_replace('  ', ' ', $value);
+				        $value = trim($value);
+				}
 			}
 
 			// any token?

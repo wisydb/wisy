@@ -786,10 +786,21 @@ class WISY_FILTER_CLASS
 				$value = str_replace('  ', ' ', $value);
 			
 			// find out the field to search the value in
-			if( ($p=strpos($value, ':'))!==false )
+			// A ":" only counts as a field separator if the part before it is a known filter
+			// identifier. Otherwise (e.g. provider name "ex:ample") the ":" is part of the search value.
+			if( ($p=strpos($value, ':'))!==false && $this->framework->isSearchFilterField(substr($value, 0, $p)) )
 			{
 				$field = strtolower(trim(substr($value, 0, $p)));
 				$value = trim(substr($value, $p+1));
+			}
+			else if( strpos($value, ':')!==false )
+			{
+			    // A ":" that is not a field separator belongs to the search value (e.g. provider name "ex:ample").
+			    // It is normalized to a space so the search behaves the same as for "ex ample".
+			    $value = str_replace(':', ' ', $value);
+			    while( strpos($value, '  ')!==false )
+			        $value = str_replace('  ', ' ', $value);
+			        $value = trim($value);
 			}
 
 			// any token?

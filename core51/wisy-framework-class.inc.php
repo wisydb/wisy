@@ -93,6 +93,40 @@ class WISY_FRAMEWORK_CLASS
 	
 	var $filterValueSeparator = ',';
 	
+	// All valid filter/field identifiers that may precede a ":" in a search query.
+	// A ":" in a search token is only interpreted as a field separator if the part before it
+	// is one of these identifiers. Otherwise the ":" is part of the search value (e.g. with provider
+	// names like "ex:ample"). Complements the simplified filter identifiers listed in $filterTokens.
+	var $searchFieldTokens = array(
+	    'tag',
+	    'schaufenster',
+	    'typ',
+	    'preis',
+	    'plz',
+	    'id',
+	    'kid',
+	    'fav',
+	    'favprint',
+	    'nr',
+	    'anbieter_tag',
+	    'bei',
+	    'km',
+	    'datum',
+	    'dauer',
+	    'volltext',
+	    'zeige',
+	);
+	
+	// checks whether $field is a known filter/field identifier (e.g. "anbieter", "ort", "zeige").
+	// Used when tokenizing the search to decide whether a ":" counts as a field separator.
+	function isSearchFilterField($field)
+	{
+	    $field = strtolower(trim(strval($field)));
+	    if( $field === '' )
+	        return false;
+	        return in_array($field, $this->searchFieldTokens) || in_array($field, $this->filterTokens);
+	}
+	
 	function __construct($baseObject, $addParam)
 	{
 	    
