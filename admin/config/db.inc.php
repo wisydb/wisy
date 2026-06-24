@@ -470,21 +470,24 @@ $maintenance->add_row(TABLE_TEXTAREA,                  'query',				'Aufruf');
 $maintenance->add_row(TABLE_TEXTAREA | TABLE_READONLY, 'result',			'Ergebnis');
 
 /*** KURSDUPLIKATE ***/
-// $kursduplikate = new Table_Def_Class(0,							'kurse_duplikate',			'Kursduplikate');
-// $kursduplikate->add_row(TABLE_FLAG,			                    'duplikat',			        'Ist Duplikat', '...', '', '', array()); // array('ctrl.size'=>'25-80')
-// $kursduplikate->add_row(TABLE_FLAG | TABLE_READONLY,             'anbieter_gleich',		    'Selber Anbieter', '...', '', '', array()); // array('ctrl.size'=>'25-80')
-// $kursduplikate->add_row(TABLE_TEXT | TABLE_READONLY,             'kurse_id1',			    'Kurs-ID 1', '...', '', '', array()); // array('ctrl.size'=>'25-80')
-// $kursduplikate->add_row(TABLE_TEXT | TABLE_READONLY,             'kurse_titel1',			    'Titel 1', '...', '', '', array('ctrl.size'=>'200-500')); // array('ctrl.size'=>'25-80')
-// $kursduplikate->add_row(TABLE_TEXT | TABLE_READONLY,             'anbieter_name1',		    'Anbieter 1', '...', '', '', array('ctrl.size'=>'200-500')); // array('ctrl.size'=>'25-80')
-// $kursduplikate->add_row(TABLE_TEXT | TABLE_READONLY,             'kurse_id2',			    'Kurs-ID 2', '...', '', '', array()); // array('ctrl.size'=>'25-80')
-// $kursduplikate->add_row(TABLE_TEXT | TABLE_READONLY,             'kurse_titel2',			    'Titel 2', '...', '', '', array('ctrl.size'=>'200-500')); // array('ctrl.size'=>'25-80')
-// $kursduplikate->add_row(TABLE_TEXT | TABLE_READONLY,             'anbieter_name2',		    'Anbieter 2', '...', '', '', array('ctrl.size'=>'200-500')); // array('ctrl.size'=>'25-80')
-// $kursduplikate->add_row(TABLE_TEXT | TABLE_READONLY,             'kurse_erschliessung1',		'Erschließung 1', '...', '', '', array('ctrl.size'=>'200-500')); // array('ctrl.size'=>'25-80')
-// $kursduplikate->add_row(TABLE_TEXT | TABLE_READONLY,             'kurse_erschliessung2',		'Erschließung 2', '...', '', '', array('ctrl.size'=>'200-500')); // array('ctrl.size'=>'25-80')
-// $kursduplikate->add_row(TABLE_TEXTAREA | TABLE_READONLY,			'kurse_beschreibung1',		'Beschreibung 1'); // array('ctrl.size'=>'25-80')
-// $kursduplikate->add_row(TABLE_TEXTAREA | TABLE_READONLY,			'kurse_beschreibung2',		'Beschreibung 2'); // array('ctrl.size'=>'25-80')
-// $kursduplikate->add_row(TABLE_TEXTAREA | TABLE_READONLY,			'duplikat_grund',			'Grund');
-// $kursduplikate->add_row(TABLE_TEXT | TABLE_READONLY,		        'aehnlichkeit_score',       'Textähnlichkeit', '...', '', '', array()); // array('ctrl.size'=>'25-80')
+$kursduplikate = new Table_Def_Class(0,								'kurse_duplikate',			'Kursduplikate');
+$kursduplikate->add_row(TABLE_FLAG,			                        'duplikat',			        'Ist Duplikat', '...', '', '', array()); // array('ctrl.size'=>'25-80')
+$kursduplikate->add_row(TABLE_FLAG | TABLE_READONLY,                'anbieter_gleich',		    'Selber Anbieter', '...', '', '', array()); // array('ctrl.size'=>'25-80')
+$kursduplikate->add_row(TABLE_FLAG | TABLE_READONLY,                'erschliessung_gleich',		'Erschlie&szlig;ung identisch', '...', '', '', array()); // array('ctrl.size'=>'25-80')
+$kursduplikate->add_row(TABLE_TEXT | TABLE_READONLY,                'kurse_id1',			    'Kurs-ID 1', '...', '', '', array()); // array('ctrl.size'=>'25-80')
+$kursduplikate->add_row(TABLE_TEXT | TABLE_READONLY,                'kurse_titel1',			    'Titel 1', '...', '', '', array('ctrl.size'=>'200-500')); // array('ctrl.size'=>'25-80')
+$kursduplikate->add_row(TABLE_TEXT | TABLE_READONLY,                'anbieter_name1',		    'Anbieter 1', '...', '', '', array('ctrl.size'=>'200-500')); // array('ctrl.size'=>'25-80')
+$kursduplikate->add_row(TABLE_ENUM | TABLE_READONLY,                'freigeschaltet1',		    'Status 1', -1, '-1###(unbekannt)###0###In Vorbereitung###1###Freigegeben###3###Abgelaufen###4###Dauerhaft###2###Gesperrt');
+$kursduplikate->add_row(TABLE_TEXT | TABLE_READONLY,                'kurse_id2',			    'Kurs-ID 2', '...', '', '', array()); // array('ctrl.size'=>'25-80')
+$kursduplikate->add_row(TABLE_TEXT | TABLE_READONLY,                'kurse_titel2',			    'Titel 2', '...', '', '', array('ctrl.size'=>'200-500')); // array('ctrl.size'=>'25-80')
+$kursduplikate->add_row(TABLE_TEXT | TABLE_READONLY,                'anbieter_name2',		    'Anbieter 2', '...', '', '', array('ctrl.size'=>'200-500')); // array('ctrl.size'=>'25-80')
+$kursduplikate->add_row(TABLE_ENUM | TABLE_READONLY,                'freigeschaltet2',		    'Status 2', -1, '-1###(unbekannt)###0###In Vorbereitung###1###Freigegeben###3###Abgelaufen###4###Dauerhaft###2###Gesperrt');
+$kursduplikate->add_row(TABLE_TEXT | TABLE_READONLY,                'kurse_erschliessung1',		'Erschlie&szlig;ung 1', '...', '', '', array('ctrl.size'=>'200-500')); // array('ctrl.size'=>'25-80')
+$kursduplikate->add_row(TABLE_TEXT | TABLE_READONLY,                'kurse_erschliessung2',		'Erschlie&szlig;ung 2', '...', '', '', array('ctrl.size'=>'200-500')); // array('ctrl.size'=>'25-80')
+$kursduplikate->add_row(TABLE_TEXTAREA | TABLE_READONLY,			'kurse_beschreibung1',		'Beschreibung 1'); // array('ctrl.size'=>'25-80')
+$kursduplikate->add_row(TABLE_TEXTAREA | TABLE_READONLY,			'kurse_beschreibung2',		'Beschreibung 2'); // array('ctrl.size'=>'25-80')
+$kursduplikate->add_row(TABLE_TEXTAREA | TABLE_READONLY,			'duplikat_grund',			'Grund');
+$kursduplikate->add_row(TABLE_TEXT | TABLE_READONLY,		        'aehnlichkeit_score',       'Text&auml:hnlichkeit', '...', '', '', array()); // array('ctrl.size'=>'25-80')
 
 
 // $Table_Def[] = $kursduplikate;

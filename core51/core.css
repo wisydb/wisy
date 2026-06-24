@@ -1128,3 +1128,94 @@ print
   }
 
 }
+
+/* ===== Aehnliche Kurse (KI-Duplikat-Vorschlaege) auf der Kurs-Detailseite ===== */
+/* Bewusst dezent gehalten: leichter Kasten, helle Karten - soll die eigentlichen
+   Kursinfos nicht ueberschatten (keine kraeftige graue Unterlegung wie Termine). */
+.wisyr_kurs_duplikate {
+	margin: 1.75em 0 1em;
+	padding: 1em 1.15em;
+	border: 1px solid #e2e2e2;
+	border-radius: 6px;
+	background: #fafafa;
+}
+.wisyr_kurs_duplikate .wisyr_dup_headline {
+	font-size: 1.05em;
+	font-weight: 600;
+	margin: 0 0 .85em;
+	color: #555;
+}
+.wisyr_kurs_duplikate .wisyr_dup_kihint {
+	font-weight: 400;
+	color: #888;
+	font-size: .9em;
+}
+.wisyr_dupcards {
+	display: flex;
+	flex-wrap: wrap;
+	gap: .75em;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+.wisyr_dupcard {
+	position: relative;
+	flex: 1 1 240px;
+	min-width: 210px;
+	max-width: 340px;
+	box-sizing: border-box;
+	background: #fff;
+	border: 1px solid #e6e6e6;
+	border-radius: 6px;
+	padding: .7em .85em;
+}
+.wisyr_dupcard_titel {
+	display: block;
+	font-weight: 600;
+	line-height: 1.3;
+	margin: 0 1.4em .2em 0; /* rechts Platz fuer den Favoriten-Stern */
+}
+.wisyr_dupcard_anbieter {
+	display: block;
+	font-size: .9em;
+	color: #666;
+}
+.wisyr_dupcard_anbieter a { color: #666; }
+/* Favoriten-Stern: jquery.wisy.js haengt das ".fav_item"-Span an .wisyr_dupcard_fav an */
+.wisyr_dupcard_fav {
+	position: absolute;
+	top: .55em;
+	right: .6em;
+}
+.wisyr_dupcard_fav .fav_item { cursor: pointer; font-size: 1.15em; }
+.wisyr_dupcard_grund {
+	margin-top: .55em;
+	font-size: .85em;
+}
+.wisyr_dupcard_grund > summary {
+	cursor: pointer;
+	color: #0a7d54;
+	list-style: none;
+	display: inline-flex;
+	align-items: center;
+}
+.wisyr_dupcard_grund > summary::-webkit-details-marker { display: none; }
+.wisyr_dupcard_q {
+	display: inline-block;
+	width: 1.15em;
+	height: 1.15em;
+	line-height: 1.15em;
+	text-align: center;
+	margin-right: .4em;
+	border-radius: 50%;
+	background: #0a7d54;
+	color: #fff;
+	font-weight: 700;
+	font-size: .85em;
+}
+.wisyr_dupcard_grund_text {
+	margin-top: .45em;
+	color: #555;
+	font-style: italic;
+	line-height: 1.4;
+}

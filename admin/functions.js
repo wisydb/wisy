@@ -145,10 +145,10 @@ function init_tb_table()
     // Clicking a row: Only go to details view, if no button and no link is clicked
     $('table.tb > tbody > tr').click(function(e) {
 	
-        // if target is action-button: don't go to detail view (= go to target of button action)
-        if ($(e.target).closest('button, .btn-diff, .btn-arrow-left, .btn-arrow-right').length > 0) {
-            return;
-        }
+		// if target is action-button: don't go to detail view (= go to target of button action)
+		if ($(e.target).closest('button, .btn-diff, .btn-arrow-left, .btn-arrow-right, .btn-arrow-all-left, .btn-arrow-all-right, .btn-toggle-duplikat').length > 0) {
+			return;
+		}
         // if target is link: don't go to detail view (= go to target/href of link)
         if ($(e.target).closest('a').length > 0) {
             return;
@@ -1207,6 +1207,10 @@ var ue = unescape("%FC");
 var oe = unescape("%F6");
 var ss = unescape("%DF");
 
+var Ae = unescape("%C4");
+var Ue = unescape("%DC");
+var Oe = unescape("%D6");
+
 
 // -------------------------
 // Kurs-Duplikate-Ansichten:
@@ -1224,212 +1228,515 @@ var diffWindow = null;
 
 $(function() {
 
-    // =====================
-    // Tabellen-Ansicht-Code
-    // =====================
-    var params = new URLSearchParams(window.location.search);
-    if (params.get('table') === 'kurse_duplikate' && $('.tb').length) {
+	// =====================
+	    // Tabellen-Ansicht-Code
+	    // =====================
+	    var params = new URLSearchParams(window.location.search);
+	    if (params.get('table') === 'kurse_duplikate' && $('.tb').length) {
 
-        var $table = $('.tb');
+	        var $table = $('.tb');
 
-        function getIndices() {
-            var ths = $table.find('thead tr th');
-            return {
-                kursId1: ths.filter(':contains("Kurs-ID 1")').index(),
-                kursId2: ths.filter(':contains("Kurs-ID 2")').index(),
-                titel1: ths.filter(':contains("Titel 1")').index(),
-                titel2: ths.filter(':contains("Titel 2")').index(),
-                anbieter1: ths.filter(':contains("Anbieter 1")').index(),
-                anbieter2: ths.filter(':contains("Anbieter 2")').index(),
-                beschreibung1: ths.filter(':contains("Beschreibung 1")').index(),
-                beschreibung2: ths.filter(':contains("Beschreibung 2")').index(),
-                duplikat: ths.filter(':contains("Ist Duplikat")').index(),
-                selberAnbieter: ths.filter(':contains("Selber Anbieter")').index()
-            };
-        }
+	        function getIndices() {
+	            var ths = $table.find('thead tr th');
+	            return {
+	                kursId1: ths.filter(':contains("Kurs-ID 1")').index(),
+	                kursId2: ths.filter(':contains("Kurs-ID 2")').index(),
+	                titel1: ths.filter(':contains("Titel 1")').index(),
+	                titel2: ths.filter(':contains("Titel 2")').index(),
+	                anbieter1: ths.filter(':contains("Anbieter 1")').index(),
+	                anbieter2: ths.filter(':contains("Anbieter 2")').index(),
+	                beschreibung1: ths.filter(':contains("Beschreibung 1")').index(),
+	                beschreibung2: ths.filter(':contains("Beschreibung 2")').index(),
+	                duplikat: ths.filter(':contains("Ist Duplikat")').index(),
+	                selberAnbieter: ths.filter(':contains("Selber Anbieter")').index(),
+	                erschliessungIdentisch: ths.filter(':contains("ung identisch")').index()
+	            };
+	        }
 
-        function toGermanEntities(str) {
-            return str
-                .replace(/ä/g, '&auml;')
-                .replace(/ö/g, '&ouml;')
-                .replace(/ü/g, '&uuml;')
-                .replace(/Ä/g, '&Auml;')
-                .replace(/Ö/g, '&Ouml;')
-                .replace(/Ü/g, '&Uuml;')
-                .replace(/ß/g, '&szlig;');
-        }
+	        function toGermanEntities(str) {
+	            return str
+	                .replace(/ä/g, '&auml;')
+	                .replace(/ö/g, '&ouml;')
+	                .replace(/ü/g, '&uuml;')
+	                .replace(/Ä/g, '&Auml;')
+	                .replace(/Ö/g, '&Ouml;')
+	               .replace(/Ü/g, '&Uuml;')
+	                .replace(/ß/g, '&szlig;');
+	        }
 
-        // "Erschliessung uebertragen" einfuegen
-        var idx = getIndices();
-        var $anbieter1TH = $table.find('thead tr th').eq(idx.anbieter1);
-        $('<th>' + toGermanEntities('Erschließung übertragen') + '</th>').insertAfter($anbieter1TH);
+	        function extractCourseIdsFromRow($row, idx) {
+	            var $tds = $row.find('td');
+	            var id1 = '';
+	            var id2 = '';
 
-        $table.find('tbody tr').each(function() {
-            var idx = getIndices();
-            var $tds = $(this).find('td');
-            var kursId1 = $tds.eq(idx.kursId1).text().trim().replace(/\D/g, '');
-            var kursId2 = $tds.eq(idx.kursId2).text().trim().replace(/\D/g, '');
+	            // 1) Primär: beide Kurs-IDs aus den Kurs-Links in der Zeile lesen
+	            var idsFromLinks = [];
+	            $row.find('a[href*="table=kurse&id="]').each(function() {
+	                var href = $(this).attr('href') || '';
+	                var m = href.match(/table=kurse&id=(\d+)/);
+	                if (m && m[1]) {
+	                    idsFromLinks.push(m[1]);
+	                }
+	            });
+	            if (idsFromLinks.length >= 2) {
+	                id1 = idsFromLinks[0];
+	                id2 = idsFromLinks[1];
+	            }
 
-            var arrowLeft = '<button class="btn-arrow-left" title="' + toGermanEntities('Nach links übertragen') + '" style="background:transparent;border:none;cursor:pointer;" ' +
-                'data-source="'+kursId2+'" data-target="'+kursId1+'">' +
-                '<svg width="18" height="18" viewBox="0 0 18 18"><path d="M12 3L6 9L12 15" stroke="#18a058" stroke-width="2" fill="none" stroke-linecap="round"/></svg>' +
-                '</button>';
-            var arrowRight = '<button class="btn-arrow-right" title="' + toGermanEntities('Nach rechts übertragen') + '" style="background:transparent;border:none;cursor:pointer;" ' +
-                'data-source="'+kursId1+'" data-target="'+kursId2+'">' +
-                '<svg width="18" height="18" viewBox="0 0 18 18"><path d="M6 3L12 9L6 15" stroke="#18a058" stroke-width="2" fill="none" stroke-linecap="round"/></svg>' +
-                '</button>';
-            var arrows = '<div style="display:flex;gap:4px;justify-content:center;align-items:center;">'+arrowLeft+arrowRight+'</div>';
+	            // 2) Fallback: über Spaltenindizes (falls vorhanden)
+	            if (!id1 && idx.kursId1 >= 0) {
+	                id1 = $tds.eq(idx.kursId1).text().trim().replace(/\D/g, '');
+	            }
+	            if (!id2 && idx.kursId2 >= 0) {
+	                id2 = $tds.eq(idx.kursId2).text().trim().replace(/\D/g, '');
+	            }
 
-            $tds.eq(idx.anbieter1).after('<td>'+arrows+'</td>');
-        });
+	            // 3) Fallback ohne Header-Abhängigkeit:
+	            //    numerische Zellen (nur Ziffern) aus der Zeile sammeln und als Kurs-IDs verwenden.
+	            //    Dadurch klappt es auch, wenn der Header-Text "Kurs-ID 2" nicht exakt erkannt wird.
+	            if (!id1 || !id2) {
+	                var numericCellIds = [];
+	                $tds.each(function() {
+	                    var cellText = $(this).text().trim();
+	                    if (/^\d+$/.test(cellText)) {
+	                        numericCellIds.push(cellText);
+	                    }
+	                });
 
-        // Diff-Button nach "Beschreibung 2" (mit Lupe)
-        // $table.find('thead tr').each(function() {
-        //    if ($(this).find('th.diffth').length === 0) {
-        //       $('<th class="diffth">Vergleich</th>').insertAfter($(this).find('th').eq(getIndices().beschreibung2));
-        //    }
-        // });
-        // $table.find('tbody tr').each(function() {
-        //     var $tds = $(this).find('td');
-        //     if ($(this).find('td.difftd').length === 0) {
-        //         $('<td class="difftd"><button type="button" class="btn-diff" title="Text vergleichen" style="background:transparent;border:none;cursor:pointer;padding:4px;">' +
-        //             '<svg width="20" height="20" viewBox="0 0 20 20" style="vertical-align:middle"><circle cx="9" cy="9" r="7" stroke="#18a058" stroke-width="2" fill="none"/><line x1="14" y1="14" x2="19" y2="19" stroke="#18a058" stroke-width="2" stroke-linecap="round"/></svg>' +
-        //             '</button></td>').insertAfter($tds.eq(getIndices().beschreibung2));
-        //     }
-        // });
+	                // Datensatz-ID (erste Spalte) ist i.d.R. kleiner/anders; Kurs-IDs stehen als erste zwei
+	                // reinen ID-Zellen nach den Statusspalten. Wir nehmen daher die letzten zwei gefundenen.
+	                if (numericCellIds.length >= 2) {
+	                    if (!id1) {
+	                        id1 = numericCellIds[numericCellIds.length - 2];
+	                    }
+	                    if (!id2) {
+	                        id2 = numericCellIds[numericCellIds.length - 1];
+	                    }
+	                }
+	            }
 
-        // Spalten-Inhalte formatieren...
-        $table.find('tbody tr').each(function() {
-            var idx = getIndices();
-            var $tds = $(this).find('td');
+	            return { id1: id1, id2: id2 };
+	        }
 
-            var kursId1 = $tds.eq(idx.kursId1).text().trim().replace(/\D/g, '');
-            $tds.eq(idx.kursId1).html(
-                $('<a>', {
-                    href: '/admin/edit.php?table=kurse&id=' + kursId1,
-                    text: kursId1,
-                    target: '_blank',
-                    title: toGermanEntities('In Editor oeffnen...')
-                })
-            );
-            var kursId2 = $tds.eq(idx.kursId2).text().trim().replace(/\D/g, '');
-            $tds.eq(idx.kursId2).html(
-                $('<a>', {
-                    href: '/admin/edit.php?table=kurse&id=' + kursId2,
-                    text: kursId2,
-                    target: '_blank',
-                    title: toGermanEntities('In Editor oeffnen...')
-                })
-            );
+	        // Liefert das HTML fuer die klickbare "Ist Duplikat"-Zelle.
+	        // value = 1 -> gruenes Haekchen, 0 -> rotes X. Klick toggelt per AJAX.
+	        function renderDuplikatToggle(value, id1, id2) {
+	            var isDup = (parseInt(value, 10) === 1);
+	            var color = isDup ? '#18a058' : '#b80000';
+	            var symbol = isDup ? '&#10003;' : '&#10007;';
+	            var tooltip = isDup
+	                ? toGermanEntities('Duplikat - Klick zum Umschalten auf "Nein"')
+	                : toGermanEntities('Kein Duplikat - Klick zum Umschalten auf "Ja"');
+	            return '<span class="btn-toggle-duplikat" '
+	                + 'data-value="' + (isDup ? 1 : 0) + '" '
+	                + 'data-id1="' + id1 + '" data-id2="' + id2 + '" '
+	                + 'title="' + tooltip + '" '
+	                + 'style="color:' + color + ';font-size:1.3em;vertical-align:middle;cursor:pointer;user-select:none;display:inline-block;padding:0 4px;">'
+	                + symbol + '</span>';
+	        }
 
-            var titel1 = $tds.eq(idx.titel1).text().trim().replace(/^"+|"+$/g, '');
-            $tds.eq(idx.titel1).html('<em>&quot;' + $('<div>').text(titel1).html() + '&quot;</em>');
-            var titel2 = $tds.eq(idx.titel2).text().trim().replace(/^"+|"+$/g, '');
-            $tds.eq(idx.titel2).html('<em>&quot;' + $('<div>').text(titel2).html() + '&quot;</em>');
-            var anbieter1 = $tds.eq(idx.anbieter1).text().trim();
-            $tds.eq(idx.anbieter1).html('<b>' + $('<div>').text(anbieter1).html() + '</b>');
-            var anbieter2 = $tds.eq(idx.anbieter2).text().trim();
-            $tds.eq(idx.anbieter2).html('<b>' + $('<div>').text(anbieter2).html() + '</b>');
-            var $duplikatTD = $tds.eq(idx.duplikat);
-            var origVal = $duplikatTD.text().trim();
-            if (origVal === "Ja" || origVal === "\u2713") { // \u2713 = grünes ok Häkchen
-                $duplikatTD.html('<span title="Ja" style="color:#18a058;font-size:1.3em;vertical-align:middle;">&#10003;</span>');
-            } else if (origVal === "Nein" || origVal === "\u2717") {
-                $duplikatTD.html('<span title="Nein" style="color:#b80000;font-size:1.3em;vertical-align:middle;">&#10007;</span>');
-            }
-            var $selberAnbieterTD = $tds.eq(idx.selberAnbieter);
-            var origVal2 = $selberAnbieterTD.text().trim();
-            if (origVal2 === "Ja" || origVal2 === "\u2713") { // \u2713 = rotes x
-                $selberAnbieterTD.html('<span title="Ja" style="color:#18a058;font-size:1.3em;vertical-align:middle;">&#10003;</span>');
-            } else if (origVal2 === "Nein" || origVal2 === "\u2717") {
-                $selberAnbieterTD.html('<span title="Nein" style="color:#b80000;font-size:1.3em;vertical-align:middle;">&#10007;</span>');
-            }
-        });
+	        // Aktions-Spalten ("Erschließung übertragen" + "Vergleich") robust nach der
+	        // IMMER vorhandenen ID-Spalte einfuegen - unabhaengig davon, welche Daten-Spalten
+	        // (Kurs-ID, Anbieter, ...) der Redakteur ein-/ausgeblendet hat.
+	        // Die echten Kurs-IDs werden NICHT mehr aus (evtl. ausgeblendeten) Zellen gelesen,
+	        // sondern serverseitig aus der kurse_duplikate-Zeilen-ID aufgeloest. Dazu traegt
+	        // jede Zeile data-dupe-rowid; die Pfeile tragen nur Richtung (data-dir/data-side).
 
-        // Ajax fuer Pfeile / Erschliessungsuebertragung
-        $table.on('click', '.btn-arrow-left, .btn-arrow-right', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            var source = $(this).data('source');
-            var target = $(this).data('target');
-            var $btn = $(this);
-            $btn.prop('disabled', true);
+	        // ID-Spalte (Zelle mit dem kurse_duplikate-Editlink) als Anker bestimmen.
+	        var idColIdx = 0;
+	        var $probeRow = $table.children('tbody').children('tr').first();
+	        if ($probeRow.length) {
+	            $probeRow.find('td').each(function(i) {
+	                if ($(this).find('a[href*="table=kurse_duplikate"]').length) { idColIdx = i; return false; }
+	            });
+	        }
 
-            $.ajax({
-                url: '/admin/tagtransfer.php',
-                method: 'GET',
-                data: { source: source, target: target },
-                success: function(response) {
-                    $btn.prop('disabled', false);
-                    $btn.attr('title', toGermanEntities("Übertragung erfolgreich!"));
-                    $btn.closest('td').append('<span style="color:#18a058;margin-left:6px;" title="Erfolgreich!">&#10003;</span>');
-                    setTimeout(function() {
-                        $btn.siblings('span[title="Erfolgreich!"]').fadeOut(700, function() { $(this).remove(); });
-                    }, 1500);
-                },
-                error: function() {
-                    $btn.prop('disabled', false);
-                    $btn.attr('title', toGermanEntities("Fehler beim Übertragen"));
-                    $btn.closest('td').append('<span style="color:#b80000;margin-left:6px;" title="Fehler!">&#9888;</span>');
-                    setTimeout(function() {
-                        $btn.siblings('span[title="Fehler!"]').fadeOut(1500, function() { $(this).remove(); });
-                    }, 2000);
-                }
-            });
-        });
+	        // Kopfzellen: Reihenfolge ID | Erschließung übertragen | Vergleich
+	        var $idTH = $table.find('thead tr th').eq(idColIdx);
+	        $('<th>Vergleich</th>').insertAfter($idTH);
+	        $('<th>' + toGermanEntities('Erschließung übertragen') + '</th>').insertAfter($idTH);
 
-        // Diff-Library fuer Tabellenansicht
-        var diffLoadedTable = false;
-        function loadDiffJsTable(callback) {
-            if (diffLoadedTable) { callback(); return; }
-            $.getScript('/admin/lib/diff/diff.min.js', function() {
-                diffLoadedTable = true;
-                callback();
-            }).fail(function() {
-                alert('Diff-Bibliothek konnte nicht geladen werden.');
-            });
-        }
+	        var diffBtnHtml = '<button type="button" class="btn-diff" title="' + toGermanEntities('Beschreibungen vergleichen') + '" style="background:transparent;border:none;cursor:pointer;padding:4px;">' +
+	            '<svg width="20" height="20" viewBox="0 0 20 20" style="vertical-align:middle"><circle cx="9" cy="9" r="7" stroke="#18a058" stroke-width="2" fill="none"/><line x1="14" y1="14" x2="19" y2="19" stroke="#18a058" stroke-width="2" stroke-linecap="round"/></svg>' +
+	            '</button>';
 
-        $table.on('click', '.btn-diff', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            var $row = $(this).closest('tr');
-            var idx = getIndices();
-            var beschreibung1 = $row.find('td').eq(idx.beschreibung1).text().trim();
-            var beschreibung2 = $row.find('td').eq(idx.beschreibung2).text().trim();
+	        // Pfeile - Quelle/Ziel loest der Server aus row + dir/side auf (fuer alle Zeilen gleich).
+	        var arrowAllLeft = '<button class="btn-arrow-all-left" data-side="2" title="' + toGermanEntities('Erschließung des rechten Kurses auf ALLE seine Duplikate übertragen') + '" style="background:transparent;border:none;cursor:pointer;">' +
+	            '<svg width="18" height="18" viewBox="0 0 18 18"><path d="M11 3L5 9L11 15" stroke="#0a58ca" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M16 3L10 9L16 15" stroke="#0a58ca" stroke-width="2" fill="none" stroke-linecap="round"/></svg>' +
+	            '</button>';
+	        var arrowLeft = '<button class="btn-arrow-left" data-dir="r2l" title="' + toGermanEntities('Erschließung des rechten Kurses auf den linken übertragen') + '" style="background:transparent;border:none;cursor:pointer;">' +
+	            '<svg width="18" height="18" viewBox="0 0 18 18"><path d="M12 3L6 9L12 15" stroke="#18a058" stroke-width="2" fill="none" stroke-linecap="round"/></svg>' +
+	            '</button>';
+	        var arrowRight = '<button class="btn-arrow-right" data-dir="l2r" title="' + toGermanEntities('Erschließung des linken Kurses auf den rechten übertragen') + '" style="background:transparent;border:none;cursor:pointer;">' +
+	            '<svg width="18" height="18" viewBox="0 0 18 18"><path d="M6 3L12 9L6 15" stroke="#18a058" stroke-width="2" fill="none" stroke-linecap="round"/></svg>' +
+	            '</button>';
+	        var arrowAllRight = '<button class="btn-arrow-all-right" data-side="1" title="' + toGermanEntities('Erschließung des linken Kurses auf ALLE seine Duplikate übertragen') + '" style="background:transparent;border:none;cursor:pointer;">' +
+	            '<svg width="18" height="18" viewBox="0 0 18 18"><path d="M2 3L8 9L2 15" stroke="#0a58ca" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M7 3L13 9L7 15" stroke="#0a58ca" stroke-width="2" fill="none" stroke-linecap="round"/></svg>' +
+	            '</button>';
+	        var arrowsHtml = '<div style="display:flex;gap:4px;justify-content:center;align-items:center;">' + arrowAllLeft + arrowLeft + arrowRight + arrowAllRight + '</div>';
 
-            loadDiffJsTable(function() {
-                if (typeof window.Diff === "undefined" || typeof window.Diff.diffWords !== "function") {
-                    alert("Diff-Bibliothek konnte nicht korrekt geladen werden.");
-                    return;
-                }
-                var diff = window.Diff.diffWords(beschreibung1, beschreibung2);
-                var html = diff.map(function(part){
-                    var color = part.added ? '#d4ffd4' : part.removed ? '#ffe3e3' : 'transparent';
-                    var tag = part.added ? 'ins' : part.removed ? 'del' : 'span';
-                    return `<${tag} style="background:${color};">${$('<div>').text(part.value).html()}</${tag}>`;
-                }).join('');
-               	if (!diffWindow || diffWindow.closed) {
-				    diffWindow = window.open("", "Diff", "width=900,height=700");
-				} else {
-				    diffWindow.focus();
-				}
-                diffWindow.document.write(
-                    "<!DOCTYPE html><html><head><title>Textvergleich</title><meta charset='utf-8'>" +
-                    "<style>body{font-family:sans-serif;font-size:1.1em;margin:24px;} ins{background:#d4ffd4;text-decoration:none;} del{background:#ffe3e3;text-decoration:none;} pre{white-space:pre-wrap;word-break:break-word;}</style></head><body>" +
-                    "<h2>Vergleich Beschreibung 1 &amp; 2</h2>" +
-                    "<pre>" + html + "</pre>" +
-                    "</body></html>"
-                );
-                diffWindow.document.close();
-            });
-        });
-    }
+	        $table.children('tbody').children('tr').each(function() {
+	            var $tr = $(this);
+	            var $tds = $tr.find('td');
+
+	            // kurse_duplikate-Zeilen-ID aus dem ID-Link lesen (ID-Spalte ist immer sichtbar)
+	            var rowId = '';
+	            var href = ($tds.eq(idColIdx).find('a[href*="table=kurse_duplikate"]').first().attr('href')) || '';
+	            var m = href.match(/[?&]id=(\d+)/);
+	            if (m) {
+	                rowId = m[1];
+	            } else {
+	                var t = $tds.eq(idColIdx).find('a').first().text().replace(/\D/g, '');
+	                if (t) { rowId = t; }
+	            }
+	            $tr.attr('data-dupe-rowid', rowId);
+
+	            // Reihenfolge nach ID: erst "Erschließung übertragen" (Pfeile), dann "Vergleich" (Lupe)
+	            $tds.eq(idColIdx).after('<td class="difftd" style="text-align:center;">' + diffBtnHtml + '</td>');
+	            $tds.eq(idColIdx).after('<td>' + arrowsHtml + '</td>');
+	        });
+
+	        // Spalten-Inhalte formatieren...
+	        $table.children('tbody').children('tr').each(function() {
+	            var idx = getIndices();
+	            var $tds = $(this).find('td');
+
+	            var kursId1 = $tds.eq(idx.kursId1).text().trim().replace(/\D/g, '');
+	            $tds.eq(idx.kursId1).html(
+	                $('<a>', {
+	                    href: '/admin/edit.php?table=kurse&id=' + kursId1,
+	                    text: kursId1,
+	                    target: '_blank',
+	                    title: toGermanEntities('In Editor oeffnen...')
+	                })
+	            );
+	            var kursId2 = $tds.eq(idx.kursId2).text().trim().replace(/\D/g, '');
+	            $tds.eq(idx.kursId2).html(
+	                $('<a>', {
+	                    href: '/admin/edit.php?table=kurse&id=' + kursId2,
+	                    text: kursId2,
+	                    target: '_blank',
+	                    title: toGermanEntities('In Editor oeffnen...')
+	                })
+	            );
+	            var titel1 = $tds.eq(idx.titel1).text().trim().replace(/^"+|"+$/g, '');
+	            $tds.eq(idx.titel1).html('<em>&quot;' + $('<div>').text(titel1).html() + '&quot;</em>');
+	            var titel2 = $tds.eq(idx.titel2).text().trim().replace(/^"+|"+$/g, '');
+	            $tds.eq(idx.titel2).html('<em>&quot;' + $('<div>').text(titel2).html() + '&quot;</em>');
+	            var anbieter1 = $tds.eq(idx.anbieter1).text().trim();
+	            $tds.eq(idx.anbieter1).html('<b>' + $('<div>').text(anbieter1).html() + '</b>');
+	            var anbieter2 = $tds.eq(idx.anbieter2).text().trim();
+	            $tds.eq(idx.anbieter2).html('<b>' + $('<div>').text(anbieter2).html() + '</b>');
+	            var $duplikatTD = $tds.eq(idx.duplikat);
+	            var origVal = $duplikatTD.text().trim();
+	            if (origVal === "Ja" || origVal === "\u2713") { // \u2713 = grünes ok Häkchen
+	                $duplikatTD.html(renderDuplikatToggle(1, kursId1, kursId2));
+	            } else if (origVal === "Nein" || origVal === "\u2717") {
+	                $duplikatTD.html(renderDuplikatToggle(0, kursId1, kursId2));
+	            }
+	            var $selberAnbieterTD = $tds.eq(idx.selberAnbieter);
+	            var origVal2 = $selberAnbieterTD.text().trim();
+	            if (origVal2 === "Ja" || origVal2 === "\u2713") { // \u2713 = rotes x
+	                $selberAnbieterTD.html('<span title="Ja" style="color:#18a058;font-size:1.3em;vertical-align:middle;">&#10003;</span>');
+	            } else if (origVal2 === "Nein" || origVal2 === "\u2717") {
+	                $selberAnbieterTD.html('<span title="Nein" style="color:#b80000;font-size:1.3em;vertical-align:middle;">&#10007;</span>');
+	            }
+	            var $erschliessungIdentischTD = $tds.eq(idx.erschliessungIdentisch);
+	            var origVal3 = $erschliessungIdentischTD.text().trim();
+	            if (origVal3 === "Ja" || origVal3 === "\u2713") { // \u2713 = rotes x
+	                $erschliessungIdentischTD.html('<span title="Ja" style="color:#18a058;font-size:1.3em;vertical-align:middle;">&#10003;</span>');
+	            } else if (origVal3 === "Nein" || origVal3 === "\u2717") {
+	                $erschliessungIdentischTD.html('<span title="Nein" style="color:#b80000;font-size:1.3em;vertical-align:middle;">&#10007;</span>');
+	            }            
+	            
+	        });
+
+	        // Ajax fuer Pfeile / Erschliessungsuebertragung (1:1)
+	        // row = kurse_duplikate-Zeilen-ID (immer vorhanden), dir = Richtung. Der Server
+	        // loest daraus Quelle/Ziel auf -> unabhaengig von eingeblendeten Spalten.
+	       $table.on('click', '.btn-arrow-left, .btn-arrow-right', function(e) {
+	            e.preventDefault();
+	            e.stopPropagation();
+	            var $btn = $(this);
+	            var $row = $btn.closest('tr');
+	            var rowId = $row.attr('data-dupe-rowid');
+	            var dir = $btn.data('dir'); // 'l2r' (links->rechts) oder 'r2l'
+
+	            if (!rowId || (dir !== 'l2r' && dir !== 'r2l')) {
+	                alert('Fehler beim ' + Ue + 'bertragen: Zeilen-/Richtungsangabe fehlt.');
+	                $btn.attr('title', toGermanEntities("Fehler beim Übertragen"));
+	                return;
+	            }
+
+	            $btn.prop('disabled', true);
+
+	            $.ajax({
+	                url: '/admin/kurse_duplikate_tagtransfer.php',
+	                method: 'POST',
+	                dataType: 'json',
+	                data: { row: rowId, dir: dir },
+	                success: function(response) {
+	                    $btn.prop('disabled', false);
+	                    var ok = response && response.success;
+	                    if (!ok) {
+	                        var backendMessage = (response && response.message) ? response.message : 'Unbekannter Fehler.';
+	                        alert('Fehler beim Übertragen: ' + backendMessage);
+	                        $btn.attr('title', toGermanEntities("Fehler beim Übertragen"));
+	                        $btn.closest('td').find('span[title="Fehler!"]').remove();
+	                        $btn.closest('td').append('<span style="color:#b80000;margin-left:6px;" title="Fehler!">&#9888;</span>');
+	                        setTimeout(function() {
+	                            $btn.closest('td').find('span[title="Fehler!"]').fadeOut(1500, function() { $(this).remove(); });
+	                        }, 2000);
+	                        return;
+	                    }
+
+	                    var successMsg = Ue+"bertragung erfolgreich.\n"
+	                        + "Quelle: " + response.source + "\n"
+	                        + "Ziel: " + response.target + "\n"
+	                        + "Transferierte Themen-ID: " + response.thema_transferred + "\n"
+	                        + "Erg"+ae+"nzte Stichw"+oe+"rter: " + response.keywords_added;
+	                    alert(successMsg);
+
+	                    $btn.attr('title', toGermanEntities("Übertragung erfolgreich!"));
+	                    $btn.closest('td').find('span[title="Erfolgreich!"]').remove();
+	                    $btn.closest('td').append('<span style="color:#18a058;margin-left:6px;" title="Erfolgreich!">&#10003;</span>');
+	                    setTimeout(function() {
+	                        $btn.closest('td').find('span[title="Erfolgreich!"]').fadeOut(700, function() { $(this).remove(); });
+	                    }, 1500);
+	                },
+	                error: function(xhr) {
+	                    $btn.prop('disabled', false);
+	                    var errMsg = 'Unbekannter Fehler.';
+	                    if (xhr && xhr.responseJSON && xhr.responseJSON.message) {
+	                        errMsg = xhr.responseJSON.message;
+	                    } else if (xhr && xhr.responseText) {
+	                        try {
+	                            var parsed = JSON.parse(xhr.responseText);
+	                            if (parsed && parsed.message) {
+	                                errMsg = parsed.message;
+	                            }
+	                        } catch (ignore) {}
+	                    }
+	                    alert('Fehler beim Übertragen: ' + errMsg);
+	                    $btn.attr('title', toGermanEntities("Fehler beim Übertragen"));
+	                    $btn.closest('td').find('span[title="Fehler!"]').remove();
+	                    $btn.closest('td').append('<span style="color:#b80000;margin-left:6px;" title="Fehler!">&#9888;</span>');
+	                    setTimeout(function() {
+	                        $btn.closest('td').find('span[title="Fehler!"]').fadeOut(1500, function() { $(this).remove(); });
+	                    }, 2000);
+	                }
+	            });
+	        });
+
+	        // Ajax fuer Doppelpfeile: Erschliessung von einer Quelle auf ALLE ihre Duplikate
+	        $table.on('click', '.btn-arrow-all-left, .btn-arrow-all-right', function(e) {
+	            e.preventDefault();
+	            e.stopPropagation();
+	            var $btn = $(this);
+	            var $row = $btn.closest('tr');
+	            var rowId = $row.attr('data-dupe-rowid');
+	            var side = String($btn.data('side') || ''); // '1' = linker Kurs ist Quelle, '2' = rechter Kurs
+
+	            if (!rowId || (side !== '1' && side !== '2')) {
+	                alert('Fehler: Zeilen-/Seitenangabe fehlt.');
+	                return;
+	            }
+
+	            var seite = (side === '1') ? 'linken' : 'rechten';
+	            if (!confirm('Erschließung des ' + seite + ' Kurses auf ALLE seine Duplikate übertragen?\n\n'
+	                + 'Bei jedem Duplikat wird das Thema gesetzt und fehlende Stichwörter werden ergänzt.\n'
+	                + 'Diese Aktion betrifft mehrere Kurse. Fortfahren?')) {
+	                return;
+	            }
+
+	            $btn.prop('disabled', true);
+	            $.ajax({
+	                url: '/admin/kurse_duplikate_tagtransfer_all.php',
+	                method: 'POST',
+	                dataType: 'json',
+	                data: { row: rowId, side: side },
+	                success: function(response) {
+	                    $btn.prop('disabled', false);
+	                    if (!response || !response.success) {
+	                        var backendMessage = (response && response.message) ? response.message : 'Unbekannter Fehler.';
+	                        alert('Fehler beim ' + Ue + 'bertragen: ' + backendMessage);
+	                        return;
+	                    }
+	                    var msg = Ue + 'bertragung auf alle Duplikate abgeschlossen.\n'
+	                        + 'Quelle: ' + response.source + '\n'
+	                        + 'Duplikate gesamt: ' + response.targets_total + '\n'
+	                        + 'Davon ge' + ae + 'ndert: ' + response.targets_changed + '\n'
+	                        + 'Erg' + ae + 'nzte Stichw' + oe + 'rter: ' + response.keywords_added;
+	                    if (response.failed) {
+	                        msg += '\nFehlgeschlagen: ' + response.failed;
+	                        if (response.failures && response.failures.length) {
+	                            response.failures.forEach(function(f) {
+	                                msg += '\n  - Kurs-ID ' + f.target + ': ' + f.message;
+	                            });
+	                        }
+	                    }
+	                    alert(msg);
+	                    $btn.closest('td').find('span[title="Erfolgreich!"]').remove();
+	                    $btn.closest('td').append('<span style="color:#18a058;margin-left:6px;" title="Erfolgreich!">&#10003;</span>');
+	                    setTimeout(function() {
+	                        $btn.closest('td').find('span[title="Erfolgreich!"]').fadeOut(700, function() { $(this).remove(); });
+	                    }, 1500);
+	                },
+	                error: function(xhr) {
+	                    $btn.prop('disabled', false);
+	                    var errMsg = 'Unbekannter Fehler.';
+	                    if (xhr && xhr.responseJSON && xhr.responseJSON.message) {
+	                        errMsg = xhr.responseJSON.message;
+	                    } else if (xhr && xhr.responseText) {
+	                        try {
+	                            var parsed = JSON.parse(xhr.responseText);
+	                            if (parsed && parsed.message) { errMsg = parsed.message; }
+	                        } catch (ignore) {}
+	                    }
+	                    alert('Fehler beim ' + Ue + 'bertragen: ' + errMsg);
+	                }
+	            });
+	        });
+
+	        // Ajax fuer das Umschalten des Duplikat-Status (Klick auf das Symbol)
+	        $table.on('click', '.btn-toggle-duplikat', function(e) {
+	            e.preventDefault();
+	            e.stopPropagation();
+	            var $span = $(this);
+	            var current = parseInt($span.data('value'), 10);
+	            var next = (current === 1) ? 0 : 1;
+	            var id1 = String($span.data('id1') || '').trim();
+	            var id2 = String($span.data('id2') || '').trim();
+	            var $td = $span.closest('td');
+
+	            if (!id1 || !id2) {
+	                alert('Fehler beim Umschalten: Ungültige Kurs-IDs.');
+	                return;
+	            }
+
+	            // visuelles Feedback: kurz "ausgrauen" waehrend der Anfrage laeuft
+	            $span.css('opacity', 0.4).css('pointer-events', 'none');
+
+	            $.ajax({
+	                url: '/admin/kurse_duplikate_setduplikat.php',
+	                method: 'POST',
+	                dataType: 'json',
+	                data: { id1: id1, id2: id2, value: next },
+	                success: function(response) {
+	                    if (!response || !response.success) {
+	                        var msg = (response && response.message) ? response.message : 'Unbekannter Fehler.';
+	                        alert('Fehler beim Umschalten: ' + msg);
+	                        $span.css('opacity', 1).css('pointer-events', 'auto');
+	                        return;
+	                    }
+	                    $td.html(renderDuplikatToggle(next, id1, id2));
+	                    // Erfolgs-Haekchen kurz neben dem Symbol einblenden
+	                    var $hint = $('<span style="color:#18a058;margin-left:6px;font-size:0.9em;" title="Gespeichert">&#10003;</span>');
+	                    $td.append($hint);
+	                    setTimeout(function() {
+	                        $hint.fadeOut(700, function() { $(this).remove(); });
+	                    }, 900);
+	                },
+	                error: function(xhr) {
+	                    var msg = 'Unbekannter Fehler.';
+	                    if (xhr && xhr.responseJSON && xhr.responseJSON.message) {
+	                        msg = xhr.responseJSON.message;
+	                    } else if (xhr && xhr.responseText) {
+	                        try {
+	                            var parsed = JSON.parse(xhr.responseText);
+	                            if (parsed && parsed.message) { msg = parsed.message; }
+	                        } catch (ignore) {}
+	                    }
+	                    alert('Fehler beim Umschalten: ' + msg);
+	                    $span.css('opacity', 1).css('pointer-events', 'auto');
+	                }
+	            });
+	        });
+
+	        // Diff-Library fuer Tabellenansicht
+	        var diffLoadedTable = false;
+	        function loadDiffJsTable(callback) {
+	            if (diffLoadedTable) { callback(); return; }
+	            $.getScript('/admin/lib/diff/diff.min.js', function() {
+	                diffLoadedTable = true;
+	                callback();
+	            }).fail(function() {
+	                alert('Diff-Bibliothek konnte nicht geladen werden.');
+	            });
+	        }
+
+	        // Lupe: Beschreibungen der beiden Kurse LIVE laden und vergleichen.
+	        // (Robust unabhaengig davon, ob die Beschreibungs-Spalten eingeblendet sind.)
+	        // Klick loest dank Klasse "btn-diff" (Whitelist in init_tb_table) + stopPropagation
+	        // NICHT die Zeilen-Navigation aus.
+	        $table.on('click', '.btn-diff', function(e) {
+	            e.preventDefault();
+	            e.stopPropagation();
+	            var $btn = $(this);
+	            var rowId = $btn.closest('tr').attr('data-dupe-rowid');
+	            if (!rowId) {
+	                alert('Vergleich nicht m' + oe + 'glich: Zeilen-ID nicht gefunden.');
+	                return;
+	            }
+	            $btn.prop('disabled', true);
+
+	            // row-Modus: der Server loest beide Kurse aus der Duplikat-Zeile auf und
+	            // liefert die Beschreibungen direkt (unabhaengig von eingeblendeten Spalten).
+	            $.ajax({
+	                url: '/admin/kurse_duplikate_courseinfo.php',
+	                method: 'GET',
+	                dataType: 'json',
+	                data: { row: rowId },
+	                success: function(resp) {
+	                    $btn.prop('disabled', false);
+	                    if (!resp || !resp.success) {
+	                        alert('Die Beschreibungen konnten nicht geladen werden.');
+	                        return;
+	                    }
+	                    var beschreibung1 = resp.beschreibung1 || '';
+	                    var beschreibung2 = resp.beschreibung2 || '';
+
+	                    loadDiffJsTable(function() {
+	                        if (typeof window.Diff === "undefined" || typeof window.Diff.diffWords !== "function") {
+	                            alert("Diff-Bibliothek konnte nicht korrekt geladen werden.");
+	                            return;
+	                        }
+	                        var diff = window.Diff.diffWords(beschreibung1, beschreibung2);
+	                        var html = diff.map(function(part){
+	                            var color = part.added ? '#d4ffd4' : part.removed ? '#ffe3e3' : 'transparent';
+	                            var tag = part.added ? 'ins' : part.removed ? 'del' : 'span';
+	                            return `<${tag} style="background:${color};">${$('<div>').text(part.value).html()}</${tag}>`;
+	                        }).join('');
+	                        if (!diffWindow || diffWindow.closed) {
+	                            diffWindow = window.open("", "Diff", "width=900,height=700");
+	                        } else {
+	                            diffWindow.focus();
+	                        }
+	                        var head1 = $('<div>').text((resp.id1 || '') + ' ' + (resp.titel1 || '')).html();
+	                        var head2 = $('<div>').text((resp.id2 || '') + ' ' + (resp.titel2 || '')).html();
+	                        diffWindow.document.write(
+	                            "<!DOCTYPE html><html><head><title>Textvergleich</title><meta charset='utf-8'>" +
+	                            "<style>body{font-family:sans-serif;font-size:1.1em;margin:24px;} ins{background:#d4ffd4;text-decoration:none;} del{background:#ffe3e3;text-decoration:none;} pre{white-space:pre-wrap;word-break:break-word;} h3{font-size:0.9em;color:#555;font-weight:normal;}</style></head><body>" +
+	                            "<h2>Vergleich Beschreibung 1 &amp; 2</h2>" +
+	                            "<h3>1: " + head1 + "<br>2: " + head2 + "</h3>" +
+	                            "<pre>" + html + "</pre>" +
+	                            "</body></html>"
+	                        );
+	                        diffWindow.document.close();
+	                    });
+	                },
+	                error: function() {
+	                    $btn.prop('disabled', false);
+	                    alert('Fehler beim Laden der Beschreibungen f' + ue + 'r den Vergleich.');
+	                }
+	            });
+	        });
+	    }
 
 
-    // ===========================
-    // Detailansicht (Edit-Form)
-    // ===========================
+	    // ===========================
+	    // Detailansicht (Edit-Form)
+	    // ===========================    
     if (/\/admin\/edit\.php$/.test(window.location.pathname) && /table=kurse_duplikate/.test(window.location.search)) {
         var $form = $('form[name="edit"]');
         if ($form.length === 0) return;
@@ -1535,6 +1842,333 @@ $(function() {
             });
         });
     }
+});
+
+
+// ============================================================
+// Kurs-Edit-Maske: "Duplikate"-Sektion (zwischen mein NOW und Anmerkungen)
+// ============================================================
+$(function() {
+
+    var params = new URLSearchParams(window.location.search);
+    if (!/\/admin\/edit\.php$/.test(window.location.pathname)) return;
+    if (params.get('table') !== 'kurse') return;
+
+    var kursId = params.get('id');
+    if (!kursId || !/^\d+$/.test(kursId)) return; // nur bei bestehendem Kurs (nicht "Neu")
+
+    var $form = $('form[action*=edit]');
+    if ($form.length === 0) return;
+
+    function esc(s) {
+        return $('<div>').text(s == null ? '' : String(s)).html();
+    }
+
+    // Umlaute werden ueber die global definierten Variablen ae/ue/oe/ss/Ae/Ue/Oe
+    // zusammengesetzt (unescape("%E4") usw.). So sind wir unabhaengig von der
+    // Datei-/Backend-Kodierung (Backend liefert derzeit noch ISO-8859-1).
+    var TITLE_MAX = 100;                      // Titel laenger als das wird abgekuerzt
+    var COLLAPSE_COOKIE = 'dupe_section_collapsed';
+
+    function dupeSetCookie(name, val) {
+        var d = new Date();
+        d.setTime(d.getTime() + 365 * 24 * 60 * 60 * 1000); // ~1 Jahr -> bis zur naechsten Aenderung
+        document.cookie = name + '=' + encodeURIComponent(val) + ';expires=' + d.toUTCString() + ';path=/';
+    }
+    function dupeGetCookie(name) {
+        var m = document.cookie.match('(?:^|; )' + name.replace(/([.*+?^${}()|[\]\\])/g, '\\$1') + '=([^;]*)');
+        return m ? decodeURIComponent(m[1]) : null;
+    }
+
+    // Liefert das Text-Eingabefeld des Attribut-Controls (Thema/Stichwort),
+    // ueber das edit.js' attr_add() neue Attribute hinzufuegt.
+    function getAttrInput(fieldName) {
+        var $hidden = $form.find('input[type=hidden][name="f_' + fieldName + '"]');
+        if (!$hidden.length) return null;
+        var $attr = $hidden.closest('.e_attr');
+        if (!$attr.length) return null;
+        var $input = $attr.find('input[type=text]').first();
+        return $input.length ? $input : null;
+    }
+
+    // IDs der aktuell im Formular gesetzten Erschliessung lesen (zum Abgleich mit
+    // den Duplikaten). Ausgewaehlte Attribute rendert das attr-Control als
+    // <span class="e_attritem" data-attrid="..."> innerhalb des jeweiligen .e_attr.
+    function currentThemaId() {
+        var $input = getAttrInput('thema');
+        if (!$input) return null;
+        var $item = $input.closest('.e_attr').find('.e_attritem[data-attrid]').first();
+        if (!$item.length) return null;
+        var v = parseInt($item.attr('data-attrid'), 10);
+        return isNaN(v) ? null : v;
+    }
+    function currentStichwortIds() {
+        var set = {};
+        var $input = getAttrInput('stichwort');
+        if (!$input) return set;
+        $input.closest('.e_attr').find('.e_attritem[data-attrid]').each(function() {
+            var v = parseInt($(this).attr('data-attrid'), 10);
+            if (!isNaN(v)) set[v] = true;
+        });
+        return set;
+    }
+
+    function themaLabel(thema) {
+        if (!thema) return '';
+        var k = thema.kuerzel ? (thema.kuerzel + ' ') : '';
+        return k + (thema.name || '');
+    }
+
+    // Thema oben ersetzen (SATTR: attr_add entfernt vorher den alten Wert)
+    function applyThema(partner) {
+        if (!partner.thema || !partner.thema.id) {
+            alert('Dieses Duplikat hat kein Thema hinterlegt.');
+            return false;
+        }
+        if (typeof attr_add !== 'function') {
+            alert('Interner Fehler: ' + Ue + 'bernahme-Funktion nicht verf' + ue + 'gbar.');
+            return false;
+        }
+        var $input = getAttrInput('thema');
+        if (!$input) {
+            alert('Das Themenfeld konnte in dieser Maske nicht gefunden werden.');
+            return false;
+        }
+        attr_add($input, partner.thema.name || ('ID ' + partner.thema.id), partner.thema.id, '');
+        return true;
+    }
+
+    // Stichwoerter oben ergaenzen (MATTR: nur die noch nicht vorhandenen)
+    function applyStichwoerter(partner) {
+        if (!partner.stichwoerter || !partner.stichwoerter.length) {
+            return { added: 0, skipped: 0, ok: true, empty: true };
+        }
+        if (typeof attr_add !== 'function') {
+            alert('Interner Fehler: ' + Ue + 'bernahme-Funktion nicht verf' + ue + 'gbar.');
+            return { added: 0, skipped: 0, ok: false };
+        }
+        var $input = getAttrInput('stichwort');
+        if (!$input) {
+            alert('Das Stichwortfeld konnte in dieser Maske nicht gefunden werden.');
+            return { added: 0, skipped: 0, ok: false };
+        }
+        var $attr = $input.closest('.e_attr');
+        var added = 0, skipped = 0;
+        partner.stichwoerter.forEach(function(sw) {
+            if (!sw || !sw.id) return;
+            if ($attr.find('.e_attritem[data-attrid="' + sw.id + '"]').length) {
+                skipped++;
+                return;
+            }
+            attr_add($input, sw.name || ('ID ' + sw.id), sw.id, sw.actype || '');
+            added++;
+        });
+        return { added: added, skipped: skipped, ok: true };
+    }
+
+    // kurzes visuelles Feedback neben einem Element
+    function flashOk($anchor) {
+        var $hint = $('<span style="color:#18a058;margin-left:6px;" title="' + Ue + 'bernommen">&#10003;</span>');
+        $anchor.after($hint);
+        setTimeout(function() {
+            $hint.fadeOut(900, function() { $(this).remove(); });
+        }, 1100);
+    }
+
+    // HTML fuer die Titelzeile eines Duplikats: vorangestellte Kurs-ID + (ggf. gekuerzter) Titel.
+    function titleLineHtml(p, i, expanded) {
+        var full = p.titel || '';
+        var truncated = full.length > TITLE_MAX;
+        var shown = (truncated && !expanded) ? full.substring(0, TITLE_MAX) : full;
+        var inner = '&quot;' + esc(shown);
+        if (truncated && !expanded) {
+            inner += '<span class="dupe-title-more" data-idx="' + i + '" style="cursor:pointer;color:#0a58ca;" title="vollst' + ae + 'ndigen Titel anzeigen">&hellip;</span>';
+        }
+        inner += '&quot;';
+        return '<a href="/admin/edit.php?table=kurse&id=' + encodeURIComponent(p.id) + '" target="_blank" rel="noopener" title="Kurs in neuem Tab ' + oe + 'ffnen">'
+            + '<span style="color:#555;">' + esc(p.id) + '</span> '
+            + '<em>' + inner + '</em></a>';
+    }
+
+    function renderSection(partners) {
+        // Hervorhebung fuer abweichende Erschliessung (Thema/Stichwoerter, die der
+        // aktuelle Kurs noch NICHT hat). Bewusst KEIN Link-/Button-Look: fette Schrift
+        // + dezent gelbe Markierung. Die Fettung ist ein zusaetzliches, farb-
+        // unabhaengiges Signal (auch bei ausgegrauten/gesperrten Zeilen erkennbar).
+        if (!document.getElementById('dupe-diff-style')) {
+            $('<style id="dupe-diff-style">'
+                + '.dupe-diff{font-weight:bold;background:#ffe9a8;border-radius:2px;padding:0 2px;'
+                + '-webkit-box-decoration-break:clone;box-decoration-break:clone;}'
+                + '</style>').appendTo('head');
+        }
+
+        // "Anmerkungen"-Sektion finden, davor einfuegen (= zwischen "mein NOW" und "Anmerkungen")
+        var $anmerk = $form.find('.e_section').filter(function() {
+            return $(this).text().replace(/\s+/g, ' ').trim() === 'Anmerkungen';
+        }).first();
+
+        var rows = partners.map(function(p, i) {
+            var anbieterLink = p.anbieter_id
+                ? '<a href="/admin/edit.php?table=anbieter&id=' + encodeURIComponent(p.anbieter_id) + '" target="_blank" rel="noopener" title="Anbieter in neuem Tab ' + oe + 'ffnen"><b>' + esc(p.anbieter_name) + '</b></a>'
+                : '<b>' + esc(p.anbieter_name) + '</b>';
+
+            var themaHtml = p.thema
+                ? '<span class="dupe-apply-thema" data-idx="' + i + '" data-themaid="' + esc(p.thema.id) + '" style="cursor:pointer;text-decoration:underline dotted;" title="Klicken, um dieses Thema oben zu ' + ue + 'bernehmen">' + esc(themaLabel(p.thema)) + '</span>'
+                : '<span style="color:#888;">(kein Thema)</span>';
+
+            // Stichwoerter als einzelne Spans (data-swid) rendern, damit abweichende
+            // (oben fehlende) Stichwoerter gezielt hervorgehoben werden koennen.
+            var swInner = (p.stichwoerter && p.stichwoerter.length)
+                ? p.stichwoerter.map(function(s) {
+                    return '<span class="dupe-sw" data-swid="' + esc(s.id) + '">' + esc(s.name) + '</span>';
+                  }).join(', ')
+                : '';
+            var swHtml = swInner
+                ? '<span class="dupe-apply-sw" data-idx="' + i + '" style="cursor:pointer;text-decoration:underline dotted;" title="Klicken, um diese Stichw' + oe + 'rter oben zu erg' + ae + 'nzen">' + swInner + '</span>'
+                : '<span style="color:#888;">(keine Stichw' + oe + 'rter)</span>';
+
+            // Gesperrt (2) / Abgelaufen (3) leicht ausgrauen - rein visuell,
+            // Links und Erschliessungs-Funktionen bleiben voll nutzbar (opacity deaktiviert nichts).
+            var st = parseInt(p.status, 10);
+            var muted = (st === 2 || st === 3);
+            var itemStyle = 'margin:0 0 0.9em 0;padding:0 0 0.7em 0;border-bottom:1px solid #e0e0e0;'
+                + (muted ? 'opacity:0.55;' : '');
+
+            return '<div class="dupe-edit-item" style="' + itemStyle + '">'
+                + '<div><span class="dupe-titleline" data-idx="' + i + '">' + titleLineHtml(p, i, false) + '</span> &ndash; Anbieter: ' + anbieterLink + '</div>'
+                + '<div style="margin-top:3px;">Status: ' + esc(p.status_name) + '</div>'
+                + '<div style="margin-top:3px;">Thema: ' + themaHtml + '</div>'
+                + '<div style="margin-top:3px;">Stichw' + oe + 'rter: ' + swHtml + '</div>'
+                + '<div style="margin-top:5px;"><button type="button" class="dupe-apply-all" data-idx="' + i + '" style="cursor:pointer;">gesamte Erschlie' + ss + 'ung ' + ue + 'bernehmen</button></div>'
+                + '</div>';
+        }).join('');
+
+        var collapsed = dupeGetCookie(COLLAPSE_COOKIE) === '1';
+        var indCollapsed = '&#9656;'; // > (eingeklappt)
+        var indExpanded  = '&#9662;'; // v (ausgeklappt)
+
+        var $header = $('<div class="e_section dupe-section-header" style="cursor:pointer;user-select:none;" title="Duplikate ein-/ausklappen">'
+            + '<span class="dupe-collapse-ind">' + (collapsed ? indCollapsed : indExpanded) + '</span> '
+            + 'Duplikate <span style="font-weight:normal;color:#888;">(' + partners.length + ')</span>'
+            + '</div>');
+
+        var $body = $('<table class="e_tb dupe-section-body"><tr>'
+            + '<td class="e_cll">Erkannte Duplikate:</td>'
+            + '<td class="e_clr"><div class="dupe-edit-list">' + rows + '</div></td>'
+            + '</tr></table>');
+
+        if (collapsed) { $body.hide(); }
+
+        if ($anmerk.length) {
+            $anmerk.before($header);
+            $anmerk.before($body);
+        } else {
+            // Fallback: ans Ende des Formularinhalts haengen
+            var $target = $form.find('.e_object').first();
+            $target.append($header);
+            $target.append($body);
+        }
+
+        // Abweichungen hervorheben: Thema, das vom aktuell gesetzten abweicht, sowie
+        // Stichwoerter des Duplikats, die der aktuelle Kurs (oben) noch nicht hat.
+        // Wird nach jeder Uebernahme erneut aufgerufen, damit die Markierung aktuell bleibt.
+        function refreshDiff() {
+            var curThema = currentThemaId();
+            var curSw = currentStichwortIds();
+            $body.find('.dupe-apply-thema[data-themaid]').each(function() {
+                var tid = parseInt($(this).attr('data-themaid'), 10);
+                $(this).toggleClass('dupe-diff', !isNaN(tid) && tid !== curThema);
+            });
+            $body.find('.dupe-sw[data-swid]').each(function() {
+                var sid = parseInt($(this).attr('data-swid'), 10);
+                var missing = !isNaN(sid) && !curSw[sid];
+                $(this).toggleClass('dupe-diff', missing);
+                if (missing) { $(this).attr('title', 'Dieses Stichwort fehlt im aktuellen Kurs'); }
+                else { $(this).removeAttr('title'); }
+            });
+        }
+        refreshDiff();
+
+        // --- Ein-/Ausklappen (Zustand im Cookie merken) ---
+        $header.on('click', function() {
+            var nowCollapsed = $body.is(':visible');
+            if (nowCollapsed) {
+                $body.slideUp(150);
+                $header.find('.dupe-collapse-ind').html(indCollapsed);
+                dupeSetCookie(COLLAPSE_COOKIE, '1');
+            } else {
+                $body.slideDown(150);
+                $header.find('.dupe-collapse-ind').html(indExpanded);
+                dupeSetCookie(COLLAPSE_COOKIE, '0');
+            }
+        });
+
+        // --- Titel ausklappen (Klick auf "...") ---
+        $body.on('click', '.dupe-title-more', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            var i = $(this).data('idx');
+            var p = partners[i];
+            if (!p) return;
+            $body.find('.dupe-titleline[data-idx="' + i + '"]').html(titleLineHtml(p, i, true));
+        });
+
+        // --- Interaktionen: Erschliessung uebernehmen ---
+        $body.on('click', '.dupe-apply-thema', function() {
+            var p = partners[$(this).data('idx')];
+            if (!p) return;
+            if (!confirm('Thema "' + themaLabel(p.thema) + '" ' + ue + 'bernehmen?\nDas aktuelle Thema oben wird ersetzt.')) return;
+            if (applyThema(p)) flashOk($(this));
+            refreshDiff();
+        });
+
+        $body.on('click', '.dupe-apply-sw', function() {
+            var p = partners[$(this).data('idx')];
+            if (!p) return;
+            if (!confirm('Stichw' + oe + 'rter dieses Duplikats ' + ue + 'bernehmen?\nFehlende Stichw' + oe + 'rter werden oben erg' + ae + 'nzt (vorhandene bleiben erhalten).')) return;
+            var res = applyStichwoerter(p);
+            if (res.ok) {
+                flashOk($(this));
+                if (res.added === 0) {
+                    alert('Alle Stichw' + oe + 'rter waren oben bereits vorhanden - nichts erg' + ae + 'nzt.');
+                }
+            }
+            refreshDiff();
+        });
+
+        $body.on('click', '.dupe-apply-all', function() {
+            var p = partners[$(this).data('idx')];
+            if (!p) return;
+            if (!confirm('Gesamte Erschlie' + ss + 'ung dieses Duplikats ' + ue + 'bernehmen?\n\n- Thema oben wird ersetzt\n- fehlende Stichw' + oe + 'rter werden oben erg' + ae + 'nzt\n\nDie ' + Ae + 'nderung wird erst mit dem Speichern des Kurses wirksam.')) return;
+
+            var themaOk = p.thema ? applyThema(p) : true;
+            var res = applyStichwoerter(p);
+
+            var msg = Ue + 'bernahme abgeschlossen:\n';
+            msg += p.thema ? ('- Thema: ' + themaLabel(p.thema) + '\n') : '- Thema: (keines vorhanden)\n';
+            if (res.ok) {
+                msg += '- Stichw' + oe + 'rter erg' + ae + 'nzt: ' + res.added + ' (bereits vorhanden: ' + res.skipped + ')';
+            }
+            msg += '\n\nBitte den Kurs noch speichern, damit die ' + Ae + 'nderung erhalten bleibt.';
+            alert(msg);
+
+            if (themaOk && res.ok) flashOk($(this));
+            refreshDiff();
+        });
+    }
+
+    // Duplikate laden und ggf. Sektion einfuegen
+    $.ajax({
+        url: '/admin/kurse_duplikate_partners.php',
+        method: 'GET',
+        dataType: 'json',
+        data: { id: kursId },
+        success: function(resp) {
+            if (!resp || !resp.success || !resp.partners || !resp.partners.length) return;
+            renderSection(resp.partners);
+        }
+        // Bei Fehler: still nichts anzeigen (Sektion ist optional/erganzend)
+    });
 });
 
 // ------------------------------

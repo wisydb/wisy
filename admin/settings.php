@@ -660,6 +660,11 @@ if( isset($settings_ok) || isset($settings_apply) )
 		if( regGet('edit.df.showchanges.use', 1) ) {
 		    regSet('edit.df.showchanges', isset( $_REQUEST['shchng'] ) && $_REQUEST['shchng'] ? 1:0, 1);
 		}
+		
+		// ... store Anzeige der Duplikate-Sektion in der Kurs-Bearbeitung (nur Tabelle "kurse")
+		if( $table_def && $table == 'kurse' ) {
+		    regSet('edit.kurse.showduplikate', isset( $_REQUEST['shdupe'] ) && $_REQUEST['shdupe'] ? 1 : 0, 1);
+		}
 	
 		// ... store skin
 		$skn_changed = 0;
@@ -1614,6 +1619,15 @@ $site->skin->sectionStart();
 
 
 		form_control_end();
+		
+		// Kurs-spezifisch: Anzeige der Duplikate-Sektion in der Bearbeitungsmaske (Standard: an)
+		if( $table_def && $table == 'kurse' )
+		{
+		    form_control_start('Duplikate');
+		    form_control_check('shdupe', regGet('edit.kurse.showduplikate', 1), '', 0, 1);
+		    echo '<label for="shdupe">Duplikate-Sektion in der Kursbearbeitung anzeigen</label><br>';
+		    form_control_end();
+		}
 
 		// date
 		form_control_start(htmlconstant('_SETTINGS_DATE'));

@@ -448,6 +448,12 @@ class WISY_KURS_RENDERER_CLASS
 			    echo $tag_cloud;
 			} // end: tag cloud
 			
+			// Aehnliche Kurse (KI-Duplikat-Vorschlaege): direkt unterhalb der
+			// "Suchbegriffe"/Tag-Cloud bzw. - wenn diese per sw_cloud.kurs_anzeige
+			// ausgeblendet ist - unterhalb der Termine-Tabelle (die Section ist hier
+			// bereits geschlossen). Eigene Sichtbarkeits-/Datenlogik in der Methode.
+			$this->renderDuplikatVerweise($kursId, $anbieterId);
+			
 			$kerst = $this->framework->iniRead('kursinfo.erstellt', 1);
 			$kaend = $this->framework->iniRead('kursinfo.geaendert', 1);
 			$kvollst = $this->framework->iniRead('kursinfo.vollstaendigkeit', 1);
@@ -519,6 +525,97 @@ class WISY_KURS_RENDERER_CLASS
 			echo $this->framework->getEpilogue();
 			
 	} // end: render()
+	
+	// Aehnliche Kurse (KI-Duplikat-Vorschlaege) auf der Kurs-Detailseite.
+	// Wird nur ausgegeben, wenn die Portaleinstellung kurse.duplikate_verweise=1
+	// ist (Default 0 = nicht anzeigen) UND es zum aufgerufenen Kurs bestaetigte
+	// Duplikate gibt, deren Partner-Kurs aktuell sichtbar ist.
+	function renderDuplikatVerweise($kursId, $anbieterId)
+	{
+	    // Portaleinstellung: 0 = nicht anzeigen (Default), 1 = anzeigen
+	    if( intval($this->framework->iniRead('kurse.duplikate_verweise', 0)) != 1 )
+	        return;
+	        
+	        $kursId     = intval($kursId);
+	        $anbieterId = intval($anbieterId);
+	        if( $kursId <= 0 )
+	            return;
+	            
+	            // Partner-Kurse aus kurse_duplikate laden. Der aufgerufene Kurs kann als
+	            // kurse_id1 ODER kurse_id2 auftreten -> der Partner ist jeweils die
+	            // "andere" ID. Es zaehlen nur als Duplikat bestaetigte Paare (duplikat=1).
+	            // Status/Titel/Anbieter werden bewusst LIVE aus den Tabellen kurse/anbieter
+	            // gelesen (nicht aus den Snapshot-Spalten in kurse_duplikate), damit keine
+	            // veralteten/geloeschten Kurse verlinkt werden. Sichtbar nur, wenn der
+	            // Partner-Kurs den Status "Freigegeben" (1) oder "Dauerhaft" (4) hat und
+	            // dessen Anbieter freigeschaltet ist. Reihenfolge: eigener Anbieter zuerst,
+	            // danach uebrige Anbieter alphabetisch, dann nach Titel.
+	            $dbDup = new DB_Admin();
+	            $dbDup->query(
+	                "SELECT kd.duplikat_grund,"
+	                . "       k.id AS partner_id, k.titel AS partner_titel,"
+	                . "       a.id AS partner_anbieter_id, a.suchname AS partner_anbieter_name"
+	                . "  FROM kurse_duplikate kd"
+	                . "  JOIN kurse k ON k.id = IF(kd.kurse_id1=$kursId, kd.kurse_id2, kd.kurse_id1)"
+	                . "  JOIN anbieter a ON a.id = k.anbieter"
+	                . " WHERE kd.duplikat = 1"
+	                . "   AND (kd.kurse_id1=$kursId OR kd.kurse_id2=$kursId)"
+	                . "   AND k.id <> $kursId"
+	                . "   AND k.freigeschaltet IN (1,4)"
+	                . "   AND a.freigeschaltet = 1"
+	                . " ORDER BY (a.id=$anbieterId) DESC, a.suchname ASC, k.titel ASC"
+	                );
+	            
+	            $cards = array();
+	            while( $dbDup->next_record() ) {
+	                $cards[] = array(
+	                    'partner_id'            => intval($dbDup->f('partner_id')),
+	                    'partner_titel'         => strval($dbDup->fcs8('partner_titel')),
+	                    'partner_anbieter_id'   => intval($dbDup->f('partner_anbieter_id')),
+	                    'partner_anbieter_name' => strval($dbDup->fcs8('partner_anbieter_name')),
+	                    'grund'                 => strval($dbDup->fcs8('duplikat_grund')),
+	                );
+	            }
+	            
+	            // Keine sichtbaren Duplikate -> Bereich gar nicht anzeigen.
+	            if( count($cards) == 0 )
+	                return;
+	                
+	                $fav_use = $this->framework->iniRead('fav.use', 0);
+	                
+	                echo '<section class="wisyr_kurs_duplikate noprint">';
+	                echo '<h2 class="wisyr_dup_headline">&Auml;hnliche Kurse, die Sie interessieren k&ouml;nnten <span class="wisyr_dup_kihint">(KI-Vorschl&auml;ge)</span></h2>';
+	                echo '<ul class="wisyr_dupcards">';
+	                foreach( $cards as $c ) {
+	                    $kursUrl     = $this->framework->getUrl('k', array('id'=>$c['partner_id']));
+	                    $anbieterUrl = $this->framework->getUrl('a', array('id'=>$c['partner_anbieter_id']));
+	                    $titel       = htmlspecialchars($c['partner_titel']);
+	                    $anbName     = htmlspecialchars($c['partner_anbieter_name']);
+	                    
+	                    // Fuehrenden KI-Marker (::gleich:: / ::unterschiedlich::) entfernen.
+	                    $grund = preg_replace('/^\s*::[a-zA-Z]+::\s*/', '', $c['grund']);
+	                    $grund = htmlspecialchars(trim($grund));
+	                    
+	                    echo '<li class="wisyr_dupcard">';
+	                    // Favoriten-Stern: das leere .fav_add dient nur als Marker;
+	                    // jquery.wisy.js haengt den klickbaren Stern an dessen Parent an.
+	                    if( $fav_use )
+	                        echo '<span class="wisyr_dupcard_fav"><span class="fav_add" data-favid="'.$c['partner_id'].'"></span></span>';
+	                        
+	                        echo '<a class="wisyr_dupcard_titel" href="'.$kursUrl.'" target="_blank" rel="noopener noreferrer">'.$titel.'</a>';
+	                        echo '<span class="wisyr_dupcard_anbieter"><a href="'.$anbieterUrl.'" target="_blank" rel="noopener noreferrer">'.$anbName.'</a></span>';
+	                        
+	                        if( $grund != '' ) {
+	                            echo '<details class="wisyr_dupcard_grund">';
+	                            echo '<summary><span class="wisyr_dupcard_q" aria-hidden="true">?</span> &Auml;hnlichkeit erkl&auml;ren</summary>';
+	                            echo '<div class="wisyr_dupcard_grund_text">'.$grund.'</div>';
+	                            echo '</details>';
+	                        }
+	                        echo '</li>';
+	                }
+	                echo '</ul>';
+	                echo '</section><!-- /.wisyr_kurs_duplikate -->';
+	} // end: renderDuplikatVerweise()
 	
 	function filter_foreign_k(&$db, $wisyPortalId, $kursId, $date_created, $no404 = false) {
 	    
