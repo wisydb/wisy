@@ -219,6 +219,14 @@ $anbieter->add_row(TABLE_INT|TABLE_READONLY,                    'x_cntkurse_stat
 $anbieter->add_row(TABLE_INT|TABLE_READONLY,                    'x_cntkurse_status_4', 'Kurse Dauerhaft ', '', '', '', array( 'layout.defhide'=>1, 'layout.join'=>1 ) );
 
 
+// NOW (mein NOW): Status der Einwilligung zur Datenuebermittlung an mein-now.de.
+// READONLY -> NICHT durch die Redaktion aenderbar; Aenderungen ausschliesslich
+// ueber das Einwilligungs-/Widerrufsformular (/now-einwilligung/). Den
+// personalisierten Link je Anbieter zeigt der Menuepunkt "NOW-Einwilligung"
+// (edit_plugin_anbieter_0) inkl. Einwilligungs-Historie/Export.
+$anbieter->add_row(TABLE_ENUM|TABLE_READONLY|TABLE_NEWSECTION, 'now_zustimmung', 'NOW-Datenuebermittlung', 0, '0###nein (gesperrt / kein Versand)###1###ja (Einwilligung erteilt)', 'mein NOW', array('layout.section'=>'mein NOW', 'help.tooltip'=>'Status der Einwilligung zur Uebermittlung an mein-now.de. Nur ueber das Einwilligungsformular aenderbar, nicht hier.'));
+
+
 $anbieter->rows[$use_neweditor? 10 : 2]->addparam = $anbieter;
 
 

@@ -1,5 +1,5 @@
 # ignore configuration file as this may contain passwords
-config.inc.php
+# config.inc.php
 
 # ignore directories not belonging to the core
 /files/

@@ -12,6 +12,7 @@ define('_EXP_TMALLERNEN',              "1001 mal Lernen");
 define('_INDEX_PLUGIN_ANBIETER_0',     "MultiEdit");
 define('_INDEX_PLUGIN_ANBIETER_1',     "Rundschreiben");
 define('_INDEX_PLUGIN_ANBIETER_2',     "Rundschreiben via Kunden - E-Mail");
+define('_EDIT_PLUGIN_ANBIETER_0',      "NOW-Einwilligung");
 define('_INDEX_PLUGIN_GLOSSAR_0',      "MultiEdit");
 define('_INDEX_PLUGIN_KURSE_0',        "MultiEdit");
 define('_INDEX_PLUGIN_KURSE_1',        "Adr.Probleme (Umkr.Suche)");

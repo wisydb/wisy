@@ -89,12 +89,53 @@ CREATE TABLE `anbieter` (
 -- Trigger `anbieter`
 --
 DELIMITER $$
-CREATE TRIGGER `anbieter_bi_v9_10_1` BEFORE INSERT ON `anbieter` FOR EACH ROW BEGIN 
+CREATE TRIGGER `anbieter_bi_v9_10_1` BEFORE INSERT ON `anbieter` FOR EACH ROW BEGIN
 SET auto_increment_increment = 10;
 SET auto_increment_offset = 1;
 END
 $$
 DELIMITER ;
+
+-- --------------------------------------------------------
+
+--
+-- Tabellenstruktur fuer Tabelle `anbieter_now_einwilligung`
+--
+-- Revisionssichere Historie der Anbieter-Einwilligungen zur Uebermittlung an
+-- das nationale Portal "mein NOW" (mein-now.de). Append-only: pro Ereignis
+-- (Erteilung oder Widerruf) wird genau ein Datensatz angelegt; der aktuelle
+-- Stand ist jeweils der neueste Datensatz pro `anbieter`.
+--
+-- Das Live-Flag, das der mein-NOW-Adapter auswertet, ist
+-- `anbieter`.`now_zustimmung` (1 = uebermitteln, 0 = nicht uebermitteln).
+-- Diese Tabelle dient der Dokumentation/Beweissicherung (welche Texte wann
+-- in welcher Version von wem bestaetigt wurden) und der Versionierung fuer
+-- spaetere Anschreiben/Aenderungen.
+--
+-- Kodierung wie das uebrige WISY: latin1 (ISO-8859-1).
+--
+
+CREATE TABLE `anbieter_now_einwilligung` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `anbieter` int(11) NOT NULL DEFAULT 0,
+  `anbieter_suchname` varchar(200) NOT NULL DEFAULT '',
+  `datum` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `aktion` varchar(20) NOT NULL DEFAULT 'erteilt',
+  `vorname` varchar(200) NOT NULL DEFAULT '',
+  `nachname` varchar(200) NOT NULL DEFAULT '',
+  `email_bestaetigung` varchar(200) NOT NULL DEFAULT '',
+  `version_paket` varchar(40) NOT NULL DEFAULT '',
+  `version_now_rechte` varchar(40) NOT NULL DEFAULT '',
+  `version_agb` varchar(40) NOT NULL DEFAULT '',
+  `version_datenschutz` varchar(40) NOT NULL DEFAULT '',
+  `text_now_rechte` longtext NOT NULL,
+  `text_agb` longtext NOT NULL,
+  `text_datenschutz` longtext NOT NULL,
+  `hash` varchar(64) NOT NULL DEFAULT '',
+  PRIMARY KEY (`id`),
+  KEY `anbieter` (`anbieter`),
+  KEY `datum` (`datum`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 -- --------------------------------------------------------
 
