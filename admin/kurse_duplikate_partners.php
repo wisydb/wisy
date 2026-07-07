@@ -18,7 +18,8 @@
  *       {
  *         id, titel, anbieter_id, anbieter_name,
  *         thema: { id, kuerzel, name } | null,
- *         stichwoerter: [ { id, name, actype }, ... ]
+ *         stichwoerter: [ { id, name, actype }, ... ],
+ *         grund: "<KI-Begruendung der Duplikat-Einschaetzung>" | ""
  *       }, ...
  *     ]
  *   }
@@ -53,10 +54,14 @@ if (intval(regGet('edit.kurse.showduplikate', 1)) === 0) {
 
 $db = new DB_Admin();
 
-// 1) Partner-IDs aus den echten Duplikat-Paaren ermitteln
+// 1) Partner-IDs aus den echten Duplikat-Paaren ermitteln.
+//    Zusaetzlich je Partner die KI-Begruendung (duplikat_grund) merken, damit
+//    die Edit-Maske "Aehnlichkeit erklaeren (KI)" anbieten kann - analog zur
+//    Frontend-Karte auf der Kurs-Detailseite (renderDuplikatVerweise).
 $partnerIds = array();
+$grundByPartner = array();   // partnerId => bereinigte KI-Begruendung
 $db->query(
-    "SELECT kurse_id1, kurse_id2 FROM kurse_duplikate "
+    "SELECT kurse_id1, kurse_id2, duplikat_grund FROM kurse_duplikate "
     . "WHERE duplikat=1 AND (kurse_id1=" . $id . " OR kurse_id2=" . $id . ")"
 );
 while ($db->next_record()) {
@@ -65,6 +70,13 @@ while ($db->next_record()) {
     $partnerId = ($cid1 === $id) ? $cid2 : $cid1;
     if ($partnerId > 0 && $partnerId !== $id) {
         $partnerIds[$partnerId] = $partnerId;
+        if (!isset($grundByPartner[$partnerId]) || $grundByPartner[$partnerId] === '') {
+            // Fuehrenden KI-Marker (::gleich:: / ::unterschiedlich::) entfernen,
+            // gleiche Bereinigung wie im Frontend (wisy-kurs-renderer-class.inc.php).
+            $grund = $db->f8('duplikat_grund');
+            $grund = preg_replace('/^\s*::[a-zA-Z]+::\s*/', '', $grund !== null ? $grund : '');
+            $grundByPartner[$partnerId] = trim($grund);
+        }
     }
 }
 
@@ -175,6 +187,7 @@ foreach ($courses as $cid => $c) {
         'sortprio'      => $c['sortprio'],
         'thema'         => $thema,
         'stichwoerter'  => $c['stichwoerter'],
+        'grund'         => isset($grundByPartner[$cid]) ? $grundByPartner[$cid] : '',
     );
 }
 

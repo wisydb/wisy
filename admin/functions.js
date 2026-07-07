@@ -2027,6 +2027,19 @@ $(function() {
                 ? '<span class="dupe-apply-sw" data-idx="' + i + '" style="cursor:pointer;text-decoration:underline dotted;" title="Klicken, um diese Stichw' + oe + 'rter oben zu erg' + ae + 'nzen">' + swInner + '</span>'
                 : '<span style="color:#888;">(keine Stichw' + oe + 'rter)</span>';
 
+            // Ausklappbare KI-Begruendung ("Aehnlichkeit erklaeren (KI)") - analog zur
+            // Frontend-Karte auf der Kurs-Detailseite (wisyr_dupcard_grund). Ein
+            // natives <details>-Element genuegt, es ist kein Klick-Handler noetig.
+            // Nur anzeigen, wenn der KI-Lauf eine Begruendung gespeichert hat.
+            var grundHtml = (p.grund && String(p.grund).replace(/\s+/g, '') !== '')
+                ? '<details class="dupe-grund" style="margin-top:4px;">'
+                    + '<summary style="cursor:pointer;color:#0a58ca;" title="KI-Begr' + ue + 'ndung der Duplikat-Einsch' + ae + 'tzung anzeigen">'
+                    + '<span aria-hidden="true" style="display:inline-block;width:1.15em;height:1.15em;line-height:1.15em;text-align:center;border:1px solid currentColor;border-radius:50%;font-size:0.85em;font-weight:bold;">?</span> '
+                    + '&Auml;hnlichkeit erkl&auml;ren (KI)</summary>'
+                    + '<div style="margin:3px 0 0 1.4em;max-width:60em;color:#555;font-style:italic;">' + esc(p.grund) + '</div>'
+                    + '</details>'
+                : '';
+
             // Gesperrt (2) / Abgelaufen (3) leicht ausgrauen - rein visuell,
             // Links und Erschliessungs-Funktionen bleiben voll nutzbar (opacity deaktiviert nichts).
             var st = parseInt(p.status, 10);
@@ -2039,6 +2052,7 @@ $(function() {
                 + '<div style="margin-top:3px;">Status: ' + esc(p.status_name) + '</div>'
                 + '<div style="margin-top:3px;">Thema: ' + themaHtml + '</div>'
                 + '<div style="margin-top:3px;">Stichw' + oe + 'rter: ' + swHtml + '</div>'
+                + grundHtml
                 + '<div style="margin-top:5px;"><button type="button" class="dupe-apply-all" data-idx="' + i + '" style="cursor:pointer;">gesamte Erschlie' + ss + 'ung ' + ue + 'bernehmen</button></div>'
                 + '</div>';
         }).join('');
