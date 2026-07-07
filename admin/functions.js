@@ -2171,6 +2171,169 @@ $(function() {
         });
     }
 
+    // ============================================================
+    // Erschliessungs-Vorschlaege fuer die Redaktion (statistisch, ohne KI-Lauf):
+    //  - Themen/Stichwoerter der aehnlichsten, bereits erschlossenen Kurse
+    //    (Volltext-Index titel_beschreibung, "more like this") und
+    //  - Stichwoerter, deren Name woertlich im Kurstext vorkommt.
+    // Datenquelle: admin/kurse_erschliessung_vorschlaege.php. Uebernahme wie in
+    // der Duplikate-Sektion clientseitig per attr_add -> wirksam erst beim Speichern.
+    // ============================================================
+    var VS_COLLAPSE_COOKIE = 'vorschlag_section_collapsed';
+
+    function loadVorschlaege() {
+        $.ajax({
+            url: '/admin/kurse_erschliessung_vorschlaege.php',
+            method: 'GET',
+            dataType: 'json',
+            data: { id: kursId },
+            success: function(resp) {
+                if (!resp || !resp.success || resp.disabled) return;
+                var hasThemen = resp.themen && resp.themen.length;
+                var hasSw = resp.stichwoerter && resp.stichwoerter.length;
+                if (!hasThemen && !hasSw) return;
+                renderVorschlaege(resp);
+            }
+            // Bei Fehler: still nichts anzeigen (Sektion ist optional/erganzend)
+        });
+    }
+
+    function renderVorschlaege(resp) {
+        var themen = resp.themen || [];
+        var sws = resp.stichwoerter || [];
+        var aehnliche = resp.aehnliche || [];
+
+        var chipStyle = 'display:inline-block;margin:2px 5px 2px 0;padding:1px 9px;'
+            + 'border:1px solid #9db4d0;border-radius:10px;cursor:pointer;background:#f4f8ff;';
+
+        // Tooltip mit Herkunftsnachweis des Vorschlags
+        function quellenTitle(s) {
+            var parts = [];
+            if (s.quellen && s.quellen.length) {
+                parts.push('aus ' + ae + 'hnlichen Kursen: ' + s.quellen.join(', '));
+            }
+            if (s.imtext) {
+                parts.push('kommt im Kurstext vor');
+            }
+            parts.push('Klicken zum ' + Ue + 'bernehmen (wirksam erst beim Speichern)');
+            return parts.join(' | ');
+        }
+
+        var themenHtml = themen.map(function(t, i) {
+            return '<span class="vs-thema" data-idx="' + i + '" style="' + chipStyle + '" title="' + esc(quellenTitle(t)) + '">'
+                + esc((t.kuerzel ? t.kuerzel + ' ' : '') + t.name) + '</span>';
+        }).join('');
+
+        var swHtml = sws.map(function(s, i) {
+            return '<span class="vs-sw" data-idx="' + i + '" style="' + chipStyle + '" title="' + esc(quellenTitle(s)) + '">'
+                + esc(s.name) + (s.imtext ? ' <span style="color:#888;" aria-hidden="true">&para;</span>' : '') + '</span>';
+        }).join('');
+
+        var quellenLine = aehnliche.length
+            ? '<div style="margin:0 0 6px 0;color:#666;">Grundlage &ndash; ' + ae + 'hnlichste erschlossene Kurse: '
+                + aehnliche.map(function(a) {
+                    return '<a href="/admin/edit.php?table=kurse&id=' + encodeURIComponent(a.id) + '" target="_blank" rel="noopener" title="' + esc(String(a.titel)).replace(/"/g, '&quot;') + '">' + esc(a.id) + '</a>'
+                        + ' <span style="color:#999;">(' + esc(a.prozent) + '%)</span>';
+                  }).join(', ')
+                + '</div>'
+            : '';
+
+        var hint = '<div style="margin-top:6px;color:#888;font-size:0.92em;">Statistisch ermittelte Vorschl' + ae + 'ge '
+            + '(&para; = kommt im Kurstext vor) &ndash; bitte nur fachlich Passendes anklicken; '
+            + 'wirksam wird die ' + Ue + 'bernahme erst mit dem Speichern des Kurses.</div>';
+
+        var collapsed = dupeGetCookie(VS_COLLAPSE_COOKIE) === '1';
+        var indCollapsed = '&#9656;'; // > (eingeklappt)
+        var indExpanded  = '&#9662;'; // v (ausgeklappt)
+
+        var $header = $('<div class="e_section vs-section-header" style="cursor:pointer;user-select:none;" title="Erschlie' + ss + 'ungsvorschl' + ae + 'ge ein-/ausklappen">'
+            + '<span class="vs-collapse-ind">' + (collapsed ? indCollapsed : indExpanded) + '</span> '
+            + 'Erschlie' + ss + 'ungsvorschl' + ae + 'ge <span style="font-weight:normal;color:#888;">(' + (themen.length + sws.length) + ')</span>'
+            + '</div>');
+
+        var bodyInner = quellenLine
+            + (themen.length ? '<div style="margin:0 0 4px 0;">Themen-Vorschl' + ae + 'ge: ' + themenHtml + '</div>' : '')
+            + (sws.length ? '<div>Stichwort-Vorschl' + ae + 'ge: ' + swHtml + '</div>' : '')
+            + hint;
+
+        var $body = $('<table class="e_tb vs-section-body"><tr>'
+            + '<td class="e_cll">Vorschl' + ae + 'ge:</td>'
+            + '<td class="e_clr">' + bodyInner + '</td>'
+            + '</tr></table>');
+
+        if (collapsed) { $body.hide(); }
+
+        // Vor "Anmerkungen" einfuegen; da loadVorschlaege erst im complete-Callback
+        // der Duplikate-Anfrage laeuft, landet die Sektion stets NACH einer ggf.
+        // vorhandenen Duplikate-Sektion (deterministische Reihenfolge).
+        var $anmerk = $form.find('.e_section').filter(function() {
+            return $(this).text().replace(/\s+/g, ' ').trim() === 'Anmerkungen';
+        }).first();
+        if ($anmerk.length) {
+            $anmerk.before($header);
+            $anmerk.before($body);
+        } else {
+            var $target = $form.find('.e_object').first();
+            $target.append($header);
+            $target.append($body);
+        }
+
+        // Chips ausgrauen, deren Thema/Stichwort im Formular bereits gesetzt ist.
+        // Wird nach jeder Uebernahme erneut aufgerufen; die Klick-Handler pruefen
+        // den Zustand zusaetzlich live (falls z.B. via Duplikate-Sektion uebernommen).
+        function refreshChips() {
+            var curThema = currentThemaId();
+            var curSw = currentStichwortIds();
+            $body.find('.vs-thema').each(function() {
+                var t = themen[$(this).data('idx')];
+                var have = t && curThema === t.id;
+                $(this).css({ opacity: have ? 0.45 : 1, cursor: have ? 'default' : 'pointer' });
+                if (have) { $(this).attr('title', 'bereits als Thema gesetzt'); }
+            });
+            $body.find('.vs-sw').each(function() {
+                var s = sws[$(this).data('idx')];
+                var have = s && !!curSw[s.id];
+                $(this).css({ opacity: have ? 0.45 : 1, cursor: have ? 'default' : 'pointer' });
+                if (have) { $(this).attr('title', 'bereits vorhanden'); }
+            });
+        }
+        refreshChips();
+
+        // --- Ein-/Ausklappen (Zustand im Cookie merken) ---
+        $header.on('click', function() {
+            var nowCollapsed = $body.is(':visible');
+            if (nowCollapsed) {
+                $body.slideUp(150);
+                $header.find('.vs-collapse-ind').html(indCollapsed);
+                dupeSetCookie(VS_COLLAPSE_COOKIE, '1');
+            } else {
+                $body.slideDown(150);
+                $header.find('.vs-collapse-ind').html(indExpanded);
+                dupeSetCookie(VS_COLLAPSE_COOKIE, '0');
+            }
+        });
+
+        // --- Interaktionen: Vorschlag uebernehmen (nutzt die Helfer der
+        //     Duplikate-Sektion: applyThema/applyStichwoerter/attr_add) ---
+        $body.on('click', '.vs-thema', function() {
+            var t = themen[$(this).data('idx')];
+            if (!t) return;
+            if (currentThemaId() === t.id) return; // bereits gesetzt
+            if (!confirm('Thema "' + (t.kuerzel ? t.kuerzel + ' ' : '') + t.name + '" ' + ue + 'bernehmen?\nDas aktuelle Thema oben wird ersetzt.')) return;
+            if (applyThema({ thema: t })) flashOk($(this));
+            refreshChips();
+        });
+
+        $body.on('click', '.vs-sw', function() {
+            var s = sws[$(this).data('idx')];
+            if (!s) return;
+            if (currentStichwortIds()[s.id]) return; // bereits vorhanden
+            var res = applyStichwoerter({ stichwoerter: [ { id: s.id, name: s.name, actype: s.actype || '' } ] });
+            if (res.ok && res.added > 0) flashOk($(this));
+            refreshChips();
+        });
+    }
+
     // Duplikate laden und ggf. Sektion einfuegen
     $.ajax({
         url: '/admin/kurse_duplikate_partners.php',
@@ -2180,8 +2343,14 @@ $(function() {
         success: function(resp) {
             if (!resp || !resp.success || !resp.partners || !resp.partners.length) return;
             renderSection(resp.partners);
+        },
+        // Bei Fehler: still nichts anzeigen (Sektion ist optional/erganzend).
+        // complete laeuft nach success/error: die Erschliessungs-Vorschlaege werden
+        // erst danach geladen, damit ihre Einfuegung vor "Anmerkungen" immer NACH
+        // der Duplikate-Sektion erfolgt (deterministische Reihenfolge in der Maske).
+        complete: function() {
+            loadVorschlaege();
         }
-        // Bei Fehler: still nichts anzeigen (Sektion ist optional/erganzend)
     });
 });
 

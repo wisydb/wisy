@@ -665,6 +665,11 @@ if( isset($settings_ok) || isset($settings_apply) )
 		if( $table_def && $table == 'kurse' ) {
 		    regSet('edit.kurse.showduplikate', isset( $_REQUEST['shdupe'] ) && $_REQUEST['shdupe'] ? 1 : 0, 1);
 		}
+
+		// ... store Anzeige der Erschliessungsvorschlaege-Sektion in der Kurs-Bearbeitung (nur Tabelle "kurse")
+		if( $table_def && $table == 'kurse' ) {
+		    regSet('edit.kurse.showvorschlaege', isset( $_REQUEST['shvorschlag'] ) && $_REQUEST['shvorschlag'] ? 1 : 0, 1);
+		}
 	
 		// ... store skin
 		$skn_changed = 0;
@@ -1626,6 +1631,15 @@ $site->skin->sectionStart();
 		    form_control_start('Duplikate');
 		    form_control_check('shdupe', regGet('edit.kurse.showduplikate', 1), '', 0, 1);
 		    echo '<label for="shdupe">Duplikate-Sektion in der Kursbearbeitung anzeigen</label><br>';
+		    form_control_end();
+		}
+
+		// Kurs-spezifisch: Anzeige der Erschliessungsvorschlaege-Sektion in der Bearbeitungsmaske (Standard: an)
+		if( $table_def && $table == 'kurse' )
+		{
+		    form_control_start('Erschlie&szlig;ungsvorschl&auml;ge');
+		    form_control_check('shvorschlag', regGet('edit.kurse.showvorschlaege', 1), '', 0, 1);
+		    echo '<label for="shvorschlag">Erschlie&szlig;ungsvorschl&auml;ge-Sektion in der Kursbearbeitung anzeigen</label><br>';
 		    form_control_end();
 		}
 
