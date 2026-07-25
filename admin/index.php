@@ -1186,7 +1186,7 @@ if( $select_numrows )
 			
 			echo " &nbsp; <a href='#' rel='noopener noreferrer' onclick='exportTableToCSV( document, \"table.tb > thead tr\", \"table.tb > tbody tr\" )' id='csvExportTable'><img src='/admin/lib/exp/CSV.png' style='height:20px;' alt='Exportiere Tabelle dieser Ansicht als CSV-Datei'></a>";
 			
-			echo " &nbsp; <a href='#' rel='noopener noreferrer' onclick='exportTableToCSV( document, false, \"table tr\", \"/admin/print.php?table=kurse&id=&prevview=list&printArea=selected&view=list&pagebreak=0&repeathead=1&ok=Drucken\" )' id='csvExportTable'><img src='/admin/lib/exp/CSV_plus.png' style='height:20px;' alt='Exportiere Tabelle aller Reiter als CSV-Datei'></a>";
+			echo " &nbsp; <a href='#' rel='noopener noreferrer' onclick='exportTableToCSV( document, false, \"table tr\", \"/admin/print.php?table=$table&id=&prevview=list&printArea=selected&view=list&pagebreak=0&repeathead=1&ok=Drucken\" )' id='csvExportTable'><img src='/admin/lib/exp/CSV_plus.png' style='height:20px;' alt='Exportiere Tabelle aller Reiter als CSV-Datei'></a>";
 			
 			if( !isset($_REQUEST['selectobject']) ) {
 			    echo " &nbsp; <a href=\"log.php?table=$table\" target=\"_blank\" rel=\"noopener noreferrer\">" . htmlconstant('_LOG') . '</a>';

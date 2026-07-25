@@ -2891,6 +2891,9 @@ class WISY_FRAMEWORK_CLASS
 	
 			case 'tree':
 				return createWisyObject('WISY_TREE_RENDERER_CLASS', $this);
+
+			case 'thesaurus':
+				return createWisyObject('WISY_THESAURUS_RENDERER_CLASS', $this);
 	
 			case 'geocode':
 				return createWisyObject('WISY_OPENSTREETMAP_CLASS', $this);

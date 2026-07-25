@@ -373,10 +373,13 @@ class WISY_EDIT_RENDERER_CLASS
 		
 			$ret .= 'f&uuml;r Anbieter: ';
 
-			// link "meine kurse"		
+			// link "meine kurse"
 			$q = (isset($_SESSION['loggedInAnbieterTag']) ? $_SESSION['loggedInAnbieterTag'] : '') . ', Datum:Alles';
-			$ret .=  '<a href="' . $this->framework->getUrl('search', array('q'=>$q)) . '">Alle Kurse</a>';
-			
+			$ret .=  '<a href="' . $this->framework->getUrl('search', array('q'=>$q)) . '">Alle Kurse anzeigen</a>';
+
+			// link "csv-export"
+			$ret .=  ' | <a href="edit?action=exportcsv" title="Alle Kurse und Durchf&uuml;hrungen als CSV-Datei im Format der Import-Musterdatei herunterladen">&darr;&nbsp;Alle Kurse als .csv exportieren</a>';
+
 			// link "kurs bearbeiten"
 			global $wisyRequestedFile;
 			if( $wisyRequestedFile[0] == 'k' && ($kursId=intval(substr($wisyRequestedFile, 1))) > 0 )
@@ -2700,9 +2703,227 @@ class WISY_EDIT_RENDERER_CLASS
 	}
 	 
 	 /**************************************************************************
+	 * CSV-Export: Alle Kurse des eingeloggten Anbieters
+	 **************************************************************************/
+
+	protected function csvCell($str)
+	{
+		// Feld fuer semikolon-getrennte CSV-Datei quoten (Excel-Konvention)
+		$str = strval($str);
+		$str = str_replace("\r\n", "\n", $str);
+		if( strpbrk($str, ";\"\n\r") !== false ) {
+			$str = '"' . str_replace('"', '""', $str) . '"';
+		}
+		return $str;
+	}
+
+	protected function csvDatum($sqldatum)
+	{
+		if( $sqldatum == '' || substr(strval($sqldatum), 0, 10) == '0000-00-00' ) {
+			return '';
+		}
+		$t = explode(' ', strtr($sqldatum, '-:', '  '));
+		return $t[2] . '.' . $t[1] . '.' . $t[0]; // TT.MM.JJJJ (DBMix-Standardpattern dd.MM.yyyy)
+	}
+
+	protected function csvBr($str)
+	{
+		// Zeilenumbrueche gemaess DBMix-/Import-Konvention als <br> ausgeben
+		// (DBMix konvertiert <br> beim Import zurueck; vermeidet mehrzeilige Zellen in der Excel->Access-Kette)
+		return str_replace(array("\r\n", "\r", "\n"), '<br>', strval($str));
+	}
+
+	protected function csvSplitKinfo($beschreibung)
+	{
+		// Kursbeschreibung auf die DBMix-Feldgrenzen aufteilen: KINFO1 max. 2800 Zeichen, KINFO2-KINFO9 je max. 280 Zeichen.
+		// Getrennt wird an Wortgrenzen; das Trennzeichen bleibt am Blockende erhalten, da DBMix die KINFO-Felder
+		// beim Import ohne Zwischenraum wieder zusammenfuegt. Ein etwaiger Rest verbleibt komplett in KINFO9
+		// (dann zwar laenger als 280 Zeichen, aber kein stiller Datenverlust).
+		$limits = array(2800, 280, 280, 280, 280, 280, 280, 280);
+		$kinfo = array_fill(0, 9, '');
+		$rest = strval($beschreibung);
+		for( $i = 0; $i < 8; $i++ )
+		{
+			if( strlen($rest) <= $limits[$i] ) {
+				$kinfo[$i] = $rest;
+				return $kinfo;
+			}
+			$cut = strrpos(substr($rest, 0, $limits[$i]), ' ');
+			if( $cut === false || $cut < $limits[$i]/2 ) { $cut = $limits[$i]-1; }
+			$kinfo[$i] = substr($rest, 0, $cut+1);
+			$rest = substr($rest, $cut+1);
+		}
+		$kinfo[8] = $rest;
+		return $kinfo;
+	}
+
+	function renderExportCsv()
+	{
+		$loggedInAnbieterId = intval($this->framework->getEditAnbieterId());
+		if( $loggedInAnbieterId <= 0 ) {
+			$this->renderLoginScreen();
+			return;
+		}
+
+		// Codes aus admin/config/codes.inc.php aufbereiten (Datei ist ISO-8859-1 und passt damit zur CSV-Ausgabe)
+		global $codes_dauer, $codes_beginnoptionen;
+		$dauerArr = array();
+		$temp = explode('###', $codes_dauer);
+		for( $i = 0; $i < sizeof($temp)-1; $i += 2 ) {
+			if( !isset($dauerArr[intval($temp[$i])]) ) { $dauerArr[intval($temp[$i])] = trim($temp[$i+1]); }
+		}
+		$beginnoptArr = array();
+		$temp = explode('###', $codes_beginnoptionen);
+		for( $i = 0; $i < sizeof($temp)-1; $i += 2 ) {
+			if( intval($temp[$i]) > 0 ) { $beginnoptArr[intval($temp[$i])] = trim($temp[$i+1]); }
+		}
+
+		$statusArr = array(1=>'Freigegeben', 4=>'Freigegeben (dauerhaftes Angebot)', 0=>'In Vorbereitung', 3=>'Abgelaufen', 2=>'Gesperrt');
+
+		// Stichwoerter, die im Frontend per Portal-Einstellung ausgeblendet werden (z.B. Kurskategorien/Niveaus),
+		// auch hier nicht exportieren (gleiche Defaults wie sw_cloud in wisy-kurs-renderer-class.inc.php)
+		$filterIds = array_map('intval', array_map('trim', explode(',', $this->framework->iniRead('sw_cloud.filterids', '866951, 866981, 866971, 866961, 867021, 867011, 867001'))));
+
+		// Sortierung: erst nach Status (Freigegeben, Dauerhaft, In Vorbereitung, Abgelaufen, Gesperrt),
+		// innerhalb der Bloecke nach fruehestem Beginn-Datum, Kurse ohne Beginn-Datum ans Blockende
+		$db  = new DB_Admin;
+		$db2 = new DB_Admin;
+		$db->query("SELECT id, titel, beschreibung, freigeschaltet, azwv_knr, bu_nummer,
+				(SELECT MIN(d.beginn) FROM kurse_durchfuehrung kd, durchfuehrung d
+				  WHERE kd.primary_id=kurse.id AND d.id=kd.secondary_id AND d.beginn>'0000-00-00 00:00:00') AS minbeginn
+			FROM kurse
+			WHERE anbieter=$loggedInAnbieterId AND freigeschaltet IN (0,1,2,3,4)
+			ORDER BY FIELD(freigeschaltet,1,4,0,3,2), (minbeginn IS NULL), minbeginn, titel_sorted;");
+
+		// Download-Header: ISO-8859-1 wie die Datenbank; oeffnet sich in Excel (deutsches Gebietsschema) direkt korrekt
+		$filename = 'wisy-kurse-anbieter' . $loggedInAnbieterId . '-' . date('Y-m-d') . '.csv';
+		header('Content-Type: text/csv; charset=ISO-8859-1');
+		header('Content-Disposition: attachment; filename="' . $filename . '"');
+		headerDoCache(0);
+
+		// Kopfzeile wie in der Import-Musterdatei der Redaktion (KINFO5-KINFO8 dort als "..." abgekuerzt,
+		// hier ausgeschrieben, damit DBMix die Spalten per Namen zuordnen kann), dahinter PREIS_HINW
+		// (echtes DBMix-Zielfeld) und WISY_*-Zusatzspalten fuer den Abgleich
+		$cols = array('KNR', 'KURSTITEL', 'KINFO1', 'KINFO2', 'KINFO3', 'KINFO4', 'KINFO5', 'KINFO6', 'KINFO7', 'KINFO8', 'KINFO9',
+			'DOZNAME', 'KURSGEB', 'Bildungsgutschein', 'Bildungsurlaub', "F\xF6rderung", 'USTD', 'MAXTN',
+			'BEGINN_DAT', 'ENDE_DAT', 'Termin_Option', 'UHRVON', 'UHRBIS', 'MO', 'DI', 'MI', 'DO', 'FR', 'SA', 'SO',
+			'DAUER', 'RAUMSTR', 'PLZ', 'Ort', 'oder alternativ RAUMPLZORT', 'DUR_HINWEIS', 'DEEPLINK',
+			'Abschluss', 'Stichwort1', 'Stichwort2', 'Stichwort5',
+			'PREIS_HINW', 'WISY_TERMINOPTION_TEXT', 'WISY_KURS_ID', 'WISY_DURCHF_ID', 'WISY_STATUS');
+		echo implode(';', $cols) . "\r\n";
+
+		while( $db->next_record() )
+		{
+			$kursId         = intval($db->fs('id'));
+			$titel          = str_replace(array("\r\n", "\r", "\n"), ' - ', $db->fs('titel'));
+			$kinfo          = $this->csvSplitKinfo($this->csvBr(trim($db->fs('beschreibung'))));
+			$freigeschaltet = intval($db->fs('freigeschaltet'));
+			$azwv_knr       = $db->fs('azwv_knr');
+			$bu_nummer      = $db->fs('bu_nummer');
+
+			// Abschluss, Foerderung und oeffentliche Sachstichwoerter des Kurses laden.
+			// Wichtig: exakter Typ-Vergleich statt Bit-Test, damit redaktionsinterne Typen (s. $codes_stichwort_eigenschaften)
+			// wie Verwaltungsstichwoerter (2048), ESCO-Kompetenzen/-Synonyme/-Berufe (524288/524289/1048576),
+			// versteckte Synonyme (32) oder "Schlagwort nicht verwenden" (8192) niemals exportiert werden
+			$abschluss = ''; $foerderung = ''; $stichworte = array();
+			$db2->query("SELECT s.id, s.stichwort, s.eigenschaften FROM stichwoerter s LEFT JOIN kurse_stichwort ks ON s.id=ks.attr_id WHERE ks.primary_id=$kursId ORDER BY ks.structure_pos;");
+			while( $db2->next_record() )
+			{
+				$eigenschaften = intval($db2->fs('eigenschaften'));
+				if( $eigenschaften == 1 /*Abschluss*/ )				{ if( $abschluss=='' )  { $abschluss  = $db2->fs('stichwort'); } }
+				else if( $eigenschaften == 2 /*Foerderungsart*/ )	{ if( $foerderung=='' ) { $foerderung = $db2->fs('stichwort'); } }
+				else if( $eigenschaften == 0 /*Sachstichwort*/ && !in_array(intval($db2->fs('id')), $filterIds) ) { $stichworte[] = $db2->fs('stichwort'); }
+			}
+
+			// je Durchfuehrung eine CSV-Zeile; Kurse ohne Durchfuehrung als einzelne Zeile
+			$durchf = array();
+			$db2->query("SELECT d.* FROM durchfuehrung d LEFT JOIN kurse_durchfuehrung kd ON d.id=kd.secondary_id WHERE kd.primary_id=$kursId ORDER BY d.beginn='0000-00-00 00:00:00', d.beginn, kd.structure_pos;");
+			while( $db2->next_record() ) {
+				$durchf[] = $db2->Record;
+			}
+			if( sizeof($durchf) == 0 ) {
+				$durchf[] = array();
+			}
+
+			foreach( $durchf as $d )
+			{
+				$preis      = isset($d['preis'])? intval($d['preis']) : -1;
+				$stunden    = isset($d['stunden'])? intval($d['stunden']) : 0;
+				$teilnehmer = isset($d['teilnehmer'])? intval($d['teilnehmer']) : 0;
+				$kurstage   = isset($d['kurstage'])? intval($d['kurstage']) : 0;
+				$zeit_von   = (isset($d['zeit_von']) && $d['zeit_von']!='00:00')? $d['zeit_von'] : '';
+				$zeit_bis   = (isset($d['zeit_bis']) && $d['zeit_bis']!='00:00')? $d['zeit_bis'] : '';
+
+				// Terminoption: in der Spalte Termin_Option steht die numerische Codezahl (das erwartet der
+				// DBMix-Import als BEGINNOPT), der lesbare Text zusaetzlich in WISY_TERMINOPTION_TEXT
+				$beginnopt = isset($d['beginnoptionen'])? intval($d['beginnoptionen']) : 0;
+				$terminoptionText = array();
+				foreach( $beginnoptArr as $bit=>$descr ) {
+					if( $beginnopt & $bit ) { $terminoptionText[] = $descr; }
+				}
+				$terminoptionText = implode(', ', $terminoptionText);
+
+				$dauer = isset($d['dauer'])? intval($d['dauer']) : 0;
+				$dauerStr = '';
+				if( $dauer > 0 ) {
+					$dauerStr = isset($dauerArr[$dauer])? $dauerArr[$dauer] : ($dauer . ' Tage');
+				}
+
+				$plz = isset($d['plz'])? $d['plz'] : '';
+				$ort = isset($d['ort'])? $d['ort'] : '';
+
+				$row = array(
+					isset($d['nr'])? $d['nr'] : '',								// KNR
+					$titel,														// KURSTITEL
+					$kinfo[0],													// KINFO1 (max. 2800 Zeichen)
+					$kinfo[1], $kinfo[2], $kinfo[3], $kinfo[4],					// KINFO2-KINFO5 (Ueberlauf, je max. 280 Zeichen)
+					$kinfo[5], $kinfo[6], $kinfo[7], $kinfo[8],					// KINFO6-KINFO9
+					'',															// DOZNAME (in WISY nicht erfasst)
+					$preis>=0? $preis : '-1',									// KURSGEB (-1 = k. A.; leer wuerde beim Import zu 0 = "kostenlos"!)
+					$azwv_knr,													// Bildungsgutschein (AZAV-Zertifikatsnr.)
+					$bu_nummer,													// Bildungsurlaub (Anerkennungs-Nr.)
+					$foerderung,												// Foerderung
+					$stunden>0? $stunden : '',									// USTD
+					$teilnehmer>0? $teilnehmer : '',							// MAXTN
+					$this->csvDatum(isset($d['beginn'])? $d['beginn'] : ''),	// BEGINN_DAT
+					$this->csvDatum(isset($d['ende'])? $d['ende'] : ''),		// ENDE_DAT
+					$beginnopt>0? $beginnopt : '',								// Termin_Option (numerische Codezahl, s.o.)
+					$zeit_von,													// UHRVON
+					$zeit_bis,													// UHRBIS
+					$kurstage&1?  'x' : '',										// MO
+					$kurstage&2?  'x' : '',										// DI
+					$kurstage&4?  'x' : '',										// MI
+					$kurstage&8?  'x' : '',										// DO
+					$kurstage&16? 'x' : '',										// FR
+					$kurstage&32? 'x' : '',										// SA
+					$kurstage&64? 'x' : '',										// SO
+					$dauerStr,													// DAUER (Freitext; WISY berechnet die Dauer bei Import aus Beginn/Ende neu)
+					isset($d['strasse'])? $d['strasse'] : '',					// RAUMSTR
+					$plz,														// PLZ
+					$ort,														// Ort
+					trim($plz . ' ' . $ort),									// oder alternativ RAUMPLZORT
+					$this->csvBr(isset($d['bemerkungen'])? $d['bemerkungen'] : ''),	// DUR_HINWEIS
+					isset($d['url'])? $d['url'] : '',							// DEEPLINK
+					$abschluss,													// Abschluss
+					isset($stichworte[0])? $stichworte[0] : '',					// Stichwort1
+					isset($stichworte[1])? $stichworte[1] : '',					// Stichwort2
+					isset($stichworte[2])? $stichworte[2] : '',					// Stichwort5
+					$this->csvBr(isset($d['preishinweise'])? $d['preishinweise'] : ''),	// PREIS_HINW (DBMix-Zielfeld)
+					$terminoptionText,											// WISY_TERMINOPTION_TEXT (nur zur Lesbarkeit)
+					$kursId,													// WISY_KURS_ID
+					isset($d['id'])? intval($d['id']) : '',						// WISY_DURCHF_ID
+					isset($statusArr[$freigeschaltet])? $statusArr[$freigeschaltet] : $freigeschaltet,	// WISY_STATUS
+				);
+				echo implode(';', array_map(array($this, 'csvCell'), $row)) . "\r\n";
+			}
+		}
+		exit();
+	}
+
+	 /**************************************************************************
 	 * edit main() - see what to do
 	 **************************************************************************/
-	
+
 	function render()
 	{
 	    $action = isset($_REQUEST['action']) ? $_REQUEST['action'] : '';
@@ -2747,7 +2968,11 @@ class WISY_EDIT_RENDERER_CLASS
 				case 'kt':
 					$this->renderEditKonto();
 					break;
-		
+
+				case 'exportcsv':
+					$this->renderExportCsv();
+					break;
+
 				default:
 					$this->framework->error404();
 					break;

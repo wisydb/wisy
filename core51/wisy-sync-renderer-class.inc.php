@@ -1764,9 +1764,36 @@ class WISY_SYNC_RENDERER_CLASS
 	        
 	        $db1->query( $sql );
 	    }
-  
-	} 
-	
+
+	}
+
+	function fixMissingAnbieterSuchnameSorted() {
+
+	    // Sanity check: anbieter.suchname_sorted wird von Bearbeitungsmaske und Standard-Import
+	    // gesetzt, einzelne Importwege (historisch z.B. der ZfU-Anbieter-Import) liessen es leer.
+	    // Leere Werte brechen die Anbieter-Sortierung (ORDER BY anbieter.suchname_sorted).
+	    // Hier werden fehlende Werte routinemaessig bei jeder Suchindex-Erstellung nachgefuellt.
+	    // Pendant fuer Kurse: update_titel_sorted() in doSyncKurse().
+
+	    echo "Fix missing anbieter.suchname_sorted" . "\n";
+
+	    $db  = new DB_ADMIN;
+	    $db1 = new DB_ADMIN;
+	    $cnt = 0;
+
+	    $db->query( "SELECT id, suchname FROM anbieter WHERE suchname_sorted='' AND suchname<>''" );
+
+	    while( $db->next_record() ) {
+	        $sorted = $this->framework->normalizeNatsort( $db->fs('suchname') );
+	        $db1->query( "UPDATE anbieter SET suchname_sorted='" . addslashes($sorted) . "' WHERE id=" . intval($db->f('id')) );
+	        $cnt++;
+	    }
+
+	    if( $cnt )
+	        $this->log( "anbieter.suchname_sorted nachgefuellt fuer " . $cnt . " Anbieter." );
+
+	}
+
 	function doMaintenance() {
 	    
 	    // Call all maintenance queries defined in the CMS
@@ -2203,7 +2230,10 @@ class WISY_SYNC_RENDERER_CLASS
 		$this->log(print_r($_GET, true));
 		
 		$this->updateAnbieterKurseCnt();
-		
+
+		// Sanity check: fehlende anbieter.suchname_sorted nachfuellen (Anbieter-Sortierung)
+		$this->fixMissingAnbieterSuchnameSorted();
+
 		// do geo mapping
 		$this->doGeoMapping();
 		
