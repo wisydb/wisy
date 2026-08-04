@@ -393,6 +393,15 @@ class WISY_KURS_RENDERER_CLASS
 			// vollstaendigkeit feedback, editieren etc.
 			echo '<footer class="wisy_kurs_footer">';
 			
+			// Hinweis-Satz aus den Einstellungen der zum Kurs gehoerenden Benutzergruppe
+			// (user_grp.settings, Schluessel "kurshinweis.fuss" - analog zu "copyright.kurse").
+			// Position: unterhalb der Termine, oberhalb der "Suchbegriffe"/Tag-Cloud.
+			$kurshinweisFuss = $this->framework->getGrpSetting($db, $kursId, 'kurshinweis.fuss');
+			if( is_string($kurshinweisFuss) && trim($kurshinweisFuss) != '' )
+			{
+				echo '<p class="wisyr_kurshinweis_fuss">' . trim($kurshinweisFuss) . '</p><!-- /.wisyr_kurshinweis_fuss -->';
+			}
+			
 			// dont display word clouds while online editing
 			if( $this->framework->iniRead('sw_cloud.kurs_anzeige', 0) && !$this->framework->editSessionStarted ) {
 			    
