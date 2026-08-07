@@ -459,6 +459,33 @@ function table_item_end()
 	echo '</td></tr>';
 }
  
+// url of the job list export, see joblist_export.php
+function job_export_url($binName, $format = 'csv', $all = 0)
+{
+	$url = 'joblist_export.php?format=' . urlencode($format);
+
+	if( $all ) {
+		$url .= '&all=1';
+	}
+	else {
+		$url .= '&jobname=' . urlencode( (string) $binName );
+	}
+
+	return isohtmlentities($url);
+}
+
+// small csv icon, rendered right beside the name of a job list
+function job_export_icon($binName, $binDescr)
+{
+	$hint = htmlconstant('_SETTINGS_BINEXPICONHINT', isohtmlentities( (string) $binDescr ) );
+
+	$ret  = '<a href="' . job_export_url($binName, 'csv') . '" title="' . $hint . '">';
+	$ret .=   '<img src="lib/exp/CSV.png" width="16" height="15" border="0" alt="CSV" style="vertical-align: middle;" />';
+	$ret .= '</a>';
+
+	return $ret;
+}
+
 
  
  
@@ -669,6 +696,10 @@ if( isset($settings_ok) || isset($settings_apply) )
 		// ... store Anzeige der Erschliessungsvorschlaege-Sektion in der Kurs-Bearbeitung (nur Tabelle "kurse")
 		if( $table_def && $table == 'kurse' ) {
 		    regSet('edit.kurse.showvorschlaege', isset( $_REQUEST['shvorschlag'] ) && $_REQUEST['shvorschlag'] ? 1 : 0, 1);
+		    // Zusatzoption: Redaktionsregeln auf die Vorschlaege anwenden (Ausgrauen
+		    // unpassender Vorschlaege; wirkt nur, wenn die separate Regeldatei
+		    // config/erschliessung_regeln.inc.php hinterlegt ist)
+		    regSet('edit.kurse.showvorschlaege.regeln', isset( $_REQUEST['shvorschlagregeln'] ) && $_REQUEST['shvorschlagregeln'] ? 1 : 0, 1);
 		}
 	
 		// ... store skin
@@ -1253,6 +1284,9 @@ if( regGet('toolbar.bin', 1) )
 					}
 				}
 			
+				// export this job list as csv, see joblist_export.php
+				echo ' ' . job_export_icon($currName, isset($currDescr)? $currDescr : $currName);
+			
 			echo '</td></tr>';
 			
 			if( $jobname == $currName )
@@ -1362,6 +1396,15 @@ if( regGet('toolbar.bin', 1) )
 							table_item_end();
 						}
 
+						// export (also available for job lists of other users)
+						table_item();
+							echo '<a href="' . job_export_url($currName, 'csv') . '">' . htmlconstant('_SETTINGS_BINEXPCSV') . '</a>';
+						table_item_end();
+
+						table_item();
+							echo '<a href="' . job_export_url($currName, 'html') . '" target="_blank" rel="noopener noreferrer">' . htmlconstant('_SETTINGS_BINEXPHTML') . '</a>';
+						table_item_end();
+
 						if( isset($_SESSION['g_session_bin']) && $_SESSION['g_session_bin']->binIsExt($currName) )
 						{
 							// external list options
@@ -1468,6 +1511,28 @@ if( regGet('toolbar.bin', 1) )
 				echo htmlconstant('_SETTINGS_BINNAMEOFNEWLIST', 
 					'<input type="text" name="jobnew" value="" size="14" maxlength="100" />');
 			table_item_end();
+		}
+		
+		// export all job lists at once, see joblist_export.php
+		if( sizeof((array) $bins) )
+		{
+			table_end();
+			table_start();
+
+			echo '<tr><td>';
+				echo '<img src="skins/default/img/treei1.gif" width="13" height="13" border="0" alt="" />';
+			echo '</td><td>';
+				echo '<a href="' . job_export_url('', 'csv', 1) . '">';
+					echo '<img src="lib/exp/CSV.png" width="16" height="15" border="0" alt="CSV" style="vertical-align: middle;" />';
+				echo '</a> ';
+				echo '<a href="' . job_export_url('', 'csv', 1) . '">' . htmlconstant('_SETTINGS_BINEXPALLCSV') . '</a>';
+			echo '</td></tr>';
+
+			echo '<tr><td>';
+				echo '<img src="skins/default/img/treei1.gif" width="13" height="13" border="0" alt="" />';
+			echo '</td><td>';
+				echo '<a href="' . job_export_url('', 'html', 1) . '" target="_blank" rel="noopener noreferrer">' . htmlconstant('_SETTINGS_BINEXPALLHTML') . '</a>';
+			echo '</td></tr>';
 		}
 		
 		echo '</table>';
@@ -1640,6 +1705,12 @@ $site->skin->sectionStart();
 		    form_control_start('Erschlie&szlig;ungsvorschl&auml;ge');
 		    form_control_check('shvorschlag', regGet('edit.kurse.showvorschlaege', 1), '', 0, 1);
 		    echo '<label for="shvorschlag">Erschlie&szlig;ungsvorschl&auml;ge-Sektion in der Kursbearbeitung anzeigen</label><br>';
+		    form_control_check('shvorschlagregeln', regGet('edit.kurse.showvorschlaege.regeln', 1), '', 0, 1);
+		    echo '<label for="shvorschlagregeln">Redaktionsregeln anwenden: vermutlich unpassende Vorschl&auml;ge ausgrauen';
+		    if( !@file_exists(dirname(__FILE__) . '/config/erschliessung_regeln.inc.php') ) {
+		        echo ' <span style="color:#888;">(ohne Wirkung: Regeldatei config/erschliessung_regeln.inc.php ist nicht hinterlegt)</span>';
+		    }
+		    echo '</label><br>';
 		    form_control_end();
 		}
 

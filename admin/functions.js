@@ -2171,14 +2171,12 @@ $(function() {
         });
     }
 
-    // ============================================================
-    // Erschliessungs-Vorschlaege fuer die Redaktion (statistisch, ohne KI-Lauf):
-    //  - Themen/Stichwoerter der aehnlichsten, bereits erschlossenen Kurse
-    //    (Volltext-Index titel_beschreibung, "more like this") und
+    // ==========================================================================================================================================================
+    // Erschliessungs-Vorschlaege fuer die Redaktion (statistisch, ohne eigenen KI-Lauf):
+    //  - Themen/Stichwoerter der aehnlichsten, bereits erschlossenen Kurse (Volltext-Index titel_beschreibung, "more like this") und
     //  - Stichwoerter, deren Name woertlich im Kurstext vorkommt.
-    // Datenquelle: admin/kurse_erschliessung_vorschlaege.php. Uebernahme wie in
-    // der Duplikate-Sektion clientseitig per attr_add -> wirksam erst beim Speichern.
-    // ============================================================
+    // Datenquelle: admin/kurse_erschliessung_vorschlaege.php. Uebernahme wie in der Duplikate-Sektion clientseitig per attr_add -> wirksam erst beim Speichern.
+    // ==========================================================================================================================================================
     var VS_COLLAPSE_COOKIE = 'vorschlag_section_collapsed';
 
     function loadVorschlaege() {
@@ -2202,6 +2200,53 @@ $(function() {
         var themen = resp.themen || [];
         var sws = resp.stichwoerter || [];
         var aehnliche = resp.aehnliche || [];
+        // Redaktionsregeln (optional): die konkreten Regeln sind komplett "lokal"/nur auf dem Server implementiert (separate,
+        // nicht veroeffentlichte Konfigurationsdatei); hier wird nur generisch gegen die aktuell im Formular gesetzte Erschliessung geprueft.
+        var regeln = resp.regeln && resp.regeln.aktiv ? resp.regeln : null;
+
+        // Liefert die Begruendung, wenn eine Redaktionsregel gegen die Vergabe
+        // dieses Stichwort-Vorschlags spricht, sonst null. dim = serverseitig
+        // fest; dim_wenn = Bedingungen gegen die Live-Erschliessung (curSw/
+        // curThema), dadurch aktualisiert sich das Dimmen nach jeder Uebernahme.
+        function regelGrund(s, curSw, curThema) {
+            if (!regeln || !s) return null;
+            if (s.dim && s.dim.grund) return s.dim.grund;
+            var i, j, r, ausgesetzt;
+            if (s.dim_wenn && s.dim_wenn.length) {
+                for (i = 0; i < s.dim_wenn.length; i++) {
+                    r = s.dim_wenn[i];
+                    ausgesetzt = false;
+                    if (r.ausser && r.ausser.length) {
+                        for (j = 0; j < r.ausser.length; j++) {
+                            if (curSw[r.ausser[j]]) { ausgesetzt = true; break; }
+                        }
+                    }
+                    if (ausgesetzt) continue;
+                    if (r.sw && r.sw.length) {
+                        for (j = 0; j < r.sw.length; j++) {
+                            if (curSw[r.sw[j]]) return r.grund;
+                        }
+                    }
+                    if (r.thema && r.thema.length && curThema !== null) {
+                        for (j = 0; j < r.thema.length; j++) {
+                            if (r.thema[j] === curThema) return r.grund;
+                        }
+                    }
+                }
+            }
+            // Mengen-Regel: ab N gesetzten Sachstichwoertern weitere
+            // Sachstichwort-Vorschlaege dimmen (Zaehlung nur ueber die dem
+            // Server bekannten IDs; von Hand neu ergaenzte SW zaehlen ggf. nicht)
+            var ms = regeln.max_sach;
+            if (ms && ms.ids && ms.ids.length && parseInt(s.actype, 10) === 0) {
+                var cnt = 0;
+                for (j = 0; j < ms.ids.length; j++) {
+                    if (curSw[ms.ids[j]]) cnt++;
+                }
+                if (cnt >= ms.limit) return ms.grund;
+            }
+            return null;
+        }
 
         var chipStyle = 'display:inline-block;margin:2px 5px 2px 0;padding:1px 9px;'
             + 'border:1px solid #9db4d0;border-radius:10px;cursor:pointer;background:#f4f8ff;';
@@ -2239,7 +2284,9 @@ $(function() {
             : '';
 
         var hint = '<div style="margin-top:6px;color:#888;font-size:0.92em;">Statistisch ermittelte Vorschl' + ae + 'ge '
-            + '(&para; = kommt im Kurstext vor) &ndash; bitte nur fachlich Passendes anklicken; '
+            + '(&para; = kommt im Kurstext vor)'
+            + (regeln ? '; blasse Vorschl' + ae + 'ge mit (?)-Symbol widersprechen vermutlich einer Redaktionsregel &ndash; Grund am Fragezeichen, ' + Ue + 'bernahme bleibt m' + oe + 'glich' : '')
+            + ' &ndash; bitte nur fachlich Passendes anklicken; '
             + 'wirksam wird die ' + Ue + 'bernahme erst mit dem Speichern des Kurses.</div>';
 
         var collapsed = dupeGetCookie(VS_COLLAPSE_COOKIE) === '1';
@@ -2293,11 +2340,37 @@ $(function() {
             $body.find('.vs-sw').each(function() {
                 var s = sws[$(this).data('idx')];
                 var have = s && !!curSw[s.id];
-                $(this).css({ opacity: have ? 0.45 : 1, cursor: have ? 'default' : 'pointer' });
-                if (have) { $(this).attr('title', 'bereits vorhanden'); }
+                var grund = have ? null : regelGrund(s, curSw, curThema);
+                $(this).find('.vs-regel-i').remove();
+                if (have) {
+                    $(this).css({ opacity: 0.45, cursor: 'default' }).attr('title', 'bereits vorhanden').removeData('regelgrund');
+                } else if (grund) {
+                    // Redaktionsregel: blass, aber weiterhin uebernehmbar; das
+                    // (?)-Symbol traegt die Begruendung (Tooltip + Klick)
+                    $(this).css({ opacity: 0.35, cursor: 'pointer' }).attr('title', quellenTitle(s)).data('regelgrund', grund);
+                    $(this).append(' <span class="vs-regel-i" title="' + esc(grund) + '" style="display:inline-block;width:1.05em;height:1.05em;line-height:1.05em;text-align:center;border:1px solid #b06000;border-radius:50%;color:#b06000;font-size:0.85em;font-weight:bold;cursor:help;">?</span>');
+                } else {
+                    $(this).css({ opacity: 1, cursor: 'pointer' }).attr('title', quellenTitle(s)).removeData('regelgrund');
+                }
             });
         }
         refreshChips();
+
+        // Live-Aktualisierung: JEDE Aenderung der Erschliessung oben (manuell,
+        // per Duplikate-Sektion oder per Vorschlag) bewertet die Chips neu -
+        // so wird z.B. ein Oberbegriff-Vorschlag blass, sobald sein
+        // Unterbegriff uebernommen wurde.
+        if (window.MutationObserver) {
+            var vsRefreshTimer = null;
+            var vsObserver = new MutationObserver(function() {
+                if (vsRefreshTimer) { clearTimeout(vsRefreshTimer); }
+                vsRefreshTimer = setTimeout(refreshChips, 150);
+            });
+            var $obsThema = getAttrInput('thema');
+            var $obsSw = getAttrInput('stichwort');
+            if ($obsThema) { vsObserver.observe($obsThema.closest('.e_attr')[0], { childList: true, subtree: true }); }
+            if ($obsSw) { vsObserver.observe($obsSw.closest('.e_attr')[0], { childList: true, subtree: true }); }
+        }
 
         // --- Ein-/Ausklappen (Zustand im Cookie merken) ---
         $header.on('click', function() {
@@ -2324,10 +2397,18 @@ $(function() {
             refreshChips();
         });
 
+        $body.on('click', '.vs-regel-i', function(e) {
+            e.preventDefault();
+            e.stopPropagation();   // nicht zugleich den Vorschlag uebernehmen
+            alert('Hinweis der Redaktionsregeln:\n\n' + ($(this).attr('title') || ''));
+        });
+
         $body.on('click', '.vs-sw', function() {
             var s = sws[$(this).data('idx')];
             if (!s) return;
             if (currentStichwortIds()[s.id]) return; // bereits vorhanden
+            var grund = $(this).data('regelgrund');
+            if (grund && !confirm('Hinweis der Redaktionsregeln:\n\n' + grund + '\n\nTrotzdem ' + ue + 'bernehmen?')) return;
             var res = applyStichwoerter({ stichwoerter: [ { id: s.id, name: s.name, actype: s.actype || '' } ] });
             if (res.ok && res.added > 0) flashOk($(this));
             refreshChips();

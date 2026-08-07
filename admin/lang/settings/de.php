@@ -18,6 +18,42 @@ define('_SETTINGS_BINEMPTY',                "Jobliste leeren");
 define('_SETTINGS_BINEMPTYASK',             "Jobliste &quot;\$1&quot; mit insg. \$2 Eintr&auml;gen leeren?");
 define('_SETTINGS_BINERRLISTNOTFOUND',      "Die Jobliste &quot;\$1&quot; wurde nicht gefunden, geben Sie den Namen genauso ein, wie Sie ihn vom entspr. Benutzer erhalten haben und achten Sie auch auf die Gro&szlig;- und Kleinschreibung.");
 define('_SETTINGS_BINERRNAMEEXISTS',        "Konnte keine neue Jobliste unter dem Namen &quot;\$1&quot; anlegen, da eine Liste diesen Namens bereits existiert.");
+define('_SETTINGS_BINEXPALLCSV',            "alle Joblisten als CSV-Datei exportieren");
+define('_SETTINGS_BINEXPALLHTML',           "alle Joblisten als druckbare HTML-Seite anzeigen");
+define('_SETTINGS_BINEXPALLLISTS',          "alle Joblisten");
+define('_SETTINGS_BINEXPCOLACCESS',         "Freigabe");
+define('_SETTINGS_BINEXPCOLCOUNT',          "Datens&auml;tze");
+define('_SETTINGS_BINEXPCOLCREATED',        "Erstellt am");
+define('_SETTINGS_BINEXPCOLDEFAULT',        "Standard-Jobliste");
+define('_SETTINGS_BINEXPCOLDETAILS',        "Details");
+define('_SETTINGS_BINEXPCOLID',             "Datensatz-ID");
+define('_SETTINGS_BINEXPCOLLINK',           "Link");
+define('_SETTINGS_BINEXPCOLLIST',           "Jobliste");
+define('_SETTINGS_BINEXPCOLLISTINT',        "Jobliste (interner Name)");
+define('_SETTINGS_BINEXPCOLMODIFIED',       "Ge&auml;ndert am");
+define('_SETTINGS_BINEXPCOLMODIFIEDBY',     "Ge&auml;ndert von");
+define('_SETTINGS_BINEXPCOLNAME',           "Bezeichnung");
+define('_SETTINGS_BINEXPCOLOWNER',          "Eigent&uuml;mer");
+define('_SETTINGS_BINEXPCOLSTATE',          "Status");
+define('_SETTINGS_BINEXPCOLTABLE',          "Tabelle");
+define('_SETTINGS_BINEXPCOLTABLEINT',       "Tabelle (interner Name)");
+define('_SETTINGS_BINEXPCREATEDBY',         "Exportiert von \$1 am \$2");
+// $1 the name of the exporting user -- $2 the export date
+define('_SETTINGS_BINEXPCSV',               "Jobliste als CSV-Datei exportieren");
+define('_SETTINGS_BINEXPHTML',              "Jobliste als druckbare HTML-Seite anzeigen");
+define('_SETTINGS_BINEXPICONHINT',          "Jobliste &quot;\$1&quot; als CSV-Datei exportieren");
+// $1 the job list name
+define('_SETTINGS_BINEXPNO',                "nein");
+define('_SETTINGS_BINEXPOVERVIEW',          "&Uuml;bersicht");
+define('_SETTINGS_BINEXPSHARED',            "mitbenutzt");
+define('_SETTINGS_BINEXPSTATEMISSING',      "nicht vorhanden");
+define('_SETTINGS_BINEXPSTATENOACCESS',     "kein Zugriff");
+define('_SETTINGS_BINEXPSTATEOK',           "vorhanden");
+define('_SETTINGS_BINEXPTITLE',             "Joblisten-Export");
+define('_SETTINGS_BINEXPTOTAL',             "insgesamt \$1 Datens&auml;tze");
+define('_SETTINGS_BINEXPTOTAL1',            "insgesamt 1 Datensatz");
+// $1 the total number of exported records
+define('_SETTINGS_BINEXPYES',               "ja");
 define('_SETTINGS_BINISACTIVEBIN',          "(Standard-Jobliste)");
 define('_SETTINGS_BINLISTBYOTHER',          "diese Jobliste wird vom Benutzer \$1 verwaltet und von Ihnen mitbenutzt; daher stehen hier nicht mehr Optionen zur Verf&uuml;gung");
 // $1 will be replaced by the name of the other list owner

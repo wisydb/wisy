@@ -6,7 +6,7 @@
  *
  * Wird von der Kurs-Edit-Maske (admin/functions.js) per AJAX aufgerufen, um
  * dort eine "Erschliessungsvorschlaege"-Sektion anzuzeigen. Die Uebernahme
- * erfolgt dort clientseitig per attr_add (wirksam erst beim Speichern).
+ * erfolgt dort clientseitig per attr_add (wirksam erst beim Speichern!).
  *
  * Zwei Vorschlagsquellen, die kombiniert und gemeinsam gerankt werden:
  *
@@ -31,16 +31,31 @@
  *     id: <kursId>,
  *     aehnliche:    [ { id, titel, prozent }, ... ]              (max. 5, fuer Herkunftszeile)
  *     themen:       [ { id, kuerzel, name, quellen:[kursIds] }, ... ]   (max. 3)
- *     stichwoerter: [ { id, name, actype, quellen:[kursIds], imtext: bool }, ... ]  (max. 20)
+ *     stichwoerter: [ { id, name, actype, quellen:[kursIds], imtext: bool,
+ *                       dim: {grund}|null, dim_wenn: [ {sw:[], thema:[], ausser:[], grund}, ... ] }, ... ]  (max. 20)
+ *     regeln:       { aktiv: bool, max_sach: {limit, ids:[], grund}|null }   (nur wenn Regeldatei aktiv)
  *   }
  *
  * Hinweise:
  *   - Bereits am Kurs gesetzte Stichwoerter / das gesetzte Thema werden nicht
  *     erneut vorgeschlagen.
+ *   - Text-Treffer auf Synonyme/versteckte Synonyme werden ueber
+ *     stichwoerter_verweis auf ihren Deskriptor aufgeloest (an Kursen sollen
+ *     nur Deskriptoren haengen, Synonyme deckt die Frontend-Suche ohnehin ab).
  *   - Fehlt der Volltext-Index (aeltere Installation), faellt der Endpoint
  *     still auf Quelle B zurueck (keine Fehlermeldung, nur weniger Vorschlaege).
- *   - Ein spaeterer Umstieg der Nachbarsuche auf Embedding-Vektoren ist geplant, 
-*	   ohne dass sich Rückgabeformat oder Maske aendern muessen.
+ *
+ * Redaktionsregeln (optional):
+ *   Liegt die separate Konfigurationsdatei config/erschliessung_regeln.inc.php
+ *   vor (Vorlage: erschliessung_regeln.inc.php-example) UND ist die
+ *   Benutzereinstellung "Redaktionsregeln anwenden" aktiv, werden Vorschlaege
+ *   zusaetzlich bewertet: fachlich vermutlich unpassende Vorschlaege erhalten
+ *   ein "dim"-Feld (mit Begruendung) bzw. "dim_wenn"-Bedingungen, die die
+ *   Maske live gegen die aktuell im Formular gesetzte Erschliessung prueft.
+ *   Die Mechanik hier ist bewusst generisch; saemtliche konkreten Regeln,
+ *   IDs, Muster und Begruendungstexte liegen ausschliesslich in der (nicht
+ *   veroeffentlichten) Regeldatei "lokal"/auf dem Server vor - wenn überhauot. 
+ *   Fehlt die Datei, aendert sich nichts an Verhalten und Ausgabeformat (die Zusatzfelder entfallen).
  */
 
 require_once('functions.inc.php');
@@ -228,6 +243,50 @@ if ($ownText !== '') {
             'actype' => $db->f('eigenschaften') !== null ? (string)$db->f('eigenschaften') : '',
         );
     }
+
+    // Treffer auf Synonyme (64) / versteckte Synonyme (32) auf ihren Deskriptor
+    // aufloesen: an Kursen sollen nur Deskriptoren haengen (Synonyme findet die
+    // Frontend-Suche von selbst). stichwoerter_verweis: primary_id = Synonym,
+    // attr_id = Deskriptor.
+    $synIds = array();
+    foreach ($textHits as $swId => $hit) {
+        $eig = intval($hit['actype']);
+        if ($eig === 32 || $eig === 64) {
+            $synIds[] = $swId;
+        }
+    }
+    if (count($synIds) > 0) {
+        $synTarget = array();   // synonymId => array(id, name, actype) des Deskriptors
+        $db->query(
+            "SELECT v.primary_id, s.id, s.stichwort, s.eigenschaften "
+            . "FROM stichwoerter_verweis v LEFT JOIN stichwoerter s ON s.id = v.attr_id "
+            . "WHERE v.primary_id IN (" . implode(',', array_map('intval', $synIds)) . ") "
+            . "ORDER BY v.primary_id, v.structure_pos"
+        );
+        while ($db->next_record()) {
+            $pid = intval($db->f('primary_id'));
+            $did = intval($db->f('id'));
+            if ($did <= 0 || isset($synTarget[$pid])) {
+                continue;   // verwaist bzw. nur den ersten Deskriptor verwenden
+            }
+            $synTarget[$pid] = array(
+                'id'     => $did,
+                'name'   => $db->f8('stichwort'),
+                'actype' => $db->f('eigenschaften') !== null ? (string)$db->f('eigenschaften') : '',
+            );
+        }
+        foreach ($synIds as $swId) {
+            unset($textHits[$swId]);
+            if (isset($synTarget[$swId])) {
+                $t = $synTarget[$swId];
+                if (!isset($haveSw[$t['id']]) && !isset($textHits[$t['id']])) {
+                    $textHits[$t['id']] = array('name' => $t['name'], 'actype' => $t['actype']);
+                }
+            }
+            // ohne Deskriptor: Treffer verwerfen (ein Synonym direkt zu
+            // verknuepfen waere fachlich falsch)
+        }
+    }
 }
 
 // Nutzungs-Haeufigkeit der reinen Text-Treffer (fuer deren Ranking): ein im
@@ -286,6 +345,227 @@ foreach ($swSuggest as $swId => $s) {
     if (count($swOut) >= $MAX_SW_SUGGEST) { break; }
 }
 
+// ------------------------------------------------------------------
+// 3b) Optionale Redaktionsregeln: Vorschlaege bewerten ("dimmen")
+// ------------------------------------------------------------------
+// Die Engine hier ist generisch (Regel-TYPEN); die konkreten Regeln - IDs,
+// Muster, Grenzwerte, Begruendungen - kommen ausschliesslich aus der separaten,
+// nicht veroeffentlichten Datei config/erschliessung_regeln.inc.php (Struktur:
+// s. erschliessung_regeln.inc.php-example). Ergebnis pro Vorschlag:
+//   dim      = { grund } : serverseitig fest ausgegraut
+//   dim_wenn = [ { sw:[ids], thema:[ids], ausser:[ids], grund }, ... ] :
+//              von der Maske LIVE gegen die aktuell im Formular gesetzte
+//              Erschliessung geprueft (greift/entfaellt also auch nach einer
+//              Uebernahme, ohne weiteren Serveraufruf).
+// Die Vorschlaege bleiben in jedem Fall anklickbar/uebernehmbar.
+
+// Texte aus der Regeldatei (latin1, wie alle admin-Dateien) fuer die
+// UTF-8-JSON-Ausgabe konvertieren; bereits gueltiges UTF-8 bleibt unveraendert.
+function vorschlaege_utf8($s)
+{
+    $s = strval($s);
+    if ($s === '' || mb_check_encoding($s, 'UTF-8')) {
+        return $s;
+    }
+    return mb_convert_encoding($s, 'UTF-8', 'ISO-8859-1');
+}
+
+$regelwerk = null;
+if (intval(regGet('edit.kurse.showvorschlaege.regeln', 1)) === 1) {
+    $regelDatei = dirname(__FILE__) . '/config/erschliessung_regeln.inc.php';
+    if (@file_exists($regelDatei)) {
+        include($regelDatei);   // definiert $erschliessung_regeln
+        if (isset($erschliessung_regeln) && is_array($erschliessung_regeln)) {
+            $regelwerk = $erschliessung_regeln;
+        }
+    }
+}
+
+$regelnOut = null;
+if ($regelwerk !== null && count($swOut) > 0) {
+    // Stammdaten (Typ, Name, Scope Note) fuer Vorschlaege + bereits am Kurs
+    // gesetzte Stichwoerter in einem Rutsch laden ("Universum" der Regeln)
+    $uniIds = array_keys($haveSw);
+    foreach ($swOut as $s) { $uniIds[] = $s['id']; }
+    $uniIds = array_values(array_unique(array_map('intval', $uniIds)));
+    $uniEig = array(); $uniName = array(); $uniScope = array();
+    if (count($uniIds) > 0) {
+        $db->query(
+            "SELECT id, stichwort, eigenschaften, scope_note FROM stichwoerter "
+            . "WHERE id IN (" . implode(',', $uniIds) . ")"
+        );
+        while ($db->next_record()) {
+            $i = intval($db->f('id'));
+            $uniEig[$i]   = intval($db->f('eigenschaften'));
+            $uniName[$i]  = strval($db->fs('stichwort'));       // roh (latin1)
+            $uniScope[$i] = strval($db->fs('scope_note'));      // roh (latin1)
+        }
+    }
+
+    // Unterbegriffe der Vorschlaege ermitteln (transitiv, stichwoerter_verweis2:
+    // primary_id = Oberbegriff, attr_id = Unterbegriff).
+    
+    $descMap = array();     // vorschlagId => array(unterbegriffIds)
+    $obRegel = isset($regelwerk['oberbegriff']) && is_array($regelwerk['oberbegriff'])
+        && !empty($regelwerk['oberbegriff']['aktiv']) ? $regelwerk['oberbegriff'] : null;
+    if ($obRegel !== null) {
+        $DESC_MAX_DEPTH = isset($obRegel['max_tiefe']) ? intval($obRegel['max_tiefe']) : 6;
+        $DESC_MAX_PER   = isset($obRegel['max_unterbegriffe']) ? intval($obRegel['max_unterbegriffe']) : 300;
+        $frontier = array();    // id => array(rootIds)
+        foreach ($swOut as $s) {
+            $descMap[$s['id']] = array();
+            $frontier[$s['id']][] = $s['id'];
+        }
+        for ($depth = 0; $depth < $DESC_MAX_DEPTH && count($frontier) > 0; $depth++) {
+            $db->query(
+                "SELECT primary_id, attr_id FROM stichwoerter_verweis2 "
+                . "WHERE primary_id IN (" . implode(',', array_map('intval', array_keys($frontier))) . ")"
+            );
+            $edges = array();
+            while ($db->next_record()) {
+                $edges[] = array(intval($db->f('primary_id')), intval($db->f('attr_id')));
+            }
+            $next = array();
+            foreach ($edges as $e) {
+                if (!isset($frontier[$e[0]])) { continue; }
+                foreach ($frontier[$e[0]] as $root) {
+                    if ($e[1] === $root || isset($descMap[$root][$e[1]])) { continue; }
+                    if (count($descMap[$root]) >= $DESC_MAX_PER) { continue; }
+                    $descMap[$root][$e[1]] = true;
+                    $next[$e[1]][] = $root;
+                }
+            }
+            $frontier = $next;
+        }
+    }
+
+    // Alle Abschluss-Stichwoerter (Typ 1), abzueglich konfigurierter Namens-Ausnahmen. Live-Abgleich erfolgt clientseitig.
+    $abRegel = isset($regelwerk['abschluss_ohne_sachstichwort']) && is_array($regelwerk['abschluss_ohne_sachstichwort'])
+        ? $regelwerk['abschluss_ohne_sachstichwort'] : null;
+    $abTrigger = array();
+    if ($abRegel !== null) {
+        foreach ($uniEig as $i => $eig) {
+            if ($eig !== 1) { continue; }
+            if (!empty($abRegel['ausnahme_muster'])
+             && @preg_match($abRegel['ausnahme_muster'], $uniName[$i])) {
+                continue;
+            }
+            $abTrigger[] = $i;
+        }
+    }
+
+    // Regeln pro Vorschlag anwenden
+    foreach ($swOut as $k => $s) {
+        $eig = intval($s['actype']);
+        $dimGrund = null;
+        $dimWenn  = array();
+
+        // Typ-Regel: bestimmte Stichwort-Typen generell dimmen
+        if (isset($regelwerk['typ_dim'][$eig])) {
+            $dimGrund = vorschlaege_utf8($regelwerk['typ_dim'][$eig]);
+        }
+
+        // Paar-Regeln: einzelne Stichwoerter (oder ganze Typen) dimmen -
+        // unbedingt oder abhaengig von anderen gesetzten Stichwoertern/Themen
+        if (isset($regelwerk['paare']) && is_array($regelwerk['paare'])) {
+            foreach ($regelwerk['paare'] as $p) {
+                if (!is_array($p)) { continue; }
+                $matches = (isset($p['dim_sw']) && intval($p['dim_sw']) === $s['id'])
+                        || (isset($p['dim_typ']) && intval($p['dim_typ']) === $eig);
+                if (!$matches) { continue; }
+                $grund = vorschlaege_utf8(isset($p['grund']) ? $p['grund'] : '');
+                $hatBedingung = !empty($p['wenn_sw']) || !empty($p['wenn_thema']);
+                if (!$hatBedingung) {
+                    if ($dimGrund === null) { $dimGrund = $grund; }
+                } else {
+                    $dimWenn[] = array(
+                        'sw'     => !empty($p['wenn_sw']) ? array_map('intval', (array)$p['wenn_sw']) : array(),
+                        'thema'  => !empty($p['wenn_thema']) ? array_map('intval', (array)$p['wenn_thema']) : array(),
+                        'ausser' => !empty($p['ausser_sw']) ? array_map('intval', (array)$p['ausser_sw']) : array(),
+                        'grund'  => $grund,
+                    );
+                }
+            }
+        }
+
+        // Scope-Note-Muster: Hinweise der Redaktion in der Scope Note
+        // (Regex auf den DB-Rohtext; Muster kommen aus der Regeldatei)
+        if ($dimGrund === null && isset($regelwerk['scope_note_muster']) && is_array($regelwerk['scope_note_muster'])
+         && isset($uniScope[$s['id']]) && $uniScope[$s['id']] !== '') {
+            foreach ($regelwerk['scope_note_muster'] as $m) {
+                if (!is_array($m) || empty($m['muster'])) { continue; }
+                $hit = array();
+                if (@preg_match($m['muster'], $uniScope[$s['id']], $hit)) {
+                    $dimGrund = vorschlaege_utf8(isset($m['grund']) ? $m['grund'] : '');
+                    if (!empty($m['zitat']) && isset($hit[0])) {
+                        // kurzen Kontext um die Fundstelle mitgeben (nur Redaktionsansicht)
+                        $pos = strpos($uniScope[$s['id']], $hit[0]);
+                        $zitat = trim(substr($uniScope[$s['id']], max(0, $pos - 40), strlen($hit[0]) + 100));
+                        $dimGrund .= ' | Scope Note: "...' . vorschlaege_utf8($zitat) . '..."';
+                    }
+                    break;
+                }
+            }
+        }
+
+        // Herkunfts-Regel: bestimmte Stichwort-Typen nur dann ungedimmt vorschlagen, wenn sie im Kurstext belegt sind:
+        // " von Nachbar-Kursen "geerbt" " ist fuer diese Typen zu unsicher.
+        if ($dimGrund === null && isset($regelwerk['quelle_ohne_textbeleg']['typen'])
+         && !$s['imtext']
+         && in_array($eig, array_map('intval', (array)$regelwerk['quelle_ohne_textbeleg']['typen']), true)) {
+            $dimGrund = vorschlaege_utf8(isset($regelwerk['quelle_ohne_textbeleg']['grund']) ? $regelwerk['quelle_ohne_textbeleg']['grund'] : '');
+        }
+
+        // Frei definierbare Zusatzbewertung aus der Regeldatei (Callable)
+        if ($dimGrund === null && isset($regelwerk['extra_bewertung']) && is_callable($regelwerk['extra_bewertung'])) {
+            $g = call_user_func($regelwerk['extra_bewertung'], array(
+                'kurs_id' => $id, 'titel' => $curTitel, 'beschreibung' => $curBeschr,
+                'thema' => $curThema, 'gesetzte_sw' => array_keys($haveSw),
+            ), $s);
+            if (is_string($g) && $g !== '') { $dimGrund = vorschlaege_utf8($g); }
+        }
+
+        // Oberbegriff-Regel: dimmen, sobald ein (transitiver) Unterbegriff des Vorschlags im Formular gesetzt ist
+        if ($obRegel !== null && !empty($descMap[$s['id']])) {
+            $dimWenn[] = array(
+                'sw'     => array_map('intval', array_keys($descMap[$s['id']])),
+                'thema'  => array(),
+                'ausser' => array(),
+                'grund'  => vorschlaege_utf8(isset($obRegel['grund']) ? $obRegel['grund'] : ''),
+            );
+        }
+
+        // Abschluss-Regel: Sachstichwoerter (Typ 0) dimmen, sobald ein Abschluss-Stichwort gesetzt ist (mit konfigurierbaren Ausnahmen)
+        if ($abRegel !== null && $eig === 0 && count($abTrigger) > 0) {
+            $dimWenn[] = array(
+                'sw'     => $abTrigger,
+                'thema'  => array(),
+                'ausser' => !empty($abRegel['aussetzen_wenn_sw']) ? array_map('intval', (array)$abRegel['aussetzen_wenn_sw']) : array(),
+                'grund'  => vorschlaege_utf8(isset($abRegel['grund']) ? $abRegel['grund'] : ''),
+            );
+        }
+
+        $swOut[$k]['dim']      = ($dimGrund !== null) ? array('grund' => $dimGrund) : null;
+        $swOut[$k]['dim_wenn'] = $dimWenn;
+    }
+
+    // Mengen-Regel: ab N gesetzten Sachstichwoertern weitere Sachstichwort-Vorschlaege dimmen (Zaehlung erfolgt clientseitig, live)
+    $maxSach = null;
+    if (isset($regelwerk['max_sachstichwoerter']['limit'])) {
+        $sachIds = array();
+        foreach ($uniEig as $i => $eig) {
+            if ($eig === 0) { $sachIds[] = $i; }
+        }
+        $maxSach = array(
+            'limit' => intval($regelwerk['max_sachstichwoerter']['limit']),
+            'ids'   => $sachIds,
+            'grund' => vorschlaege_utf8(isset($regelwerk['max_sachstichwoerter']['grund']) ? $regelwerk['max_sachstichwoerter']['grund'] : ''),
+        );
+    }
+
+    $regelnOut = array('aktiv' => true, 'max_sach' => $maxSach);
+}
+
 // Themen-Vorschlaege: Namen laden + nach Gewicht sortieren
 $themaOut = array();
 if (count($themaSuggest) > 0) {
@@ -328,10 +608,14 @@ foreach ($neighbors as $cid => $n) {
     if (count($similarOut) >= $SIMILAR_SHOWN) { break; }
 }
 
-echo json_encode(array(
+$out = array(
     'success'      => true,
     'id'           => $id,
     'aehnliche'    => $similarOut,
     'themen'       => $themaOut,
     'stichwoerter' => $swOut,
-));
+);
+if ($regelnOut !== null) {
+    $out['regeln'] = $regelnOut;
+}
+echo json_encode($out);

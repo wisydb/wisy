@@ -18,6 +18,42 @@ define('_SETTINGS_BINEMPTY',                "empty job list");
 define('_SETTINGS_BINEMPTYASK',             "Empty job list &quot;\$1&quot; with \$2 entries?");
 define('_SETTINGS_BINERRLISTNOTFOUND',      "Cannot find the job list &quot;\$1&quot;. Enter the name exactly as you got it from the user, also regard the case!");
 define('_SETTINGS_BINERRNAMEEXISTS',        "Could not create a new job list with tne name &quot;\$1&quot;. The name is already in use.");
+define('_SETTINGS_BINEXPALLCSV',            "export all job lists as CSV file");
+define('_SETTINGS_BINEXPALLHTML',           "show all job lists as printable HTML page");
+define('_SETTINGS_BINEXPALLLISTS',          "all job lists");
+define('_SETTINGS_BINEXPCOLACCESS',         "sharing");
+define('_SETTINGS_BINEXPCOLCOUNT',          "records");
+define('_SETTINGS_BINEXPCOLCREATED',        "created");
+define('_SETTINGS_BINEXPCOLDEFAULT',        "default job list");
+define('_SETTINGS_BINEXPCOLDETAILS',        "details");
+define('_SETTINGS_BINEXPCOLID',             "record ID");
+define('_SETTINGS_BINEXPCOLLINK',           "link");
+define('_SETTINGS_BINEXPCOLLIST',           "job list");
+define('_SETTINGS_BINEXPCOLLISTINT',        "job list (internal name)");
+define('_SETTINGS_BINEXPCOLMODIFIED',       "modified");
+define('_SETTINGS_BINEXPCOLMODIFIEDBY',     "modified by");
+define('_SETTINGS_BINEXPCOLNAME',           "name");
+define('_SETTINGS_BINEXPCOLOWNER',          "owner");
+define('_SETTINGS_BINEXPCOLSTATE',          "state");
+define('_SETTINGS_BINEXPCOLTABLE',          "table");
+define('_SETTINGS_BINEXPCOLTABLEINT',       "table (internal name)");
+define('_SETTINGS_BINEXPCREATEDBY',         "exported by \$1, \$2");
+// $1 the name of the exporting user -- $2 the export date
+define('_SETTINGS_BINEXPCSV',               "export job list as CSV file");
+define('_SETTINGS_BINEXPHTML',              "show job list as printable HTML page");
+define('_SETTINGS_BINEXPICONHINT',          "export job list &quot;\$1&quot; as CSV file");
+// $1 the job list name
+define('_SETTINGS_BINEXPNO',                "no");
+define('_SETTINGS_BINEXPOVERVIEW',          "Overview");
+define('_SETTINGS_BINEXPSHARED',            "shared");
+define('_SETTINGS_BINEXPSTATEMISSING',      "does not exist");
+define('_SETTINGS_BINEXPSTATENOACCESS',     "no access");
+define('_SETTINGS_BINEXPSTATEOK',           "exists");
+define('_SETTINGS_BINEXPTITLE',             "Job list export");
+define('_SETTINGS_BINEXPTOTAL',             "\$1 records in total");
+define('_SETTINGS_BINEXPTOTAL1',            "1 record in total");
+// $1 the total number of exported records
+define('_SETTINGS_BINEXPYES',               "yes");
 define('_SETTINGS_BINISACTIVEBIN',          "(default job list)");
 define('_SETTINGS_BINLISTBYOTHER',          "this job list is owned by \$1, you're only using it; for this reason there are no more options here");
 // $1 will be replaced by the name of the other list owner
