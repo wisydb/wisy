@@ -1,7 +1,10 @@
+# ZUM STOPPEN DER AUSFUEHRUNG DIESES SCRIPTS: STOPP-Datei anlegen: kursduplikate.stop
+
 import pandas as pd
 import mysql.connector
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+from concurrent.futures import ThreadPoolExecutor
 import re
 import subprocess
 import time
@@ -19,6 +22,7 @@ import fcntl
 
 LOGFILE = "kursduplikate.log"
 LOCKFILE = "kursduplikate.lock"
+STOPFILE = "kursduplikate.stop"
 
 def log(msg):
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -93,15 +97,20 @@ def release_lock():
 
 atexit.register(release_lock)
 acquire_lock_or_exit()
+if os.path.exists(STOPFILE):
+    os.remove(STOPFILE)
 
 
 warnings.filterwarnings("ignore", message=".*joblib will operate.*")
 
-MAX_LLM_CHECKS = 20000    # Maximale Anzahl KI-Checks pro Aufruf (wird als Limit genutzt)
+MAX_LLM_CHECKS = 500000    # Maximale Anzahl KI-Checks pro Aufruf (wird als Limit genutzt)
 MAX_BATCH_SIZE = 5        # Speichert nach X Vergleichen in die DB, kann nach Bedarf angepasst werden
 PROCESSED_FILE = "already_processed.json"  # Zwischenspeicherung der bereits bearbeiteten Paare
-WORT_AEHNLICHKEIT_VORAUSWAHL = 0.70 # Texte müssen mind. 70% Wort-Ähnlichkeit (egal welche Reihenfolge) aufweisen, um der KI zum Vergleich präsentiert zu werden
+WORT_AEHNLICHKEIT_VORAUSWAHL = 0.30 # Texte müssen mind. 30% Wort-Ähnlichkeit (egal welche Reihenfolge) aufweisen, um der KI zum Vergleich präsentiert zu werden
 RUN_STATS_FILE = "dupe_stats.json"
+
+OLLAMA_MODEL = "gemma4:26b"
+WORKERS = 2          # muss zu OLLAMA_NUM_PARALLEL auf dem Server passen!
 
 
 TEMPLATE_USER_ID = 7
@@ -149,12 +158,18 @@ def llm_check_duplikat(titel1, beschr1, titel2, beschr2):
 [PROMPT ergänzen...]
 """
 	
-# llama3.3:latest
+
     
     try:
         response = requests.post(
-            f"http://127.0.0.1:{LOCAL_TUNNEL_PORT}/api/generate",
-            json={"model": "gemma4:31b", "prompt": prompt, "stream": True},
+            f"http://127.0.0.1:{LOCAL_TUNNEL_PORT}/api/chat",
+            json={
+                "model": OLLAMA_MODEL,
+                "messages": [{"role": "user", "content": prompt}],
+                "stream": True,
+                "think": False,
+                "options": {"temperature": 0, "seed": 42}
+            },
             stream=True,
             timeout=300
         )
@@ -162,8 +177,9 @@ def llm_check_duplikat(titel1, beschr1, titel2, beschr2):
         for line in response.iter_lines():
             if line:
                 data = json.loads(line.decode("utf-8"))
-                if "response" in data:
-                    text_chunks.append(data["response"])
+                stueck = data.get("message", {}).get("content")
+                if stueck:
+                    text_chunks.append(stueck)
         full_response = "".join(text_chunks).strip()
         response_lower = full_response.lower()
         if response_lower.startswith("::gleich::"):
@@ -171,11 +187,13 @@ def llm_check_duplikat(titel1, beschr1, titel2, beschr2):
         elif response_lower.startswith("::unterschiedlich::"):
             decision = "unterschiedlich"
         else:
-            decision = "unterschiedlich"
+            log(f"⚠️ Unbrauchbare Antwort ({len(full_response)} Zeichen): "
+                f"{full_response[:120]!r}")
+            return None, f"Unbrauchbare Antwort: {full_response[:200]}"
         return decision, full_response
     except Exception as e:
         log(f"⚠️ Fehler beim LLM-Check (stream): {e}")
-        return "unterschiedlich", f"Fehler beim LLM-Check: {e}"
+        return None, f"Fehler beim LLM-Check: {e}"
 
 # ===== DB-Verbindung konfigurieren =====
 db_config = {
@@ -446,18 +464,41 @@ run_checked = 0
 # Kumulierte Zähler über mehrere Aufrufe
 stats = load_run_stats()
 
+def ergebnisse(paare):
+    """Holt die LLM-Antworten blockweise parallel,
+    liefert sie aber in Originalreihenfolge zurueck."""
+    with ThreadPoolExecutor(max_workers=WORKERS) as pool:
+        for i in range(0, len(paare), WORKERS):
+            block = paare[i:i + WORKERS]
+            futures = []
+            for kurse_id1, kurse_id2, score in block:
+                k1 = df[df['id'] == kurse_id1].iloc[0]
+                k2 = df[df['id'] == kurse_id2].iloc[0]
+                futures.append(pool.submit(
+                    llm_check_duplikat,
+                    k1['titel'], k1['beschreibung'],
+                    k2['titel'], k2['beschreibung']))
+            for (kurse_id1, kurse_id2, score), fut in zip(block, futures):
+                decision, begruendung = fut.result()
+                yield kurse_id1, kurse_id2, score, decision, begruendung
+                
 max_checks = min(MAX_LLM_CHECKS, len(pending_pairs))
-for index, (kurse_id1, kurse_id2, score) in enumerate(pending_pairs[:max_checks], 1):
-    kurs1 = df[df['id'] == kurse_id1].iloc[0]
-    kurs2 = df[df['id'] == kurse_id2].iloc[0]
+for index, (kurse_id1, kurse_id2, score, decision, begruendung) in enumerate(
+        ergebnisse(pending_pairs[:max_checks]), 1):
+
+    if os.path.exists(STOPFILE):
+        log("🛑 Stopp-Datei gefunden - beende nach aktuellem Stand.")
+        break
 
     log(f"{index} / {max_checks} (gesamt {total_pairs}):")
     log(f"🔍 Vergleiche: ID {kurse_id1} vs {kurse_id2}")
 
-    decision, begruendung = llm_check_duplikat(
-        kurs1['titel'], kurs1['beschreibung'],
-        kurs2['titel'], kurs2['beschreibung']
-    )
+    if decision is None:
+        log("⏭️ Uebersprungen (Fehler) - wird beim naechsten Lauf erneut versucht.\n")
+        continue
+
+    kurs1 = df[df['id'] == kurse_id1].iloc[0]
+    kurs2 = df[df['id'] == kurse_id2].iloc[0]
 
     log(f"🔍 Entscheidung: {decision}")
     log(f"🔍 Begründung: {begruendung}\n")
