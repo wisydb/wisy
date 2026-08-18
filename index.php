@@ -399,7 +399,7 @@ if( @file_exists("$wisyCore/$wisyRequestedFile") )
         if($wisyRequestedExt == "css"
             || $wisyRequestedExt == "js"
             ) {
-                $longer_expiration = (20); // 2 weeks // 86400*14
+                $longer_expiration = (1209600); // 2 weeks // 86400*14
                 headerDoCache($longer_expiration); // $default_expiration
                 
                 $filectime_orig = filectime($requested_filepath);

@@ -108,6 +108,7 @@ class REST_API_CLASS
 			'fu_knr'			=>	array('flags'=>REST_STRING,				),
 			'foerder_knr'		=>	array('flags'=>REST_STRING,				),
 			'azwv_knr'			=>	array('flags'=>REST_STRING,				),
+		    'now_zustimmung'	=>	array('flags'=>REST_INT,				'protected_by'=>'now_zustimmung_fix'	), // bleibt unveraendert, solange kurse.now_zustimmung_fix gesetzt ist
 			'notizen'			=>	array('flags'=>REST_STRING_PREPENDONLY,	),
 		    'notizen_fix'		=>	array('flags'=>REST_STRING_PREPENDONLY,	),
 		),
@@ -180,7 +181,7 @@ class REST_API_CLASS
 			'herkunftsID'		=>	array('flags'=>REST_STRING,				),
 		    'notizen'			=>	array('flags'=>REST_STRING_PREPENDONLY,	),
 		    'notizen_fix'		=>	array('flags'=>REST_STRING_PREPENDONLY,	),
-		    'now_zustimmung'	=>	array('flags'=>REST_INT,				),
+		    'now_zustimmung'	=>	array('flags'=>REST_INT,				'protected_by'=>'now_zustimmung_fix'	), // bleibt unveraendert, solange anbieter.now_zustimmung_fix gesetzt ist
 		),
 		'themen' => array
 		(
@@ -994,7 +995,16 @@ class REST_API_CLASS
 				else if( $prop['flags']&REST_INT )
 				{
 					$sql .= $sql? ', ' : '';
-					$sql .= "$name=" . intval($_REQUEST[$name]);
+					if( isset($prop['protected_by']) && $prop['protected_by'] != '' )
+					{
+						// Feld-Fixierung: solange das Sperr-Feld (z.B. now_zustimmung_fix)
+						// im Datensatz gesetzt ist, bleibt der gespeicherte Wert erhalten
+						$sql .= "$name=IF({$prop['protected_by']}>0, $name, " . intval($_REQUEST[$name]) . ")";
+					}
+					else
+					{
+						$sql .= "$name=" . intval($_REQUEST[$name]);
+					}
 				}
 				else if( $prop['flags']&REST_STRING )
 				{

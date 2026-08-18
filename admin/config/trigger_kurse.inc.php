@@ -633,6 +633,54 @@ function update_kurs_state($kurs_id, $param)
 
 
 /*****************************************************************************
+ * mein NOW: kurse.now_zustimmung an anbieter.now_zustimmung angleichen
+ *****************************************************************************/
+
+
+/* Standard-Vergabe: Kurse von Anbietern mit NOW-Einwilligung
+ * (anbieter.now_zustimmung=1) erhalten kurse.now_zustimmung=1, sofern der
+ * Kurs nicht per kurse.now_zustimmung_fix fixiert ist. date_modified wird
+ * mitgesetzt, damit die Aenderung fuer Delta-Abgleiche sichtbar ist.
+ *
+ * Ein ENTZUG der Anbieter-Einwilligung wird bewusst NICHT auf die Kurse
+ * uebertragen: Die Uebermittlung an mein NOW prueft immer zusaetzlich die
+ * Anbieter-Zustimmung, ohne Anbieter-Einwilligung wird also ohnehin nichts
+ * uebertragen - und die Kurs-Werte bleiben fuer eine spaetere erneute
+ * Einwilligung erhalten.
+ *
+ * Aufrufe: taeglich ueber den Sync (kurseSlow ->
+ * alle_freischaltungen_ueberpruefen, s. core51/wisy-sync-renderer-class),
+ * ausserdem direkt bei jeder Einwilligung/redaktionellen Vergabe
+ * (now-einwilligung/inc/functions.inc.php, now_propagate_kurse_zustimmung).
+ */
+function now_zustimmung_kurse_angleichen()
+{
+	$db = new DB_Admin;
+	$db->query("UPDATE kurse INNER JOIN anbieter ON kurse.anbieter=anbieter.id"
+		. " SET kurse.now_zustimmung=1, kurse.date_modified='" . ftime("%Y-%m-%d %H:%M:%S") . "'"
+		. " WHERE anbieter.now_zustimmung=1 AND kurse.now_zustimmung=0 AND kurse.now_zustimmung_fix=0;");
+	return $db->affected_rows();
+}
+
+
+/* Neu angelegte Kurse erben die NOW-Zustimmung ihres Anbieters als
+ * Standardwert (sofern nicht fixiert). Aufruf aus trigger_kurse() bei
+ * action=afterinsert. */
+function now_zustimmung_kurs_erben($kurs_id)
+{
+	$kurs_id = intval($kurs_id);
+	if( $kurs_id <= 0 )
+		return;
+
+	$db = new DB_Admin;
+	$db->query("UPDATE kurse INNER JOIN anbieter ON kurse.anbieter=anbieter.id"
+		. " SET kurse.now_zustimmung=1"
+		. " WHERE kurse.id=$kurs_id AND anbieter.now_zustimmung=1"
+		. " AND kurse.now_zustimmung=0 AND kurse.now_zustimmung_fix=0;");
+}
+
+
+/*****************************************************************************
  * Trigger "main"
  *****************************************************************************/
 
@@ -651,6 +699,9 @@ function alle_freischaltungen_ueberpruefen()
 	
 	$dummy = array();
 	update_alle_anbieter_vollst($dummy);
+	
+	// mein NOW: Kurs-Zustimmung an die Anbieter-Einwilligung angleichen
+	now_zustimmung_kurse_angleichen();
 }
 
 
@@ -661,6 +712,12 @@ function trigger_kurse(&$param)
     if( isset( $param['action'] ) && $param['action'] == 'afterinsert'
      || isset( $param['action'] ) && $param['action'] == 'afterupdate' )
 	{
+
+	    // mein NOW: neue Kurse erben die NOW-Zustimmung ihres Anbieters
+	    if( isset( $param['action'] ) && $param['action'] == 'afterinsert' )
+	    {
+	        now_zustimmung_kurs_erben( isset($param['id']) ? $param['id'] : 0 );
+	    }
 
 	    $uks = update_kurs_state( (isset($param['id']) ? $param['id'] : null), array('from_cms'=>1, 'set_plz_stadtteil'=>1, 'write'=>1));
 		

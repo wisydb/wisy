@@ -172,7 +172,19 @@ class IMP_IMPORTER_CLASS
 		for( $r = 0; $r < sizeof((array) $rows); $r++ )
 		{
 			$row = $rows[$r];
-			switch( $row->flags&TABLE_ROW ) 
+
+			// Feld-Fixierung (prop 'edit.protectedBy', z.B. now_zustimmung_fix):
+			// beim Import bleibt der gespeicherte Wert erhalten, solange das
+			// Sperr-Feld im Zieldatensatz gesetzt ist (das Sperr-Feld selbst
+			// steht in der Zeilen-Definition NACH dem geschuetzten Feld, so
+			// dass IF() hier noch den alten Wert sieht)
+			if( isset($row->prop['edit.protectedBy']) && $row->prop['edit.protectedBy'] )
+			{
+				$sql .= ', ' . $row->name . '=IF(' . $row->prop['edit.protectedBy'] . '>0, ' . $row->name . ', ' . $mysqlDb->quote($sqliteDb->fs($row->name)) . ')';
+				continue;
+			}
+
+			switch( $row->flags&TABLE_ROW )
 			{
 					case TABLE_ENUM:
 					case TABLE_BITFIELD:

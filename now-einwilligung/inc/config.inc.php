@@ -96,6 +96,59 @@ define('NOW_CONTACT_EMAIL', 'redaktion@example.org');
 
 /*------------------------------------------------------------------
  ###WISY-BETREIBER-INDIVIDUELL-GGF-TEXT-ERSETZEN###
+ "Antwort an" (Reply-To) für ALLE Mails dieses Moduls.
+
+ Versendet wird in der Regel über ein unbeaufsichtigtes Postfach
+ (no-reply@...), weil dessen Zugangsdaten in den Portaleinstellungen liegen
+ und SPF/DKIM auf diese Domain ausgestellt sind. Rückfragen und Widersprüche
+ der Anbieter müssen aber bei der Redaktion ankommen – dafür wird diese
+ Adresse als Reply-To gesetzt (bei SMTP wie im mail()-Fallback).
+
+ Leer = es gilt NOW_CONTACT_EMAIL, ersatzweise NOW_ADMIN_EMAIL; die Adresse
+ muss also nur gesetzt werden, wenn Antworten woanders hin sollen als die
+ im Mailtext genannte Kontaktadresse.
+ NOW_MAIL_REPLYTONAME leer = NOW_MAIL_FROMNAME.
+------------------------------------------------------------------*/
+define('NOW_MAIL_REPLYTO',     '');
+define('NOW_MAIL_REPLYTONAME', '');
+
+/*------------------------------------------------------------------
+ ###WISY-BETREIBER-INDIVIDUELL-GGF-TEXT-ERSETZEN###
+ Werte für die Informations-Mail der REDAKTIONELLEN Vergabe
+ (inc/now-infomail.inc.php).
+
+ NOW_KOOPV_PARTNER   Stelle, die die Kooperationsvereinbarung mit der
+                     Bundesagentur für Arbeit geschlossen hat (Bundesland
+                     bzw. zuständige Behörde). Wird im Satz "<...> hat mit
+                     der Bundesagentur für Arbeit vereinbart, ..." eingesetzt.
+
+ NOW_INFOMAIL_FRIST  Datum, bis zu dem ein Widerspruch möglich ist, als
+                     fertiger Text (z. B. '30. September 2026'). PFLICHT:
+                     Solange leer, ist die redaktionelle Vergabe blockiert –
+                     so kann keine Mail mit unausgefülltem Datum hinausgehen.
+                     Vor jeder neuen Versandrunde aktualisieren.
+
+ NOW_INFOMAIL_SIGNATUR  Signatur unter der Informations-Mail, mehrzeilig als
+                     reiner Text (\n). In der HTML-Fassung werden die
+                     Zeilenumbrüche automatisch umgesetzt. PFLICHT (s. o.).
+                     Hier stehen bewusst nur Platzhalter – die realen Angaben
+                     (Name, Funktion, Anschrift, Registernummer) trägt der
+                     Betreiber in seiner lokalen Konfiguration ein.
+------------------------------------------------------------------*/
+define('NOW_KOOPV_PARTNER',    'das Land / die zuständige Behörde');
+define('NOW_INFOMAIL_FRIST',   '');
+define('NOW_INFOMAIL_SIGNATUR',
+      "Max Mustermann\n"
+    . "Geschäftsführung\n"
+    . "\n"
+    . "Musterbildung gGmbH\n"
+    . "Musterstraße 1\n"
+    . "12345 Musterstadt\n"
+    . "Telefon 01234 567890"
+);
+
+/*------------------------------------------------------------------
+ ###WISY-BETREIBER-INDIVIDUELL-GGF-TEXT-ERSETZEN###
  Basis-URL für die ERZEUGTEN Formular-Links (Anschreiben, Redaktions-Maske).
  - NOW_BASEURL_FROM_REQUEST = true: Basis-URL wird aus dem aktuellen
    Request-Host abgeleitet. Dadurch erzeugen Aufrufe aus einer Sandbox

@@ -220,11 +220,15 @@ $anbieter->add_row(TABLE_INT|TABLE_READONLY,                    'x_cntkurse_stat
 
 
 // NOW (mein NOW): Status der Einwilligung zur Datenuebermittlung an mein-now.de.
-// READONLY -> NICHT durch die Redaktion aenderbar; Aenderungen ausschliesslich
-// ueber das Einwilligungs-/Widerrufsformular (/now-einwilligung/). Den
-// personalisierten Link je Anbieter zeigt der Menuepunkt "NOW-Einwilligung"
-// (edit_plugin_anbieter_0) inkl. Einwilligungs-Historie/Export.
-$anbieter->add_row(TABLE_ENUM|TABLE_READONLY|TABLE_NEWSECTION, 'now_zustimmung', 'NOW-Datenuebermittlung', 0, '0###nein (gesperrt / kein Versand)###1###ja (Einwilligung erteilt)', 'mein NOW', array('layout.section'=>'mein NOW', 'help.tooltip'=>'Status der Einwilligung zur Uebermittlung an mein-now.de. Nur ueber das Einwilligungsformular aenderbar, nicht hier.'));
+// READONLY -> NICHT direkt in der Maske aenderbar; Aenderungen ueber das
+// Einwilligungs-/Widerrufsformular (/now-einwilligung/), die redaktionelle
+// Vergabe im Menuepunkt "NOW-Einwilligung" (edit_plugin_anbieter_0, inkl.
+// personalisierter Links, Historie/Export) sowie ueber MultiEdit.
+// Ist now_zustimmung_fix gesetzt, kann now_zustimmung weder durch das
+// Anbieter-Formular noch durch MultiEdit/redaktionelle Vergabe geaendert
+// werden (die Redaktions-Entscheidung bleibt bestehen).
+$anbieter->add_row(TABLE_ENUM|TABLE_READONLY|TABLE_NEWSECTION, 'now_zustimmung', 'NOW-Datenuebermittlung', 0, '0###nein (gesperrt / kein Versand)###1###ja (Einwilligung erteilt)', 'mein NOW', array('layout.section'=>'mein NOW', 'edit.protectedBy'=>'now_zustimmung_fix', 'help.tooltip'=>'Status der Einwilligung zur Uebermittlung an mein-now.de. Aenderbar ueber das Einwilligungsformular, den Menuepunkt NOW-Einwilligung (redaktionelle Vergabe) und MultiEdit - nicht direkt hier.'));
+$anbieter->add_row(TABLE_FLAG, 'now_zustimmung_fix', 'NOW-Status fixiert', 0, 0, '', array('layout.join'=>1, 'help.tooltip'=>'Fixiert die Entscheidung in NOW-Datenuebermittlung: Solange gesetzt, kann der Status weder durch das Anbieter-Formular noch durch MultiEdit oder die redaktionelle Vergabe geaendert werden.'));
 
 
 $anbieter->rows[$use_neweditor? 10 : 2]->addparam = $anbieter;
@@ -389,6 +393,8 @@ if($use_neweditor) {
         'x_df_lastdeleted_origin', 'Letzte DF-L&ouml;schung Ursache', '', '', 'Termin', array( 'showIfSetting' => 'edit.df.showchanges', 'layout.join' => 1, 'layout.descr.hide'=>1, 'layout.descr'=>'DFInsertedChangeOrigin', 'layout.after'=>'', 'layout.bg.class'=>'', 'layout.descr.class'=>'df_lastdeletedOrigin', 'ctrl.class'=>'df_lastdeletedOriginCtrl'));
 }
 
+$kurse->add_row(TABLE_FLAG,				'now_zustimmung',			'mein NOW', 0, 0, '', array('layout.section'=>'mein NOW', 'edit.protectedBy'=>'now_zustimmung_fix', 'help.tooltip'=>'Uebermittlung dieses Kurses an mein-now.de; uebertragen wird nur, wenn auch der Anbieter zugestimmt hat. Wird bei Anbieter-Einwilligung automatisch gesetzt, sofern nicht fixiert.'));
+$kurse->add_row(TABLE_FLAG,				'now_zustimmung_fix',		'mein NOW fixieren', 0, 0, '', array('layout.join'=>1, 'help.tooltip'=>'Fixiert die mein-NOW-Entscheidung fuer diesen Kurs: Solange gesetzt, wird mein NOW weder durch die Anbieter-Einwilligung noch durch Sync oder MultiEdit geaendert.'));
 
 $kurse->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,			'notizen_fix',			'Anmerkungen', '', '', '',  array('layout.section'=>1));
 $kurse->add_row(TABLE_TEXTAREA,				'notizen',			'Journal', '', '', '');
@@ -459,7 +465,7 @@ $anbieter_billing->add_row(TABLE_TEXTAREA|TABLE_NEWSECTION,			'notizen',				'Jou
 $apikeys = new Table_Def_Class(0,								'apikeys',			'API-Keys');
 $apikeys->add_row(TABLE_TEXT|TABLE_LIST|TABLE_MUST,				'name',				'Name', '', '', '', array('ctrl.size'=>'10-80', 'layout.bg.class'=>'e_bglite', 'layout.descr.class'=>'e_bolder', 'ctrl.class'=>'e_bolder'));
 $apikeys->add_row(TABLE_TEXT|TABLE_LIST|TABLE_UNIQUE,			'apikey',			'persönlicher API-Key', 'wird automatisch erzeugt', '', '', array('ctrl.size'=>'25-80'));
-$apikeys->add_row(TABLE_TEXT|TABLE_LIST|TABLE_UNIQUE,			'filter_apiurl',	'URL muss enthalten', '', '', '', array('layout.after'=>'<br>Beispiel: /api/v1/', 'ctrl.size'=>'25-80'));
+$apikeys->add_row(TABLE_TEXT|TABLE_LIST,			            'filter_apiurl',	'URL muss enthalten', '', '', '', array('layout.after'=>'<br>Beispiel: /api/v1/', 'ctrl.size'=>'25-80'));
 $apikeys->add_row(TABLE_BITFIELD|TABLE_LIST,					'flags',			'Optionen', 1+2, '1###Freigeschaltet###2###Verschl&uuml;sselte Verbindung###4###Schreibzugriff erlauben (Achtung: Beim Schreiben greifen nur Benutzergruppen-Beschränkungen - kein Ausgabefilter, keine Ausgabe-Bedingungen)###8###Journal Lesezugriff<br><br>', '', array('ctrl.checkboxes'=>1));
 $apikeys->add_row(TABLE_TEXTAREA, 				                'filter_tabelle_felder_werte', 		'<span style="text-decoration:underline">Ausgabe-Bedingung:</span><br>Liste von <b>SQL-WHERE -Bedingungen</b> je Tabelle und Feld', '', '', '', array('layout.after'=>'<br>Wird eine Bedingung für "durchfuehrung" formuliert, und wird diese nicht erfüllt, wird auch der zugehörige Kurs nicht angezeigt. Alle anderen Tabellen (stichwoerter, anbieter):<br><span style="text-decoration:underline">Syntax-Beispiele (Trenner = Semikolon; Die Felder müssen in der gleichen Tabelle sein!)</span>:<br>kurse.freigeschaltet IN (1,4); anbieter.gruendungsjahr = 1980; glossar.begriff = "Lehramt"; portale.domains LIKE "%example.com%"; durchfuehrung.preis > 100;<br>user.loginname = "testuser"; stichwoerter.user_modified = 200; themen.user_created = 100; themen.kuerzel = "14.1." OR themen.kuerzel = "14.2."; stichwoerter.stichwort LIKE "%Prüfung%"; user_grp.shortname = "Abgelaufen"; kurse.user_access = 508;<br><br>'));
 $apikeys->add_row(TABLE_TEXTAREA, 				                'filter_kurse_stichwoerter', 		'<span style="text-decoration:underline">Ausgabe-Bedingung:</span><br>Liste&nbsp;zwingend&nbsp;notwendiger<br><b>Kurs-</b>Stichwort-IDs', '', '', '', array('layout.after'=>'<br>Syntax:&nbsp;<i>&lt;id&gt;<b>,&nbsp;</b>&lt;id&gt;<b>,&nbsp;</b>&lt;id&gt;<b>,&nbsp;</b>[...]</i><br>Beispiel: 5367, 21811, 21861, 802691<br><br>'));

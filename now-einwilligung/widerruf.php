@@ -70,6 +70,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     $anbieter = $postAnbieterId > 0 ? now_load_anbieter($postAnbieterId) : null;
     if (!$anbieter) { $errors[] = 'Bitte wählen Sie einen gültigen Anbieter aus.'; }
+    elseif (intval($anbieter['now_zustimmung_fix']) > 0) {
+        // Die Redaktion hat den Übermittlungs-Status fixiert – das Formular
+        // darf anbieter.now_zustimmung dann nicht ändern.
+        $errors[] = 'Der Übermittlungs-Status dieses Anbieters wurde von der Redaktion fest hinterlegt und kann '
+                  . 'derzeit nicht über dieses Formular geändert werden. Bitte wenden Sie sich an ' . NOW_CONTACT_EMAIL . '.';
+    }
 
     $vorname  = trim((string)($_POST['vorname']  ?? ''));
     $nachname = trim((string)($_POST['nachname'] ?? ''));
@@ -155,6 +161,17 @@ $queryString   = ($lockedAnbieter ? ('?a=' . $lockedAnbieter['id'] . '&t=' . now
        an „mein&nbsp;NOW“ <strong>widerrufen</strong>. Ihre Daten im Kursportal (WISY) bleiben
        davon unberührt; lediglich die Weitergabe an „mein&nbsp;NOW“ wird beendet.</p>
 
+    <?php if ($lockedAnbieter && intval($lockedAnbieter['now_zustimmung_fix']) > 0): ?>
+
+        <div class="box box-info">
+            Der Übermittlungs-Status von <strong><?= now_h($lockedAnbieter['suchname']) ?></strong> wurde von der
+            Redaktion fest hinterlegt und kann derzeit nicht über dieses Formular geändert werden.
+            Bitte wenden Sie sich bei Fragen an
+            <a href="mailto:<?= now_h(NOW_CONTACT_EMAIL) ?>"><?= now_h(NOW_CONTACT_EMAIL) ?></a>.
+        </div>
+
+    <?php else: ?>
+
     <form id="widerrufForm" action="<?= now_h($queryString) ?>" method="post" autocomplete="off">
         <input type="hidden" name="csrf" value="<?= now_h($csrf) ?>">
         <div class="hp"><label>Website<input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
@@ -201,6 +218,8 @@ $queryString   = ($lockedAnbieter ? ('?a=' . $lockedAnbieter['id'] . '&t=' . now
         <button type="submit" id="submitBtn" disabled>Widerruf absenden</button>
         <p class="muted small">Sie können nach einem Widerruf jederzeit erneut einwilligen.</p>
     </form>
+
+    <?php endif; /* now_zustimmung_fix */ ?>
 
 <?php endif; ?>
 

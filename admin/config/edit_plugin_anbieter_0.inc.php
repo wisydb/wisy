@@ -23,6 +23,7 @@ define('NOW_EINW_IN', true);
 $nowRoot = dirname(dirname(__DIR__)); // .../wisy
 require_once($nowRoot . '/now-einwilligung/inc/config.inc.php');
 require_once($nowRoot . '/now-einwilligung/inc/functions.inc.php');
+require_once($nowRoot . '/now-einwilligung/inc/now-infomail.inc.php');
 
 $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
@@ -31,13 +32,28 @@ $db = new DB_Admin;
 // latin1-sichere Ausgabe-Escapes (Backend ist ISO-8859-1)
 function nowadmin_h($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'ISO-8859-1'); }
 
+// Name der angemeldeten Redakteurin / des Redakteurs (latin1, fuer Protokoll)
+function nowadmin_bearbeiter()
+{
+    $name = 'Redaktion';
+    if (isset($_SESSION['g_session_userid']) && intval($_SESSION['g_session_userid']) > 0) {
+        $dbU = new DB_Admin;
+        $dbU->query("SELECT name, loginname FROM user WHERE id=" . intval($_SESSION['g_session_userid']));
+        if ($dbU->next_record()) {
+            $name = trim((string)$dbU->fs('name')) !== '' ? trim((string)$dbU->fs('name')) : trim((string)$dbU->fs('loginname'));
+        }
+    }
+    return $name;
+}
+
 // --- Anbieter-Stammdaten ----------------------------------------------------
-$db->query("SELECT suchname, pflege_email, anspr_email, now_zustimmung FROM anbieter WHERE id=" . $id);
+$db->query("SELECT suchname, pflege_email, anspr_email, now_zustimmung, now_zustimmung_fix FROM anbieter WHERE id=" . $id);
 $anbieterOk   = $db->next_record();
 $suchname     = $anbieterOk ? $db->fs('suchname')       : '';
 $pflegeEmail  = $anbieterOk ? trim((string)$db->fs('pflege_email')) : '';
 $ansprEmail   = $anbieterOk ? trim((string)$db->fs('anspr_email'))  : '';
 $nowFlag      = $anbieterOk ? intval($db->f('now_zustimmung')) : 0;
+$nowFix       = $anbieterOk ? intval($db->f('now_zustimmung_fix')) : 0;
 $kontaktEmail = $pflegeEmail !== '' ? $pflegeEmail : $ansprEmail;
 
 $linkEinw    = now_build_link($id);
@@ -52,6 +68,27 @@ if ($anbieterOk && isset($_GET['do']) && $_GET['do'] === 'anschreiben') {
         'pflege_email' => $pflegeEmail,
         'anspr_email'  => $ansprEmail,
     ));
+}
+
+// --- Aktion: Zustimmung redaktionell erteilen + Informations-Mail -----------
+// (Einwilligung wurde auf anderem Wege erteilt; die Mail informiert nur und
+// ruft hoechstens zur Gegenkontrolle auf. Ohne hinterlegten Info-Mail-Text
+// oder ohne gueltige Pflege-Adresse unterbleibt die komplette Aktion.)
+$redResult = null; // null = keine Aktion, sonst Rueckgabe von now_set_zustimmung_redaktionell()
+if ($anbieterOk && isset($_GET['do']) && $_GET['do'] === 'redaktionell_erteilen') {
+    $redResult = now_set_zustimmung_redaktionell(
+        $id,
+        true /*erteilen*/,
+        now_to_utf8(nowadmin_bearbeiter()),
+        true /*mit Info-Mail*/,
+        'Anbieter-Maske'
+    );
+    // Status fuer die Anzeige neu laden
+    $db->query("SELECT now_zustimmung, now_zustimmung_fix FROM anbieter WHERE id=" . $id);
+    if ($db->next_record()) {
+        $nowFlag = intval($db->f('now_zustimmung'));
+        $nowFix  = intval($db->f('now_zustimmung_fix'));
+    }
 }
 
 // --- Historie laden ---------------------------------------------------------
@@ -121,10 +158,15 @@ $site->skin->workspaceStart();
  .now-tbl tr:nth-child(even){ background:#f6f6f6; }
  .now-act-erteilt { color:#2e7d32; font-weight:bold; }
  .now-act-widerrufen { color:#c62828; font-weight:bold; }
+ .now-act-erteilt_redaktion { color:#2e7d32; font-weight:bold; }
+ .now-act-entzogen_redaktion { color:#c62828; font-weight:bold; }
+ .now-fix { background:#fff3e0; color:#e65100; border:1px solid #e65100; }
  .now-hint { color:#666; font-size:11px; }
  .now-btn, a.now-btn, a.now-btn:link, a.now-btn:visited, a.now-btn:hover, a.now-btn:active {
    display:inline-block;margin:6px 0;padding:5px 10px;background:#004d71;
    color:#fff !important;text-decoration:none !important;border-radius:4px;border:1px solid #003a55; }
+ .now-btn.redaktionell, a.now-btn.redaktionell, a.now-btn.redaktionell:link, a.now-btn.redaktionell:visited, a.now-btn.redaktionell:hover, a.now-btn.redaktionell:active {
+   background-color:orange !important; color: black !important; font-weight: bold !important;}
  a.now-btn:hover { background:#00658f; }
 </style>
 <div class="now-wrap">
@@ -141,8 +183,18 @@ $site->skin->workspaceStart();
         <?php else: ?>
             <span class="now-status now-nein">keine Einwilligung - keine &Uuml;bermittlung</span>
         <?php endif; ?>
+        <?php if ($nowFix > 0): ?>
+            <span class="now-status now-fix">fixiert</span>
+        <?php endif; ?>
     </p>
-    <p class="now-hint">Der Status ist nur &uuml;ber die folgenden Formular-Links &auml;nderbar (nicht in der Maske).</p>
+    <?php if ($nowFix > 0): ?>
+        <p class="now-hint">Der Status ist <b>fixiert</b> (H&auml;kchen &quot;NOW-Status fixiert&quot; in der
+           Anbieter-Maske): Weder das Anbieter-Formular noch MultiEdit oder die redaktionelle Vergabe
+           k&ouml;nnen ihn &auml;ndern. Zum &Auml;ndern zun&auml;chst die Fixierung in der Maske entfernen.</p>
+    <?php else: ?>
+        <p class="now-hint">Der Status ist &uuml;ber die folgenden Formular-Links oder die redaktionelle
+           Vergabe (unten) &auml;nderbar - nicht direkt in der Maske.</p>
+    <?php endif; ?>
 
     <table class="now-links">
         <tr>
@@ -176,6 +228,87 @@ $site->skin->workspaceStart();
            wird dadurch nicht ber&uuml;hrt.</p>
     <?php else: ?>
         <p class="now-hint">Kein Versand m&ouml;glich: F&uuml;r diesen Anbieter ist keine Pflege-/Kontakt-E-Mail hinterlegt.</p>
+    <?php endif; ?>
+
+    <h2 style="margin-top:18px;">Zustimmung redaktionell erteilen</h2>
+
+    <?php if ($redResult !== null): ?>
+        <?php if ($redResult['status'] === 'ok'): ?>
+            <p class="now-status now-ja">Zustimmung redaktionell erteilt und protokolliert.
+               <?= (int)$redResult['kurse'] ?> Kurs(e) auf &Uuml;bermittlung gesetzt.
+               <?php if ($redResult['mail_ok']): ?>
+                   Informations-Mail an <?= nowadmin_h($redResult['email']) ?> gesendet.
+               <?php else: ?>
+                   ACHTUNG: Die Informations-Mail an <?= nowadmin_h($redResult['email']) ?> konnte NICHT
+                   gesendet werden - bitte den Anbieter anderweitig informieren.
+                   <?php if ($redResult['mail_error'] !== ''): ?>
+                       <br>Grund: <?= nowadmin_h(now_to_latin1($redResult['mail_error'])) ?>
+                   <?php endif; ?>
+               <?php endif; ?>
+               <?php if ($redResult['kopie_ok'] === true): ?>
+                   <br>Nachweis-Kopie an <?= nowadmin_h(NOW_ADMIN_EMAIL) ?> gesendet.
+               <?php elseif ($redResult['kopie_ok'] === false): ?>
+                   <br>ACHTUNG: Die Nachweis-Kopie an <?= nowadmin_h(NOW_ADMIN_EMAIL) ?> konnte NICHT
+                   gesendet werden<?= $redResult['kopie_error'] !== '' ? ' - Grund: ' . nowadmin_h(now_to_latin1($redResult['kopie_error'])) : '' ?>.
+               <?php elseif ($redResult['kopie_ok'] === null && $redResult['mail_ok'] !== null): ?>
+                   <br>Hinweis: Keine Nachweis-Kopie versendet - NOW_ADMIN_EMAIL ist nicht gesetzt.
+               <?php endif; ?>
+            </p>
+            <?php if ($redResult['mail_transport'] === 'mail'): ?>
+                <p class="now-status now-fix">
+                    <b>ACHTUNG - Versandweg:</b> Die Mails gingen NICHT &uuml;ber das externe Postfach (SMTP),
+                    sondern &uuml;ber das lokale Sendmail des Webservers <b>ohne Authentifizierung</b>.
+                    Solche Mails scheitern an SPF/DMARC; strenge Empf&auml;nger (z.&nbsp;B. Gmail) weisen sie
+                    hart zur&uuml;ck - trotz &quot;versendet&quot;-Meldung.
+                    <?php if ($redResult['mail_warning'] !== ''): ?>
+                        <br>Grund: <?= nowadmin_h(now_to_latin1($redResult['mail_warning'])) ?>
+                    <?php endif; ?>
+                    <br>Zu pr&uuml;fen: Portaleinstellungen <tt>mail.extern*</tt> des Portals, das zu diesem
+                    Host geh&ouml;rt, sowie <tt>PHPMAILER_PATH</tt> in der Server-Konfiguration.
+                </p>
+            <?php endif; ?>
+        <?php elseif ($redResult['status'] === 'fix'): ?>
+            <p class="now-status now-nein">Nicht ausgef&uuml;hrt: Der Status ist fixiert (now_zustimmung_fix).</p>
+        <?php elseif ($redResult['status'] === 'schon'): ?>
+            <p class="now-status now-nein">Nicht ausgef&uuml;hrt: Die Zustimmung ist bereits erteilt.</p>
+        <?php elseif ($redResult['status'] === 'kein_text'): ?>
+            <p class="now-status now-nein">Nicht ausgef&uuml;hrt: Die Informations-Mail ist nicht vollst&auml;ndig
+               hinterlegt (Text in now-einwilligung/inc/now-infomail.inc.php sowie NOW_INFOMAIL_FRIST und
+               NOW_INFOMAIL_SIGNATUR in now-einwilligung/inc/config.inc.php).</p>
+        <?php elseif ($redResult['status'] === 'keine_email'): ?>
+            <p class="now-status now-nein">Nicht ausgef&uuml;hrt: Keine g&uuml;ltige Pflege-/Kontakt-E-Mail hinterlegt.</p>
+        <?php else: ?>
+            <p class="now-status now-nein">Nicht ausgef&uuml;hrt (<?= nowadmin_h($redResult['status']) ?>).</p>
+        <?php endif; ?>
+    <?php endif; ?>
+
+    <?php if ($nowFix > 0): ?>
+        <p class="now-hint">Nicht m&ouml;glich: Der Status ist fixiert (now_zustimmung_fix). Zum &Auml;ndern
+           zun&auml;chst das H&auml;kchen &quot;NOW-Status fixiert&quot; in der Anbieter-Maske entfernen.</p>
+    <?php elseif ($nowFlag === 1): ?>
+        <p class="now-hint">Die Zustimmung ist bereits erteilt - eine redaktionelle Vergabe ist nicht n&ouml;tig.</p>
+    <?php elseif (!now_infomail_hinterlegt()): ?>
+        <p class="now-hint">Nicht m&ouml;glich: Die <b>Informations-Mail ist nicht vollst&auml;ndig hinterlegt</b>.
+           Ben&ouml;tigt werden der Text in <tt>now-einwilligung/inc/now-infomail.inc.php</tt> sowie in
+           <tt>now-einwilligung/inc/config.inc.php</tt> die Werte <tt>NOW_INFOMAIL_FRIST</tt>
+           (Widerspruchsfrist) und <tt>NOW_INFOMAIL_SIGNATUR</tt>. Die redaktionelle Vergabe setzt voraus,
+           dass die Informations-Mail vollst&auml;ndig an den Anbieter versendet werden kann.</p>
+    <?php elseif ($kontaktEmail === ''): ?>
+        <p class="now-hint">Nicht m&ouml;glich: F&uuml;r diesen Anbieter ist keine Pflege-/Kontakt-E-Mail
+           hinterlegt - die Informations-Mail k&ouml;nnte nicht zugestellt werden.</p>
+    <?php else: ?>
+        <a class="now-btn redaktionell" href="module.php?module=edit_plugin_anbieter_0&amp;id=<?= (int)$id ?>&amp;do=redaktionell_erteilen"
+           onclick="return confirm('Zustimmung jetzt redaktionell erteilen (now_zustimmung=1, alle Kurse ohne Fixierung erhalten die Kurs-Zustimmung) und die Informations-E-Mail an <?= nowadmin_h($kontaktEmail) ?> senden (Nachweis-Kopie an <?= nowadmin_h(NOW_ADMIN_EMAIL) ?>)?');">
+            Zustimmung jetzt erteilen + Informations-E-Mail senden
+        </a>
+        <p class="now-hint">F&uuml;r den Fall, dass die Einwilligung auf anderem Wege (z.&nbsp;B. schriftlich)
+           erteilt wurde: setzt anbieter.now_zustimmung=1, protokolliert den Vorgang revisionssicher
+           (Historie + Journal) und sendet die <b>Informations-Mail</b> (zweiter, eigener Text - informiert
+           nur und ruft zur Gegenkontrolle auf) an die Pflege-Adresse. Die Redaktion
+           (<?= nowadmin_h(NOW_ADMIN_EMAIL) ?>) erh&auml;lt zus&auml;tzlich eine gekennzeichnete
+           <b>Nachweis-Kopie</b> mit Anbieter, Empf&auml;nger, Zeitpunkt, ausl&ouml;sender Person,
+           Zustellergebnis und vollst&auml;ndigem Wortlaut - als Beleg des Versands, da der Anbieter
+           hierauf nicht zwangsl&auml;ufig reagiert.</p>
     <?php endif; ?>
 
     <h2 style="margin-top:18px;">Einwilligungs-Historie

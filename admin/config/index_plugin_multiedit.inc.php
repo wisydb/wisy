@@ -154,12 +154,27 @@ class MULTIEDIT_PLUGIN_CLASS
 						$options .= "add_journal###Journaleintrag hinzuf&uuml;gen###";
 						$options .= "dfield__beginn__setdate###Beginn: setze Beginn aller DF auf 'Parameter2'###";
 						$options .= "del_old_durchf###Abgelaufene Durchf&uuml;hrungen L&Ouml;SCHEN###";
-						
+
+						$options .= "nop2######";
+						$options .= "now_kurse_erteilen###mein NOW: Kurs-&Uuml;bermittlung setzen (now_zustimmung=1)###";
+						$options .= "now_kurse_entziehen###mein NOW: Kurs-&Uuml;bermittlung entziehen (now_zustimmung=0)###";
+
 						$options .= "nop2######";
 						$options .= "nop2###- - - Alle Aktionen - - -###";
 						$options .= "nop2######";
-						
-						// $options .= "trigger_kurse###PLZ, Stadtteil etc. erg&auml;nzen###"; // <- just a headline / not fitting / useless?
+
+						$options .= "trigger_kurse###PLZ, Stadtteil etc. erg&auml;nzen###";
+					}
+
+					// mein NOW: redaktionelle Vergabe/Entzug der Anbieter-Zustimmung
+					// (Details/Bestaetigung folgen auf einer eigenen Seite nach OK)
+					if( isset($this->tableName) && $this->tableName == 'anbieter' )
+					{
+						$options .= "nop2###- - - mein NOW - - -###";
+						$options .= "nop2######";
+						$options .= "now_erteilen###mein NOW: Zustimmung erteilen + Info-Mail an Anbieter###";
+						$options .= "now_entziehen###mein NOW: Zustimmung entziehen###";
+						$options .= "nop2######";
 					}
 				
 					// create possible actions list ...
@@ -175,8 +190,12 @@ class MULTIEDIT_PLUGIN_CLASS
 					$options .= "field__user_grp__settext###Benutzergruppe: setze auf 'Parameter2' (nur ID) ###";
 					$options .= "field__user_access__settext###Rechte: setze auf 'Parameter2'###";
 					
-					$options .= "nop2######";
-					$options .= "duplikat_kurse###Kurse duplizieren + Anbieter aus 'Parameter2' verwenden###";
+					// arbeitet ausschliesslich mit Kurs-IDs, daher nur in der Kurs-Maske
+					if( isset($this->tableName) && $this->tableName == 'kurse' )
+					{
+						$options .= "nop2######";
+						$options .= "duplikat_kurse###Kurse duplizieren + Anbieter aus 'Parameter2' verwenden###";
+					}
 					$options .= "nop2######";
 					$options .= "add_journal###Journaleintrag hinzuf&uuml;gen###";
 					$options .= "nop2######";
@@ -186,23 +205,57 @@ class MULTIEDIT_PLUGIN_CLASS
 					$sel = isset( $_REQUEST['action'] ) ? $_REQUEST['action'] : 'nop';
 					if( $sel == 'nop2' ) $sel = 'nop';
 					
-					// Text clues for Multiedit options
-					// Array key = name of multiedit option (see above)
-					$clue['duplikat_kurse'] = "<br>Ein manueller Journaleintrag wird an das neue UND an das Original-Angebot vergeben.<br>";
-					$clue['duplikat_kurse'] .= "Das neue, duplizierte Angebote erh&auml;lt aber auch einen automatischen Journal-Eintrag.<br>";
-					$clue['duplikat_kurse'] .= "Erstelldatum und &Auml;nderungsdatum wird bei den neuen, duplizierten Angeboten auf jetzt gesetzt.<br>";
-					$clue['duplikat_kurse'] .= "Am Ende des Vorgangs muss die Anzahl der duplizierten Angebote erscheinen.<br>";
-					$clue['duplikat_kurse'] .= "Vorsicht beim Arbeiten zwei Reitern: Multiedit bezieht sich immer auf die letzte Suchanfrage (egal welcher Reiter gerade geklickt ist).<br><br>";
-					
-					$onchangeJS = '';
-					
-					foreach( $clue AS $key => $text ) {
-					    $onchangeJS .= " if( $(this).val() == '".$key."' ) { ";
-					    $onchangeJS .= "$('table.sm:last-child').before('<div class=hinweis style=\\'padding: 5px; background-color: #ededed\\'>Hinweis:";
-					    $onchangeJS .= $text;
-					    $onchangeJS .= "</div>'); } else { if( $('.hinweis').length ) { $('.hinweis').remove(); } } ";
+					// Hinweistexte zu den Aktionen; Array-Schluessel = Name der MultiEdit-Aktion
+					// (siehe oben). Es werden nur die Texte der jeweiligen Maske aufgebaut.
+					$clue = array();
+
+					if( isset($this->tableName) && $this->tableName == 'kurse' )
+					{
+						$clue['duplikat_kurse'] = "<br>Ein manueller Journaleintrag wird an das neue UND an das Original-Angebot vergeben.<br>";
+						$clue['duplikat_kurse'] .= "Das neue, duplizierte Angebote erh&auml;lt aber auch einen automatischen Journal-Eintrag.<br>";
+						$clue['duplikat_kurse'] .= "Erstelldatum und &Auml;nderungsdatum wird bei den neuen, duplizierten Angeboten auf jetzt gesetzt.<br>";
+						$clue['duplikat_kurse'] .= "Am Ende des Vorgangs muss die Anzahl der duplizierten Angebote erscheinen.<br>";
+						$clue['duplikat_kurse'] .= "Vorsicht beim Arbeiten zwei Reitern: Multiedit bezieht sich immer auf die letzte Suchanfrage (egal welcher Reiter gerade geklickt ist).<br><br>";
+
+						$clue['trigger_kurse'] = "<br>Erg&auml;nzt fehlende Angaben aus der Adresse (PLZ, Stadtteil, Bezirk); vorhandene Werte bleiben unver&auml;ndert.<br>";
+						$clue['trigger_kurse'] .= "Dabei l&auml;uft die komplette n&auml;chtliche Kurs-Aktualisierung sofort mit: Tagescode, Wochentage, Neuberechnung der Dauer (au&szlig;er bei fixierter Dauer), Stichwort 'rollstuhlgerecht' und Sortiertitel.<br>";
+						$clue['trigger_kurse'] .= "Auch Vollst&auml;ndigkeit und Freigabestatus werden neu berechnet - ein Lauf kann Kurse also im Status verschieben. Parameter werden nicht ben&ouml;tigt.<br><br>";
+
+						$clue['now_kurse_erteilen'] = "<br>Setzt kurse.now_zustimmung=1 f&uuml;r die gew&auml;hlten Kurse; fixierte Kurse (kurse.now_zustimmung_fix) bleiben unber&uuml;hrt. Es werden keine E-Mails versendet.<br>";
+						$clue['now_kurse_erteilen'] .= "&Uuml;bertragen wird ein Kurs nur, wenn auch die Anbieter-Zustimmung vorliegt.<br>";
+						$clue['now_kurse_erteilen'] .= "Ein manueller Journaleintrag wird bei den ge&auml;nderten Kursen vorangestellt. Parameter werden nicht ben&ouml;tigt.<br><br>";
+
+						$clue['now_kurse_entziehen'] = "<br>Setzt kurse.now_zustimmung=0 f&uuml;r die gew&auml;hlten Kurse; fixierte Kurse (kurse.now_zustimmung_fix) bleiben unber&uuml;hrt. Es werden keine E-Mails versendet.<br>";
+						$clue['now_kurse_entziehen'] .= "Ein manueller Journaleintrag wird bei den ge&auml;nderten Kursen vorangestellt. Parameter werden nicht ben&ouml;tigt.<br><br>";
 					}
-					
+
+					if( isset($this->tableName) && $this->tableName == 'anbieter' )
+					{
+						$clue['now_erteilen'] = "<br>Setzt anbieter.now_zustimmung=1 und protokolliert je Anbieter (Historie + Journal), so als w&auml;re es einzeln in der Anbieter-Maske ausgel&ouml;st worden.<br>";
+						$clue['now_erteilen'] .= "Sendet die Informations-Mail an die jeweilige Pflege-E-Mail-Adresse und setzt die Kurs-Zustimmung aller Kurse ohne Fixierung.<br>";
+						$clue['now_erteilen'] .= "Die Redaktion erh&auml;lt je Anbieter eine gekennzeichnete <b>Nachweis-Kopie</b> (Beleg des Versands mit Empf&auml;nger, Zeitpunkt und Wortlaut) - bei x Anbietern also auch x Kopien.<br>";
+						$clue['now_erteilen'] .= "Anbieter mit fixiertem Status (now_zustimmung_fix) werden NICHT ver&auml;ndert.<br>";
+						$clue['now_erteilen'] .= "Ein manueller Journaleintrag wird zus&auml;tzlich zum automatischen Eintrag vorangestellt.<br>";
+						$clue['now_erteilen'] .= "Vor dem Schreiben/Versand erscheint eine Best&auml;tigungsseite mit allen Empf&auml;nger-Adressen (dort auch Abbruch m&ouml;glich). Parameter werden nicht ben&ouml;tigt.<br><br>";
+
+						$clue['now_entziehen'] = "<br>Setzt anbieter.now_zustimmung=0 und protokolliert je Anbieter (Historie + Journal). Es werden KEINE E-Mails versendet.<br>";
+						$clue['now_entziehen'] .= "Ein manueller Journaleintrag wird zus&auml;tzlich zum automatischen Eintrag vorangestellt.<br>";
+						$clue['now_entziehen'] .= "Anbieter mit fixiertem Status (now_zustimmung_fix) werden NICHT ver&auml;ndert. Vor dem Schreiben erscheint eine Best&auml;tigungsseite. Parameter werden nicht ben&ouml;tigt.<br><br>";
+					}
+
+					// Hinweiskasten zur gewaehlten Aktion: zuerst einen ggf. vorhandenen
+					// Kasten entfernen, dann genau einen Text einfuegen
+					$onchangeJS = '';
+					if( sizeof($clue) )
+					{
+						$onchangeJS = "$('.hinweis').remove(); var clue = '';";
+						foreach( $clue AS $key => $text ) {
+							$onchangeJS .= " if( $(this).val() == '".$key."' ) { clue = '".addslashes($text)."'; }";
+						}
+						$onchangeJS .= " if( clue != '' ) { $('table.sm:last-child').last()"
+							. ".before('<div class=hinweis style=\\'padding: 5px; background-color: #ededed\\'>Hinweis:' + clue + '</div>'); }";
+					}
+
 					form_control_enum('action', $sel, $options, 0, '', $onchangeJS);
 					
 				$site->skin->controlEnd();
@@ -412,6 +465,15 @@ class MULTIEDIT_PLUGIN_CLASS
 		$field  = isset( $temp[1] ) ? $temp[1] : null;
 		$action = isset( $temp[2] ) ? $temp[2] : null;
 
+		// mein NOW: nicht ueber die generische Feld-Aktion aenderbar - nur ueber
+		// die eigenen Aktionen (Fixierung/Protokoll/Mailversand werden dort beruecksichtigt)
+		if( $field == 'now_zustimmung' || $field == 'now_zustimmung_fix' )
+		{
+			$this->renderDefaultPage('Bitte verwenden Sie f&uuml;r mein NOW die daf&uuml;r vorgesehenen MultiEdit-Aktionen '
+				. '(&quot;mein NOW: ...&quot;) - dort werden Fixierung, Protokoll und ggf. Mailversand ber&uuml;cksichtigt.');
+			exit();
+		}
+
 		$table_def = Table_Find_Def($localTableName);
 		
 		$rowdescr = '';
@@ -575,6 +637,282 @@ class MULTIEDIT_PLUGIN_CLASS
 	}
 	
 	
+	/*************************************************************************
+	 * mein NOW: Zustimmung zur Uebermittlung an mein-now.de
+	 * (anbieter.now_zustimmung / kurse.now_zustimmung per MultiEdit)
+	 *************************************************************************/
+
+	// Name der angemeldeten Redakteurin / des Redakteurs (latin1, fuer Protokoll)
+	private function now_bearbeiter()
+	{
+		$name = 'Redaktion';
+		if( isset($_SESSION['g_session_userid']) && intval($_SESSION['g_session_userid']) > 0 )
+		{
+			$db = new DB_Admin;
+			$db->query("SELECT name, loginname FROM user WHERE id=" . intval($_SESSION['g_session_userid']));
+			if( $db->next_record() ) {
+				$name = trim((string)$db->fs('name')) !== '' ? trim((string)$db->fs('name')) : trim((string)$db->fs('loginname'));
+			}
+		}
+		return $name;
+	}
+
+	// HTML-Liste von Anbietern (Eingaben sind latin1 aus der DB)
+	private function now_list($arr, $withEmail)
+	{
+		$html = '';
+		foreach( $arr as $a ) {
+			$html .= '<li>' . isohtmlspecialchars($a['suchname']) . ' (ID ' . intval($a['id']) . ')'
+				. ($withEmail? ' &ndash; ' . ($a['email'] != ''? isohtmlspecialchars($a['email']) : 'keine E-Mail') : '')
+				. '</li>';
+		}
+		return $html == ''? '' : '<ul style="margin:4px 0 4px 18px;padding:0;">' . $html . '</ul>';
+	}
+
+	// Bestaetigungsseite VOR dem tatsaechlichen Schreiben in die DB und dem
+	// E-Mail-Versand (mit Moeglichkeit zum Abbruch); reicht alle Parameter
+	// des ersten Schritts durch und setzt now_confirmed=1.
+	private function renderNowConfirmPage($erteilen, $todo, $skipMsg)
+	{
+		global $site;
+
+		$site->pageStart(array('popfit'=>1));
+		form_tag('plugin_multiedit_confirm', 'module.php', '', '', 'get');
+		foreach( array('module', 'action', 'param1', 'param2', 'journal_entry', 'user_answer', 'correct_answer') as $key ) {
+			form_hidden($key, isset($_REQUEST[$key])? $_REQUEST[$key] : '');
+		}
+		form_hidden('ok', 'OK');
+		form_hidden('now_confirmed', '1');
+
+			$site->skin->submenuStart();
+				echo 'mein NOW: Best&auml;tigung erforderlich';
+			$site->skin->submenuBreak();
+				echo '&nbsp;';
+			$site->skin->submenuEnd();
+
+			$site->skin->msgStart('w');
+				if( $erteilen ) {
+					echo '<b>Achtung:</b> Sie sind im Begriff, mit diesem Vorgang die NOW-Zustimmung f&uuml;r <b>' . sizeof($todo) . '</b> Anbieter zu erteilen '
+					   . 'und die Informations-E-Mail an <b>' . sizeof($todo) . '</b> Anbieter-Pflege-E-Mail-Adressen zu senden, konkret:';
+				}
+				else {
+					echo '<b>Achtung:</b> Sie sind im Begriff, mit diesem Vorgang die NOW-Zustimmung f&uuml;r <b>' . sizeof($todo) . '</b> Anbieter zu entziehen (ohne E-Mail-Versand), konkret:';
+				}
+			$site->skin->msgEnd();
+
+			$site->skin->workspaceStart();
+				echo '<div style="max-height:260px;overflow:auto;border:1px solid #ccc;padding:4px 8px;margin:4px 0;background:#fff;">';
+					echo $this->now_list($todo, $erteilen);
+				echo '</div>';
+				echo 'Jeder Vorgang wird je Anbieter revisionssicher protokolliert (Einwilligungs-Historie + Journal), '
+				   . 'so als w&auml;re er einzeln in der Anbieter-Maske ausgel&ouml;st worden.';
+				if( $erteilen ) {
+					echo ' Die Kurse der Anbieter erhalten die Kurs-Zustimmung (sofern nicht fixiert).';
+					echo ' Zus&auml;tzlich geht je Anbieter eine <b>Nachweis-Kopie</b> an '
+					   . isohtmlspecialchars(NOW_ADMIN_EMAIL) . ' (also ' . sizeof($todo) . ' Kopien).';
+				}
+				if( $skipMsg ) {
+					echo '<div style="color:#666;margin-top:6px;">' . $skipMsg . '</div>';
+				}
+			$site->skin->workspaceEnd();
+
+			$site->skin->buttonsStart();
+				form_button('now_go', $erteilen? 'Ja, jetzt erteilen + E-Mails senden' : 'Ja, jetzt entziehen');
+				form_button('cancel', htmlconstant('_CANCEL'), 'window.close();return false;');
+			$site->skin->buttonsEnd();
+
+		echo '</form>';
+		$site->pageEnd();
+	}
+
+	// anbieter.now_zustimmung erteilen/entziehen: analysieren, bestaetigen lassen,
+	// dann je Anbieter wie mit dem Einzel-Knopf in der Anbieter-Maske ausfuehren
+	// (Protokoll + Journal + Info-Mail via now_set_zustimmung_redaktionell()).
+	// Ein manueller Journaleintrag aus der Maske wird zusaetzlich zum
+	// automatischen Eintrag vorangestellt (nur bei tatsaechlich Geaenderten).
+	private function do_now_anbieter($erteilen, $allIdsStr, $eql, $journal_entry)
+	{
+		// NOW-Helfer laden (Konfiguration, Mailversand, redaktionelle Vergabe)
+		if( !defined('NOW_EINW_IN') ) define('NOW_EINW_IN', true);
+		$nowRoot = dirname(dirname(__DIR__)); // .../wisy
+		require_once($nowRoot . '/now-einwilligung/inc/config.inc.php');
+		require_once($nowRoot . '/now-einwilligung/inc/functions.inc.php');
+		require_once($nowRoot . '/now-einwilligung/inc/now-infomail.inc.php');
+
+		// Auswahl analysieren
+		$db = new DB_Admin;
+		$todo = array(); $skipFix = array(); $skipSchon = array(); $skipMail = array();
+		$db->query("SELECT id, suchname, pflege_email, anspr_email, now_zustimmung, now_zustimmung_fix
+		              FROM anbieter WHERE id IN($allIdsStr) ORDER BY suchname");
+		while( $db->next_record() )
+		{
+			$email = trim((string)$db->fs('pflege_email'));
+			if( $email == '' ) $email = trim((string)$db->fs('anspr_email'));
+			$a = array('id'=>intval($db->f('id')), 'suchname'=>$db->fs('suchname'), 'email'=>$email);
+
+			if( intval($db->f('now_zustimmung_fix')) > 0 )
+				{ $skipFix[] = $a; }
+			else if( intval($db->f('now_zustimmung')) == ($erteilen? 1 : 0) )
+				{ $skipSchon[] = $a; }
+			else if( $erteilen && ($email == '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) )
+				{ $skipMail[] = $a; }
+			else
+				{ $todo[] = $a; }
+		}
+
+		// Vergabe nur, wenn die Informations-Mail auch vollstaendig versendet werden kann
+		if( $erteilen && !now_infomail_hinterlegt() )
+		{
+			$this->renderDefaultPage('mein NOW: Abgebrochen - die Informations-Mail ist nicht vollst&auml;ndig '
+				. 'hinterlegt. Ben&ouml;tigt werden der Text in now-einwilligung/inc/now-infomail.inc.php sowie in '
+				. 'now-einwilligung/inc/config.inc.php die Werte NOW_INFOMAIL_FRIST (Widerspruchsfrist) und '
+				. 'NOW_INFOMAIL_SIGNATUR. Die Vergabe setzt voraus, dass die Informations-Mail vollst&auml;ndig '
+				. 'an die Anbieter versendet werden kann.');
+			exit();
+		}
+
+		$skipMsg = '';
+		if( sizeof($skipFix) )   $skipMsg .= '<br>' . sizeof($skipFix) . ' Anbieter werden &uuml;bersprungen, weil der Status fixiert ist (now_zustimmung_fix):' . $this->now_list($skipFix, false);
+		if( sizeof($skipSchon) ) $skipMsg .= '<br>' . sizeof($skipSchon) . ' Anbieter haben den gew&uuml;nschten Status bereits.';
+		if( sizeof($skipMail) )  $skipMsg .= '<br>' . sizeof($skipMail) . ' Anbieter werden &uuml;bersprungen, weil keine g&uuml;ltige Pflege-/Kontakt-E-Mail hinterlegt ist:' . $this->now_list($skipMail, false);
+
+		if( !sizeof($todo) )
+		{
+			$this->renderDefaultPage('mein NOW: Keine passenden Anbieter in der Auswahl.' . $skipMsg, 'i');
+			exit();
+		}
+
+		// Bestaetigungsseite vor dem tatsaechlichen Schreiben/Mailversand
+		if( !isset($_REQUEST['now_confirmed']) || $_REQUEST['now_confirmed'] != '1' )
+		{
+			$this->renderNowConfirmPage($erteilen, $todo, $skipMsg);
+			exit();
+		}
+
+		// Ausfuehren - je Anbieter wie beim Einzel-Knopf in der Anbieter-Maske
+		$bearbeiter = now_to_utf8($this->now_bearbeiter());
+		$okCnt = 0; $kurseCnt = 0; $mailFail = array(); $sonstFail = array(); $doneIds = ''; $mailErr = '';
+		$kopieCnt = 0; $kopieFail = array(); $transportWarn = '';
+		foreach( $todo as $a )
+		{
+			$res = now_set_zustimmung_redaktionell($a['id'], $erteilen, $bearbeiter, $erteilen /*Info-Mail nur bei Vergabe*/, 'MultiEdit');
+			if( $res['status'] == 'ok' )
+			{
+				$okCnt++;
+				$kurseCnt += intval($res['kurse']);
+				$doneIds .= ($doneIds == ''? '' : ',') . $a['id'];
+				if( $erteilen && !$res['mail_ok'] ) {
+					$mailFail[] = $a;
+					if( $mailErr == '' && $res['mail_error'] != '' ) { $mailErr = now_to_latin1($res['mail_error']); }
+				}
+				if( $erteilen && $res['kopie_ok'] === true )  { $kopieCnt++; }
+				if( $erteilen && $res['kopie_ok'] === false ) { $kopieFail[] = $a; }
+				if( $transportWarn == '' && $res['mail_transport'] == 'mail' ) {
+					$transportWarn = now_to_latin1($res['mail_warning']);
+				}
+			}
+			else
+			{
+				$sonstFail[] = $a;
+			}
+		}
+
+		$msg = 'mein NOW: Zustimmung ' . ($erteilen? 'erteilt' : 'entzogen') . ' f&uuml;r ' . $okCnt . ' Anbieter (je Anbieter protokolliert in Historie + Journal).';
+		if( $erteilen )
+		{
+			$msg .= '<br>' . ($okCnt - sizeof($mailFail)) . ' Informations-Mails an die Anbieter versendet.';
+			$msg .= '<br>' . $kopieCnt . ' Nachweis-Kopien an ' . isohtmlspecialchars(NOW_ADMIN_EMAIL) . ' versendet.';
+			$msg .= '<br>' . $kurseCnt . ' Kurs(e) auf &Uuml;bermittlung gesetzt (Standard-Vergabe an die Kurse).';
+			if( sizeof($mailFail) ) {
+				$msg .= '<br><b>ACHTUNG:</b> Info-Mail-Versand FEHLGESCHLAGEN (Zustimmung dennoch gesetzt, siehe Journal) bei:' . $this->now_list($mailFail, true);
+				if( $mailErr != '' ) $msg .= 'Grund (erster Fall): ' . isohtmlspecialchars($mailErr) . '<br>';
+			}
+			if( sizeof($kopieFail) ) {
+				$msg .= '<br><b>ACHTUNG:</b> Nachweis-Kopie an die Redaktion FEHLGESCHLAGEN bei:' . $this->now_list($kopieFail, true);
+			}
+			if( $transportWarn != '' ) {
+				$msg .= '<br><br><b>ACHTUNG - Versandweg:</b> Die Mails gingen NICHT &uuml;ber das externe Postfach (SMTP), '
+				      . 'sondern &uuml;ber das lokale Sendmail des Webservers <b>ohne Authentifizierung</b>. Solche Mails scheitern '
+				      . 'an SPF/DMARC; strenge Empf&auml;nger (z.&nbsp;B. Gmail) weisen sie hart zur&uuml;ck - trotz '
+				      . '&quot;versendet&quot;-Meldung.<br>Grund: ' . isohtmlspecialchars($transportWarn)
+				      . '<br>Zu pr&uuml;fen: Portaleinstellungen mail.extern* des zu diesem Host geh&ouml;renden Portals '
+				      . 'sowie PHPMAILER_PATH in der Server-Konfiguration.';
+			}
+		}
+		if( sizeof($sonstFail) ) $msg .= '<br>Nicht ausgef&uuml;hrt bei:' . $this->now_list($sonstFail, false);
+
+		// manuellen Journaleintrag der Maske zusaetzlich voranstellen
+		// (nur bei den tatsaechlich geaenderten Anbietern)
+		if( $journal_entry != '' && $doneIds != '' )
+		{
+			$db->query("UPDATE anbieter SET notizen=CONCAT('" . addslashes($journal_entry) . "\n', notizen) WHERE id IN($doneIds)");
+			$msg .= '<br>Journaleintrag: ' . isohtmlspecialchars($journal_entry);
+		}
+
+		$msg .= $skipMsg;
+
+		if( $doneIds != '' )
+		{
+			$logwriter = new LOG_WRITER_CLASS;
+			$logwriter->addData('query', $eql);
+			$logwriter->addData('action', 'mein NOW: Zustimmung ' . ($erteilen? 'erteilt (+Info-Mail)' : 'entzogen') . ' fuer ' . $okCnt . ' Anbieter');
+			$logwriter->log($this->tableName, $doneIds, (isset($_SESSION['g_session_userid']) ? $_SESSION['g_session_userid'] : null), 'multiedit');
+		}
+
+		$this->renderStatusPage($msg, 1 /*1=update main window*/);
+		exit();
+	}
+
+	// kurse.now_zustimmung setzen/entziehen (keine E-Mails); fixierte Kurse
+	// (kurse.now_zustimmung_fix) werden nie ueberschrieben. Ein manueller
+	// Journaleintrag aus der Maske wird bei den geaenderten Kursen vorangestellt.
+	private function do_now_kurse($erteilen, $allIdsStr, $eql, $journal_entry)
+	{
+		$db = new DB_Admin;
+		$neu = $erteilen? 1 : 0;
+
+		// fixierte Kurse mit abweichendem Wert nur zaehlen (bleiben unveraendert)
+		$db->query("SELECT COUNT(*) AS cnt FROM kurse WHERE id IN($allIdsStr) AND now_zustimmung_fix>0 AND now_zustimmung!=$neu");
+		$db->next_record();
+		$fixCnt = intval($db->f('cnt'));
+
+		// manueller Journaleintrag (nur bei den tatsaechlich geaenderten Kursen)
+		$journal_sql = '';
+		if( $journal_entry != '' )
+		{
+			$journal_sql = ", notizen=CONCAT('" . addslashes($journal_entry) . "\n', notizen)";
+		}
+
+		// nur nicht fixierte Kurse mit abweichendem Wert aendern; date_modified
+		// mitsetzen, damit die Aenderung fuer Delta-Abgleiche sichtbar ist
+		$db->query("UPDATE kurse SET now_zustimmung=$neu"
+			. ", date_modified='" . ftime("%Y-%m-%d %H:%M:%S") . "'"
+			. ", user_modified=" . (isset($_SESSION['g_session_userid'])? intval($_SESSION['g_session_userid']) : 0)
+			. $journal_sql
+			. " WHERE id IN($allIdsStr) AND now_zustimmung_fix=0 AND now_zustimmung!=$neu");
+		$changed = intval($db->affected_rows());
+
+		if( $changed == 0 && $fixCnt == 0 )
+		{
+			$this->renderDefaultPage('Keine &Auml;nderungen notwendig.', 'i');
+			exit();
+		}
+
+		$msg = 'mein NOW: Kurs-&Uuml;bermittlung (now_zustimmung=' . $neu . ') f&uuml;r ' . $changed . ' Kurse gesetzt. Es werden keine E-Mails versendet.';
+		if( $journal_entry != '' && $changed ) $msg .= '<br>Journaleintrag: ' . isohtmlspecialchars($journal_entry);
+		if( $fixCnt )     $msg .= '<br>' . $fixCnt . ' Kurse wurden NICHT ge&auml;ndert, weil sie fixiert sind (now_zustimmung_fix).';
+		if( $erteilen )   $msg .= '<br>Hinweis: &Uuml;bertragen wird ein Kurs nur, wenn auch die Anbieter-Zustimmung (anbieter.now_zustimmung) vorliegt.';
+
+		$logwriter = new LOG_WRITER_CLASS;
+		$logwriter->addData('query', $eql);
+		$logwriter->addData('action', 'mein NOW: kurse.now_zustimmung=' . $neu . ' fuer ' . $changed . ' Kurse' . ($fixCnt? ' (' . $fixCnt . ' fixierte uebersprungen)' : ''));
+		$logwriter->log($this->tableName, $allIdsStr, (isset($_SESSION['g_session_userid']) ? $_SESSION['g_session_userid'] : null), 'multiedit');
+
+		$this->renderStatusPage($msg, 1 /*1=update main window*/);
+		exit();
+	}
+
+
 	function main($tableName)
 	{
 		$this->tableName = $tableName;
@@ -639,7 +977,38 @@ class MULTIEDIT_PLUGIN_CLASS
 		$param2			= isset( $_REQUEST['param2'] ) ? $_REQUEST['param2'] : null; // Leerzeichen sind relevant!
 		$add_msg		= '';
 		$journal_entry	= isset( $_REQUEST['journal_entry'] ) ? trim( $_REQUEST['journal_entry'] ) : null;
-		
+
+		// Aktionen, die ausschliesslich mit Kurs- bzw. Anbieter-IDs arbeiten, gegen den
+		// Aufruf aus einer anderen Maske absichern (die Aktion ist auch ueber den
+		// URL-Parameter "action" erreichbar, nicht nur ueber die Auswahlliste)
+		$kurseOnlyActions = array('duplikat_kurse', 'trigger_kurse', 'del_old_durchf', 'now_kurse_erteilen', 'now_kurse_entziehen');
+		$anbieterOnlyActions = array('now_erteilen', 'now_entziehen');
+
+		if( (in_array($action, $kurseOnlyActions) || substr((string)$action, 0, 8) == 'dfield__') && $this->tableName != 'kurse' )
+		{
+			$this->renderDefaultPage('Diese Aktion steht nur in der Kurs-Maske zur Verf&uuml;gung.');
+			exit();
+		}
+
+		if( in_array($action, $anbieterOnlyActions) && $this->tableName != 'anbieter' )
+		{
+			$this->renderDefaultPage('Diese Aktion steht nur in der Anbieter-Maske zur Verf&uuml;gung.');
+			exit();
+		}
+
+		// mein NOW: eigene Behandlung inkl. Bestaetigungsseite, Protokoll je
+		// Datensatz und ggf. Mailversand; die Methoden beenden das Skript selbst
+		if( ($action == 'now_erteilen' || $action == 'now_entziehen') && $this->tableName == 'anbieter' )
+		{
+			$this->do_now_anbieter($action == 'now_erteilen', $allIdsStr, $eql, $journal_entry);
+			exit();
+		}
+		if( ($action == 'now_kurse_erteilen' || $action == 'now_kurse_entziehen') && $this->tableName == 'kurse' )
+		{
+			$this->do_now_kurse($action == 'now_kurse_erteilen', $allIdsStr, $eql, $journal_entry);
+			exit();
+		}
+
 		// bei Bedarf die IDs der sekundaeren Tabelle (Durchfuehrungen) laden
 		if( substr($action, 0, 8) == 'dfield__' ||  $action == 'del_old_durchf'  )
 		{
@@ -717,12 +1086,8 @@ class MULTIEDIT_PLUGIN_CLASS
 		        exit();
 		    }
 		    
-		    // Set new provider from the second parameter
-		    $neuer_anbieter   = $param2;
 		    $columns          = array();
-		    $dupl_angebote    = array();
-		    $dupl_durchf      = array();
-		    
+
 		    
 		    // Query the database for all column names and data types of the current table
 		    $db2->query( "SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'kurse' AND table_schema = '{$db2->Database}' ORDER BY ordinal_position" );
@@ -734,8 +1099,7 @@ class MULTIEDIT_PLUGIN_CLASS
 		    }
 		    
 		    // Query the database to select all records from the current table by IDs
-		    $from = "FROM kurse WHERE id IN($allIdsStr)";
-		    $db->query("SELECT *, (SELECT count(*) $from) AS cnt $from;");
+		    $db->query("SELECT * FROM kurse WHERE id IN($allIdsStr);");
 		    
 		    $cnt_kurse = 0;
 		    
@@ -746,7 +1110,6 @@ class MULTIEDIT_PLUGIN_CLASS
 		        
 		        $kID_old = $db->f('id');
 		        $aID_old = $db->f('anbieter');
-		        $total_kurse = $db->f('cnt');
 		        
 		        if( $aID_old == intval($param2) ){
 		            $this->renderDefaultPage('Abgebrochen. Sie d&uuml;rfen als neue Anbieter-ID in Parameter 2 nicht die bisherige Anbieter-ID eingeben.');
@@ -772,7 +1135,7 @@ class MULTIEDIT_PLUGIN_CLASS
 		                if( $col['type'] == 'bigint' || $col['type'] == 'int' || $col['type'] == 'mediumint' || $col['type'] == 'float' || $col['type'] == 'decimal' ) {
 		                    
 		                    if( $col['name'] == 'anbieter' )
-		                        $set .= $param2;   // Use the new anbieter as set in Multiedit Param 2
+		                        $set .= intval($param2);   // Use the new anbieter as set in Multiedit Param 2
 		                    else if( $col['name'] == 'user_created' || $col['name'] == 'user_modified' )
 		                        $set .= (isset($_SESSION['g_session_userid']) ? intval($_SESSION['g_session_userid']) : null);
 		                    else if( $col['type'] == 'int' && intval($db->f($col['name'])) == 0 )
@@ -783,12 +1146,14 @@ class MULTIEDIT_PLUGIN_CLASS
 		                } else {
 		                    
 		                    // Set journal entry
-		                    if( $col['name'] == 'notizen' )
-		                        $set .= "'" . $journal_entry . "\n". date('d.m.y') . ": Duplikat von " . $kID_old . " via Multiedit\n". $db->fs( $col['name'] ) . "'";
+		                    if( $col['name'] == 'notizen' ) {
+		                        $notizen = $journal_entry . "\n" . date('d.m.y') . ": Duplikat von " . $kID_old . " via Multiedit\n" . $db->fs( $col['name'] );
+		                        $set .= "'" . addslashes($notizen) . "'";
+		                    }
 		                    else if( $col['name'] == 'date_created' || $col['name'] == 'date_modified' )
 		                        $set .= "'" . date('Y-m-d H:i:s') . "'"; // date_created + date_modified = today
 		                    else
-		                        $set .= "'" . str_replace("'", "\'", $db->fs( $col['name'] ) ) . "'"; // Standard
+		                        $set .= "'" . addslashes( $db->fs( $col['name'] ) ) . "'"; // Standard
 		                }
 		                
 		                // Append comma for all columns except the last
@@ -854,10 +1219,11 @@ class MULTIEDIT_PLUGIN_CLASS
 		                $db4->query( $sql );
 		                $dfID_new = $db4->insert_id();
 		                
-		                if( $dfID_new )
-		                    // echo "-> Neue DF : " . $dfID_new . "<br>";
+		                if( $dfID_new ) {
+		                    // Verknuepfung zwischen Kurs und neuer Durchfuehrung
 		                    $sql = "INSERT INTO kurse_durchfuehrung SET primary_id = " . $kID_new . ", secondary_id = " . $dfID_new . ", structure_pos = " . $structure_pos;
 		                    $db4->query( $sql );
+		                }
 		            }
 		            
 		        } // end: new kurs
@@ -865,7 +1231,7 @@ class MULTIEDIT_PLUGIN_CLASS
 		    } // end: while kurse
 		    
 		    
-		    $add_msg .= $total_kurse . ' Angebote dupliziert. <br>';
+		    $add_msg .= $cnt_kurse . ' Angebote dupliziert. <br>';
 		    
 		} // end: duplikat_kurse
 		else if( $action == 'del_old_durchf' )
@@ -892,7 +1258,7 @@ class MULTIEDIT_PLUGIN_CLASS
 				$db->query($sql);
 
 				if( $db->next_record() ) {
-				    $trigger_param = array( 'action'=>'afterdelete', 'id'=>8, 'primary_id'=>$db->f('primary_id'), 'origin'=>'Multiedit'  );
+				    $trigger_param = array( 'action'=>'afterdelete', 'id'=>$dfID, 'primary_id'=>$db->f('primary_id'), 'origin'=>'Multiedit'  );
 				    $table_defSec = Table_Find_Def('durchfuehrung');
 				    call_plugin($table_defSec->trigger_script, $trigger_param);  // DF trigger
 				}
@@ -953,7 +1319,7 @@ class MULTIEDIT_PLUGIN_CLASS
 		  $db->query($sql);  
 		}
 
-		$add_msg . " Die Aktion wurde f&uuml;r {$this->allIdsCount} $this->tableDescr durchgef&uuml;hrt.";
+		$add_msg .= " Die Aktion wurde f&uuml;r {$this->allIdsCount} $this->tableDescr durchgef&uuml;hrt.";
 		
 		$logwriter = new LOG_WRITER_CLASS;
 		$logwriter->addData('query', $eql);

@@ -91,6 +91,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (!$lockedAnbieter && !now_anbieter_eligible($anbieter['id'])) {
         // Dropdown-Pfad: nur in Frage kommende Anbieter (Stichwort „NOW ja“) zulassen.
         $errors[] = 'Dieser Anbieter kommt für die Übermittlung an „mein NOW“ derzeit nicht in Frage.';
+    } elseif (intval($anbieter['now_zustimmung_fix']) > 0) {
+        // Die Redaktion hat den Übermittlungs-Status fixiert – das Formular
+        // darf anbieter.now_zustimmung dann nicht ändern.
+        $errors[] = 'Der Übermittlungs-Status dieses Anbieters wurde von der Redaktion fest hinterlegt und kann '
+                  . 'derzeit nicht über dieses Formular geändert werden. Bitte wenden Sie sich an ' . NOW_CONTACT_EMAIL . '.';
     }
 
     // Felder
@@ -192,6 +197,17 @@ $queryString   = ($lockedAnbieter ? ('?a=' . $lockedAnbieter['id'] . '&t=' . now
        Mehr über „mein&nbsp;NOW“:
        <a href="<?= now_h(NOW_URL_UEBERUNS) ?>" target="_blank" rel="noopener"><?= now_h(NOW_URL_UEBERUNS) ?></a>.</p>
 
+    <?php if ($lockedAnbieter && intval($lockedAnbieter['now_zustimmung_fix']) > 0): ?>
+
+        <div class="box box-info">
+            Der Übermittlungs-Status von <strong><?= now_h($lockedAnbieter['suchname']) ?></strong> wurde von der
+            Redaktion fest hinterlegt und kann derzeit nicht über dieses Formular geändert werden.
+            Bitte wenden Sie sich bei Fragen an
+            <a href="mailto:<?= now_h(NOW_CONTACT_EMAIL) ?>"><?= now_h(NOW_CONTACT_EMAIL) ?></a>.
+        </div>
+
+    <?php else: ?>
+
     <?php if ($lockedAnbieter && intval($lockedAnbieter['now_zustimmung']) === 1): ?>
         <div class="box box-info">
             Für <strong><?= now_h($lockedAnbieter['suchname']) ?></strong> liegt bereits eine Einwilligung vor.
@@ -278,6 +294,8 @@ $queryString   = ($lockedAnbieter ? ('?a=' . $lockedAnbieter['id'] . '&t=' . now
         <button type="submit" id="submitBtn" disabled>Einwilligung absenden</button>
         <p class="muted small">Sie können die Übermittlung an „mein&nbsp;NOW“ jederzeit und ohne Frist widerrufen.</p>
     </form>
+
+    <?php endif; /* now_zustimmung_fix */ ?>
 
 <?php endif; ?>
 

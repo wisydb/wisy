@@ -685,6 +685,27 @@ class EDIT_DATA_CLASS
 						// if we go here, most stuff is already validated by set_dbval_*() - if any set_dbval_*() returns errors,
 						// the record ist **not** saved.
 						if( !$field->is_readonly() ) {
+							// Feld-Fixierung: verweist die prop 'edit.protectedBy' auf ein Sperr-Feld
+							// im selben Datensatz (z.B. now_zustimmung_fix), bleibt der gespeicherte
+							// Wert erhalten, solange das Sperr-Feld in der DB gesetzt ist und nicht
+							// im selben Speichervorgang entfernt wird (nur primaere Felder).
+							if( isset($row->prop['edit.protectedBy']) && $row->prop['edit.protectedBy']
+							 && $secondary_field_name == '' && $currRecordFound
+							 && intval($this->dbCurrent->f($row->prop['edit.protectedBy'])) > 0 )
+							{
+								$protector_stays_set = true; // ist das Sperr-Feld nicht Teil des Formulars, gilt es als weiterhin gesetzt
+								for( $p = 0; $p < sizeof((array) $this->controls); $p++ ) {
+									if( $this->controls[$p]->name == 'f_' . $row->prop['edit.protectedBy'] ) {
+										$protector_stays_set = intval($this->controls[$p]->dbval) > 0;
+										break;
+									}
+								}
+								if( $protector_stays_set && strval($field->dbval) != $this->dbCurrent->fs($row->name) ) {
+									$this->warnings[] = trim($row->descr) . ': Wert nicht ge&auml;ndert, da der Datensatz hier fixiert ist ('
+										. $row->prop['edit.protectedBy'] . '). Zum &Auml;ndern zun&auml;chst die Fixierung entfernen.';
+									$field->dbval = $this->dbCurrent->fs($row->name); // gespeicherten Wert beibehalten
+								}
+							}
 							$sql .= $row->name . "=" . $this->db1->quote($field->dbval) . ", ";
 							
 							if( $currRecordFound ) {

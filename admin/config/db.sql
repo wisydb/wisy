@@ -82,7 +82,8 @@ CREATE TABLE `anbieter` (
   `x_cntkurse_status_2` int(11) DEFAULT NULL,
   `x_cntkurse_status_3` int(11) DEFAULT NULL,
   `x_cntkurse_status_4` int(11) DEFAULT NULL,
-  `now_zustimmung` int(11) NOT NULL DEFAULT 0
+  `now_zustimmung` int(11) NOT NULL DEFAULT 0,
+  `now_zustimmung_fix` int(11) NOT NULL DEFAULT 0
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 --
@@ -111,6 +112,20 @@ DELIMITER ;
 -- Diese Tabelle dient der Dokumentation/Beweissicherung (welche Texte wann
 -- in welcher Version von wem bestaetigt wurden) und der Versionierung fuer
 -- spaetere Anschreiben/Aenderungen.
+--
+-- `aktion`: 'erteilt' / 'widerrufen' (Anbieter via Formular) sowie
+-- 'erteilt_redaktion' / 'entzogen_redaktion' (redaktionelle Vergabe ueber
+-- die Anbieter-Maske bzw. MultiEdit; bei 'erteilt_redaktion' enthaelt
+-- `text_now_rechte` die Kopie der versendeten Informations-Mail und
+-- `version_now_rechte` deren Version).
+--
+-- Fixierung: `anbieter`.`now_zustimmung_fix` bzw. `kurse`.`now_zustimmung_fix`
+-- (jeweils >0) verhindern JEDE Aenderung des zugehoerigen now_zustimmung
+-- (Formular, MultiEdit, redaktionelle Vergabe, Sync, REST-API); nur das
+-- Entfernen der Fixierung in der jeweiligen Maske gibt das Feld wieder frei.
+-- Kurs-Flag: `kurse`.`now_zustimmung` wird bei Anbieter-Einwilligung
+-- automatisch auf 1 gesetzt (Standard-Vergabe, auch taeglich per Sync);
+-- uebermittelt wird ein Kurs nur, wenn Anbieter- UND Kurs-Zustimmung vorliegen.
 --
 -- Kodierung wie das uebrige WISY: latin1 (ISO-8859-1).
 --
