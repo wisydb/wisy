@@ -470,10 +470,10 @@ function now_parse_settings__($in, &$out, $follow_includes)
  "Antwort an" (Reply-To) für alle Mails des Moduls.
  Der Absender ist das SMTP-Postfach der Portaldomain (meist no-reply@...) und
  damit für Rückfragen unbrauchbar. Antworten sollen die Redaktion erreichen.
- Reihenfolge: NOW_MAIL_REPLYTO, NOW_CONTACT_EMAIL, NOW_ADMIN_EMAIL – die erste
+ Reihenfolge: NOW_MAIL_REPLYTO, NOW_CONTACT_EMAIL, NOW_ADMIN_EMAIL - die erste
  Adresse, die syntaktisch gültig ist (ein Tippfehler in einer Konstanten kostet
  so nicht die gesamte Antwortmöglichkeit).
- @return array(adresse, anzeigename) – Adresse leer = kein Reply-To setzen.
+ @return array(adresse, anzeigename) - Adresse leer = kein Reply-To setzen.
 ------------------------------------------------------------------*/
 function now_mail_replyto()
 {
@@ -833,7 +833,7 @@ function now_send_infomail_kopie($mail, $meta)
     $text =
 "NACHWEIS-KOPIE fuer die Redaktion
 Diese Nachricht dokumentiert den Versand der Informations-Mail zur
-Uebermittlung an \"mein NOW\". Sie wurde NICHT an den Anbieter gesendet.
+Uebermittlung an \"mein NOW\". Diese Meta-Infos wurden NICHT an den Anbieter gesendet (nur der Text ganz unten).
 
 $kopfText
 Der Vorgang ist zusaetzlich revisionssicher protokolliert (Tabelle
@@ -856,7 +856,7 @@ $trenner
 '<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#222;line-height:1.5;">'
 . '<p style="background:#fff3e0;border:1px solid #e65100;color:#e65100;padding:8px 10px;margin:0 0 12px;">'
 . '<b>Nachweis-Kopie f&uuml;r die Redaktion.</b><br>Diese Nachricht dokumentiert den Versand der '
-. 'Informations-Mail zur &Uuml;bermittlung an &bdquo;mein&nbsp;NOW&ldquo;. Sie wurde <b>nicht</b> an den Anbieter gesendet.</p>'
+. 'Informations-Mail zur &Uuml;bermittlung an &bdquo;mein&nbsp;NOW&ldquo;. Diese Meta-Infos wurden <b>nicht</b> an den Anbieter gesendet (nur der Text ganz unten).</p>'
 . '<table style="font-size:13px;border-collapse:collapse;margin-bottom:12px;">' . $kopfHtml . '</table>'
 . '<p style="font-size:12px;color:#666;">Der Vorgang ist zus&auml;tzlich revisionssicher protokolliert '
 . '(Tabelle <tt>anbieter_now_einwilligung</tt>) und im Journal des Anbieters vermerkt.</p>'

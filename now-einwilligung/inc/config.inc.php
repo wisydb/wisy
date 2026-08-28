@@ -101,7 +101,7 @@ define('NOW_CONTACT_EMAIL', 'redaktion@example.org');
  Versendet wird in der Regel über ein unbeaufsichtigtes Postfach
  (no-reply@...), weil dessen Zugangsdaten in den Portaleinstellungen liegen
  und SPF/DKIM auf diese Domain ausgestellt sind. Rückfragen und Widersprüche
- der Anbieter müssen aber bei der Redaktion ankommen – dafür wird diese
+ der Anbieter müssen aber bei der Redaktion ankommen - dafür wird diese
  Adresse als Reply-To gesetzt (bei SMTP wie im mail()-Fallback).
 
  Leer = es gilt NOW_CONTACT_EMAIL, ersatzweise NOW_ADMIN_EMAIL; die Adresse
@@ -119,8 +119,9 @@ define('NOW_MAIL_REPLYTONAME', '');
 
  NOW_KOOPV_PARTNER   Stelle, die die Kooperationsvereinbarung mit der
                      Bundesagentur für Arbeit geschlossen hat (Bundesland
-                     bzw. zuständige Behörde). Wird im Satz "<...> hat mit
-                     der Bundesagentur für Arbeit vereinbart, ..." eingesetzt.
+                     bzw. zuständige Behörde). Steht am SATZANFANG ("<...>
+                     hat mit der BA vereinbart, ..."), daher großschreiben,
+                     z. B. "Die Freie und Hansestadt Hamburg".
 
  NOW_INFOMAIL_FRIST  Datum, bis zu dem ein Widerspruch möglich ist, als
                      fertiger Text (z. B. '30. September 2026'). PFLICHT:
@@ -135,7 +136,7 @@ define('NOW_MAIL_REPLYTONAME', '');
                      (Name, Funktion, Anschrift, Registernummer) trägt der
                      Betreiber in seiner lokalen Konfiguration ein.
 ------------------------------------------------------------------*/
-define('NOW_KOOPV_PARTNER',    'das Land / die zuständige Behörde');
+define('NOW_KOOPV_PARTNER',    'Das Land / die zuständige Behörde');
 define('NOW_INFOMAIL_FRIST',   '');
 define('NOW_INFOMAIL_SIGNATUR',
       "Max Mustermann\n"

@@ -168,6 +168,16 @@ $site->skin->workspaceStart();
  .now-btn.redaktionell, a.now-btn.redaktionell, a.now-btn.redaktionell:link, a.now-btn.redaktionell:visited, a.now-btn.redaktionell:hover, a.now-btn.redaktionell:active {
    background-color:orange !important; color: black !important; font-weight: bold !important;}
  a.now-btn:hover { background:#00658f; }
+ a.now-btn.now-btn-disabled,
+ 
+ /* ACHTUNG: nachfolgenden Block entfernen, falls man auf aktive Einwilligung mit Formularen umstellen will / blauen Button reaktivieren will */
+ /* falls man einen "Button" deaktivieren will: z.B. <span> class="now-btn now-btn-disabled" aria-disabled="true" title="Aktuell deaktiviert - bitte redaktionelle Vergabe nutzen">Anschreiben jetzt an diesen Anbieter senden </span> */
+ a.now-btn.now-btn-disabled:hover { 
+  background:#999 !important;
+  color:#eee !important;
+  cursor:not-allowed;
+  pointer-events:none;
+ }
 </style>
 <div class="now-wrap">
 
@@ -218,6 +228,8 @@ $site->skin->workspaceStart();
            (keine g&uuml;ltige Pflege-/Kontakt-E-Mail oder Versandfehler &ndash; siehe Server-Log).</p>
     <?php endif; ?>
 
+    <h2 style="margin-top:18px;">Einwilligungs-Formulare versenden</h2>
+    
     <?php if ($kontaktEmail !== ''): ?>
         <a class="now-btn" href="module.php?module=edit_plugin_anbieter_0&amp;id=<?= (int)$id ?>&amp;do=anschreiben"
            onclick="return confirm('Anschreiben (HTML-Mail mit pers&ouml;nlichem Link) jetzt an <?= nowadmin_h($kontaktEmail) ?> senden?');">
@@ -230,7 +242,7 @@ $site->skin->workspaceStart();
         <p class="now-hint">Kein Versand m&ouml;glich: F&uuml;r diesen Anbieter ist keine Pflege-/Kontakt-E-Mail hinterlegt.</p>
     <?php endif; ?>
 
-    <h2 style="margin-top:18px;">Zustimmung redaktionell erteilen</h2>
+    <h2 style="margin-top:18px;">Zustimmung sofort redaktionell erteilen</h2>
 
     <?php if ($redResult !== null): ?>
         <?php if ($redResult['status'] === 'ok'): ?>
@@ -301,14 +313,15 @@ $site->skin->workspaceStart();
            onclick="return confirm('Zustimmung jetzt redaktionell erteilen (now_zustimmung=1, alle Kurse ohne Fixierung erhalten die Kurs-Zustimmung) und die Informations-E-Mail an <?= nowadmin_h($kontaktEmail) ?> senden (Nachweis-Kopie an <?= nowadmin_h(NOW_ADMIN_EMAIL) ?>)?');">
             Zustimmung jetzt erteilen + Informations-E-Mail senden
         </a>
-        <p class="now-hint">F&uuml;r den Fall, dass die Einwilligung auf anderem Wege (z.&nbsp;B. schriftlich)
-           erteilt wurde: setzt anbieter.now_zustimmung=1, protokolliert den Vorgang revisionssicher
-           (Historie + Journal) und sendet die <b>Informations-Mail</b> (zweiter, eigener Text - informiert
-           nur und ruft zur Gegenkontrolle auf) an die Pflege-Adresse. Die Redaktion
-           (<?= nowadmin_h(NOW_ADMIN_EMAIL) ?>) erh&auml;lt zus&auml;tzlich eine gekennzeichnete
-           <b>Nachweis-Kopie</b> mit Anbieter, Empf&auml;nger, Zeitpunkt, ausl&ouml;sender Person,
-           Zustellergebnis und vollst&auml;ndigem Wortlaut - als Beleg des Versands, da der Anbieter
-           hierauf nicht zwangsl&auml;ufig reagiert.</p>
+        <p class="now-hint">
+        <ul>
+        	<li>Setzt anbieter.now_zustimmung=1,</li> 
+        	<li>protokolliert den Vorgang revisionssicher (Historie + Journal) und</li> 
+            <li>sendet eine <b>Informations-Mail</b> an die <b>Pflege</b>-Mail-Adresse.</li>
+            <li>Die Redaktion (<?= nowadmin_h(NOW_ADMIN_EMAIL) ?>) erh&auml;lt zus&auml;tzlich eine <b>Nachweis-Kopie</b> mit Anbieter, Empf&auml;nger, Zeitpunkt, ausl&ouml;sender Person, 
+            Zustellergebnis und vollst&auml;ndigem Wortlaut - als Beleg des Versands</li>
+       </ul>     
+       </p>
     <?php endif; ?>
 
     <h2 style="margin-top:18px;">Einwilligungs-Historie
