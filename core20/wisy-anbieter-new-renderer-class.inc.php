@@ -408,6 +408,8 @@ class WISY_ANBIETER_NEW_RENDERER_CLASS extends WISY_ANBIETER_RENDERER_CLASS
 		$gruendungsjahr = intval($db->fs('gruendungsjahr'));
 		$rechtsform     = intval($db->fs('rechtsform'));
 
+		$this->filter_anbieterprofil_ohnekurse($suchname); // #anbieterprofil_ohnekurse
+		
 		// promoted?
 		if( intval($_GET['promoted']) > 0 )
 		{

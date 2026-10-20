@@ -432,6 +432,31 @@ class WISY_ANBIETER_RENDERER_CLASS
 	
 	}
 	
+	protected function filter_anbieterprofil_ohnekurse($suchname)
+	{
+		// #anbieterprofil_ohnekurse: 404, wenn der Anbieter im Portal keine aktuellen Kurse hat (Tag-Frequenz des Anbieter-Tags in x_tags_freq, portalbezogen);
+		// auch von render() im Modul WISY_ANBIETER_NEW_RENDERER_CLASS aufgerufen
+		if( !intval($this->framework->iniRead('seo.set404_anbieterprofil_ohnekurse', 0)) )
+			return;
+		
+		$tagsuggestor =& createWisyObject('WISY_TAGSUGGESTOR_CLASS', $this->framework);
+		if( intval($tagsuggestor->getTagFreq(array($tagsuggestor->getTagId($suchname)))) > 0 )
+			return;
+		
+		// x_tags_freq wird bei jeder Synchronisation geleert und neu befuellt;
+		// ohne Eintraege fuer das Portal ist die Tag-Frequenz 0 nicht aussagekraeftig
+		$db = new DB_Admin();
+		$portalId = ( isset($GLOBALS['wisyPortalFilter']['stdkursfilter']) && $GLOBALS['wisyPortalFilter']['stdkursfilter']!='' ) ? intval($GLOBALS['wisyPortalId']) : 0; // wie in getTagFreq()
+		$db->query("SELECT tag_id FROM x_tags_freq WHERE portal_id=$portalId LIMIT 1");
+		if( !$db->next_record() )
+			return;
+		
+		if( $this->framework->is_editor_active($db, $this->h_before_dontshowteditorforeign_k) || $this->framework->is_frondendeditor_active() )
+			return;
+		
+		$this->framework->error404("Fehler 404 - Seite <i>in diesem Portal</i> nicht gefunden", "<ul><li><a href='/edit?action=ek&id=0'>Zur Seite wechseln: \"Onlinepflege-Login f&uuml;r Anbieter\" ...</a></li></ul>");
+	}
+	
 	function render()
 	{
 		$anbieter_id = intval($_GET['id']);
@@ -459,6 +484,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 		$anbieter_suchname = $db->fs('suchname');
 		$typ               = intval($db->f('typ'));
 
+		$this->filter_anbieterprofil_ohnekurse($anbieter_suchname); // #anbieterprofil_ohnekurse
 
 		// promoted?
 		if( intval($_GET['promoted']) > 0 )

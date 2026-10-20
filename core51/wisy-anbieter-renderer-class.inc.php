@@ -11,6 +11,7 @@ class WISY_ANBIETER_RENDERER_CLASS
 {
 	var $framework;
 	var $unsecureOnly = false;
+	var $h_before_dontshoweditor_a = 27; // Redaktions-Login der letzten 27h, wie h_before_dontshowteditorforeign_k im Kurs-Renderer
 
 	function __construct(&$framework)
 	{
@@ -552,6 +553,15 @@ class WISY_ANBIETER_RENDERER_CLASS
 		echo $map->render();
 	}
 	
+	protected function tagFreqAvailable(&$db)
+	{
+		// x_tags_freq wird bei jeder Synchronisation geleert und neu befuellt;
+		// ohne Eintraege fuer das Portal ist die Tag-Frequenz 0 nicht aussagekraeftig
+		$portalId = ( isset($GLOBALS['wisyPortalFilter']['stdkursfilter']) && $GLOBALS['wisyPortalFilter']['stdkursfilter']!='' ) ? intval($GLOBALS['wisyPortalId']) : 0; // wie in getTagFreq()
+		$db->query("SELECT tag_id FROM x_tags_freq WHERE portal_id=$portalId LIMIT 1");
+		return $db->next_record();
+	}
+	
 	public function render()
 	{
 	    $anbieter_id = intval( $this->framework->getParam('id') );
@@ -603,6 +613,19 @@ class WISY_ANBIETER_RENDERER_CLASS
 		
 		$anbieter_ort = cs8($db->fs('ort'), "UTF-8");
 		$anbieter_portraet = cs8($db->fs('firmenportraet'), "UTF-8");
+		
+		$this->tagsuggestorObj =& createWisyObject('WISY_TAGSUGGESTOR_CLASS', $this->framework);
+		$tag_suchname = $this->tagsuggestorObj->keyword2tagName($suchname);
+		$this->tag_suchname_id = $this->tagsuggestorObj->getTagId($tag_suchname);
+		
+		// #anbieterprofil_ohnekurse: 404, wenn der Anbieter im Portal keine aktuellen Kurse hat (Tag-Frequenz des Anbieter-Tags in x_tags_freq, portalbezogen)
+		if( intval($this->framework->iniRead('seo.set404_anbieterprofil_ohnekurse', 0)) && !$no404
+		    && intval($this->tagsuggestorObj->getTagFreq(array($this->tag_suchname_id))) <= 0
+		    && $this->tagFreqAvailable($db)
+		    && !$this->framework->is_editor_active($db, $this->h_before_dontshoweditor_a)
+		    && !$this->framework->is_frondendeditor_active() ) {
+		    $this->framework->error404("Fehler 404 - Seite <i>in diesem Portal</i> nicht gefunden", "<ul><li><a href='/edit?action=ek&id=0'>Zur Seite wechseln: \"Onlinepflege-Login f&uuml;r Anbieter\" ...</a></li></ul>");
+		}
 		
 		// promoted?
 		if( intval( $this->framework->getParam('promoted') ) > 0 )
@@ -659,10 +682,6 @@ class WISY_ANBIETER_RENDERER_CLASS
 		
 		echo $this->framework->getSearchField();
 
-		$this->tagsuggestorObj =& createWisyObject('WISY_TAGSUGGESTOR_CLASS', $this->framework); 
-		$tag_suchname = $this->tagsuggestorObj->keyword2tagName($suchname);
-		$this->tag_suchname_id = $this->tagsuggestorObj->getTagId($tag_suchname);
-		
 		echo "\n\n" . '<div id="wisy_resultarea" class="'.$this->framework->getAllowFeedbackClass().'">';
 		
 		echo '<p class="noprint"><a class="wisyr_zurueck" href="javascript:history.back();">&laquo; Zur&uuml;ck</a></p>';
