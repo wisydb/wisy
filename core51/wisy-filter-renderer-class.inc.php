@@ -1053,7 +1053,7 @@ class WISY_FILTERMENU_CLASS
 	                }
 	                
 	                // removing empty elements causes counting mismatch at other places
-	                $elements = array_filter($elements); // remove empty elements
+	                $elements = array_filter($elements, 'strlen'); // remove empty elements
 	                
 	                $wasNumeric = false;
 	                $wasOption = false;

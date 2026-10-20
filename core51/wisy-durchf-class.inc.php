@@ -293,7 +293,9 @@ class WISY_DURCHF_CLASS
 		            || $stichwort['id'] == $controlTags['Orientierungskurs']
 		            || $stichwort['id'] == $controlTags['Integrationskurs fuer Frauen']
 		            || $stichwort['id'] == $controlTags['Integrationskurs fuer Eltern']
-		            || $stichwort['id'] == $controlTags['Integrationskurs fuer junge Erwachsene'] )
+		            || $stichwort['id'] == $controlTags['Integrationskurs fuer junge Erwachsene'] 
+		            || $stichwort['id'] == $controlTags['Massnahme nach 16k SGB II']
+		            || $stichwort['id'] == $controlTags['Rehabilitation'] )
 		            ) {
 		                $preishinweise_arr[] = cs8('kostenlos&nbsp;bei&nbsp;F&ouml;rderung');
 		                $aid_output = true;
