@@ -266,13 +266,12 @@ function now_store_consent($data)
     $flag = ($aktion === 'widerrufen') ? 0 : 1;
     $db->query("UPDATE anbieter SET now_zustimmung=" . $flag . " WHERE id=" . $anbieter . " AND now_zustimmung_fix=0");
 
-    // Standard-Vergabe: Mit der Anbieter-Einwilligung erhalten alle seine
-    // Kurse kurse.now_zustimmung=1 (sofern nicht per kurse.now_zustimmung_fix
-    // fixiert). Ein Widerruf wird NICHT auf die Kurse übertragen – die
-    // Übermittlung prüft ohnehin immer zusätzlich die Anbieter-Zustimmung.
-    if ($flag === 1) {
-        now_propagate_kurse_zustimmung($anbieter);
-    }
+    // Die Anbieter-Entscheidung wird auf seine Kurse übertragen (sofern nicht
+    // per kurse.now_zustimmung_fix fixiert): Einwilligung schaltet sie frei,
+    // Widerruf schaltet sie wieder ab. Der Widerruf muss mitlaufen, damit in
+    // Onlinepflege und Redaktionsmaske kein Kurs mehr auf "Übermittlung" steht,
+    // obwohl der Anbieter widerrufen hat.
+    now_propagate_kurse_zustimmung($anbieter, $flag);
 
     // --- 3) Journal-Eintrag in anbieter.notizen (latin1, voranstellen) ------
     now_append_journal($anbieter, $data, $aktion, $now);
@@ -519,27 +518,30 @@ function now_mail_header_name__($name)
 
 /*------------------------------------------------------------------
  Zentraler Mailversand (UTF-8). Bevorzugt SMTP/PHPMailer anhand der
- Portaleinstellungen (mail.extern.*). Fällt auf die PHP-mail()-Funktion
- zurück, wenn PHPMailer nicht konfiguriert ist.
+ Portaleinstellungen (mail.extern.*).
  $bodyHtml != null  -> HTML-Mail (multipart: HTML + Text-Alternative).
  Im lokalen Test (.local / CLI) wird nichts versendet (nur Logeintrag).
-------------------------------------------------------------------*/
+ ------------------------------------------------------------------*/
 function now_send_mail($to, $subjectRaw, $body, $bcc = '', $bodyHtml = null)
 {
     $GLOBALS['now_mail_last_error']     = '';
     $GLOBALS['now_mail_last_warning']   = '';
     $GLOBALS['now_mail_last_transport'] = '';
+    $GLOBALS['now_mail_last_reason']    = '';
+    $GLOBALS['now_mail_last_rejected']  = array();
     $host = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '';
 
     // DEV: nicht wirklich senden
     if (substr($host, -6) === '.local' || PHP_SAPI === 'cli') {
         error_log("[NOW-Einwilligung] (DEV) Mail an $to" . ($bcc ? " (BCC $bcc)" : '') . " – Betreff: $subjectRaw" . ($bodyHtml !== null ? ' [HTML]' : ''));
         $GLOBALS['now_mail_last_transport'] = 'dev';
+        $GLOBALS['now_mail_last_reason']    = 'dev';
         return true;
     }
 
     if (trim((string)$to) === '' || !filter_var(trim((string)$to), FILTER_VALIDATE_EMAIL)) {
-        $GLOBALS['now_mail_last_error'] = 'Keine gültige Empfänger-Adresse: "' . $to . '"';
+        $GLOBALS['now_mail_last_error']  = 'Keine gültige Empfänger-Adresse: "' . $to . '"';
+        $GLOBALS['now_mail_last_reason'] = 'adresse_syntax';
         error_log('[NOW-Einwilligung] ' . $GLOBALS['now_mail_last_error']);
         return false;
     }
@@ -573,6 +575,13 @@ function now_send_mail($to, $subjectRaw, $body, $bcc = '', $bodyHtml = null)
             list($replyAddr, $replyName) = now_mail_replyto();
             if ($replyAddr !== '') { $mail->addReplyTo($replyAddr, $replyName); }
 
+            // PHPMailer bietet keine Liste der vom Server abgelehnten Empfänger
+            // an ($bad_rcpt ist dort eine lokale Variable). Der Callback wird je
+            // Empfänger aufgerufen, VOR der Exception - damit lässt sich versions- und
+            // sprachunabhängig feststellen, WELCHE Adresse abgelehnt wurde.
+            $GLOBALS['now_mail_last_rejected'] = array();
+            $mail->action_function = 'now_mail_rcpt_callback__';
+
             $mail->addAddress($to);
             if ($bcc !== '') { $mail->addBCC($bcc); }
 
@@ -586,18 +595,51 @@ function now_send_mail($to, $subjectRaw, $body, $bcc = '', $bodyHtml = null)
             }
             if ($mail->send()) {
                 $GLOBALS['now_mail_last_transport'] = 'smtp';
+                $GLOBALS['now_mail_last_reason']    = 'ok';
                 return true;
             }
-            $GLOBALS['now_mail_last_warning'] = 'SMTP-Versand abgelehnt: ' . $mail->ErrorInfo;
+            // Mit new PHPMailer(true) praktisch unerreichbar - send() generierte Exception
+            // statt false zurückzugeben. Bleibt als Absicherung stehen.
+            $fehlertext = 'SMTP-Versand abgelehnt: ' . $mail->ErrorInfo;
+            $fehlercode = 0;
         } catch (Throwable $e) {
-            $GLOBALS['now_mail_last_warning'] = 'PHPMailer-Fehler: ' . $e->getMessage();
-            // Fallback unten
+            $fehlertext = 'PHPMailer-Fehler: ' . $e->getMessage();
+            $fehlercode = (int)$e->getCode();
         }
-        error_log('[NOW-Einwilligung] ' . $GLOBALS['now_mail_last_warning']);
+
+        /*--------------------------------------------------------------
+         Wenn SMTP konfiguriert war und Nachricht nicht angenommen hat:
+         KEIN Fallback auf mail(), siehe Kopfkommentar. Stattdessen die
+         Fehlerart bestimmen, damit der Aufrufer eine abgelehnte Adresse
+         von einem Transportproblem unterscheiden kann.
+
+         Erkennung, absteigend nach Verlässlichkeit:
+         1. Der action_function-Callback hat für einen Empfänger issent=false
+            gemeldet, dann hat der Server genau diese Adresse abgelehnt.
+         2. Exception-Code 1 (PHPMailer::STOP_CONTINUE) wird für abgelehnte
+            Empfänger vergeben. Anhänge nutzt dieses Modul nicht, die zweite
+            Quelle dieses Codes entfällt also. Alles andere gilt als Transportproblem (Verbindung, TLS, Auth, MAIL FROM, DATA).
+        --------------------------------------------------------------*/
+        $abgelehnt = isset($GLOBALS['now_mail_last_rejected']) ? (array)$GLOBALS['now_mail_last_rejected'] : array();
+        if ($abgelehnt || $fehlercode === 1) {
+            $GLOBALS['now_mail_last_reason'] = 'empfaenger_abgelehnt';
+            $GLOBALS['now_mail_last_error']  = 'Der Mailserver hat die Empfänger-Adresse abgelehnt'
+                . ($abgelehnt ? ' (' . implode(', ', $abgelehnt) . ')' : '')
+                . '. ' . $fehlertext;
+        } else {
+            $GLOBALS['now_mail_last_reason'] = 'transport';
+            $GLOBALS['now_mail_last_error']  = 'Der Versand über das externe Postfach ist gescheitert. ' . $fehlertext;
+        }
+        $GLOBALS['now_mail_last_transport'] = 'keiner';
+        error_log('[NOW-Einwilligung] ' . $GLOBALS['now_mail_last_error']);
+        return false;
+
     } elseif (!$usePHPMailer) {
+        $GLOBALS['now_mail_last_reason']  = 'nicht_konfiguriert';
         $GLOBALS['now_mail_last_warning'] = 'Portaleinstellung "mail.extern" ist leer/nicht gesetzt (Quelle der Einstellungen: '
             . now_settings_source() . ')';
     } else {
+        $GLOBALS['now_mail_last_reason']  = 'nicht_konfiguriert';
         $GLOBALS['now_mail_last_warning'] = 'PHPMAILER_PATH ' . (defined('PHPMAILER_PATH') ? 'zeigt auf eine nicht vorhandene Datei' : 'ist nicht definiert');
     }
 
@@ -649,10 +691,36 @@ function now_send_mail($to, $subjectRaw, $body, $bcc = '', $bodyHtml = null)
         return true;
     }
 
+    $GLOBALS['now_mail_last_reason'] = 'mail_uebergabe_fehlgeschlagen';
     $GLOBALS['now_mail_last_error'] = trim(($GLOBALS['now_mail_last_warning'] !== '' ? $GLOBALS['now_mail_last_warning'] . ' | ' : '')
         . 'PHP mail() konnte die Nachricht nicht übergeben.');
     error_log('[NOW-Einwilligung] Versand an ' . $to . ' fehlgeschlagen: ' . $GLOBALS['now_mail_last_error']);
     return false;
+}
+
+/**
+ * Callback, den PHPMailer je Empfänger aufruft (action_function). Sammelt die
+ * Adressen, die der Server abgelehnt hat. PHPMailer selbst bietet dafür keine
+ * Schnittstelle an - die abgelehnten Adressen stehen dort nur als Fließtext in
+ * der Ausnahme. Der Callback läuft, BEVOR die Ausnahme geworfen wird.
+ * @param bool  $isSent Empfänger angenommen?
+ * @param array $to     [[adresse, name]]
+ */
+function now_mail_rcpt_callback__($isSent, $to, $cc = array(), $bcc = array(), $subject = '', $body = '', $from = '', $extra = array())
+{
+    if ($isSent) {
+        return;
+    }
+    $adresse = '';
+    if (is_array($to) && $to) {
+        $erster  = reset($to);
+        $adresse = is_array($erster) ? (string)(isset($erster[0]) ? $erster[0] : '') : (string)$erster;
+    } elseif (!is_array($to)) {
+        $adresse = (string)$to;
+    }
+    if (trim($adresse) !== '') {
+        $GLOBALS['now_mail_last_rejected'][] = trim($adresse);
+    }
 }
 
 /**
@@ -663,6 +731,27 @@ function now_send_mail($to, $subjectRaw, $body, $bcc = '', $bodyHtml = null)
 function now_last_mail_error()
 {
     return isset($GLOBALS['now_mail_last_error']) ? (string)$GLOBALS['now_mail_last_error'] : '';
+}
+
+/**
+ * Fehlerart des letzten Versands - fester Wortschatz:
+ *   'ok'                            über SMTP versendet
+ *   'dev'                           Testumgebung, nichts versendet
+ *   'adresse_syntax'                Empfänger-Adresse schon syntaktisch unbrauchbar
+ *   'empfaenger_abgelehnt'          SMTP-Server hat die Adresse zurückgewiesen
+ *   'transport'                     Verbindung, TLS, Anmeldung oder Absender
+ *   'nicht_konfiguriert'            kein SMTP hinterlegt, mail()-Fallback lief
+ *   'mail_uebergabe_fehlgeschlagen' auch das lokale mail() hat nicht übernommen
+ */
+function now_last_mail_reason()
+{
+    return isset($GLOBALS['now_mail_last_reason']) ? (string)$GLOBALS['now_mail_last_reason'] : '';
+}
+
+/** Vom Mailserver abgelehnte Empfänger-Adressen des letzten Versands. */
+function now_last_mail_rejected()
+{
+    return isset($GLOBALS['now_mail_last_rejected']) ? (array)$GLOBALS['now_mail_last_rejected'] : array();
 }
 
 /**
@@ -697,6 +786,9 @@ function now_transport_text($transport, $warning = '')
             return 'ACHTUNG: lokales Sendmail OHNE Authentifizierung – SPF/DMARC schlagen bei externen '
                  . 'Empfängern fehl, Gmail & Co. weisen die Mail zurück'
                  . ($warning !== '' ? ' (Grund: ' . $warning . ')' : '');
+        case 'keiner':
+            return 'NICHT versendet = das externe Postfach hat die Nachricht nicht angenommen '
+                 . '(kein Rückfall auf das lokale Sendmail)';
     }
     return 'unbekannt';
 }
@@ -806,6 +898,8 @@ function now_send_infomail_kopie($mail, $meta)
         'Zeitpunkt'         => $meta['zeitpunkt'],
         'Ausgel&ouml;st durch' => $meta['bearbeiter'] . ($meta['quelle'] !== '' ? ' (' . $meta['quelle'] . ')' : ''),
         'Zustellung'        => $zustellung,
+        // Ergebnis der Vergabe: ohne zugestellte Mail wird nichts gesetzt.
+        'Vergabe'           => isset($meta['vergabe']) ? $meta['vergabe'] : '(nicht angegeben)',
         // Versandweg gehört in den Nachweis: über das lokale Sendmail versandte
         // Mails gelten bei strengen Empfängern als nicht zugestellt.
         'Versandweg'        => isset($meta['versandweg']) ? $meta['versandweg'] : 'unbekannt',
@@ -896,18 +990,25 @@ function now_zustimmung_fix_gesetzt($anbieterId)
 }
 
 /**
- * Standard-Vergabe an die Kurse: setzt kurse.now_zustimmung=1 für alle Kurse
- * des Anbieters, die noch auf 0 stehen und nicht per kurse.now_zustimmung_fix
- * fixiert sind. date_modified wird gesetzt, damit die Änderung für
- * Delta-Abgleiche (Sync/Adapter) sichtbar ist.
- * Gibt die Anzahl der geänderten Kurse zurück.
+ * Überträgt die Anbieter-Entscheidung auf seine Kurse: setzt
+ * kurse.now_zustimmung auf $wert für alle Kurse des Anbieters, die noch anders
+ * stehen und nicht per kurse.now_zustimmung_fix fixiert sind. date_modified
+ * wird gesetzt, damit die Änderung für Delta-Abgleiche (Sync/Adapter) sichtbar
+ * ist. Gibt die Anzahl der geänderten Kurse zurück.
+ *
+ * Beide Richtungen: Die Einwilligung schaltet die Kurse frei, der Widerruf
+ * schaltet sie wieder ab. Ohne die Rückrichtung stünden die Kurse eines
+ * Anbieters, der widerrufen hat, weiter auf "Übermittlung" - was in der
+ * Onlinepflege und in der Redaktionsmaske eine Übermittlung vortäuscht, die
+ * wegen der zusätzlichen Prüfung der Anbieter-Zustimmung gar nicht stattfindet.
  */
-function now_propagate_kurse_zustimmung($anbieterId)
+function now_propagate_kurse_zustimmung($anbieterId, $wert = 1)
 {
-    $db = now_db_handle();
-    $db->query("UPDATE kurse SET now_zustimmung=1, date_modified='" . date('Y-m-d H:i:s') . "'
+    $wert = $wert ? 1 : 0;
+    $db   = now_db_handle();
+    $db->query("UPDATE kurse SET now_zustimmung=" . $wert . ", date_modified='" . date('Y-m-d H:i:s') . "'
                  WHERE anbieter=" . intval($anbieterId) . "
-                   AND now_zustimmung=0 AND now_zustimmung_fix=0");
+                   AND now_zustimmung=" . (1 - $wert) . " AND now_zustimmung_fix=0");
     return intval($db->affected_rows());
 }
 
@@ -919,20 +1020,27 @@ function now_propagate_kurse_zustimmung($anbieterId)
  *  - respektiert anbieter.now_zustimmung_fix (keine Änderung, wenn fixiert)
  *  - protokolliert revisionssicher in anbieter_now_einwilligung
  *    (aktion 'erteilt_redaktion' / 'entzogen_redaktion') und im Journal
- *  - Vergabe: Standard-Vergabe an alle Kurse (now_propagate_kurse_zustimmung)
+ *  - überträgt die Entscheidung auf die Kurse (now_propagate_kurse_zustimmung):
+ *    Vergabe schaltet sie frei, Entzug schaltet sie ab - je ohne fixierte Kurse
  *  - Vergabe mit $mitInfomail: Informations-Mail (inc/now-infomail.inc.php)
- *    an die Pflege-Adresse, Kopie (BCC) an die Redaktion (NOW_ADMIN_EMAIL).
- *    Die Vergabe unterbleibt KOMPLETT, wenn kein Info-Mail-Text hinterlegt
- *    oder keine gültige Empfänger-Adresse vorhanden ist (Mail ist Pflicht).
+ *    an die Pflege-Adresse, Nachweis-Kopie an die Redaktion (NOW_ADMIN_EMAIL).
+ *    Die Vergabe unterbleibt KOMPLETT, wenn kein Info-Mail-Text hinterlegt ist,
+ *    keine gültige Empfänger-Adresse vorliegt ODER die Mail nicht zugestellt
+ *    werden konnte ('mail_fehlgeschlagen'). Ohne Mail keine Zustimmung: Die
+ *    Vergabe baut auf einen möglichen Widerspruch, den nur kennt, wer die Mail
+ *    bekommen hat. Der Versuch wird trotzdem dokumentiert (Nachweis-Kopie und
+ *    Journal), die append-only-Historie bleibt in diesem Fall leer.
  *
  * @param int    $anbieterId
  * @param bool   $erteilen     true = Zustimmung erteilen, false = entziehen
  * @param string $bearbeiter   Name der Redakteurin/des Redakteurs (UTF-8)
  * @param bool   $mitInfomail  Info-Mail versenden (nur bei Vergabe relevant)
  * @param string $quelle       fürs Journal, z. B. 'Anbieter-Maske', 'MultiEdit'
- * @return array ('status' => 'ok'|'nicht_gefunden'|'fix'|'schon'|'kein_text'|'keine_email',
+ * @return array ('status' => 'ok'|'nicht_gefunden'|'fix'|'schon'|'kein_text'
+ *                            |'keine_email'|'mail_fehlgeschlagen',
  *                'mail_ok' => bool|null, 'mail_error' => string,
  *                'mail_transport' => string, 'mail_warning' => string,
+ *                'mail_reason' => string, 'mail_rejected' => array,
  *                'kopie_ok' => bool|null, 'kopie_error' => string,
  *                'kurse' => int, 'email' => string)
  */
@@ -942,6 +1050,7 @@ function now_set_zustimmung_redaktionell($anbieterId, $erteilen, $bearbeiter, $m
     $erteilen   = (bool)$erteilen;
     $ret        = array('status' => 'ok', 'mail_ok' => null, 'mail_error' => '',
                         'mail_transport' => '', 'mail_warning' => '',
+                        'mail_reason' => '', 'mail_rejected' => array(),
                         'kopie_ok' => null, 'kopie_error' => '', 'kurse' => 0, 'email' => '');
 
     // --- Anbieter laden (bewusst OHNE freigeschaltet-Filter: die Redaktion
@@ -988,7 +1097,46 @@ function now_set_zustimmung_redaktionell($anbieterId, $erteilen, $bearbeiter, $m
         $mail = now_infomail(array('id' => $anbieterId, 'suchname' => $suchname));
     }
 
-    // --- 1) Live-Flag setzen (Guard nochmals in der WHERE-Klausel);
+    /*------------------------------------------------------------------
+     1) Informations-Mail ZUERST versenden.
+
+     Die Vergabe baut darauf auf, dass der Anbieter widersprechen kann. Wer die
+     Mail nie bekommen hat, kann das nicht. Der Versand steht deshalb vor jedem
+     Schreibvorgang: Die Historie in anbieter_now_einwilligung ist append-only
+     und liesse sich nachträglich nicht sauber zurücknehmen.
+
+     Scheitert der Versand, unterbleiben Flag, Kurs-Vergabe und Historie
+     vollständig. Dokumentiert wird der Versuch trotzdem über die
+     Nachweis-Kopie an die Redaktion und einen Journaleintrag.
+    ------------------------------------------------------------------*/
+    if ($mail !== null) {
+        // Ohne BCC - die Redaktion erhält stattdessen die gekennzeichnete
+        // Nachweis-Kopie als eigene Nachricht.
+        $ret['mail_ok'] = now_send_mail(
+            $kontaktEmail,
+            $mail['subject'],
+            $mail['text'],
+            '',
+            (trim((string)$mail['html']) !== '') ? $mail['html'] : null
+        );
+        // Diagnose sichern, BEVOR die Nachweis-Kopie die Globals überschreibt
+        $ret['mail_transport'] = now_last_mail_transport();
+        $ret['mail_warning']   = now_last_mail_warning();
+        $ret['mail_reason']    = now_last_mail_reason();
+        $ret['mail_rejected']  = now_last_mail_rejected();
+        if (!$ret['mail_ok']) {
+            $ret['mail_error'] = now_last_mail_error();
+            $ret['status']     = 'mail_fehlgeschlagen';
+        }
+    }
+
+    $vergeben = ($ret['status'] === 'ok');   // false = Mail gescheitert, nichts wird geschrieben
+    $now      = date('Y-m-d H:i:s');
+    $aktion   = $erteilen ? 'erteilt_redaktion' : 'entzogen_redaktion';
+
+    if ($vergeben) {
+
+    // --- 2) Live-Flag setzen (Guard nochmals in der WHERE-Klausel);
     // ---    date_modified mitsetzen, damit die Änderung für Delta-Abgleiche
     // ---    (Sync/Adapter) sichtbar ist --------------------------------------
     $userModified = (isset($_SESSION['g_session_userid']) && intval($_SESSION['g_session_userid']) > 0)
@@ -997,14 +1145,11 @@ function now_set_zustimmung_redaktionell($anbieterId, $erteilen, $bearbeiter, $m
         . ", date_modified='" . date('Y-m-d H:i:s') . "'" . $userModified
         . " WHERE id=" . $anbieterId . " AND now_zustimmung_fix=0");
 
-    // --- 2) Standard-Vergabe an die Kurse (nur bei Vergabe) ------------------
-    if ($erteilen) {
-        $ret['kurse'] = now_propagate_kurse_zustimmung($anbieterId);
-    }
+    // --- 3) Die Entscheidung an die Kurse weitergeben ------------------------
+    // ---    Vergabe schaltet frei, Entzug schaltet ab (je ohne fixierte Kurse)
+    $ret['kurse'] = now_propagate_kurse_zustimmung($anbieterId, $flagNeu);
 
-    // --- 3) Revisionssicherer Protokoll-Eintrag ------------------------------
-    $aktion = $erteilen ? 'erteilt_redaktion' : 'entzogen_redaktion';
-    $now    = date('Y-m-d H:i:s');
+    // --- 4) Revisionssicherer Protokoll-Eintrag ------------------------------
     $mailArchiv  = ($mail !== null) ? now_archive($mail['subject'] . "\n\n" . $mail['text']) : '';
     $mailVersion = ($mail !== null) ? ('Info-Mail ' . NOW_INFOMAIL_VERSION) : '';
     $hash = hash('sha256',
@@ -1033,27 +1178,12 @@ function now_set_zustimmung_redaktionell($anbieterId, $erteilen, $bearbeiter, $m
         . $db->quote('') . ", "
         . $db->quote($hash) . ")");
 
-    // --- 4) Informations-Mail senden (nach dem Schreiben, Ergebnis kommt ins
-    // ---    Journal; BCC immer an die Redaktion) -----------------------------
-    if ($mail !== null) {
-        // 4a) Die eigentliche Informations-Mail an den Anbieter (ohne BCC –
-        //     die Redaktion erhält stattdessen die gekennzeichnete Nachweis-Kopie)
-        $ret['mail_ok'] = now_send_mail(
-            $kontaktEmail,
-            $mail['subject'],
-            $mail['text'],
-            '',
-            (trim((string)$mail['html']) !== '') ? $mail['html'] : null
-        );
-        // Diagnose sichern, BEVOR der nächste Versand die Globals überschreibt
-        $ret['mail_transport'] = now_last_mail_transport();
-        $ret['mail_warning']   = now_last_mail_warning();
-        if (!$ret['mail_ok']) {
-            $ret['mail_error'] = now_last_mail_error();
-        }
+    } // /if ($vergeben) - ab hier laufen beide Fälle wieder gemeinsam
 
-        // 4b) Nachweis-Kopie an die Redaktion – auch bei fehlgeschlagenem
-        //     Anbieter-Versand (dann als Beleg des Versuchs inkl. Grund)
+    // --- 5) Nachweis-Kopie an die Redaktion ---------------------------------
+    // Läuft auch bei gescheitertem Versand an den Anbieter - dann als Beleg des
+    // Versuchs, samt Grund und dem Hinweis, dass deshalb NICHTS vergeben wurde.
+    if ($mail !== null) {
         $ret['kopie_ok'] = now_send_infomail_kopie($mail, array(
             'anbieter'          => $anbieterId,
             'suchname'          => $suchname,
@@ -1064,22 +1194,30 @@ function now_set_zustimmung_redaktionell($anbieterId, $erteilen, $bearbeiter, $m
             'zustellung_ok'     => (bool)$ret['mail_ok'],
             'zustellung_fehler' => $ret['mail_error'],
             'versandweg'        => now_transport_text($ret['mail_transport'], $ret['mail_warning']),
+            'vergabe'           => $vergeben
+                ? 'Zustimmung erteilt, ' . intval($ret['kurse']) . ' Kurs(e) auf Uebermittlung gesetzt'
+                : 'KEINE Zustimmung vergeben - die Informations-Mail hat den Anbieter nicht erreicht',
         ));
         if ($ret['kopie_ok'] === false) {
             $ret['kopie_error'] = now_last_mail_error();
         }
     }
 
-    // --- 5) Journal-Eintrag in anbieter.notizen (latin1, voranstellen) -------
+    // --- 6) Journal-Eintrag in anbieter.notizen (latin1, voranstellen) -------
     $datum = date('d.m.Y H:i', strtotime($now));
-    if ($erteilen) {
+    if (!$vergeben) {
+        // Bewusst ohne die Wortfolgen "redaktionell ERTEILT" und "Kurs(e) auf":
+        // nach denen sucht tools/journal-reparatur.php.
+        $eintrag = "$datum: NOW-Übermittlung NICHT vergeben"
+            . ($quelle !== '' ? " ($quelle)" : '') . ", versucht durch \"$bearbeiter\". "
+            . "Die Informations-Mail an $kontaktEmail konnte nicht zugestellt werden"
+            . ($ret['mail_error'] !== '' ? " [{$ret['mail_error']}]" : '') . ". "
+            . "Zustimmung, Kurse und Historie blieben unverändert.\n";
+    } elseif ($erteilen) {
         $eintrag = "$datum: NOW-Übermittlung redaktionell ERTEILT durch \"$bearbeiter\""
             . ($quelle !== '' ? " ($quelle)" : '') . ". ";
         if ($mail !== null) {
-            $eintrag .= $ret['mail_ok']
-                ? "Info-Mail an: $kontaktEmail. "
-                : "ACHTUNG: Info-Mail an $kontaktEmail FEHLGESCHLAGEN"
-                  . ($ret['mail_error'] !== '' ? " [{$ret['mail_error']}]" : '') . ". ";
+            $eintrag .= "Info-Mail an: $kontaktEmail. ";
             if ($ret['mail_transport'] === 'mail') {
                 $eintrag .= "ACHTUNG: Versand nur ueber lokales Sendmail ohne Authentifizierung"
                           . ($ret['mail_warning'] !== '' ? " [{$ret['mail_warning']}]" : '')
@@ -1097,7 +1235,8 @@ function now_set_zustimmung_redaktionell($anbieterId, $erteilen, $bearbeiter, $m
         $eintrag .= $ret['kurse'] . " Kurs(e) auf Übermittlung gesetzt.\n";
     } else {
         $eintrag = "$datum: NOW-Übermittlung redaktionell ENTZOGEN durch \"$bearbeiter\""
-            . ($quelle !== '' ? " ($quelle)" : '') . ".\n";
+            . ($quelle !== '' ? " ($quelle)" : '') . ". "
+            . $ret['kurse'] . " Kurs(e) von der Übermittlung genommen.\n";
     }
     $db->query("SELECT notizen FROM anbieter WHERE id=" . $anbieterId);
     $alt = $db->next_record() ? (string)$db->fs('notizen') : '';

@@ -142,6 +142,103 @@ class WISY_EDIT_RENDERER_CLASS
 		return $this->cachePwEinst;
 	}
 
+	/**
+	 * mein NOW: Zustimmungsstatus des angemeldeten Anbieters, gecacht wie
+	 * getAnbieterPwEinst() - die Masken fragen mehrfach.
+	 * @return array ('zustimmung' => 0|1, 'fix' => 0|1)
+	 */
+	protected function getAnbieterNowStatus()
+	{
+		if( !isset($this->cacheNowStatus) )
+		{
+			$this->cacheNowStatus = array('zustimmung' => 0, 'fix' => 0);
+			$anbieter_id = isset($_SESSION['loggedInAnbieterId']) ? intval($_SESSION['loggedInAnbieterId']) : 0;
+			if( $anbieter_id )
+			{
+				$db = new DB_Admin;
+				$db->query("SELECT now_zustimmung, now_zustimmung_fix FROM anbieter WHERE id=$anbieter_id;");
+				if( $db->next_record() )
+				{
+					$this->cacheNowStatus['zustimmung'] = intval($db->fcs8('now_zustimmung'));
+					$this->cacheNowStatus['fix']        = intval($db->fcs8('now_zustimmung_fix'));
+				}
+			}
+		}
+
+		return $this->cacheNowStatus;
+	}
+
+	/** mein NOW: hat der angemeldete Anbieter der Uebermittlung zugestimmt? */
+	protected function getAnbieterNowZustimmung()
+	{
+		$s = $this->getAnbieterNowStatus();
+		return $s['zustimmung'];
+	}
+
+	/**
+	 * mein NOW: Darf der Anbieter das Uebermittlungs-Haekchen dieses Kurses
+	 * selbst umstellen?
+	 *
+	 * Bedingungen:
+	 *  - der Anbieter hat selbst zugestimmt (sonst hat das Kurs-Flag ohnehin
+	 *    keine Wirkung und die Zeile wird gar nicht angezeigt),
+	 *  - der Kurs ist nicht per kurse.now_zustimmung_fix festgesetzt,
+	 *  - der Kurs existiert bereits (bei der Neuanlage erbt er den Status).
+	 *
+	 * WICHTIG: Genau diese Bedingung gilt fuer Anzeige UND Auswertung des POST.
+	 * Liefen die beiden auseinander, wuerde jedes Speichern der Kursmaske das
+	 * Flag stillschweigend auf 0 setzen, weil das Haekchen dann nicht im POST
+	 * steht. Deshalb nur ueber diese eine Funktion pruefen.
+	 */
+	protected function nowKursHaekchenAenderbar($kurs)
+	{
+		if( $this->getAnbieterNowZustimmung() != 1 ) {
+			return false;
+		}
+		if( intval(isset($kurs['id']) ? $kurs['id'] : 0) <= 0 ) {
+			return false;
+		}
+		return intval(isset($kurs['now_zustimmung_fix']) ? $kurs['now_zustimmung_fix'] : 0) == 0;
+	}
+
+	/**
+	 * mein NOW: personalisierter Widerrufs-Link für den angemeldeten Anbieter.
+	 * Leerer String, wenn das Modul now-einwilligung nicht ausgerollt ist -
+	 * die Onlinepflege soll daran nicht scheitern.
+	 *
+	 * Geladen wird erst hier und nur bei Bedarf: config.inc.php bringt mit
+	 * NOW_LINK_SECRET und NOW_ADMIN_PW zwei Geheimnisse in den Konstantenraum
+	 * des Requests, die sonst nur im Redaktionssystem und in den
+	 * Standalone-Seiten sichtbar sind. Der Bootstrap des Moduls darf NICHT
+	 * mitgeladen werden, er würde die Portalkonfiguration überschreiben.
+	 */
+	protected function getNowWiderrufLink()
+	{
+		$anbieter_id = isset($_SESSION['loggedInAnbieterId']) ? intval($_SESSION['loggedInAnbieterId']) : 0;
+		if( $anbieter_id <= 0 )
+		{
+			return '';
+		}
+
+		if( !function_exists('now_build_widerruf_link') )
+		{
+			$nowInc = dirname(__DIR__) . '/now-einwilligung/inc';
+			if( !@file_exists($nowInc.'/config.inc.php') || !@file_exists($nowInc.'/functions.inc.php') )
+			{
+				return '';
+			}
+			if( !defined('NOW_EINW_IN') ) { define('NOW_EINW_IN', true); }
+			require_once($nowInc.'/config.inc.php');
+			require_once($nowInc.'/functions.inc.php');
+			if( !function_exists('now_build_widerruf_link') )
+			{
+				return '';
+			}
+		}
+
+		return now_build_widerruf_link($anbieter_id);
+	}
+
 	protected function canPromote()
 	{
 		if( !isset($this->cacheCanPromote) )
@@ -976,6 +1073,23 @@ class WISY_EDIT_RENDERER_CLASS
 		$kurs['abschluss']		= intval($_POST['abschluss']);
 		$kurs['foerderung']		= intval($_POST['foerderung']);
 		$kurs['msgtooperator']	= $_POST['msgtooperator'];
+
+		// mein NOW: Uebermittlungs-Haekchen. Bedingung identisch zur Anzeige
+		// (s. nowKursHaekchenAenderbar) - sonst wuerde ein Speichern der Maske
+		// das Flag auf 0 setzen, obwohl das Haekchen gar nicht angeboten wurde.
+		if( $this->nowKursHaekchenAenderbar($kurs) && isset($_POST['now_zustimmung']) )
+		{
+			$now_neu = intval($_POST['now_zustimmung'])==1 ? 1 : 0;
+			$kurs['now_zustimmung'] = $now_neu;
+			if( $now_neu == 0 )
+			{
+				// Abwahl festschreiben: ohne now_zustimmung_fix wuerde der
+				// taegliche Abgleich (now_zustimmung_kurse_angleichen) den Kurs
+				// spaetestens am naechsten Tag wieder auf 1 setzen, solange der
+				// Anbieter selbst zugestimmt hat.
+				$kurs['now_zustimmung_fix'] = 1;
+			}
+		}
 		$kurs['durchf'] = array();
 		for( $i = 0; $i < sizeof((array) $_POST['nr']); $i ++ )
 		{	
@@ -1229,7 +1343,12 @@ class WISY_EDIT_RENDERER_CLASS
 		if( !$oldData['rights_editTitel'] ) 	{ $newData['titel'] = $oldData['titel']; }
 		if( !$oldData['rights_editAbschluss'] )	{ $newData['abschluss'] = $oldData['abschluss']; $newData['msgtooperator'] = $oldData['msgtooperator']; }
 		
-		$allowed_kfields = array('error', 'info', 'durchf', 'msgtooperator');
+		// now_zustimmung/now_zustimmung_fix gehoeren dazu: Ueber das Haekchen
+		// entscheidet der Anbieter selbst, das ist keine pruefungspflichtige
+		// Kursaenderung. Ohne diesen Eintrag koennten Anbieter mit
+		// Bagatell-Recht (canEditBagatelleOnly) den Kurs gar nicht mehr
+		// speichern, sobald sie das Haekchen umstellen.
+		$allowed_kfields = array('error', 'info', 'durchf', 'msgtooperator', 'now_zustimmung', 'now_zustimmung_fix');
 		$allowed_dfields = array('id', 'nr', 'stunden', 'teilnehmer', 'preis', 'preishinweise', 'sonderpreis', 'sonderpreistage', 'beginn', 'ende',
 		    'beginnoptionen', 'zeit_von', 'zeit_bis', 'kurstage', 'tagescode', 'stadtteil', 'strasse', 'dauer');
 		
@@ -1365,6 +1484,15 @@ class WISY_EDIT_RENDERER_CLASS
 									;");
 		    $kursId = $db->insert_id();
 		    $newData['id'] = $kursId;
+
+		    // mein NOW: der neue Kurs erbt die Zustimmung seines Anbieters sofort.
+		    // Die Onlinepflege ruft trigger_kurse() nicht auf. Ohne diesen Aufruf
+		    // wuerde der Kurs erst beim naechsten Tagesabgleich beruecksichtigt und
+		    // in der Maske bis dahin faelschlich als "nicht uebermittelt" erscheinen.
+		    // (trigger_kurse.inc.php ist im Konstruktor bereits eingebunden.)
+		    if( function_exists('now_zustimmung_kurs_erben') ) {
+		        now_zustimmung_kurs_erben($kursId);
+		    }
 		}
 		
 		// DURCHFÜHRUNGS-Änderungen ablegen
@@ -1516,6 +1644,13 @@ class WISY_EDIT_RENDERER_CLASS
 		// KURS-Änderungen ablegen
 		if( !$oldData['rights_editTitel'] ) 	{ $newData['titel'] = $oldData['titel']; }
 		if( !$oldData['rights_editAbschluss'] )	{ $newData['abschluss'] = $oldData['abschluss']; $newData['msgtooperator'] = $oldData['msgtooperator']; }
+
+		// mein NOW: gegen den Stand in der DATENBANK pruefen, nicht gegen
+		// $newData - dort kann now_zustimmung_fix bereits von der eigenen
+		// Abwahl stammen. Der Schutz durch now_zustimmung_fix wird sonst
+		// wirkungslos, weil die Onlinepflege am Redaktionssystem vorbei
+		// schreibt (admin/lib/edit/data.inc.php greift hier nicht).
+		$nowAenderbar = $this->nowKursHaekchenAenderbar($oldData);
 		
 		if( $actions != ''
 		 || $oldData['titel'] 			!= $newData['titel']
@@ -1526,6 +1661,7 @@ class WISY_EDIT_RENDERER_CLASS
 		 || $oldData['abschluss'] 		!= $newData['abschluss']
 		 || $oldData['foerderung'] 		!= $newData['foerderung']
 		 || $oldData['msgtooperator'] 	!= $newData['msgtooperator']
+		 || ($nowAenderbar && $oldData['now_zustimmung'] != $newData['now_zustimmung'])
 		 )
 		{
 			// protocol
@@ -1549,7 +1685,24 @@ class WISY_EDIT_RENDERER_CLASS
 									 bu_nummer='".addslashes($newData['bu_nummer'])."',
 									 fu_knr='".addslashes($newData['fu_knr'])."',
 									 azwv_knr='".addslashes($newData['azwv_knr'])."', ";
-			
+
+			// mein NOW: nur schreiben, wenn der Anbieter das Haekchen bedienen
+			// durfte. Eine Abwahl wird zugleich per now_zustimmung_fix
+			// festgeschrieben, sonst holt der taegliche Abgleich sie wieder ein.
+			// COALESCE, weil notizen NULL sein kann. CONCAT() mit NULL wuerde
+			// das Journal loeschen.
+			if( $nowAenderbar && $oldData['now_zustimmung'] != $newData['now_zustimmung'] )
+			{
+				$nowNeu = intval($newData['now_zustimmung'])==1 ? 1 : 0;
+				$sql .= " now_zustimmung=$nowNeu, ";
+				$nowJournal = ftime("%d.%m.%y") . ': mein NOW: Uebermittlung dieses Kurses vom Anbieter in der Onlinepflege '
+				            . ($nowNeu==0 ? "abgewaehlt (Kurs festgeschrieben).\n" : "aktiviert.\n");
+				if( $nowNeu == 0 ) {
+					$sql .= " now_zustimmung_fix=1, ";
+				}
+				$sql .= " notizen=CONCAT('".addslashes($nowJournal)."', COALESCE(notizen,'')), ";
+			}
+
 			if($this->framework->iniRead('onlinepflege.invorbereitung', "") == 1)
 				$sql .= "freigeschaltet=0, ";
 			
@@ -1907,6 +2060,37 @@ class WISY_EDIT_RENDERER_CLASS
 							
 						echo '</td>';
 					echo '</tr>';
+
+					// mein NOW: Uebermittlungsstatus dieses Kurses.
+					// Nur sichtbar, wenn der Anbieter selbst zugestimmt hat -
+					// ohne Anbieter-Zustimmung wird ohnehin nichts uebermittelt
+					// und das Kurs-Flag steht dann auf 0.
+					if( $this->getAnbieterNowZustimmung() == 1 && intval($kurs['id']) > 0 )
+					{
+						echo '<tr>';
+						echo '<td width="10%" valign="top" nowrap="nowrap">mein NOW:&nbsp;&nbsp;</td>';
+						echo '<td>';
+						if( $this->nowKursHaekchenAenderbar($kurs) )
+						{
+							// Hidden vor der Checkbox: ein leeres Kaestchen postet sonst gar nichts
+							echo '<input type="hidden" name="now_zustimmung" value="0" />';
+							echo '<label title="Ohne Haken wird dieser Kurs nicht an mein NOW weitergegeben. Die Entscheidung bleibt dann bestehen, bis die Redaktion sie aendert.">';
+							echo '<input type="checkbox" name="now_zustimmung" value="1"'
+							   . (intval($kurs['now_zustimmung']) == 1 ? ' checked="checked"' : '') . ' /> ';
+							echo 'an <a href="https://mein-now.de" target="_blank" rel="noopener noreferrer">mein NOW</a> &uuml;bermitteln';
+							echo '</label>';
+						}
+						else
+						{
+							echo intval($kurs['now_zustimmung']) == 1
+							   ? 'Dieser Kurs wird an mein NOW &uuml;bermittelt. '
+							   : 'Dieser Kurs wird <b>nicht</b> an mein NOW &uuml;bermittelt. ';
+							echo '<small>Bitte wenden Sie sich f&uuml;r die mein-NOW-&Uuml;bermittlung dieses Kurses an die Redaktion.</small>';
+						}
+						echo '<br />&nbsp;';
+						echo '</td>';
+						echo '</tr>';
+					}
 
 					// STICHWORTVORSCHLAEGE
 					if( $kurs['rights_editAbschluss'] )
@@ -2371,7 +2555,49 @@ class WISY_EDIT_RENDERER_CLASS
 	    {
 	        echo "<p class=\"wisy_topnote\">" .implode('<br />', $topnotes). "</p>";
 	    }
-	    
+
+	    // mein NOW: Uebermittlungsstatus und Widerspruchsmoeglichkeit.
+	    // Steht ausserhalb des <form>, weil der Widerrufs-Link auf ein eigenes
+	    // Formular fuehrt und verschachtelte Formulare nicht zulaessig sind.
+	    // Nur bei ladbarem Profil - konnte der Anbieter nicht geladen werden
+	    // (z. B. nicht freigeschaltet), waere die Aussage nicht belastbar.
+	    if( $showForm )
+	    {
+	    $nowStatus = $this->getAnbieterNowStatus();
+	    echo '<div class="wisy_nownote" style="border: 1px solid #ccc; padding: 8px 10px; margin: 0 0 14px 0;">';
+	        echo '<b>&Uuml;bermittlung an "mein NOW":</b> ';
+	        if( $nowStatus['zustimmung'] == 1 )
+	        {
+	            echo 'Ihre Anbieter- und Kursdaten werden an das nationale Weiterbildungsportal '
+	               . '<a href="https://mein-now.de" target="_blank" rel="noopener noreferrer">mein NOW</a> '
+	               . 'der Bundesagentur f&uuml;r Arbeit &uuml;bermittelt.';
+
+	            if( $nowStatus['fix'] )
+	            {
+	                echo '<br /><small>Dieser Status wurde redaktionell festgesetzt. F&uuml;r eine &Auml;nderung '
+	                   . 'wenden Sie sich bitte an die Redaktion.</small>';
+	            }
+	            else
+	            {
+	                $nowWiderruf = $this->getNowWiderrufLink();
+	                if( $nowWiderruf != '' )
+	                {
+	                    echo '<br /><small>Sie k&ouml;nnen der &Uuml;bermittlung jederzeit und ohne Frist widersprechen: '
+	                       . '<a href="'.htmlspecialchars($nowWiderruf).'">&Uuml;bermittlung an mein NOW widerrufen</a>. '
+	                       . 'Ihre Daten in diesem Portal bleiben davon unber&uuml;hrt.</small>';
+	                }
+	            }
+	        }
+	        else
+	        {
+	            echo 'Ihre Daten werden <b>nicht</b> an das nationale Weiterbildungsportal '
+	               . '<a href="https://mein-now.de" target="_blank" rel="noopener noreferrer">mein NOW</a> '
+	               . '&uuml;bermittelt.';
+	            echo '<br /><small>Wenn Sie das &auml;ndern m&ouml;chten, wenden Sie sich bitte an die Redaktion.</small>';
+	        }
+	    echo '</div>';
+	    } // /if( $showForm ) - mein NOW
+
 	    $secureaction = "";
 	    
 	    if( $this->framework->iniRead('useredit.secure', 1)==1

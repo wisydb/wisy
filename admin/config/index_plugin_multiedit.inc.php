@@ -801,15 +801,19 @@ class MULTIEDIT_PLUGIN_CLASS
 				$okCnt++;
 				$kurseCnt += intval($res['kurse']);
 				$doneIds .= ($doneIds == ''? '' : ',') . $a['id'];
-				if( $erteilen && !$res['mail_ok'] ) {
-					$mailFail[] = $a;
-					if( $mailErr == '' && $res['mail_error'] != '' ) { $mailErr = now_to_latin1($res['mail_error']); }
-				}
 				if( $erteilen && $res['kopie_ok'] === true )  { $kopieCnt++; }
 				if( $erteilen && $res['kopie_ok'] === false ) { $kopieFail[] = $a; }
 				if( $transportWarn == '' && $res['mail_transport'] == 'mail' ) {
 					$transportWarn = now_to_latin1($res['mail_warning']);
 				}
+			}
+			elseif( $res['status'] == 'mail_fehlgeschlagen' )
+			{
+				// Info-Mail nicht zugestellt: es wurde NICHTS gesetzt, weder Flag noch
+				// Kurse noch Historie. Nur der Versuch ist im Journal vermerkt.
+				$mailFail[] = $a;
+				if( $mailErr == '' && $res['mail_error'] != '' ) { $mailErr = now_to_latin1($res['mail_error']); }
+				if( $res['kopie_ok'] === true ) { $kopieCnt++; }
 			}
 			else
 			{
@@ -820,11 +824,11 @@ class MULTIEDIT_PLUGIN_CLASS
 		$msg = 'mein NOW: Zustimmung ' . ($erteilen? 'erteilt' : 'entzogen') . ' f&uuml;r ' . $okCnt . ' Anbieter (je Anbieter protokolliert in Historie + Journal).';
 		if( $erteilen )
 		{
-			$msg .= '<br>' . ($okCnt - sizeof($mailFail)) . ' Informations-Mails an die Anbieter versendet.';
+			$msg .= '<br>' . $okCnt . ' Informations-Mails an die Anbieter versendet (nur bei angenommener Mail wird die Zustimmung gesetzt).';
 			$msg .= '<br>' . $kopieCnt . ' Nachweis-Kopien an ' . isohtmlspecialchars(NOW_ADMIN_EMAIL) . ' versendet.';
 			$msg .= '<br>' . $kurseCnt . ' Kurs(e) auf &Uuml;bermittlung gesetzt (Standard-Vergabe an die Kurse).';
 			if( sizeof($mailFail) ) {
-				$msg .= '<br><b>ACHTUNG:</b> Info-Mail-Versand FEHLGESCHLAGEN (Zustimmung dennoch gesetzt, siehe Journal) bei:' . $this->now_list($mailFail, true);
+				$msg .= '<br><b>ACHTUNG:</b> Info-Mail nicht zustellbar - <b>Zustimmung NICHT gesetzt</b> (kein Flag, keine Kurse, kein Historien-Eintrag; der Versuch steht im Journal) bei:' . $this->now_list($mailFail, true);
 				if( $mailErr != '' ) $msg .= 'Grund (erster Fall): ' . isohtmlspecialchars($mailErr) . '<br>';
 			}
 			if( sizeof($kopieFail) ) {
@@ -838,6 +842,10 @@ class MULTIEDIT_PLUGIN_CLASS
 				      . '<br>Zu pr&uuml;fen: Portaleinstellungen mail.extern* des zu diesem Host geh&ouml;renden Portals '
 				      . 'sowie PHPMAILER_PATH in der Server-Konfiguration.';
 			}
+		}
+		else
+		{
+			$msg .= '<br>' . $kurseCnt . ' Kurs(e) von der &Uuml;bermittlung genommen (Kurse mit Fixierung bleiben unberuehrt).';
 		}
 		if( sizeof($sonstFail) ) $msg .= '<br>Nicht ausgef&uuml;hrt bei:' . $this->now_list($sonstFail, false);
 

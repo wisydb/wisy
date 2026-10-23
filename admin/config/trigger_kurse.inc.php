@@ -637,16 +637,20 @@ function update_kurs_state($kurs_id, $param)
  *****************************************************************************/
 
 
-/* Standard-Vergabe: Kurse von Anbietern mit NOW-Einwilligung
- * (anbieter.now_zustimmung=1) erhalten kurse.now_zustimmung=1, sofern der
- * Kurs nicht per kurse.now_zustimmung_fix fixiert ist. date_modified wird
- * mitgesetzt, damit die Aenderung fuer Delta-Abgleiche sichtbar ist.
+/* Abgleich der Kurse mit der Anbieter-Entscheidung, in BEIDE Richtungen:
+ * - Anbieter hat eingewilligt (anbieter.now_zustimmung=1): seine Kurse
+ *   erhalten kurse.now_zustimmung=1,
+ * - Anbieter hat widerrufen (anbieter.now_zustimmung=0): seine Kurse
+ *   werden wieder auf kurse.now_zustimmung=0 gesetzt.
+ * Kurse mit kurse.now_zustimmung_fix bleiben in beiden Richtungen unberuehrt.
+ * date_modified wird mitgesetzt, damit die Aenderung fuer Delta-Abgleiche
+ * sichtbar ist.
  *
- * Ein ENTZUG der Anbieter-Einwilligung wird bewusst NICHT auf die Kurse
- * uebertragen: Die Uebermittlung an mein NOW prueft immer zusaetzlich die
- * Anbieter-Zustimmung, ohne Anbieter-Einwilligung wird also ohnehin nichts
- * uebertragen - und die Kurs-Werte bleiben fuer eine spaetere erneute
- * Einwilligung erhalten.
+ * Rueckrichtung: Fuer die Uebermittlung entbehrlich, weil ohnehin zusaetzlich 
+ * die Anbieter-Zustimmung geprueft wird. 
+ * Sichtbar ist der Kurswert aber in der Redaktionsmaske und in der
+ * Onlinepflege - dort stuenden die Kurse eines Anbieters, der widerrufen
+ * hat, weiter auf "Uebermittlung".
  *
  * Aufrufe: taeglich ueber den Sync (kurseSlow ->
  * alle_freischaltungen_ueberpruefen, s. core51/wisy-sync-renderer-class),
@@ -656,10 +660,22 @@ function update_kurs_state($kurs_id, $param)
 function now_zustimmung_kurse_angleichen()
 {
 	$db = new DB_Admin;
+	$jetzt = ftime("%Y-%m-%d %H:%M:%S");
+	$geaendert = 0;
+
+	// Einwilligung -> Kurse freischalten
 	$db->query("UPDATE kurse INNER JOIN anbieter ON kurse.anbieter=anbieter.id"
-		. " SET kurse.now_zustimmung=1, kurse.date_modified='" . ftime("%Y-%m-%d %H:%M:%S") . "'"
+		. " SET kurse.now_zustimmung=1, kurse.date_modified='" . $jetzt . "'"
 		. " WHERE anbieter.now_zustimmung=1 AND kurse.now_zustimmung=0 AND kurse.now_zustimmung_fix=0;");
-	return $db->affected_rows();
+	$geaendert += $db->affected_rows();
+
+	// Widerruf -> Kurse wieder abschalten
+	$db->query("UPDATE kurse INNER JOIN anbieter ON kurse.anbieter=anbieter.id"
+		. " SET kurse.now_zustimmung=0, kurse.date_modified='" . $jetzt . "'"
+		. " WHERE anbieter.now_zustimmung=0 AND kurse.now_zustimmung=1 AND kurse.now_zustimmung_fix=0;");
+	$geaendert += $db->affected_rows();
+
+	return $geaendert;
 }
 
 

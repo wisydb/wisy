@@ -279,6 +279,28 @@ $site->skin->workspaceStart();
                     Host geh&ouml;rt, sowie <tt>PHPMAILER_PATH</tt> in der Server-Konfiguration.
                 </p>
             <?php endif; ?>
+        <?php elseif ($redResult['status'] === 'mail_fehlgeschlagen'): ?>
+            <p class="now-status now-nein"><b>Nicht ausgef&uuml;hrt: Die Informations-Mail konnte nicht
+               zugestellt werden.</b> Die Zustimmung wurde deshalb <b>nicht</b> gesetzt, es wurden weder
+               Kurse freigeschaltet noch ein Historien-Eintrag geschrieben - der Anbieter h&auml;tte von
+               der &Uuml;bermittlung nichts erfahren und ihr auch nicht widersprechen k&ouml;nnen.
+               <?php if ($redResult['mail_reason'] === 'empfaenger_abgelehnt'): ?>
+                   <br>Der Mailserver hat die Empf&auml;nger-Adresse <b><?= nowadmin_h(now_to_latin1(
+                       $redResult['mail_rejected'] ? implode(', ', $redResult['mail_rejected']) : $redResult['email'])) ?></b>
+                       dauerhaft abgelehnt. Bitte die hinterlegte Pflege-E-Mail pr&uuml;fen und die Vergabe
+                       danach erneut ausl&ouml;sen.
+               <?php else: ?>
+                   <br>Der Versand &uuml;ber das externe Postfach ist gescheitert. Das ist in der Regel ein
+                       vor&uuml;bergehendes Problem - bitte sp&auml;ter erneut versuchen. H&auml;lt es an, die
+                       Portaleinstellungen <tt>mail.extern*</tt> pr&uuml;fen.
+               <?php endif; ?>
+               <?php if ($redResult['mail_error'] !== ''): ?>
+                   <br>Meldung des Mailservers: <?= nowadmin_h(now_to_latin1($redResult['mail_error'])) ?>
+               <?php endif; ?>
+               <?php if ($redResult['kopie_ok'] === true): ?>
+                   <br>Eine Nachweis-Kopie des Versuchs ging an <?= nowadmin_h(NOW_ADMIN_EMAIL) ?>.
+               <?php endif; ?>
+            </p>
         <?php elseif ($redResult['status'] === 'fix'): ?>
             <p class="now-status now-nein">Nicht ausgef&uuml;hrt: Der Status ist fixiert (now_zustimmung_fix).</p>
         <?php elseif ($redResult['status'] === 'schon'): ?>
@@ -310,14 +332,15 @@ $site->skin->workspaceStart();
            hinterlegt - die Informations-Mail k&ouml;nnte nicht zugestellt werden.</p>
     <?php else: ?>
         <a class="now-btn redaktionell" href="module.php?module=edit_plugin_anbieter_0&amp;id=<?= (int)$id ?>&amp;do=redaktionell_erteilen"
-           onclick="return confirm('Zustimmung jetzt redaktionell erteilen (now_zustimmung=1, alle Kurse ohne Fixierung erhalten die Kurs-Zustimmung) und die Informations-E-Mail an <?= nowadmin_h($kontaktEmail) ?> senden (Nachweis-Kopie an <?= nowadmin_h(NOW_ADMIN_EMAIL) ?>)?');">
+           onclick="return confirm('Zustimmung jetzt redaktionell erteilen? Gesetzt wird sie nur, wenn die Informations-E-Mail angenommen wird (dann: now_zustimmung=1, alle Kurse ohne Fixierung erhalten die Kurs-Zustimmung). E-Mail an <?= nowadmin_h($kontaktEmail) ?> senden (Nachweis-Kopie an <?= nowadmin_h(NOW_ADMIN_EMAIL) ?>)?');">
             Zustimmung jetzt erteilen + Informations-E-Mail senden
         </a>
         <p class="now-hint">
         <ul>
-        	<li>Setzt anbieter.now_zustimmung=1,</li> 
+        	<li>versendet zuerst die <b>Informations-Mail</b> an die <b>Pflege</b>-Mail-Adresse. Nimmt der Mailserver sie nicht an, bricht die Vergabe ab: kein Flag, keine Kurse, kein Historien-Eintrag,</li>
+        	<li>setzt danach anbieter.now_zustimmung=1,</li>
         	<li>protokolliert den Vorgang revisionssicher (Historie + Journal) und</li> 
-            <li>sendet eine <b>Informations-Mail</b> an die <b>Pflege</b>-Mail-Adresse.</li>
+            <li>schaltet alle Kurse ohne Fixierung auf &Uuml;bermittlung.</li>
             <li>Die Redaktion (<?= nowadmin_h(NOW_ADMIN_EMAIL) ?>) erh&auml;lt zus&auml;tzlich eine <b>Nachweis-Kopie</b> mit Anbieter, Empf&auml;nger, Zeitpunkt, ausl&ouml;sender Person, 
             Zustellergebnis und vollst&auml;ndigem Wortlaut - als Beleg des Versands</li>
        </ul>     
