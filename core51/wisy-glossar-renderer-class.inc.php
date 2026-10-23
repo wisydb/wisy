@@ -52,6 +52,7 @@ class WISY_GLOSSAR_RENDERER_CLASS
         $glossar = $this->getGlossareintrag($glossar_id, $no404);
         
         // 404 wenn Usergruppe Portal != Usergruppe Glossar und Gloasser nicht an einem Stichwort und Portalparameter glossarshowall != 1
+        // Dieselbe Regel verwendet WISY_RATGEBERSEITEN_RENDERER_CLASS (/ratgeberseiten), bei Aenderungen dort ebenfalls anpassen
         if (trim($this->framework->iniRead('disable.glossar', false))
             || ($glossarshowall != 1 && $glossar['user_grp'] != $wisyPortalUserGrp && !in_array($glossar_id, $glossarshowids) && !in_array($glossar['user_grp'], $glossarshowgrps) && $this->getGlossarArt($glossar_id) == 0) ) {
                 

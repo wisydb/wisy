@@ -3065,6 +3065,11 @@ class WISY_FRAMEWORK_CLASS
 			case 'sitemap-landingpages.xml.gz':
 			    return createWisyObject('WISY_LANDINGPAGE_RENDERER_CLASS', $this, array('type'=>$wisyRequestedFile));
 			
+			// Liste aller im Portal sichtbaren Ratgeberseiten
+			// Funktioniert: Aber bitte nur aktivieren, wenn Nutzen für konkrete Portalinstanzen klar. 
+			// case 'ratgeberseiten':
+			//     return createWisyObject('WISY_RATGEBERSEITEN_RENDERER_CLASS', $this);
+			
 			// deprecated URLs
 			case 'kurse.php':
 			case 'anbieter.php':
